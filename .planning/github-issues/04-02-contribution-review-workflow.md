@@ -6,6 +6,7 @@ Document how contributors can propose content while preserving quality and licen
 
 - Add contributor documentation for lesson, vocabulary, phrasebook, and resource proposals.
 - Add content review checklist for Traditional Chinese accuracy, pinyin, Japanese naturalness, Taiwan usage, and source metadata.
+- Add review criteria for the Chabiko lesson loop, Travel Quest usefulness, kanji bridge accuracy, tone notes, and false-friend warnings.
 - Explain how to handle license questions.
 - Align GitHub templates with content review needs.
 
@@ -19,6 +20,7 @@ Document how contributors can propose content while preserving quality and licen
 
 - [ ] Contributor docs explain how to propose content safely.
 - [ ] Review checklist covers Chinese accuracy, pinyin, Japanese naturalness, Taiwan usage, and source metadata.
+- [ ] Review checklist covers lesson-loop completeness, travel task usefulness, and kanji/on-yomi bridge risks.
 - [ ] License uncertainty has a clear "do not import yet" path.
 - [ ] Issue/PR templates support content review workflow.
 
@@ -26,4 +28,4 @@ Document how contributors can propose content while preserving quality and licen
 
 - `.planning/REQUIREMENTS.md`: QUAL-01.
 - `.planning/ROADMAP.md` Phase 4, plan 04-02.
-
+- `docs/strategy/learning-and-motivation-strategy.md`.

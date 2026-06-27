@@ -40,6 +40,8 @@ Japanese learners can keep reading and practicing until they can use simple Chin
 - Main use case: preparing for a Taiwan trip, with enough confidence to read signs, order food, ask simple questions, and recognize common words.
 - Content tone: entertaining, short, curiosity-driven, and easy to continue.
 - Learning bridge: Japanese kanji knowledge is useful, but false friends and pronunciation gaps must be called out explicitly.
+- Learning loop: every core lesson should move from recognizable kanji or travel hook to sound focus, chunk practice, and a concrete Taiwan travel task.
+- Motivation loop: progress should be framed as travel readiness by scenario, not only as completed lessons.
 - Candidate public resources include official Taiwan learning/travel sites and open lexical data sources, but no third-party content should be copied until license and attribution are verified.
 - Product language: Japanese for learner-facing explanations; Traditional Chinese for target language; repo planning may be bilingual.
 
@@ -60,6 +62,8 @@ Japanese learners can keep reading and practicing until they can use simple Chin
 | Japanese explanations first | The audience is Japanese learners, not generic English-speaking learners. | — Pending |
 | Static-first v1 | Public learning content and local practice can validate value without accounts. | — Pending |
 | On-yomi similarity is a bridge, not a guarantee | Similar-looking words can mislead; false friends need explicit warnings. | — Pending |
+| Lessons follow a travel-task loop | Learners need visible usefulness and repeated retrieval, not only reading. | — Pending |
+| Motivation is scenario readiness | Taiwan travel readiness is more concrete than generic points or streaks. | — Pending |
 | External resources are linked/attributed, not copied | Prevent copyright and license problems in a public repo. | — Pending |
 | AGENTS.md and CLAUDE.md mirror policy-critical sections | Keeps Codex and Claude Code aligned on scope, Git, content, and package manager rules. | — Pending |
 
@@ -82,4 +86,3 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 *Last updated: 2026-06-28 after initialization*
-

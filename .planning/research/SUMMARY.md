@@ -12,6 +12,22 @@ Beginner path, mobile-friendly lessons, Traditional Chinese, pinyin, Japanese ex
 
 Make Mandarin/Japanese on-yomi similarity a guided learning bridge: useful for recognition, but always paired with pronunciation, tone, usage, and false-friend warnings.
 
+## Learning Strategy
+
+Chabiko should use a repeatable lesson loop:
+
+1. Taiwan travel hook.
+2. Can-do goal.
+3. Core sentence.
+4. Chunk breakdown.
+5. Kanji bridge.
+6. Single sound or tone focus.
+7. Mini practice.
+8. Travel task.
+9. Review hook.
+
+Motivation should be based on travel readiness by scenario, not only lesson counts or generic streaks. See `docs/strategy/learning-and-motivation-strategy.md`.
+
 ## External Resource Strategy
 
 Candidate resources:
@@ -32,4 +48,3 @@ No external data is approved for import until exact license, attribution, and tr
 - Taiwan usage should be explicit when it differs from generic Mandarin resources.
 - The product should not become a dictionary clone.
 - UI should expose useful learning content immediately, not a marketing shell.
-

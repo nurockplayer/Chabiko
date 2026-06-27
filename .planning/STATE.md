@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-06-28)
 Phase: 1 of 4 (Foundation and Content Model)
 Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-06-28 — Initialized GSD project docs, roadmap, GitHub repo, milestone, and issues.
+Last activity: 2026-06-28 — Added Chabiko learning/motivation strategy and updated roadmap/requirements.
 
 Progress: 0%
 
@@ -42,6 +42,8 @@ Recent decisions affecting current work:
 
 - Traditional Chinese first for Taiwan travel.
 - Static-first public content before accounts.
+- Lessons should follow the Chabiko lesson loop.
+- Motivation should be framed as Travel Quest/readiness by scenario.
 - External resources require license and attribution review before reuse.
 - AGENTS.md and CLAUDE.md must stay aligned on policy-critical rules.
 

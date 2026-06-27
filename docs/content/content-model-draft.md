@@ -7,11 +7,19 @@ This draft guides Phase 1 implementation. It is not an executable schema yet.
 - `id`
 - `titleJa`
 - `level`
+- `canDoJa`
 - `learnerOutcomeJa`
 - `hookJa`
+- `travelScenario`
 - `sections`
+- `coreSentence`
+- `chunks`
+- `kanjiBridgeNotes`
+- `soundFocus`
 - `examples`
 - `reviewPrompts`
+- `travelTask`
+- `relatedVocabulary`
 - `reviewStatus`
 
 ## Vocabulary
@@ -23,7 +31,9 @@ This draft guides Phase 1 implementation. It is not an executable schema yet.
 - `kana`
 - `category`
 - `similarityType`
+- `toneNote`
 - `caution`
+- `travelScenario`
 - `examples`
 - `source`
 - `reviewStatus`
@@ -36,6 +46,8 @@ This draft guides Phase 1 implementation. It is not an executable schema yet.
 - `japanese`
 - `scenario`
 - `notesJa`
+- `soundFocus`
+- `travelTask`
 - `relatedVocabulary`
 - `source`
 - `reviewStatus`
@@ -51,4 +63,3 @@ This draft guides Phase 1 implementation. It is not an executable schema yet.
 - `allowedUse`
 - `attribution`
 - `notes`
-

@@ -17,6 +17,7 @@
 - [ ] **LEARN-01**: Learner can follow a beginner path with at least 10 short lessons.
 - [ ] **LEARN-02**: Each lesson has a Japanese hook, learner outcome, Traditional Chinese examples, pinyin, and review prompts.
 - [ ] **LEARN-03**: Lesson pages are readable on mobile and desktop without text overlap.
+- [ ] **LEARN-04**: Each core lesson follows the Chabiko lesson loop: hook, can-do goal, core sentence, chunk breakdown, kanji bridge, sound focus, mini practice, and travel task.
 
 ### On-yomi Bridge
 
@@ -35,6 +36,12 @@
 - [ ] **PRACT-01**: Learner can complete at least three lightweight practice modes without logging in.
 - [ ] **PRACT-02**: Practice gives immediate feedback and a retry path.
 - [ ] **PRACT-03**: Practice progress can persist locally where useful without cloud accounts.
+- [ ] **PRACT-04**: Practice modes cover recognition, listening or tone discrimination, recall, and scenario roleplay.
+
+### Motivation
+
+- [ ] **MOTIV-01**: Learner can see travel readiness by scenario rather than only lesson completion.
+- [ ] **MOTIV-02**: Learner can access at least one short recurring format such as Daily Taiwan Chinese or Travel Quest prompts.
 
 ### Resources And Quality
 
@@ -81,6 +88,7 @@
 | LEARN-01 | Phase 2 | Pending |
 | LEARN-02 | Phase 2 | Pending |
 | LEARN-03 | Phase 3 | Pending |
+| LEARN-04 | Phase 2 | Pending |
 | ONYOMI-01 | Phase 2 | Pending |
 | ONYOMI-02 | Phase 2 | Pending |
 | ONYOMI-03 | Phase 3 | Pending |
@@ -90,17 +98,19 @@
 | PRACT-01 | Phase 3 | Pending |
 | PRACT-02 | Phase 3 | Pending |
 | PRACT-03 | Phase 3 | Pending |
+| PRACT-04 | Phase 3 | Pending |
+| MOTIV-01 | Phase 3 | Pending |
+| MOTIV-02 | Phase 3 | Pending |
 | RES-01 | Phase 1 | Pending |
 | RES-02 | Phase 1 | Pending |
 | QUAL-01 | Phase 4 | Pending |
 | QUAL-02 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 20 total
-- Mapped to phases: 20
+- v1 requirements: 24 total
+- Mapped to phases: 24
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-28*
 *Last updated: 2026-06-28 after initial roadmap*
-

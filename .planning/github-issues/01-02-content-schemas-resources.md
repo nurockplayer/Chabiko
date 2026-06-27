@@ -9,6 +9,7 @@ Define the structured content model and seed the resource registry so Chabiko co
 - Add seed examples for each content type.
 - Add a candidate resource registry for official and open-data sources.
 - Track owner, URL, license status, allowed use, attribution, and notes.
+- Include fields needed by the Chabiko lesson loop: can-do goal, core sentence, chunk breakdown, kanji bridge notes, sound focus, travel task, and scenario tags.
 
 ## Out of scope
 
@@ -19,6 +20,8 @@ Define the structured content model and seed the resource registry so Chabiko co
 ## Acceptance criteria
 
 - [ ] Schemas require Traditional Chinese, pinyin, Japanese explanation, category/scenario, and review/source metadata where applicable.
+- [ ] Lesson schema supports hook, can-do goal, core sentence, chunks, kanji bridge notes, sound focus, mini practice/review prompts, and travel task.
+- [ ] Vocabulary schema supports tone notes, similarity type, caution/false-friend notes, and travel scenario tags.
 - [ ] Resource registry includes license status for each candidate source.
 - [ ] Validation fails on missing required metadata.
 - [ ] No copied third-party content is added without approval.
@@ -28,4 +31,4 @@ Define the structured content model and seed the resource registry so Chabiko co
 - `.planning/REQUIREMENTS.md`: FOUND-03, RES-01, RES-02.
 - `.planning/research/SUMMARY.md`.
 - `docs/content/content-model-draft.md`.
-
+- `docs/strategy/learning-and-motivation-strategy.md`.
