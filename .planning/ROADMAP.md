@@ -31,9 +31,9 @@ Build Chabiko from a public planning repo into a useful static-first learning si
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Scaffold app and package-manager baseline.
-- [ ] 01-02: Define content schemas and seed resource registry.
-- [ ] 01-03: Align collaboration docs, issue templates, and content licensing guardrails.
+- [ ] 01-01: Scaffold app and package-manager baseline. (#1)
+- [ ] 01-02: Define content schemas and seed resource registry. (#2)
+- [ ] 01-03: Align collaboration docs, issue templates, and content licensing guardrails. (#3)
 
 ### Phase 2: Seed Curriculum and Travel Content
 **Goal**: Create the first useful body of learner content for Japanese speakers preparing for Taiwan travel.
@@ -48,9 +48,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Draft beginner lesson sequence.
-- [ ] 02-02: Build on-yomi bridge vocabulary dataset.
-- [ ] 02-03: Build Taiwan travel phrasebook dataset.
+- [ ] 02-01: Draft beginner lesson sequence. (#4)
+- [ ] 02-02: Build on-yomi bridge vocabulary dataset. (#5)
+- [ ] 02-03: Build Taiwan travel phrasebook dataset. (#6)
 
 ### Phase 3: Learning Experience and Practice
 **Goal**: Turn structured content into a polished mobile-first learning experience with lightweight practice.
@@ -66,9 +66,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Build lesson, vocabulary, and phrasebook pages.
-- [ ] 03-02: Build cross-linking and filters.
-- [ ] 03-03: Build practice interactions and local progress.
+- [ ] 03-01: Build lesson, vocabulary, and phrasebook pages. (#7)
+- [ ] 03-02: Build cross-linking and filters. (#8)
+- [ ] 03-03: Build practice interactions and local progress. (#9)
 
 ### Phase 4: Quality, Deployment, and Contribution Flow
 **Goal**: Make v1 reliable enough for public iteration and community/content contribution.
@@ -83,8 +83,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Add CI, content validation, and preview deploy.
-- [ ] 04-02: Add contributor docs and review workflow.
+- [ ] 04-01: Add CI, content validation, and preview deploy. (#10)
+- [ ] 04-02: Add contributor docs and review workflow. (#11)
 
 ## Progress
 
@@ -97,4 +97,3 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. Seed Curriculum and Travel Content | 0/3 | Not started | - |
 | 3. Learning Experience and Practice | 0/3 | Not started | - |
 | 4. Quality, Deployment, and Contribution Flow | 0/2 | Not started | - |
-
