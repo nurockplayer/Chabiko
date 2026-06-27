@@ -1,0 +1,32 @@
+name: Content
+description: Track lesson, vocabulary, phrasebook, or resource curation work.
+title: "[content] "
+labels:
+  - type:content
+body:
+  - type: textarea
+    id: learner-outcome
+    attributes:
+      label: Learner outcome
+      description: What can the learner understand or say after this content?
+    validations:
+      required: true
+  - type: textarea
+    id: content-scope
+    attributes:
+      label: Content scope
+      description: Lesson, vocabulary, sentences, examples, and review prompts.
+    validations:
+      required: true
+  - type: textarea
+    id: review
+    attributes:
+      label: Review requirements
+      description: Accuracy, Japanese explanation quality, source attribution, or native-speaker review.
+      value: |
+        - [ ] Traditional Chinese reviewed
+        - [ ] Japanese explanation reviewed
+        - [ ] Source/license noted where applicable
+    validations:
+      required: true
+

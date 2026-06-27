@@ -1,0 +1,13 @@
+.DS_Store
+.omc/
+node_modules/
+dist/
+.next/
+.vercel/
+.wrangler/
+.env
+.env.*
+!.env.example
+coverage/
+playwright-report/
+test-results/
