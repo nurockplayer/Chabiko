@@ -19,9 +19,9 @@ Milestone: [v1.0 MVP](https://github.com/nurockplayer/Chabiko/milestone/1)
 - [#7 Build lesson, vocabulary, and phrasebook pages](https://github.com/nurockplayer/Chabiko/issues/7)
 - [#8 Add cross-linking and filters](https://github.com/nurockplayer/Chabiko/issues/8)
 - [#9 Build practice interactions and local progress](https://github.com/nurockplayer/Chabiko/issues/9)
+- [#12 Build Travel Quest and readiness motivation system](https://github.com/nurockplayer/Chabiko/issues/12)
 
 ## Phase 4: Quality, Deployment, and Contribution Flow
 
 - [#10 Add CI, content validation, and preview deploy](https://github.com/nurockplayer/Chabiko/issues/10)
 - [#11 Document contribution and content review workflow](https://github.com/nurockplayer/Chabiko/issues/11)
-

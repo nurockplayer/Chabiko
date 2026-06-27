@@ -71,7 +71,7 @@ Plans:
 - [ ] 03-01: Build lesson, vocabulary, and phrasebook pages. (#7)
 - [ ] 03-02: Build cross-linking and filters. (#8)
 - [ ] 03-03: Build practice interactions and local progress. (#9)
-- [ ] 03-04: Build Travel Quest and readiness motivation system. (issue pending)
+- [ ] 03-04: Build Travel Quest and readiness motivation system. (#12)
 
 ### Phase 4: Quality, Deployment, and Contribution Flow
 **Goal**: Make v1 reliable enough for public iteration and community/content contribution.
