@@ -10,7 +10,18 @@ Beginner path, mobile-friendly lessons, Traditional Chinese, pinyin, Japanese ex
 
 ## Differentiator
 
-Make Mandarin/Japanese on-yomi similarity a guided learning bridge: useful for recognition, but always paired with pronunciation, tone, usage, and false-friend warnings.
+Make Mandarin/Japanese kanji similarity a guided learning bridge: useful for recognition, but always paired with pronunciation, tone, usage, and false-friend warnings. Chabiko should feel clearly made for Japanese speakers, not like a generic Chinese learning app with Japanese labels pasted on top.
+
+## Japanese Learner Alignment
+
+The v1 product should be grounded in prioritized Japanese learner personas and jobs-to-be-done. The most likely v1 spine is Taiwan travel readiness, with secondary paths for school-credit support, business/service encounters, study abroad, and Chinese media curiosity.
+
+Content and practice should explicitly handle Japanese-native learner pain points:
+
+- Mandarin tones and pinyin pronunciation.
+- Kanji false friends and same-looking words with different usage.
+- Word order, measure words, aspect particles, and complements.
+- Traditional/Simplified and Taiwan/Mainland usage differences.
 
 ## Learning Strategy
 
@@ -46,5 +57,6 @@ No external data is approved for import until exact license, attribution, and tr
 
 - Content review matters as much as code review.
 - Taiwan usage should be explicit when it differs from generic Mandarin resources.
+- Variant notes should be useful and selective, not clutter every beginner card.
 - The product should not become a dictionary clone.
 - UI should expose useful learning content immediately, not a marketing shell.
