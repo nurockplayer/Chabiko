@@ -11,7 +11,7 @@ usage gaps, false friends, and Taiwan/Mainland differences.
 
 ## Core Value
 
-Japanese learners can keep reading and practicing until they can use simple Chinese for their goal, especially Taiwan travel situations.
+Japanese learners can keep reading and practicing until they can use simple Chinese for their goal, with Taiwan travel readiness as the v1 differentiating spine.
 
 ## Requirements
 
