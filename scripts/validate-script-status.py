@@ -39,13 +39,20 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
         elif val not in CONTROLLED_STATUSES:
             errors.append(f"{path}.traditionalStatus '{val}' — not a valid status")
 
-    # simplified is optional; when absent, simplifiedStatus must also be absent
+    # simplified is optional; when absent, simplifiedStatus must be absent
+    # or explicitly "unavailable" (meaning "confirmed unavailable")
     simplified_present = "simplified" in record and record["simplified"] is not None
     simplified_status_present = "simplifiedStatus" in record
 
     if not simplified_present:
         if simplified_status_present:
-            errors.append(f"{path}: 'simplifiedStatus' present but 'simplified' is absent")
+            val = record["simplifiedStatus"]
+            if val != "unavailable":
+                errors.append(
+                    f"{path}: 'simplifiedStatus' must be 'unavailable' when 'simplified' is absent"
+                )
+            elif not isinstance(val, str):
+                errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
     else:
         if not simplified_status_present:
             errors.append(f"{path}: 'simplifiedStatus' is required when 'simplified' is present")
@@ -133,15 +140,39 @@ def test_simplified_without_status_fails():
 
 
 def test_status_present_without_simplified_fails():
+    """simplifiedStatus=verified without simplified should fail (only unavailable allowed)."""
     errs = validate_script_fields({
         "id": "x",
         "traditional": "你好",
         "traditionalStatus": "authored",
         "simplifiedStatus": "verified",
     })
-    assert any("simplifiedStatus" in e and "absent" in e for e in errs), (
-        f"Expected simplifiedStatus-without-simplified error, got {errs}"
+    assert any("must be 'unavailable'" in e for e in errs), (
+        f"Expected simulatedStatus-must-be-unavailable error, got {errs}"
     )
+
+
+def test_simplified_status_unavailable_without_simplified_passes():
+    """simplifiedStatus=unavailable without simplified is valid (confirmed unavailable)."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplifiedStatus": "unavailable",
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_simplified_status_unavailable_with_simplified_passes():
+    """simplifiedStatus=unavailable with simplified present is also valid."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplified": "你好",
+        "simplifiedStatus": "unavailable",
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
 
 
 def test_invalid_traditional_status_fails():
@@ -187,6 +218,7 @@ def test_non_string_status_fails():
 
 
 def test_simplified_none_is_absent():
+    """simplified=None counts as absent — simplifiedStatus must be 'unavailable'."""
     errs = validate_script_fields({
         "id": "x",
         "traditional": "你好",
@@ -194,8 +226,8 @@ def test_simplified_none_is_absent():
         "simplified": None,
         "simplifiedStatus": "verified",
     })
-    assert any("simplifiedStatus" in e and "absent" in e for e in errs), (
-        f"Expected simplifiedStatus-without-simplified error when simplified is None, got {errs}"
+    assert any("must be 'unavailable'" in e for e in errs), (
+        f"Expected must-be-unavailable error when simplified is None, got {errs}"
     )
 
 
@@ -258,6 +290,20 @@ def test_walk_catches_simplified_only_record():
     )
 
 
+def test_missing_check_arg_exits_two():
+    """--check without a file argument should print usage and exit with code 2."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            [sys.executable, __file__, "--check"],
+            capture_output=True, text=True
+        )
+        assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+        assert "Usage:" in result.stderr, f"Expected usage in stderr, got: {result.stderr}"
+    except ImportError:
+        pass  # skip if subprocess unavailable (unlikely)
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -276,6 +322,9 @@ def run_tests():
         test_walk_bundle_invalid,
         test_walk_ignores_non_chinese_content,
         test_walk_catches_simplified_only_record,
+        test_simplified_status_unavailable_without_simplified_passes,
+        test_simplified_status_unavailable_with_simplified_passes,
+        test_missing_check_arg_exits_two,
     ]
     failures = 0
     for test in tests:
@@ -290,8 +339,11 @@ def run_tests():
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--check":
+        if len(sys.argv) < 3:
+            print("Usage: python3 scripts/validate-script-status.py --check <file>", file=sys.stderr)
+            sys.exit(2)
         filepath = sys.argv[2]
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
         errors = walk_content_records(data)
         for e in errors:
