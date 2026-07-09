@@ -25,9 +25,11 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     """
     errors: list[str] = []
 
-    # traditional is required
+    # traditional is required and must be a string
     if "traditional" not in record:
         errors.append(f"{path}: 'traditional' is required")
+    elif not isinstance(record["traditional"], str):
+        errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
 
     # traditionalStatus is required; unavailable is contradictory because
     # traditional always has text
@@ -46,6 +48,9 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     # or explicitly "unavailable" (meaning "confirmed unavailable")
     simplified_present = "simplified" in record and record["simplified"] is not None
     simplified_status_present = "simplifiedStatus" in record
+
+    if simplified_present and not isinstance(record["simplified"], str):
+        errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
 
     if not simplified_present:
         if simplified_status_present:
@@ -366,6 +371,32 @@ def test_walk_catches_missing_traditional_with_pinyin():
     )
 
 
+def test_traditional_non_string_fails():
+    """traditional must be a string."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": 123,
+        "traditionalStatus": "authored",
+    })
+    assert any("must be a string" in e for e in errs), (
+        f"Expected traditional-must-be-string error, got {errs}"
+    )
+
+
+def test_simplified_non_string_fails():
+    """simplified must be a string when present."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplified": 456,
+        "simplifiedStatus": "verified",
+    })
+    assert any("must be a string" in e for e in errs), (
+        f"Expected simplified-must-be-string error, got {errs}"
+    )
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -391,6 +422,8 @@ def run_tests():
         test_simplified_status_unavailable_with_simplified_fails,
         test_simplified_status_valid_with_simplified_passes,
         test_missing_check_arg_exits_two,
+        test_traditional_non_string_fails,
+        test_simplified_non_string_fails,
     ]
     failures = 0
     for test in tests:
