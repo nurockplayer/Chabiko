@@ -101,7 +101,7 @@ sed -n '1,120p' AGENTS.md
 
 ## 內容與資料規則
 
-- v1 以繁體中文為主，不做簡體中文優先教材。
+- 內容與資料支援繁簡雙語顯示；台灣旅遊路徑以繁體為主，HSK／學校課業／一般中文路徑可預設簡體。
 - 內容必須存在 structured, reviewable files，不要硬塞在 React component 裡。
 - 每個 vocabulary entry 至少支援：繁體中文、pinyin、日文說明、類別、例句、tone note、caution/source/review metadata。
 - 每個核心 lesson 必須符合 `docs/strategy/learning-and-motivation-strategy.md` 的 lesson loop。
