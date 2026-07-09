@@ -60,6 +60,8 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
             val = record["simplifiedStatus"]
             if not isinstance(val, str):
                 errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
+            elif val == "unavailable":
+                errors.append(f"{path}: 'simplifiedStatus' cannot be 'unavailable' when 'simplified' text exists")
             elif val not in CONTROLLED_STATUSES:
                 errors.append(f"{path}.simplifiedStatus '{val}' — not a valid status")
 
@@ -163,8 +165,8 @@ def test_simplified_status_unavailable_without_simplified_passes():
     assert errs == [], f"Expected no errors, got {errs}"
 
 
-def test_simplified_status_unavailable_with_simplified_passes():
-    """simplifiedStatus=unavailable with simplified present is also valid."""
+def test_simplified_status_unavailable_with_simplified_fails():
+    """simplifiedStatus=unavailable with simplified text is contradictory and must fail."""
     errs = validate_script_fields({
         "id": "x",
         "traditional": "你好",
@@ -172,7 +174,9 @@ def test_simplified_status_unavailable_with_simplified_passes():
         "simplified": "你好",
         "simplifiedStatus": "unavailable",
     })
-    assert errs == [], f"Expected no errors, got {errs}"
+    assert any("cannot be 'unavailable'" in e for e in errs), (
+        f"Expected cannot-be-unavailable error, got {errs}"
+    )
 
 
 def test_invalid_traditional_status_fails():
@@ -239,6 +243,19 @@ def test_all_four_statuses_valid():
             "traditionalStatus": s,
         })
         assert errs == [], f"Status '{s}' should be valid, got {errs}"
+
+
+def test_simplified_status_valid_with_simplified_passes():
+    """simplified text with a valid non-unavailable status should pass."""
+    for s in ("authored", "verified", "generated"):
+        errs = validate_script_fields({
+            "id": "x",
+            "traditional": "你好",
+            "traditionalStatus": "authored",
+            "simplified": "你好",
+            "simplifiedStatus": s,
+        })
+        assert errs == [], f"Status '{s}' with simplified text should pass, got {errs}"
 
 
 def test_walk_bundle():
@@ -323,7 +340,8 @@ def run_tests():
         test_walk_ignores_non_chinese_content,
         test_walk_catches_simplified_only_record,
         test_simplified_status_unavailable_without_simplified_passes,
-        test_simplified_status_unavailable_with_simplified_passes,
+        test_simplified_status_unavailable_with_simplified_fails,
+        test_simplified_status_valid_with_simplified_passes,
         test_missing_check_arg_exits_two,
     ]
     failures = 0

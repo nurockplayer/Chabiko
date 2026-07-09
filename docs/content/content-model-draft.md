@@ -41,7 +41,8 @@ traditional       — Traditional Chinese string (required)
 traditionalStatus — provenance of the Traditional form (required)
 
 simplified         — Simplified Chinese string (optional, present when both forms exist)
-simplifiedStatus   — provenance of the Simplified form (required when simplified is present)
+simplifiedStatus   — provenance of the Simplified form (required when simplified is present;
+                    may be "unavailable" without simplified to mark the form as confirmed absent)
 ```
 
 ### Fallback Behavior
@@ -70,8 +71,8 @@ A minimal executable validator for script status fields is at `scripts/validate-
 
 1. `traditional` is required on all applicable content types.
 2. `traditionalStatus` is required and must be one of: `authored`, `verified`, `generated`, `unavailable`.
-3. `simplified` is optional. When absent, `simplifiedStatus` must also be absent.
-4. When `simplified` is present, `simplifiedStatus` is required and must be one of the four controlled values.
+3. `simplified` is optional. When absent, `simplifiedStatus` must also be absent, or be `"unavailable"` to mark the form as confirmed absent. `authored`, `verified`, and `generated` are invalid when `simplified` is absent.
+4. When `simplified` is present, `simplifiedStatus` is required and must be one of: `authored`, `verified`, `generated`. `unavailable` is invalid when `simplified` text exists (a form with text cannot be "unavailable").
 5. `unavailable` is valid for either form; it does not create a validation error on its own.
 6. Display eligibility is a production concern, not a validation concern — the status values themselves are always valid.
 
