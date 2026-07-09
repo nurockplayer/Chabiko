@@ -16,6 +16,9 @@ import sys
 
 CONTROLLED_STATUSES = frozenset({"authored", "verified", "generated", "unavailable"})
 
+# Collection keys whose items are always Chinese content.
+CHINESE_CONTENT_COLLECTIONS = frozenset({"vocabulary", "sentences", "phrasebook"})
+
 
 def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     """
@@ -76,28 +79,30 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     return errors
 
 
-def walk_content_records(data, path: str = "root") -> list[str]:
+def walk_content_records(data, path: str = "root", parent_key: str = "") -> list[str]:
     """
     Walk a content bundle and validate script provenance fields on every
-    record that has any script-related field or has a `pinyin` field
-    (indicating Chinese content).
+    record that has any script-related field, has a `pinyin` field
+    (indicating Chinese content), or sits under a known Chinese-content
+    collection key (vocabulary/sentences/phrasebook).
 
     Returns a flat list of error messages.
     """
     errors: list[str] = []
 
     if isinstance(data, dict):
-        # Validate any record that has at least one script-related field
-        # or has pinyin (strong signal of Chinese content)
+        # Validate any record that has at least one script-related field,
+        # has pinyin (strong signal of Chinese content), or sits under a
+        # known Chinese-content collection parent.
         chinese_content_keys = {"traditional", "traditionalStatus", "simplified", "simplifiedStatus", "pinyin"}
-        if chinese_content_keys & data.keys():
+        if chinese_content_keys & data.keys() or parent_key in CHINESE_CONTENT_COLLECTIONS:
             errors.extend(validate_script_fields(data, path))
         for key, value in data.items():
-            errors.extend(walk_content_records(value, f"{path}.{key}"))
+            errors.extend(walk_content_records(value, f"{path}.{key}", key))
 
     elif isinstance(data, list):
         for i, item in enumerate(data):
-            errors.extend(walk_content_records(item, f"{path}[{i}]"))
+            errors.extend(walk_content_records(item, f"{path}[{i}]", parent_key))
 
     return errors
 
@@ -371,6 +376,32 @@ def test_walk_catches_missing_traditional_with_pinyin():
     )
 
 
+def test_walk_catches_vocab_without_any_script_field():
+    """vocabulary entry with no traditional/pinyin must still be caught via parent key."""
+    data = {
+        "vocabulary": [
+            {"id": "v1", "japanese": "良い"},
+        ],
+    }
+    errs = walk_content_records(data)
+    assert any("traditional" in e and "required" in e for e in errs), (
+        f"Expected traditional-required error for vocab without script fields, got {errs}"
+    )
+
+
+def test_walk_catches_sentences_without_script_field():
+    """sentences entry with no traditional/pinyin must be caught via parent key."""
+    data = {
+        "sentences": [
+            {"id": "s1", "japanese": "テスト"},
+        ],
+    }
+    errs = walk_content_records(data)
+    assert any("traditional" in e and "required" in e for e in errs), (
+        f"Expected traditional-required error for sentence without script fields, got {errs}"
+    )
+
+
 def test_traditional_non_string_fails():
     """traditional must be a string."""
     errs = validate_script_fields({
@@ -418,6 +449,8 @@ def run_tests():
         test_walk_ignores_non_chinese_content,
         test_walk_catches_simplified_only_record,
         test_walk_catches_missing_traditional_with_pinyin,
+        test_walk_catches_vocab_without_any_script_field,
+        test_walk_catches_sentences_without_script_field,
         test_simplified_status_unavailable_without_simplified_passes,
         test_simplified_status_unavailable_with_simplified_fails,
         test_simplified_status_valid_with_simplified_passes,
