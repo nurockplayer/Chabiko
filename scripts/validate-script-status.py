@@ -29,13 +29,16 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     if "traditional" not in record:
         errors.append(f"{path}: 'traditional' is required")
 
-    # traditionalStatus is required and must be a controlled value
+    # traditionalStatus is required; unavailable is contradictory because
+    # traditional always has text
     if "traditionalStatus" not in record:
         errors.append(f"{path}: 'traditionalStatus' is required")
     else:
         val = record["traditionalStatus"]
         if not isinstance(val, str):
             errors.append(f"{path}.traditionalStatus must be a string, got {type(val).__name__}")
+        elif val == "unavailable":
+            errors.append(f"{path}: 'traditionalStatus' cannot be 'unavailable' when 'traditional' text exists")
         elif val not in CONTROLLED_STATUSES:
             errors.append(f"{path}.traditionalStatus '{val}' — not a valid status")
 
@@ -203,13 +206,39 @@ def test_invalid_simplified_status_fails():
     )
 
 
-def test_unavailable_is_valid():
+def test_unavailable_on_traditional_fails():
+    """unavailable is contradictory when traditional text exists."""
     errs = validate_script_fields({
         "id": "x",
         "traditional": "你好",
         "traditionalStatus": "unavailable",
     })
-    assert errs == [], f"unavailable should be valid, got {errs}"
+    assert any("cannot be 'unavailable'" in e for e in errs), (
+        f"Expected cannot-be-unavailable error, got {errs}"
+    )
+
+
+def test_unavailable_on_simplified_no_text_passes():
+    """unavailable is valid on simplified when it confirms the form is absent."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplifiedStatus": "unavailable",
+    })
+    assert errs == [], f"unavailable on simplified (no text) should pass, got {errs}"
+
+
+def test_traditional_status_unavailable_fails():
+    """traditionalStatus=unavailable is contradictory because traditional always has text."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "unavailable",
+    })
+    assert any("cannot be 'unavailable'" in e for e in errs), (
+        f"Expected traditional-cannot-be-unavailable error, got {errs}"
+    )
 
 
 def test_non_string_status_fails():
@@ -236,7 +265,8 @@ def test_simplified_none_is_absent():
 
 
 def test_all_four_statuses_valid():
-    for s in ("authored", "verified", "generated", "unavailable"):
+    """traditionalStatus=unavailable is now rejected (contradictory), so only test non-unavailable."""
+    for s in ("authored", "verified", "generated"):
         errs = validate_script_fields({
             "id": "x",
             "traditional": "你好",
@@ -330,8 +360,10 @@ def run_tests():
         test_simplified_without_status_fails,
         test_status_present_without_simplified_fails,
         test_invalid_traditional_status_fails,
+        test_traditional_status_unavailable_fails,
         test_invalid_simplified_status_fails,
-        test_unavailable_is_valid,
+        test_unavailable_on_traditional_fails,
+        test_unavailable_on_simplified_no_text_passes,
         test_non_string_status_fails,
         test_simplified_none_is_absent,
         test_all_four_statuses_valid,

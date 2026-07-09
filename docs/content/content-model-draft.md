@@ -69,12 +69,11 @@ When a record has `unavailable` for one script form:
 
 A minimal executable validator for script status fields is at `scripts/validate-script-status.py`.
 
-1. `traditional` is required on all applicable content types.
-2. `traditionalStatus` is required and must be one of: `authored`, `verified`, `generated`, `unavailable`.
+1. `traditional` is required on all applicable content types. `traditionalStatus` of `"unavailable"` is always invalid because `traditional` text always exists.
+2. `traditionalStatus` is required and must be one of: `authored`, `verified`, `generated`.
 3. `simplified` is optional. When absent, `simplifiedStatus` must also be absent, or be `"unavailable"` to mark the form as confirmed absent. `authored`, `verified`, and `generated` are invalid when `simplified` is absent.
 4. When `simplified` is present, `simplifiedStatus` is required and must be one of: `authored`, `verified`, `generated`. `unavailable` is invalid when `simplified` text exists (a form with text cannot be "unavailable").
-5. `unavailable` is valid for either form; it does not create a validation error on its own.
-6. Display eligibility is a production concern, not a validation concern — the status values themselves are always valid.
+5. Display eligibility is a production concern, not a validation concern — the status values themselves are always valid when not contradictory.
 
 ## Japanese-Native Pain-Point Metadata
 
@@ -140,9 +139,9 @@ When full schema validation is implemented (planned #2), these rules must also h
 
 - `id`
 - `traditional`
-- `traditionalStatus` (authored / verified / generated / unavailable)
+- `traditionalStatus` (authored / verified / generated)
 - `simplified` (optional, available where both forms exist)
-- `simplifiedStatus` (required when simplified is present; authored / verified / generated / unavailable)
+- `simplifiedStatus` (required when simplified is present; authored / verified / generated)
 - `pinyin`
 - `japanese`
 - `kana`
@@ -160,9 +159,9 @@ When full schema validation is implemented (planned #2), these rules must also h
 
 - `id`
 - `traditional`
-- `traditionalStatus` (authored / verified / generated / unavailable)
+- `traditionalStatus` (authored / verified / generated)
 - `simplified` (optional, available where both forms exist)
-- `simplifiedStatus` (required when simplified is present; authored / verified / generated / unavailable)
+- `simplifiedStatus` (required when simplified is present; authored / verified / generated)
 - `pinyin`
 - `japanese`
 - `scenario`
@@ -190,9 +189,9 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `id`
 - `scenario` (food / transport / hotel / shopping / emergency / airport)
 - `traditional`
-- `traditionalStatus` (authored / verified / generated / unavailable)
+- `traditionalStatus` (authored / verified / generated)
 - `simplified` (optional, available where both forms exist)
-- `simplifiedStatus` (required when simplified is present; authored / verified / generated / unavailable)
+- `simplifiedStatus` (required when simplified is present; authored / verified / generated)
 - `pinyin`
 - `japanese`
 - `usageNotesJa`
