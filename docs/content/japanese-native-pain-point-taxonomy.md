@@ -143,7 +143,7 @@ These tags allow lessons, vocabulary entries, phrasebook items, and practice con
 | **How Japanese learners misunderstand** | Japanese learners see shinjitai (新字体) — many characters look like Simplified but some like Traditional. A Japanese learner may confuse 発 (Jp shinjitai) with 发 (Simplified) vs 發 (Traditional), or 広 with 广 vs 廣. They may not know which script is used where, or they may assume that Japanese kanji is always interchangeable with Chinese characters. |
 | **When to use** | The content explicitly shows a Traditional vs Simplified difference, or the script choice is a teaching point (e.g., "this sign in Taiwan uses Traditional 歡迎"). |
 | **When NOT to use** | The content merely exists in one script or the other. Almost all Chinese content has a script form — tagging every entry would be meaningless. Only tag when the *difference* is the focus. |
-| **Applicable content types** | vocabulary (scriptStatus field), phrasebook (Taiwan-specific entries), practice (script matching exercise), lesson (script awareness note) |
+| **Applicable content types** | vocabulary (traditionalStatus/simplifiedStatus fields), phrasebook (Taiwan-specific entries), practice (script matching exercise), lesson (script awareness note) |
 | **Review notes** | This tag is NOT for UI language selection. It is for Chinese content script display. Verify the tag is not applied to every Traditional- or Simplified-only entry — only where the script difference itself matters. For Taiwanese content, consider pairing with taiwan-mainland-usage. |
 
 ### 2.11 taiwan-mainland-usage
@@ -447,10 +447,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "ようこそ",
   "caution": "台湾では繁体字「歡迎」が使われる。日本の「歓迎」と漢字は似ているが意味用法が異なる。",
   "painPointTags": ["traditional-simplified"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "greeting",
   "reviewStatus": "draft"
 }
@@ -465,10 +463,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "体",
   "caution": "日本の新字体「体」は簡体字と同じ形だが、繁体字では「體」。読み方は日本語の「からだ／たい」とは異なり tǐ。",
   "painPointTags": ["traditional-simplified"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "body",
   "reviewStatus": "draft"
 }
@@ -548,10 +544,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "MRT／地下鉄",
   "caution": "台湾で「地下鉄／MRT」を指す言葉。中国本土では「地铁（dìtiě）」が一般的。発音 jié は日本語の「捷（ショウ）」と異なる。",
   "painPointTags": ["taiwan-mainland-usage", "pinyin-pronunciation"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "transport",
   "reviewStatus": "draft"
 }

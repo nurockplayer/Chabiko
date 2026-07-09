@@ -74,8 +74,8 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
 def walk_content_records(data, path: str = "root") -> list[str]:
     """
     Walk a content bundle and validate script provenance fields on every
-    record that has any script-related field (traditional, traditionalStatus,
-    simplified, simplifiedStatus).
+    record that has any script-related field or has a `pinyin` field
+    (indicating Chinese content).
 
     Returns a flat list of error messages.
     """
@@ -83,8 +83,9 @@ def walk_content_records(data, path: str = "root") -> list[str]:
 
     if isinstance(data, dict):
         # Validate any record that has at least one script-related field
-        script_keys = {"traditional", "traditionalStatus", "simplified", "simplifiedStatus"}
-        if script_keys & data.keys():
+        # or has pinyin (strong signal of Chinese content)
+        chinese_content_keys = {"traditional", "traditionalStatus", "simplified", "simplifiedStatus", "pinyin"}
+        if chinese_content_keys & data.keys():
             errors.extend(validate_script_fields(data, path))
         for key, value in data.items():
             errors.extend(walk_content_records(value, f"{path}.{key}"))
@@ -319,6 +320,7 @@ def test_walk_ignores_non_chinese_content():
     data = {
         "metadata": {"version": 1},
         "lessons": [{"id": "l1", "titleJa": "レッスン1"}],
+        "settings": {"theme": "dark"},
     }
     errs = walk_content_records(data)
     assert errs == [], f"Non-Chinese records should be ignored, got {errs}"
@@ -351,6 +353,19 @@ def test_missing_check_arg_exits_two():
         pass  # skip if subprocess unavailable (unlikely)
 
 
+def test_walk_catches_missing_traditional_with_pinyin():
+    """A record with pinyin but no traditional must be caught."""
+    data = {
+        "vocabulary": [
+            {"id": "v1", "pinyin": "hǎo", "japanese": "良い"},
+        ],
+    }
+    errs = walk_content_records(data)
+    assert any("traditional" in e and "required" in e for e in errs), (
+        f"Expected traditional-required error for pinyin-only record, got {errs}"
+    )
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -371,6 +386,7 @@ def run_tests():
         test_walk_bundle_invalid,
         test_walk_ignores_non_chinese_content,
         test_walk_catches_simplified_only_record,
+        test_walk_catches_missing_traditional_with_pinyin,
         test_simplified_status_unavailable_without_simplified_passes,
         test_simplified_status_unavailable_with_simplified_fails,
         test_simplified_status_valid_with_simplified_passes,
