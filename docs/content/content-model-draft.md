@@ -28,7 +28,7 @@ When schema validation is implemented (planned #2), these rules must hold:
 3. Invalid tags cause a validation error.
 4. Type must be `string[]` (or `array[string]`).
 5. Empty array `[]` is treated as absent — no error.
-6. Duplicate values should be rejected or silently deduplicated.
+6. Duplicate values should be rejected by validation. Authoring tools may deduplicate before validation, but stored content should not contain duplicates.
 7. Tags must be lowercase kebab-case only.
 8. The controlled list is an exhaustive allowlist.
 
@@ -129,7 +129,7 @@ When schema validation is implemented (planned #2), these rules must hold:
 - `relatedVocabulary`
 - `source`
 - `reviewStatus`
-- `scriptStatus` (authored / verified / generated / unavailable)
+- `scriptStatus` (authored / verified / generated / unavailable; temporary draft field, expected to split into per-form provenance metadata in #24)
 
 ## Resource
 
