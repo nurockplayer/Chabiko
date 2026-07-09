@@ -21,7 +21,9 @@ Content items can optionally carry one or more `painPointTags` drawn from a cont
 
 ### Validation Contract
 
-When schema validation is implemented (planned #2), these rules must hold:
+A minimal executable validator exists at `scripts/validate-pain-points.py`. It validates `painPointTags` against the controlled taxonomy with zero dependencies.
+
+When full schema validation is implemented (planned #2), these rules must also hold:
 
 1. `painPointTags` field is optional on applicable content types.
 2. If present, each value must be a case-sensitive, exact-match string from the controlled taxonomy.

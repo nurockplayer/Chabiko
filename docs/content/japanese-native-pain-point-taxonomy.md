@@ -593,7 +593,13 @@ The following examples show valid vs invalid tag values for content validation:
 
 ## 8. Validation Contract (for future schema implementation)
 
-When a content schema is implemented (planned in #2), the following rules must hold:
+A minimal executable validator exists at `scripts/validate-pain-points.py`. It validates `painPointTags` against the controlled taxonomy with zero dependencies (Python 3). Run with:
+
+```bash
+python3 scripts/validate-pain-points.py
+```
+
+When full schema validation is implemented (planned in #2), the following rules must hold:
 
 1. `painPointTags` field is optional on applicable content types.
 2. If present, each value must be a string matching one of the 11 controlled tags (case-sensitive, exact match).
