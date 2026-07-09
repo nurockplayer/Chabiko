@@ -22,7 +22,7 @@
 
 - [ ] **SCRIPT-01**: Learner can switch Chinese content display between Simplified and Traditional where both forms exist.
 - [ ] **SCRIPT-02**: Learning paths define default script display: Taiwan travel is Traditional-first; HSK, school, and general Mandarin paths may be Simplified-first.
-- [ ] **SCRIPT-03**: AI-assisted or automated script conversion is allowed for authoring support, but production content must store reviewed canonical fields or verified conversion output for entries where conversion may affect meaning, usage, or learner safety.
+- [ ] **SCRIPT-03**: AI-assisted or automated script conversion is allowed only for authoring support, but production display must not rely on unreviewed runtime conversion; every learner-facing script form must be authored or verified before release, with review metadata tracking its status.
 
 ### Learning Content
 

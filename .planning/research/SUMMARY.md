@@ -22,7 +22,7 @@ Path defaults should do the work:
 - HSK, school, and general Mandarin paths: Simplified-first, with Traditional display available when possible.
 - Shared vocabulary and kanji bridge content: dual-script where relevant, with caution notes when script conversion affects meaning, frequency, or regional usage.
 
-AI-assisted script conversion can help authoring, but production content should track whether each script form is authored, verified, or generated. Meaning-sensitive entries should not rely on unreviewed runtime conversion.
+AI-assisted script conversion can help authoring, but production display must not rely on unreviewed runtime conversion. Each learner-facing script form should be authored or verified before release, and review metadata should track whether it is authored, verified, or generated-and-verified.
 
 ## Japanese Learner Alignment
 

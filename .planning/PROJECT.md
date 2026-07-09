@@ -54,7 +54,7 @@ Japanese learners can keep reading and practicing until they can use simple Chin
 - Motivation loop: progress should be framed as goal readiness by scenario, not only as completed lessons.
 - Script strategy: support Simplified / Traditional switching globally; let the learning path decide the default display.
 - Variant strategy: Taiwan travel content is Traditional-first and Taiwan-usage-first; HSK/general Mandarin content can be Simplified-first; variants appear when they help the learner, not as clutter.
-- AI/tooling strategy: AI-assisted script conversion can speed up authoring, but production content should keep reviewed canonical script fields or verified conversion output to avoid unsafe automatic substitutions.
+- AI/tooling strategy: AI-assisted script conversion can speed up authoring, but production display must use reviewed canonical script fields or verified conversion output; unreviewed runtime conversion is not allowed for learner-facing Chinese content.
 - Candidate public resources include official Taiwan learning/travel sites and open lexical data sources, but no third-party content should be copied until license and attribution are verified.
 - Product language: Japanese for learner-facing explanations; Chinese content can be displayed in Simplified or Traditional; repo planning may be bilingual.
 

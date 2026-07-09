@@ -25,7 +25,7 @@ Phase 1 establishes the technical, editorial, and product-positioning foundation
 ### Content Model
 - **D-07:** Lessons, vocabulary, sentences, practice items, and resources must be structured data, not hard-coded UI text.
 - **D-08:** Content should support explicit script fields or verified conversion output for Simplified and Traditional Chinese where relevant.
-- **D-09:** AI-assisted script conversion can speed up authoring, but production content should not rely on unreviewed runtime conversion for meaning-sensitive entries.
+- **D-09:** AI-assisted script conversion can speed up authoring, but production content must not rely on unreviewed runtime conversion; script forms displayed to learners must be authored or verified before release, with generated status tracked in review metadata.
 - **D-10:** Vocabulary entries must support kanji bridge metadata and caution/false-friend notes.
 - **D-11:** Content should support Japanese-native learner pain-point tags such as tone, pinyin pronunciation, kanji false friend, word order, measure word, complement, and Taiwan/Mainland usage.
 - **D-12:** Source and review metadata are required fields where content can be externally derived.
@@ -51,7 +51,7 @@ Phase 1 establishes the technical, editorial, and product-positioning foundation
 - Choose exact schema validation library.
 - Choose directory names for content files.
 - Choose the final taxonomy labels as long as they represent Japanese-native learner pain points clearly.
-- Choose the storage shape for script variants, as long as the UI can switch and review metadata can track whether a form is authored, verified, or generated.
+- Choose the storage shape for script variants, as long as the UI can switch and review metadata can track whether a form is authored, verified, or generated-and-verified; generated-only forms are not learner-facing production content.
 
 </decisions>
 
