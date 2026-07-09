@@ -2,6 +2,8 @@
 
 @~/.claude/CLAUDE.md
 
+本檔繼承 global ~/.claude/CLAUDE.md 的全域規則；repo-specific 與 Codex 共用規則以 AGENTS.md 為並行 source of truth。git、package manager、supply-chain、scope 與安全規則必須同時參照 AGENTS.md 才能取得完整規範。
+
 ## 語言設定（覆寫全域規則）
 
 本專案覆寫全域語言限制：
