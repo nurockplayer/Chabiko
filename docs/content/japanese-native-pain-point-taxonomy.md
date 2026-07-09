@@ -600,7 +600,7 @@ When a content schema is implemented (planned in #2), the following rules must h
 3. Values not in the controlled list must cause a validation error.
 4. `painPointTags` type must be `string[]` (or `array[string]`).
 5. Empty array `[]` is treated as absent — no error.
-6. Duplicate values in the array should be rejected or silently deduplicated (implementer's choice).
+6. Duplicate values in the array should be rejected by validation. Authoring tools may deduplicate before validation, but stored content must not contain duplicates.
 7. Tag strings must be lowercase kebab-case only (e.g., `kanji-false-friend`, not `kanji_false_friend` or `KANJI_FALSE_FRIEND`).
 8. The controlled list is an exhaustive allowlist: no custom or ad-hoc tags.
 
