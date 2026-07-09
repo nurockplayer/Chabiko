@@ -2,24 +2,28 @@
 
 Milestone: [v1.0 MVP](https://github.com/nurockplayer/Chabiko/milestone/1)
 
-## Phase 1: Foundation and Content Model
+## Phase 1: Foundation, Content Model, and Japanese Learner Positioning
 
 - [#1 Scaffold app and package-manager baseline](https://github.com/nurockplayer/Chabiko/issues/1)
 - [#2 Define content schemas and resource registry](https://github.com/nurockplayer/Chabiko/issues/2)
 - [#3 Align collaboration docs and licensing guardrails](https://github.com/nurockplayer/Chabiko/issues/3)
+- [#13 Define Japanese learner personas and JTBD](https://github.com/nurockplayer/Chabiko/issues/13)
+- [#14 Add Japanese-native pain-point taxonomy to content schema](https://github.com/nurockplayer/Chabiko/issues/14)
+- [#18 Create dual-script and Taiwan/Mainland variant strategy](https://github.com/nurockplayer/Chabiko/issues/18)
 
-## Phase 2: Seed Curriculum and Travel Content
+## Phase 2: Japanese-Learner Content Seeds
 
 - [#4 Draft beginner lesson sequence](https://github.com/nurockplayer/Chabiko/issues/4)
 - [#5 Build on-yomi bridge vocabulary dataset](https://github.com/nurockplayer/Chabiko/issues/5)
 - [#6 Build Taiwan travel phrasebook dataset](https://github.com/nurockplayer/Chabiko/issues/6)
 
-## Phase 3: Learning Experience and Practice
+## Phase 3: Learning Experience, Practice, and Travel Readiness
 
 - [#7 Build lesson, vocabulary, and phrasebook pages](https://github.com/nurockplayer/Chabiko/issues/7)
 - [#8 Add cross-linking and filters](https://github.com/nurockplayer/Chabiko/issues/8)
 - [#9 Build practice interactions and local progress](https://github.com/nurockplayer/Chabiko/issues/9)
 - [#12 Build Travel Quest and readiness motivation system](https://github.com/nurockplayer/Chabiko/issues/12)
+- [#22 Add global Simplified / Traditional display toggle](https://github.com/nurockplayer/Chabiko/issues/22)
 
 ## Phase 4: Quality, Deployment, and Contribution Flow
 
