@@ -19,6 +19,7 @@ Milestone: [v1.0 MVP](https://github.com/nurockplayer/Chabiko/milestone/1)
 
 ## Phase 3: Learning Experience, Practice, and Travel Readiness
 
+- [#17 Add learning paths by goal with script defaults](https://github.com/nurockplayer/Chabiko/issues/17)
 - [#7 Build lesson, vocabulary, and phrasebook pages](https://github.com/nurockplayer/Chabiko/issues/7)
 - [#8 Add cross-linking and filters](https://github.com/nurockplayer/Chabiko/issues/8)
 - [#9 Build practice interactions and local progress](https://github.com/nurockplayer/Chabiko/issues/9)
