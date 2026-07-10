@@ -63,3 +63,36 @@ The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is ma
 
 All external resources are candidates until licensing and attribution are documented in the repo.
 
+## Docker Local Development
+
+A minimal Docker-based environment is available for consistent local development.
+
+### Setup
+
+```bash
+docker compose build
+```
+
+### Commands
+
+```bash
+# Install JS dependencies
+docker compose run --rm app pnpm install
+
+# Start dev server
+docker compose run --rm app pnpm dev
+
+# Build for production
+docker compose run --rm app pnpm build
+
+# Run uv-based content validators
+docker compose run --rm app uv run python scripts/validate-pain-points.py
+docker compose run --rm app uv run python scripts/validate-script-status.py
+```
+
+### Notes
+
+- The `app` service mounts the repo root so source changes are reflected immediately.
+- Dependencies (node_modules, .venv) are installed inside the container, not on the host.
+- The same tooling rules apply inside Docker: **pnpm** for JavaScript, **uv** for Python.
+
