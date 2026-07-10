@@ -34,6 +34,7 @@ Script form is a **display transformation of character shapes**, not a change of
 - The toggle affects **Chinese learner-facing content only**. Product UI (Japanese explanations, labels, navigation) remains in Japanese regardless of the toggle state.
 - The toggle is a **display preference**, not a content filter. Switching to Simplified does not switch the learner to Mainland vocabulary — it merely shows the Simplified character shapes for whatever content is being viewed.
 - The toggle must respect per-form provenance (see section 6). Toggling to a form with `generated` status must not be allowed in production.
+- Pinyin is unaffected by the script toggle. When a content entry has separate script forms, each form's pinyin is identical (same word, same pronunciation). For entries where regional pronunciation differs (e.g., 垃圾 lèsè in Taiwan vs lājī in Mainland), the pinyin difference is a regional usage concern, not a script toggle concern — see section 2.2.
 
 ### 2.2 Regional Usage (Taiwan / Mainland)
 
@@ -56,15 +57,15 @@ Regional usage is a **content selection and authoring dimension**, not a display
 
 ## 3. Path Defaults
 
-Each learning path can define defaults for both script form and regional usage. The defaults apply when a learner first enters the path and can be overridden manually (see section 4).
+Each learning path can define defaults for both script form and regional usage. The defaults apply when a learner first enters the path. Manual override (see section 4) applies to **script form only** — regional usage is path-defined and cannot be toggled independently.
 
 | Path | Default Script | Default Regional Usage | Rationale |
 |------|----------------|------------------------|-----------|
 | **Taiwan travel** (#6) | Traditional | Taiwan | Taiwan uses Traditional script and Taiwan-specific vocabulary. Learner needs to read real-world signs and menus. |
 | **HSK / general Mandarin** | Simplified | Mainland | HSK is a Mainland China standard test; most textbooks use Simplified. Mainland vocabulary is the baseline for HSK listening/reading. |
 | **School / university support** | Simplified | Mainland | Most Japanese university Mandarin courses follow PRC-based Beijing curriculum and use Simplified characters. |
-| **Business / service** | Path-dependent | Learner-configurable | Depends on whether the learner interacts with Taiwan-based or Mainland-based clients. Default can be set during path selection. |
-| **Study-abroad** | Path-dependent | Path-dependent | Simplified if studying in Mainland China, Traditional if studying in Taiwan. |
+| **Business / service** | Path-dependent | Path-dependent | Depends on whether the learner interacts with Taiwan-based or Mainland-based clients. Learner selects a regional-specific business path (e.g., Taiwan-business or Mainland-business). |
+| **Study-abroad** | Path-dependent | Path-dependent | Simplified if studying in Mainland China, Traditional if studying in Taiwan. Regional usage follows the destination country. |
 
 ### 3.1 Path Default Interaction with Content
 
@@ -80,16 +81,15 @@ Each learning path can define defaults for both script form and regional usage. 
 ### 4.1 Global Script Toggle (Planned #22)
 
 - A global toggle lets learners switch script display at any time.
-- The toggle position persists across sessions (e.g., in LocalStorage).
-- The toggle is a **learner preference**, scoped to the current session or device.
-- The toggle must clearly indicate which form is currently active and whether the other form is available.
-- When the learner switches paths, the **path default is applied as the initial toggle position**, but the learner's manual override is preserved as a separate preference. The UI should show the path default but not override the learner's explicit choice without asking.
+- The toggle is a **learner preference**; manual choice overrides the path default (see section 4.3 for precedence).
+- The toggle affects **Chinese learner-facing content only**. Product UI remains in Japanese regardless of toggle state.
+- Path-switch behavior (whether toggle resets or preserves on path change) is deferred to #17/#22.
 
 ### 4.2 Regional Usage
 
-- Regional usage is **path-defined**, not toggled. There is no global "Taiwan / Mainland" switch.
-- Learners choose their regional usage context by selecting a learning path.
-- Individual content items may show both variants with contrastive notes where useful.
+- Regional usage is **path-defined**, not toggled. There is no global "Taiwan / Mainland" switch, and learners cannot manually override regional usage independently of path selection.
+- Learners choose their regional usage context by selecting a learning path. To change regional usage, the learner selects a different path.
+- Individual content items may show both variants with contrastive notes where useful, but the primary variant is determined by path membership.
 
 ### 4.3 Override Precedence
 
@@ -117,9 +117,9 @@ When a content record has one script form marked as `unavailable` (see #24 per-f
    - A form with `generated` status must never be used as a fallback target for an `unavailable` form unless it has first been promoted to `verified`.
    - A form with `unavailable` status displayed as fallback must not be used as the basis for practice scoring or assessment.
 
-5. **Path behavior during fallback:**
-   - If a Taiwan travel vocabulary entry has `traditional: "unavailable"` (unlikely but handled), the Simplified form cannot serve as the primary display unless it is `verified`. In this case, the entry should be flagged for content review rather than shown to learners.
-   - Fallback is a **temporary measure** for content gaps, not a permanent display strategy. Content missing one script form should be prioritized for authoring/verification.
+5. **No-available-form exclusion:** If the requested form is `unavailable` and the other form is also `unavailable` or `generated`, no displayable form exists. The entry must be excluded from rendering and flagged for content review.
+
+6. **Fallback is a temporary measure** for content gaps, not a permanent display strategy. Content missing one script form should be prioritized for authoring/verification.
 
 ---
 
@@ -137,10 +137,9 @@ The provenance system (#24) defines four statuses per script form: `authored`, `
 ### 6.1 Toggle-Provenance Interaction
 
 - The toggle must only switch to an `authored` or `verified` form.
-- If the toggled-to form is `generated`, the toggle must remain on the current form, and the option for the generated form must appear disabled or unavailable.
+- If the toggled-to form is `generated`, the toggle must remain on the current form.
 - If the toggled-to form is `unavailable`, fallback rules apply (section 5).
 - Provenance is authoring metadata and is independent of the toggle. A `verified` Traditional form remains `verified` even when the learner is viewing the Simplified form.
-- The toggle UI may optionally show a subtle indicator of provenance quality (e.g., a small badge or tooltip when the active form is `verified` vs `authored`), but this is a post-v1 enhancement.
 
 ### 6.2 Path Default-Provenance Interaction
 
@@ -208,7 +207,7 @@ This document defines the **strategy** for dual-script and regional variant hand
 - How learning paths are selected, created, or managed in the UI
 - How path membership determines content filtering or sequencing
 - How path defaults are presented to the learner during path selection
-- Path switching behavior and its effect on toggle state
+- Path switching behavior and its effect on toggle state (only the precedence rule in section 4.3 is defined here)
 
 ---
 
@@ -272,12 +271,13 @@ This document defines the **strategy** for dual-script and regional variant hand
 
 ### 9.4 Traditional-Only Content — Fallback Scenario
 
+In this example, only the Traditional form has been authored. The Simplified form has `simplifiedStatus: "unavailable"` and `simplified` is absent, matching the content model contract.
+
 ```jsonc
 {
   "id": "voc-script-fallback-001",
   "traditional": "歡迎光臨",
   "traditionalStatus": "authored",
-  "simplified": "欢迎光临",
   "simplifiedStatus": "unavailable",
   "pinyin": "huānyíng guānglín",
   "japanese": "いらっしゃいませ",
