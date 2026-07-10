@@ -2,6 +2,8 @@
 
 This draft guides Phase 1 implementation. It is not an executable schema yet.
 
+For the dual-script and regional variant strategy that governs the fields and rules below, see [dual-script-and-regional-variant-strategy.md](dual-script-and-regional-variant-strategy.md).
+
 ## Dual-Script Support
 
 - Chinese learner-facing content supports both Traditional and Simplified fields where relevant.

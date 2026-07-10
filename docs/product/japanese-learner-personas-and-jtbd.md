@@ -27,7 +27,7 @@ This document defines the Japanese speaker personas and jobs-to-be-done (JTBD) t
 |-------|-------------|
 | #14 Pain-point taxonomy | Personas define *who*, #14 defines *what hurts* |
 | #17 Learning paths | Persona JTBD feeds path design |
-| #18 Dual-script / variant strategy | Script expectations from personas inform path defaults |
+| #18 Dual-script / variant strategy | Script expectations from personas inform path defaults. The strategy is defined in [dual-script-and-regional-variant-strategy.md](../content/dual-script-and-regional-variant-strategy.md). |
 | #22 Global script toggle | Persona path membership sets the toggle default |
 | #4 Beginner lesson sequence | Primary persona drives v1 lesson hook and examples |
 | #6 Taiwan travel phrasebook | Primary persona's core use case |
