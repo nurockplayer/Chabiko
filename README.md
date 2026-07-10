@@ -32,6 +32,25 @@ This is a greenfield web project. When implementation starts:
 - Keep content data structured and reviewable.
 - Do not import third-party word lists, audio, images, or lesson text unless license and attribution are verified.
 
+## Content Validation
+
+Content validators use **uv** (Python 3.14+). Run them from the repo root:
+
+```bash
+# Run all validator self-tests
+uv run python scripts/validate-pain-points.py
+uv run python scripts/validate-script-status.py
+
+# Validate a content file against the pain-point taxonomy
+uv run python scripts/validate-pain-points.py --check <file>
+
+# Validate a content file for script provenance fields
+uv run python scripts/validate-script-status.py --check <file>
+```
+
+No additional dependencies are required — the validators are zero-dependency Python 3.
+The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is managed by `uv` only.
+
 ## Candidate Reference Sources
 
 - [Learning Mandarin in Taiwan](https://lmit.edu.tw/)

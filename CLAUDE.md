@@ -44,6 +44,7 @@ GSD 鐵則：
 Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - Static-first web app，TypeScript，Structured content files。
 - pnpm 為唯一套件管理工具；scaffold/package.json 必須包含 `"packageManager": "pnpm@10"`；不得產生 npm/yarn/bun lockfile。
+- uv 為 Python validation tooling 的管理工具（Python 3.14+）；Python validators 一律用 `uv run python` 執行；不得使用 Poetry、Pipenv 或 requirements.txt。
 - LocalStorage 可用於 v1 練習進度。
 - v1 不需要後端、登入、雲端同步、付款、語音辨識或 AI 自動解釋生成。
 
