@@ -352,7 +352,7 @@ The following questions should be resolved during implementation of related issu
 |----------|-------------|--------------------|
 | Should the global toggle show an indicator when the active form is a fallback (unavailable → alternative shown)? | #22 | Deferred to #22 UI design. |
 | Should path selection explicitly ask the learner about regional usage preference, or derive it from the path name? | #17 | Deferred to #17 path design. |
-| How should content review workflows flag entries where one script form is missing for a path that defaults to that form? | #11 | Add to content review checklist. Implementation in Phase 4. |
+| How should content review workflows flag entries where one script form is missing for a path that defaults to that form? | #11 | Deferred to #11 content review workflow design. |
 | Should the toggle persist when switching paths? | #22 | Deferred to #22/#17 — both the persistence behavior and the "recommended" indicator are implementation decisions. |
 
 ---
