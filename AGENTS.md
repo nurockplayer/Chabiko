@@ -54,6 +54,7 @@ sed -n '1,120p' AGENTS.md
 - TypeScript。
 - Structured content files。
 - uv 為 Python validation tooling 的管理工具（Python 3.14+）；Python validators 一律用 `uv run python` 執行；不得使用 Poetry、Pipenv 或 requirements.txt。
+- Docker 是支援的 local dev environment（Dockerfile + docker-compose）；Docker 內仍使用 pnpm 與 uv，不變。
 - LocalStorage 可用於 v1 練習進度。
 - v1 不需要後端、登入、雲端同步、付款、語音辨識或 AI 自動解釋生成。
 

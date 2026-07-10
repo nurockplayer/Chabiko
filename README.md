@@ -63,3 +63,59 @@ The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is ma
 
 All external resources are candidates until licensing and attribution are documented in the repo.
 
+## Docker Local Development
+
+A minimal Docker-based environment is available for consistent local development.
+
+### Setup
+
+```bash
+docker compose build
+```
+
+### Verify tooling is available
+
+Use these commands to verify the Docker image has the expected tooling:
+
+```bash
+docker compose run --rm app node --version
+docker compose run --rm app pnpm --version
+docker compose run --rm app uv --version
+```
+
+### pnpm commands (deferred)
+
+The Docker image provides **pnpm** for JavaScript tooling, but `pnpm install` / `pnpm dev` / `pnpm build`
+require a `package.json` to be present. These commands become usable once the JS app scaffold is added:
+
+```bash
+# Install JS dependencies (requires package.json)
+docker compose run --rm app pnpm install
+
+# Start dev server (requires package.json)
+docker compose run --rm --service-ports app pnpm dev
+
+# Build for production (requires package.json)
+docker compose run --rm app pnpm build
+```
+
+> The dev port (`3000`) is mapped in `docker-compose.yml` so `--service-ports` exposes it to the host (default: http://localhost:3000). Adjust the port after the app framework is chosen.
+>
+> A `command: pnpm dev` is intentionally omitted — the image has no `package.json` yet, so a baked-in dev command would make `docker compose up` fail until the app scaffold is added.
+
+### uv-based content validators
+
+The Docker image provides **uv** for Python content validation. These work immediately:
+
+```bash
+docker compose run --rm app uv run python scripts/validate-pain-points.py
+docker compose run --rm app uv run python scripts/validate-script-status.py
+```
+
+### Notes
+
+- The `app` service mounts the repo root so source changes are reflected immediately.
+- Dependencies (`node_modules`, `.venv`) are stored in Docker named volumes, not written to the host working tree.
+- To clean up all volumes: `docker compose down -v`
+- The same tooling rules apply inside Docker: **pnpm** for JavaScript, **uv** for Python.
+
