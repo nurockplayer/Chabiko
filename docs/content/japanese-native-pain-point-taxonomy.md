@@ -143,7 +143,7 @@ These tags allow lessons, vocabulary entries, phrasebook items, and practice con
 | **How Japanese learners misunderstand** | Japanese learners see shinjitai (新字体) — many characters look like Simplified but some like Traditional. A Japanese learner may confuse 発 (Jp shinjitai) with 发 (Simplified) vs 發 (Traditional), or 広 with 广 vs 廣. They may not know which script is used where, or they may assume that Japanese kanji is always interchangeable with Chinese characters. |
 | **When to use** | The content explicitly shows a Traditional vs Simplified difference, or the script choice is a teaching point (e.g., "this sign in Taiwan uses Traditional 歡迎"). |
 | **When NOT to use** | The content merely exists in one script or the other. Almost all Chinese content has a script form — tagging every entry would be meaningless. Only tag when the *difference* is the focus. |
-| **Applicable content types** | vocabulary (scriptStatus field), phrasebook (Taiwan-specific entries), practice (script matching exercise), lesson (script awareness note) |
+| **Applicable content types** | vocabulary (traditionalStatus/simplifiedStatus fields), phrasebook (Taiwan-specific entries), practice (script matching exercise), lesson (script awareness note) |
 | **Review notes** | This tag is NOT for UI language selection. It is for Chinese content script display. Verify the tag is not applied to every Traditional- or Simplified-only entry — only where the script difference itself matters. For Taiwanese content, consider pairing with taiwan-mainland-usage. |
 
 ### 2.11 taiwan-mainland-usage
@@ -262,6 +262,8 @@ When reviewing AI-generated or AI-assisted content:
   "toneNote": "第一声（高く平らな音）。日本語にはない調子なので、意識して高さを保つ。",
   "painPointTags": ["tone"],
   "category": "family",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -276,6 +278,8 @@ When reviewing AI-generated or AI-assisted content:
   "toneNote": "第三声（低くから上がる音）。最初にしっかり低くしてから上げる。日本語の「うま」の平板な発音とは違う。",
   "painPointTags": ["tone"],
   "category": "animal",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -293,6 +297,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["pinyin-pronunciation"],
   "caution": "日本語の「し」と違って舌を歯茎につけない。si は歯を食いしばるイメージ。",
   "category": "number",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -308,6 +314,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["pinyin-pronunciation"],
   "caution": "日本語の「にち」とまったく違う発音。rì の r は舌を後ろに巻いて出す。",
   "category": "time",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -325,6 +333,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["kanji-false-friend"],
   "similarityType": "false-friend",
   "category": "daily-necessity",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -340,6 +350,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["kanji-false-friend"],
   "similarityType": "false-friend",
   "category": "transport",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -357,6 +369,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["same-kanji-different-meaning"],
   "similarityType": "partial-overlap",
   "category": "action",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -372,6 +386,8 @@ When reviewing AI-generated or AI-assisted content:
   "painPointTags": ["same-kanji-different-meaning"],
   "similarityType": "partial-overlap",
   "category": "food",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -388,6 +404,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "日本語の「有る」は存在を表すが、中国語の「有」は所有の意味が強い。日本語のように「私には兄弟がある」と言えるが、中国語では「我有兄弟」のように所有構造になる。否定は「沒有」で、日本語の「ない」とは異なり、存在と所有の否定両方に使う。",
   "painPointTags": ["same-kanji-different-usage"],
   "category": "grammar",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -404,6 +422,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "台湾で使われる表現。中国本土では「出租車（chūzūchē）」が一般的。",
   "painPointTags": ["taiwan-mainland-usage"],
   "category": "transport",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -418,6 +438,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "台湾で使われる表現。中国本土では「鼠标（shǔbiāo）」が一般的。",
   "painPointTags": ["taiwan-mainland-usage"],
   "category": "technology",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -432,6 +454,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "台湾で使われる表現。中国本土では「盒饭（héfàn）」が一般的。日本語の「弁当」に近い。",
   "painPointTags": ["taiwan-mainland-usage"],
   "category": "food",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -447,10 +471,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "ようこそ",
   "caution": "台湾では繁体字「歡迎」が使われる。日本の「歓迎」と漢字は似ているが意味用法が異なる。",
   "painPointTags": ["traditional-simplified"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "greeting",
   "reviewStatus": "draft"
 }
@@ -465,10 +487,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "体",
   "caution": "日本の新字体「体」は簡体字と同じ形だが、繁体字では「體」。読み方は日本語の「からだ／たい」とは異なり tǐ。",
   "painPointTags": ["traditional-simplified"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "body",
   "reviewStatus": "draft"
 }
@@ -485,6 +505,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "私は明日台北に行きます",
   "notesJa": "中国語の語順は SVO（主語＋動詞＋目的語）。日本語の SOV（主語＋目的語＋動詞）と異なり、「我台北去」にはならない。時間表現「明天」は動詞の前に置く（主語＋時間＋動詞＋目的語）。",
   "painPointTags": ["word-order"],
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -501,6 +523,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "日本語では「一枚」だが、中国語ではチケットや平らな紙類に「張」を使う。日本語の「一枚」＝薄くて平らなものに使うが、中国語の「張」は紙類、チケット、机、ベッドなど幅広い。",
   "painPointTags": ["measure-word"],
   "category": "transport",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -517,6 +541,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "「了」は日本語の過去形「〜た」とは違う。了は完了相（perfective aspect）で、未来の完了にも使える（明天我吃了飯再去＝明日ご飯を食べてから行く）。日本語の「た」のような過去専用ではない。",
   "painPointTags": ["aspect-particle"],
   "category": "grammar",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -533,6 +559,8 @@ When reviewing AI-generated or AI-assisted content:
   "caution": "中国語の結果補語。日本語では「聞いてわかる」のように動詞を二つ並べるか「聞き取れる」のような可能動詞で表現するが、中国語では「動詞＋補語」の形をとる。否定は「聽不懂／听不懂」。",
   "painPointTags": ["complement"],
   "category": "grammar",
+    "traditionalStatus": "authored",
+    "simplifiedStatus": "authored",
   "reviewStatus": "draft"
 }
 ```
@@ -548,10 +576,8 @@ When reviewing AI-generated or AI-assisted content:
   "japanese": "MRT／地下鉄",
   "caution": "台湾で「地下鉄／MRT」を指す言葉。中国本土では「地铁（dìtiě）」が一般的。発音 jié は日本語の「捷（ショウ）」と異なる。",
   "painPointTags": ["taiwan-mainland-usage", "pinyin-pronunciation"],
-  "scriptStatus": {
-    "traditional": "verified",
-    "simplified": "verified"
-  },
+  "traditionalStatus": "verified",
+  "simplifiedStatus": "verified",
   "category": "transport",
   "reviewStatus": "draft"
 }
@@ -618,3 +644,4 @@ See `docs/content/content-model-draft.md` for how `painPointTags` appears in eac
 ---
 
 *This document is part of the Chabiko content architecture (#14). It should be reviewed when content schemas are implemented (#2) and when new pain points are identified through content authoring or user feedback.*
+
