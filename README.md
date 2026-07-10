@@ -92,16 +92,16 @@ require a `package.json` to be present. These commands become usable once the JS
 # Install JS dependencies (requires package.json)
 docker compose run --rm app pnpm install
 
-# Start dev server — use `docker compose up` or `--service-ports`
-# to expose the mapped port to the host (default: http://localhost:3000)
-docker compose up app
-# or: docker compose run --rm --service-ports app pnpm dev
+# Start dev server (requires package.json)
+docker compose run --rm --service-ports app pnpm dev
 
 # Build for production (requires package.json)
 docker compose run --rm app pnpm build
 ```
 
-> The dev port (`3000`) is a common default. Adjust it in `docker-compose.yml` once the app framework is chosen.
+> The dev port (`3000`) is mapped in `docker-compose.yml` so `--service-ports` exposes it to the host (default: http://localhost:3000). Adjust the port after the app framework is chosen.
+>
+> A `command: pnpm dev` is intentionally omitted — the image has no `package.json` yet, so a baked-in dev command would make `docker compose up` fail until the app scaffold is added.
 
 ### uv-based content validators
 
