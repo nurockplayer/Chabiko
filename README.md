@@ -34,18 +34,18 @@ This is a greenfield web project. When implementation starts:
 
 ## Content Validation
 
-Content validators use **uv** (Python package manager). Run them from the repo root:
+Content validators use **uv** (Python 3.14+). Run them from the repo root:
 
 ```bash
 # Run all validator self-tests
-uv run python3 scripts/validate-pain-points.py
-uv run python3 scripts/validate-script-status.py
+uv run python scripts/validate-pain-points.py
+uv run python scripts/validate-script-status.py
 
 # Validate a content file against the pain-point taxonomy
-uv run python3 scripts/validate-pain-points.py --check <file>
+uv run python scripts/validate-pain-points.py --check <file>
 
 # Validate a content file for script provenance fields
-uv run python3 scripts/validate-script-status.py --check <file>
+uv run python scripts/validate-script-status.py --check <file>
 ```
 
 No additional dependencies are required — the validators are zero-dependency Python 3.
