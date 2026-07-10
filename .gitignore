@@ -11,3 +11,5 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.venv/
+__pycache__/

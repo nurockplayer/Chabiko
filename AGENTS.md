@@ -53,6 +53,7 @@ sed -n '1,120p' AGENTS.md
 - pnpm。
 - TypeScript。
 - Structured content files。
+- uv 為 Python validation tooling 的管理工具；Python validators 一律用 `uv run` 執行；不得使用 Poetry、Pipenv 或 requirements.txt。
 - LocalStorage 可用於 v1 練習進度。
 - v1 不需要後端、登入、雲端同步、付款、語音辨識或 AI 自動解釋生成。
 
