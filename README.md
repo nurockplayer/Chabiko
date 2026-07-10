@@ -73,19 +73,37 @@ A minimal Docker-based environment is available for consistent local development
 docker compose build
 ```
 
-### Commands
+### Verify tooling is available
+
+Use these commands to verify the Docker image has the expected tooling:
 
 ```bash
-# Install JS dependencies
+docker compose run --rm app node --version
+docker compose run --rm app pnpm --version
+docker compose run --rm app uv --version
+```
+
+### pnpm commands (deferred)
+
+The Docker image provides **pnpm** for JavaScript tooling, but `pnpm install` / `pnpm dev` / `pnpm build`
+require a `package.json` to be present. These commands become usable once the JS app scaffold is added:
+
+```bash
+# Install JS dependencies (requires package.json)
 docker compose run --rm app pnpm install
 
-# Start dev server
+# Start dev server (requires package.json)
 docker compose run --rm app pnpm dev
 
-# Build for production
+# Build for production (requires package.json)
 docker compose run --rm app pnpm build
+```
 
-# Run uv-based content validators
+### uv-based content validators
+
+The Docker image provides **uv** for Python content validation. These work immediately:
+
+```bash
 docker compose run --rm app uv run python scripts/validate-pain-points.py
 docker compose run --rm app uv run python scripts/validate-script-status.py
 ```
