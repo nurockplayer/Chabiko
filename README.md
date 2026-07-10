@@ -115,6 +115,7 @@ docker compose run --rm app uv run python scripts/validate-script-status.py
 ### Notes
 
 - The `app` service mounts the repo root so source changes are reflected immediately.
-- Dependencies (node_modules, .venv) are installed inside the container, not on the host.
+- Dependencies (`node_modules`, `.venv`) are stored in Docker named volumes, not written to the host working tree.
+- To clean up all volumes: `docker compose down -v`
 - The same tooling rules apply inside Docker: **pnpm** for JavaScript, **uv** for Python.
 
