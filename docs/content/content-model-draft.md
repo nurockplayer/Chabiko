@@ -218,4 +218,4 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `attributionInstructions` (optional)
 - `reviewStatus` (candidate / under-review / approved / rejected)
 - `attribution`
-- `notes` (optional)
+- `notes`
