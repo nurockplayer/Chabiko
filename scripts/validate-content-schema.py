@@ -234,12 +234,6 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 def _build_schemas():
     """Define all content type schemas."""
 
-    base_script_and_review = {
-        "field_types": {},
-        "controlled_fields": {},
-        "extra_validators": [],
-    }
-
     # Lesson
     SCHEMAS["lesson"] = {
         "required": [
@@ -281,6 +275,7 @@ def _build_schemas():
         "field_types": {
             "id": str, "pinyin": str, "japanese": str, "kana": str,
             "category": str, "reviewStatus": str,
+            "similarityType": str,
             "examples": list, "painPointTags": list,
         },
         "controlled_fields": {
@@ -907,7 +902,8 @@ def test_pain_point_tags_empty_ok():
 
 def test_pain_point_tags_missing_ok():
     """Absence of painPointTags is not an error; handled by schema optional fields."""
-    pass  # Validated via schema optional field handling
+    errs = validate_single(_minimal_vocab(), "vocabulary")
+    _assert_no_errors(errs, "tags_missing_ok")
 
 
 def test_pain_point_tags_non_list():

@@ -60,7 +60,7 @@ uv run python scripts/validate-content-schema.py --check data/examples/valid/phr
 uv run python scripts/validate-content-schema.py --check data/examples/valid/practice.json
 ```
 
-No additional dependencies are required — the validators are zero-dependency Python 3.
+No additional dependencies are required — the validators are zero-dependency Python 3.14+.
 The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is managed by `uv` only.
 
 ## Candidate Reference Sources

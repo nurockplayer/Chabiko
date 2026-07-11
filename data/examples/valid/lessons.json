@@ -9,7 +9,9 @@
       "hookJa": "台湾の夜市と言えば…臭豆腐？それともタピオカ？",
       "travelScenario": "food",
       "coreSentence": "我要這個",
-      "sections": [],
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「我要」＝〜が欲しい/〜したい。指を差して「這個/那個」を組み合わせる。"}
+      ],
       "chunks": [
         {"chunk": "我要", "meaning": "私は〜が欲しい", "notesJa": "日本語の「欲しい」と違い、中国語では「要」が意思を表す"},
         {"chunk": "這個", "meaning": "これ", "notesJa": "「這」＝これ、「個」＝量詞。指差しで使う"}
@@ -24,7 +26,9 @@
         {"traditional": "我要這個", "pinyin": "wǒ yào zhège", "japanese": "これをください"},
         {"traditional": "我要那個", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
       ],
-      "reviewPrompts": [],
+      "reviewPrompts": [
+        {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください"}
+      ],
       "travelTask": "夜市で指を差して「我要這個」と言ってみよう",
       "relatedVocabulary": ["voc-001", "voc-002"],
       "reviewStatus": "draft"

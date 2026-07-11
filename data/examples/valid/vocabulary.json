@@ -15,7 +15,8 @@
       "examples": [
         {"traditional": "謝謝你", "pinyin": "xièxie nǐ", "japanese": "ありがとう（あなたに）"}
       ],
-      "reviewStatus": "draft"
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "自作者による基本語彙"}
     },
     {
       "id": "voc-002",
@@ -31,6 +32,9 @@
       "painPointTags": ["pinyin-pronunciation"],
       "caution": "日本語の「これ」と似ているが、中国語の「這個」は名詞の前に置く（這個東西＝これ）。",
       "travelScenario": "food",
+      "examples": [
+        {"traditional": "這個多少錢", "pinyin": "zhège duōshao qián", "japanese": "これはいくらですか？"}
+      ],
       "reviewStatus": "reviewed",
       "source": {"type": "authored", "note": "自作者による基本語彙"}
     }
