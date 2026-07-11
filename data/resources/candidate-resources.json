@@ -1,0 +1,81 @@
+{
+  "resources": [
+    {
+      "id": "resource-lmit",
+      "title": "Learning Mandarin in Taiwan",
+      "url": "https://lmit.edu.tw/",
+      "owner": "National Taiwan Normal University (NTNU) Mandarin Training Center",
+      "resourceType": "official-site",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Learning Mandarin in Taiwan (https://lmit.edu.tw/) by National Taiwan Normal University Mandarin Training Center",
+      "notes": "Official Taiwanese Mandarin proficiency resources. Metadata-only reference — do not import content without verifying license."
+    },
+    {
+      "id": "resource-tocfl",
+      "title": "TOCFL (Test of Chinese as a Foreign Language)",
+      "url": "https://tocfl.edu.tw/",
+      "owner": "Steering Committee for the Test Of Chinese as a Foreign Language (SC-TOP)",
+      "resourceType": "official-site",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "TOCFL (https://tocfl.edu.tw/) by the Steering Committee for the Test Of Chinese as a Foreign Language",
+      "notes": "Official TOCFL testing site. Metadata-only reference — do not import test content or sample questions without explicit permission."
+    },
+    {
+      "id": "resource-taiwan-tourism-japan",
+      "title": "Taiwan Tourism Administration Japan Site",
+      "url": "https://jp.taiwan.net.tw/",
+      "owner": "Taiwan Tourism Administration (交通部觀光署)",
+      "resourceType": "official-site",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Taiwan Tourism Administration Japan Site (https://jp.taiwan.net.tw/) by Taiwan Tourism Administration",
+      "notes": "Japanese-language Taiwan tourism portal. Useful for travel scenario research. Metadata-only reference — do not copy travel descriptions or images."
+    },
+    {
+      "id": "resource-cc-cedict",
+      "title": "CC-CEDICT",
+      "url": "https://cc-cedict.org/wiki/",
+      "owner": "CC-CEDICT Contributors (MDBG / Community)",
+      "resourceType": "dictionary",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "CC-CEDICT (https://cc-cedict.org/wiki/) by CC-CEDICT Contributors",
+      "notes": "Community-edited Chinese-English dictionary. Published under CC BY-SA 3.0 — license details need review before any attributed use. Metadata-only reference — do not import dictionary entries."
+    },
+    {
+      "id": "resource-edrdg-license",
+      "title": "EDRDG License Page",
+      "url": "https://www.edrdg.org/edrdg/licence.html",
+      "owner": "Electronic Dictionary Research and Development Group (EDRDG)",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "EDRDG License Page (https://www.edrdg.org/edrdg/licence.html) by Electronic Dictionary Research and Development Group",
+      "notes": "License and usage terms for JMdict/EDICT and KANJIDIC. Reference for understanding EDRDG's data licensing. Metadata-only reference."
+    },
+    {
+      "id": "resource-kanjivg",
+      "title": "KanjiVG",
+      "url": "https://kanjivg.tagaini.net/",
+      "owner": "Ulrich Apel (KanjiVG project)",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "KanjiVG (https://kanjivg.tagaini.net/) by Ulrich Apel",
+      "notes": "Kanji stroke order data (SVG). Published under CC BY SA 3.0 — license details need review. Metadata-only reference — do not import SVG data."
+    },
+    {
+      "id": "resource-unicode-unihan",
+      "title": "Unicode Unihan Database",
+      "url": "https://www.unicode.org/charts/unihan.html",
+      "owner": "Unicode Consortium",
+      "resourceType": "standard",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Unicode Unihan Database (https://www.unicode.org/charts/unihan.html) by Unicode Consortium",
+      "notes": "Unified Repertoire and Ordering (URO) for CJK Unified Ideographs. Reference for character-level information. Metadata-only reference — do not import character charts or mappings."
+    }
+  ]
+}

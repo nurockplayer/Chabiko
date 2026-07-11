@@ -1,0 +1,14 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-006",
+      "title": "Invalid URL Scheme",
+      "url": "ftp://example.org/resource",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Invalid URL Scheme by Test"
+    }
+  ]
+}
