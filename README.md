@@ -49,7 +49,7 @@ uv run python scripts/validate-pain-points.py --check <file>
 uv run python scripts/validate-script-status.py --check <file>
 
 # Validate a content file against the full content schema
-# (covers Lesson, Vocabulary, Sentence, Phrasebook, Practice)
+# (covers Lesson, Vocabulary, Sentence, Phrasebook, Practice, Resource)
 uv run python scripts/validate-content-schema.py --check <file>
 
 # Validate all seed examples
@@ -58,6 +58,10 @@ uv run python scripts/validate-content-schema.py --check data/examples/valid/voc
 uv run python scripts/validate-content-schema.py --check data/examples/valid/sentences.json
 uv run python scripts/validate-content-schema.py --check data/examples/valid/phrasebook.json
 uv run python scripts/validate-content-schema.py --check data/examples/valid/practice.json
+uv run python scripts/validate-content-schema.py --check data/examples/valid/resources.json
+
+# Validate the candidate resource registry
+uv run python scripts/validate-content-schema.py --check data/resources/candidate-resources.json
 ```
 
 No additional dependencies are required — the validators are zero-dependency Python 3.14+.
@@ -126,6 +130,9 @@ docker compose run --rm app uv run python scripts/validate-content-schema.py
 
 # Validate seed examples via Docker
 docker compose run --rm app uv run python scripts/validate-content-schema.py --check data/examples/valid/lessons.json
+
+# Validate candidate resource registry via Docker
+docker compose run --rm app uv run python scripts/validate-content-schema.py --check data/resources/candidate-resources.json
 ```
 
 ### Notes

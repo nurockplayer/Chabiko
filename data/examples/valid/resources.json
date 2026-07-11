@@ -1,0 +1,16 @@
+{
+  "resources": [
+    {
+      "id": "resource-example-valid-001",
+      "title": "Example Reference Source",
+      "url": "https://example.org/chinese-reference",
+      "owner": "Example Organization",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Example Reference Source (https://example.org/chinese-reference) by Example Organization",
+      "reviewStatus": "candidate",
+      "notes": "Example resource for validation testing. Metadata-only — no content imported."
+    }
+  ]
+}

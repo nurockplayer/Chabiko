@@ -56,6 +56,34 @@ VALID_SIMILARITY_TYPES = frozenset({
     "false-friend", "partial-overlap", "same-meaning", "none",
 })
 
+VALID_RESOURCE_TYPES = frozenset({
+    "official-site", "dictionary", "standard", "reference", "academic", "other",
+})
+
+VALID_LICENSE_STATUSES = frozenset({
+    "unknown", "needs-review", "approved", "restricted", "prohibited",
+})
+
+VALID_ALLOWED_USES = frozenset({
+    "reference-only", "attributed-use", "non-commercial", "commercial", "citation",
+})
+
+VALID_RESOURCE_REVIEW_STATUSES = frozenset({
+    "candidate", "under-review", "approved", "rejected",
+})
+
+VALID_LANGUAGE_RELEVANCE = frozenset({
+    "primary", "supplementary", "unrelated",
+})
+
+VALID_REGIONAL_RELEVANCE = frozenset({
+    "taiwan-specific", "cross-strait", "mainland-specific", "general",
+})
+
+VALID_SCRIPT_RELEVANCE = frozenset({
+    "traditional", "simplified", "both", "neutral",
+})
+
 # ─── Content type schemas ──────────────────────────────────────────────────
 # Each schema defines:
 #   required: fields that must be present (non-None)
@@ -234,6 +262,17 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_resource_url(record: dict, path: str) -> list[str]:
+    """Validate that url and canonicalUrl start with http:// or https://."""
+    errors = []
+    for field in ("url", "canonicalUrl"):
+        value = record.get(field)
+        if value is not None and isinstance(value, str):
+            if not (value.startswith("http://") or value.startswith("https://")):
+                errors.append(f"{path}.{field} must start with 'http://' or 'https://'")
+    return errors
+
+
 # ─── Schema definitions ────────────────────────────────────────────────────
 
 def _build_schemas():
@@ -388,6 +427,38 @@ def _build_schemas():
         ],
     }
 
+    # Resource
+    SCHEMAS["resource"] = {
+        "required": [
+            "id", "title", "url", "owner", "resourceType",
+            "licenseStatus", "allowedUse", "attribution",
+            "reviewStatus", "notes",
+        ],
+        "optional": [
+            "canonicalUrl", "languageRelevance", "regionalRelevance",
+            "scriptRelevance", "attributionInstructions",
+        ],
+        "field_types": {
+            "id": str, "title": str, "url": str, "owner": str,
+            "resourceType": str, "licenseStatus": str,
+            "allowedUse": str, "attribution": str,
+            "canonicalUrl": str,
+            "languageRelevance": str, "regionalRelevance": str,
+            "scriptRelevance": str, "reviewStatus": str,
+            "attributionInstructions": str, "notes": str,
+        },
+        "controlled_fields": {
+            "resourceType": VALID_RESOURCE_TYPES,
+            "licenseStatus": VALID_LICENSE_STATUSES,
+            "allowedUse": VALID_ALLOWED_USES,
+            "reviewStatus": VALID_RESOURCE_REVIEW_STATUSES,
+            "languageRelevance": VALID_LANGUAGE_RELEVANCE,
+            "regionalRelevance": VALID_REGIONAL_RELEVANCE,
+            "scriptRelevance": VALID_SCRIPT_RELEVANCE,
+        },
+        "extra_validators": [_check_resource_url],
+    }
+
 
 _build_schemas()
 
@@ -399,6 +470,7 @@ COLLECTION_MAP = {
     "sentences": "sentence",
     "phrasebook": "phrasebook",
     "practice": "practice",
+    "resources": "resource",
 }
 
 
@@ -583,6 +655,32 @@ def run_tests():
         test_practice_valid,
         test_practice_missing_required,
         test_practice_invalid_type,
+
+        # ─── Resource ───
+        test_resource_valid,
+        test_resource_valid_with_notes,
+        test_resource_missing_license_status,
+        test_resource_missing_allowed_use,
+        test_resource_missing_review_status,
+        test_resource_missing_attribution,
+        test_resource_invalid_license_status,
+        test_resource_invalid_allowed_use,
+        test_resource_invalid_resource_type,
+        test_resource_invalid_review_status,
+        test_resource_invalid_url,
+        test_resource_url_ftp_fails,
+        test_resource_unknown_field,
+        test_resource_notes_wrong_type,
+        test_resource_url_https_allowed,
+        test_resource_url_http_allowed,
+        test_resource_url_empty_string,
+        test_resource_url_non_string,
+        test_resource_canonical_url_valid,
+        test_resource_canonical_url_invalid,
+        test_resource_missing_notes,
+        test_resource_bundle_with_resources,
+        test_resource_bundle_invalid_resource,
+        test_resource_bundle_non_list,
 
         # ─── Bundle ───
         test_bundle_valid,
@@ -958,6 +1056,168 @@ def test_practice_invalid_type():
     _assert_has_error(errs, "not valid", "practice_type")
 
 
+# ─── Resource tests ────────────────────────────────────────────────────────
+
+def _minimal_resource(**overrides):
+    data = {
+        "id": "resource-test-001",
+        "title": "Test Resource",
+        "url": "https://example.org/test",
+        "owner": "Test Owner",
+        "resourceType": "reference",
+        "licenseStatus": "needs-review",
+        "allowedUse": "reference-only",
+        "reviewStatus": "candidate",
+        "attribution": "Test Resource (https://example.org/test) by Test Owner",
+        "notes": "Metadata-only reference.",
+    }
+    data.update(overrides)
+    return data
+
+
+def test_resource_valid():
+    errs = validate_single(_minimal_resource(), "resource")
+    _assert_no_errors(errs, "resource_valid")
+
+
+
+
+def test_resource_valid_with_notes():
+    errs = validate_single(_minimal_resource(notes="Optional note"), "resource")
+    _assert_no_errors(errs, "resource_with_notes")
+
+
+def test_resource_missing_license_status():
+    errs = validate_single(_minimal_resource(licenseStatus=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_license_status")
+
+
+def test_resource_missing_allowed_use():
+    errs = validate_single(_minimal_resource(allowedUse=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_allowed_use")
+
+
+def test_resource_missing_review_status():
+    errs = validate_single(_minimal_resource(reviewStatus=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_review_status")
+
+
+def test_resource_missing_attribution():
+    errs = validate_single(_minimal_resource(attribution=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_attribution")
+
+
+def test_resource_missing_notes():
+    errs = validate_single(_minimal_resource(notes=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_notes")
+
+
+def test_resource_invalid_license_status():
+    errs = validate_single(_minimal_resource(licenseStatus="approved-but-not"), "resource")
+    _assert_has_error(errs, "not valid", "resource_invalid_license")
+
+
+def test_resource_invalid_allowed_use():
+    errs = validate_single(_minimal_resource(allowedUse="unknown"), "resource")
+    _assert_has_error(errs, "not valid", "resource_invalid_allowed_use")
+
+
+def test_resource_invalid_resource_type():
+    errs = validate_single(_minimal_resource(resourceType="feed"), "resource")
+    _assert_has_error(errs, "not valid", "resource_invalid_type")
+
+
+def test_resource_invalid_review_status():
+    errs = validate_single(_minimal_resource(reviewStatus="invalid"), "resource")
+    _assert_has_error(errs, "not valid", "resource_invalid_review_status")
+
+
+def test_resource_invalid_url():
+    """URL must start with http:// or https://."""
+    errs = validate_single(_minimal_resource(url="example.org"), "resource")
+    _assert_has_error(errs, "must start with", "resource_invalid_url")
+
+
+def test_resource_url_ftp_fails():
+    errs = validate_single(_minimal_resource(url="ftp://example.org/resource"), "resource")
+    _assert_has_error(errs, "must start with", "resource_url_ftp")
+
+
+def test_resource_unknown_field():
+    errs = validate_single(_minimal_resource(randomField="xyz"), "resource")
+    _assert_has_error(errs, "unknown field", "resource_unknown")
+
+
+def test_resource_notes_wrong_type():
+    """notes must be str, not list."""
+    errs = validate_single(_minimal_resource(notes=["not-a-string"]), "resource")
+    _assert_has_error(errs, "must be str", "resource_notes_type")
+
+
+def test_resource_url_https_allowed():
+    """https:// URLs must be accepted."""
+    errs = validate_single(_minimal_resource(url="https://example.org"), "resource")
+    _assert_no_errors(errs, "resource_url_https")
+
+
+def test_resource_url_http_allowed():
+    """http:// URLs must be accepted."""
+    errs = validate_single(_minimal_resource(url="http://example.org"), "resource")
+    _assert_no_errors(errs, "resource_url_http")
+
+
+def test_resource_url_empty_string():
+    """Empty url string should trigger scheme error."""
+    errs = validate_single(_minimal_resource(url=""), "resource")
+    _assert_has_error(errs, "must start with", "resource_url_empty")
+
+
+def test_resource_url_non_string():
+    """Non-string url gets type error."""
+    errs = validate_single(_minimal_resource(url=42), "resource")
+    _assert_has_error(errs, "must be str", "resource_url_type")
+
+
+def test_resource_canonical_url_valid():
+    """canonicalUrl with https:// should pass."""
+    errs = validate_single(_minimal_resource(canonicalUrl="https://canonical.example"), "resource")
+    _assert_no_errors(errs, "resource_canonical_url_valid")
+
+
+def test_resource_canonical_url_invalid():
+    """canonicalUrl with ftp:// should fail."""
+    errs = validate_single(_minimal_resource(canonicalUrl="ftp://canonical.example"), "resource")
+    _assert_has_error(errs, "must start with", "resource_canonical_url_invalid")
+
+
+def test_resource_bundle_with_resources():
+    """resources collection in bundle should be recognized and validated."""
+    data = {
+        "resources": [_minimal_resource()],
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "bundle_with_resources")
+
+
+def test_resource_bundle_invalid_resource():
+    """resources collection with invalid entry should fail."""
+    data = {
+        "resources": [
+            _minimal_resource(),
+            {"id": "resource-bad"},
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "required field", "bundle_resource_invalid")
+
+
+def test_resource_bundle_non_list():
+    """resources must be a list."""
+    data = {"resources": "not-a-list"}
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "expected a list", "bundle_resource_non_list")
+
+
 # ─── Bundle tests ──────────────────────────────────────────────────────────
 
 def test_bundle_valid():
@@ -967,6 +1227,7 @@ def test_bundle_valid():
         "sentences": [_minimal_sentence()],
         "phrasebook": [_minimal_phrasebook()],
         "practice": [_minimal_practice()],
+        "resources": [_minimal_resource()],
     }
     errs = validate_bundle(data)
     _assert_no_errors(errs, "bundle_valid")

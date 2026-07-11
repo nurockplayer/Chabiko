@@ -1,0 +1,15 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-008",
+      "title": "Copied Content Without License Status",
+      "url": "https://example.org/copied-content",
+      "owner": "Test",
+      "resourceType": "reference",
+      "allowedUse": "reference-only",
+      "attribution": "Copied Content Without License Status by Test",
+      "reviewStatus": "candidate",
+      "notes": "This resource contains copied content imported for reference"
+    }
+  ]
+}

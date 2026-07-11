@@ -207,9 +207,15 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `id`
 - `title`
 - `url`
+- `canonicalUrl` (optional)
 - `owner`
-- `resourceType`
-- `licenseStatus`
-- `allowedUse`
+- `resourceType` (official-site / dictionary / standard / reference / academic / other)
+- `languageRelevance` (optional, primary / supplementary / unrelated)
+- `regionalRelevance` (optional, taiwan-specific / cross-strait / mainland-specific / general)
+- `scriptRelevance` (optional, traditional / simplified / both / neutral)
+- `licenseStatus` (unknown / needs-review / approved / restricted / prohibited)
+- `allowedUse` (reference-only / attributed-use / non-commercial / commercial / citation)
+- `attributionInstructions` (optional)
+- `reviewStatus` (candidate / under-review / approved / rejected)
 - `attribution`
 - `notes`

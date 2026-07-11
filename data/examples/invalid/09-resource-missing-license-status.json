@@ -1,0 +1,15 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-001",
+      "title": "Missing License Status",
+      "url": "https://example.org/no-license",
+      "owner": "Test",
+      "resourceType": "reference",
+      "allowedUse": "reference-only",
+      "attribution": "Missing License Status by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
+    }
+  ]
+}

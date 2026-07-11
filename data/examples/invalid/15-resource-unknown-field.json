@@ -1,0 +1,17 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-007",
+      "title": "Resource With Unknown Field",
+      "url": "https://example.org/unknown-field",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Resource With Unknown Field by Test",
+      "reviewStatus": "candidate",
+      "licenseText": "Some license text here",
+      "notes": "Test fixture."
+    }
+  ]
+}

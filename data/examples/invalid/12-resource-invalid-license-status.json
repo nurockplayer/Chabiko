@@ -1,0 +1,16 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-004",
+      "title": "Invalid License Status",
+      "url": "https://example.org/invalid-license",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "approved-but-not",
+      "allowedUse": "reference-only",
+      "attribution": "Invalid License Status by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
+    }
+  ]
+}

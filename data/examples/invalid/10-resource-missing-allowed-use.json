@@ -1,0 +1,15 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-002",
+      "title": "Missing Allowed Use",
+      "url": "https://example.org/no-allowed-use",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "attribution": "Missing Allowed Use by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
+    }
+  ]
+}
