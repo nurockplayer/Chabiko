@@ -1,0 +1,15 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-bad-001",
+      "titleJa": "テスト",
+      "level": "professional",
+      "canDoJa": "何かできる",
+      "learnerOutcomeJa": "何かを学ぶ",
+      "hookJa": "フック",
+      "travelScenario": "travel",
+      "coreSentence": "測試",
+      "reviewStatus": "draft"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "vocabulary": [
+    {
+      "id": "voc-bad-001",
+      "traditional": "你好",
+      "traditionalStatus": "authored",
+      "simplified": "你好",
+      "simplifiedStatus": "draft",
+      "pinyin": "nǐhǎo",
+      "japanese": "こんにちは",
+      "kana": "こんにちは",
+      "category": "greeting",
+      "reviewStatus": "draft"
+    }
+  ]
+}

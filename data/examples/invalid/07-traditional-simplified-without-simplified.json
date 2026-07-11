@@ -1,0 +1,16 @@
+{
+  "vocabulary": [
+    {
+      "id": "voc-bad-004",
+      "traditional": "歡迎光臨",
+      "traditionalStatus": "authored",
+      "simplifiedStatus": "unavailable",
+      "pinyin": "huānyíng guānglín",
+      "japanese": "いらっしゃいませ",
+      "kana": "いらっしゃいませ",
+      "painPointTags": ["traditional-simplified"],
+      "category": "greeting",
+      "reviewStatus": "draft"
+    }
+  ]
+}

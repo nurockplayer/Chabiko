@@ -1,0 +1,23 @@
+{
+  "practice": [
+    {
+      "id": "practice-001",
+      "type": "tone-discrimination",
+      "promptJa": "次の音声を聴いて「媽」の声調を選んでください",
+      "correctAnswer": "第一声",
+      "distractors": ["第二声", "第三声", "第四声"],
+      "painPointTags": ["tone"],
+      "relatedVocabulary": ["voc-001"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "practice-002",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswer": "我明天去台北",
+      "distractors": ["我去台北明天", "明天我台北去", "台北我去明天"],
+      "painPointTags": ["word-order"],
+      "reviewStatus": "draft"
+    }
+  ]
+}

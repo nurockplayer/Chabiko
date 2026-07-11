@@ -1,0 +1,32 @@
+{
+  "phrasebook": [
+    {
+      "id": "phrase-001",
+      "scenario": "food",
+      "traditional": "我要一杯珍珠奶茶",
+      "traditionalStatus": "authored",
+      "simplified": "我要一杯珍珠奶茶",
+      "simplifiedStatus": "verified",
+      "pinyin": "wǒ yào yī bēi zhēnzhū nǎichá",
+      "japanese": "タピオカミルクティーを一杯ください",
+      "usageNotesJa": "「一杯 (yī bēi)」は飲み物に使う量詞。「珍珠奶茶」は台湾発祥のタピオカドリンク。台湾ではどこでも買える。中国本土では「珍珠奶茶」も通じるが、タピオカ自体が台湾発祥のため台湾の方がバリエーションが多い。",
+      "painPointTags": ["taiwan-mainland-usage"],
+      "relatedVocabulary": ["voc-001"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "自作者による台湾旅行フレーズ"}
+    },
+    {
+      "id": "phrase-002",
+      "scenario": "transport",
+      "traditional": "請問這附近有捷運站嗎？",
+      "traditionalStatus": "authored",
+      "simplified": "请问这附近有捷运站吗？",
+      "simplifiedStatus": "verified",
+      "pinyin": "Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?",
+      "japanese": "すみません、この近くにMRTの駅はありますか？",
+      "usageNotesJa": "「捷運」は台湾でのMRT/地下鉄の呼称。中国本土では「地铁 (dìtiě)」と言う。",
+      "painPointTags": ["taiwan-mainland-usage"],
+      "reviewStatus": "draft"
+    }
+  ]
+}
