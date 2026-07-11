@@ -273,6 +273,58 @@ def _check_resource_url(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_resource_policy(record: dict, path: str) -> list[str]:
+    """Validate cross-field license, review, and permission policy rules."""
+    errors = []
+    license_status = record.get("licenseStatus")
+    review_status = record.get("reviewStatus")
+
+    if record.get("productionImportAllowed") is True and license_status not in {
+        "approved", "restricted"
+    }:
+        errors.append(
+            f"{path}.productionImportAllowed=True requires licenseStatus to be "
+            f"'approved' or 'restricted'; got '{license_status}'"
+        )
+
+    if review_status == "approved" and license_status in {"unknown", "needs-review"}:
+        errors.append(
+            f"{path}.reviewStatus='approved' requires an approved license; "
+            f"licenseStatus is '{license_status}'"
+        )
+
+    if record.get("attributionRequired") is True:
+        instructions = record.get("attributionInstructions")
+        if not isinstance(instructions, str) or not instructions.strip():
+            errors.append(
+                f"{path}.attributionInstructions is required and must be a non-empty "
+                f"string when attributionRequired=True"
+            )
+
+    blocking_statuses = {"unknown", "needs-review", "prohibited"}
+    blocked_by_license = license_status in blocking_statuses
+    blocked_by_review = review_status == "rejected"
+    if blocked_by_license or blocked_by_review:
+        status_detail = []
+        if blocked_by_license:
+            status_detail.append(f"licenseStatus='{license_status}'")
+        if blocked_by_review:
+            status_detail.append("reviewStatus='rejected'")
+        status_text = " and ".join(status_detail)
+        for field in (
+            "productionImportAllowed",
+            "commercialUseAllowed",
+            "modificationAllowed",
+            "redistributionAllowed",
+        ):
+            if record.get(field) is True:
+                errors.append(
+                    f"{path}.{field}=True is not permitted when {status_text}"
+                )
+
+    return errors
+
+
 # ─── Schema definitions ────────────────────────────────────────────────────
 
 def _build_schemas():
@@ -467,7 +519,7 @@ def _build_schemas():
             "regionalRelevance": VALID_REGIONAL_RELEVANCE,
             "scriptRelevance": VALID_SCRIPT_RELEVANCE,
         },
-        "extra_validators": [_check_resource_url],
+        "extra_validators": [_check_resource_url, _check_resource_policy],
     }
 
 
@@ -671,6 +723,13 @@ def run_tests():
         test_resource_valid,
         test_resource_valid_with_notes,
         test_resource_policy_fields_valid,
+        test_resource_production_import_requires_approved_license,
+        test_resource_production_import_allowed_for_restricted_license,
+        test_resource_approved_review_requires_approved_license,
+        test_resource_prohibited_license_blocks_permission_flags,
+        test_resource_rejected_review_blocks_permission_flags,
+        test_resource_unreviewed_license_blocks_non_reference_permissions,
+        test_resource_attribution_required_needs_instructions,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
         test_resource_missing_review_status,
@@ -1113,6 +1172,56 @@ def test_resource_policy_fields_valid():
         reviewedDate="2026-07-12",
     )
     _assert_no_errors(validate_single(record, "resource"), "resource_policy_fields_valid")
+
+
+def test_resource_production_import_requires_approved_license():
+    errs = validate_single(_minimal_resource(productionImportAllowed=True), "resource")
+    _assert_has_error(errs, "productionImportAllowed", "resource_import_needs_license")
+
+
+def test_resource_production_import_allowed_for_restricted_license():
+    errs = validate_single(
+        _minimal_resource(licenseStatus="restricted", productionImportAllowed=True),
+        "resource",
+    )
+    _assert_no_errors(errs, "resource_import_restricted_license")
+
+
+def test_resource_approved_review_requires_approved_license():
+    errs = validate_single(
+        _minimal_resource(reviewStatus="approved", licenseStatus="needs-review"),
+        "resource",
+    )
+    _assert_has_error(errs, "reviewStatus", "resource_approved_review_needs_license")
+
+
+def test_resource_prohibited_license_blocks_permission_flags():
+    errs = validate_single(
+        _minimal_resource(licenseStatus="prohibited", modificationAllowed=True),
+        "resource",
+    )
+    _assert_has_error(errs, "modificationAllowed", "resource_prohibited_permission")
+
+
+def test_resource_rejected_review_blocks_permission_flags():
+    errs = validate_single(
+        _minimal_resource(reviewStatus="rejected", commercialUseAllowed=True),
+        "resource",
+    )
+    _assert_has_error(errs, "commercialUseAllowed", "resource_rejected_permission")
+
+
+def test_resource_unreviewed_license_blocks_non_reference_permissions():
+    errs = validate_single(
+        _minimal_resource(licenseStatus="unknown", redistributionAllowed=True),
+        "resource",
+    )
+    _assert_has_error(errs, "redistributionAllowed", "resource_unknown_permission")
+
+
+def test_resource_attribution_required_needs_instructions():
+    errs = validate_single(_minimal_resource(attributionRequired=True), "resource")
+    _assert_has_error(errs, "attributionInstructions", "resource_attribution_instructions")
 
 
 def test_resource_missing_license_status():
