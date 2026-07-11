@@ -56,7 +56,7 @@
       "resourceType": "dictionary",
       "languageRelevance": "supplementary",
       "regionalRelevance": "general",
-      "scriptRelevance": "simplified",
+      "scriptRelevance": "both",
       "licenseStatus": "needs-review",
       "allowedUse": "reference-only",
       "attributionInstructions": "Attribute as 'CC-CEDICT (https://cc-cedict.org/wiki/) by CC-CEDICT Contributors'",
@@ -110,7 +110,7 @@
       "attributionInstructions": "Attribute as 'Unicode Unihan Database (https://www.unicode.org/charts/unihan.html) by Unicode Consortium'",
       "reviewStatus": "candidate",
       "attribution": "Unicode Unihan Database (https://www.unicode.org/charts/unihan.html) by Unicode Consortium",
-      "notes": "Unified Repertoire and Ordering (URO) for CJK Unified Ideographs. Reference for character-level information. Metadata-only reference — do not import character charts or mappings."
+      "notes": "Unicode Han Database containing character mappings, readings, variants, dictionary references, and other Han ideograph properties. Metadata-only reference — do not import data without license review."
     }
   ]
 }
