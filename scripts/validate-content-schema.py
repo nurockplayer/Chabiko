@@ -61,12 +61,27 @@ VALID_RESOURCE_TYPES = frozenset({
 })
 
 VALID_LICENSE_STATUSES = frozenset({
-    "needs-review", "link-only", "reference-only",
-    "verified-permissive", "verified-copyleft", "verified-proprietary",
+    "unknown", "needs-review", "approved", "restricted", "prohibited",
 })
 
 VALID_ALLOWED_USES = frozenset({
-    "reference-only", "attributed-use", "non-commercial", "commercial", "citation", "unknown",
+    "reference-only", "attributed-use", "non-commercial", "commercial", "citation",
+})
+
+VALID_RESOURCE_REVIEW_STATUSES = frozenset({
+    "candidate", "under-review", "approved", "rejected",
+})
+
+VALID_LANGUAGE_RELEVANCE = frozenset({
+    "primary", "supplementary", "unrelated",
+})
+
+VALID_REGIONAL_RELEVANCE = frozenset({
+    "taiwan-specific", "cross-strait", "mainland-specific", "general",
+})
+
+VALID_SCRIPT_RELEVANCE = frozenset({
+    "traditional", "simplified", "both", "neutral",
 })
 
 # ─── Content type schemas ──────────────────────────────────────────────────
@@ -416,17 +431,30 @@ def _build_schemas():
         "required": [
             "id", "title", "url", "owner", "resourceType",
             "licenseStatus", "allowedUse", "attribution",
+            "reviewStatus",
         ],
-        "optional": ["notes"],
+        "optional": [
+            "canonicalUrl", "languageRelevance", "regionalRelevance",
+            "scriptRelevance", "attributionInstructions",
+            "notes",
+        ],
         "field_types": {
             "id": str, "title": str, "url": str, "owner": str,
             "resourceType": str, "licenseStatus": str,
-            "allowedUse": str, "attribution": str, "notes": str,
+            "allowedUse": str, "attribution": str,
+            "canonicalUrl": str,
+            "languageRelevance": str, "regionalRelevance": str,
+            "scriptRelevance": str, "reviewStatus": str,
+            "attributionInstructions": str, "notes": str,
         },
         "controlled_fields": {
             "resourceType": VALID_RESOURCE_TYPES,
             "licenseStatus": VALID_LICENSE_STATUSES,
             "allowedUse": VALID_ALLOWED_USES,
+            "reviewStatus": VALID_RESOURCE_REVIEW_STATUSES,
+            "languageRelevance": VALID_LANGUAGE_RELEVANCE,
+            "regionalRelevance": VALID_REGIONAL_RELEVANCE,
+            "scriptRelevance": VALID_SCRIPT_RELEVANCE,
         },
         "extra_validators": [_check_resource_url],
     }
@@ -633,14 +661,16 @@ def run_tests():
         test_resource_valid_with_notes,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
+        test_resource_missing_review_status,
         test_resource_missing_attribution,
         test_resource_invalid_license_status,
         test_resource_invalid_allowed_use,
         test_resource_invalid_resource_type,
+        test_resource_invalid_review_status,
         test_resource_invalid_url,
+        test_resource_url_ftp_fails,
         test_resource_unknown_field,
         test_resource_notes_wrong_type,
-        test_resource_copied_without_license_status,
         test_resource_url_https_allowed,
         test_resource_url_http_allowed,
         test_resource_url_empty_string,
@@ -1034,6 +1064,7 @@ def _minimal_resource(**overrides):
         "resourceType": "reference",
         "licenseStatus": "needs-review",
         "allowedUse": "reference-only",
+        "reviewStatus": "candidate",
         "attribution": "Test Resource (https://example.org/test) by Test Owner",
     }
     data.update(overrides)
@@ -1043,6 +1074,8 @@ def _minimal_resource(**overrides):
 def test_resource_valid():
     errs = validate_single(_minimal_resource(), "resource")
     _assert_no_errors(errs, "resource_valid")
+
+
 
 
 def test_resource_valid_with_notes():
@@ -1060,18 +1093,23 @@ def test_resource_missing_allowed_use():
     _assert_has_error(errs, "required field", "resource_no_allowed_use")
 
 
+def test_resource_missing_review_status():
+    errs = validate_single(_minimal_resource(reviewStatus=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_review_status")
+
+
 def test_resource_missing_attribution():
     errs = validate_single(_minimal_resource(attribution=None), "resource")
     _assert_has_error(errs, "required field", "resource_no_attribution")
 
 
 def test_resource_invalid_license_status():
-    errs = validate_single(_minimal_resource(licenseStatus="approved"), "resource")
+    errs = validate_single(_minimal_resource(licenseStatus="approved-but-not"), "resource")
     _assert_has_error(errs, "not valid", "resource_invalid_license")
 
 
 def test_resource_invalid_allowed_use():
-    errs = validate_single(_minimal_resource(allowedUse="copy-anything"), "resource")
+    errs = validate_single(_minimal_resource(allowedUse="unknown"), "resource")
     _assert_has_error(errs, "not valid", "resource_invalid_allowed_use")
 
 
@@ -1080,10 +1118,20 @@ def test_resource_invalid_resource_type():
     _assert_has_error(errs, "not valid", "resource_invalid_type")
 
 
+def test_resource_invalid_review_status():
+    errs = validate_single(_minimal_resource(reviewStatus="invalid"), "resource")
+    _assert_has_error(errs, "not valid", "resource_invalid_review_status")
+
+
 def test_resource_invalid_url():
     """URL must start with http:// or https://."""
     errs = validate_single(_minimal_resource(url="example.org"), "resource")
     _assert_has_error(errs, "must start with", "resource_invalid_url")
+
+
+def test_resource_url_ftp_fails():
+    errs = validate_single(_minimal_resource(url="ftp://example.org/resource"), "resource")
+    _assert_has_error(errs, "must start with", "resource_url_ftp")
 
 
 def test_resource_unknown_field():
@@ -1095,18 +1143,6 @@ def test_resource_notes_wrong_type():
     """notes must be str, not list."""
     errs = validate_single(_minimal_resource(notes=["not-a-string"]), "resource")
     _assert_has_error(errs, "must be str", "resource_notes_type")
-
-
-def test_resource_copied_without_license_status():
-    """Simulate a resource entry with copied/imported intent but no licenseStatus."""
-    errs = validate_single(
-        _minimal_resource(
-            licenseStatus=None,
-            notes="Imported for reference — license status not yet documented",
-        ),
-        "resource",
-    )
-    _assert_has_error(errs, "required field", "resource_copied_no_license")
 
 
 def test_resource_url_https_allowed():
@@ -1122,7 +1158,7 @@ def test_resource_url_http_allowed():
 
 
 def test_resource_url_empty_string():
-    """Empty url string should trigger scheme error, not required-field error."""
+    """Empty url string should trigger scheme error."""
     errs = validate_single(_minimal_resource(url=""), "resource")
     _assert_has_error(errs, "must start with", "resource_url_empty")
 

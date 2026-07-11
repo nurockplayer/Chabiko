@@ -2,12 +2,13 @@
   "resources": [
     {
       "id": "resource-bad-001",
-      "title": "Resource Without License Status",
+      "title": "Missing License Status",
       "url": "https://example.org/no-license",
       "owner": "Test",
       "resourceType": "reference",
       "allowedUse": "reference-only",
-      "attribution": "Resource Without License Status by Test"
+      "attribution": "Missing License Status by Test",
+      "reviewStatus": "candidate"
     }
   ]
 }

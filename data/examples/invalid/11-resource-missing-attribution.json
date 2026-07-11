@@ -2,12 +2,13 @@
   "resources": [
     {
       "id": "resource-bad-003",
-      "title": "Resource Without Attribution",
+      "title": "Missing Attribution",
       "url": "https://example.org/no-attribution",
       "owner": "Test",
       "resourceType": "reference",
       "licenseStatus": "needs-review",
-      "allowedUse": "reference-only"
+      "allowedUse": "reference-only",
+      "reviewStatus": "candidate"
     }
   ]
 }

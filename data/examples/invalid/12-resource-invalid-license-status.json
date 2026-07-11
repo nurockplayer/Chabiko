@@ -6,9 +6,10 @@
       "url": "https://example.org/invalid-license",
       "owner": "Test",
       "resourceType": "reference",
-      "licenseStatus": "approved",
+      "licenseStatus": "approved-but-not",
       "allowedUse": "reference-only",
-      "attribution": "Invalid License Status by Test"
+      "attribution": "Invalid License Status by Test",
+      "reviewStatus": "candidate"
     }
   ]
 }
