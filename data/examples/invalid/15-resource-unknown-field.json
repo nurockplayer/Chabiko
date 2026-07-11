@@ -10,7 +10,8 @@
       "allowedUse": "reference-only",
       "attribution": "Resource With Unknown Field by Test",
       "reviewStatus": "candidate",
-      "licenseText": "Some license text here"
+      "licenseText": "Some license text here",
+      "notes": "Test fixture."
     }
   ]
 }

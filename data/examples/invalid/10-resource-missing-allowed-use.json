@@ -8,7 +8,8 @@
       "resourceType": "reference",
       "licenseStatus": "needs-review",
       "attribution": "Missing Allowed Use by Test",
-      "reviewStatus": "candidate"
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
     }
   ]
 }

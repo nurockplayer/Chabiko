@@ -9,7 +9,8 @@
       "licenseStatus": "needs-review",
       "allowedUse": "reference-only",
       "attribution": "Invalid URL by Test",
-      "reviewStatus": "candidate"
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
     }
   ]
 }

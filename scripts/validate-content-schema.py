@@ -432,12 +432,11 @@ def _build_schemas():
         "required": [
             "id", "title", "url", "owner", "resourceType",
             "licenseStatus", "allowedUse", "attribution",
-            "reviewStatus",
+            "reviewStatus", "notes",
         ],
         "optional": [
             "canonicalUrl", "languageRelevance", "regionalRelevance",
             "scriptRelevance", "attributionInstructions",
-            "notes",
         ],
         "field_types": {
             "id": str, "title": str, "url": str, "owner": str,
@@ -1069,6 +1068,7 @@ def _minimal_resource(**overrides):
         "allowedUse": "reference-only",
         "reviewStatus": "candidate",
         "attribution": "Test Resource (https://example.org/test) by Test Owner",
+        "notes": "Metadata-only reference.",
     }
     data.update(overrides)
     return data

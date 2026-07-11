@@ -9,7 +9,8 @@
       "licenseStatus": "approved-but-not",
       "allowedUse": "reference-only",
       "attribution": "Invalid License Status by Test",
-      "reviewStatus": "candidate"
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
     }
   ]
 }

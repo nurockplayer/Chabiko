@@ -9,7 +9,8 @@
       "licenseStatus": "needs-review",
       "allowedUse": "copy-anything",
       "attribution": "Invalid Allowed Use by Test",
-      "reviewStatus": "candidate"
+      "reviewStatus": "candidate",
+      "notes": "Test fixture."
     }
   ]
 }
