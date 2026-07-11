@@ -677,6 +677,7 @@ def run_tests():
         test_resource_url_non_string,
         test_resource_canonical_url_valid,
         test_resource_canonical_url_invalid,
+        test_resource_missing_notes,
         test_resource_bundle_with_resources,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
@@ -1104,6 +1105,11 @@ def test_resource_missing_review_status():
 def test_resource_missing_attribution():
     errs = validate_single(_minimal_resource(attribution=None), "resource")
     _assert_has_error(errs, "required field", "resource_no_attribution")
+
+
+def test_resource_missing_notes():
+    errs = validate_single(_minimal_resource(notes=None), "resource")
+    _assert_has_error(errs, "required field", "resource_no_notes")
 
 
 def test_resource_invalid_license_status():
