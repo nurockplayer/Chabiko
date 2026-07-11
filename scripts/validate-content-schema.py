@@ -187,10 +187,15 @@ def _check_pain_point_context(record: dict, path: str) -> list[str]:
             )
 
     if "kanji-false-friend" in tag_set:
-        if not record.get("caution"):
+        has_explanation = bool(record.get("caution")) or bool(record.get("usageNotesJa"))
+        # Lesson-type items may use kanjiBridgeNotes instead of caution
+        kanji_bridge = record.get("kanjiBridgeNotes", [])
+        if isinstance(kanji_bridge, list) and len(kanji_bridge) > 0:
+            has_explanation = True
+        if not has_explanation:
             errors.append(
                 f"{path}: 'painPointTags' contains 'kanji-false-friend' but "
-                f"'caution' field is missing — should explain the meaning difference"
+                f"neither 'caution', 'usageNotesJa', nor 'kanjiBridgeNotes' explains the meaning difference"
             )
 
     if "traditional-simplified" in tag_set:
@@ -252,6 +257,7 @@ def _build_schemas():
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
+            "travelScenario": VALID_SCENARIOS,
             "reviewStatus": VALID_REVIEW_STATUSES,
         },
         "extra_validators": [
@@ -479,11 +485,9 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
         if schema_type is None:
             if key in ALLOWED_TOP_KEYS:
                 continue
-            if isinstance(value, list):
-                errors.append(
-                    f"{collection_path}: unrecognized content collection '{key}' "
-                    f"(not one of {sorted(COLLECTION_MAP.keys())})"
-                )
+            errors.append(
+                f"{collection_path}: unrecognized top-level key '{key}'"
+            )
             continue
 
         if not isinstance(value, list):
@@ -529,12 +533,16 @@ def run_tests():
         test_lesson_invalid_review_status,
         test_lesson_unknown_field,
         test_lesson_taiwan_usage_needs_context,
+        test_lesson_invalid_travel_scenario,
+        test_lesson_false_friend_with_kanji_bridge,
+        test_lesson_false_friend_without_context,
 
         # ─── Vocabulary ───
         test_vocab_valid,
         test_vocab_missing_required,
         test_vocab_invalid_script_status,
         test_vocab_invalid_similarity_type,
+        test_vocab_similarity_type_non_string,
         test_vocab_generated_not_production,
         test_vocab_missing_caution_for_false_friend,
         test_vocab_missing_caution_for_taiwan_usage,
@@ -562,6 +570,8 @@ def run_tests():
         test_bundle_invalid_item,
         test_bundle_non_collection_keys_ok,
         test_bundle_unknown_collection_fails,
+        test_bundle_object_key_fails,
+        test_bundle_unknown_string_key_fails,
 
         # ─── Pain point tags ───
         test_pain_point_tags_valid,
@@ -631,6 +641,12 @@ def test_lesson_invalid_level():
     _assert_has_error(errs, "not valid", "lesson_level")
 
 
+def test_lesson_invalid_travel_scenario():
+    """travelScenario must be from VALID_SCENARIOS."""
+    errs = validate_single(_minimal_lesson(travelScenario="travel"), "lesson")
+    _assert_has_error(errs, "not valid", "lesson_travel_scenario")
+
+
 def test_lesson_invalid_review_status():
     errs = validate_single(_minimal_lesson(reviewStatus="approved"), "lesson")
     _assert_has_error(errs, "not valid", "lesson_review")
@@ -649,6 +665,28 @@ def test_lesson_taiwan_usage_needs_context():
     )
     _assert_has_error(errs, "painPointTags", "lesson_taiwan_context")
     _assert_has_error(errs, "neither", "lesson_taiwan_context")
+
+
+def test_lesson_false_friend_with_kanji_bridge():
+    """Lesson with kanji-false-friend and non-empty kanjiBridgeNotes should pass."""
+    errs = validate_single(
+        _minimal_lesson(
+            painPointTags=["kanji-false-friend"],
+            kanjiBridgeNotes=[{"kanji": "手紙", "jpReading": "てがみ", "noteJa": "日本語の手紙≠中国語の手紙"}],
+        ),
+        "lesson",
+    )
+    _assert_no_errors(errs, "lesson_false_friend_kanji_bridge")
+
+
+def test_lesson_false_friend_without_context():
+    """Lesson with kanji-false-friend and no explanation should fail."""
+    errs = validate_single(
+        _minimal_lesson(painPointTags=["kanji-false-friend"]),
+        "lesson",
+    )
+    _assert_has_error(errs, "kanji-false-friend", "lesson_false_friend_no_context")
+    _assert_has_error(errs, "kanjiBridgeNotes", "lesson_false_friend_no_context")
 
 
 # ─── Vocabulary tests ──────────────────────────────────────────────────────
@@ -686,6 +724,12 @@ def test_vocab_invalid_script_status():
 def test_vocab_invalid_similarity_type():
     errs = validate_single(_minimal_vocab(similarityType="exact-match"), "vocabulary")
     _assert_has_error(errs, "not valid", "vocab_similarity")
+
+
+def test_vocab_similarity_type_non_string():
+    """similarityType must be a string, not a number."""
+    errs = validate_single(_minimal_vocab(similarityType=123), "vocabulary")
+    _assert_has_error(errs, "must be str", "vocab_similarity_type")
 
 
 def test_vocab_generated_not_production():
@@ -872,10 +916,24 @@ def test_bundle_non_collection_keys_ok():
 
 
 def test_bundle_unknown_collection_fails():
-    """Unknown collection keys that look like lists must be rejected."""
+    """Unknown top-level keys must be rejected."""
     data = {"vocabularies_typo": [_minimal_vocab()]}
     errs = validate_bundle(data)
     _assert_has_error(errs, "unrecognized", "bundle_unknown_collection")
+
+
+def test_bundle_object_key_fails():
+    """Unknown top-level key with dict value must also be rejected."""
+    data = {"lesson": {"id": "x"}}
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "unrecognized", "bundle_object_key")
+
+
+def test_bundle_unknown_string_key_fails():
+    """Unknown top-level key with string value must also be rejected."""
+    data = {"vocab": "should fail"}
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "unrecognized", "bundle_unknown_string")
 
 
 # ─── Pain point tag tests ──────────────────────────────────────────────────
