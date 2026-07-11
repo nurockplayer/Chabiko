@@ -263,12 +263,13 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 
 
 def _check_resource_url(record: dict, path: str) -> list[str]:
-    """Validate that url starts with http:// or https://."""
+    """Validate that url and canonicalUrl start with http:// or https://."""
     errors = []
-    url = record.get("url")
-    if url is not None and isinstance(url, str):
-        if not (url.startswith("http://") or url.startswith("https://")):
-            errors.append(f"{path}.url must start with 'http://' or 'https://'")
+    for field in ("url", "canonicalUrl"):
+        value = record.get(field)
+        if value is not None and isinstance(value, str):
+            if not (value.startswith("http://") or value.startswith("https://")):
+                errors.append(f"{path}.{field} must start with 'http://' or 'https://'")
     return errors
 
 
@@ -675,6 +676,8 @@ def run_tests():
         test_resource_url_http_allowed,
         test_resource_url_empty_string,
         test_resource_url_non_string,
+        test_resource_canonical_url_valid,
+        test_resource_canonical_url_invalid,
         test_resource_bundle_with_resources,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
@@ -1167,6 +1170,18 @@ def test_resource_url_non_string():
     """Non-string url gets type error."""
     errs = validate_single(_minimal_resource(url=42), "resource")
     _assert_has_error(errs, "must be str", "resource_url_type")
+
+
+def test_resource_canonical_url_valid():
+    """canonicalUrl with https:// should pass."""
+    errs = validate_single(_minimal_resource(canonicalUrl="https://canonical.example"), "resource")
+    _assert_no_errors(errs, "resource_canonical_url_valid")
+
+
+def test_resource_canonical_url_invalid():
+    """canonicalUrl with ftp:// should fail."""
+    errs = validate_single(_minimal_resource(canonicalUrl="ftp://canonical.example"), "resource")
+    _assert_has_error(errs, "must start with", "resource_canonical_url_invalid")
 
 
 def test_resource_bundle_with_resources():
