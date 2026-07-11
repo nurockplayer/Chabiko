@@ -244,16 +244,21 @@ def _build_schemas():
         "required": [
             "id", "titleJa", "level", "canDoJa", "learnerOutcomeJa",
             "hookJa", "travelScenario", "coreSentence", "reviewStatus",
+            "chunks", "kanjiBridgeNotes", "soundFocus",
+            "reviewPrompts", "travelTask",
         ],
         "optional": [
-            "sections", "chunks", "kanjiBridgeNotes", "soundFocus",
-            "examples", "reviewPrompts", "travelTask", "relatedVocabulary",
+            "sections", "examples", "relatedVocabulary",
             "painPointTags",
         ],
         "field_types": {
             "id": str, "titleJa": str, "level": str, "canDoJa": str,
             "learnerOutcomeJa": str, "hookJa": str, "travelScenario": str,
             "coreSentence": str, "reviewStatus": str,
+            "sections": list, "chunks": list, "kanjiBridgeNotes": list,
+            "soundFocus": list, "examples": list, "reviewPrompts": list,
+            "travelTask": str, "relatedVocabulary": list,
+            "painPointTags": list,
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
@@ -282,10 +287,12 @@ def _build_schemas():
             "id": str, "pinyin": str, "japanese": str, "kana": str,
             "category": str, "reviewStatus": str,
             "similarityType": str,
+            "travelScenario": str,
             "examples": list, "painPointTags": list,
         },
         "controlled_fields": {
             "similarityType": VALID_SIMILARITY_TYPES,
+            "travelScenario": VALID_SCENARIOS,
             "reviewStatus": VALID_REVIEW_STATUSES,
         },
         "extra_validators": [
@@ -312,10 +319,11 @@ def _build_schemas():
         "field_types": {
             "id": str, "pinyin": str, "japanese": str,
             "scenario": str, "reviewStatus": str,
-            "soundFocus": list, "relatedVocabulary": list,
+            "soundFocus": list, "travelTask": str, "relatedVocabulary": list,
             "painPointTags": list,
         },
         "controlled_fields": {
+            "scenario": VALID_SCENARIOS,
             "reviewStatus": VALID_REVIEW_STATUSES,
         },
         "extra_validators": [
@@ -529,13 +537,22 @@ def run_tests():
         # ─── Lesson ───
         test_lesson_valid,
         test_lesson_missing_required,
+        test_lesson_missing_chunks,
+        test_lesson_missing_kanji_bridge,
+        test_lesson_missing_sound_focus,
+        test_lesson_missing_review_prompts,
+        test_lesson_missing_travel_task,
         test_lesson_invalid_level,
+        test_lesson_invalid_travel_scenario,
         test_lesson_invalid_review_status,
         test_lesson_unknown_field,
         test_lesson_taiwan_usage_needs_context,
         test_lesson_invalid_travel_scenario,
         test_lesson_false_friend_with_kanji_bridge,
         test_lesson_false_friend_without_context,
+        test_lesson_chunks_type_string_fails,
+        test_lesson_sound_focus_type_string_fails,
+        test_lesson_travel_task_type_list_fails,
 
         # ─── Vocabulary ───
         test_vocab_valid,
@@ -548,11 +565,13 @@ def run_tests():
         test_vocab_missing_caution_for_taiwan_usage,
         test_vocab_source_required_for_published,
         test_vocab_source_not_required_for_draft,
+        test_vocab_travel_scenario_controlled,
 
         # ─── Sentence ───
         test_sentence_valid,
         test_sentence_missing_required,
         test_sentence_false_friend_with_caution,
+        test_sentence_scenario_controlled,
 
         # ─── Phrasebook ───
         test_phrasebook_valid,
@@ -621,6 +640,11 @@ def _minimal_lesson(**overrides):
         "travelScenario": "food",
         "coreSentence": "我要這個",
         "reviewStatus": "draft",
+        "chunks": [],
+        "kanjiBridgeNotes": [],
+        "soundFocus": [],
+        "reviewPrompts": [],
+        "travelTask": "練習してみよう",
     }
     data.update(overrides)
     return data
@@ -629,6 +653,49 @@ def _minimal_lesson(**overrides):
 def test_lesson_valid():
     errs = validate_single(_minimal_lesson(), "lesson")
     _assert_no_errors(errs, "lesson_valid")
+
+
+def test_lesson_missing_chunks():
+    errs = validate_single(_minimal_lesson(chunks=None), "lesson")
+    _assert_has_error(errs, "required field", "lesson_missing_chunks")
+
+
+def test_lesson_missing_kanji_bridge():
+    errs = validate_single(_minimal_lesson(kanjiBridgeNotes=None), "lesson")
+    _assert_has_error(errs, "required field", "lesson_missing_kanji_bridge")
+
+
+def test_lesson_missing_sound_focus():
+    errs = validate_single(_minimal_lesson(soundFocus=None), "lesson")
+    _assert_has_error(errs, "required field", "lesson_missing_sound_focus")
+
+
+def test_lesson_missing_review_prompts():
+    errs = validate_single(_minimal_lesson(reviewPrompts=None), "lesson")
+    _assert_has_error(errs, "required field", "lesson_missing_review_prompts")
+
+
+def test_lesson_missing_travel_task():
+    errs = validate_single(_minimal_lesson(travelTask=None), "lesson")
+    _assert_has_error(errs, "required field", "lesson_missing_travel_task")
+
+
+def test_lesson_chunks_type_string_fails():
+    """chunks must be a list, not a string."""
+    errs = validate_single(_minimal_lesson(chunks="not-a-list"), "lesson")
+    _assert_has_error(errs, "must be list", "lesson_chunks_type")
+
+
+def test_lesson_sound_focus_type_string_fails():
+    """soundFocus must be a list, not a string."""
+    errs = validate_single(_minimal_lesson(soundFocus="not-a-list"), "lesson")
+    _assert_has_error(errs, "must be list", "lesson_soundfocus_type")
+
+
+def test_lesson_travel_task_type_list_fails():
+    """travelTask must be a string, not a list."""
+    errs = validate_single(_minimal_lesson(travelTask=["not-a-string"]), "lesson")
+    _assert_has_error(errs, "must be str", "lesson_traveltask_type")
 
 
 def test_lesson_missing_required():
@@ -756,6 +823,11 @@ def test_vocab_missing_caution_for_taiwan_usage():
     _assert_has_error(errs, "caution", "vocab_no_caution_taiwan")
 
 
+def test_vocab_travel_scenario_controlled():
+    errs = validate_single(_minimal_vocab(travelScenario="weather"), "vocabulary")
+    _assert_has_error(errs, "not valid", "vocab_travel_scenario")
+
+
 def test_vocab_source_required_for_published():
     """reviewed/published content must have source."""
     errs = validate_single(
@@ -810,6 +882,12 @@ def test_sentence_false_friend_with_caution():
         "sentence",
     )
     _assert_no_errors(errs, "sentence_false_friend_caution")
+
+
+def test_sentence_scenario_controlled():
+    """Sentence scenario must be from VALID_SCENARIOS."""
+    errs = validate_single(_minimal_sentence(scenario="weather"), "sentence")
+    _assert_has_error(errs, "not valid", "sentence_scenario")
 
 
 # ─── Phrasebook tests ──────────────────────────────────────────────────────
