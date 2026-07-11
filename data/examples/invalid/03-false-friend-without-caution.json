@@ -1,0 +1,17 @@
+{
+  "vocabulary": [
+    {
+      "id": "voc-bad-003",
+      "traditional": "手紙",
+      "traditionalStatus": "authored",
+      "simplified": "手纸",
+      "simplifiedStatus": "verified",
+      "pinyin": "shǒuzhǐ",
+      "japanese": "トイレットペーパー",
+      "kana": "トイレットペーパー",
+      "category": "daily-necessity",
+      "painPointTags": ["kanji-false-friend"],
+      "reviewStatus": "draft"
+    }
+  ]
+}

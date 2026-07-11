@@ -1,0 +1,38 @@
+{
+  "vocabulary": [
+    {
+      "id": "voc-001",
+      "traditional": "謝謝",
+      "traditionalStatus": "authored",
+      "simplified": "谢谢",
+      "simplifiedStatus": "verified",
+      "pinyin": "xièxie",
+      "japanese": "ありがとう",
+      "kana": "ありがとう",
+      "category": "greeting",
+      "similarityType": "none",
+      "toneNote": "xiè は第四声（急降下）。重ね言葉で二文字目は軽声になる。",
+      "examples": [
+        {"traditional": "謝謝你", "pinyin": "xièxie nǐ", "japanese": "ありがとう（あなたに）"}
+      ],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "voc-002",
+      "traditional": "這個",
+      "traditionalStatus": "authored",
+      "simplified": "这个",
+      "simplifiedStatus": "verified",
+      "pinyin": "zhège",
+      "japanese": "これ",
+      "kana": "これ",
+      "category": "demonstrative",
+      "toneNote": "「這 zhè」は第四声。会話では「zhèi」と発音されることもある。",
+      "painPointTags": ["pinyin-pronunciation"],
+      "caution": "日本語の「これ」と似ているが、中国語の「這個」は名詞の前に置く（這個東西＝これ）。",
+      "travelScenario": "food",
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "自作者による基本語彙"}
+    }
+  ]
+}

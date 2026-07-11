@@ -1,0 +1,16 @@
+{
+  "phrasebook": [
+    {
+      "id": "phrase-bad-002",
+      "scenario": "food",
+      "traditional": "我要一杯珍珠奶茶",
+      "traditionalStatus": "authored",
+      "simplified": "我要一杯珍珠奶茶",
+      "simplifiedStatus": "verified",
+      "pinyin": "wǒ yào yī bēi zhēnzhū nǎichá",
+      "japanese": "タピオカミルクティーを一杯ください",
+      "painPointTags": ["taiwan-mainland-usage"],
+      "reviewStatus": "draft"
+    }
+  ]
+}

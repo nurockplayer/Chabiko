@@ -40,12 +40,24 @@ Content validators use **uv** (Python 3.14+). Run them from the repo root:
 # Run all validator self-tests
 uv run python scripts/validate-pain-points.py
 uv run python scripts/validate-script-status.py
+uv run python scripts/validate-content-schema.py
 
 # Validate a content file against the pain-point taxonomy
 uv run python scripts/validate-pain-points.py --check <file>
 
 # Validate a content file for script provenance fields
 uv run python scripts/validate-script-status.py --check <file>
+
+# Validate a content file against the full content schema
+# (covers Lesson, Vocabulary, Sentence, Phrasebook, Practice)
+uv run python scripts/validate-content-schema.py --check <file>
+
+# Validate all seed examples
+uv run python scripts/validate-content-schema.py --check data/examples/valid/lessons.json
+uv run python scripts/validate-content-schema.py --check data/examples/valid/vocabulary.json
+uv run python scripts/validate-content-schema.py --check data/examples/valid/sentences.json
+uv run python scripts/validate-content-schema.py --check data/examples/valid/phrasebook.json
+uv run python scripts/validate-content-schema.py --check data/examples/valid/practice.json
 ```
 
 No additional dependencies are required — the validators are zero-dependency Python 3.
@@ -110,6 +122,10 @@ The Docker image provides **uv** for Python content validation. These work immed
 ```bash
 docker compose run --rm app uv run python scripts/validate-pain-points.py
 docker compose run --rm app uv run python scripts/validate-script-status.py
+docker compose run --rm app uv run python scripts/validate-content-schema.py
+
+# Validate seed examples via Docker
+docker compose run --rm app uv run python scripts/validate-content-schema.py --check data/examples/valid/lessons.json
 ```
 
 ### Notes

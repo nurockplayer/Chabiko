@@ -1,0 +1,22 @@
+{
+  "sentences": [
+    {
+      "id": "sentence-001",
+      "traditional": "請問到台北車站要怎麼走？",
+      "traditionalStatus": "authored",
+      "simplified": "请问到台北车站要怎么走？",
+      "simplifiedStatus": "verified",
+      "pinyin": "Qǐngwèn dào Táiběi Chēzhàn yào zěnme zǒu?",
+      "japanese": "台北駅までどうやって行きますか？",
+      "scenario": "transport",
+      "notesJa": "「請問」は「すみません、お尋ねします」の丁寧表現。「怎麼走」は「どう行くか」。",
+      "soundFocus": [
+        {"item": "請 qǐng", "noteJa": "第三声＋第二声。q は日本語の「チ」に近いが、舌を盛り上げる。"}
+      ],
+      "travelTask": "この表現を使って駅員に道を尋ねる練習をする",
+      "relatedVocabulary": ["voc-001"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "自作者による旅行フレーズ"}
+    }
+  ]
+}

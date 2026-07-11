@@ -1,0 +1,13 @@
+{
+  "phrasebook": [
+    {
+      "id": "phrase-bad-001",
+      "scenario": "weather",
+      "traditional": "你好",
+      "traditionalStatus": "authored",
+      "pinyin": "nǐhǎo",
+      "japanese": "こんにちは",
+      "reviewStatus": "draft"
+    }
+  ]
+}
