@@ -437,6 +437,10 @@ def _build_schemas():
         "optional": [
             "canonicalUrl", "languageRelevance", "regionalRelevance",
             "scriptRelevance", "attributionInstructions",
+            "productionImportAllowed", "commercialUseAllowed",
+            "modificationAllowed", "redistributionAllowed",
+            "attributionRequired", "licenseName", "licenseUrl",
+            "reviewedBy", "reviewedDate",
         ],
         "field_types": {
             "id": str, "title": str, "url": str, "owner": str,
@@ -446,6 +450,13 @@ def _build_schemas():
             "languageRelevance": str, "regionalRelevance": str,
             "scriptRelevance": str, "reviewStatus": str,
             "attributionInstructions": str, "notes": str,
+            "productionImportAllowed": bool,
+            "commercialUseAllowed": bool,
+            "modificationAllowed": bool,
+            "redistributionAllowed": bool,
+            "attributionRequired": bool,
+            "licenseName": str, "licenseUrl": str,
+            "reviewedBy": str, "reviewedDate": str,
         },
         "controlled_fields": {
             "resourceType": VALID_RESOURCE_TYPES,
@@ -659,6 +670,7 @@ def run_tests():
         # ─── Resource ───
         test_resource_valid,
         test_resource_valid_with_notes,
+        test_resource_policy_fields_valid,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
         test_resource_missing_review_status,
@@ -1085,6 +1097,22 @@ def test_resource_valid():
 def test_resource_valid_with_notes():
     errs = validate_single(_minimal_resource(notes="Optional note"), "resource")
     _assert_no_errors(errs, "resource_with_notes")
+
+
+def test_resource_policy_fields_valid():
+    record = _minimal_resource(
+        productionImportAllowed=False,
+        commercialUseAllowed=False,
+        modificationAllowed=False,
+        redistributionAllowed=False,
+        attributionRequired=True,
+        attributionInstructions="Credit the source owner.",
+        licenseName="Example License",
+        licenseUrl="https://example.org/license",
+        reviewedBy="content-reviewer",
+        reviewedDate="2026-07-12",
+    )
+    _assert_no_errors(validate_single(record, "resource"), "resource_policy_fields_valid")
 
 
 def test_resource_missing_license_status():
