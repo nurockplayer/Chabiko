@@ -1,0 +1,28 @@
+{
+  "resources": [
+    {
+      "id": "resource-duplicate-001",
+      "title": "First Duplicate Resource",
+      "url": "https://example.org/duplicate-first",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "First Duplicate Resource by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture for duplicate resource IDs."
+    },
+    {
+      "id": "resource-duplicate-001",
+      "title": "Second Duplicate Resource",
+      "url": "https://example.org/duplicate-second",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "attribution": "Second Duplicate Resource by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture for duplicate resource IDs."
+    }
+  ]
+}
