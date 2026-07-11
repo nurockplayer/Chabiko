@@ -19,6 +19,7 @@ Usage:
 
 import json
 import sys
+from urllib.parse import urlparse
 
 # ─── Controlled vocabularies ───────────────────────────────────────────────
 
@@ -263,13 +264,20 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 
 
 def _check_resource_url(record: dict, path: str) -> list[str]:
-    """Validate that url and canonicalUrl start with http:// or https://."""
+    """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
     for field in ("url", "canonicalUrl"):
         value = record.get(field)
         if value is not None and isinstance(value, str):
             if not (value.startswith("http://") or value.startswith("https://")):
                 errors.append(f"{path}.{field} must start with 'http://' or 'https://'")
+            try:
+                parsed = urlparse(value)
+                hostname = parsed.hostname
+            except ValueError:
+                hostname = None
+            if not hostname:
+                errors.append(f"{path}.{field} must include a non-empty hostname")
     return errors
 
 
@@ -637,11 +645,19 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             errors.append(f"{collection_path}: expected a list of {schema_type} items")
             continue
 
+        seen_resource_ids = set() if key == "resources" else None
         for i, item in enumerate(value):
             if not isinstance(item, dict):
                 errors.append(f"{collection_path}[{i}]: expected a JSON object")
                 continue
             item_path = f"{collection_path}[{i}]"
+            if seen_resource_ids is not None:
+                resource_id = item.get("id")
+                if isinstance(resource_id, str):
+                    if resource_id in seen_resource_ids:
+                        errors.append(f"{item_path}: duplicate resource id '{resource_id}'")
+                    else:
+                        seen_resource_ids.add(resource_id)
             errors.extend(validate_single(item, schema_type, item_path))
 
     return errors
@@ -740,6 +756,8 @@ def run_tests():
         test_resource_invalid_review_status,
         test_resource_invalid_url,
         test_resource_url_ftp_fails,
+        test_resource_url_without_hostname_fails,
+        test_resource_invalid_relevance_values_fail,
         test_resource_unknown_field,
         test_resource_notes_wrong_type,
         test_resource_url_https_allowed,
@@ -750,6 +768,7 @@ def run_tests():
         test_resource_canonical_url_invalid,
         test_resource_missing_notes,
         test_resource_bundle_with_resources,
+        test_resource_duplicate_ids_fail,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
 
@@ -1280,6 +1299,21 @@ def test_resource_url_ftp_fails():
     _assert_has_error(errs, "must start with", "resource_url_ftp")
 
 
+def test_resource_url_without_hostname_fails():
+    errs = validate_single(_minimal_resource(url="https://"), "resource")
+    _assert_has_error(errs, "hostname", "resource_url_no_hostname")
+
+
+def test_resource_invalid_relevance_values_fail():
+    for field, value in (
+        ("languageRelevance", "invalid"),
+        ("regionalRelevance", "invalid"),
+        ("scriptRelevance", "invalid"),
+    ):
+        errs = validate_single(_minimal_resource(**{field: value}), "resource")
+        _assert_has_error(errs, "not valid", f"resource_{field}_invalid")
+
+
 def test_resource_unknown_field():
     errs = validate_single(_minimal_resource(randomField="xyz"), "resource")
     _assert_has_error(errs, "unknown field", "resource_unknown")
@@ -1334,6 +1368,12 @@ def test_resource_bundle_with_resources():
     }
     errs = validate_bundle(data)
     _assert_no_errors(errs, "bundle_with_resources")
+
+
+def test_resource_duplicate_ids_fail():
+    data = {"resources": [_minimal_resource(), _minimal_resource()]}
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate resource id", "resource_duplicate_id")
 
 
 def test_resource_bundle_invalid_resource():
