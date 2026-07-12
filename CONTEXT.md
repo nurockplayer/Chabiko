@@ -194,39 +194,15 @@ The persistent record associated with an Issue Fingerprint. Repeated detections 
 
 ## Content Source of Truth
 
-The complete structured learning content and its authoritative version history stored in Git. Git is the source used to reconstruct past content. Lightweight revision metadata may reference Git commits but does not replace or duplicate the canonical content.
+The complete structured learning content and its authoritative version history stored in Git. Git is used to inspect, compare, and restore ordinary AI-managed content changes. Chabiko does not maintain a separate node-level revision ledger for ordinary AI edits.
 
-## Semantic Revision
+## AI Change History
 
-A change that can alter learner interpretation, linguistic correctness, pedagogy, answer evaluation, regional naturalness, examination mapping, safety, or any other meaning-bearing behavior of a Reviewable Content Node. Every Semantic Revision must create a Content Revision record and must pass all applicable Review Lock checks and the Automated Publication Gate.
-
-## Mechanical Revision
-
-A change that does not affect the meaning or learner-facing behavior of a Reviewable Content Node, such as deterministic serialization formatting or whitespace normalization. Mechanical Revisions remain visible in Git history but do not create Content Revision records. A change must be treated as semantic whenever classification is uncertain.
-
-## Content Revision
-
-A lightweight node-level metadata record created for each Semantic Revision. The initial record contains the Reviewable Content Node identifier, content hashes before and after the change, actor identity or actor type, model version when applicable, prompt version, validator version, related Issue Fingerprints, and creation time. It does not store a complete duplicate of the content; the corresponding full versions remain in Git. When stored in a Revision Manifest committed with the content change, the containing Git commit is the authoritative commit identifier and does not need to be duplicated inside the record.
-
-## Revision Ledger
-
-The append-only, Git-tracked collection of Revision Manifests for Semantic Revisions. Automated agents may add new ledger entries but must not rewrite or delete existing entries. Git history and repository protections provide the authoritative audit trail.
-
-## Revision Manifest
-
-One machine-readable manifest created for a content-maintenance batch. It contains a stable batch or workflow-run identifier and one Content Revision entry for each Semantic Revision in that batch. The manifest is committed together with the corresponding content changes. Because a Git commit cannot contain its own final commit SHA without creating a self-reference, the containing commit supplies that identity; the manifest may instead record the input or parent commit and workflow-run identifier.
-
-## Atomic Content Revision Commit
-
-A Git commit that contains both the Semantic Revisions and their required Revision Manifest. Deterministic Validators must reject a semantic content change without a matching ledger entry, a ledger entry without a matching content diff, or hashes that do not match the committed node content.
-
-## Derived Revision Index
-
-An optional searchable database or other index projected from the Revision Ledger. It exists only for query performance and user interfaces, may be rebuilt completely from Git, and must never become an independent source of truth.
+The ordinary history of additions and modifications made to AI-Managed Content. It is recorded through Git commits and, when used, pull-request or workflow summaries. Commit metadata may identify the responsible agent, models, broad reason, and affected nodes, but no separate Content Revision record is required.
 
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, deduplicate recurring findings by Issue Fingerprint, create Content Revision metadata for every Semantic Revision, and commit required Revision Manifests atomically with their corresponding content changes.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, and deduplicate recurring findings by Issue Fingerprint. Ordinary AI edits rely on Git for change history; formal node-level history is reserved for human review and Revision Decisions.
 
 ## Kanji Bridge
 
