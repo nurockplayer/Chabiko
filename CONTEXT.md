@@ -44,9 +44,25 @@ A concrete situation in which learners can use what they study. Taiwan travel is
 
 A practical learning path built around Taiwan travel situations. It supports the core Mandarin curriculum by turning learned language into concrete tasks; it does not define the full scope of Chabiko.
 
+## Shared Mandarin Core
+
+The region-independent language ability represented by a Capability Unit before a Learning Path selects a regional standard. It captures shared meaning and transferable ability without pretending that all vocabulary, pronunciation, or usage is identical across regions.
+
+## Language Variant
+
+A regional standard of Mandarin that governs natural vocabulary, pronunciation, usage, examples, and accepted answers. Chabiko initially distinguishes Mainland Mandarin and Taiwan Mandarin. A Language Variant is not merely a writing-system conversion.
+
+## Path Language Standard
+
+The Language Variant designated as authoritative for a Learning Path. 中国語検定 and HSK paths use Mainland Mandarin as their standard; the Taiwan Travel Path uses Taiwan Mandarin. The designated standard controls default wording, pronunciation, audio, and answer evaluation.
+
+## Regional Realization
+
+A reviewed regional expression of a shared Capability Unit, including the natural word form, pronunciation, usage notes, and examples for a specific Language Variant. Regional Realizations may share meaning while differing substantially in wording or sound.
+
 ## Script Variant
 
-The Traditional or Simplified written form of Chinese learning content. Script choice may vary by learning path and learner goal without changing Chabiko's core identity as a Mandarin-learning product.
+The Traditional or Simplified written form of Chinese content. Script Variant describes orthography only and must not be used as a substitute for Language Variant. Automatic character conversion cannot determine natural regional vocabulary or pronunciation.
 
 ## Kanji Bridge
 
