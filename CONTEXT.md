@@ -172,9 +172,21 @@ The content-maintenance workflow in which models have distinct responsibilities 
 
 The unpublished state for AI-Managed Content that cannot pass the Asymmetric Multi-Model Workflow after permitted repair attempts, contains unresolved model disagreement, or otherwise lacks sufficient confidence for learner-facing use. Quarantined content must not be repeatedly published and withdrawn while agents disagree.
 
+## Repair Attempt
+
+One complete Authoring Agent revision followed by Critic Agent evaluation and all applicable Deterministic Validators for the same content version and failure set.
+
+## Repair Budget
+
+The maximum number of automatic Repair Attempts allowed before content enters Content Quarantine. The default budget is three attempts. Scheduled maintenance must skip quarantined content after the budget is exhausted rather than repeatedly consuming model calls.
+
+## Quarantine Requeue Trigger
+
+A substantive change that permits quarantined content to enter the workflow again. Valid triggers include a human content edit, an explicit human recheck request, a prompt or validator rule version change, an Authoring or Critic model version change, a new authoritative source, or a relevant examination or Language Variant rule update. Time passing or another hourly schedule run is not a valid trigger.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, and follow the Asymmetric Multi-Model Workflow rather than model voting.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, and skip quarantined content until a valid Quarantine Requeue Trigger occurs.
 
 ## Kanji Bridge
 
