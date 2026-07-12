@@ -22,6 +22,7 @@ export interface SoundFocus {
 
 export interface LessonExample {
   traditional: string;
+  simplified?: string;
   pinyin: string;
   japanese: string;
 }

@@ -12,5 +12,6 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.pnpm-store/
 .venv/
 __pycache__/

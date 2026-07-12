@@ -25,6 +25,22 @@ describe('loadLessons', () => {
     const bundle = loadLessons('data/examples/valid/lessons.json');
     expect(bundle.lessons[0].id).toBe('lesson-001');
   });
+
+  it('throws on invalid JSON with a descriptive message', () => {
+    expect(() => loadLessons('tests/fixtures/malformed.json')).toThrow(
+      /Failed to parse lesson bundle/,
+    );
+  });
+
+  it('throws on missing lessons array with a descriptive message', () => {
+    expect(() => loadLessons('tests/fixtures/missing-array.json')).toThrow(
+      /Invalid lesson bundle structure/,
+    );
+  });
+
+  it('throws when the file does not exist', () => {
+    expect(() => loadLessons('data/nonexistent.json')).toThrow();
+  });
 });
 
 describe('loadLessonById', () => {
@@ -36,6 +52,21 @@ describe('loadLessonById', () => {
 
   it('returns undefined for an unknown id', () => {
     const lesson = loadLessonById('lesson-999');
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when the file does not exist', () => {
+    const lesson = loadLessonById('lesson-001', 'data/nonexistent.json');
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when the file contains invalid JSON', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/malformed.json');
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when the bundle lacks a lessons array', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/missing-array.json');
     expect(lesson).toBeUndefined();
   });
 });
@@ -50,15 +81,5 @@ describe('learner shell uses fixture data', () => {
     expect(lesson!.hookJa.length).toBeGreaterThan(0);
     expect(lesson!.canDoJa.length).toBeGreaterThan(0);
     expect(lesson!.coreSentence.length).toBeGreaterThan(0);
-  });
-
-  it('returns fallback-safe undefined when fixture is missing', () => {
-    // Simulates the scenario where the lessons file is absent or empty
-    const lesson = loadLessonById('non-existent-lesson');
-    expect(lesson).toBeUndefined();
-
-    const bundle = loadLessons();
-    const missing = bundle.lessons.find((l) => l.id === '');
-    expect(missing).toBeUndefined();
   });
 });
