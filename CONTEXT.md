@@ -112,6 +112,18 @@ The human action that resolves a Revision Proposal by accepting it, rejecting it
 
 The auditable record of human review and revision decisions for a Reviewable Content Node. It records the reviewer, decision time, reason, previous version, accepted version, and supporting sources when applicable.
 
+## Reviewer
+
+An authorized human who may approve content only within explicitly assigned Review Scopes. Being a Reviewer does not imply authority over every language variant, explanation language, linguistic field, or examination mapping.
+
+## Review Scope
+
+A named area of review authority, such as Taiwan Mandarin, Mainland Mandarin, Japanese Explanation, Pronunciation, Grammar, 中国語検定 Mapping, or HSK Mapping. A review decision is valid only for scopes assigned to the Reviewer.
+
+## Scoped Review Status
+
+The review state attached to a Reviewable Content Node for one specific Review Scope. A node may be reviewed and locked for one scope while remaining AI-managed for other scopes.
+
 ## Automated Content Maintenance
 
 The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, and distinguish editable AI-managed material from human-reviewed material before applying any change.
