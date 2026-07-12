@@ -7,10 +7,9 @@ export interface Props {
   pinyin?: string;
   exampleSentence?: string;
   exampleJapanese?: string;
-  lessonId: string;
 }
 
-const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJapanese, lessonId } = Astro.props;
+const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJapanese } = Astro.props;
 ---
 
 <article class="lesson-card">
@@ -39,9 +38,10 @@ const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJa
   )}
 
   <div class="cta-wrapper">
-    <a href={`/lessons/${lessonId}/`} class="cta-button">
+    <span class="cta-button cta-button--disabled">
       このレッスンを始める →
-    </a>
+      <span class="cta-badge">準備中</span>
+    </span>
   </div>
 </article>
 
@@ -118,7 +118,9 @@ const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJa
     border-top: 1px solid var(--c-border);
   }
   .cta-button {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
     background: var(--c-accent);
     color: #fff;
     padding: var(--space-sm) var(--space-lg);
@@ -126,11 +128,16 @@ const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJa
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    transition: background 0.2s;
   }
-  .cta-button:hover {
-    background: var(--c-accent-hover);
-    text-decoration: none;
+  .cta-button--disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .cta-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
   }
 
   @media (width >= 768px) {
