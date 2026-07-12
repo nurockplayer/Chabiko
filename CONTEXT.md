@@ -162,7 +162,7 @@ An independent AI role responsible for adversarially reviewing content produced 
 
 ## Deterministic Validator
 
-A non-generative check that evaluates rules with reproducible outcomes, such as schema validity, identifier integrity, required fields, pinyin format, supported Script Variants, reference integrity, Review Lock preservation, and other machine-verifiable constraints. A mandatory validator failure always blocks publication.
+A non-generative check that evaluates rules with reproducible outcomes, such as schema validity, identifier integrity, required fields, pinyin format, supported Script Variants, reference integrity, Review Lock preservation, deletion eligibility, and other machine-verifiable constraints. A mandatory validator failure always blocks publication.
 
 ## Asymmetric Multi-Model Workflow
 
@@ -200,9 +200,21 @@ The complete structured learning content and its authoritative version history s
 
 The ordinary history of additions and modifications made to AI-Managed Content. It is recorded through Git commits and, when used, pull-request or workflow summaries. Commit metadata may identify the responsible agent, models, broad reason, and affected nodes, but no separate Content Revision record is required.
 
+## Stable Content Node Identity
+
+A Reviewable Content Node identifier is persistent after creation. Approved agents may create new identifiers and modify unlocked node content, but must not rename, recycle, or replace an existing identifier merely because the content is rewritten. References, learner state, review records, and Issue Fingerprints continue to identify the original node.
+
+## Directly Deletable Node
+
+An unlocked Reviewable Content Node that may be permanently removed because deterministic checks confirm that it has no references from Lessons, Exercises, Assessment Mappings, or other content, no learner progress or saved state, and no Human-Checked, Expert-Reviewed, Review Lock, or Review History record.
+
+## Deprecated Content Node
+
+A Reviewable Content Node that is no longer offered for new learner-facing use but must retain its identifier because it is referenced, has learner progress or saved state, or has human review records. Deprecation preserves existing interpretation and history without requiring a full split, merge, or replacement-lineage system in the first version.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, and deduplicate recurring findings by Issue Fingerprint. Ordinary AI edits rely on Git for change history; formal node-level history is reserved for human review and Revision Decisions.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, deduplicate recurring findings by Issue Fingerprint, preserve Stable Content Node Identity, directly delete only Directly Deletable Nodes, and deprecate protected or referenced nodes instead of removing them. Ordinary AI edits rely on Git for change history; formal node-level history is reserved for human review and Revision Decisions.
 
 ## Kanji Bridge
 
