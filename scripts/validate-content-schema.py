@@ -737,6 +737,7 @@ def run_tests():
         test_resource_license_url_uses_url_validation,
         test_resource_reviewed_date_requires_reviewer,
         test_resource_terminal_review_requires_metadata,
+        test_resource_approved_review_with_metadata_is_valid,
         test_resource_reviewed_date_requires_real_iso_date,
         test_resource_attribution_required_rejects_present_non_booleans,
         test_resource_attribution_required_needs_instructions,
@@ -1193,6 +1194,19 @@ def test_resource_terminal_review_requires_metadata():
         errs = validate_single(_minimal_resource(reviewStatus=status), "resource")
         _assert_has_error(errs, "reviewedBy", f"resource_{status}_reviewer")
         _assert_has_error(errs, "reviewedDate", f"resource_{status}_date")
+
+
+def test_resource_approved_review_with_metadata_is_valid():
+    errs = validate_single(
+        _minimal_resource(
+            licenseStatus="approved",
+            reviewStatus="approved",
+            reviewedBy="content-reviewer",
+            reviewedDate="2026-07-12",
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "resource_approved_review_with_metadata")
 
 
 def test_resource_reviewed_date_requires_real_iso_date():
