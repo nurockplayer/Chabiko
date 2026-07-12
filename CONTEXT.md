@@ -64,6 +64,14 @@ A reviewed regional expression of a shared Capability Unit, including the natura
 
 The Traditional or Simplified written form of Chinese content. Script Variant describes orthography only and must not be used as a substitute for Language Variant. Automatic character conversion cannot determine natural regional vocabulary or pronunciation.
 
+## Display Script Preference
+
+A learner-facing preference that controls whether Chinese text is rendered in Simplified or Traditional characters without changing the active Language Variant, pronunciation, vocabulary standard, audio, examples, or accepted answers.
+
+## Language Standard Selection
+
+The choice of Mainland Mandarin or Taiwan Mandarin as the learner's active regional standard. It is independent from Display Script Preference and is normally inherited from the selected Learning Path rather than changed by the ordinary script toggle.
+
 ## Kanji Bridge
 
 The deliberate use of Japanese kanji familiarity to help learners recognize and remember Mandarin vocabulary, while explicitly warning about pronunciation differences, semantic gaps, and false friends.
