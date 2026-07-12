@@ -216,10 +216,6 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `licenseStatus` (unknown / needs-review / approved / restricted / prohibited)
 - `allowedUse` (reference-only / attributed-use / non-commercial / commercial / citation)
 - `attributionInstructions` (optional)
-- `productionImportAllowed` (optional, boolean)
-- `commercialUseAllowed` (optional, boolean)
-- `modificationAllowed` (optional, boolean)
-- `redistributionAllowed` (optional, boolean)
 - `attributionRequired` (optional, boolean)
 - `licenseName` (optional, string)
 - `licenseUrl` (optional, URL string)
@@ -229,11 +225,11 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `attribution`
 - `notes`
 
-### Policy validation
+### License review metadata validation
 
-- `productionImportAllowed` may be `true` only when `licenseStatus` is `approved` or `restricted`.
-- `reviewStatus: approved` cannot be used with `licenseStatus: unknown` or `needs-review`.
-- Resources with `licenseStatus: prohibited`, an unreviewed license (`unknown` or `needs-review`), or `reviewStatus: rejected` cannot grant non-reference permission flags (`productionImportAllowed`, `commercialUseAllowed`, `modificationAllowed`, or `redistributionAllowed`).
+- `licenseUrl` requires a non-empty `licenseName` and must use the `http` or `https` scheme with a hostname.
 - `attributionRequired: true` requires non-empty `attributionInstructions`.
-- Resource `id` values must be unique within the resource registry.
-- `url` and `canonicalUrl` (when present) must use the `http` or `https` scheme and include a hostname.
+- `reviewedDate` requires non-empty `reviewedBy` and must be a real `YYYY-MM-DD` calendar date.
+- `reviewStatus: approved` and `reviewStatus: rejected` require both `reviewedBy` and `reviewedDate`.
+- `attributionRequired`, when present, must be a boolean.
+- `url`, `canonicalUrl`, and `licenseUrl` (when present) must use the `http` or `https` scheme and include a hostname.

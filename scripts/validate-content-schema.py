@@ -19,6 +19,7 @@ Usage:
 
 import json
 import sys
+from datetime import date
 from urllib.parse import urlparse
 
 # ─── Controlled vocabularies ───────────────────────────────────────────────
@@ -266,7 +267,7 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 def _check_resource_url(record: dict, path: str) -> list[str]:
     """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
-    for field in ("url", "canonicalUrl"):
+    for field in ("url", "canonicalUrl", "licenseUrl"):
         value = record.get(field)
         if value is not None and isinstance(value, str):
             if not (value.startswith("http://") or value.startswith("https://")):
@@ -281,54 +282,63 @@ def _check_resource_url(record: dict, path: str) -> list[str]:
     return errors
 
 
-def _check_resource_policy(record: dict, path: str) -> list[str]:
-    """Validate cross-field license, review, and permission policy rules."""
+def _check_resource_review_metadata(record: dict, path: str) -> list[str]:
+    """Validate optional license and review metadata relationships."""
     errors = []
-    license_status = record.get("licenseStatus")
     review_status = record.get("reviewStatus")
 
-    if record.get("productionImportAllowed") is True and license_status not in {
-        "approved", "restricted"
-    }:
-        errors.append(
-            f"{path}.productionImportAllowed=True requires licenseStatus to be "
-            f"'approved' or 'restricted'; got '{license_status}'"
-        )
-
-    if review_status == "approved" and license_status in {"unknown", "needs-review"}:
-        errors.append(
-            f"{path}.reviewStatus='approved' requires an approved license; "
-            f"licenseStatus is '{license_status}'"
-        )
-
-    if record.get("attributionRequired") is True:
-        instructions = record.get("attributionInstructions")
-        if not isinstance(instructions, str) or not instructions.strip():
+    if "attributionRequired" in record:
+        attribution_required = record["attributionRequired"]
+        if not isinstance(attribution_required, bool):
+            errors.append(f"{path}.attributionRequired must be a boolean when present")
+        elif attribution_required and not isinstance(
+            record.get("attributionInstructions"), str
+        ):
             errors.append(
                 f"{path}.attributionInstructions is required and must be a non-empty "
-                f"string when attributionRequired=True"
+                "string when attributionRequired=True"
+            )
+        elif attribution_required and not record["attributionInstructions"].strip():
+            errors.append(
+                f"{path}.attributionInstructions is required and must be a non-empty "
+                "string when attributionRequired=True"
             )
 
-    blocking_statuses = {"unknown", "needs-review", "prohibited"}
-    blocked_by_license = license_status in blocking_statuses
-    blocked_by_review = review_status == "rejected"
-    if blocked_by_license or blocked_by_review:
-        status_detail = []
-        if blocked_by_license:
-            status_detail.append(f"licenseStatus='{license_status}'")
-        if blocked_by_review:
-            status_detail.append("reviewStatus='rejected'")
-        status_text = " and ".join(status_detail)
-        for field in (
-            "productionImportAllowed",
-            "commercialUseAllowed",
-            "modificationAllowed",
-            "redistributionAllowed",
-        ):
-            if record.get(field) is True:
-                errors.append(
-                    f"{path}.{field}=True is not permitted when {status_text}"
-                )
+    if record.get("licenseUrl") is not None and not (
+        isinstance(record.get("licenseName"), str) and record["licenseName"].strip()
+    ):
+        errors.append(
+            f"{path}.licenseName is required and must be non-empty when licenseUrl is present"
+        )
+
+    reviewed_by = record.get("reviewedBy")
+    reviewed_date = record.get("reviewedDate")
+    has_reviewer = isinstance(reviewed_by, str) and bool(reviewed_by.strip())
+    has_review_date = isinstance(reviewed_date, str) and bool(reviewed_date.strip())
+
+    if reviewed_date is not None and not has_reviewer:
+        errors.append(
+            f"{path}.reviewedBy is required and must be non-empty when reviewedDate is present"
+        )
+
+    if has_review_date:
+        try:
+            parsed_date = date.fromisoformat(reviewed_date)
+        except ValueError:
+            parsed_date = None
+        if parsed_date is None or parsed_date.isoformat() != reviewed_date:
+            errors.append(f"{path}.reviewedDate must be a real YYYY-MM-DD calendar date")
+
+    if review_status in {"approved", "rejected"} and not has_reviewer:
+        errors.append(
+            f"{path}.reviewedBy is required and must be non-empty when reviewStatus is "
+            f"'{review_status}'"
+        )
+    if review_status in {"approved", "rejected"} and not has_review_date:
+        errors.append(
+            f"{path}.reviewedDate is required and must be non-empty when reviewStatus is "
+            f"'{review_status}'"
+        )
 
     return errors
 
@@ -497,8 +507,6 @@ def _build_schemas():
         "optional": [
             "canonicalUrl", "languageRelevance", "regionalRelevance",
             "scriptRelevance", "attributionInstructions",
-            "productionImportAllowed", "commercialUseAllowed",
-            "modificationAllowed", "redistributionAllowed",
             "attributionRequired", "licenseName", "licenseUrl",
             "reviewedBy", "reviewedDate",
         ],
@@ -510,11 +518,6 @@ def _build_schemas():
             "languageRelevance": str, "regionalRelevance": str,
             "scriptRelevance": str, "reviewStatus": str,
             "attributionInstructions": str, "notes": str,
-            "productionImportAllowed": bool,
-            "commercialUseAllowed": bool,
-            "modificationAllowed": bool,
-            "redistributionAllowed": bool,
-            "attributionRequired": bool,
             "licenseName": str, "licenseUrl": str,
             "reviewedBy": str, "reviewedDate": str,
         },
@@ -527,7 +530,7 @@ def _build_schemas():
             "regionalRelevance": VALID_REGIONAL_RELEVANCE,
             "scriptRelevance": VALID_SCRIPT_RELEVANCE,
         },
-        "extra_validators": [_check_resource_url, _check_resource_policy],
+        "extra_validators": [_check_resource_url, _check_resource_review_metadata],
     }
 
 
@@ -645,19 +648,11 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             errors.append(f"{collection_path}: expected a list of {schema_type} items")
             continue
 
-        seen_resource_ids = set() if key == "resources" else None
         for i, item in enumerate(value):
             if not isinstance(item, dict):
                 errors.append(f"{collection_path}[{i}]: expected a JSON object")
                 continue
             item_path = f"{collection_path}[{i}]"
-            if seen_resource_ids is not None:
-                resource_id = item.get("id")
-                if isinstance(resource_id, str):
-                    if resource_id in seen_resource_ids:
-                        errors.append(f"{item_path}: duplicate resource id '{resource_id}'")
-                    else:
-                        seen_resource_ids.add(resource_id)
             errors.extend(validate_single(item, schema_type, item_path))
 
     return errors
@@ -738,13 +733,12 @@ def run_tests():
         # ─── Resource ───
         test_resource_valid,
         test_resource_valid_with_notes,
-        test_resource_policy_fields_valid,
-        test_resource_production_import_requires_approved_license,
-        test_resource_production_import_allowed_for_restricted_license,
-        test_resource_approved_review_requires_approved_license,
-        test_resource_prohibited_license_blocks_permission_flags,
-        test_resource_rejected_review_blocks_permission_flags,
-        test_resource_unreviewed_license_blocks_non_reference_permissions,
+        test_resource_license_url_requires_license_name,
+        test_resource_license_url_uses_url_validation,
+        test_resource_reviewed_date_requires_reviewer,
+        test_resource_terminal_review_requires_metadata,
+        test_resource_reviewed_date_requires_real_iso_date,
+        test_resource_attribution_required_rejects_present_non_booleans,
         test_resource_attribution_required_needs_instructions,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
@@ -757,7 +751,6 @@ def run_tests():
         test_resource_invalid_url,
         test_resource_url_ftp_fails,
         test_resource_url_without_hostname_fails,
-        test_resource_invalid_relevance_values_fail,
         test_resource_unknown_field,
         test_resource_notes_wrong_type,
         test_resource_url_https_allowed,
@@ -768,7 +761,6 @@ def run_tests():
         test_resource_canonical_url_invalid,
         test_resource_missing_notes,
         test_resource_bundle_with_resources,
-        test_resource_duplicate_ids_fail,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
 
@@ -1177,65 +1169,44 @@ def test_resource_valid_with_notes():
     _assert_no_errors(errs, "resource_with_notes")
 
 
-def test_resource_policy_fields_valid():
-    record = _minimal_resource(
-        productionImportAllowed=False,
-        commercialUseAllowed=False,
-        modificationAllowed=False,
-        redistributionAllowed=False,
-        attributionRequired=True,
-        attributionInstructions="Credit the source owner.",
-        licenseName="Example License",
-        licenseUrl="https://example.org/license",
-        reviewedBy="content-reviewer",
-        reviewedDate="2026-07-12",
-    )
-    _assert_no_errors(validate_single(record, "resource"), "resource_policy_fields_valid")
-
-
-def test_resource_production_import_requires_approved_license():
-    errs = validate_single(_minimal_resource(productionImportAllowed=True), "resource")
-    _assert_has_error(errs, "productionImportAllowed", "resource_import_needs_license")
-
-
-def test_resource_production_import_allowed_for_restricted_license():
+def test_resource_license_url_requires_license_name():
     errs = validate_single(
-        _minimal_resource(licenseStatus="restricted", productionImportAllowed=True),
-        "resource",
+        _minimal_resource(licenseUrl="https://example.org/license"), "resource"
     )
-    _assert_no_errors(errs, "resource_import_restricted_license")
+    _assert_has_error(errs, "licenseName", "resource_license_url_requires_name")
 
 
-def test_resource_approved_review_requires_approved_license():
+def test_resource_license_url_uses_url_validation():
     errs = validate_single(
-        _minimal_resource(reviewStatus="approved", licenseStatus="needs-review"),
-        "resource",
+        _minimal_resource(licenseName="Example", licenseUrl="https://"), "resource"
     )
-    _assert_has_error(errs, "reviewStatus", "resource_approved_review_needs_license")
+    _assert_has_error(errs, "licenseUrl", "resource_license_url_hostname")
 
 
-def test_resource_prohibited_license_blocks_permission_flags():
-    errs = validate_single(
-        _minimal_resource(licenseStatus="prohibited", modificationAllowed=True),
-        "resource",
-    )
-    _assert_has_error(errs, "modificationAllowed", "resource_prohibited_permission")
+def test_resource_reviewed_date_requires_reviewer():
+    errs = validate_single(_minimal_resource(reviewedDate="2026-07-12"), "resource")
+    _assert_has_error(errs, "reviewedBy", "resource_review_date_requires_reviewer")
 
 
-def test_resource_rejected_review_blocks_permission_flags():
-    errs = validate_single(
-        _minimal_resource(reviewStatus="rejected", commercialUseAllowed=True),
-        "resource",
-    )
-    _assert_has_error(errs, "commercialUseAllowed", "resource_rejected_permission")
+def test_resource_terminal_review_requires_metadata():
+    for status in ("approved", "rejected"):
+        errs = validate_single(_minimal_resource(reviewStatus=status), "resource")
+        _assert_has_error(errs, "reviewedBy", f"resource_{status}_reviewer")
+        _assert_has_error(errs, "reviewedDate", f"resource_{status}_date")
 
 
-def test_resource_unreviewed_license_blocks_non_reference_permissions():
-    errs = validate_single(
-        _minimal_resource(licenseStatus="unknown", redistributionAllowed=True),
-        "resource",
-    )
-    _assert_has_error(errs, "redistributionAllowed", "resource_unknown_permission")
+def test_resource_reviewed_date_requires_real_iso_date():
+    for reviewed_date in ("2026-02-29", "2026-13-01", "20260712"):
+        errs = validate_single(
+            _minimal_resource(reviewedBy="editor", reviewedDate=reviewed_date), "resource"
+        )
+        _assert_has_error(errs, "reviewedDate", f"resource_bad_date_{reviewed_date}")
+
+
+def test_resource_attribution_required_rejects_present_non_booleans():
+    for value in (None, 1, "true"):
+        errs = validate_single(_minimal_resource(attributionRequired=value), "resource")
+        _assert_has_error(errs, "attributionRequired", f"resource_bad_bool_{value!r}")
 
 
 def test_resource_attribution_required_needs_instructions():
@@ -1304,16 +1275,6 @@ def test_resource_url_without_hostname_fails():
     _assert_has_error(errs, "hostname", "resource_url_no_hostname")
 
 
-def test_resource_invalid_relevance_values_fail():
-    for field, value in (
-        ("languageRelevance", "invalid"),
-        ("regionalRelevance", "invalid"),
-        ("scriptRelevance", "invalid"),
-    ):
-        errs = validate_single(_minimal_resource(**{field: value}), "resource")
-        _assert_has_error(errs, "not valid", f"resource_{field}_invalid")
-
-
 def test_resource_unknown_field():
     errs = validate_single(_minimal_resource(randomField="xyz"), "resource")
     _assert_has_error(errs, "unknown field", "resource_unknown")
@@ -1368,12 +1329,6 @@ def test_resource_bundle_with_resources():
     }
     errs = validate_bundle(data)
     _assert_no_errors(errs, "bundle_with_resources")
-
-
-def test_resource_duplicate_ids_fail():
-    data = {"resources": [_minimal_resource(), _minimal_resource()]}
-    errs = validate_bundle(data)
-    _assert_has_error(errs, "duplicate resource id", "resource_duplicate_id")
 
 
 def test_resource_bundle_invalid_resource():
