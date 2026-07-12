@@ -19,6 +19,8 @@ Usage:
 
 import json
 import sys
+from datetime import date
+from urllib.parse import urlparse
 
 # ─── Controlled vocabularies ───────────────────────────────────────────────
 
@@ -263,13 +265,86 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 
 
 def _check_resource_url(record: dict, path: str) -> list[str]:
-    """Validate that url and canonicalUrl start with http:// or https://."""
+    """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
-    for field in ("url", "canonicalUrl"):
+    for field in ("url", "canonicalUrl", "licenseUrl"):
         value = record.get(field)
         if value is not None and isinstance(value, str):
             if not (value.startswith("http://") or value.startswith("https://")):
                 errors.append(f"{path}.{field} must start with 'http://' or 'https://'")
+            try:
+                parsed = urlparse(value)
+                hostname = parsed.hostname
+            except ValueError:
+                hostname = None
+            if not hostname:
+                errors.append(f"{path}.{field} must include a non-empty hostname")
+    return errors
+
+
+def _check_resource_review_metadata(record: dict, path: str) -> list[str]:
+    """Validate optional license and review metadata relationships."""
+    errors = []
+    review_status = record.get("reviewStatus")
+
+    if "attributionRequired" in record:
+        attribution_required = record["attributionRequired"]
+        if not isinstance(attribution_required, bool):
+            errors.append(f"{path}.attributionRequired must be a boolean when present")
+        elif attribution_required and not isinstance(
+            record.get("attributionInstructions"), str
+        ):
+            errors.append(
+                f"{path}.attributionInstructions is required and must be a non-empty "
+                "string when attributionRequired=True"
+            )
+        elif attribution_required and not record["attributionInstructions"].strip():
+            errors.append(
+                f"{path}.attributionInstructions is required and must be a non-empty "
+                "string when attributionRequired=True"
+            )
+
+    if record.get("licenseUrl") is not None and not (
+        isinstance(record.get("licenseName"), str) and record["licenseName"].strip()
+    ):
+        errors.append(
+            f"{path}.licenseName is required and must be non-empty when licenseUrl is present"
+        )
+
+    reviewed_by = record.get("reviewedBy")
+    reviewed_date = record.get("reviewedDate")
+    has_reviewer = isinstance(reviewed_by, str) and bool(reviewed_by.strip())
+    has_review_date = isinstance(reviewed_date, str) and bool(reviewed_date.strip())
+
+    if reviewed_date is not None and not has_reviewer:
+        errors.append(
+            f"{path}.reviewedBy is required and must be non-empty when reviewedDate is present"
+        )
+
+    if isinstance(reviewed_date, str) and not reviewed_date.strip():
+        errors.append(
+            f"{path}.reviewedDate must not be empty or whitespace-only"
+        )
+
+    if has_review_date:
+        try:
+            parsed_date = date.fromisoformat(reviewed_date)
+        except ValueError:
+            parsed_date = None
+        if parsed_date is None or parsed_date.isoformat() != reviewed_date:
+            errors.append(f"{path}.reviewedDate must be a real YYYY-MM-DD calendar date")
+
+    if review_status in {"approved", "rejected"} and not has_reviewer:
+        errors.append(
+            f"{path}.reviewedBy is required and must be non-empty when reviewStatus is "
+            f"'{review_status}'"
+        )
+    if review_status in {"approved", "rejected"} and not has_review_date:
+        errors.append(
+            f"{path}.reviewedDate is required and must be non-empty when reviewStatus is "
+            f"'{review_status}'"
+        )
+
     return errors
 
 
@@ -437,6 +512,8 @@ def _build_schemas():
         "optional": [
             "canonicalUrl", "languageRelevance", "regionalRelevance",
             "scriptRelevance", "attributionInstructions",
+            "attributionRequired", "licenseName", "licenseUrl",
+            "reviewedBy", "reviewedDate",
         ],
         "field_types": {
             "id": str, "title": str, "url": str, "owner": str,
@@ -446,6 +523,8 @@ def _build_schemas():
             "languageRelevance": str, "regionalRelevance": str,
             "scriptRelevance": str, "reviewStatus": str,
             "attributionInstructions": str, "notes": str,
+            "licenseName": str, "licenseUrl": str,
+            "reviewedBy": str, "reviewedDate": str,
         },
         "controlled_fields": {
             "resourceType": VALID_RESOURCE_TYPES,
@@ -456,7 +535,7 @@ def _build_schemas():
             "regionalRelevance": VALID_REGIONAL_RELEVANCE,
             "scriptRelevance": VALID_SCRIPT_RELEVANCE,
         },
-        "extra_validators": [_check_resource_url],
+        "extra_validators": [_check_resource_url, _check_resource_review_metadata],
     }
 
 
@@ -659,6 +738,16 @@ def run_tests():
         # ─── Resource ───
         test_resource_valid,
         test_resource_valid_with_notes,
+        test_resource_license_url_requires_license_name,
+        test_resource_license_url_uses_url_validation,
+        test_resource_reviewed_date_requires_reviewer,
+        test_resource_terminal_review_requires_metadata,
+        test_resource_approved_review_with_metadata_is_valid,
+        test_resource_reviewed_date_requires_real_iso_date,
+        test_resource_reviewed_date_empty_string_fails,
+        test_resource_reviewed_date_whitespace_fails,
+        test_resource_attribution_required_rejects_present_non_booleans,
+        test_resource_attribution_required_needs_instructions,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
         test_resource_missing_review_status,
@@ -669,6 +758,7 @@ def run_tests():
         test_resource_invalid_review_status,
         test_resource_invalid_url,
         test_resource_url_ftp_fails,
+        test_resource_url_without_hostname_fails,
         test_resource_unknown_field,
         test_resource_notes_wrong_type,
         test_resource_url_https_allowed,
@@ -1087,6 +1177,78 @@ def test_resource_valid_with_notes():
     _assert_no_errors(errs, "resource_with_notes")
 
 
+def test_resource_license_url_requires_license_name():
+    errs = validate_single(
+        _minimal_resource(licenseUrl="https://example.org/license"), "resource"
+    )
+    _assert_has_error(errs, "licenseName", "resource_license_url_requires_name")
+
+
+def test_resource_license_url_uses_url_validation():
+    errs = validate_single(
+        _minimal_resource(licenseName="Example", licenseUrl="https://"), "resource"
+    )
+    _assert_has_error(errs, "licenseUrl", "resource_license_url_hostname")
+
+
+def test_resource_reviewed_date_requires_reviewer():
+    errs = validate_single(_minimal_resource(reviewedDate="2026-07-12"), "resource")
+    _assert_has_error(errs, "reviewedBy", "resource_review_date_requires_reviewer")
+
+
+def test_resource_terminal_review_requires_metadata():
+    for status in ("approved", "rejected"):
+        errs = validate_single(_minimal_resource(reviewStatus=status), "resource")
+        _assert_has_error(errs, "reviewedBy", f"resource_{status}_reviewer")
+        _assert_has_error(errs, "reviewedDate", f"resource_{status}_date")
+
+
+def test_resource_approved_review_with_metadata_is_valid():
+    errs = validate_single(
+        _minimal_resource(
+            licenseStatus="approved",
+            reviewStatus="approved",
+            reviewedBy="content-reviewer",
+            reviewedDate="2026-07-12",
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "resource_approved_review_with_metadata")
+
+
+def test_resource_reviewed_date_requires_real_iso_date():
+    for reviewed_date in ("2026-02-29", "2026-13-01", "20260712"):
+        errs = validate_single(
+            _minimal_resource(reviewedBy="editor", reviewedDate=reviewed_date), "resource"
+        )
+        _assert_has_error(errs, "reviewedDate", f"resource_bad_date_{reviewed_date}")
+
+
+def test_resource_reviewed_date_empty_string_fails():
+    errs = validate_single(
+        _minimal_resource(reviewedBy="editor", reviewedDate=""), "resource"
+    )
+    _assert_has_error(errs, "reviewedDate", "resource_reviewed_date_empty")
+
+
+def test_resource_reviewed_date_whitespace_fails():
+    errs = validate_single(
+        _minimal_resource(reviewedBy="editor", reviewedDate="   "), "resource"
+    )
+    _assert_has_error(errs, "reviewedDate", "resource_reviewed_date_whitespace")
+
+
+def test_resource_attribution_required_rejects_present_non_booleans():
+    for value in (None, 1, "true"):
+        errs = validate_single(_minimal_resource(attributionRequired=value), "resource")
+        _assert_has_error(errs, "attributionRequired", f"resource_bad_bool_{value!r}")
+
+
+def test_resource_attribution_required_needs_instructions():
+    errs = validate_single(_minimal_resource(attributionRequired=True), "resource")
+    _assert_has_error(errs, "attributionInstructions", "resource_attribution_instructions")
+
+
 def test_resource_missing_license_status():
     errs = validate_single(_minimal_resource(licenseStatus=None), "resource")
     _assert_has_error(errs, "required field", "resource_no_license_status")
@@ -1141,6 +1303,11 @@ def test_resource_invalid_url():
 def test_resource_url_ftp_fails():
     errs = validate_single(_minimal_resource(url="ftp://example.org/resource"), "resource")
     _assert_has_error(errs, "must start with", "resource_url_ftp")
+
+
+def test_resource_url_without_hostname_fails():
+    errs = validate_single(_minimal_resource(url="https://"), "resource")
+    _assert_has_error(errs, "hostname", "resource_url_no_hostname")
 
 
 def test_resource_unknown_field():

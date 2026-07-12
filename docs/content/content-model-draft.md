@@ -216,6 +216,20 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `licenseStatus` (unknown / needs-review / approved / restricted / prohibited)
 - `allowedUse` (reference-only / attributed-use / non-commercial / commercial / citation)
 - `attributionInstructions` (optional)
+- `attributionRequired` (optional, boolean)
+- `licenseName` (optional, string)
+- `licenseUrl` (optional, URL string)
+- `reviewedBy` (optional, string)
+- `reviewedDate` (optional, date string)
 - `reviewStatus` (candidate / under-review / approved / rejected)
 - `attribution`
 - `notes`
+
+### License review metadata validation
+
+- `licenseUrl` requires a non-empty `licenseName` and must use the `http` or `https` scheme with a hostname.
+- `attributionRequired: true` requires non-empty `attributionInstructions`.
+- `reviewedDate` requires non-empty `reviewedBy` and must be a real `YYYY-MM-DD` calendar date.
+- `reviewStatus: approved` and `reviewStatus: rejected` require both `reviewedBy` and `reviewedDate`.
+- `attributionRequired`, when present, must be a boolean.
+- `url`, `canonicalUrl`, and `licenseUrl` (when present) must use the `http` or `https` scheme and include a hostname.
