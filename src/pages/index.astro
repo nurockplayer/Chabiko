@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import LessonCard from '../components/LessonCard.astro';
+import GoalPathSlot from '../components/GoalPathSlot.astro';
+import { loadLessonById } from '../content/loadLessons';
+
+const lesson = loadLessonById('lesson-001');
+const example = lesson?.examples[0];
+---
+
+<BaseLayout title="ホーム">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  {lesson ? (
+    <LessonCard
+      title={lesson.titleJa}
+      hookJa={lesson.hookJa}
+      canDoJa={lesson.canDoJa}
+      coreSentence={lesson.coreSentence}
+      pinyin={example?.pinyin}
+      exampleSentence={example?.traditional}
+      exampleJapanese={example?.japanese}
+      lessonId={lesson.id}
+    />
+  ) : (
+    <article class="fallback-message">
+      <h1>レッスンを読み込めませんでした</h1>
+      <p>現在レッスンコンテンツが利用できません。しばらく経ってから再度アクセスしてください。</p>
+    </article>
+  )}
+
+  <GoalPathSlot />
+</BaseLayout>
+
+<style>
+  .fallback-message {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-xl);
+    text-align: center;
+  }
+  .fallback-message h1 {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-sm);
+  }
+  .fallback-message p {
+    color: var(--c-text-secondary);
+  }
+</style>

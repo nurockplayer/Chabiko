@@ -1,0 +1,86 @@
+---
+
+export interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Chabiko | チャビコ — 日本人のための中国語学習" />
+    <title>{title} | Chabiko</title>
+    <style>
+      :root {
+        --c-bg: #fafafa;
+        --c-surface: #ffffff;
+        --c-text: #1a1a1a;
+        --c-text-secondary: #666;
+        --c-accent: #2563eb;
+        --c-accent-hover: #1d4ed8;
+        --c-border: #e5e5e5;
+        --c-slot-bg: #f0f0f0;
+        --radius: 8px;
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 1rem;
+        --space-lg: 1.5rem;
+        --space-xl: 2rem;
+        --max-w: 48rem;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+          'Noto Sans CJK JP', sans-serif;
+        background: var(--c-bg);
+        color: var(--c-text);
+        line-height: 1.7;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      a {
+        color: var(--c-accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+        padding: var(--space-md);
+        max-width: var(--max-w);
+        width: 100%;
+        margin: 0 auto;
+      }
+      @media (width >= 768px) {
+        .main-content {
+          padding: var(--space-lg) var(--space-xl);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <slot name="header" />
+      <main class="main-content">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

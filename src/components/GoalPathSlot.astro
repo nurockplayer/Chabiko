@@ -1,0 +1,69 @@
+---
+---
+
+<!--
+  Goal Path Slot (#17 placeholder)
+
+  This slot provides a visible entry point for future goal-based learning paths.
+  The paths themselves are implemented in #17; here we show a preview of where
+  they will appear and a disabled affordance so the layout is structurally complete.
+-->
+<section class="goal-path-slot" aria-label="学習パス（準備中）">
+  <h2 class="slot-heading">学習パス</h2>
+  <div class="path-cards">
+    <div class="path-card path-card--disabled">
+      <span class="path-icon">&#x1F3C3;</span>
+      <span class="path-label">台湾旅行で使える中国語</span>
+      <span class="path-badge">準備中</span>
+    </div>
+    <div class="path-card path-card--disabled">
+      <span class="path-icon">&#x1F4DA;</span>
+      <span class="path-label">HSK対策</span>
+      <span class="path-badge">準備中</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .goal-path-slot {
+    background: var(--c-surface);
+    border: 1px dashed var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+  .slot-heading {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-sm);
+  }
+  .path-cards {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+  .path-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .path-icon {
+    font-size: 1.1rem;
+  }
+  .path-badge {
+    background: var(--c-slot-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    color: var(--c-text-secondary);
+  }
+</style>

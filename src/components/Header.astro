@@ -1,0 +1,82 @@
+---
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <span class="logo">Chabiko</span>
+    <span class="logo-sub">チャビコ</span>
+    <nav class="nav-primary" aria-label="メインナビゲーション">
+      <a href="/" class="nav-link nav-link--active">ホーム</a>
+    </nav>
+    <!-- #22 用の表示切替スロット -->
+    <div class="slot script-toggle-slot" aria-label="簡体字／繁体字切替（準備中）">
+      <span class="slot-label">繁｜簡</span>
+      <span class="slot-badge">準備中</span>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: var(--space-sm) var(--space-md);
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--c-accent);
+  }
+  .logo-sub {
+    font-size: 0.75rem;
+    color: var(--c-text-secondary);
+    margin-left: -0.5rem;
+  }
+  .nav-primary {
+    margin-left: auto;
+  }
+  .nav-link {
+    font-size: 0.875rem;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius);
+  }
+  .nav-link--active {
+    background: var(--c-accent);
+    color: #fff;
+  }
+  /* Script toggle slot: visible placeholder for #22 */
+  .script-toggle-slot {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px dashed var(--c-border);
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    color: var(--c-text-secondary);
+  }
+  .slot-badge {
+    background: var(--c-slot-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+  }
+  @media (width < 480px) {
+    .logo-sub {
+      display: none;
+    }
+    .script-toggle-slot {
+      font-size: 0.65rem;
+    }
+  }
+</style>

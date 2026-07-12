@@ -2,6 +2,7 @@
 .omc/
 node_modules/
 dist/
+.astro/
 .next/
 .vercel/
 .wrangler/
