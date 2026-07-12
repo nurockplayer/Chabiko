@@ -184,9 +184,17 @@ The maximum number of automatic Repair Attempts allowed before content enters Co
 
 A substantive change that permits quarantined content to enter the workflow again. Valid triggers include a human content edit, an explicit human recheck request, a prompt or validator rule version change, an Authoring or Critic model version change, a new authoritative source, or a relevant examination or Language Variant rule update. Time passing or another hourly schedule run is not a valid trigger.
 
+## Issue Fingerprint
+
+A stable machine-readable identity for one detected content problem. The fingerprint is derived from the Reviewable Content Node identifier, Review Scope, normalized failure category, rule or check identifier, and applicable Language Variant. Model-written explanations, wording, confidence prose, and suggested fixes do not participate in the fingerprint.
+
+## Issue Record
+
+The persistent record associated with an Issue Fingerprint. Repeated detections of the same fingerprint update the existing record with occurrence count, first-seen and last-seen times, current evidence, affected content version, and resolution state instead of creating duplicate records. A resolved issue may be reopened when the same fingerprint is detected again.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, and skip quarantined content until a valid Quarantine Requeue Trigger occurs.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, and deduplicate recurring findings by Issue Fingerprint.
 
 ## Kanji Bridge
 
