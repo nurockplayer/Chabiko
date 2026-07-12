@@ -12,6 +12,26 @@ Build durable Mandarin ability for study, assessment, and real-world use. Chabik
 
 Structured learning aimed at measurable proficiency, including vocabulary, grammar, listening, reading, and practice relevant to Chinese-language examinations. Exam preparation is a primary product target, not a secondary edge case.
 
+## Capability Unit
+
+A reusable unit of Mandarin ability, such as recognizing a word, understanding a grammar pattern, distinguishing a tone, comprehending a sentence, or completing a communicative task. Capability Units are the canonical source of learning content.
+
+## Learning Path
+
+An ordered view over shared Capability Units for a particular learner goal. Chabiko supports both capability-oriented paths and exam-oriented paths without duplicating the underlying lessons or exercises.
+
+## Capability-Oriented Path
+
+A Learning Path organized around durable language ability, such as pronunciation, vocabulary, grammar, listening, reading, conversation, or practical scenarios.
+
+## Exam Path
+
+A Learning Path that maps shared Capability Units to the scope, level, and task types of a named Chinese-language examination. An Exam Path does not own a separate copy of the curriculum.
+
+## Assessment Mapping
+
+The relationship between a Capability Unit and one or more examination levels, syllabi, or task types. Assessment Mapping may change when an examination changes without redefining the underlying language ability.
+
 ## Application Scenario
 
 A concrete situation in which learners can use what they study. Taiwan travel is the leading early application scenario because it gives Japanese learners an accessible, motivating place to apply Mandarin in practice.
