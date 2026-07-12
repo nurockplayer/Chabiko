@@ -348,6 +348,103 @@ def _check_resource_review_metadata(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
+    """Validate permission flags and cross-field consistency for resources."""
+    errors = []
+
+    PERMISSION_FLAGS = (
+        "productionImportAllowed", "commercialUseAllowed",
+        "modificationAllowed", "redistributionAllowed",
+    )
+
+    # Type check: reject null for permission flags
+    for field in PERMISSION_FLAGS:
+        if field in record and record[field] is None:
+            errors.append(f"{path}.{field} must be a boolean when present")
+
+    # Collect boolean-valued flags for cross-field checks
+    true_flags = set()
+    for field in PERMISSION_FLAGS:
+        val = record.get(field)
+        if isinstance(val, bool) and val is True:
+            true_flags.add(field)
+
+    license_status = record.get("licenseStatus")
+    review_status = record.get("reviewStatus")
+    allowed_use = record.get("allowedUse")
+
+    # Track flags already reported, so no field gets two errors
+    errored_flags = set()
+
+    # Rule: licenseStatus in {unknown, needs-review, prohibited} blocks permissions
+    if isinstance(license_status, str) and license_status in ("unknown", "needs-review", "prohibited"):
+        for field in sorted(true_flags):
+            errors.append(
+                f"{path}.{field} must be false or absent when "
+                f"licenseStatus is '{license_status}'"
+            )
+            errored_flags.add(field)
+
+    # Rule: reviewStatus=rejected blocks permissions
+    if review_status == "rejected":
+        for field in sorted(true_flags - errored_flags):
+            errors.append(
+                f"{path}.{field} must be false or absent when "
+                f"reviewStatus is 'rejected'"
+            )
+            errored_flags.add(field)
+
+    # Rules: productionImportAllowed positive checks
+    if "productionImportAllowed" not in errored_flags and "productionImportAllowed" in true_flags:
+        has_pia_error = False
+
+        if isinstance(license_status, str) and license_status not in ("approved", "restricted"):
+            errors.append(
+                f"{path}.productionImportAllowed is true but licenseStatus is "
+                f"'{license_status}'; must be 'approved' or 'restricted'"
+            )
+            has_pia_error = True
+
+        if isinstance(allowed_use, str) and allowed_use in ("reference-only", "citation"):
+            errors.append(
+                f"{path}.productionImportAllowed is true but allowedUse is '{allowed_use}'"
+            )
+            has_pia_error = True
+
+        if not isinstance(review_status, str) or review_status != "approved":
+            errors.append(
+                f"{path}.productionImportAllowed is true but reviewStatus is "
+                f"'{review_status}'; must be 'approved'"
+            )
+            has_pia_error = True
+
+        if has_pia_error:
+            errored_flags.add("productionImportAllowed")
+
+    # Rule: reviewStatus=approved conflicts with bad licenseStatus
+    if review_status == "approved" and isinstance(license_status, str) and \
+       license_status in ("unknown", "needs-review", "prohibited"):
+        errors.append(
+            f"{path}: reviewStatus is 'approved' but licenseStatus is "
+            f"'{license_status}'"
+        )
+
+    # Rule: allowedUse must be consistent with permission flags
+    unhandled = true_flags - errored_flags
+    if isinstance(allowed_use, str):
+        if allowed_use in ("reference-only", "citation"):
+            for field in sorted(unhandled):
+                errors.append(
+                    f"{path}.{field} is true but allowedUse is '{allowed_use}'"
+                )
+        elif allowed_use == "non-commercial" and "commercialUseAllowed" in unhandled:
+            errors.append(
+                f"{path}.commercialUseAllowed is true but allowedUse is 'non-commercial'"
+            )
+
+    return errors
+
+
 # ─── Schema definitions ────────────────────────────────────────────────────
 
 def _build_schemas():
@@ -514,6 +611,8 @@ def _build_schemas():
             "scriptRelevance", "attributionInstructions",
             "attributionRequired", "licenseName", "licenseUrl",
             "reviewedBy", "reviewedDate",
+            "productionImportAllowed", "commercialUseAllowed",
+            "modificationAllowed", "redistributionAllowed",
         ],
         "field_types": {
             "id": str, "title": str, "url": str, "owner": str,
@@ -525,6 +624,8 @@ def _build_schemas():
             "attributionInstructions": str, "notes": str,
             "licenseName": str, "licenseUrl": str,
             "reviewedBy": str, "reviewedDate": str,
+            "productionImportAllowed": bool, "commercialUseAllowed": bool,
+            "modificationAllowed": bool, "redistributionAllowed": bool,
         },
         "controlled_fields": {
             "resourceType": VALID_RESOURCE_TYPES,
@@ -535,7 +636,7 @@ def _build_schemas():
             "regionalRelevance": VALID_REGIONAL_RELEVANCE,
             "scriptRelevance": VALID_SCRIPT_RELEVANCE,
         },
-        "extra_validators": [_check_resource_url, _check_resource_review_metadata],
+        "extra_validators": [_check_resource_url, _check_resource_review_metadata, _check_resource_permission_policy],
     }
 
 
@@ -771,6 +872,29 @@ def run_tests():
         test_resource_bundle_with_resources,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
+
+        # ─── Resource permission policy ───
+        test_resource_all_permissions_false_ok,
+        test_resource_all_permissions_true_ok,
+        test_resource_permission_flags_reject_null,
+        test_resource_permission_flags_reject_number,
+        test_resource_permission_flags_reject_string,
+        test_resource_permission_omitted_ok,
+        test_resource_permissions_unknown_license_blocked,
+        test_resource_permissions_needs_review_license_blocked,
+        test_resource_permissions_prohibited_license_blocked,
+        test_resource_permissions_rejected_review_blocked,
+        test_resource_permissions_rejected_no_duplicate_flag_errors,
+        test_resource_production_import_bad_license,
+        test_resource_production_import_bad_allowed_use,
+        test_resource_production_import_bad_review_status,
+        test_resource_production_import_restricted_allowed,
+        test_resource_review_approved_conflicts_with_bad_license,
+        test_resource_allowed_use_reference_only_no_permissions,
+        test_resource_allowed_use_citation_no_permissions,
+        test_resource_allowed_use_non_commercial_no_commercial,
+        test_resource_candidate_backward_compatible,
+        test_resource_restricted_license_allows_permissions,
 
         # ─── Bundle ───
         test_bundle_valid,
@@ -1383,6 +1507,298 @@ def test_resource_bundle_non_list():
     data = {"resources": "not-a-list"}
     errs = validate_bundle(data)
     _assert_has_error(errs, "expected a list", "bundle_resource_non_list")
+
+
+# ─── Resource permission policy tests ───────────────────────────────────────
+
+def _minimal_resource_with_permissions(**overrides):
+    """Create a minimal resource that satisfies productionImportAllowed preconditions."""
+    data = {
+        "id": "resource-perm-test",
+        "title": "Permission Test Resource",
+        "url": "https://example.org/perm-test",
+        "owner": "Test Owner",
+        "resourceType": "reference",
+        "licenseStatus": "approved",
+        "allowedUse": "attributed-use",
+        "reviewStatus": "approved",
+        "reviewedBy": "content-reviewer",
+        "reviewedDate": "2026-07-12",
+        "attribution": "Permission Test Resource by Test Owner",
+        "notes": "Test fixture for permission policy.",
+    }
+    data.update(overrides)
+    return data
+
+
+def test_resource_all_permissions_false_ok():
+    """All permission flags set to false should pass."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            productionImportAllowed=False,
+            commercialUseAllowed=False,
+            modificationAllowed=False,
+            redistributionAllowed=False,
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "all_false_ok")
+
+
+def test_resource_all_permissions_true_ok():
+    """All permission flags true with approved review and compatible license/use."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            productionImportAllowed=True,
+            commercialUseAllowed=True,
+            modificationAllowed=True,
+            redistributionAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "all_true_ok")
+
+
+def test_resource_permission_flags_reject_null():
+    """Permission flags must be boolean, reject null."""
+    for field in ("productionImportAllowed", "commercialUseAllowed", "modificationAllowed", "redistributionAllowed"):
+        errs = validate_single(
+            _minimal_resource_with_permissions(**{field: None}),
+            "resource",
+        )
+        _assert_has_error(errs, "must be a boolean", f"perm_null_{field}")
+
+
+def test_resource_permission_flags_reject_number():
+    """Permission flags must be boolean, reject integers."""
+    for field in ("productionImportAllowed", "commercialUseAllowed"):
+        errs = validate_single(
+            _minimal_resource_with_permissions(**{field: 1}),
+            "resource",
+        )
+        _assert_has_error(errs, "must be bool", f"perm_number_{field}")
+
+
+def test_resource_permission_flags_reject_string():
+    """Permission flags must be boolean, reject strings."""
+    for field in ("productionImportAllowed", "modificationAllowed"):
+        errs = validate_single(
+            _minimal_resource_with_permissions(**{field: "yes"}),
+            "resource",
+        )
+        _assert_has_error(errs, "must be bool", f"perm_string_{field}")
+
+
+def test_resource_permission_omitted_ok():
+    """Permission flags absent should pass (backward compat)."""
+    data = _minimal_resource_with_permissions()
+    for field in ("productionImportAllowed", "commercialUseAllowed", "modificationAllowed", "redistributionAllowed"):
+        data.pop(field, None)
+    errs = validate_single(data, "resource")
+    _assert_no_errors(errs, "perm_omitted_ok")
+
+
+def test_resource_permissions_unknown_license_blocked():
+    """licenseStatus=unknown blocks all permission flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="unknown",
+            productionImportAllowed=True,
+            commercialUseAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed must be false or absent", "perm_unknown_license")
+    _assert_has_error(errs, "commercialUseAllowed must be false or absent", "perm_unknown_license")
+    _assert_has_error(errs, "licenseStatus is 'unknown'", "perm_unknown_license_reason")
+
+
+def test_resource_permissions_needs_review_license_blocked():
+    """licenseStatus=needs-review blocks all permission flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="needs-review",
+            productionImportAllowed=True,
+            modificationAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed must be false or absent", "perm_needs_review")
+    _assert_has_error(errs, "modificationAllowed must be false or absent", "perm_needs_review")
+
+
+def test_resource_permissions_prohibited_license_blocked():
+    """licenseStatus=prohibited blocks all permission flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="prohibited",
+            productionImportAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed must be false or absent", "perm_prohibited")
+    # Exactly one error for this field (no duplicate from other rules)
+    assert sum(1 for e in errs if "productionImportAllowed" in e) == 1, (
+        f"Expected exactly 1 error for productionImportAllowed, got: {errs}"
+    )
+
+
+def test_resource_permissions_rejected_review_blocked():
+    """reviewStatus=rejected blocks all permission flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            reviewStatus="rejected",
+            reviewedBy="reviewer",
+            reviewedDate="2026-07-12",
+            productionImportAllowed=True,
+            commercialUseAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed must be false or absent", "perm_rejected")
+    _assert_has_error(errs, "commercialUseAllowed must be false or absent", "perm_rejected_review")
+
+
+def test_resource_permissions_rejected_no_duplicate_flag_errors():
+    """If licenseStatus and reviewStatus both block, each flag gets only one error."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="unknown",
+            reviewStatus="rejected",
+            productionImportAllowed=True,
+            modificationAllowed=True,
+        ),
+        "resource",
+    )
+    for field in ("productionImportAllowed", "modificationAllowed"):
+        count = sum(1 for e in errs if f"{field}" in e)
+        assert count == 1, (
+            f"Expected exactly 1 error for {field}, got {count}: {errs}"
+        )
+
+
+def test_resource_production_import_bad_license():
+    """productionImportAllowed=true requires approved/restricted license."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="unknown",
+            productionImportAllowed=True,
+        ),
+        "resource",
+    )
+    # licenseStatus=unknown blocks first, overriding the pia-specific check
+    _assert_has_error(errs, "productionImportAllowed must be false or absent", "pia_bad_license")
+    _assert_has_error(errs, "licenseStatus is 'unknown'", "pia_bad_license_reason")
+
+
+def test_resource_production_import_bad_allowed_use():
+    """productionImportAllowed=true incompatible with reference-only/citation."""
+    for use in ("reference-only", "citation"):
+        errs = validate_single(
+            _minimal_resource_with_permissions(allowedUse=use, productionImportAllowed=True),
+            "resource",
+        )
+        _assert_has_error(errs, "productionImportAllowed is true", f"pia_use_{use}")
+        _assert_has_error(errs, f"allowedUse is '{use}'", f"pia_use_{use}_reason")
+
+
+def test_resource_production_import_bad_review_status():
+    """productionImportAllowed=true requires reviewStatus=approved."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            reviewStatus="candidate",
+            productionImportAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed is true", "pia_bad_review")
+    _assert_has_error(errs, "reviewStatus is 'candidate'", "pia_bad_review_reason")
+
+
+def test_resource_production_import_restricted_allowed():
+    """productionImportAllowed with licenseStatus=restricted should pass."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="restricted",
+            productionImportAllowed=True,
+            commercialUseAllowed=False,
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "pia_restricted")
+
+
+def test_resource_review_approved_conflicts_with_bad_license():
+    """reviewStatus=approved conflicts with licenseStatus unknown/needs-review/prohibited."""
+    for ls in ("unknown", "needs-review", "prohibited"):
+        errs = validate_single(
+            _minimal_resource_with_permissions(licenseStatus=ls),
+            "resource",
+        )
+        _assert_has_error(errs, "reviewStatus is 'approved'", f"approved_conflict_{ls}")
+        _assert_has_error(errs, f"licenseStatus is '{ls}'", f"approved_conflict_{ls}_reason")
+
+
+def test_resource_allowed_use_reference_only_no_permissions():
+    """allowedUse=reference-only with permission flags should fail."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            allowedUse="reference-only",
+            productionImportAllowed=True,
+            commercialUseAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "productionImportAllowed is true", "refonly_pia")
+    _assert_has_error(errs, "commercialUseAllowed is true but allowedUse is 'reference-only'", "refonly_commercial")
+    # Two separate errors: one from pia-specific check, one from general allowedUse consistency
+    _assert_has_error(errs, "allowedUse is 'reference-only'", "refonly_reason")
+
+
+def test_resource_allowed_use_citation_no_permissions():
+    """allowedUse=citation with permission flags should fail."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            allowedUse="citation",
+            modificationAllowed=True,
+            redistributionAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "modificationAllowed is true but allowedUse is 'citation'", "citation_mod")
+    _assert_has_error(errs, "redistributionAllowed is true but allowedUse is 'citation'", "citation_redist")
+
+
+def test_resource_allowed_use_non_commercial_no_commercial():
+    """allowedUse=non-commercial with commercialUseAllowed should fail."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            allowedUse="non-commercial",
+            commercialUseAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "commercialUseAllowed is true but allowedUse is 'non-commercial'", "noncommercial")
+
+
+def test_resource_candidate_backward_compatible():
+    """Candidate with no permission flags passes (backward compat)."""
+    errs = validate_single(_minimal_resource(), "resource")
+    _assert_no_errors(errs, "candidate_backward")
+
+
+def test_resource_restricted_license_allows_permissions():
+    """licenseStatus=restricted should allow permission flags (not just approved)."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="restricted",
+            productionImportAllowed=True,
+            modificationAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "restricted_allows")
+
 
 
 # ─── Bundle tests ──────────────────────────────────────────────────────────

@@ -6,8 +6,8 @@
       "url": "https://example.org/chinese-reference",
       "owner": "Example Organization",
       "resourceType": "reference",
-      "licenseStatus": "needs-review",
-      "allowedUse": "reference-only",
+      "licenseStatus": "approved",
+      "allowedUse": "attributed-use",
       "attributionInstructions": "Credit Example Organization and link to the original reference source.",
       "attributionRequired": true,
       "licenseName": "Example Reference License",
@@ -15,8 +15,12 @@
       "reviewedBy": "Chabiko Content Team",
       "reviewedDate": "2026-07-12",
       "attribution": "Example Reference Source (https://example.org/chinese-reference) by Example Organization",
-      "reviewStatus": "candidate",
-      "notes": "Example resource for validation testing. Metadata-only — no content imported."
+      "reviewStatus": "approved",
+      "notes": "Example resource for validation testing. Metadata-only — no content imported.",
+      "productionImportAllowed": true,
+      "commercialUseAllowed": false,
+      "modificationAllowed": false,
+      "redistributionAllowed": false
     }
   ]
 }

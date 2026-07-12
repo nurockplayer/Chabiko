@@ -1,0 +1,19 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-020",
+      "title": "Production Import With Reference Only",
+      "url": "https://example.org/bad-pia-refonly",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "approved",
+      "allowedUse": "reference-only",
+      "attribution": "Production Import With Reference Only by Test",
+      "reviewStatus": "approved",
+      "reviewedBy": "content-reviewer",
+      "reviewedDate": "2026-07-12",
+      "notes": "Test fixture.",
+      "productionImportAllowed": true
+    }
+  ]
+}

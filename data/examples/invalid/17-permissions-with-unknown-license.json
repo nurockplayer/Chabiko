@@ -1,0 +1,18 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-017",
+      "title": "Permissions With Unknown License",
+      "url": "https://example.org/bad-perm-license",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "unknown",
+      "allowedUse": "attributed-use",
+      "attribution": "Permissions With Unknown License by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture.",
+      "productionImportAllowed": true,
+      "commercialUseAllowed": true
+    }
+  ]
+}

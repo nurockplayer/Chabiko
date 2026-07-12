@@ -221,6 +221,10 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `licenseUrl` (optional, URL string)
 - `reviewedBy` (optional, string)
 - `reviewedDate` (optional, date string)
+- `productionImportAllowed` (optional, boolean)
+- `commercialUseAllowed` (optional, boolean)
+- `modificationAllowed` (optional, boolean)
+- `redistributionAllowed` (optional, boolean)
 - `reviewStatus` (candidate / under-review / approved / rejected)
 - `attribution`
 - `notes`
@@ -233,3 +237,21 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `reviewStatus: approved` and `reviewStatus: rejected` require both `reviewedBy` and `reviewedDate`.
 - `attributionRequired`, when present, must be a boolean.
 - `url`, `canonicalUrl`, and `licenseUrl` (when present) must use the `http` or `https` scheme and include a hostname.
+
+### Resource permission policy validation
+
+- `productionImportAllowed`, `commercialUseAllowed`, `modificationAllowed`, and `redistributionAllowed` are optional. When present, they must be booleans.
+- When `productionImportAllowed` is `true`:
+  - `licenseStatus` must be `approved` or `restricted`.
+  - `allowedUse` must not be `reference-only` or `citation`.
+  - `reviewStatus` must be `approved`.
+- When `licenseStatus` is `unknown`, `needs-review`, or `prohibited`, all permission flags must be `false` or absent.
+- When `reviewStatus` is `rejected`, all permission flags must be `false` or absent.
+- When `reviewStatus` is `approved`, `licenseStatus` must not be `unknown`, `needs-review`, or `prohibited`.
+- `allowedUse` values are consistent with permission flags: `reference-only` and `citation` do not allow any permission flags; `non-commercial` does not allow `commercialUseAllowed`.
+
+Validation priorities (what fires when multiple conditions apply):
+1. `licenseStatus` blocking rules take highest priority — a resource with `licenseStatus: unknown` and a permission flag gets a single blocking error, not additional type or cross-field errors.
+2. `reviewStatus: rejected` operates only on flags not already blocked by license status.
+3. `productionImportAllowed` positive checks apply only to flags not blocked by earlier rules.
+4. `allowedUse` consistency errors fire on any remaining unhandled true flags.
