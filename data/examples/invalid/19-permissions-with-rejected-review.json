@@ -1,0 +1,20 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-019",
+      "title": "Permissions With Rejected Review",
+      "url": "https://example.org/bad-perm-rejected",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "approved",
+      "allowedUse": "commercial",
+      "attribution": "Permissions With Rejected Review by Test",
+      "reviewStatus": "rejected",
+      "reviewedBy": "content-reviewer",
+      "reviewedDate": "2026-07-12",
+      "notes": "Test fixture.",
+      "productionImportAllowed": true,
+      "modificationAllowed": true
+    }
+  ]
+}

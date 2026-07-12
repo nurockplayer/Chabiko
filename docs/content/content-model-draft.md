@@ -221,6 +221,10 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `licenseUrl` (optional, URL string)
 - `reviewedBy` (optional, string)
 - `reviewedDate` (optional, date string)
+- `productionImportAllowed` (optional, boolean)
+- `commercialUseAllowed` (optional, boolean)
+- `modificationAllowed` (optional, boolean)
+- `redistributionAllowed` (optional, boolean)
 - `reviewStatus` (candidate / under-review / approved / rejected)
 - `attribution`
 - `notes`
@@ -233,3 +237,31 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `reviewStatus: approved` and `reviewStatus: rejected` require both `reviewedBy` and `reviewedDate`.
 - `attributionRequired`, when present, must be a boolean.
 - `url`, `canonicalUrl`, and `licenseUrl` (when present) must use the `http` or `https` scheme and include a hostname.
+
+### Resource permission policy validation
+
+- `productionImportAllowed`, `commercialUseAllowed`, `modificationAllowed`, and `redistributionAllowed` are optional. When present, they must be booleans.
+- When `productionImportAllowed` is `true`:
+  - `licenseStatus` must be `approved` or `restricted`.
+  - `allowedUse` must not be `reference-only` or `citation`.
+  - `reviewStatus` must be `approved`.
+  - Multiple reasons are combined into a single error per flag.
+- When `licenseStatus` is `unknown`, `needs-review`, or `prohibited`:
+  - All permission flags must be `false` or absent.
+  - `allowedUse` must be `reference-only` or `citation`; non-reference values fail even with no permission flags set.
+- When `reviewStatus` is `rejected`:
+  - All permission flags must be `false` or absent.
+  - `allowedUse` must be `reference-only` or `citation`; non-reference values fail even with no permission flags set.
+- When `reviewStatus` is `approved`, `licenseStatus` must not be `unknown`, `needs-review`, or `prohibited`.
+- `allowedUse` values are consistent with permission flags:
+  - `reference-only` and `citation` do not allow any permission flags.
+  - `non-commercial` does not allow `commercialUseAllowed`.
+  - `commercial` requires `commercialUseAllowed` to not be explicit `false`.
+
+Error priority (ensures at most one error per flag):
+1. `allowedUse` vs `licenseStatus` / `reviewStatus` (Phase A — no `true` flags needed).
+2. `licenseStatus` blocking rules (Phase B) — highest priority for flags.
+3. `reviewStatus: rejected` blocking (Phase C) — only unhandled flags.
+4. `productionImportAllowed` combined positive checks (Phase D) — one combined error.
+5. `reviewStatus=approved` vs bad `licenseStatus` (Phase E).
+6. `allowedUse` consistency with remaining flags (Phase F).

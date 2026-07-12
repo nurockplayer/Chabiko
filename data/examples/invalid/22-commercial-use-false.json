@@ -1,0 +1,19 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-022",
+      "title": "AllowedUse Commercial With Explicit False",
+      "url": "https://example.org/bad-commercial-false",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "approved",
+      "allowedUse": "commercial",
+      "attribution": "AllowedUse Commercial With False by Test",
+      "reviewStatus": "approved",
+      "reviewedBy": "content-reviewer",
+      "reviewedDate": "2026-07-12",
+      "notes": "Test fixture.",
+      "commercialUseAllowed": false
+    }
+  ]
+}
