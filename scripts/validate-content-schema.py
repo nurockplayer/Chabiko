@@ -2092,10 +2092,14 @@ def test_resource_duplicate_deterministic_order():
     errs = validate_bundle(data)
     dup_errors = [e for e in errs if "duplicate resource id" in e]
     assert len(dup_errors) == 2, f"Expected 2 duplicate errors, got {len(dup_errors)}: {dup_errors}"
-    # First duplicate: second occurrence of 'z-resource' at [2]
-    _assert_has_error(errs, "root.resources[2]: duplicate resource id 'z-resource'", "det_order_z")
-    # Second duplicate: second occurrence of 'a-resource' at [4]
-    _assert_has_error(errs, "root.resources[4]: duplicate resource id 'a-resource'", "det_order_a")
+    # dup_errors[0] must be z-resource at [2] (first duplicate detected)
+    assert "root.resources[2]" in dup_errors[0] and "z-resource" in dup_errors[0], (
+        f"Expected dup_errors[0] to mention z-resource at [2], got: {dup_errors[0]}"
+    )
+    # dup_errors[1] must be a-resource at [4] (second duplicate detected)
+    assert "root.resources[4]" in dup_errors[1] and "a-resource" in dup_errors[1], (
+        f"Expected dup_errors[1] to mention a-resource at [4], got: {dup_errors[1]}"
+    )
 
 
 # ─── Bundle tests ──────────────────────────────────────────────────────────
