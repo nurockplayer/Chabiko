@@ -4,12 +4,12 @@ export interface Props {
   hookJa: string;
   canDoJa: string;
   coreSentence: string;
-  pinyin?: string;
   exampleSentence?: string;
+  examplePinyin?: string;
   exampleJapanese?: string;
 }
 
-const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJapanese } = Astro.props;
+const { title, hookJa, canDoJa, coreSentence, exampleSentence, examplePinyin, exampleJapanese } = Astro.props;
 ---
 
 <article class="lesson-card">
@@ -26,13 +26,14 @@ const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJa
   <section class="core-section" aria-label="コア表現">
     <h2 class="section-heading">コア表現</h2>
     <p class="core-sentence" lang="zh-Hant">{coreSentence}</p>
-    {pinyin && <p class="pinyin" lang="zh-Latn">{pinyin}</p>}
+    <!-- coreSentence 的拼音會由後續 issue 的資料模型提供 -->
   </section>
 
   {exampleSentence && (
     <section class="example-section" aria-label="例文">
       <h2 class="section-heading">例文</h2>
       <p class="example-sentence" lang="zh-Hant">{exampleSentence}</p>
+      {examplePinyin && <p class="example-pinyin" lang="zh-Latn">{examplePinyin}</p>}
       {exampleJapanese && <p class="example-meaning">{exampleJapanese}</p>}
     </section>
   )}
@@ -106,6 +107,11 @@ const { title, hookJa, canDoJa, coreSentence, pinyin, exampleSentence, exampleJa
   .example-sentence {
     font-size: 1.25rem;
     line-height: 1.5;
+  }
+  .example-pinyin {
+    font-size: 0.9rem;
+    color: var(--c-text-secondary);
+    margin-top: var(--space-xs);
   }
   .example-meaning {
     font-size: 0.85rem;
