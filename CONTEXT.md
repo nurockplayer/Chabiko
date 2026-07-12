@@ -12,13 +12,21 @@ Build durable Mandarin ability for study, assessment, and real-world use. Chabik
 
 Structured learning aimed at measurable proficiency, including vocabulary, grammar, listening, reading, and practice relevant to Chinese-language examinations. Exam preparation is a primary product target, not a secondary edge case.
 
-## Capability Unit
+## Capability
 
-A reusable unit of Mandarin ability, such as recognizing a word, understanding a grammar pattern, distinguishing a tone, comprehending a sentence, or completing a communicative task. Capability Units are the canonical source of learning content.
+A small, reusable, trackable unit of Mandarin ability, such as recognizing a word, understanding a grammar pattern, distinguishing a tone, comprehending a sentence, or completing a communicative task. Capabilities are the canonical units mapped across lessons, exercises, scenarios, and examinations.
+
+## Lesson
+
+A learner-facing instructional sequence that combines one or more Capabilities into a coherent learning experience. Lessons may be organized differently across paths without duplicating the underlying Capabilities.
+
+## Exercise
+
+An activity that teaches, rehearses, or assesses one or more Capabilities. An Exercise is not itself the canonical definition of the ability it covers.
 
 ## Learning Path
 
-An ordered view over shared Capability Units for a particular learner goal. Chabiko supports both capability-oriented paths and exam-oriented paths without duplicating the underlying lessons or exercises.
+An ordered view over shared Capabilities and Lessons for a particular learner goal. Chabiko supports both capability-oriented paths and exam-oriented paths without duplicating the underlying curriculum.
 
 ## Capability-Oriented Path
 
@@ -26,7 +34,7 @@ A Learning Path organized around durable language ability, such as pronunciation
 
 ## Exam Path
 
-A Learning Path that maps shared Capability Units to the scope, level, and task types of a named Chinese-language examination. An Exam Path does not own a separate copy of the curriculum.
+A Learning Path that maps shared Capabilities to the scope, level, and task types of a named Chinese-language examination. An Exam Path does not own a separate copy of the curriculum.
 
 ## Exam Path Priority
 
@@ -34,7 +42,7 @@ The order in which full exam-oriented experiences are developed. The first compl
 
 ## Assessment Mapping
 
-The relationship between a Capability Unit and one or more examination levels, syllabi, or task types. Assessment Mapping may change when an examination changes without redefining the underlying language ability.
+The relationship between a Capability and one or more examination levels, syllabi, or task types. Assessment Mapping may change when an examination changes without redefining the underlying language ability.
 
 ## Application Scenario
 
@@ -42,11 +50,11 @@ A concrete situation in which learners can use what they study. Taiwan travel is
 
 ## Taiwan Travel Path
 
-A practical learning path built around Taiwan travel situations. It supports the core Mandarin curriculum by turning learned language into concrete tasks; it does not define the full scope of Chabiko.
+A practical Learning Path built around Taiwan travel situations. It supports the core Mandarin curriculum by turning learned language into concrete tasks; it does not define the full scope of Chabiko.
 
 ## Shared Mandarin Core
 
-The region-independent language ability represented by a Capability Unit before a Learning Path selects a regional standard. It captures shared meaning and transferable ability without pretending that all vocabulary, pronunciation, or usage is identical across regions.
+The region-independent language ability represented by a Capability before a Learning Path selects a regional standard. It captures shared meaning and transferable ability without pretending that all vocabulary, pronunciation, or usage is identical across regions.
 
 ## Language Variant
 
@@ -58,7 +66,7 @@ The Language Variant designated as authoritative for a Learning Path. 中国語�
 
 ## Regional Realization
 
-A reviewed regional expression of a shared Capability Unit, including the natural word form, pronunciation, usage notes, and examples for a specific Language Variant. Regional Realizations may share meaning while differing substantially in wording or sound.
+A reviewed regional expression of a shared Capability, including the natural word form, pronunciation, usage notes, and examples for a specific Language Variant. Regional Realizations may share meaning while differing substantially in wording or sound.
 
 ## Script Variant
 
@@ -71,6 +79,22 @@ A learner-facing preference that controls whether Chinese text is rendered in Si
 ## Language Standard Selection
 
 The choice of Mainland Mandarin or Taiwan Mandarin as the learner's active regional standard. It is independent from Display Script Preference and is normally inherited from the selected Learning Path rather than changed by the ordinary script toggle.
+
+## AI-Managed Content
+
+Structured learning content initially generated by AI and eligible for continued inspection and modification by approved automated agents, including scheduled GitHub Actions using models such as Gemini or DeepSeek.
+
+## Human-Reviewed Content
+
+Content that an authorized human has explicitly reviewed and approved. Human-Reviewed Content is protected from all automated semantic modification until a human explicitly removes or supersedes that approval.
+
+## Review Lock
+
+The protection applied to Human-Reviewed Content. Automated agents may report suspected problems with locked content, but must not edit, replace, delete, or regenerate the locked material.
+
+## Automated Content Maintenance
+
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks and must distinguish editable AI-managed material from human-reviewed material before proposing or applying any change.
 
 ## Kanji Bridge
 
