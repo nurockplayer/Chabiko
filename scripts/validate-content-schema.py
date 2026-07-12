@@ -321,6 +321,11 @@ def _check_resource_review_metadata(record: dict, path: str) -> list[str]:
             f"{path}.reviewedBy is required and must be non-empty when reviewedDate is present"
         )
 
+    if isinstance(reviewed_date, str) and not reviewed_date.strip():
+        errors.append(
+            f"{path}.reviewedDate must not be empty or whitespace-only"
+        )
+
     if has_review_date:
         try:
             parsed_date = date.fromisoformat(reviewed_date)
@@ -739,6 +744,8 @@ def run_tests():
         test_resource_terminal_review_requires_metadata,
         test_resource_approved_review_with_metadata_is_valid,
         test_resource_reviewed_date_requires_real_iso_date,
+        test_resource_reviewed_date_empty_string_fails,
+        test_resource_reviewed_date_whitespace_fails,
         test_resource_attribution_required_rejects_present_non_booleans,
         test_resource_attribution_required_needs_instructions,
         test_resource_missing_license_status,
@@ -1215,6 +1222,20 @@ def test_resource_reviewed_date_requires_real_iso_date():
             _minimal_resource(reviewedBy="editor", reviewedDate=reviewed_date), "resource"
         )
         _assert_has_error(errs, "reviewedDate", f"resource_bad_date_{reviewed_date}")
+
+
+def test_resource_reviewed_date_empty_string_fails():
+    errs = validate_single(
+        _minimal_resource(reviewedBy="editor", reviewedDate=""), "resource"
+    )
+    _assert_has_error(errs, "reviewedDate", "resource_reviewed_date_empty")
+
+
+def test_resource_reviewed_date_whitespace_fails():
+    errs = validate_single(
+        _minimal_resource(reviewedBy="editor", reviewedDate="   "), "resource"
+    )
+    _assert_has_error(errs, "reviewedDate", "resource_reviewed_date_whitespace")
 
 
 def test_resource_attribution_required_rejects_present_non_booleans():
