@@ -1,0 +1,40 @@
+{
+  "resources": [
+    {
+      "id": "resource-duplicate-test",
+      "title": "First Occurrence",
+      "url": "https://example.org/first",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "reviewStatus": "candidate",
+      "attribution": "First Occurrence (https://example.org/first) by Test",
+      "notes": "First instance of duplicate id."
+    },
+    {
+      "id": "resource-unique",
+      "title": "Unique Resource",
+      "url": "https://example.org/unique",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "reviewStatus": "candidate",
+      "attribution": "Unique Resource (https://example.org/unique) by Test",
+      "notes": "This one is unique."
+    },
+    {
+      "id": "resource-duplicate-test",
+      "title": "Second Occurrence",
+      "url": "https://example.org/second",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "needs-review",
+      "allowedUse": "reference-only",
+      "reviewStatus": "candidate",
+      "attribution": "Second Occurrence (https://example.org/second) by Test",
+      "notes": "Duplicate id with first entry."
+    }
+  ]
+}

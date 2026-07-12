@@ -775,6 +775,35 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             item_path = f"{collection_path}[{i}]"
             errors.extend(validate_single(item, schema_type, item_path))
 
+        # Duplicate resource ID detection (bundle-level, within the resource collection)
+        if schema_type == "resource":
+            errors.extend(_check_resource_duplicate_ids(value, collection_path))
+
+    return errors
+
+
+def _check_resource_duplicate_ids(resources: list, path: str) -> list[str]:
+    """
+    Detect resources with duplicate 'id' values within the same bundle.
+
+    Only checks entries that have a valid string 'id'; non-string/missing ids
+    are handled by schema validation and silently skipped here to avoid crashes.
+    """
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for i, item in enumerate(resources):
+        if not isinstance(item, dict):
+            continue
+        rid = item.get("id")
+        if not isinstance(rid, str):
+            continue
+        if rid in seen:
+            errors.append(
+                f"{path}[{i}]: duplicate resource id '{rid}' "
+                f"(first occurrence at {path}[{seen[rid]}])"
+            )
+        else:
+            seen[rid] = i
     return errors
 
 
@@ -917,6 +946,17 @@ def run_tests():
         test_resource_needs_review_license_non_reference_use,
         test_resource_allowed_use_commercial_explicit_false,
         test_resource_pia_combined_allowed_use_and_review_one_error,
+
+        # ─── Resource duplicate ID detection ───
+        test_resource_duplicate_id_simple,
+        test_resource_duplicate_id_three_entries,
+        test_resource_duplicate_id_error_message_format,
+        test_resource_no_duplicate_no_error,
+        test_resource_missing_id_does_not_crash,
+        test_resource_missing_id_does_not_false_positive_with_none,
+        test_resource_wrong_type_id_does_not_crash,
+        test_resource_duplicate_different_content_types_not_detected,
+        test_resource_duplicate_deterministic_order,
 
         # ─── Bundle ───
         test_bundle_valid,
@@ -1918,6 +1958,144 @@ def test_resource_pia_combined_allowed_use_and_review_one_error():
     )
     _assert_has_error(errs, "allowedUse is 'reference-only'", "pia_combined_refonly")
     _assert_has_error(errs, "reviewStatus is 'candidate'", "pia_combined_review")
+
+
+# ─── Resource duplicate ID detection tests ──────────────────────────────────
+
+def test_resource_duplicate_id_simple():
+    """Two resources with the same id should be detected."""
+    data = {
+        "resources": [
+            _minimal_resource(id="resource-dup-a"),
+            _minimal_resource(id="resource-dup-a"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate resource id", "dup_simple")
+
+
+def test_resource_duplicate_id_three_entries():
+    """Three resources: first and third share an id, second different."""
+    data = {
+        "resources": [
+            _minimal_resource(id="resource-dup-x"),
+            _minimal_resource(id="resource-dup-y"),
+            _minimal_resource(id="resource-dup-x"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate resource id 'resource-dup-x'", "dup_three")
+    assert sum(1 for e in errs if "duplicate resource id" in e) == 1, (
+        f"Expected exactly 1 duplicate error, got {errs}"
+    )
+
+
+def test_resource_duplicate_id_error_message_format():
+    """Error must include the duplicated id, first position, and current position."""
+    data = {
+        "resources": [
+            _minimal_resource(id="resource-dup-msg"),
+            _minimal_resource(id="resource-msg-other"),
+            _minimal_resource(id="resource-dup-msg"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate resource id 'resource-dup-msg'", "dup_msg_id")
+    _assert_has_error(errs, "first occurrence at root.resources[0]", "dup_msg_first")
+    _assert_has_error(errs, "root.resources[2]: duplicate", "dup_msg_current")
+
+
+def test_resource_no_duplicate_no_error():
+    """All unique ids produce no duplicate error."""
+    data = {
+        "resources": [
+            _minimal_resource(id="resource-a"),
+            _minimal_resource(id="resource-b"),
+            _minimal_resource(id="resource-c"),
+        ]
+    }
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert dup_errors == [], f"Expected no duplicate errors, got {dup_errors}"
+
+
+def test_resource_missing_id_does_not_crash():
+    """Missing id field is handled by schema validation, must not crash duplicate check."""
+    data = {
+        "resources": [
+            _minimal_resource(),
+            {"title": "No-id resource", "url": "https://example.org/no-id", "owner": "T", "resourceType": "reference", "licenseStatus": "needs-review", "allowedUse": "reference-only", "reviewStatus": "candidate", "attribution": "No-id", "notes": "Missing id."},
+        ]
+    }
+    errs = validate_bundle(data)
+    # Must not crash — should produce a missing-required error from schema validation
+    # and duplicate check should silently skip the id-less entry
+    _assert_has_error(errs, "required field", "dup_no_id_req")
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert dup_errors == [], f"Expected no duplicate errors, got {dup_errors}"
+
+
+def test_resource_missing_id_does_not_false_positive_with_none():
+    """Explicit None id should not cause a false duplicate."""
+    data = {
+        "resources": [
+            _minimal_resource(id=None),
+            _minimal_resource(id=None),
+        ]
+    }
+    # Both have id=None which is not a string — duplicate check skips non-string
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert dup_errors == [], f"Expected no duplicate errors, got {dup_errors}"
+
+
+def test_resource_wrong_type_id_does_not_crash():
+    """Numeric id should not crash the duplicate checker."""
+    data = {
+        "resources": [
+            _minimal_resource(id=42),
+            _minimal_resource(id=42),
+        ]
+    }
+    errs = validate_bundle(data)
+    # Type error from schema validation, no crash
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert dup_errors == [], f"Expected no duplicate errors, got {dup_errors}"
+
+
+def test_resource_duplicate_different_content_types_not_detected():
+    """Same id in different content type collections is not a duplicate."""
+    data = {
+        "resources": [
+            _minimal_resource(id="shared-id"),
+        ],
+        "vocabulary": [
+            _minimal_vocab(id="shared-id"),
+        ],
+    }
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert dup_errors == [], f"Expected no duplicate errors across content types, got {dup_errors}"
+
+
+def test_resource_duplicate_deterministic_order():
+    """Duplicate error order must be deterministic (by position in array)."""
+    data = {
+        "resources": [
+            _minimal_resource(id="z-resource"),
+            _minimal_resource(id="a-resource"),
+            _minimal_resource(id="z-resource"),
+            _minimal_resource(id="m-resource"),
+            _minimal_resource(id="a-resource"),
+        ]
+    }
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate resource id" in e]
+    assert len(dup_errors) == 2, f"Expected 2 duplicate errors, got {len(dup_errors)}: {dup_errors}"
+    # First duplicate: second occurrence of 'z-resource' at [2]
+    _assert_has_error(errs, "root.resources[2]: duplicate resource id 'z-resource'", "det_order_z")
+    # Second duplicate: second occurrence of 'a-resource' at [4]
+    _assert_has_error(errs, "root.resources[4]: duplicate resource id 'a-resource'", "det_order_a")
 
 
 # ─── Bundle tests ──────────────────────────────────────────────────────────
