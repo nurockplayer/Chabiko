@@ -100,9 +100,21 @@ A Review Lock applied to a specific Reviewable Content Node. Locked sibling node
 
 The protection applied to Human-Reviewed Content. Automated agents may report suspected problems with locked content, but must not edit, replace, delete, regenerate, or indirectly invalidate the locked material.
 
+## Revision Proposal
+
+A separate candidate replacement for a Human-Reviewed Content Node. Automated agents may create a Revision Proposal when they suspect locked content is wrong or outdated, but the proposal must not alter the active reviewed version before human approval.
+
+## Revision Decision
+
+The human action that resolves a Revision Proposal by accepting it, rejecting it, editing and accepting it, or marking it as requiring no change. Acceptance supersedes the previous reviewed version and creates a newly reviewed version.
+
+## Review History
+
+The auditable record of human review and revision decisions for a Reviewable Content Node. It records the reviewer, decision time, reason, previous version, accepted version, and supporting sources when applicable.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks and must distinguish editable AI-managed material from human-reviewed material before proposing or applying any change.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, and distinguish editable AI-managed material from human-reviewed material before applying any change.
 
 ## Kanji Bridge
 
