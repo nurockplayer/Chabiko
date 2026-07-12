@@ -245,13 +245,23 @@ When full schema validation is implemented (planned #2), these rules must also h
   - `licenseStatus` must be `approved` or `restricted`.
   - `allowedUse` must not be `reference-only` or `citation`.
   - `reviewStatus` must be `approved`.
-- When `licenseStatus` is `unknown`, `needs-review`, or `prohibited`, all permission flags must be `false` or absent.
-- When `reviewStatus` is `rejected`, all permission flags must be `false` or absent.
+  - Multiple reasons are combined into a single error per flag.
+- When `licenseStatus` is `unknown`, `needs-review`, or `prohibited`:
+  - All permission flags must be `false` or absent.
+  - `allowedUse` must be `reference-only` or `citation`; non-reference values fail even with no permission flags set.
+- When `reviewStatus` is `rejected`:
+  - All permission flags must be `false` or absent.
+  - `allowedUse` must be `reference-only` or `citation`; non-reference values fail even with no permission flags set.
 - When `reviewStatus` is `approved`, `licenseStatus` must not be `unknown`, `needs-review`, or `prohibited`.
-- `allowedUse` values are consistent with permission flags: `reference-only` and `citation` do not allow any permission flags; `non-commercial` does not allow `commercialUseAllowed`.
+- `allowedUse` values are consistent with permission flags:
+  - `reference-only` and `citation` do not allow any permission flags.
+  - `non-commercial` does not allow `commercialUseAllowed`.
+  - `commercial` requires `commercialUseAllowed` to not be explicit `false`.
 
-Validation priorities (what fires when multiple conditions apply):
-1. `licenseStatus` blocking rules take highest priority — a resource with `licenseStatus: unknown` and a permission flag gets a single blocking error, not additional type or cross-field errors.
-2. `reviewStatus: rejected` operates only on flags not already blocked by license status.
-3. `productionImportAllowed` positive checks apply only to flags not blocked by earlier rules.
-4. `allowedUse` consistency errors fire on any remaining unhandled true flags.
+Error priority (ensures at most one error per flag):
+1. `allowedUse` vs `licenseStatus` / `reviewStatus` (Phase A — no `true` flags needed).
+2. `licenseStatus` blocking rules (Phase B) — highest priority for flags.
+3. `reviewStatus: rejected` blocking (Phase C) — only unhandled flags.
+4. `productionImportAllowed` combined positive checks (Phase D) — one combined error.
+5. `reviewStatus=approved` vs bad `licenseStatus` (Phase E).
+6. `allowedUse` consistency with remaining flags (Phase F).

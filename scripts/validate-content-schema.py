@@ -356,14 +356,19 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
         "productionImportAllowed", "commercialUseAllowed",
         "modificationAllowed", "redistributionAllowed",
     )
+    NON_REFERENCE_USES = {"attributed-use", "non-commercial", "commercial"}
 
-    # Type check: reject null for permission flags
+    # Phase 1: Type check — reject null for permission flags
     for field in PERMISSION_FLAGS:
         if field in record and record[field] is None:
             errors.append(f"{path}.{field} must be a boolean when present")
 
     # Collect boolean-valued flags for cross-field checks
     true_flags = set()
+    commercial_explicitly_false = (
+        isinstance(record.get("commercialUseAllowed"), bool)
+        and record["commercialUseAllowed"] is False
+    )
     for field in PERMISSION_FLAGS:
         val = record.get(field)
         if isinstance(val, bool) and val is True:
@@ -376,7 +381,23 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
     # Track flags already reported, so no field gets two errors
     errored_flags = set()
 
-    # Rule: licenseStatus in {unknown, needs-review, prohibited} blocks permissions
+    # Phase A: allowedUse itself is a permission declaration
+    # licenseStatus=unknown/needs-review/prohibited restricts allowedUse
+    if isinstance(license_status, str) and license_status in ("unknown", "needs-review", "prohibited"):
+        if isinstance(allowed_use, str) and allowed_use in NON_REFERENCE_USES:
+            errors.append(
+                f"{path}: allowedUse is '{allowed_use}' but licenseStatus is "
+                f"'{license_status}'; must be 'reference-only' or 'citation'"
+            )
+
+    # reviewStatus=rejected restricts allowedUse
+    if review_status == "rejected" and isinstance(allowed_use, str) and allowed_use in NON_REFERENCE_USES:
+        errors.append(
+            f"{path}: allowedUse is '{allowed_use}' but reviewStatus is "
+            f"'rejected'; must be 'reference-only' or 'citation'"
+        )
+
+    # Phase B: licenseStatus in {unknown, needs-review, prohibited} blocks flags
     if isinstance(license_status, str) and license_status in ("unknown", "needs-review", "prohibited"):
         for field in sorted(true_flags):
             errors.append(
@@ -385,7 +406,7 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
             )
             errored_flags.add(field)
 
-    # Rule: reviewStatus=rejected blocks permissions
+    # Phase C: reviewStatus=rejected blocks remaining flags
     if review_status == "rejected":
         for field in sorted(true_flags - errored_flags):
             errors.append(
@@ -394,34 +415,23 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
             )
             errored_flags.add(field)
 
-    # Rules: productionImportAllowed positive checks
+    # Phase D: productionImportAllowed positive checks (one combined error per flag)
     if "productionImportAllowed" not in errored_flags and "productionImportAllowed" in true_flags:
-        has_pia_error = False
-
+        reasons = []
         if isinstance(license_status, str) and license_status not in ("approved", "restricted"):
-            errors.append(
-                f"{path}.productionImportAllowed is true but licenseStatus is "
-                f"'{license_status}'; must be 'approved' or 'restricted'"
-            )
-            has_pia_error = True
-
+            reasons.append(f"licenseStatus is '{license_status}'")
         if isinstance(allowed_use, str) and allowed_use in ("reference-only", "citation"):
-            errors.append(
-                f"{path}.productionImportAllowed is true but allowedUse is '{allowed_use}'"
-            )
-            has_pia_error = True
-
+            reasons.append(f"allowedUse is '{allowed_use}'")
         if not isinstance(review_status, str) or review_status != "approved":
+            reasons.append(f"reviewStatus is '{review_status}'")
+        if reasons:
             errors.append(
-                f"{path}.productionImportAllowed is true but reviewStatus is "
-                f"'{review_status}'; must be 'approved'"
+                f"{path}.productionImportAllowed is true but "
+                + "; ".join(reasons)
             )
-            has_pia_error = True
-
-        if has_pia_error:
             errored_flags.add("productionImportAllowed")
 
-    # Rule: reviewStatus=approved conflicts with bad licenseStatus
+    # Phase E: reviewStatus=approved conflicts with bad licenseStatus
     if review_status == "approved" and isinstance(license_status, str) and \
        license_status in ("unknown", "needs-review", "prohibited"):
         errors.append(
@@ -429,7 +439,7 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
             f"'{license_status}'"
         )
 
-    # Rule: allowedUse must be consistent with permission flags
+    # Phase F: allowedUse must be consistent with remaining permission flags
     unhandled = true_flags - errored_flags
     if isinstance(allowed_use, str):
         if allowed_use in ("reference-only", "citation"):
@@ -440,6 +450,10 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
         elif allowed_use == "non-commercial" and "commercialUseAllowed" in unhandled:
             errors.append(
                 f"{path}.commercialUseAllowed is true but allowedUse is 'non-commercial'"
+            )
+        elif allowed_use == "commercial" and commercial_explicitly_false:
+            errors.append(
+                f"{path}.commercialUseAllowed is false but allowedUse is 'commercial'"
             )
 
     return errors
@@ -895,6 +909,14 @@ def run_tests():
         test_resource_allowed_use_non_commercial_no_commercial,
         test_resource_candidate_backward_compatible,
         test_resource_restricted_license_allows_permissions,
+
+        # ─── Resource permission policy regression ───
+        test_resource_prohibited_license_commercial_use_no_flags,
+        test_resource_rejected_review_commercial_use_no_flags,
+        test_resource_unknown_license_non_reference_use,
+        test_resource_needs_review_license_non_reference_use,
+        test_resource_allowed_use_commercial_explicit_false,
+        test_resource_pia_combined_allowed_use_and_review_one_error,
 
         # ─── Bundle ───
         test_bundle_valid,
@@ -1799,6 +1821,103 @@ def test_resource_restricted_license_allows_permissions():
     )
     _assert_no_errors(errs, "restricted_allows")
 
+
+# ─── Resource permission policy regression tests (fix blockers) ────────────
+
+def test_resource_prohibited_license_commercial_use_no_flags():
+    """prohibited license + allowedUse=commercial + no permission flags fails."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="prohibited",
+            allowedUse="commercial",
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "allowedUse is 'commercial' but licenseStatus is 'prohibited'",
+                      "prohibited_allowed_use")
+    _assert_has_error(errs, "must be 'reference-only' or 'citation'",
+                      "prohibited_allowed_use_reason")
+
+
+def test_resource_rejected_review_commercial_use_no_flags():
+    """rejected review + allowedUse=commercial + no permission flags fails."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            reviewStatus="rejected",
+            reviewedBy="reviewer",
+            reviewedDate="2026-07-12",
+            allowedUse="commercial",
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "allowedUse is 'commercial' but reviewStatus is 'rejected'",
+                      "rejected_allowed_use")
+    _assert_has_error(errs, "must be 'reference-only' or 'citation'",
+                      "rejected_allowed_use_reason")
+
+
+def test_resource_unknown_license_non_reference_use():
+    """unknown license + non-reference allowedUse fails even with no flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="unknown",
+            allowedUse="attributed-use",
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "allowedUse is 'attributed-use' but licenseStatus is 'unknown'",
+                      "unknown_nonref")
+    _assert_has_error(errs, "must be 'reference-only' or 'citation'",
+                      "unknown_nonref_reason")
+
+
+def test_resource_needs_review_license_non_reference_use():
+    """needs-review license + non-reference allowedUse fails even with no flags."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            licenseStatus="needs-review",
+            allowedUse="commercial",
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "allowedUse is 'commercial' but licenseStatus is 'needs-review'",
+                      "needsreview_nonref")
+
+
+def test_resource_allowed_use_commercial_explicit_false():
+    """allowedUse=commercial with commercialUseAllowed=false fails."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            allowedUse="commercial",
+            commercialUseAllowed=False,
+            productionImportAllowed=False,
+        ),
+        "resource",
+    )
+    _assert_has_error(errs, "commercialUseAllowed is false but allowedUse is 'commercial'",
+                      "commercial_false")
+
+
+def test_resource_pia_combined_allowed_use_and_review_one_error():
+    """productionImportAllowed=true with both bad allowedUse and non-approved
+    reviewStatus produces exactly ONE error for that flag."""
+    errs = validate_single(
+        _minimal_resource_with_permissions(
+            allowedUse="reference-only",
+            reviewStatus="candidate",
+            productionImportAllowed=True,
+        ),
+        "resource",
+    )
+    # Phase D combines reasons into one error; Phase F fires separately for flag
+    # not blocked by Phase D that conflicts with allowedUse=reference-only.
+    # productionImportAllowed should appear in exactly 1 error.
+    count = sum(1 for e in errs if "productionImportAllowed" in e)
+    assert count == 1, (
+        f"Expected exactly 1 error for productionImportAllowed, got {count}: {errs}"
+    )
+    _assert_has_error(errs, "allowedUse is 'reference-only'", "pia_combined_refonly")
+    _assert_has_error(errs, "reviewStatus is 'candidate'", "pia_combined_review")
 
 
 # ─── Bundle tests ──────────────────────────────────────────────────────────

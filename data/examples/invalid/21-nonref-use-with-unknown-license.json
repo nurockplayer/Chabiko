@@ -1,0 +1,16 @@
+{
+  "resources": [
+    {
+      "id": "resource-bad-021",
+      "title": "Non-Reference Use With Unknown License",
+      "url": "https://example.org/bad-unknown-use",
+      "owner": "Test",
+      "resourceType": "reference",
+      "licenseStatus": "unknown",
+      "allowedUse": "commercial",
+      "attribution": "Non-Reference Use With Unknown by Test",
+      "reviewStatus": "candidate",
+      "notes": "Test fixture. allowedUse=commercial with licenseStatus=unknown must fail even without permission flags."
+    }
+  ]
+}
