@@ -265,3 +265,11 @@ Error priority (ensures at most one error per flag):
 4. `productionImportAllowed` combined positive checks (Phase D) — one combined error.
 5. `reviewStatus=approved` vs bad `licenseStatus` (Phase E).
 6. `allowedUse` consistency with remaining flags (Phase F).
+
+### Resource duplicate ID detection
+
+- Within a single `resources` array, two or more entries with the same `id` fail validation.
+- The error message includes the duplicated `id`, the index of the first occurrence, and the index of the current duplicate occurrence.
+- Output order is deterministic — errors appear in the order duplicates are found (by increasing array index).
+- Entries with a missing or non-string `id` are silently skipped (schema-level validation handles those separately).
+- The check is scoped to the `resources` collection only; identical `id` values across different content types (e.g., a resource and a vocabulary entry) are not flagged.
