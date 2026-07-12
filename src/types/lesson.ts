@@ -45,7 +45,7 @@ export interface Lesson {
   chunks: LessonChunk[];
   kanjiBridgeNotes: KanjiBridgeNote[];
   soundFocus: SoundFocus[];
-  examples: LessonExample[];
+  examples?: LessonExample[];
   reviewPrompts: ReviewPrompt[];
   travelTask: string;
   relatedVocabulary: string[];

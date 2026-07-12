@@ -17,8 +17,8 @@ describe('loadLessons', () => {
     expect(lesson.hookJa).toContain('夜市');
     expect(lesson.canDoJa).toContain('注文');
     expect(lesson.coreSentence).toBe('我要這個');
-    expect(lesson.examples.length).toBeGreaterThan(0);
-    expect(lesson.examples[0].pinyin).toBe('wǒ yào zhège');
+    expect(lesson?.examples?.length).toBeGreaterThan(0);
+    expect(lesson?.examples?.[0]?.pinyin).toBe('wǒ yào zhège');
   });
 
   it('loads a lesson from an explicit path', () => {

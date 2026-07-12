@@ -6,7 +6,7 @@ import GoalPathSlot from '../components/GoalPathSlot.astro';
 import { loadLessonById } from '../content/loadLessons';
 
 const lesson = loadLessonById('lesson-001');
-const example = lesson?.examples[0];
+const example = lesson?.examples?.[0] ?? null;
 ---
 
 <BaseLayout title="ホーム">
