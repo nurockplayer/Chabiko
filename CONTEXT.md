@@ -152,9 +152,29 @@ AI-Managed Content that has passed the Automated Publication Gate and is eligibl
 
 The state of content that fails one or more mandatory checks in the Automated Publication Gate. Failed content must remain unpublished or be withdrawn from learner-facing use until a later revision passes the required checks.
 
+## Authoring Agent
+
+The approved AI role responsible for generating new AI-Managed Content and applying semantic revisions to unlocked content. The initial planned Authoring Agent is DeepSeek, but the role is defined independently from any specific model provider.
+
+## Critic Agent
+
+An independent AI role responsible for adversarially reviewing content produced by the Authoring Agent. The Critic Agent identifies linguistic, pedagogical, regional, assessment, safety, and consistency problems but does not directly publish content. The initial planned Critic Agent is Gemini.
+
+## Deterministic Validator
+
+A non-generative check that evaluates rules with reproducible outcomes, such as schema validity, identifier integrity, required fields, pinyin format, supported Script Variants, reference integrity, Review Lock preservation, and other machine-verifiable constraints. A mandatory validator failure always blocks publication.
+
+## Asymmetric Multi-Model Workflow
+
+The content-maintenance workflow in which models have distinct responsibilities rather than equal votes. The default sequence is Authoring Agent, Critic Agent, Deterministic Validators, then publication. A major Critic finding returns the content to the Authoring Agent for revision; it is not resolved by majority voting.
+
+## Content Quarantine
+
+The unpublished state for AI-Managed Content that cannot pass the Asymmetric Multi-Model Workflow after permitted repair attempts, contains unresolved model disagreement, or otherwise lacks sufficient confidence for learner-facing use. Quarantined content must not be repeatedly published and withdrawn while agents disagree.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, and re-run the Automated Publication Gate after every semantic revision to published content.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, and follow the Asymmetric Multi-Model Workflow rather than model voting.
 
 ## Kanji Bridge
 
