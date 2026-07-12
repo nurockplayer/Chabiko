@@ -28,6 +28,10 @@ A Learning Path organized around durable language ability, such as pronunciation
 
 A Learning Path that maps shared Capability Units to the scope, level, and task types of a named Chinese-language examination. An Exam Path does not own a separate copy of the curriculum.
 
+## Exam Path Priority
+
+The order in which full exam-oriented experiences are developed. The first complete Exam Path is the Japanese Chinese Proficiency Test (中国語検定), followed by HSK. TOCFL may receive Assessment Mappings before it receives a complete learner-facing Exam Path.
+
 ## Assessment Mapping
 
 The relationship between a Capability Unit and one or more examination levels, syllabi, or task types. Assessment Mapping may change when an examination changes without redefining the underlying language ability.
