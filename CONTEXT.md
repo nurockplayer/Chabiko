@@ -140,9 +140,21 @@ The product principle that learner-facing trust is based on whether content has 
 
 A visible indicator that content has received Human-Checked or Expert-Reviewed status for a relevant Review Scope. Chabiko does not display an AI-generated badge for ordinary content. Verification signals must not imply that unlabelled content is invalid, only that it has not received the corresponding human review level.
 
+## Automated Publication Gate
+
+The automated quality threshold that AI-Managed Content must pass before it becomes publicly visible. Human review is not required for publication, but the content must satisfy all applicable structural, linguistic, safety, consistency, and provenance checks defined for its content type and Language Variant.
+
+## Published AI-Managed Content
+
+AI-Managed Content that has passed the Automated Publication Gate and is eligible for learner-facing use without a Human-Checked or Expert-Reviewed badge. Publication does not add a Review Lock and does not prevent approved automated agents from continuing to inspect and improve the content.
+
+## Publication Failure
+
+The state of content that fails one or more mandatory checks in the Automated Publication Gate. Failed content must remain unpublished or be withdrawn from learner-facing use until a later revision passes the required checks.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, and distinguish editable AI-managed material from human-reviewed material before applying any change.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, and re-run the Automated Publication Gate after every semantic revision to published content.
 
 ## Kanji Bridge
 
