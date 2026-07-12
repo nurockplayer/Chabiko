@@ -206,11 +206,27 @@ A change that does not affect the meaning or learner-facing behavior of a Review
 
 ## Content Revision
 
-A lightweight node-level metadata record created for each Semantic Revision. The initial record contains the Reviewable Content Node identifier, content hashes before and after the change, actor identity or actor type, model version when applicable, prompt version, validator version, related Issue Fingerprints, Git commit SHA, and creation time. It does not store a complete duplicate of the content; the corresponding full versions remain in Git.
+A lightweight node-level metadata record created for each Semantic Revision. The initial record contains the Reviewable Content Node identifier, content hashes before and after the change, actor identity or actor type, model version when applicable, prompt version, validator version, related Issue Fingerprints, and creation time. It does not store a complete duplicate of the content; the corresponding full versions remain in Git. When stored in a Revision Manifest committed with the content change, the containing Git commit is the authoritative commit identifier and does not need to be duplicated inside the record.
+
+## Revision Ledger
+
+The append-only, Git-tracked collection of Revision Manifests for Semantic Revisions. Automated agents may add new ledger entries but must not rewrite or delete existing entries. Git history and repository protections provide the authoritative audit trail.
+
+## Revision Manifest
+
+One machine-readable manifest created for a content-maintenance batch. It contains a stable batch or workflow-run identifier and one Content Revision entry for each Semantic Revision in that batch. The manifest is committed together with the corresponding content changes. Because a Git commit cannot contain its own final commit SHA without creating a self-reference, the containing commit supplies that identity; the manifest may instead record the input or parent commit and workflow-run identifier.
+
+## Atomic Content Revision Commit
+
+A Git commit that contains both the Semantic Revisions and their required Revision Manifest. Deterministic Validators must reject a semantic content change without a matching ledger entry, a ledger entry without a matching content diff, or hashes that do not match the committed node content.
+
+## Derived Revision Index
+
+An optional searchable database or other index projected from the Revision Ledger. It exists only for query performance and user interfaces, may be rebuilt completely from Git, and must never become an independent source of truth.
 
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, deduplicate recurring findings by Issue Fingerprint, and create Content Revision metadata for every Semantic Revision.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, deduplicate recurring findings by Issue Fingerprint, create Content Revision metadata for every Semantic Revision, and commit required Revision Manifests atomically with their corresponding content changes.
 
 ## Kanji Bridge
 
