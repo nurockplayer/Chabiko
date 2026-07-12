@@ -192,9 +192,25 @@ A stable machine-readable identity for one detected content problem. The fingerp
 
 The persistent record associated with an Issue Fingerprint. Repeated detections of the same fingerprint update the existing record with occurrence count, first-seen and last-seen times, current evidence, affected content version, and resolution state instead of creating duplicate records. A resolved issue may be reopened when the same fingerprint is detected again.
 
+## Content Source of Truth
+
+The complete structured learning content and its authoritative version history stored in Git. Git is the source used to reconstruct past content. Lightweight revision metadata may reference Git commits but does not replace or duplicate the canonical content.
+
+## Semantic Revision
+
+A change that can alter learner interpretation, linguistic correctness, pedagogy, answer evaluation, regional naturalness, examination mapping, safety, or any other meaning-bearing behavior of a Reviewable Content Node. Every Semantic Revision must create a Content Revision record and must pass all applicable Review Lock checks and the Automated Publication Gate.
+
+## Mechanical Revision
+
+A change that does not affect the meaning or learner-facing behavior of a Reviewable Content Node, such as deterministic serialization formatting or whitespace normalization. Mechanical Revisions remain visible in Git history but do not create Content Revision records. A change must be treated as semantic whenever classification is uncertain.
+
+## Content Revision
+
+A lightweight node-level metadata record created for each Semantic Revision. The initial record contains the Reviewable Content Node identifier, content hashes before and after the change, actor identity or actor type, model version when applicable, prompt version, validator version, related Issue Fingerprints, Git commit SHA, and creation time. It does not store a complete duplicate of the content; the corresponding full versions remain in Git.
+
 ## Automated Content Maintenance
 
-The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, and deduplicate recurring findings by Issue Fingerprint.
+The recurring process by which approved AI agents inspect and directly improve AI-Managed Content. The process must preserve Review Locks, route suspected problems in locked content into Revision Proposals, distinguish editable AI-managed material from human-reviewed material before applying any change, re-run the Automated Publication Gate after every semantic revision to published content, follow the Asymmetric Multi-Model Workflow rather than model voting, enforce the Repair Budget, skip quarantined content until a valid Quarantine Requeue Trigger occurs, deduplicate recurring findings by Issue Fingerprint, and create Content Revision metadata for every Semantic Revision.
 
 ## Kanji Bridge
 
