@@ -45,18 +45,21 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     'travelTask',
     'reviewStatus',
   ];
-  const optionalArrayFields = [
-    'sections',
+  const requiredArrayFields = [
     'chunks',
     'kanjiBridgeNotes',
     'soundFocus',
-    'examples',
     'reviewPrompts',
+  ];
+  const optionalArrayFields = [
+    'sections',
+    'examples',
     'relatedVocabulary',
   ];
 
   return (
     requiredTextFields.every((field) => isNonEmptyString(lesson[field])) &&
+    requiredArrayFields.every((field) => Array.isArray(lesson[field])) &&
     optionalArrayFields.every(
       (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
     )

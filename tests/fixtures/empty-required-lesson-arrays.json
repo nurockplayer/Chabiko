@@ -1,0 +1,20 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-001",
+      "titleJa": "空の配列も使えるレッスン",
+      "level": "beginner",
+      "canDoJa": "注文できる",
+      "learnerOutcomeJa": "指差し注文が使える",
+      "hookJa": "夜市で使う",
+      "travelScenario": "food",
+      "coreSentence": "我要這個",
+      "chunks": [],
+      "kanjiBridgeNotes": [],
+      "soundFocus": [],
+      "reviewPrompts": [],
+      "travelTask": "注文してみよう",
+      "reviewStatus": "draft"
+    }
+  ]
+}

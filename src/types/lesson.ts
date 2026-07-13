@@ -42,11 +42,11 @@ export interface Lesson {
   travelScenario: string;
   coreSentence: string;
   sections?: LessonSection[];
-  chunks?: LessonChunk[];
-  kanjiBridgeNotes?: KanjiBridgeNote[];
-  soundFocus?: SoundFocus[];
+  chunks: LessonChunk[];
+  kanjiBridgeNotes: KanjiBridgeNote[];
+  soundFocus: SoundFocus[];
   examples?: LessonExample[];
-  reviewPrompts?: ReviewPrompt[];
+  reviewPrompts: ReviewPrompt[];
   travelTask: string;
   relatedVocabulary?: string[];
   reviewStatus: string;
