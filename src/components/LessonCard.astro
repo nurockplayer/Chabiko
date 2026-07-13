@@ -1,0 +1,160 @@
+---
+export interface Props {
+  title: string;
+  hookJa: string;
+  canDoJa: string;
+  coreSentence: string;
+  exampleSentence?: string;
+  examplePinyin?: string;
+  exampleJapanese?: string;
+}
+
+const { title, hookJa, canDoJa, coreSentence, exampleSentence, examplePinyin, exampleJapanese } = Astro.props;
+---
+
+<article class="lesson-card">
+  <span class="lesson-label">今日のレッスン</span>
+  <h1 class="lesson-title">{title}</h1>
+
+  <p class="lesson-hook">{hookJa}</p>
+
+  <section class="goal-section" aria-label="目標">
+    <h2 class="section-heading">目標</h2>
+    <p class="can-do">{canDoJa}</p>
+  </section>
+
+  <section class="core-section" aria-label="コア表現">
+    <h2 class="section-heading">コア表現</h2>
+    <p class="core-sentence" lang="zh-Hant">{coreSentence}</p>
+    <!-- coreSentence 的拼音會由後續 issue 的資料模型提供 -->
+  </section>
+
+  {exampleSentence && (
+    <section class="example-section" aria-label="例文">
+      <h2 class="section-heading">例文</h2>
+      <p class="example-sentence" lang="zh-Hant">{exampleSentence}</p>
+      {examplePinyin && <p class="example-pinyin" lang="zh-Latn">{examplePinyin}</p>}
+      {exampleJapanese && <p class="example-meaning">{exampleJapanese}</p>}
+    </section>
+  )}
+
+  <div class="cta-wrapper">
+    <span class="cta-button cta-button--disabled">
+      このレッスンを始める →
+      <span class="cta-badge">準備中</span>
+    </span>
+  </div>
+</article>
+
+<style>
+  .lesson-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+  .lesson-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--c-accent);
+    margin-bottom: var(--space-sm);
+  }
+  .lesson-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: var(--space-md);
+  }
+  .lesson-hook {
+    color: var(--c-text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .section-heading {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+  }
+  .goal-section,
+  .core-section,
+  .example-section {
+    margin-bottom: var(--space-md);
+  }
+  .can-do {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .core-sentence {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--c-accent);
+  }
+  .pinyin {
+    font-size: 0.9rem;
+    color: var(--c-text-secondary);
+    margin-top: var(--space-xs);
+  }
+  .example-sentence {
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+  .example-pinyin {
+    font-size: 0.9rem;
+    color: var(--c-text-secondary);
+    margin-top: var(--space-xs);
+  }
+  .example-meaning {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-top: var(--space-xs);
+  }
+  .cta-wrapper {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--c-border);
+  }
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--c-accent);
+    color: #fff;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+  }
+  .cta-button--disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .cta-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+  }
+
+  @media (width >= 768px) {
+    .lesson-card {
+      padding: var(--space-xl);
+    }
+    .lesson-title {
+      font-size: 1.75rem;
+    }
+    .core-sentence {
+      font-size: 2rem;
+    }
+  }
+</style>
