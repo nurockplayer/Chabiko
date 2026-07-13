@@ -26,7 +26,7 @@ const chunks = (lesson?.chunks ?? []).filter(
   (chunk) => chunk && hasText(chunk.chunk) && hasText(chunk.meaning),
 );
 const kanjiBridgeNotes = (lesson?.kanjiBridgeNotes ?? []).filter(
-  (note) => note && hasText(note.kanji) && hasText(note.noteJa),
+  (note) => note && hasText(note.kanji) && hasText(note.jpReading) && hasText(note.noteJa),
 );
 const soundFocus = (lesson?.soundFocus ?? []).filter(
   (focus) => focus && hasText(focus.item) && hasText(focus.noteJa),

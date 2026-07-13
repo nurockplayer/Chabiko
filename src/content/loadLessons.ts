@@ -33,7 +33,18 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
   if (!value || typeof value !== 'object') return false;
 
   const lesson = value as Record<string, unknown>;
-  const requiredTextFields = ['id', 'titleJa', 'hookJa', 'canDoJa', 'coreSentence', 'travelTask'];
+  const requiredTextFields = [
+    'id',
+    'titleJa',
+    'level',
+    'canDoJa',
+    'learnerOutcomeJa',
+    'hookJa',
+    'travelScenario',
+    'coreSentence',
+    'travelTask',
+    'reviewStatus',
+  ];
   const optionalArrayFields = [
     'sections',
     'chunks',
@@ -41,6 +52,7 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     'soundFocus',
     'examples',
     'reviewPrompts',
+    'relatedVocabulary',
   ];
 
   return (

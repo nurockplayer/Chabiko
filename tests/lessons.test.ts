@@ -74,6 +74,11 @@ describe('loadLessonById', () => {
     const lesson = loadLessonById('lesson-001', 'tests/fixtures/incomplete-lesson.json');
     expect(lesson).toBeUndefined();
   });
+
+  it('returns undefined when required lesson fields are empty or related vocabulary is malformed', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/invalid-lesson-contract.json');
+    expect(lesson).toBeUndefined();
+  });
 });
 
 describe('learner shell uses fixture data', () => {

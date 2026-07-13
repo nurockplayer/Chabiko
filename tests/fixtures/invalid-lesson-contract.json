@@ -1,0 +1,17 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-001",
+      "titleJa": "壊れたレッスン",
+      "level": "",
+      "canDoJa": "注文できる",
+      "learnerOutcomeJa": "",
+      "hookJa": "夜市で使う",
+      "travelScenario": "",
+      "coreSentence": "我要這個",
+      "travelTask": "注文してみよう",
+      "reviewStatus": "",
+      "relatedVocabulary": "voc-001"
+    }
+  ]
+}
