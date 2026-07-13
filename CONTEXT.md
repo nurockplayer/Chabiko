@@ -24,6 +24,26 @@ A learner-facing instructional sequence that combines one or more Capabilities i
 
 An activity that teaches, rehearses, or assesses one or more Capabilities. An Exercise is not itself the canonical definition of the ability it covers.
 
+## Exercise Attempt
+
+A learner interaction with an Exercise that records the submitted response, outcome, timing, hints or assistance used, and the Capabilities assessed. An Exercise Attempt is learning evidence rather than a direct declaration that a Capability has been mastered.
+
+## Learning Evidence
+
+A learner-specific observation used to update Capability Mastery, including Exercise Attempts and other explicitly supported demonstrations of ability. Evidence must identify the affected Capabilities and retain enough context to interpret whether it reflects recognition, recall, comprehension, production, or another assessed skill.
+
+## Capability Mastery
+
+The authoritative learner-specific progress state for one Capability. Capability Mastery is derived from accumulated Learning Evidence and is reusable across Lessons and Learning Paths that reference the same Capability. Reorganizing a Lesson or entering another Learning Path must not erase valid mastery evidence.
+
+## Lesson Completion
+
+A learner-facing progress state for one Lesson, derived from the Lesson's required Capabilities, required Exercises, and any lesson-specific completion rules. Lesson Completion supports navigation, motivation, and course presentation, but is not the authoritative measure of whether the learner possesses the underlying abilities.
+
+## Cross-Path Progress Reuse
+
+The product rule that valid Capability Mastery earned through one Learning Path is recognized by every other Learning Path that references the same Capability. A path may still require its own lesson-specific activity, but it must not treat already demonstrated shared ability as entirely unknown.
+
 ## Learning Path
 
 An ordered view over shared Capabilities and Lessons for a particular learner goal. Chabiko supports both capability-oriented paths and exam-oriented paths without duplicating the underlying curriculum.
