@@ -5,6 +5,6 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ['dist/', 'src/env.d.ts'],
+    ignores: ['dist/', '.astro/', '.claude/', 'src/env.d.ts'],
   },
 );

@@ -69,6 +69,11 @@ describe('loadLessonById', () => {
     const lesson = loadLessonById('lesson-001', 'tests/fixtures/missing-array.json');
     expect(lesson).toBeUndefined();
   });
+
+  it('returns undefined for an incomplete lesson so callers can render a fallback', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/incomplete-lesson.json');
+    expect(lesson).toBeUndefined();
+  });
 });
 
 describe('learner shell uses fixture data', () => {
