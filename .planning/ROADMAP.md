@@ -43,6 +43,7 @@ Plans:
 ### Phase 1.1: First Learner-Facing Vertical Slice (INSERTED)
 **Goal**: Prove one complete Japanese-first learner journey from the home page into a real, structured Taiwan-travel lesson before scaling content and UI breadth.
 **Depends on**: Completed app scaffold in #1
+Phase 1.1 may begin once #1 is completed and the referenced validated seed content is available. The remaining Phase 1 plans (#13, #14, #18, and #3) and completion of the full Phase 2 dataset are non-blocking for #42.
 **Does not depend on**: Completion of the full Phase 2 content dataset
 **Requirements**: LEARN-03 vertical-slice subset
 **UI hint**: yes
@@ -124,7 +125,8 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 1.1 -> 2 -> 3 -> 4
+Roadmap display order: 1 -> 1.1 -> 2 -> 3 -> 4.
+Phase 1.1 is an inserted scheduling exception: #42 may begin after its explicit prerequisite is complete and does not wait for the remaining Phase 1 plans or the full Phase 2 dataset.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
