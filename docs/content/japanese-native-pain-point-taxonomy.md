@@ -1,9 +1,9 @@
 # Japanese-Native Pain-Point Taxonomy
 
 **Status:** Draft for #14
-**Last updated:** 2026-07-09
+**Last updated:** 2026-07-14
 **Based on:** #13 Japanese Learner Personas and JTBD
-**Alignment:** Taiwan Travel Learner (P1) primary persona, v1 scope per REQUIREMENTS.md POS-02
+**Alignment:** P1 赴台旅行準備者 primary persona, P2 台灣文化與日常實用中文初學者 and P3 學校／大學／HSK 補強者 secondary personas; v1 scope per REQUIREMENTS.md POS-02
 
 ---
 
@@ -25,12 +25,12 @@ These tags allow lessons, vocabulary entries, phrasebook items, and practice con
 
 | Persona | Most Relevant Pain Points |
 |---------|---------------------------|
-| P1: Taiwan Travel Learner | tone, pinyin-pronunciation, kanji-false-friend, same-kanji-different-meaning, traditional-simplified, taiwan-mainland-usage |
-| P2: University / Class-Support | tone, pinyin-pronunciation, kanji-false-friend, same-kanji-different-meaning, same-kanji-different-usage, word-order, measure-word, complement |
-| P3: HSK / General Learner | tone, pinyin-pronunciation, word-order, aspect-particle, complement, traditional-simplified |
-| P4: Business / Service-Industry | tone, pinyin-pronunciation, taiwan-mainland-usage, traditional-simplified |
-| P5: Study-Abroad | tone, pinyin-pronunciation, word-order, complement, traditional-simplified |
-| P6: Media / Culture Interest | kanji-false-friend, same-kanji-different-meaning, same-kanji-different-usage, traditional-simplified, taiwan-mainland-usage |
+| P1: 赴台旅行準備者 | tone, pinyin-pronunciation, kanji-false-friend, same-kanji-different-meaning, traditional-simplified, taiwan-mainland-usage |
+| P2: 台灣文化與日常實用中文初學者 | tone, pinyin-pronunciation, kanji-false-friend, same-kanji-different-meaning, same-kanji-different-usage, traditional-simplified, taiwan-mainland-usage |
+| P3: 學校／大學／HSK 補強者 | tone, pinyin-pronunciation, kanji-false-friend, word-order, measure-word, aspect-particle, complement, traditional-simplified |
+| P4: 接客／工作情境學習者 | tone, pinyin-pronunciation, taiwan-mainland-usage, traditional-simplified |
+| P5: 中長期留學／居住準備者 | tone, pinyin-pronunciation, word-order, complement, traditional-simplified |
+| P6: 中文媒體／粉絲文化理解者 | kanji-false-friend, same-kanji-different-meaning, same-kanji-different-usage, traditional-simplified, taiwan-mainland-usage |
 
 ---
 
