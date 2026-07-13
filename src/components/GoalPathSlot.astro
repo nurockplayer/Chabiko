@@ -4,18 +4,17 @@
 <!--
   Goal Path Slot (#17 placeholder)
 
-  This slot provides a visible entry point for future goal-based learning paths.
-  The paths themselves are implemented in #17; here we show a preview of where
-  they will appear and a disabled affordance so the layout is structurally complete.
+  This slot provides a direct entry into the first Taiwan travel lesson.
+  Full goal-path behavior remains implemented by #17; the HSK entry stays unavailable.
 -->
-<section class="goal-path-slot" aria-label="学習パス（準備中）">
+<section class="goal-path-slot" aria-label="学習パス">
   <h2 class="slot-heading">学習パス</h2>
   <div class="path-cards">
-    <div class="path-card path-card--disabled">
+    <a class="path-card path-card--active" href="/lessons/lesson-001/">
       <span class="path-icon">&#x1F3C3;</span>
       <span class="path-label">台湾旅行で使える中国語</span>
-      <span class="path-badge">準備中</span>
-    </div>
+      <span class="path-badge">はじめる</span>
+    </a>
     <div class="path-card path-card--disabled">
       <span class="path-icon">&#x1F4DA;</span>
       <span class="path-label">HSK対策</span>
@@ -53,6 +52,17 @@
     border: 1px solid var(--c-border);
     border-radius: var(--radius);
     font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .path-card--active {
+    color: var(--c-text);
+    border-color: var(--c-accent);
+  }
+  .path-card--active:hover {
+    background: var(--c-slot-bg);
+    text-decoration: none;
+  }
+  .path-card--disabled {
     opacity: 0.5;
     pointer-events: none;
   }

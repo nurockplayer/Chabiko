@@ -25,6 +25,47 @@ function parseLessonBundle(raw: string, path: string): LessonBundle {
   return parsed as LessonBundle;
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][number] {
+  if (!value || typeof value !== 'object') return false;
+
+  const lesson = value as Record<string, unknown>;
+  const requiredTextFields = [
+    'id',
+    'titleJa',
+    'level',
+    'canDoJa',
+    'learnerOutcomeJa',
+    'hookJa',
+    'travelScenario',
+    'coreSentence',
+    'travelTask',
+    'reviewStatus',
+  ];
+  const requiredArrayFields = [
+    'chunks',
+    'kanjiBridgeNotes',
+    'soundFocus',
+    'reviewPrompts',
+  ];
+  const optionalArrayFields = [
+    'sections',
+    'examples',
+    'relatedVocabulary',
+  ];
+
+  return (
+    requiredTextFields.every((field) => isNonEmptyString(lesson[field])) &&
+    requiredArrayFields.every((field) => Array.isArray(lesson[field])) &&
+    optionalArrayFields.every(
+      (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
+    )
+  );
+}
+
 /**
  * Load lesson content from a JSON file.
  * Falls back to the default fixture path when no argument is supplied.
@@ -38,8 +79,7 @@ export function loadLessons(filePath?: string): LessonBundle {
 
 /**
  * Load a single lesson by its id.
- * Returns undefined when the lesson is not found, the file is missing,
- * or the file contains invalid JSON.
+ * Returns undefined when the lesson is not found, unavailable, or incomplete.
  */
 export function loadLessonById(
   id: string,
@@ -47,7 +87,8 @@ export function loadLessonById(
 ): LessonBundle['lessons'][number] | undefined {
   try {
     const bundle = loadLessons(filePath);
-    return bundle.lessons.find((l) => l.id === id);
+    const lesson = bundle.lessons.find((candidate) => candidate.id === id);
+    return isRenderableLesson(lesson) ? lesson : undefined;
   } catch {
     return undefined;
   }

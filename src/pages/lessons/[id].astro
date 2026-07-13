@@ -1,0 +1,177 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Header from '../../components/Header.astro';
+import { loadLessonById } from '../../content/loadLessons';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { Lesson } from '../../types/lesson';
+
+export const getStaticPaths = (() => {
+  const lesson = loadLessonById('lesson-001');
+
+  return [
+    {
+      params: { id: 'lesson-001' },
+      props: { lesson },
+    },
+  ];
+}) satisfies GetStaticPaths;
+
+const { lesson } = Astro.props as { lesson?: Lesson };
+const hasText = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
+const sections = (lesson?.sections ?? []).filter(
+  (section) => section && hasText(section.headingJa) && hasText(section.contentJa),
+);
+const chunks = (lesson?.chunks ?? []).filter(
+  (chunk) => chunk && hasText(chunk.chunk) && hasText(chunk.meaning),
+);
+const kanjiBridgeNotes = (lesson?.kanjiBridgeNotes ?? []).filter(
+  (note) => note && hasText(note.kanji) && hasText(note.jpReading) && hasText(note.noteJa),
+);
+const soundFocus = (lesson?.soundFocus ?? []).filter(
+  (focus) => focus && hasText(focus.item) && hasText(focus.noteJa),
+);
+const examples = (lesson?.examples ?? []).filter(
+  (example) => example && hasText(example.traditional) && hasText(example.japanese),
+);
+const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
+  (prompt) => prompt && hasText(prompt.promptJa) && hasText(prompt.answerJa),
+);
+---
+
+<BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'}>
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  {
+    lesson ? (
+      <article class="lesson-page">
+        <a class="back-link" href="/">← ホームに戻る</a>
+        <header class="lesson-intro">
+          <p class="lesson-label">台湾旅行の中国語</p>
+          <h1>{lesson.titleJa}</h1>
+          <p class="hook">{lesson.hookJa}</p>
+        </header>
+
+        <section aria-labelledby="can-do-heading">
+          <h2 id="can-do-heading">できるようになること</h2>
+          <p>{lesson.canDoJa}</p>
+        </section>
+
+        <section aria-labelledby="core-heading">
+          <h2 id="core-heading">今日のコア表現</h2>
+          <p class="core-sentence" lang="zh-Hant">{lesson.coreSentence}</p>
+        </section>
+
+        {sections.map((section) => (
+          <section aria-label={section.headingJa}>
+            <h2>{section.headingJa}</h2>
+            <p>{section.contentJa}</p>
+          </section>
+        ))}
+
+        {chunks.length > 0 && (
+          <section aria-labelledby="chunks-heading">
+            <h2 id="chunks-heading">フレーズを分けてみよう</h2>
+            <dl class="detail-list">
+              {chunks.map((chunk) => (
+                <div>
+                  <dt lang="zh-Hant">{chunk.chunk}</dt>
+                  <dd>{chunk.meaning}</dd>
+                  {hasText(chunk.notesJa) && <dd class="note">{chunk.notesJa}</dd>}
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        {kanjiBridgeNotes.length > 0 && (
+          <section aria-labelledby="kanji-heading">
+            <h2 id="kanji-heading">漢字からつなげよう</h2>
+            {kanjiBridgeNotes.map((note) => (
+              <p><strong lang="zh-Hant">{note.kanji}</strong>（{note.jpReading}）：{note.noteJa}</p>
+            ))}
+          </section>
+        )}
+
+        {soundFocus.length > 0 && (
+          <section aria-labelledby="sound-heading">
+            <h2 id="sound-heading">音のポイント</h2>
+            {soundFocus.map((focus) => (
+              <p><strong>{focus.item}</strong>：{focus.noteJa}</p>
+            ))}
+          </section>
+        )}
+
+        {examples.length > 0 && (
+          <section aria-labelledby="examples-heading">
+            <h2 id="examples-heading">例文</h2>
+            <div class="example-list">
+              {examples.map((example) => (
+                <div>
+                  <p class="example-sentence" lang="zh-Hant">{example.traditional}</p>
+                  {hasText(example.pinyin) && <p class="pinyin" lang="zh-Latn">{example.pinyin}</p>}
+                  <p>{example.japanese}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {reviewPrompts.length > 0 && (
+          <section aria-labelledby="review-heading">
+            <h2 id="review-heading">振り返り</h2>
+            <dl class="detail-list">
+              {reviewPrompts.map((prompt) => (
+                <div>
+                  <dt>{prompt.promptJa}</dt>
+                  <dd>{prompt.answerJa}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        <section class="travel-task" aria-labelledby="task-heading">
+          <h2 id="task-heading">旅先でやってみよう</h2>
+          <p>{lesson.travelTask}</p>
+        </section>
+      </article>
+    ) : (
+      <article class="fallback-message">
+        <h1>レッスンを読み込めませんでした</h1>
+        <p>現在このレッスンは利用できません。ホームから別の内容を確認してください。</p>
+        <a href="/">ホームに戻る</a>
+      </article>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .lesson-page,
+  .fallback-message {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    overflow-wrap: anywhere;
+  }
+  .back-link { display: inline-block; margin-bottom: var(--space-lg); font-weight: 600; }
+  .lesson-intro { border-bottom: 1px solid var(--c-border); margin-bottom: var(--space-lg); padding-bottom: var(--space-lg); }
+  .lesson-label { color: var(--c-accent); font-size: 0.875rem; font-weight: 700; margin-bottom: var(--space-xs); }
+  h1 { font-size: clamp(1.65rem, 7vw, 2.25rem); line-height: 1.3; }
+  h2 { font-size: 1.05rem; margin-bottom: var(--space-sm); }
+  section { margin-top: var(--space-xl); }
+  .hook, .pinyin, .note { color: var(--c-text-secondary); }
+  .hook { margin-top: var(--space-md); }
+  .core-sentence, .example-sentence { color: var(--c-accent); font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 700; line-height: 1.35; }
+  .detail-list, .example-list { display: grid; gap: var(--space-md); }
+  .detail-list > div, .example-list > div { border-left: 3px solid var(--c-border); padding-left: var(--space-md); }
+  dt { font-weight: 700; }
+  dd { margin: var(--space-xs) 0 0; }
+  .travel-task { background: #eff6ff; border-radius: var(--radius); padding: var(--space-md); }
+  .fallback-message { text-align: center; }
+  .fallback-message p { color: var(--c-text-secondary); margin: var(--space-md) 0; }
+  @media (width >= 768px) { .lesson-page, .fallback-message { padding: var(--space-xl); } }
+</style>

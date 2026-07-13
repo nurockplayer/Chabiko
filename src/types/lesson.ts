@@ -41,14 +41,14 @@ export interface Lesson {
   hookJa: string;
   travelScenario: string;
   coreSentence: string;
-  sections: LessonSection[];
+  sections?: LessonSection[];
   chunks: LessonChunk[];
   kanjiBridgeNotes: KanjiBridgeNote[];
   soundFocus: SoundFocus[];
   examples?: LessonExample[];
   reviewPrompts: ReviewPrompt[];
   travelTask: string;
-  relatedVocabulary: string[];
+  relatedVocabulary?: string[];
   reviewStatus: string;
 }
 

@@ -69,6 +69,39 @@ describe('loadLessonById', () => {
     const lesson = loadLessonById('lesson-001', 'tests/fixtures/missing-array.json');
     expect(lesson).toBeUndefined();
   });
+
+  it('returns undefined for an incomplete lesson so callers can render a fallback', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/incomplete-lesson.json');
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when required lesson fields are empty or related vocabulary is malformed', () => {
+    const lesson = loadLessonById('lesson-001', 'tests/fixtures/invalid-lesson-contract.json');
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when a schema-required lesson-loop array is missing', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/missing-required-lesson-array.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('accepts empty required arrays and absent optional arrays', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/empty-required-lesson-arrays.json',
+    );
+    expect(lesson).toBeDefined();
+    expect(lesson?.chunks).toEqual([]);
+    expect(lesson?.kanjiBridgeNotes).toEqual([]);
+    expect(lesson?.soundFocus).toEqual([]);
+    expect(lesson?.reviewPrompts).toEqual([]);
+    expect(lesson?.sections).toBeUndefined();
+    expect(lesson?.examples).toBeUndefined();
+    expect(lesson?.relatedVocabulary).toBeUndefined();
+  });
 });
 
 describe('learner shell uses fixture data', () => {
