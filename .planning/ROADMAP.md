@@ -8,9 +8,10 @@ Build Chabiko from a public planning repo into a useful static-first learning si
 
 **Phase Numbering:**
 - Integer phases (1, 2, 3): Planned milestone work.
-- Decimal phases (2.1, 2.2): Urgent insertions, marked INSERTED.
+- Decimal phases (1.1, 2.1, 2.2): Urgent insertions, marked INSERTED.
 
 - [ ] **Phase 1: Foundation, Content Model, and Japanese Learner Positioning** - Create the app foundation, define Japanese learner personas and pain-point metadata, decide dual-script and regional-variant handling, build content schemas, seed the resource registry, and align collaboration guardrails.
+- [ ] **Phase 1.1: First Learner-Facing Vertical Slice (INSERTED)** - Connect the learner shell to one real Taiwan-travel lesson page before the full Phase 2 dataset and Phase 3 UI expansion.
 - [ ] **Phase 2: Japanese-Learner Content Seeds** - Write v1 seed lessons, kanji bridge / false-friend vocabulary, Taiwan travel phrasebook content, and review metadata with Simplified / Traditional support where relevant.
 - [ ] **Phase 3: Learning Experience, Practice, and Travel Readiness** - Build the learner-facing pages, goal paths, script switching, filters, phrase navigation, roleplay, tone/pronunciation practice, local progress, and Travel Quest readiness system.
 - [ ] **Phase 4: Quality Gates, Review Workflow, and Preview Deploy** - Add CI, previews, review checklists, and public contribution workflow.
@@ -32,12 +33,29 @@ Build Chabiko from a public planning repo into a useful static-first learning si
 **Plans**: 6 plans
 
 Plans:
-- [ ] 01-01: Scaffold app and package-manager baseline. (#1)
+- [x] 01-01: Scaffold app and package-manager baseline. (#1)
 - [ ] 01-02: Define Japanese learner personas and JTBD. (#13)
 - [ ] 01-03: Add Japanese-native pain-point taxonomy. (#14)
 - [ ] 01-04: Define dual-script and Taiwan/Mainland variant strategy. (#18)
-- [ ] 01-05: Define content schemas and seed resource registry. (#2)
+- [x] 01-05: Define content schemas and seed resource registry. (#2)
 - [ ] 01-06: Align collaboration docs, issue templates, and content licensing guardrails. (#3)
+
+### Phase 1.1: First Learner-Facing Vertical Slice (INSERTED)
+**Goal**: Prove one complete Japanese-first learner journey from the home page into a real, structured Taiwan-travel lesson before scaling content and UI breadth.
+**Depends on**: Completed app scaffold in #1
+**Does not depend on**: Completion of the full Phase 2 content dataset
+**Requirements**: LEARN-03 vertical-slice subset
+**UI hint**: yes
+**Success Criteria** (what must be TRUE):
+  1. The home-page Taiwan travel entry opens a generated `/lessons/lesson-001/` route without a 404.
+  2. The lesson page renders existing validated repository content instead of duplicated hard-coded presentation data.
+  3. The available lesson-loop sections use Japanese-first labels and remain usable on mobile and desktop.
+  4. Optional or unavailable lesson data is handled safely without empty UI sections or build crashes.
+  5. This insertion does not implement the full goal-path behavior from #17, script switching from #22, or the complete learner-facing surfaces from #7.
+**Plans**: 1 plan
+
+Plans:
+- [ ] 01.1-01: Add Taiwan travel entry and first content-backed lesson page. (#42)
 
 ### Phase 2: Japanese-Learner Content Seeds
 **Goal**: Create the first useful body of structured learner content for Japanese speakers, with path-appropriate Simplified / Traditional defaults.
@@ -106,11 +124,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 1.1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation, Content Model, and Japanese Learner Positioning | 0/6 | Not started | - |
+| 1. Foundation, Content Model, and Japanese Learner Positioning | 2/6 | In progress | - |
+| 1.1 First Learner-Facing Vertical Slice (INSERTED) | 0/1 | Not started | - |
 | 2. Japanese-Learner Content Seeds | 0/4 | Not started | - |
 | 3. Learning Experience, Practice, and Travel Readiness | 0/9 | Not started | - |
 | 4. Quality Gates, Review Workflow, and Preview Deploy | 0/2 | Not started | - |
