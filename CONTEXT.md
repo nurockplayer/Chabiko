@@ -40,6 +40,22 @@ An activity that teaches, rehearses, or assesses one or more Capabilities. An Ex
 
 An Exercise type approved to produce Learning Evidence that the Mastery Engine may use for Mastery Stage transitions. In the first version, this is limited to reliably scoreable written recognition, listening recognition, active recall with deterministic answer normalization, sentence-pattern comprehension through ordering, filling, or naturalness selection, and pronunciation discrimination such as tone or confusable-sound identification.
 
+## Canonical Answer
+
+The primary correct answer stored for a deterministically scored Exercise. The Canonical Answer represents the answer normally displayed in explanations and is defined for the Exercise's target Language Variant and answer format. It is not the only acceptable learner response when explicitly approved alternatives exist.
+
+## Accepted Answer
+
+An explicitly stored alternative response that is judged equivalent for one Exercise after its configured normalization rules are applied. Accepted Answers may cover approved Script Variants, orthographic forms, abbreviations, or contextually equivalent expressions, but they must be authored and validated before learner attempts are evaluated. Similar meaning alone does not make a response accepted.
+
+## Deterministic Answer Normalization
+
+The versioned, reproducible transformation applied before matching a learner response against the Canonical Answer and Accepted Answers. Permitted transformations are configured by Exercise type and may include trimming surrounding whitespace, normalizing full-width and half-width punctuation, optionally ignoring sentence-final punctuation, and handling Script Variant equivalence when explicitly allowed. Normalization must not infer synonyms, regional vocabulary equivalence, omitted meaning, or grammatical intent.
+
+## Deterministic Answer Matching
+
+The rule that an active-recall or fill-in response is correct only when its normalized form matches the normalized Canonical Answer or one of the normalized Accepted Answers. Learner-time evaluation must not expand the accepted set, call AI, or reinterpret an unmatched response semantically. Internal AI agents may propose additional Accepted Answers through the ordinary content workflow, but they become active only after validation and publication.
+
 ## Deferred Open-Ended Exercise
 
 A free sentence-production or spoken-production Exercise type whose reliable automatic evaluation would require learner-facing AI or another runtime model service. These exercise types are outside the first-version product scope. Chabiko may still teach the underlying skills through examples and self-guided practice, but it does not submit learner responses to an AI evaluator and does not treat unscored open-ended work as Capability Mastery evidence.
