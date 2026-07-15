@@ -50,7 +50,15 @@ An explicitly stored alternative response that is judged equivalent for one Exer
 
 ## Deterministic Answer Normalization
 
-The versioned, reproducible transformation applied before matching a learner response against the Canonical Answer and Accepted Answers. Permitted transformations are configured by Exercise type and may include trimming surrounding whitespace, normalizing full-width and half-width punctuation, optionally ignoring sentence-final punctuation, and handling Script Variant equivalence when explicitly allowed. Normalization must not infer synonyms, regional vocabulary equivalence, omitted meaning, or grammatical intent.
+The versioned, reproducible transformation applied before matching a learner response against the Canonical Answer and Accepted Answers. Permitted transformations are configured by Exercise type and may include trimming surrounding whitespace, normalizing full-width and half-width punctuation, optionally ignoring sentence-final punctuation, and applying Script-Equivalent Answer Evaluation when allowed. Normalization must not infer synonyms, regional vocabulary equivalence, omitted meaning, or grammatical intent.
+
+## Script-Equivalent Answer Evaluation
+
+The rule that an Exercise not intended to test writing system accepts deterministically equivalent Traditional and Simplified character forms as the same answer. Equivalence must use a versioned character mapping rather than AI or semantic inference. It applies to orthographic variants such as 銀行 and 银行, but must not equate regional lexical alternatives such as 計程車 and 出租车. A Learning Path or examination rule may explicitly disable this equivalence.
+
+## Script-Sensitive Exercise
+
+An Exercise whose stated assessment purpose or applicable examination rule requires a particular Script Variant. A Script-Sensitive Exercise does not apply cross-script equivalence and requires the configured Traditional or Simplified form. Script sensitivity must be explicit in the Exercise definition rather than inferred from the learner's display preference.
 
 ## Deterministic Answer Matching
 
