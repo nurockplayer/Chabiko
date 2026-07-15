@@ -55,6 +55,7 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     'sections',
     'examples',
     'relatedVocabulary',
+    'painPointTags',
   ];
 
   return (
