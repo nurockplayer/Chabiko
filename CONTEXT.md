@@ -48,6 +48,14 @@ A learner-specific scheduling state indicating that a Capability should be revie
 
 The rule that Mastery Stage changes use hysteresis rather than reacting to one Exercise Attempt. Advancement requires multiple credible successes across different times or contexts, and success achieved with hints, revealed answers, or substantial assistance may contribute less evidence. A single failure marks the Capability as Review Due without lowering its stage. Repeated recent failures may lower at most one stage at a time, and later credible evidence may advance the Capability again.
 
+## Evidence Evaluation
+
+The process that converts a learner response into standardized Learning Evidence, including assessed Capabilities, outcome, error categories, assistance used, confidence, and the kind of ability demonstrated. Evaluation may use deterministic logic, AI, or both, but it must not directly assign or change a Mastery Stage. An evaluation below the required confidence threshold is inconclusive rather than positive mastery evidence.
+
+## Mastery Engine
+
+The deterministic, versioned rule system that is solely authorized to update Mastery Stage and Review Due from standardized Learning Evidence under the Mastery Transition Policy. The same inputs and rule version must produce the same transition result, and rule changes must be testable. AI evaluators may supply evidence but must not bypass or override the Mastery Engine.
+
 ## Lesson Completion
 
 A learner-facing progress state for one Lesson, derived from the Lesson's required Capabilities, required Exercises, and any lesson-specific completion rules. Lesson Completion supports navigation, motivation, and course presentation, but is not the authoritative measure of whether the learner possesses the underlying abilities.
