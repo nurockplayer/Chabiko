@@ -44,6 +44,10 @@ The learner-facing level of Capability Mastery represented by exactly four order
 
 A learner-specific scheduling state indicating that a Capability should be reviewed now or soon. Review Due is independent from Mastery Stage: a Mastered Capability may become due for review without immediately being treated as unlearned, and completing an appropriate review may clear the due state without changing the visible mastery stage.
 
+## Mastery Transition Policy
+
+The rule that Mastery Stage changes use hysteresis rather than reacting to one Exercise Attempt. Advancement requires multiple credible successes across different times or contexts, and success achieved with hints, revealed answers, or substantial assistance may contribute less evidence. A single failure marks the Capability as Review Due without lowering its stage. Repeated recent failures may lower at most one stage at a time, and later credible evidence may advance the Capability again.
+
 ## Lesson Completion
 
 A learner-facing progress state for one Lesson, derived from the Lesson's required Capabilities, required Exercises, and any lesson-specific completion rules. Lesson Completion supports navigation, motivation, and course presentation, but is not the authoritative measure of whether the learner possesses the underlying abilities.
