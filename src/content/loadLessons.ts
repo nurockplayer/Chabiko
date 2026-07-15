@@ -63,7 +63,10 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     requiredArrayFields.every((field) => Array.isArray(lesson[field])) &&
     optionalArrayFields.every(
       (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
-    )
+    ) &&
+    (lesson.painPointTags === undefined ||
+      (Array.isArray(lesson.painPointTags) &&
+        (lesson.painPointTags as unknown[]).every(isNonEmptyString)))
   );
 }
 

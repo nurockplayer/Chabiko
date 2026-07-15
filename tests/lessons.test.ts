@@ -83,6 +83,22 @@ describe('loadLessonById', () => {
     expect(lesson).toBeUndefined();
   });
 
+  it('returns undefined when painPointTags contains a number element', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-number-element.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains a null element', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-null-element.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
   it('loads a lesson with valid painPointTags string array', () => {
     const lesson = loadLessonById('lesson-001');
     expect(lesson).toBeDefined();
