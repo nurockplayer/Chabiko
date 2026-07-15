@@ -3,7 +3,7 @@
 **Status:** Design for #15
 **Last updated:** 2026-07-15
 **Alignment:** Phase 3 plan 03-05; P1 (Taiwan Travel Learner) primary persona
-**Research basis:** Zhu & Zhang (2012), Shu & Mok (2024), Shi & Zhang (2016), phonetic contrast analyses of Japanese-Mandarin L2 acquisition
+**Research basis:** Zhu & Zhang (2012), Shu & Mok (2024), Wu et al. (2024), So & Best (2010), phonetic contrast analyses of Japanese-Mandarin L2 acquisition. See §10 for full references.
 
 ---
 
@@ -34,7 +34,7 @@ Each pronunciation exercise follows a five-step loop. Steps 1–3 are receptive 
 | 2 | **Compare** | Sees a side-by-side contrast: the target sound vs a Japanese‑speaker‑specific trap (e.g., zhēn vs zēn, T2 麻 vs T3 馬). A Japanese explanation describes the acoustic difference. | Structured minimal-pair data; Japanese explanation text |
 | 3 | **Discriminate** | Hears or sees a pinyin/tone prompt and selects the correct answer from distractors. Immediate feedback: correct/incorrect with explanation. | Structured multiple‑choice items; local correctness state |
 | 4 | **Shadow** | Sees the target word with pinyin and tone contour. Learner speaks aloud (unrecorded — self-monitored). A checklist of "what to listen for in your own voice" appears, written for Japanese speakers. | Tone contour graphic; Japanese‑language self-check prompts |
-| 5 | **Retry** | If the learner answered incorrectly in step 3, the same item reappears with a stronger hint (e.g., tone contour highlighted, narrower distractor set). After two consecutive correct answers, the item is marked as "review later" in local state. | Local progress state (new / learning / shaky / confident per item) |
+| 5 | **Retry** | If the learner answered incorrectly in step 3, the same item reappears with a stronger hint (e.g., tone contour highlighted, narrower distractor set). After two consecutive correct answers, the item is promoted to `confident` in local state. | Local progress state (new / learning / shaky / confident per item) |
 
 ### 2.2 Loop Variant for Lesson Integration
 
@@ -44,6 +44,8 @@ When a pronunciation item appears inside a lesson (as part of the `soundFocus` s
 
 ## 3. v1 Tone and Pinyin Contrasts
 
+The pronunciation target for v1 is Taiwan Guoyu (臺灣國語). Tone contours follow Taiwan‑practiced patterns (e.g., fewer neutral‑tone reductions than Mainland Putonghua). Initial/final inventories are shared between Taiwan and Mainland Mandarin; the contrasts below apply regardless of regional variant.
+
 The following contrasts are selected for v1 based on (a) severity of Japanese-native interference supported by acquisition research, and (b) frequency in beginner travel vocabulary. They are ordered by priority.
 
 ### 3.1 Tone Contrasts
@@ -51,9 +53,9 @@ The following contrasts are selected for v1 based on (a) severity of Japanese-na
 | Priority | Contrast | Why | Research basis | Example pairs |
 |----------|----------|-----|----------------|---------------|
 | P1 | T2 (rising) vs T3 (dipping) | Most confusable pair for Japanese speakers; both have dipping/rising contours that Japanese pitch‑accent does not distinguish | Zhu & Zhang (2012) — Japanese learners' lowest discrimination accuracy on T2 vs T3; confusion driven by turning‑point position and ΔF0 | 麻 má (T2) vs 馬 mǎ (T3); 十 shí vs 屎 shǐ; 什麼 shénme vs 怎麼 zěnme |
-| P2 | T1 (high level) vs T4 (falling) | Japanese speakers flatten these into a single falling category because Japanese phrase‑final pitch drops mimic T4 | Shi & Zhang (2016) — cross‑language F0 range comparison; flattening arises from L1 pitch‑accent transfer | 媽 mā (T1) vs 罵 mà (T4); 書 shū vs 樹 shù |
+| P2 | T1 (high level) vs T4 (falling) | Japanese speakers flatten these into a single falling category because Japanese phrase‑final pitch drops mimic T4 | So & Best (2010) — cross‑linguistic tone perception study; Japanese speakers confuse T1/T4 alongside T2/T3; Wu et al. (2024) — Japanese speakers produce narrower F0 range, flattening contour tones | 媽 mā (T1) vs 罵 mà (T4); 書 shū vs 樹 shù |
 | P3 | T3 sandhi (3‑3 → 2‑3) | Japanese speakers over‑apply or ignore tone sandhi; both error patterns cause comprehension breakdown | Shu & Mok (2024) — Japanese learners overgeneralise T3 sandhi under influence of L1 pitch‑accent patterns | 你好 nǐ hǎo → ní hǎo; 很好 hěn hǎo → hén hǎo |
-| P4 | T1 vs T2 | Less confusable than T2/T3 but still worth covering with high‑frequency travel vocabulary | General L2 Mandarin tone acquisition literature | 喝 hē (T1) vs 和 hé (T2); 三 sān vs 傘 sǎn |
+| P4 | T1 vs T2 | Less confusable than T2/T3 but still worth covering with high‑frequency travel vocabulary | General L2 Mandarin tone acquisition literature | 喝 hē (T1) vs 和 hé (T2); 通 tōng (T1) vs 同 tóng (T2) |
 
 ### 3.2 Pinyin Consonant Contrasts
 
@@ -83,20 +85,19 @@ These words should appear as the first tone‑discrimination practice items beca
 | 東西 dōngxī / 東西 dōngxi | T1‑T1 vs T1‑neutral | Direction vs "thing" |
 | 湯 tāng / 燙 tàng | T1 vs T4 | Food (soup vs hot) |
 | 飽 bǎo / 包 bāo | T3 vs T1 | Food (full vs wrap) |
-| 請 qǐng / 親 qīn | T3 vs T1 | Politeness (please vs kiss — caution context) |
+| 點 diǎn / 店 diàn | T3 vs T4 | Ordering (a little vs shop) |
 
 ---
 
 ## 4. Practice Item Formats
 
-The existing content model (`docs/content/content-model-draft.md`) defines a `practice` type with a `type` field. This design adds three new `type` values to that model: `tone-discrimination` (already defined in the model as a placeholder), `pinyin-contrast`, and `guided-shadowing`. A fourth format, `tone-pair-matching`, is a v1 stretch goal.
+The existing content model (`docs/content/content-model-draft.md`) defines a `practice` type with a `type` field. This design proposes three new `type` values to extend that allowlist: `tone-discrimination` (already listed as a placeholder), `pinyin-contrast`, and `guided-shadowing`. A fourth format, `tone-pair-matching`, is a v1 stretch goal. A separate issue should update the content model allowlist when these formats are implemented.
 
 ### 4.1 Tone Discrimination (`type: tone-discrimination`)
 
-**How it works:**
-- Learner sees a pinyin syllable or hears (via tone contour visual) a tone pattern.
-- Learner selects the correct tone category from options.
-- Immediate feedback shows the tone contour with a Japanese explanation.
+**How it works (visual-only / reference-audio ready):**
+- **Visual mode** (v1): Learner sees two contrasting syllables sharing the same pinyin letters but differing only by tone (e.g., mā vs mà). A tone‑contour graphic alongside each option shows the pitch shape. Learner selects the syllable that matches a given description (e.g., "which one has a high‑level tone?").
+- **Audio mode** (post‑v1, same data shape): Learner hears a reference recording and selects the matching tone‑contour option. No structural changes to the item — audio files are added as an optional field.
 
 **Data shape:**
 
@@ -104,17 +105,18 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
 {
   "id": "tone-disc-001",
   "type": "tone-discrimination",
-  "promptJa": "「mā」の声調はどれ？",
-  "correctAnswer": "第一声",
-  "distractors": ["第二声", "第三声", "第四声"],
-  "toneContourHint": "高く平らな音。日本語の平板なアクセントに近いが、最後まで下げない。",
+  "promptJa": "「mā」と「mà」、どちらが高い平らな声調？",
+  "correctAnswer": "mā（第一声）",
+  "distractors": ["mà（第四声）"],
+  "toneContourHintJa": "第一声は高く平ら。日本語の平板なアクセントに近いが、最後まで下げない。第四声は急降下。",
+  "interferenceJa": "日本語話者は第一声と第四声を平らに伸ばして区別しにくい。",
   "relatedVocabulary": ["voc-tone-001"],
   "painPointTags": ["tone"],
   "reviewStatus": "draft"
 }
 ```
 
-**Structured content requirement:** Each item stores `toneContourHintJa` (Japanese explanation of the correct tone's contour), `correctAnswer` (one of the four tone labels in Japanese), and `distractors` (other tone labels).
+**Structured content requirement:** Each item stores `toneContourHintJa` (Japanese explanation of the correct tone's contour), `interferenceJa` (Japanese-native interference note), `correctAnswer` (the correct option), and `distractors` (wrong options). Items prompt a two-option or four-option choice between contrasting tones — the pinyin alone does not reveal the answer because both options share the same syllable and differ only by tone. An optional `audioRef` field can hold a future reference‑audio file path per option.
 
 ### 4.2 Pinyin Contrast (`type: pinyin-contrast`)
 
@@ -133,6 +135,8 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
   "correctAnswer": "zh",
   "distractors": ["z", "j"],
   "contrastNoteJa": "zh は舌を後ろに巻いて出す。日本語の「ず」とは違う。",
+  "interferenceJa": "日本語には巻き舌音（zh/ch/sh）がないため、z/c/s と混同しやすい。",
+  "articulationJa": "舌先を上あごの後ろに巻きつけるようにしてから離す。",
   "relatedVocabulary": ["voc-pinyin-001"],
   "painPointTags": ["pinyin-pronunciation"],
   "reviewStatus": "draft"
@@ -156,6 +160,9 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
   "type": "guided-shadowing",
   "promptJa": "声に出して言ってみよう：「謝謝」",
   "targetTraditional": "謝謝",
+  "targetTraditionalStatus": "authored",
+  "targetSimplified": "谢谢",
+  "targetSimplifiedStatus": "authored",
   "targetPinyin": "xièxie",
   "shadowStepsJa": [
     "1. xiè は第四声。短く急激に下げる。",
@@ -167,6 +174,8 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
     "☐ 二つ目が短く軽くなったか？",
     "☐ 舌が歯茎に近づいていたか？"
   ],
+  "interferenceJa": "日本語の「シエシエ」は平板で x の摩擦が弱い。",
+  "articulationJa": "x は舌を歯茎に近づけて隙間から息を出す。「シ」より摩擦音が強い。",
   "relatedVocabulary": ["voc-common-001"],
   "painPointTags": ["tone", "pinyin-pronunciation"],
   "reviewStatus": "draft"
@@ -235,7 +244,7 @@ Contour data can be stored as a simple coordinate array per tone pattern in the 
 ]
 ```
 
-The four canonical tone shapes and common tone‑pair shapes (e.g., T3‑T3 sandhi) are authored once and referenced by `toneContourId` in practice items.
+The four canonical tone shapes and common tone‑pair shapes (e.g., T3‑T3 sandhi) are authored once and referenced by `toneContourId` in practice items. Neutral‑tone (轻声) items use a separate contour preset with reduced amplitude. Contour visualisation must not rely solely on colour — each line should also use a distinct dash pattern or label for accessibility.
 
 ---
 
@@ -245,9 +254,9 @@ The four canonical tone shapes and common tone‑pair shapes (e.g., T3‑T3 sand
 
 Pronunciation practice items connect to lessons through two mechanisms:
 
-1. **`soundFocus` field:** Each lesson's `soundFocus` section names exactly one sound/tone point. If the `soundFocus` has a matching pain point tag (`tone` or `pinyin-pronunciation`), a "Practice this sound" link appears at the end of the lesson's mini‑practice section, linking to the relevant practice item(s).
+1. **`soundFocus` field with `contrastId`:** Each `soundFocus` entry in a lesson may include an optional `contrastId` that references a tone or pinyin contrast defined in this document (e.g., `contrastId: "tone-t2-vs-t3"`). Practice items with a matching `contrastId` are linked for "Practice this sound" display at the end of the lesson's mini‑practice section.
 
-2. **`painPointTags` matching:** Practice items with `painPointTags` matching a lesson's `painPointTags` are eligible for cross‑linking. The lesson page may display related practice items below the `travelTask` section.
+2. **`painPointTags` matching (fallback):** Practice items with `painPointTags` matching a lesson's `painPointTags` are eligible for cross‑linking when no `contrastId` is specified. The lesson page may display related practice items below the `travelTask` section.
 
 ### 6.2 Vocabulary Connection
 
@@ -257,17 +266,17 @@ Pronunciation practice items connect to lessons through two mechanisms:
 
 ### 6.3 Travel Quest Connection
 
-- Travel Quest completion criteria may include pronunciation practice for scenario‑key vocabulary.
+- Travel Quest completion may include pronunciation practice for scenario‑key vocabulary, but only discrimination‑format items (which have objectively correct answers) affect readiness. Guided‑shadowing self‑assessment is informational only and does not block Quest completion.
 - Example: completing the "Night Market" Travel Quest requires passing tone‑discrimination drills for 我要, 這個, 多少錢, 好吃.
 - This is a checklist in local state, not a server‑side requirement. The Quest page displays pending pronunciation practice items alongside other task types.
 
 ### 6.4 Data Flow
 
 ```
-Lesson (soundFocus + painPointTags)
+Lesson (soundFocus + contrastId + painPointTags)
     → Practice items (type: tone-discrimination / pinyin-contrast / guided-shadowing)
     → Vocabulary entries (via relatedVocabulary)
-    → Travel Quest (via scenario-tagged vocabulary)
+    → Travel Quest (via scenario-tagged vocabulary + discrimination‑pass criteria)
 ```
 
 All links are declarative (stored in content JSON). No runtime inference is required.
@@ -292,11 +301,13 @@ All links are declarative (stored in content JSON). No runtime inference is requ
 
 ---
 
-## 8. v1 Content Count Estimate
+## 8. Preliminary Content Count Estimate (Non-Binding)
 
-| Format | Minimum items | Notes |
-|--------|---------------|-------|
-| Tone discrimination | 12 | 4 tone pairs × 3 minimal pairs each |
+The following estimate is for authoring scoping only. Implementation decisions about exact numbers belong to the content authoring issue.
+
+| Format | Suggested minimum | Basis |
+|--------|-------------------|-------|
+| Tone discrimination | 12 | 4 tone contrasts × 3 minimal pairs each |
 | Pinyin contrast | 15 | 5 consonant contrasts × 3 minimal pairs each |
 | Guided shadowing | 8 | High‑frequency travel words and phrases |
 | Total | 35 | Feasible for initial authoring |
@@ -309,9 +320,17 @@ These items are assigned to existing and planned lessons via `painPointTags` and
 
 | Question | Owner |
 |----------|-------|
-| Should tone‑discrimination items include a "play reference" UI even without audio, or should the tone contour visual alone be the prompt? | Implementation (#9 practice interactions) |
-| Should guided‑shadowing self‑assessment affect Travel Quest readiness, or remain purely informational? | Implementation (#12 readiness system) |
 | What is the exact set of tone‑contour SVG coordinate presets (canonical vs sandhi)? | Content authoring (#6 phrasebook, #4 lesson sequence) |
+
+---
+
+## 10. References
+
+- So, C. K., & Best, C. T. (2010). Cross-language perception of non-native tonal contrasts: Effects of native phonological and phonetic experience. *Language and Speech*, 53(2), 251–276.
+- Zhu, M., Zhang, K., & Yoshimoto, K. (2012). The acquisition of Mandarin tones by Japanese learners. *Proceedings of TAL 2012*, ISCA Archive.
+- Wu, X., et al. (2024). Production of Mandarin tones by Japanese native speakers. *Proceedings of Speech Prosody 2024*, ISCA.
+- Shu, Y., Zhu, Y., & Mok, P. (2024). Tonal patterns of the Mandarin Third Tone Sandhi produced by Japanese-speaking L2 learners. *Proceedings of Speech Prosody 2024*, ISCA.
+- Japanese phoneme inventory cross‑language analysis sources used for pinyin contrast priority table.
 
 ---
 
