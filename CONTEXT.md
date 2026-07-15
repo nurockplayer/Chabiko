@@ -14,7 +14,19 @@ Structured learning aimed at measurable proficiency, including vocabulary, gramm
 
 ## Capability
 
-A small, reusable, trackable unit of Mandarin ability, such as recognizing a word, understanding a grammar pattern, distinguishing a tone, comprehending a sentence, or completing a communicative task. Capabilities are the canonical units mapped across lessons, exercises, scenarios, and examinations.
+A small, reusable, trackable unit of Mandarin ability with a specific performance mode, such as recognizing a written word, understanding a spoken word, recalling an expression, pronouncing it, understanding a grammar pattern, comprehending a sentence, or completing a communicative task. Capabilities are the canonical units mapped across lessons, exercises, scenarios, and examinations.
+
+## Capability Mode
+
+The kind of learner performance represented and assessed by a Capability, such as written recognition, spoken comprehension, active recall, contextual production, pronunciation, reading comprehension, or listening comprehension. Capability Mastery belongs to the specific Capability Mode being demonstrated and must not be inferred automatically from another mode.
+
+## Capability Family
+
+A grouping of related Capabilities that share a lexical item, grammar concept, communicative purpose, or other common learning concept while requiring different Capability Modes. A Capability Family supports navigation, recommendations, and content organization but does not own a shared Mastery Stage and does not make mastery transferable between its members.
+
+## Selective Capability Expansion
+
+The rule that Chabiko creates only the Capability Modes that a Lesson, Exercise, Learning Path, or examination actually teaches or assesses. The system must not generate every possible mode for every word or concept merely for model completeness.
 
 ## Lesson
 
@@ -34,7 +46,7 @@ A learner-specific observation used to update Capability Mastery, including Exer
 
 ## Capability Mastery
 
-The authoritative learner-specific progress state for one Capability. Capability Mastery is derived from accumulated Learning Evidence and is reusable across Lessons and Learning Paths that reference the same Capability. Reorganizing a Lesson or entering another Learning Path must not erase valid mastery evidence.
+The authoritative learner-specific progress state for one Capability. Capability Mastery is derived from accumulated Learning Evidence and is reusable across Lessons and Learning Paths that reference the same Capability. Reorganizing a Lesson or entering another Learning Path must not erase valid mastery evidence. Evidence for one member of a Capability Family may influence recommendations but must not directly advance another member's Mastery Stage.
 
 ## Mastery Stage
 
