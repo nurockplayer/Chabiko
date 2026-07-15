@@ -36,6 +36,14 @@ A learner-facing instructional sequence that combines one or more Capabilities i
 
 An activity that teaches, rehearses, or assesses one or more Capabilities. An Exercise is not itself the canonical definition of the ability it covers.
 
+## Mastery-Earning Exercise
+
+An Exercise type approved to produce Learning Evidence that the Mastery Engine may use for Mastery Stage transitions. In the first version, this is limited to reliably scoreable written recognition, listening recognition, active recall with deterministic answer normalization, sentence-pattern comprehension through ordering, filling, or naturalness selection, and pronunciation discrimination such as tone or confusable-sound identification.
+
+## Experimental Exercise
+
+An Exercise whose evaluation is not yet reliable enough to affect Capability Mastery, initially including free sentence production and spoken production. It may provide learner feedback and retain an Exercise Attempt, but its result must not advance or lower Mastery Stage or clear Review Due until its evaluator has been validated and the exercise type is explicitly promoted to Mastery-Earning Exercise.
+
 ## Exercise Attempt
 
 A learner interaction with an Exercise that records the submitted response, outcome, timing, hints or assistance used, and the Capabilities assessed. An Exercise Attempt is learning evidence rather than a direct declaration that a Capability has been mastered.
