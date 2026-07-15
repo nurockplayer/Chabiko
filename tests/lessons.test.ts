@@ -99,6 +99,22 @@ describe('loadLessonById', () => {
     expect(lesson).toBeUndefined();
   });
 
+  it('returns undefined when painPointTags contains an unknown tag', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-unknown-tag.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains duplicate tags', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-duplicate-tag.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
   it('loads a lesson with valid painPointTags string array', () => {
     const lesson = loadLessonById('lesson-001');
     expect(lesson).toBeDefined();
@@ -115,6 +131,15 @@ describe('loadLessonById', () => {
     );
     expect(lesson).toBeDefined();
     expect(lesson?.painPointTags).toBeUndefined();
+  });
+
+  it('loads a lesson with an empty painPointTags array', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/empty-painpoint-tags.json',
+    );
+    expect(lesson).toBeDefined();
+    expect(lesson?.painPointTags).toEqual([]);
   });
 
   it('returns undefined when required lesson fields are empty or related vocabulary is malformed', () => {

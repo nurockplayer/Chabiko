@@ -1,0 +1,21 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-001",
+      "titleJa": "不正な painPointTags（不明なタグ）のレッスン",
+      "level": "beginner",
+      "canDoJa": "注文できる",
+      "learnerOutcomeJa": "指差し注文が使える",
+      "hookJa": "夜市で使う",
+      "travelScenario": "food",
+      "coreSentence": "我要這個",
+      "chunks": [],
+      "kanjiBridgeNotes": [],
+      "soundFocus": [],
+      "reviewPrompts": [],
+      "travelTask": "注文してみよう",
+      "painPointTags": ["bad-tag"],
+      "reviewStatus": "draft"
+    }
+  ]
+}
