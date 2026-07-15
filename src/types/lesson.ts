@@ -49,6 +49,7 @@ export interface Lesson {
   reviewPrompts: ReviewPrompt[];
   travelTask: string;
   relatedVocabulary?: string[];
+  painPointTags?: string[];
   reviewStatus: string;
 }
 

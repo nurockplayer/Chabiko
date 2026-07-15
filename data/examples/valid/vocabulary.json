@@ -37,6 +37,35 @@
       ],
       "reviewStatus": "reviewed",
       "source": {"type": "authored", "note": "自作者による基本語彙"}
+    },
+    {
+      "id": "voc-003",
+      "traditional": "媽",
+      "traditionalStatus": "authored",
+      "simplified": "妈",
+      "simplifiedStatus": "authored",
+      "pinyin": "mā",
+      "japanese": "お母さん",
+      "kana": "おかあさん",
+      "category": "family",
+      "toneNote": "第一声（高く平らな音）。日本語にはない調子なので、意識して高さを保つ。",
+      "painPointTags": ["tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "voc-004",
+      "traditional": "手紙",
+      "traditionalStatus": "authored",
+      "simplified": "手纸",
+      "simplifiedStatus": "authored",
+      "pinyin": "shǒuzhǐ",
+      "japanese": "トイレットペーパー",
+      "kana": "トイレットペーパー",
+      "category": "daily-necessity",
+      "similarityType": "false-friend",
+      "caution": "日本語の「手紙（てがみ）」＝ letter とは意味がまったく違う。中国語では「手に使う紙」＝ toilet paper。",
+      "painPointTags": ["kanji-false-friend"],
+      "reviewStatus": "draft"
     }
   ]
 }
