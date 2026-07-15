@@ -4,6 +4,20 @@ import type { LessonBundle } from '../types/lesson';
 
 const DEFAULT_DATA_PATH = 'data/examples/valid/lessons.json';
 
+const CONTROLLED_PAIN_POINT_TAGS = new Set([
+  'tone',
+  'pinyin-pronunciation',
+  'kanji-false-friend',
+  'same-kanji-different-meaning',
+  'same-kanji-different-usage',
+  'word-order',
+  'measure-word',
+  'aspect-particle',
+  'complement',
+  'traditional-simplified',
+  'taiwan-mainland-usage',
+]);
+
 function parseLessonBundle(raw: string, path: string): LessonBundle {
   let parsed: unknown;
   try {
@@ -27,6 +41,20 @@ function parseLessonBundle(raw: string, path: string): LessonBundle {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isValidPainPointTags(value: unknown): boolean {
+  if (value === undefined) return true;
+  if (!Array.isArray(value)) return false;
+  if (value.length === 0) return true;
+  const seen = new Set<string>();
+  for (const element of value) {
+    if (!isNonEmptyString(element)) return false;
+    if (!CONTROLLED_PAIN_POINT_TAGS.has(element)) return false;
+    if (seen.has(element)) return false;
+    seen.add(element);
+  }
+  return true;
 }
 
 function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][number] {
@@ -62,7 +90,8 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     requiredArrayFields.every((field) => Array.isArray(lesson[field])) &&
     optionalArrayFields.every(
       (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
-    )
+    ) &&
+    isValidPainPointTags(lesson.painPointTags)
   );
 }
 

@@ -30,13 +30,42 @@
       "category": "demonstrative",
       "toneNote": "「這 zhè」は第四声。会話では「zhèi」と発音されることもある。",
       "painPointTags": ["pinyin-pronunciation"],
-      "caution": "日本語の「これ」と似ているが、中国語の「這個」は名詞の前に置く（這個東西＝これ）。",
+      "caution": "zhè の zh は日本語の「じ」や「ず」と違い、舌を後ろに巻いて歯茎の後ろで出すそり舌音。日本語話者は舌を平らにして「ジェー」と発音しがちなので、舌先を上あごの奥に向けて意識的に巻く。",
       "travelScenario": "food",
       "examples": [
         {"traditional": "這個多少錢", "pinyin": "zhège duōshao qián", "japanese": "これはいくらですか？"}
       ],
       "reviewStatus": "reviewed",
       "source": {"type": "authored", "note": "自作者による基本語彙"}
+    },
+    {
+      "id": "voc-003",
+      "traditional": "媽",
+      "traditionalStatus": "authored",
+      "simplified": "妈",
+      "simplifiedStatus": "authored",
+      "pinyin": "mā",
+      "japanese": "お母さん",
+      "kana": "おかあさん",
+      "category": "family",
+      "toneNote": "第一声（高く平らな音）。日本語にはない調子なので、意識して高さを保つ。",
+      "painPointTags": ["tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "voc-004",
+      "traditional": "手紙",
+      "traditionalStatus": "authored",
+      "simplified": "手纸",
+      "simplifiedStatus": "authored",
+      "pinyin": "shǒuzhǐ",
+      "japanese": "トイレットペーパー",
+      "kana": "トイレットペーパー",
+      "category": "daily-necessity",
+      "similarityType": "false-friend",
+      "caution": "日本語の「手紙（てがみ）」＝ letter とは意味がまったく違う。中国語では「手に使う紙」＝ toilet paper。",
+      "painPointTags": ["kanji-false-friend"],
+      "reviewStatus": "draft"
     }
   ]
 }

@@ -75,6 +75,73 @@ describe('loadLessonById', () => {
     expect(lesson).toBeUndefined();
   });
 
+  it('returns undefined when painPointTags is a string instead of an array', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-tag-type.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains a number element', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-number-element.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains a null element', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-null-element.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains an unknown tag', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-unknown-tag.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('returns undefined when painPointTags contains duplicate tags', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/invalid-painpoint-duplicate-tag.json',
+    );
+    expect(lesson).toBeUndefined();
+  });
+
+  it('loads a lesson with valid painPointTags string array', () => {
+    const lesson = loadLessonById('lesson-001');
+    expect(lesson).toBeDefined();
+    expect(Array.isArray(lesson?.painPointTags)).toBe(true);
+    if (lesson?.painPointTags) {
+      expect(lesson.painPointTags).toContain('tone');
+    }
+  });
+
+  it('loads a lesson when painPointTags is absent', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/empty-required-lesson-arrays.json',
+    );
+    expect(lesson).toBeDefined();
+    expect(lesson?.painPointTags).toBeUndefined();
+  });
+
+  it('loads a lesson with an empty painPointTags array', () => {
+    const lesson = loadLessonById(
+      'lesson-001',
+      'tests/fixtures/empty-painpoint-tags.json',
+    );
+    expect(lesson).toBeDefined();
+    expect(lesson?.painPointTags).toEqual([]);
+  });
+
   it('returns undefined when required lesson fields are empty or related vocabulary is malformed', () => {
     const lesson = loadLessonById('lesson-001', 'tests/fixtures/invalid-lesson-contract.json');
     expect(lesson).toBeUndefined();
