@@ -36,6 +36,14 @@ A learner-specific observation used to update Capability Mastery, including Exer
 
 The authoritative learner-specific progress state for one Capability. Capability Mastery is derived from accumulated Learning Evidence and is reusable across Lessons and Learning Paths that reference the same Capability. Reorganizing a Lesson or entering another Learning Path must not erase valid mastery evidence.
 
+## Mastery Stage
+
+The learner-facing level of Capability Mastery represented by exactly four ordered states: Unseen, Learning, Familiar, and Mastered. The stages communicate meaningful progress without exposing a falsely precise numeric score. Internal algorithms may use additional signals, but learner-facing mastery remains expressed through these four stages.
+
+## Review Due
+
+A learner-specific scheduling state indicating that a Capability should be reviewed now or soon. Review Due is independent from Mastery Stage: a Mastered Capability may become due for review without immediately being treated as unlearned, and completing an appropriate review may clear the due state without changing the visible mastery stage.
+
 ## Lesson Completion
 
 A learner-facing progress state for one Lesson, derived from the Lesson's required Capabilities, required Exercises, and any lesson-specific completion rules. Lesson Completion supports navigation, motivation, and course presentation, but is not the authoritative measure of whether the learner possesses the underlying abilities.
