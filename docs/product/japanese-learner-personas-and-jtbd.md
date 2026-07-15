@@ -1,240 +1,196 @@
 # Japanese Learner Personas and Jobs-to-Be-Done
 
-**Status:** Draft for #13
-**Last updated:** 2026-07-09
-**Product context:** Chabiko | チャビコ — a Japanese-first Mandarin learning site
-**Alignment:** PR #21 dual-script path-based strategy, PR #3 research summary
+**Status:** Chabiko v1 產品假設與優先順序（尚未經使用者訪談驗證）  
+**Last updated:** 2026-07-13  
+**Scope:** GitHub Issue #13
 
----
+## 決策摘要
 
-## 1. Overview
+Chabiko v1 以「準備赴台旅行的日語母語初學者」為 primary persona。Secondary personas 是「因台灣文化而想學日常實用中文的初學者」與「需要日文優先補強的學校、大學或 HSK 初學者」。這個排序採納 Issue #13 的初始假設，但理由是它最符合既有產品方向、目前的台灣旅遊 lesson vertical slice，以及已規劃的 Travel Quest，不是因為訪談或市場規模已證實它勝出。
 
-This document defines the Japanese speaker personas and jobs-to-be-done (JTBD) that guide Chabiko's v1 scope, curriculum priorities, content model, script display defaults, and product surface design. It ensures Chabiko is built for actual Japanese learner needs rather than becoming a generic Chinese-learning app.
+- **Primary:** P1 赴台旅行準備者。
+- **Secondary:** P2 台灣文化與日常實用中文初學者、P3 學校／大學／HSK 補強者。
+- **v1 不主動最佳化:** P4 接客／工作情境、P5 中長期留學／居住準備、P6 中文媒體／粉絲文化理解。
 
-**Design principles applied from source of truth:**
+這些 persona 是用來控制 v1 取捨的行為與情境假設，不是人口統計分眾。現階段不指定年齡、職業比例或市場大小。
 
-- **Product UI language:** Japanese — all learner-facing explanations, navigation, and labels are in Japanese. The product is built for Japanese speakers, not translated from English.
-- **Chinese content script display:** Simplified and Traditional — Chinese text supports both scripts with path-based defaults and a global toggle. This is a display preference for Chinese content, not a change to the Japanese UI.
-- **Path default vs manual toggle:** Learning paths set the default Chinese script display (e.g., Traditional-first for Taiwan travel), but the learner should be able to switch Simplified / Traditional display at any time through the global script toggle where both forms exist. A manual script choice should override the path default locally where appropriate. This toggle affects learner-facing Chinese content only; Japanese product UI and explanations remain Japanese-first.
-- **Script availability:** Not all content may have both script forms authored or verified. Missing script forms need explicit fallback handling and per-form provenance metadata (traditionalStatus/simplifiedStatus with values: authored / verified / generated / unavailable) to prevent silent display of unreviewed text. The toggle should indicate when a form is unavailable rather than silently falling back.
-- Taiwan travel is the v1 differentiating spine.
-- AI-assisted script conversion may aid authoring; production learner-facing forms must be authored or verified.
-- No unreviewed runtime conversion for production display.
+## 證據、既有決策與假設邊界
 
-### Related issues
+### 已知依據
 
-| Issue | Relationship |
-|-------|-------------|
-| #14 Pain-point taxonomy | Personas define *who*, #14 defines *what hurts* |
-| #17 Learning paths | Persona JTBD feeds path design |
-| #18 Dual-script / variant strategy | Script expectations from personas inform path defaults. The strategy is defined in [dual-script-and-regional-variant-strategy.md](../content/dual-script-and-regional-variant-strategy.md). |
-| #22 Global script toggle | Persona path membership sets the toggle default |
-| #4 Beginner lesson sequence | Primary persona drives v1 lesson hook and examples |
-| #6 Taiwan travel phrasebook | Primary persona's core use case |
-| #12 Travel Quest readiness | Readiness metrics must feel relevant to primary persona |
+1. Repo source of truth 已將 Japanese-first、台灣旅行 readiness、短而實用的 lesson loop、繁簡雙語顯示與 scenario-based practice 設為產品方向；目前可執行的 `lesson-001` 也是夜市點餐情境。這些是**已採用的產品決策**，不是外部使用者研究結果。
+2. 台灣交通部觀光署 2025 年 12 月統計中，按居住地計算的日本旅客為 173,702 人，占當月來台旅客 18.35%。這能支持「日本赴台旅遊是具體且持續存在的使用情境」，但不能證明旅客有中文學習需求、偏好的學習方式，或願意使用 Chabiko。[來源](https://admin.taiwan.net.tw/english/info/News?a=1329&id=35220)
+3. 一項 2024 年研究比較 9 名日本人中國語學習者與 9 名母語者的聲調產出，發現部分聲調的調域有顯著差異。樣本很小，因此只用來支持「聲調值得明確教學與練習」，不能推論所有日本學習者的共同錯誤或某一種練習必然有效。[來源](https://www.jstage.jst.go.jp/article/asjsc/4/3/4_SC-2024-26/_article/-char/ja)
+4. 一項針對初級日本人中文學習者的研究顯示，既有漢字知識可協助漢字詞義處理，但漢字、拼音與中文讀音之間的轉換仍有速度與正確度取捨。這支持 Chabiko 把漢字當 bridge、同時要求拼音與發音提醒；它不支持把相似字形、詞義或音讀直接視為等同。[來源](https://www.jstage.jst.go.jp/article/psysoc/67/1/67_2023-A254/_article/-char/en)
 
----
+### 尚待驗證的產品假設
 
-## 2. Personas
+- Persona 的動機、情境、痛點、session 長度與 retention hook 均是設計假設，不是訪談發現。
+- 「有旅行日期會提高回訪」、「Daily Taiwan Chinese 能留住文化型初學者」與「scenario readiness 比 streak 更有動機」都仍待產品訊號或後續研究驗證。
+- 學校與大學課程使用的字體、教材與教學順序可能不同；P3 的簡體優先只適用於 HSK 或採簡體教材的路徑，不宣稱代表所有日本學校。
+- 外部證據只支持部分跨 persona 的學習設計，不證明下面六個 persona 的規模或排序。排序是 v1 策略選擇。
 
-### P1: Taiwan Travel Learner — 台湾旅行学習者
+## V1 優先順序
 
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese speaker, 25–45, employed or student, planning a leisure trip to Taiwan within 3–12 months. Minimal or zero Mandarin background. Comfortable with hiragana/katakana and basic kanji but has never studied Chinese. |
-| **Motivation** | Wants to travel independently beyond tourist bubble — read signs, order at night markets, ask for directions, handle check-in, and recover from misunderstandings. Wants the trip to feel smoother and more respectful. |
-| **Learning context** | Self-directed, mobile-first. Studies during commute, lunch break, or before bed. No formal class. Uses travel guides, Google Translate, and YouTube for preparation. |
-| **Desired outcome** | Can handle ~10 practical Taiwan travel scenarios with basic Chinese: ordering food, buying tickets, checking in, asking prices, introducing themselves, and simple emergency phrases. Can read about 30–50 common Traditional Chinese characters found on Taiwan signs and menus. |
-| **Pain points** | Tones are unfamiliar and hard to distinguish. Knows kanji but discovers same-looking characters have different readings and meanings in Chinese. Struggles with Taiwan-specific vocabulary (e.g., 便當 vs 盒飯, 計程車 vs 出租車). Finds most Chinese-learning apps are English-based and generic-Mandarin-focused. Cannot tell which resources use Taiwan usage vs Mainland usage. |
-| **Likely session length** | 3–8 minutes, multiple times per day. |
-| **Strongest retention hook** | "I'll need this on my trip next month" — practical urgency and travel date anchoring. |
-| **Default script expectation** | Traditional — because Taiwan uses Traditional Chinese and the learner wants to read real-world signs and menus. |
-| **JTBD** | When I am **planning a trip to Taiwan**, I want to **learn practical Chinese phrases for real travel situations**, so I can **order food, read signs, ask directions, and handle basic interactions confidently during my stay without relying entirely on English or gestures**. |
+排序依四項產品判準：與 Taiwan-travel differentiator 的適配度、能否重用既有／已規劃 surface、v1 scope 是否可控、是否有明確的回訪理由。這不是市場研究排名。
 
-### P2: University / Class-Support Learner — 大学授業サポート学習者
+| Rank | Persona | V1 role | 排序理由 |
+|---|---|---|---|
+| **1** | P1 赴台旅行準備者 | **Primary** | 與 core value、現有夜市 lesson、六個 phrasebook 情境及 Travel Quest 直接一致；情境邊界清楚。 |
+| **2** | P2 台灣文化與日常實用中文初學者 | **Secondary** | 可重用台灣旅遊內容，Daily Taiwan Chinese 與 Culture Bite 可形成不靠旅行日期的回訪入口。 |
+| **3** | P3 學校／大學／HSK 補強者 | **Secondary** | 可重用日文解說、漢字 bridge、發音與基礎 practice；繁簡路徑支援其教材差異，但不需在 v1 建完整考試課程。 |
+| **4** | P4 接客／工作情境學習者 | Later | 部分接客任務可重用，但產業、客群地區與正式程度差異會快速擴大內容範圍。 |
+| **5** | P5 中長期留學／居住準備者 | Later | 需要醫療、租屋、行政、學術與長篇聽讀等深度，超出旅行型 v1。 |
+| **6** | P6 中文媒體／粉絲文化理解者 | Later | 需要大量詞彙、快速聽力、俚語與作品脈絡，與 v1 的短情境任務重疊較少。 |
 
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese university student, 18–22, enrolled in a beginner Mandarin course (第二外国語としての中国語). Has 1–2 classes per week. Knows some pinyin and basic phrases from class but struggles with retention and lacks practice outside of class. |
-| **Motivation** | Needs to pass the course and get credit. Wants to keep up with classmates and not fall behind. Some are interested in continuing beyond the requirement; others just want to survive the semester. |
-| **Learning context** | Complements formal class. Studies before exams, submits homework, reviews vocabulary. Uses university-provided textbooks (typically Simplified-based). May also reference online resources for exam prep. |
-| **Desired outcome** | Can recall assigned vocabulary, understand basic grammar points (word order, 是/在/有 sentences, basic complements), and pass the final exam. Can produce simple self-introductions and answer the teacher's questions in class. |
-| **Pain points** | Classroom pace is too fast or too slow. Textbook explanations are in Japanese but boring and decontextualized. Pronunciation drills feel disconnected from real use. Finds it hard to practice outside of class — no conversation partner, no engaging review material. False friends between kanji and Chinese characters cause test mistakes. |
-| **Likely session length** | 5–15 minutes, 2–4 times per week (exam-driven spikes). |
-| **Strongest retention hook** | "This will be on the test" — exam alignment and credit pressure. |
-| **Default script expectation** | Simplified — because most Japanese university Mandarin courses follow the PRC-based Beijing curriculum and use Simplified characters. |
-| **JTBD** | When I am **taking a Mandarin course at university**, I want to **practice and review what we learned in class through engaging exercises**, so I can **keep up with the curriculum, avoid failing the exam, and build confidence in basic conversation**. |
+## Personas 與 JTBD
 
-### P3: HSK / General Mandarin Learner — HSK・一般中国語学習者
+每個「可能 session 長度」都是用來協助內容切片的設計目標，並非觀察所得。
 
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese self-directed learner, 20–40, studying Mandarin for career, travel (Mainland China or unspecified), or personal interest. May have studied some Chinese before (1–2 semesters) but plateaued. Target: HSK 3–4 or equivalent functional ability. |
-| **Motivation** | Wants a structured, measurable progression. HSK certification is useful for job hunting, transfer to China, or personal goal-setting. Sees Mandarin as a long-term skill investment. |
-| **Learning context** | Self-study with textbooks (e.g., 中日橋, 漢語教科書), apps, podcasts, or italki tutors. Has a routine but lacks a cohesive curriculum. May use Anki decks or HSK vocabulary lists. |
-| **Desired outcome** | Can pass HSK 3 or 4. Can hold simple conversations on familiar topics (work, hobbies, travel). Can read simplified Chinese passages at an intermediate-beginner level. |
-| **Pain points** | HSK vocabulary lists are dry and lack context. Few apps are designed for Japanese speakers — most are English-first. Struggles with grammar differences (word order, aspect particles 了/過/著, complement of result) that English-based resources don't explain well for Japanese learners. Tones remain difficult without feedback. |
-| **Likely session length** | 10–20 minutes daily or every other day. |
-| **Strongest retention hook** | "I'm making progress toward HSK level N" — certification milestone and visible level advancement. |
-| **Default script expectation** | Simplified — because HSK is a Mainland China standard test using Simplified Chinese. |
-| **JTBD** | When I want to **certify my Mandarin level or build general Chinese ability**, I want to **follow a structured path with clear milestones and vocabulary aligned to my goal**, so I can **pass HSK exams, hold practical conversations, and track measurable progress over time**. |
+### P1 赴台旅行準備者 — 台湾旅行準備者
 
-### P4: Business / Service-Industry Learner — ビジネス・接客学習者
-
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese professional, 28–50, working in retail, tourism, hospitality, logistics, or manufacturing where Chinese-speaking customers, clients, or colleagues are increasingly common. May have zero Chinese background or very basic phrasebook knowledge. |
-| **Motivation** | Wants to provide better service to Chinese-speaking customers, build trust with business partners, or reduce friction in daily work communication. Often feels embarrassed when unable to handle a simple customer interaction. |
-| **Learning context** | Time-constrained and pragmatic. Studies during downtime at work or after hours. Prefers scenario-based learning (e.g., "greeting a customer," "checking an order," "explaining a delay"). |
-| **Desired outcome** | Can handle ~5–10 work-specific scenarios: greeting customers, confirming orders, giving simple directions, apologizing for delays, and basic small talk. Can recognize key vocabulary relevant to their industry. |
-| **Pain points** | No time for long study sessions. Work scenarios vary widely (Taiwan tourists vs Mainland Chinese tourists vs Shenzhen-based suppliers). Unsure which script or regional usage to learn. Most business Chinese resources assume an English-speaking learner in a white-collar office, not a Japanese speaker in service/tourism/retail. |
-| **Likely session length** | 3–10 minutes, during work breaks or on commute. |
-| **Strongest retention hook** | "I'll use this with the customer tomorrow" — immediate work application and professional confidence. |
-| **Default script expectation** | Either / path-dependent — depends on whether the learner's client base is primarily Taiwan-based (Traditional) or Mainland-based (Simplified). Some will need awareness of both. |
-| **JTBD** | When I am **dealing with Chinese-speaking customers or work contacts**, I want to **learn practical phrases for my specific industry scenarios**, so I can **handle routine interactions professionally and build better relationships with Chinese-speaking partners or guests**. |
-
-### P5: Study-Abroad / Exam-Oriented Learner — 留学・受験準備学習者
-
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese student or career-changer, 18–30, planning to study at a university or language program in China or Taiwan for an extended period (semester to 2 years). High motivation, long time horizon. |
-| **Motivation** | Needs to build a foundation strong enough for daily life and academic listening in a Chinese-speaking environment. Passing TOCFL or HSK is often a prerequisite for university admission or scholarship eligibility. |
-| **Learning context** | Intensive self-study, possibly supplemented by a language school or tutor. Follows a structured daily study plan (1–2 hours). Uses textbooks, graded readers, flashcards, and shadowing practice. |
-| **Desired outcome** | Can achieve HSK 4+ or TOCFL Level 2+ before departure. Can handle real-life situations: renting an apartment, opening a bank account, visiting a doctor, and understanding classroom instructions. |
-| **Pain points** | High stakes — preparation is time-limited and visa/tuition-dependent. Needs comprehensive coverage (listening, reading, speaking, writing). Long plateau periods where progress feels invisible. Difficult to self-assess readiness before departure. |
-| **Likely session length** | 30–60 minutes daily during preparation phase. |
-| **Strongest retention hook** | "I'll be in Taipei/Beijing in 6 months" — fixed departure date creates sustained urgency. |
-| **Default script expectation** | Path-dependent: Simplified if studying in Mainland China, Traditional if studying in Taiwan. |
-| **JTBD** | When I am **preparing to study abroad in a Chinese-speaking country**, I want to **build a comprehensive Mandarin foundation with strong listening and reading skills**, so I can **handle daily life, follow academic content, and meet proficiency requirements before departure**. |
-
-### P6: Chinese Media / Culture Interest Learner — 中国エンタメ・文化関心学習者
-
-| Field | Value |
-|-------|-------|
-| **Learner snapshot** | Japanese learner, 16–35, drawn to Chinese-language media — C-dramas, movies, variety shows, web novels, or music. May have started learning because of a specific show or artist. Often self-taught through exposure. |
-| **Motivation** | Wants to understand original content without relying on subtitles or translation. Wants to engage with a fandom or community. May also want to visit filming locations or attend events. |
-| **Learning context** | Media-driven informal learning. Watches content with Chinese subtitles, looks up words, follows fan accounts. Less structured but high exposure volume. Learns by encountering the same phrases repeatedly. |
-| **Desired outcome** | Can follow the gist of a variety show or drama episode. Can understand song lyrics. Can read Weibo posts or web novel chapters with occasional dictionary lookups. |
-| **Pain points** | Media Chinese is fast and full of slang, cultural references, and regional expressions not found in textbooks. Dictionaries and subtitles help but don't explain the grammar or cultural context. Spoken dialogue in dramas often uses different tones or colloquial reductions from textbook pronunciation. |
-| **Likely session length** | 1–5 minutes (while watching content: pause and look up), or 15–30 minute dedicated study sessions. |
-| **Strongest retention hook** | "I want to understand this drama without subtitles" — emotional connection to content and characters. |
-| **Default script expectation** | Both — depends on media type. Mainland productions use Simplified; Taiwanese productions use Traditional. Learner will encounter both and needs flexibility. |
-| **JTBD** | When I am **watching or reading Chinese-language media**, I want to **understand what the original content says without relying on Japanese subtitles**, so I can **enjoy the material as intended and engage more deeply with the culture and fandom**. |
-
----
-
-## 3. V1 Priority Ranking
-
-### Primary v1 Persona
-
-| Rank | Persona | Rationale |
-|------|---------|-----------|
-| **1** | P1: Taiwan Travel Learner | Most differentiated use case. Aligns with Chabiko's core value ("Taiwan travel readiness as v1 differentiating spine"). Strongest JTBD urgency — travel has a fixed date. Minimum viable content scope is well-bounded (10–15 travel scenarios). Dual-script needs are clear (Traditional-first). Few mainstream apps serve this persona from a Japanese-first angle. |
-
-### Secondary v1 Personas
-
-Personas Chabiko can partially serve in v1 without diluting the Taiwan travel spine. Their needs inform content format, practice design, and script flexibility — but do not drive the primary curriculum.
-
-| Rank | Persona | How v1 Serves | Guardrails |
-|------|---------|---------------|------------|
-| **2** | P2: University / Class-Support Learner | Kanji bridge vocabulary, pinyin and tone practice, grammar notes, and beginner lesson loop overlap with what a first-year university student needs. Chabiko's lesson structure (chunk breakdown, sound focus) supplements classroom learning. | Must not add curriculum scope just to match a specific textbook. Lessons remain can-do/task-based, not academically sequenced. |
-| **3** | P3: HSK / General Mandarin Learner | Kanji bridge vocabulary, general beginner lessons, pinyin/tone practice, and path-based script support (Simplified-first for HSK path) are useful. HSK vocabulary alignment could be additive without replacing the Taiwan travel spine. | Must not pull the v1 curriculum toward HSK exam-only content. HSK path in v1 means "practical Mandarin that happens to be HSK-level-appropriate," not "prepare for the HSK exam." |
-| **4** | P4: Business / Service-Industry Learner | Taiwan travel phrasebook overlaps with service-industry scenarios (ordering food, checking in, asking directions). Scenario roleplay cards and practice interactions translate directly to work contexts. | Scenario roleplay in v1 is travel-first. Business-specific content (e.g., meeting vocabulary, formal email) is deferred. |
-
-### Later / Not Optimized for v1 Personas
-
-Chabiko's v1 design should not block these personas, but the curriculum, phrasebook, and practice loops are not primarily designed for them.
-
-| Rank | Persona | Reason for Deferral |
-|------|---------|---------------------|
-| **5** | P5: Study-Abroad / Exam-Oriented Learner | Requires intensive curriculum depth and comprehensive listening/reading/writing coverage far beyond v1 scope. High-stakes exam preparation needs audio and speaking assessment that v1 explicitly defers. |
-| **6** | P6: Chinese Media / Culture Interest Learner | Media comprehension requires large vocabulary breadth, listening speed, and cultural reference knowledge that exceed v1's bounded scenario scope. Most useful after v1 core content stabilizes and audio support exists. |
-
----
-
-## 4. Persona-to-Surface Mapping
-
-| Chabiko Surface | P1: Taiwan Travel | P2: University | P3: HSK / General | P4: Business / Service | Notes |
-|-----------------|-------------------|----------------|-------------------|------------------------|-------|
-| **Beginner lesson sequence** | Lessons use Taiwan travel scenarios as hooks and examples. | Lessons overlap with beginner grammar, chunk breakdown, and pinyin. | Lessons can be taken on an HSK-labeled path with same content. | Travel scenarios (ordering, asking directions) = service scenarios. | Core lesson content is shared; path labels and script defaults differ. |
-| **Kanji bridge vocabulary** | False friends relevant to travel context. Japanese-on'yomi bridge for memorization. | Direct classroom aid — many false friends appear in first-year curriculum. | Useful for HSK vocabulary memorization. | Industry-specific false friends applicable where overlap exists. | Kanji bridge is cross-persona utility. |
-| **Taiwan travel phrasebook** | Primary use case. 6 scenarios (food, transport, hotel, shopping, emergency, airport). | Supplementary — travel may not be their goal. | Less relevant for HSK-only learners. | Maps to service scenarios (hotel, food, transport). | This surface exists for P1 first. |
-| **Practice interactions** | Tone discrimination + scenario roleplay aligned to travel. | Pinyin/tone practice and recognition drills. | Pinyin/tone practice and recall exercises. | Scenario roleplay cards for service contexts. | Practice modes are shared; content context differs. |
-| **Travel Quest / readiness** | Primary motivation system. Trip date anchors urgency and scenario readiness tracking. | May not resonate unless they also plan to travel. | Less relevant unless combined with travel interest. | Readiness framed as "can handle service scenario X." | Designed for P1; others can opt in. |
-| **Daily Taiwan Chinese** | Re-engagement hook — sees a phrase they'll need tomorrow. | Casual cultural exposure. | Casual vocabulary building. | Work-relevant if daily phrase matches their industry. | Designed for P1; others benefit passively. |
-| **Scenario roleplay cards** | Taiwan-specific roleplay (night market, check-in, taxi). | Basic roleplay for classroom practice. | General roleplay for conversation practice. | Customer-service roleplay contexts. | v1 cards are travel-first; service overlap is secondary. |
-| **Goal-based learning paths** | "Taiwan trip readiness" is the default v1 path. | "University support" path could be added post-v1. | "HSK preparation" path could be added post-v1. | "Service Chinese" path deferred. | v1 has one primary path; others are post-launch. |
-| **Script display default** | Traditional-first. | Simplified-first. | Simplified-first. | Depends on client region. | Path membership determines default; toggle available. |
-
----
-
-## 5. V1 Non-Goals
-
-Chabiko v1 explicitly does **not** optimize for:
-
-- **Not a generic Chinese-learning app.** Chabiko is built for Japanese speakers learning Mandarin for practical goals, with Taiwan travel as the primary v1 spine. It is not a Duolingo/Pleco/HelloChinese replacement.
-- **Not a full HSK curriculum in v1.** HSK vocabulary alignment is useful, but v1 does not offer HSK-specific lesson tracks, mock exams, or certification preparation.
-- **Not a dictionary replacement.** Chabiko links and explains vocabulary in context. It does not aim to replace Weblio, CC-CEDICT, or Pleco as a general-purpose dictionary.
-- **Not speech-recognition-first.** Tone and pronunciation practice in v1 uses listening discrimination and recognition exercises, not speech input.
-- **Not account / cloud-sync dependent.** v1 learning progress may persist in LocalStorage. Accounts, bookmarks, and cross-device sync are deferred.
-- **Not Mainland-only Mandarin product.** Simplified-first paths exist for appropriate personas, but Taiwan travel — with Traditional-first, Taiwan-usage-first content — remains the differentiator. The product does not assume all learners target Mainland Mandarin.
-- **Not Traditional-only after PR #21.** Dual-script support with path-based defaults is the baseline. No learner is forced into Traditional-only or Simplified-only content.
-- **Not a classroom replacement.** Chabiko supplements classroom or self-study; it does not replace a teacher, tutor, or formal course for learners who need structured correction and speaking practice.
-- **Not a media-comprehension tool.** Drama/ variety show / web novel vocabulary support is deferred until core content stabilizes and audio support is available.
-- **Not AI-tutor-first.** v1 does not offer AI-generated explanations, AI conversation partners, or adaptive question generation. All learner-facing content is authored or verified before release.
-
----
-
-## 6. Cross-References
-
-### Source of truth alignment
-
-| Document | Alignment |
-|----------|-----------|
-| `.planning/PROJECT.md` | Personas validate the "Target learner" and "Secondary use cases" sections; P1 directly maps to "Main use case: preparing for a Taiwan trip." |
-| `.planning/REQUIREMENTS.md` | POS-01 is directly satisfied; PATH-01 (Taiwan travel as v1 differentiating path) reinforced. |
-| `.planning/ROADMAP.md` | Phase 1 plan 01-02 ("Define Japanese learner personas and JTBD") scoped correctly. |
-| `.planning/research/SUMMARY.md` | Personas ground the "Japanese Learner Alignment" section with specific jobs and priorities. |
-| Phase 1 CONTEXT | D-05 (personas guide v1 scope before content schemas) and D-06 (Taiwan travel as differentiating spine) are confirmed. |
-| `.planning/github-issues/INDEX.md` | No change needed — #13 already listed under Phase 1. |
-
-### Cross-references to update
-
-The following documents reference persona/JTBD work and should be checked for consistency:
-
-- `.planning/ROADMAP.md` — Phase 1 success criterion #3 ("Japanese learner personas and jobs-to-be-done are prioritized for v1") is now defineable.
-- `.planning/REQUIREMENTS.md` — POS-01 scope aligned; PATH-01 priority confirmed.
-- `.planning/github-issues/INDEX.md` — No structural change needed; #13 remains correctly placed.
-
----
-
-## 7. Persona Assumptions to Validate
-
-The following assumptions should be validated through user research or early product signals. They are reasonable starting points but may shift as the team learns more.
-
-| Assumption | Source Persona | Risk If Wrong |
-|------------|----------------|---------------|
-| Taiwan travel learners have a trip date within 3–12 months that creates urgency | P1 | Session length and retention hook weakens; Travel Quest framing may not motivate |
-| 3–8 minute sessions are sufficient for beginners to make progress | P1, P4 | Content chunk size may be too small for meaningful learning |
-| Japanese learners prefer explicit kanji bridge notes rather than finding it distracting | P1, P2, P3 | Kanji bridge feature could add noise if learners find it unhelpful or confusing |
-| University Mandarin courses in Japan predominantly use Simplified Chinese and PRC-based curriculum | P2 | Script default for P2 path would need adjustment |
-| Japanese self-directed HSK learners want Simplified-first, not Traditional | P3 | Script default for HSK path would need adjustment |
-| Learners value readiness-by-scenario over completion streaks | P1, P4 | Motivation system redesign needed if learners prefer traditional progress metrics |
-
-These assumptions will be revisited when user feedback is available after v1 launch.
-
----
-
-## 8. Recommended Next Steps
-
-| After closing #13 | Connected issue |
+| Field | Hypothesis |
 |---|---|
-| Define Japanese-native learner pain-point taxonomy | #14 |
-| Draft dual-script and Taiwan/Mainland variant strategy | #18 |
-| Design goal-based learning paths | #17 |
-| Build global Simplified / Traditional display toggle | #22 |
-| Revisit persona assumptions after user feedback | Post-v1 |
+| **JTBD** | 當我準備去台灣旅行時，我想在真實旅遊情境中快速學會可說、可辨識的中文，使我能完成點餐、交通、住宿、購物與求助等任務，不必完全依賴英文、翻譯工具或手勢。 |
+| **Motivation** | 降低旅途中的不確定感，並能在台灣主動完成幾個重要互動。 |
+| **Learning context** | 零基礎或初學；旅行前用手機自學，偏好能立刻連到行程的內容。 |
+| **Desired outcome** | 看懂常見正體中文線索，能使用少量高頻 chunk，並在六個 v1 travel scenarios 中完成基本 can-do task 與誤解修復。 |
+| **Pain points** | `tone`、`pinyin-pronunciation`、`traditional-simplified`、`taiwan-mainland-usage`；漢字看似熟悉卻不會讀，或誤把日文意義套入中文。標籤只在內容確實教到該難點時使用。 |
+| **Likely session length** | **假設：3–8 分鐘。** 一次完成一個 phrase、sound focus、mini practice 或 travel task。 |
+| **Strongest retention hook** | 下一個旅行情境的 readiness，以及「這句在旅途中會用到」的時間迫近感。 |
+| **Script / region default** | 正體中文、台灣用語優先；有已審核形式時可切換簡體。 |
+
+### P2 台灣文化與日常實用中文初學者 — 台湾文化・日常中国語ビギナー
+
+| Field | Hypothesis |
+|---|---|
+| **JTBD** | 當我因台灣飲食、城市生活與文化產生興趣時，我想用很短的日文解說持續學一點實用中文，使我能理解日常詞句、感覺自己更接近台灣，並逐步具備未來旅行時可用的能力。 |
+| **Motivation** | 對台灣文化的好奇與想理解「這個詞在台灣怎麼用」，未必已有旅行日期。 |
+| **Learning context** | 零碎、自主、手機優先；由一則食物、交通、便利商店或生活文化內容進入學習。 |
+| **Desired outcome** | 穩定累積常見台灣詞彙與短句，能辨識一些正體字，並把文化興趣轉成可回想的日常表達。 |
+| **Pain points** | 長課程容易失去動機；不知道文化內容如何轉成可用語言；漢字帶來早期熟悉感，也可能遮蔽中文讀音、聲調與實際用法。 |
+| **Likely session length** | **假設：1–5 分鐘。** 一則 Daily Taiwan Chinese，必要時接一題 practice。 |
+| **Strongest retention hook** | 每日一個有趣而可用的台灣發現，以及同一內容日後在 Travel Quest 再出現。 |
+| **Script / region default** | 正體中文、台灣用語優先；避免為了展示差異而在每則內容塞滿變體。 |
+
+### P3 學校／大學／HSK 補強者 — 授業・HSKサポート学習者
+
+| Field | Hypothesis |
+|---|---|
+| **JTBD** | 當我在學校、大學或 HSK 自學中遇到難懂或記不住的基礎中文時，我想用日文與日本語母語者熟悉的對照方式做短練習，使我能理解課內概念、記住詞句，並更有把握完成下一次課堂或複習。 |
+| **Motivation** | 跟上課程、完成複習或取得可見的基礎進步；考試可能是目標之一，但不是唯一目標。 |
+| **Learning context** | 搭配既有教材或課程，不取代老師與課本；常在上課前後或考前使用。 |
+| **Desired outcome** | 用日文釐清初級語序、量詞、體貌、補語、拼音與聲調，並能回想教材中的核心詞句。 |
+| **Pain points** | `word-order`、`measure-word`、`aspect-particle`、`complement`、`tone`、`pinyin-pronunciation` 與 kanji false friends；不同教材的字體與範圍不一致。 |
+| **Likely session length** | **假設：5–15 分鐘。** 以一個概念或一組錯題為單位。 |
+| **Strongest retention hook** | 近期課堂／測驗可用的補強，以及 shaky item 的短期重現。 |
+| **Script / region default** | 由 path 或教材決定；HSK／簡體教材可簡體優先，仍保留已審核正體形式。 |
+
+### P4 接客／工作情境學習者 — 接客・業務場面学習者
+
+| Field | Hypothesis |
+|---|---|
+| **JTBD** | 當我需要接待或與中文使用者完成例行工作互動時，我想練習少量、情境明確的用語，使我能確認需求、說明下一步並在沒聽懂時禮貌修復溝通。 |
+| **Motivation** | 近期可用的工作表現與服務信心。 |
+| **Learning context** | 工作空檔或通勤；需要與職務直接相關的情境。 |
+| **Desired outcome** | 完成數個高頻接客任務，不以廣泛商務流利為目標。 |
+| **Pain points** | 時間少；產業術語與禮貌層次不同；客群來自台灣或中國大陸時，用字與字體需求不同。 |
+| **Likely session length** | **假設：3–10 分鐘。** |
+| **Strongest retention hook** | 下一個班次或客戶互動能直接使用。 |
+| **V1 implication** | 只重用與旅遊接待重疊的內容；不建立產業別 business Chinese path。 |
+
+### P5 中長期留學／居住準備者 — 留学・長期滞在準備者
+
+| Field | Hypothesis |
+|---|---|
+| **JTBD** | 當我準備在中文環境中長期學習或生活時，我想建立比旅遊更完整的語言能力，使我能處理日常行政、醫療、居住與學習任務。 |
+| **Motivation** | 出發日期、入學或檢定門檻，以及長期生活自立。 |
+| **Learning context** | 較密集、通常搭配正式課程、家教或教材。 |
+| **Desired outcome** | 整合聽、說、讀、寫與較長對話，不只記住 survival phrases。 |
+| **Pain points** | 範圍大、風險高、需要個別回饋；台灣與中國大陸目的地也會改變字體、檢定與用語需求。 |
+| **Likely session length** | **假設：20–45 分鐘以上。** |
+| **Strongest retention hook** | 出發與入學時程、生活任務 readiness。 |
+| **V1 implication** | Chabiko v1 只能提供旅行／日常基礎，不宣稱足以完成留學或檢定準備。 |
+
+### P6 中文媒體／粉絲文化理解者 — 中国語コンテンツ理解学習者
+
+| Field | Hypothesis |
+|---|---|
+| **JTBD** | 當我接觸中文戲劇、音樂、社群或作品時，我想理解原文中的常見表達與文化脈絡，使我能降低對日文翻譯的依賴並更深入享受內容。 |
+| **Motivation** | 對作品、人物或社群的情感連結。 |
+| **Learning context** | 一邊觀看／閱讀一邊查詞，或從特定片段延伸學習。 |
+| **Desired outcome** | 理解高頻口語、字幕與文化語境。 |
+| **Pain points** | 語速、俚語、作品脈絡與詞彙量遠高於 v1 travel scope；來源授權也是額外限制。 |
+| **Likely session length** | **假設：5–20 分鐘，或隨內容即時查詢。** |
+| **Strongest retention hook** | 能理解下一段原文內容。 |
+| **V1 implication** | Culture Bite 可以帶來少量重疊，但不匯入或重製第三方作品內容，也不做媒體理解 curriculum。 |
+
+## Top personas 對 v1 surfaces 的映射
+
+下表只承諾共享內容與 path-aware 呈現；不為每個 persona 複製一套 curriculum。
+
+| Surface | P1 赴台旅行準備者 | P2 台灣文化／日常初學者 | P3 學校／大學／HSK 補強者 |
+|---|---|---|---|
+| **Lessons** | 台灣六大旅遊情境作為 hook 與 travel task；目前夜市點餐 `lesson-001` 是第一個 vertical slice。 | 從食物、城市與生活文化 hook 進入同一 lesson loop；保留 can-do 與 sound focus，不變成純文化文章。 | 重用 chunk、kanji bridge 與日文文法對照；可由簡體優先 path 呈現，但不按特定課本複製章次。 |
+| **Vocabulary** | 優先旅行高頻詞、正體辨識、台灣用語與有實際風險的 false friend。 | Daily Taiwan Chinese／Culture Bite 串回 3–5 個可複習詞；文化趣味必須連到用法。 | 以 pain-point metadata 找出聲調、語序、量詞、體貌與補語等補強項目；不宣稱完整覆蓋 HSK 詞表。 |
+| **Phrasebook** | 核心 surface：airport、transport、food、shopping、hotel、emergency；包含 fallback phrase 與 roleplay 連結。 | 每日內容可從 phrasebook 選一個文化／日常相關 phrase，再導向完整情境。 | 當作實用輸出補充，不把 phrasebook 包裝成考試題庫或課堂對齊。 |
+| **Practice** | 認讀、聲調／拼音辨識、日文提示 recall、3–5 回合 scenario roleplay 與 retry。 | 一題即可完成的認讀／recall，之後把 shaky item 放回相關日常情境。 | 針對近期概念做辨識、排序與 recall；使用同一套 `painPointTags`，不另建考試專用 scoring。 |
+| **Travel Quest** | 主要 motivation layer；以「能否點餐、搭車、入住、求助、修復誤解」顯示 scenario readiness。 | 將文化興趣逐步導向可做的日常任務；可選擇加入 quest，但不強迫先有旅行日期。 | 只在 learner 選擇旅行目標時使用；不把 HSK 等級或學分進度錯算成 Taiwan readiness。 |
+| **Daily Taiwan Chinese** | 在旅行前重現下一個情境的一句 phrase、一個 sound point 與一題練習。 | **主要 retention hook**：1–3 分鐘的 phrase、日文解說、台灣文化 note 與 instant practice。 | 作為低壓補充與複習入口；若內容不符合其教材範圍，不宣稱可取代課內複習。 |
+
+### 對既有與已規劃內容的直接影響
+
+- #4 beginner lesson sequence 應以 P1 決定第一批 lesson 排序，P2 與 P3 透過共享內容、日文解說與 script default 受益。
+- #6 phrasebook 與 #19 roleplay 先服務 P1；P2 可從 Daily Taiwan Chinese 進入，P3 只作補充。
+- #12／#20 Travel Quest readiness 只把實際 can-do 與情境練習算入 Taiwan readiness；它不是泛用 streak 或 HSK 分數。
+- `docs/content/japanese-native-pain-point-taxonomy.md` 的 tag 是跨 persona 的內容 metadata，不是「每位日本學習者都有此問題」的證明，也不得過度標註。
+- P1 與 P2 正體／台灣用語優先；P3 由 path 決定 script default。所有 learner-facing 形式仍須 authored 或 verified。
+
+## V1 deliberate non-optimization
+
+Chabiko v1 刻意不為下列目標最佳化，即使部分 persona 可能受益：
+
+- **不做完整 HSK、TOCFL、校內考試或指定教材對齊。** 不提供全級詞表、模擬考、分數預測或逐章同步。
+- **不做完整留學／長期生活課程。** 租屋、醫療、行政、學術聽讀與長篇寫作不納入旅行型 v1 的完成定義。
+- **不做產業別 business Chinese。** 不為零售、飯店、製造或辦公室各自建立內容樹；只保留與 travel/service 重疊的任務。
+- **不做中文媒體理解產品。** 不追求俚語庫、字幕學習、作品匯入或受版權保護內容的重製。
+- **不以長時間、全面流利為 session model。** v1 優先 1–15 分鐘內可完成的單一 lesson／practice／quest step。
+- **不把漢字熟悉感當成中文能力。** 每個 bridge 仍需搭配拼音、聲調、語義／用法 caution 與 review metadata。
+- **不以 AI tutor、speech recognition、帳號或 cloud sync 解決 persona 需求。** 這些仍在 v1 scope 之外。
+- **不以 generic streak 取代實際 readiness。** 回訪機制必須連回可使用的 phrase、practice 或 scenario outcome。
+
+## 待驗證清單
+
+後續訪談、可用性測試或產品訊號應優先檢查以下假設；本 issue 不假裝已完成這些研究。
+
+| Assumption | 可觀察訊號 | 若不成立的調整 |
+|---|---|---|
+| P1 的旅行情境與日期能帶來最強的開始／回訪動機 | 首次 lesson 啟動、Travel Quest 選擇、情境完成與回訪 | 降低旅行日期依賴，重新比較 P2 的文化型入口。 |
+| P2 願意從文化興趣進入短 practice | Daily Taiwan Chinese 完成後進入 practice／lesson 的比例 | 讓 Daily 格式更獨立，或降低其 v1 優先度。 |
+| P3 覺得日文對照與 pain-point practice 能補強既有教材 | 補強題 retry、回訪與質性回饋 | 收窄支援範圍，不建立未被使用的 school／HSK path。 |
+| 1–15 分鐘的設計切片符合前三 persona | 開始到完成時間、半途離開位置、同 session 的下一步選擇 | 調整內容粒度；不把預估 session 長度當硬性人格特徵。 |
+| Scenario readiness 比單純完成數更能傳達進步 | readiness 檢視、quest completion、返回相關 practice | 簡化 readiness 呈現，但仍保留 can-do outcome。 |
+| Path-based script default 足以處理 P3 的教材差異 | 手動切換頻率與 fallback 發生率 | 在 #17／#22 調整 path 與 toggle 行為，不改變 Japanese-first UI。 |
+
+## Source of truth 與參考
+
+### Repository
+
+- [`.planning/PROJECT.md`](../../.planning/PROJECT.md)
+- [`.planning/REQUIREMENTS.md`](../../.planning/REQUIREMENTS.md) — POS-01、PATH-01、MOTIV-01～03
+- [`.planning/ROADMAP.md`](../../.planning/ROADMAP.md) — Phase 1 plan 01-02
+- [`docs/strategy/learning-and-motivation-strategy.md`](../strategy/learning-and-motivation-strategy.md)
+- [`docs/content/japanese-native-pain-point-taxonomy.md`](../content/japanese-native-pain-point-taxonomy.md)
+- [`docs/content/dual-script-and-regional-variant-strategy.md`](../content/dual-script-and-regional-variant-strategy.md)
+- [`data/examples/valid/lessons.json`](../../data/examples/valid/lessons.json)
+- GitHub issues #4、#6、#12、#14、#17、#19、#20、#42
+
+### External evidence
+
+- Taiwan Tourism Administration, [Visitor Statistical Analysis for December 2025](https://admin.taiwan.net.tw/english/info/News?a=1329&id=35220).
+- 伍晟（2024）, [日本語を母語とする中国語学習者による声調の産出に関する研究](https://www.jstage.jst.go.jp/article/asjsc/4/3/4_SC-2024-26/_article/-char/ja).
+- Zhang & Tamaoka（2025）, [Harmonizing Sounds: The Navigation of Phonological Processing in Pinyin and Hanzi by Early Japanese CFL Learners](https://www.jstage.jst.go.jp/article/psysoc/67/1/67_2023-A254/_article/-char/en).
 
 ---
 
-*This document is a product planning artifact, not an implementation spec. It will be updated as personas are validated or invalidated through user feedback and product iteration.*
+這份文件是產品規劃假設，不是 persona 訪談報告。當實際研究或產品訊號反駁某項假設時，應更新 persona、排序與相應 source of truth，而不是把原假設重新包裝成證據。
