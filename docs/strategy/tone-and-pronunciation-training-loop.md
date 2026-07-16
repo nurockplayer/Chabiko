@@ -91,7 +91,7 @@ These words should appear as the first tone‑discrimination practice items beca
 
 ## 4. Practice Item Formats
 
-The existing content model (`docs/content/content-model-draft.md`) defines a `practice` type with a `type` field. This design proposes three new `type` values to extend that allowlist: `tone-discrimination` (already listed as a placeholder), `pinyin-contrast`, and `guided-shadowing`. A fourth format, `tone-pair-matching`, is a v1 stretch goal. A separate issue should update the content model allowlist when these formats are implemented.
+The existing content model (`docs/content/content-model-draft.md`) defines a `practice` type with a `type` field. This design adds `pinyin-contrast` and `guided-shadowing` alongside the existing `tone-discrimination` value; the content model and validator are updated in this change so authored items using these formats are accepted. A fourth format, `tone-pair-matching`, is a v1 stretch goal.
 
 ### 4.1 Tone Discrimination (`type: tone-discrimination`)
 
@@ -119,7 +119,7 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
 }
 ```
 
-**Structured content requirement:** Each item stores `toneContourHintJa` (Japanese explanation of the correct tone's contour), `interferenceJa` (Japanese-native interference note), `correctAnswer` (the correct option), and `distractors` (wrong options). Items prompt a two-option or four-option choice between contrasting tones — both options share the same syllable and differ only by tone, and the tone‑contour graphics are part of the prompt. An optional `audioRef` field can hold a future reference‑audio file path per option.
+**Structured content requirement:** Each item stores `contrastId`, `toneContourId`, `toneContourHintJa` (Japanese explanation of the correct tone's contour), `interferenceJa` (Japanese-native interference note), `correctAnswer` (the correct option), and `distractors` (wrong options). Items prompt a two-option or four-option choice between contrasting tones — both options share the same syllable and differ only by tone, and the tone‑contour graphics are part of the prompt. An optional `audioRef` field can hold a future reference‑audio file path per option.
 
 This is a contour‑identification exercise (visual mode), not a true listening‑discrimination exercise. Only auditory mode (post‑v1, using `audioRef`) qualifies as discrimination for Travel Quest readiness purposes.
 
@@ -151,7 +151,7 @@ This is a contour‑identification exercise (visual mode), not a true listening�
 }
 ```
 
-**Structured content requirement:** Each item stores `contrastNoteJa` (Japanese explanation of the articulatory difference from the nearest Japanese sound), `correctAnswer` (a pinyin initial, final, or syllable), and `distractors` (confusable alternatives chosen from the Japanese‑specific confusion matrix in §3.2).
+**Structured content requirement:** Each item stores `contrastId`, `contrastNoteJa` (Japanese explanation of the articulatory difference from the nearest Japanese sound), `interferenceJa`, `articulationJa`, `correctAnswer` (a pinyin initial, final, or syllable), and `distractors` (confusable alternatives chosen from the Japanese‑specific confusion matrix in §3.2). `toneContourId` is optional for pinyin-only contrasts.
 
 ### 4.3 Guided Shadowing (`type: guided-shadowing`)
 
@@ -195,7 +195,7 @@ This is a contour‑identification exercise (visual mode), not a true listening�
 }
 ```
 
-**Structured content requirement:** Each item stores `targetTraditional`, `targetTraditionalStatus`, `targetPinyin`, `shadowStepsJa` (an ordered list of Japanese instructions), and `selfCheckJa` (a checklist the learner ticks mentally or via UI). The `targetTraditional`/`targetSimplified` naming distinguishes the shadowing target from the canonical vocabulary record fields (which use `traditional`/`simplified`). When the shadowing target is a phrase, it may not correspond to a single vocabulary entry; the `target*` prefix avoids collision with vocabulary record semantics. No audio or recording is required — the learner self‑monitors. Unlike tone‑discrimination and pinyin‑contrast items, guided‑shadowing has no single correct answer — `correctAnswer` is `null` and the existing practice schema must allow this when `type` is `guided-shadowing`. This type‑specific `correctAnswer` relaxation should be added to the practice schema when the allowlist is extended.
+**Structured content requirement:** Each item stores `targetTraditional`, `targetTraditionalStatus`, `targetPinyin`, `toneContourId`, `shadowStepsJa` (an ordered list of Japanese instructions), `selfCheckJa` (a checklist the learner ticks mentally or via UI), `interferenceJa`, and `articulationJa`. The `targetTraditional`/`targetSimplified` naming distinguishes the shadowing target from the canonical vocabulary record fields (which use `traditional`/`simplified`). When the shadowing target is a phrase, it may not correspond to a single vocabulary entry; the `target*` prefix avoids collision with vocabulary record semantics. No audio or recording is required — the learner self‑monitors. Unlike tone‑discrimination and pinyin‑contrast items, guided‑shadowing has no single correct answer — `correctAnswer` is `null`; the validator explicitly allows this for `guided-shadowing` only.
 
 ### 4.4 Tone Pair Matching (stretch goal, `type: tone-pair-matching`)
 
@@ -267,9 +267,9 @@ The four canonical tone shapes and common tone‑pair shapes (e.g., T3‑T3 sand
 
 Pronunciation practice items connect to lessons through two mechanisms:
 
-1. **`soundFocus` field with `contrastId`:** Each `soundFocus` entry in a lesson may include an optional `contrastId` that references a tone or pinyin contrast defined in this document (e.g., `contrastId: "tone-t2-vs-t3"`). Practice items with a matching `contrastId` are linked for "Practice this sound" display at the end of the lesson's mini‑practice section.
+1. **`lesson.painPointTags` as the link source:** v1 links a lesson to practice items when they share a `painPointTags` value. `SoundFocus` remains the existing one-item structure `{ item, noteJa }`; it explains the target sound in the lesson and does not carry tags or a `contrastId`.
 
-2. **`painPointTags` matching (fallback):** Practice items with `painPointTags` matching a lesson's `painPointTags` are eligible for cross‑linking when no `contrastId` is specified. The lesson page may display related practice items below the `travelTask` section.
+2. **Selection rule:** When several matching items exist, show them in authored order. The lesson author selects the intended target through the existing `soundFocus.item` and Japanese `noteJa`; no new tag or linking field is added to `SoundFocus` in v1.
 
 ### 6.2 Vocabulary Connection
 
@@ -279,14 +279,14 @@ Pronunciation practice items connect to lessons through two mechanisms:
 
 ### 6.3 Travel Quest Connection
 
-- Travel Quest completion may include pronunciation practice for scenario‑key vocabulary. Visual‑mode tone‑contour identification builds explicit awareness but does not qualify as auditory discrimination; only post‑v1 audio‑mode items (using `audioRef`) count as discrimination for Quest readiness. Guided‑shadowing self‑assessment is informational only and does not block Quest completion.
-- Example: completing the "Night Market" Travel Quest requires passing tone‑discrimination drills for 我要, 這個, 多少錢, 好吃.
+- Travel Quest completion may include pronunciation practice for scenario‑key vocabulary. In v1, a passed visual-mode tone-contour item counts as **low-confidence pronunciation readiness** so a Quest remains completable without audio; post-v1 audio-mode success supersedes it as confirmed auditory discrimination. Guided-shadowing self-assessment is informational only and does not block Quest completion.
+- Example: the "Night Market" Travel Quest may include tone-discrimination drills for 我要, 這個, 多少錢, 好吃, but these are non-blocking until audio-mode validation is available.
 - This is a checklist in local state, not a server‑side requirement. The Quest page displays pending pronunciation practice items alongside other task types.
 
 ### 6.4 Data Flow
 
-```
-Lesson (soundFocus + contrastId + painPointTags)
+```text
+Lesson (soundFocus + painPointTags)
     → Practice items (type: tone-discrimination / pinyin-contrast / guided-shadowing)
     → Vocabulary entries (via relatedVocabulary)
     → Travel Quest (via scenario-tagged vocabulary + discrimination‑pass criteria)
