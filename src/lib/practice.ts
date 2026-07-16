@@ -41,7 +41,18 @@ export function generateQuestions(lesson: Lesson): PracticeQuestion[] {
     const distractors: string[] = [];
     const seen = new Set<string>([correct]);
 
+    // Exclude chunk meanings for chunks whose text appears in the prompt,
+    // since those meanings may be synonymous with the correct answer.
+    const excludedChunks = new Set<string>();
+    for (const chunk of lesson.chunks ?? []) {
+      if (chunk.meaning?.trim() && prompt.promptJa.includes(chunk.chunk)) {
+        excludedChunks.add(chunk.meaning.trim());
+      }
+    }
+
     for (const candidate of pool) {
+      if (seen.has(candidate)) continue;
+      if (excludedChunks.has(candidate)) continue;
       if (seen.has(candidate)) continue;
       distractors.push(candidate);
       seen.add(candidate);
