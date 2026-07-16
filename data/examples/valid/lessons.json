@@ -27,7 +27,7 @@
         {"traditional": "我要那個", "traditionalStatus": "authored", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
       ],
       "reviewPrompts": [
-        {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください", "distractorsJa": ["私はこれが欲しい", "これはいくらですか"]}
+        {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください", "distractorsJa": ["私は〜が欲しい", "これはいくらですか"]}
       ],
       "travelTask": "夜市で指を差して「我要這個」と言ってみよう",
       "relatedVocabulary": ["voc-001", "voc-002"],

@@ -45,11 +45,16 @@ const json = JSON.stringify(questions);
     const store = new ProgressStore();
     const lessonId = questions[0].lessonId;
     let current = 0;
-    let answeredCorrectly = 0;
 
     function render() {
       if (current >= questions.length) {
         store.markComplete(lessonId);
+        // Sync completion badge immediately (not waiting for refresh)
+        const badge = document.getElementById('lesson-completion-badge');
+        if (badge) {
+          badge.textContent = '✔ 完了済み';
+          badge.className = 'completion-badge completion-badge--done';
+        }
         root.innerHTML =
           '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
         return;
@@ -109,7 +114,6 @@ const json = JSON.stringify(questions);
           '<p class="feedback-correct">正解！</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        answeredCorrectly++;
         setTimeout(() => {
           current++;
           render();

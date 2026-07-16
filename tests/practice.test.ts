@@ -26,7 +26,7 @@ const baseLesson: Lesson = {
     {
       promptJa: '「我要這個」はどういう意味？',
       answerJa: 'これをください',
-      distractorsJa: ['私はこれが欲しい', 'これはいくらですか'],
+      distractorsJa: ['私は〜が欲しい', 'これはいくらですか'],
     },
   ],
   travelTask: '夜市で指を差して「我要這個」と言ってみよう',
@@ -48,7 +48,7 @@ describe('generateQuestions', () => {
 
   it('includes distractors in choices', () => {
     const questions = generateQuestions(baseLesson);
-    expect(questions[0].choices).toContain('私はこれが欲しい');
+    expect(questions[0].choices).toContain('私は〜が欲しい');
     expect(questions[0].choices).toContain('これはいくらですか');
   });
 
