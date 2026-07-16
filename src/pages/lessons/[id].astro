@@ -45,9 +45,6 @@ const soundFocus = (lesson?.soundFocus ?? []).filter(
 const examples = (lesson?.examples ?? []).filter(
   (example) => example && hasText(example.traditional) && hasText(example.japanese),
 );
-const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
-  (prompt) => prompt && hasText(prompt.promptJa) && hasText(prompt.answerJa),
-);
 ---
 
 <BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'}>
@@ -128,20 +125,6 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
                 </div>
               ))}
             </div>
-          </section>
-        )}
-
-        {reviewPrompts.length > 0 && (
-          <section aria-labelledby="review-heading">
-            <h2 id="review-heading">振り返り</h2>
-            <dl class="detail-list">
-              {reviewPrompts.map((prompt) => (
-                <div>
-                  <dt>{prompt.promptJa}</dt>
-                  <dd>{prompt.answerJa}</dd>
-                </div>
-              ))}
-            </dl>
           </section>
         )}
 
