@@ -38,8 +38,8 @@
       "id": "lesson-002",
       "titleJa": "値段を聞いてみよう",
       "level": "beginner",
-      "canDoJa": "値段を聞いて、言われた金額を理解できる",
-      "learnerOutcomeJa": "「多少錢」を使って値段を尋ね、数字の聞き取りができる",
+      "canDoJa": "値段を尋ね、値札やレジ表示で金額を確認できる",
+      "learnerOutcomeJa": "「多少錢」を使って値段を尋ね、表示された金額を確認できる",
       "hookJa": "夜市で気になるあの料理、いくらかな？",
       "travelScenario": "food",
       "coreSentence": "這個多少錢？",
@@ -61,8 +61,8 @@
         {"item": "少 shǎo", "noteJa": "第三声。先に下げてから上げる。sh はそり舌音。"}
       ],
       "examples": [
-        {"traditional": "這個多少錢？", "traditionalStatus": "authored", "pinyin": "zhège duōshao qián?", "japanese": "これはいくらですか？"},
-        {"traditional": "那個多少錢？", "traditionalStatus": "authored", "pinyin": "nàge duōshao qián?", "japanese": "それはいくらですか？"}
+        {"traditional": "這個多少錢？", "traditionalStatus": "authored", "pinyin": "zhège duōshǎo qián?", "japanese": "これはいくらですか？"},
+        {"traditional": "那個多少錢？", "traditionalStatus": "authored", "pinyin": "nàge duōshǎo qián?", "japanese": "それはいくらですか？"}
       ],
       "reviewPrompts": [
         {"promptJa": "値段を聞くときの決まり文句は？", "answerJa": "「這個多少錢？」"},
@@ -91,7 +91,7 @@
         {"chunk": "哪裡", "meaning": "どこ", "notesJa": "「哪」は疑問詞、「裡」は中／内部。組み合わせて「どこ」の意味。"}
       ],
       "kanjiBridgeNotes": [
-        {"kanji": "駅", "jpReading": "えき", "noteJa": "日本語は「駅」だが、台湾中国語では「站」を使う。JRの駅は「火車站」、MRTの駅は「捷運站」、バスターミナルは「轉運站」。"}
+        {"kanji": "在", "jpReading": "ざい", "noteJa": "日本語の「存在（そんざい）」「在宅（ざいたく）」と同じ漢字。中国語でも位置や存在を表す基本動詞。"}
       ],
       "soundFocus": [
         {"item": "站 zhàn", "noteJa": "第四声。舌先を上の歯茎の後ろにつけてから、声を短く急降下させる。"},

@@ -126,14 +126,11 @@ export function loadLessonById(
 /**
  * Load all renderable lessons from the bundle, in file order.
  * Filters out lessons that fail isRenderableLesson validation.
+ * Throws on file-not-found, invalid JSON, or structural errors.
  */
 export function loadAllRenderableLessons(
   filePath?: string,
 ): LessonBundle['lessons'][number][] {
-  try {
-    const bundle = loadLessons(filePath);
-    return bundle.lessons.filter((lesson) => isRenderableLesson(lesson));
-  } catch {
-    return [];
-  }
+  const bundle = loadLessons(filePath);
+  return bundle.lessons.filter((lesson) => isRenderableLesson(lesson));
 }

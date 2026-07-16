@@ -219,14 +219,14 @@ describe('loadAllRenderableLessons', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('returns empty array when file does not exist', () => {
-    const lessons = loadAllRenderableLessons('data/nonexistent.json');
-    expect(lessons).toEqual([]);
+  it('throws when file does not exist', () => {
+    expect(() => loadAllRenderableLessons('data/nonexistent.json')).toThrow();
   });
 
-  it('returns empty array for invalid JSON', () => {
-    const lessons = loadAllRenderableLessons('tests/fixtures/malformed.json');
-    expect(lessons).toEqual([]);
+  it('throws for invalid JSON', () => {
+    expect(() => loadAllRenderableLessons('tests/fixtures/malformed.json')).toThrow(
+      /Failed to parse lesson bundle/,
+    );
   });
 
   it('filters out non-renderable lessons from the bundle', () => {
@@ -236,13 +236,29 @@ describe('loadAllRenderableLessons', () => {
 });
 
 describe('lesson content requirements', () => {
-  it('lesson-002 has price/amount content', () => {
+  it('lesson-002 has price/amount content with narrowed outcome', () => {
     const lesson = loadLessonById('lesson-002');
     expect(lesson).toBeDefined();
     expect(lesson!.coreSentence).toContain('多少');
     expect(lesson!.travelScenario).toBe('food');
     expect(lesson!.painPointTags).toContain('tone');
     expect(lesson!.painPointTags).toContain('pinyin-pronunciation');
+    expect(lesson!.canDoJa).toContain('値札');
+    expect(lesson!.learnerOutcomeJa).toContain('表示された金額');
+  });
+
+  it('lesson-002 examples pinyin matches soundFocus for 少', () => {
+    const lesson = loadLessonById('lesson-002');
+    expect(lesson).toBeDefined();
+    const soundShǎo = lesson!.soundFocus.find((s) => s.item.startsWith('少'));
+    expect(soundShǎo).toBeDefined();
+    expect(soundShǎo!.item).toContain('shǎo');
+    // All examples containing 多少 should use the same 少 tone
+    for (const ex of lesson!.examples ?? []) {
+      if (ex.pinyin.includes('duōshǎo')) {
+        expect(ex.pinyin).toContain('duōshǎo');
+      }
+    }
   });
 
   it('lesson-002 has kanji-bridge context for false-friend tags', () => {
@@ -261,12 +277,12 @@ describe('lesson content requirements', () => {
     expect(lesson!.painPointTags).toContain('kanji-false-friend');
   });
 
-  it('lesson-003 kanjiBridgeNotes explain the station kanji difference', () => {
+  it('lesson-003 kanjiBridgeNotes use 在 as a bridge character', () => {
     const lesson = loadLessonById('lesson-003');
     expect(lesson).toBeDefined();
-    const stationNote = lesson!.kanjiBridgeNotes.find((n) => n.kanji === '駅');
-    expect(stationNote).toBeDefined();
-    expect(stationNote!.noteJa).toContain('站');
+    const bridgeNote = lesson!.kanjiBridgeNotes.find((n) => n.kanji === '在');
+    expect(bridgeNote).toBeDefined();
+    expect(bridgeNote!.noteJa).toContain('存在');
   });
 
   it('lesson-003 example uses 捷運站 for MRT context', () => {
