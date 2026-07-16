@@ -107,7 +107,7 @@
         {"promptJa": "「在」の意味は？", "answerJa": "〜にある・いる（存在・位置）"}
       ],
       "travelTask": "MRTの駅を探すときに「捷運站在哪裡？」と聞いてみよう。トイレを探すときは「廁所在哪裡？」が使える。",
-      "painPointTags": ["kanji-false-friend", "tone"],
+      "painPointTags": ["tone"],
       "reviewStatus": "draft"
     }
   ]

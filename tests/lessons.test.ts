@@ -274,7 +274,7 @@ describe('lesson content requirements', () => {
     expect(lesson).toBeDefined();
     expect(lesson!.coreSentence).toContain('捷運站');
     expect(lesson!.travelScenario).toBe('transport');
-    expect(lesson!.painPointTags).toContain('kanji-false-friend');
+    expect(lesson!.painPointTags).not.toContain('kanji-false-friend');
   });
 
   it('lesson-003 kanjiBridgeNotes use 在 as a bridge character', () => {
