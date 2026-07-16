@@ -253,9 +253,9 @@ describe('lesson content requirements', () => {
     const soundShǎo = lesson!.soundFocus.find((s) => s.item.startsWith('少'));
     expect(soundShǎo).toBeDefined();
     expect(soundShǎo!.item).toContain('shǎo');
-    // All examples containing 多少 should use the same 少 tone
+    // All examples whose traditional text contains 多少 must use duōshǎo
     for (const ex of lesson!.examples ?? []) {
-      if (ex.pinyin.includes('duōshǎo')) {
+      if (ex.traditional.includes('多少')) {
         expect(ex.pinyin).toContain('duōshǎo');
       }
     }
@@ -269,12 +269,13 @@ describe('lesson content requirements', () => {
     expect(lesson!.reviewPrompts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('lesson-003 has asking-location content', () => {
+  it('lesson-003 has asking-location content with narrowed outcome', () => {
     const lesson = loadLessonById('lesson-003');
     expect(lesson).toBeDefined();
     expect(lesson!.coreSentence).toContain('捷運站');
     expect(lesson!.travelScenario).toBe('transport');
     expect(lesson!.painPointTags).not.toContain('kanji-false-friend');
+    expect(lesson!.learnerOutcomeJa).toContain('目的の場所を尋ね');
   });
 
   it('lesson-003 kanjiBridgeNotes use 在 as a bridge character', () => {

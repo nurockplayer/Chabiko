@@ -32,7 +32,7 @@
       "travelTask": "夜市で指を差して「我要這個」と言ってみよう",
       "relatedVocabulary": ["voc-001", "voc-002"],
       "painPointTags": ["tone"],
-      "reviewStatus": "draft"
+      "reviewStatus": "reviewed"
     },
     {
       "id": "lesson-002",
@@ -71,14 +71,14 @@
       "travelTask": "夜市や屋台で気になる品物を指差して「這個多少錢？」と聞いてみよう。相手の指の数やレジ表示で金額を確認しよう。",
       "relatedVocabulary": ["voc-002"],
       "painPointTags": ["tone", "pinyin-pronunciation"],
-      "reviewStatus": "draft"
+      "reviewStatus": "reviewed"
     },
     {
       "id": "lesson-003",
       "titleJa": "場所を尋ねてみよう",
       "level": "beginner",
       "canDoJa": "駅やトイレなど、目的の場所がどこにあるか聞ける",
-      "learnerOutcomeJa": "「在哪裡」を使って場所を尋ね、簡単な方向指示が理解できる",
+      "learnerOutcomeJa": "「在哪裡」を使って、目的の場所を尋ねられる",
       "hookJa": "MRTの駅、どこにあるかわかる？",
       "travelScenario": "transport",
       "coreSentence": "捷運站在哪裡？",
@@ -108,7 +108,7 @@
       ],
       "travelTask": "MRTの駅を探すときに「捷運站在哪裡？」と聞いてみよう。トイレを探すときは「廁所在哪裡？」が使える。",
       "painPointTags": ["tone"],
-      "reviewStatus": "draft"
+      "reviewStatus": "reviewed"
     }
   ]
 }
