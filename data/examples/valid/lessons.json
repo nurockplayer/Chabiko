@@ -23,8 +23,8 @@
         {"item": "要 yào", "noteJa": "第四声。yào は「ヤオ」と伸ばさず、短く急降下。"}
       ],
       "examples": [
-        {"traditional": "我要這個", "pinyin": "wǒ yào zhège", "japanese": "これをください"},
-        {"traditional": "我要那個", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
+        {"traditional": "我要這個", "traditionalStatus": "authored", "pinyin": "wǒ yào zhège", "japanese": "これをください"},
+        {"traditional": "我要那個", "traditionalStatus": "authored", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
       ],
       "reviewPrompts": [
         {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください"}
@@ -61,8 +61,8 @@
         {"item": "少 shǎo", "noteJa": "第三声。先に下げてから上げる。sh はそり舌音。"}
       ],
       "examples": [
-        {"traditional": "這個多少錢？", "pinyin": "zhège duōshao qián?", "japanese": "これはいくらですか？"},
-        {"traditional": "那個多少錢？", "pinyin": "nàge duōshao qián?", "japanese": "それはいくらですか？"}
+        {"traditional": "這個多少錢？", "traditionalStatus": "authored", "pinyin": "zhège duōshao qián?", "japanese": "これはいくらですか？"},
+        {"traditional": "那個多少錢？", "traditionalStatus": "authored", "pinyin": "nàge duōshao qián?", "japanese": "それはいくらですか？"}
       ],
       "reviewPrompts": [
         {"promptJa": "値段を聞くときの決まり文句は？", "answerJa": "「這個多少錢？」"},
@@ -99,8 +99,8 @@
         {"item": "裡 lǐ", "noteJa": "第三声。nǎ との連続で変調に注意。ゆっくり区切って練習しよう。"}
       ],
       "examples": [
-        {"traditional": "捷運站在哪裡？", "pinyin": "jiéyùn zhàn zài nǎlǐ?", "japanese": "MRTの駅はどこですか？"},
-        {"traditional": "廁所在哪裡？", "pinyin": "cèsuǒ zài nǎlǐ?", "japanese": "トイレはどこですか？"}
+        {"traditional": "捷運站在哪裡？", "traditionalStatus": "authored", "pinyin": "jiéyùn zhàn zài nǎlǐ?", "japanese": "MRTの駅はどこですか？"},
+        {"traditional": "廁所在哪裡？", "traditionalStatus": "authored", "pinyin": "cèsuǒ zài nǎlǐ?", "japanese": "トイレはどこですか？"}
       ],
       "reviewPrompts": [
         {"promptJa": "場所を尋ねる基本フレーズは？", "answerJa": "「〜在哪裡？」"},
