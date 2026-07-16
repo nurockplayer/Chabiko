@@ -194,6 +194,8 @@ def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
     }
     required_fields = requirements.get(practice_type)
     if required_fields is None:
+        if record.get("correctAnswer") is None:
+            return [f"{path}: 'correctAnswer' is required for type '{practice_type}'"]
         return []
 
     errors = [
@@ -930,6 +932,7 @@ def run_tests():
         test_guided_shadowing_practice_contract,
         test_pronunciation_practice_contract_missing_field,
         test_guided_shadowing_rejects_correct_answer,
+        test_existing_practice_type_still_requires_correct_answer,
 
         # ─── Resource ───
         test_resource_valid,
@@ -1446,6 +1449,14 @@ def test_guided_shadowing_rejects_correct_answer():
         articulationJa="x は摩擦を強くする。",
     ), "practice")
     _assert_has_error(errs, "must be null", "guided_shadowing_rejects_correct_answer")
+
+
+def test_existing_practice_type_still_requires_correct_answer():
+    errs = validate_single(_minimal_practice(
+        type="pronunciation-practice",
+        correctAnswer=None,
+    ), "practice")
+    _assert_has_error(errs, "correctAnswer", "existing_practice_type_requires_correct_answer")
 
 
 # ─── Resource tests ────────────────────────────────────────────────────────
