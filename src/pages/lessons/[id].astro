@@ -149,12 +149,10 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
         </section>
 
         <nav class="lesson-nav" aria-label="レッスンナビゲーション">
-          {prevLesson ? (
+          {prevLesson && (
             <a class="nav-link nav-prev" href={`/lessons/${prevLesson.id}/`}>
               ← {prevLesson.titleJa}
             </a>
-          ) : (
-            <span></span>
           )}
           {nextLesson ? (
             <a class="nav-link nav-next" href={`/lessons/${nextLesson.id}/`}>
@@ -200,8 +198,8 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   dt { font-weight: 700; }
   dd { margin: var(--space-xs) 0 0; }
   .travel-task { background: #eff6ff; border-radius: var(--radius); padding: var(--space-md); }
-  .lesson-nav { display: flex; justify-content: space-between; align-items: stretch; gap: var(--space-sm); margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--c-border); }
-  .nav-link { display: flex; align-items: center; padding: var(--space-sm) var(--space-md); border: 1px solid var(--c-border); border-radius: var(--radius); font-weight: 600; font-size: 0.9rem; text-decoration: none; color: var(--c-text); transition: background 0.15s; }
+  .lesson-nav { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: stretch; gap: var(--space-sm); margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--c-border); }
+  .nav-link { display: flex; align-items: center; flex: 1 1 100%; padding: var(--space-sm) var(--space-md); border: 1px solid var(--c-border); border-radius: var(--radius); font-weight: 600; font-size: 0.9rem; text-decoration: none; color: var(--c-text); transition: background 0.15s; }
   .nav-link:hover { background: var(--c-slot-bg); text-decoration: none; }
   .nav-prev { justify-content: flex-start; }
   .nav-next { justify-content: flex-end; }
@@ -209,4 +207,5 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   .fallback-message { text-align: center; }
   .fallback-message p { color: var(--c-text-secondary); margin: var(--space-md) 0; }
   @media (width >= 768px) { .lesson-page, .fallback-message { padding: var(--space-xl); } }
+  @media (width >= 640px) { .nav-link { flex: 1 1 auto; } }
 </style>
