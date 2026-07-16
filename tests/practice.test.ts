@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateQuestions, isCorrect } from '../src/lib/practice';
+import { generateQuestions } from '../src/lib/practice';
 import type { Lesson } from '../src/types/lesson';
 
 const baseLesson: Lesson = {
@@ -73,7 +73,7 @@ describe('generateQuestions', () => {
     expect(questions).toHaveLength(2);
   });
 
-  it('pulls distractors from chunks and examples when review pool is small', () => {
+  it('pulls distractors from chunks when review pool is small', () => {
     const lesson: Lesson = {
       ...baseLesson,
       coreSentence: '核心文',
@@ -81,29 +81,8 @@ describe('generateQuestions', () => {
         { chunk: '我', meaning: '私' },
         { chunk: '你', meaning: 'あなた' },
       ],
-      examples: [
-        { traditional: '我要這個', pinyin: 'wǒ yào zhège', japanese: 'これをください' },
-        { traditional: '我要那個', pinyin: 'wǒ yào nàge', japanese: 'それをください' },
-      ],
     };
     const questions = generateQuestions(lesson);
     expect(questions[0].choices.length).toBeGreaterThanOrEqual(2);
-  });
-});
-
-describe('isCorrect', () => {
-  const question = {
-    promptJa: 'test?',
-    correctAnswer: '正解',
-    choices: ['正解', '誤答1', '誤答2'],
-    lessonId: 'lesson-001',
-  };
-
-  it('returns true when selected matches correctAnswer', () => {
-    expect(isCorrect(question, '正解')).toBe(true);
-  });
-
-  it('returns false when selected does not match correctAnswer', () => {
-    expect(isCorrect(question, '誤答1')).toBe(false);
   });
 });

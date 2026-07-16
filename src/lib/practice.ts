@@ -24,10 +24,6 @@ function gatherAnswerPool(lesson: Lesson): string[] {
   for (const chunk of lesson.chunks ?? []) {
     if (chunk.meaning?.trim()) pool.push(chunk.meaning.trim());
   }
-  for (const example of lesson.examples ?? []) {
-    if (example.japanese?.trim()) pool.push(example.japanese.trim());
-  }
-  if (lesson.coreSentence?.trim()) pool.push(lesson.coreSentence.trim());
   return pool;
 }
 
@@ -63,8 +59,4 @@ export function generateQuestions(lesson: Lesson): PracticeQuestion[] {
   }
 
   return questions;
-}
-
-export function isCorrect(question: PracticeQuestion, selected: string): boolean {
-  return selected === question.correctAnswer;
 }
