@@ -1,12 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
-import LessonCard from '../components/LessonCard.astro';
 import GoalPathSlot from '../components/GoalPathSlot.astro';
-import { loadLessonById } from '../content/loadLessons';
+import { loadAllRenderableLessons } from '../content/loadLessons';
 
-const lesson = loadLessonById('lesson-001');
-const example = lesson?.examples?.[0] ?? null;
+const lessons = loadAllRenderableLessons();
 ---
 
 <BaseLayout title="ホーム">
@@ -14,16 +12,33 @@ const example = lesson?.examples?.[0] ?? null;
     <Header />
   </Fragment>
 
-  {lesson ? (
-    <LessonCard
-      title={lesson.titleJa}
-      hookJa={lesson.hookJa}
-      canDoJa={lesson.canDoJa}
-      coreSentence={lesson.coreSentence}
-      exampleSentence={example?.traditional}
-      examplePinyin={example?.pinyin}
-      exampleJapanese={example?.japanese}
-    />
+  {lessons.length > 0 ? (
+    <>
+      <section class="path-section" id="taiwan-travel-path" aria-label="台湾旅行パス">
+        <h1 class="path-heading">台湾旅行で使える中国語</h1>
+        <p class="path-description">全{lessons.length}レッスン。指差し・値段・場所の順に覚えよう。</p>
+        <ol class="lesson-list">
+          {lessons.map((lesson, index) => {
+            const example = lesson.examples?.[0] ?? null;
+            return (
+              <li class="lesson-list-item">
+                <a class="lesson-list-link" href={`/lessons/${lesson.id}/`}>
+                  <span class="lesson-number">{index + 1}</span>
+                  <span class="lesson-info">
+                    <span class="lesson-title">{lesson.titleJa}</span>
+                    <span class="lesson-can-do">{lesson.canDoJa}</span>
+                    {example && (
+                      <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
+                    )}
+                  </span>
+                  <span class="lesson-arrow">→</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    </>
   ) : (
     <article class="fallback-message">
       <h1>レッスンを読み込めませんでした</h1>
@@ -48,5 +63,88 @@ const example = lesson?.examples?.[0] ?? null;
   }
   .fallback-message p {
     color: var(--c-text-secondary);
+  }
+  .path-section {
+    margin-bottom: var(--space-lg);
+  }
+  h1.path-heading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+  }
+  .path-description {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-md);
+  }
+  .lesson-list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-sm);
+  }
+  .lesson-list-item {
+    margin: 0;
+  }
+  .lesson-list-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-md);
+    text-decoration: none;
+    color: var(--c-text);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .lesson-list-link:hover {
+    background: var(--c-slot-bg);
+    border-color: var(--c-accent);
+    text-decoration: none;
+  }
+  .lesson-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: var(--c-accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .lesson-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+  .lesson-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .lesson-can-do {
+    font-size: 0.8rem;
+    color: var(--c-text-secondary);
+  }
+  .lesson-example {
+    font-size: 0.9rem;
+    color: var(--c-accent);
+    font-weight: 600;
+    margin-top: 2px;
+    overflow-wrap: anywhere;
+  }
+  .lesson-arrow {
+    font-size: 1.1rem;
+    color: var(--c-text-secondary);
+    flex-shrink: 0;
+  }
+  @media (width >= 768px) {
+    .lesson-list-link {
+      padding: var(--space-lg);
+    }
   }
 </style>

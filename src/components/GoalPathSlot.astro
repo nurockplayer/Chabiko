@@ -1,20 +1,32 @@
 ---
+import { loadAllRenderableLessons } from '../content/loadLessons';
+
+const lessons = loadAllRenderableLessons();
+const firstLesson = lessons[0];
 ---
 
 <!--
   Goal Path Slot (#17 placeholder)
 
-  This slot provides a direct entry into the first Taiwan travel lesson.
+  Shows the active Taiwan travel path with a link to the lesson index on the home page.
   Full goal-path behavior remains implemented by #17; the HSK entry stays unavailable.
 -->
 <section class="goal-path-slot" aria-label="学習パス">
   <h2 class="slot-heading">学習パス</h2>
   <div class="path-cards">
-    <a class="path-card path-card--active" href="/lessons/lesson-001/">
-      <span class="path-icon">&#x1F3C3;</span>
-      <span class="path-label">台湾旅行で使える中国語</span>
-      <span class="path-badge">はじめる</span>
-    </a>
+    {firstLesson ? (
+      <a class="path-card path-card--active" href="/#taiwan-travel-path">
+        <span class="path-icon">&#x1F3C3;</span>
+        <span class="path-label">台湾旅行で使える中国語</span>
+        <span class="path-badge">{lessons.length}レッスン</span>
+      </a>
+    ) : (
+      <div class="path-card path-card--disabled">
+        <span class="path-icon">&#x1F3C3;</span>
+        <span class="path-label">台湾旅行で使える中国語</span>
+        <span class="path-badge">準備中</span>
+      </div>
+    )}
     <div class="path-card path-card--disabled">
       <span class="path-icon">&#x1F4DA;</span>
       <span class="path-label">HSK対策</span>

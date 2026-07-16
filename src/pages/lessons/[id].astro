@@ -1,22 +1,32 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
-import { loadLessonById } from '../../content/loadLessons';
+import { loadAllRenderableLessons } from '../../content/loadLessons';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { Lesson } from '../../types/lesson';
 
-export const getStaticPaths = (() => {
-  const lesson = loadLessonById('lesson-001');
+interface NavLesson {
+  id: string;
+  titleJa: string;
+}
 
-  return [
-    {
-      params: { id: 'lesson-001' },
-      props: { lesson },
+export const getStaticPaths = (() => {
+  const lessons = loadAllRenderableLessons();
+  return lessons.map((lesson, index) => ({
+    params: { id: lesson.id },
+    props: {
+      lesson,
+      prevLesson: index > 0 ? ({ id: lessons[index - 1].id, titleJa: lessons[index - 1].titleJa } satisfies NavLesson) : null,
+      nextLesson: index < lessons.length - 1 ? ({ id: lessons[index + 1].id, titleJa: lessons[index + 1].titleJa } satisfies NavLesson) : null,
     },
-  ];
+  }));
 }) satisfies GetStaticPaths;
 
-const { lesson } = Astro.props as { lesson?: Lesson };
+const { lesson, prevLesson, nextLesson } = Astro.props as {
+  lesson?: Lesson;
+  prevLesson?: NavLesson | null;
+  nextLesson?: NavLesson | null;
+};
 const hasText = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 const sections = (lesson?.sections ?? []).filter(
@@ -47,7 +57,7 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   {
     lesson ? (
       <article class="lesson-page">
-        <a class="back-link" href="/">← ホームに戻る</a>
+        <a class="back-link" href="/">← 台湾旅行パスに戻る</a>
         <header class="lesson-intro">
           <p class="lesson-label">台湾旅行の中国語</p>
           <h1>{lesson.titleJa}</h1>
@@ -137,6 +147,23 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
           <h2 id="task-heading">旅先でやってみよう</h2>
           <p>{lesson.travelTask}</p>
         </section>
+
+        <nav class="lesson-nav" aria-label="レッスンナビゲーション">
+          {prevLesson && (
+            <a class="nav-link nav-prev" href={`/lessons/${prevLesson.id}/`}>
+              ← {prevLesson.titleJa}
+            </a>
+          )}
+          {nextLesson ? (
+            <a class="nav-link nav-next" href={`/lessons/${nextLesson.id}/`}>
+              {nextLesson.titleJa} →
+            </a>
+          ) : (
+            <a class="nav-link nav-complete" href="/">
+              台湾旅行パスを完了 → 一覧に戻る
+            </a>
+          )}
+        </nav>
       </article>
     ) : (
       <article class="fallback-message">
@@ -171,7 +198,14 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   dt { font-weight: 700; }
   dd { margin: var(--space-xs) 0 0; }
   .travel-task { background: #eff6ff; border-radius: var(--radius); padding: var(--space-md); }
+  .lesson-nav { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: stretch; gap: var(--space-sm); margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--c-border); }
+  .nav-link { display: flex; align-items: center; flex: 1 1 100%; padding: var(--space-sm) var(--space-md); border: 1px solid var(--c-border); border-radius: var(--radius); font-weight: 600; font-size: 0.9rem; text-decoration: none; color: var(--c-text); transition: background 0.15s; }
+  .nav-link:hover { background: var(--c-slot-bg); text-decoration: none; }
+  .nav-prev { justify-content: flex-start; }
+  .nav-next { justify-content: flex-end; }
+  .nav-complete { color: var(--c-accent); border-color: var(--c-accent); }
   .fallback-message { text-align: center; }
   .fallback-message p { color: var(--c-text-secondary); margin: var(--space-md) 0; }
   @media (width >= 768px) { .lesson-page, .fallback-message { padding: var(--space-xl); } }
+  @media (width >= 640px) { .nav-link { flex: 1 1 auto; } }
 </style>

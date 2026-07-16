@@ -23,8 +23,8 @@
         {"item": "要 yào", "noteJa": "第四声。yào は「ヤオ」と伸ばさず、短く急降下。"}
       ],
       "examples": [
-        {"traditional": "我要這個", "pinyin": "wǒ yào zhège", "japanese": "これをください"},
-        {"traditional": "我要那個", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
+        {"traditional": "我要這個", "traditionalStatus": "authored", "pinyin": "wǒ yào zhège", "japanese": "これをください"},
+        {"traditional": "我要那個", "traditionalStatus": "authored", "pinyin": "wǒ yào nàge", "japanese": "それをください"}
       ],
       "reviewPrompts": [
         {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください"}
@@ -32,7 +32,83 @@
       "travelTask": "夜市で指を差して「我要這個」と言ってみよう",
       "relatedVocabulary": ["voc-001", "voc-002"],
       "painPointTags": ["tone"],
-      "reviewStatus": "draft"
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "lesson-002",
+      "titleJa": "値段を聞いてみよう",
+      "level": "beginner",
+      "canDoJa": "値段を尋ね、値札やレジ表示で金額を確認できる",
+      "learnerOutcomeJa": "「多少錢」を使って値段を尋ね、表示された金額を確認できる",
+      "hookJa": "夜市で気になるあの料理、いくらかな？",
+      "travelScenario": "food",
+      "coreSentence": "這個多少錢？",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「多少錢」＝いくら？「多少」は数量を尋ねる定型の疑問詞。「錢」はお金。値札を見ながら使う表現。"}
+      ],
+      "chunks": [
+        {"chunk": "這個", "meaning": "これ", "notesJa": "lesson-001 で出てきた「這個」と同じ。"},
+        {"chunk": "多少", "meaning": "どれくらい", "notesJa": "数量を尋ねる定型の疑問詞。日本語の「いくら」に相当。"},
+        {"chunk": "錢", "meaning": "お金", "notesJa": "お金のこと。台湾では「元（NTドル）」が通貨の単位。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "錢", "jpReading": "せん", "noteJa": "日本語の「銭」に似た字形。中国語ではお金全般を指す。台湾の通貨単位は「元」。共通の漢字字形を覚えの手がかりにしよう。"},
+        {"kanji": "多", "jpReading": "た", "noteJa": "日本語と同じ漢字で意味も近い。"},
+        {"kanji": "少", "jpReading": "しょう", "noteJa": "日本語と同じ漢字。"}
+      ],
+      "soundFocus": [
+        {"item": "多 duō", "noteJa": "第一声。高く平らに。「ドゥオ」と伸ばす。"},
+        {"item": "少 shǎo", "noteJa": "第三声。先に下げてから上げる。sh はそり舌音。"}
+      ],
+      "examples": [
+        {"traditional": "這個多少錢？", "traditionalStatus": "authored", "pinyin": "zhège duōshǎo qián?", "japanese": "これはいくらですか？"},
+        {"traditional": "那個多少錢？", "traditionalStatus": "authored", "pinyin": "nàge duōshǎo qián?", "japanese": "それはいくらですか？"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "値段を聞くときの決まり文句は？", "answerJa": "「這個多少錢？」"},
+        {"promptJa": "「多少」の意味は？", "answerJa": "どれくらい（数量を尋ねる）"}
+      ],
+      "travelTask": "夜市や屋台で気になる品物を指差して「這個多少錢？」と聞いてみよう。相手の指の数やレジ表示で金額を確認しよう。",
+      "relatedVocabulary": ["voc-002"],
+      "painPointTags": ["tone", "pinyin-pronunciation"],
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "lesson-003",
+      "titleJa": "場所を尋ねてみよう",
+      "level": "beginner",
+      "canDoJa": "駅やトイレなど、目的の場所がどこにあるか聞ける",
+      "learnerOutcomeJa": "「在哪裡」を使って、目的の場所を尋ねられる",
+      "hookJa": "MRTの駅、どこにあるかわかる？",
+      "travelScenario": "transport",
+      "coreSentence": "捷運站在哪裡？",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「在哪裡」＝どこにある？「在」＝〜にある（存在・位置）、「哪裡」＝どこ。場所を指差しながら使うのがコツ。"}
+      ],
+      "chunks": [
+        {"chunk": "捷運站", "meaning": "MRTの駅", "notesJa": "「捷運」＝MRT（高速交通機関）、「站」＝駅。台湾の都市部では「捷運」が地下鉄・高架鉄道を指す。"},
+        {"chunk": "在", "meaning": "〜にある・いる", "notesJa": "存在や位置を表す基本動詞。"},
+        {"chunk": "哪裡", "meaning": "どこ", "notesJa": "「哪」は疑問詞、「裡」は中／内部。組み合わせて「どこ」の意味。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "在", "jpReading": "ざい", "noteJa": "日本語の「存在（そんざい）」「在宅（ざいたく）」と同じ漢字。中国語でも位置や存在を表す基本動詞。"}
+      ],
+      "soundFocus": [
+        {"item": "站 zhàn", "noteJa": "第四声。舌先を上の歯茎の後ろにつけてから、声を短く急降下させる。"},
+        {"item": "哪 nǎ", "noteJa": "第三声。先に下げてから上げる。n は舌尖を上の歯の裏につけて発音。"},
+        {"item": "裡 lǐ", "noteJa": "第三声。nǎ との連続で変調に注意。ゆっくり区切って練習しよう。"}
+      ],
+      "examples": [
+        {"traditional": "捷運站在哪裡？", "traditionalStatus": "authored", "pinyin": "jiéyùn zhàn zài nǎlǐ?", "japanese": "MRTの駅はどこですか？"},
+        {"traditional": "廁所在哪裡？", "traditionalStatus": "authored", "pinyin": "cèsuǒ zài nǎlǐ?", "japanese": "トイレはどこですか？"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "場所を尋ねる基本フレーズは？", "answerJa": "「〜在哪裡？」"},
+        {"promptJa": "「在」の意味は？", "answerJa": "〜にある・いる（存在・位置）"}
+      ],
+      "travelTask": "MRTの駅を探すときに「捷運站在哪裡？」と聞いてみよう。トイレを探すときは「廁所在哪裡？」が使える。",
+      "painPointTags": ["tone"],
+      "reviewStatus": "reviewed"
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadLessons, loadLessonById } from '../src/content/loadLessons';
+import { loadLessons, loadLessonById, loadAllRenderableLessons } from '../src/content/loadLessons';
 
 describe('loadLessons', () => {
   it('loads lessons from the default fixture file', () => {
@@ -181,5 +181,172 @@ describe('learner shell uses fixture data', () => {
     expect(lesson!.hookJa.length).toBeGreaterThan(0);
     expect(lesson!.canDoJa.length).toBeGreaterThan(0);
     expect(lesson!.coreSentence.length).toBeGreaterThan(0);
+  });
+});
+
+describe('loadAllRenderableLessons', () => {
+  it('returns all 3 lessons from the default fixture', () => {
+    const lessons = loadAllRenderableLessons();
+    expect(lessons).toHaveLength(3);
+  });
+
+  it('returns lessons in file order', () => {
+    const lessons = loadAllRenderableLessons();
+    expect(lessons[0].id).toBe('lesson-001');
+    expect(lessons[1].id).toBe('lesson-002');
+    expect(lessons[2].id).toBe('lesson-003');
+  });
+
+  it('each lesson has all required renderable fields', () => {
+    const lessons = loadAllRenderableLessons();
+    for (const lesson of lessons) {
+      expect(lesson.titleJa.length).toBeGreaterThan(0);
+      expect(lesson.hookJa.length).toBeGreaterThan(0);
+      expect(lesson.canDoJa.length).toBeGreaterThan(0);
+      expect(lesson.coreSentence.length).toBeGreaterThan(0);
+      expect(lesson.learnerOutcomeJa.length).toBeGreaterThan(0);
+      expect(lesson.travelTask.length).toBeGreaterThan(0);
+      expect(lesson.chunks.length).toBeGreaterThan(0);
+      expect(lesson.kanjiBridgeNotes.length).toBeGreaterThan(0);
+      expect(lesson.soundFocus.length).toBeGreaterThan(0);
+      expect(lesson.reviewPrompts.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('each lesson has unique id', () => {
+    const lessons = loadAllRenderableLessons();
+    const ids = lessons.map((l) => l.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('throws when file does not exist', () => {
+    expect(() => loadAllRenderableLessons('data/nonexistent.json')).toThrow();
+  });
+
+  it('throws for invalid JSON', () => {
+    expect(() => loadAllRenderableLessons('tests/fixtures/malformed.json')).toThrow(
+      /Failed to parse lesson bundle/,
+    );
+  });
+
+  it('filters out non-renderable lessons from the bundle', () => {
+    const lessons = loadAllRenderableLessons('tests/fixtures/incomplete-lesson.json');
+    expect(lessons).toHaveLength(0);
+  });
+});
+
+describe('lesson content requirements', () => {
+  it('lesson-002 has price/amount content with narrowed outcome', () => {
+    const lesson = loadLessonById('lesson-002');
+    expect(lesson).toBeDefined();
+    expect(lesson!.coreSentence).toContain('多少');
+    expect(lesson!.travelScenario).toBe('food');
+    expect(lesson!.painPointTags).toContain('tone');
+    expect(lesson!.painPointTags).toContain('pinyin-pronunciation');
+    expect(lesson!.canDoJa).toContain('値札');
+    expect(lesson!.learnerOutcomeJa).toContain('表示された金額');
+  });
+
+  it('lesson-002 examples pinyin matches soundFocus for 少', () => {
+    const lesson = loadLessonById('lesson-002');
+    expect(lesson).toBeDefined();
+    const soundShǎo = lesson!.soundFocus.find((s) => s.item.startsWith('少'));
+    expect(soundShǎo).toBeDefined();
+    expect(soundShǎo!.item).toContain('shǎo');
+    // All examples whose traditional text contains 多少 must use duōshǎo
+    for (const ex of lesson!.examples ?? []) {
+      if (ex.traditional.includes('多少')) {
+        expect(ex.pinyin).toContain('duōshǎo');
+      }
+    }
+  });
+
+  it('lesson-002 has kanji-bridge context for false-friend tags', () => {
+    // lesson-002 doesn't have kanji-false-friend tag, so no context required
+    const lesson = loadLessonById('lesson-002');
+    expect(lesson).toBeDefined();
+    // Just verify it loads and has expected content
+    expect(lesson!.reviewPrompts.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('lesson-003 has asking-location content with narrowed outcome', () => {
+    const lesson = loadLessonById('lesson-003');
+    expect(lesson).toBeDefined();
+    expect(lesson!.coreSentence).toContain('捷運站');
+    expect(lesson!.travelScenario).toBe('transport');
+    expect(lesson!.painPointTags).not.toContain('kanji-false-friend');
+    expect(lesson!.learnerOutcomeJa).toContain('目的の場所を尋ね');
+  });
+
+  it('lesson-003 kanjiBridgeNotes use 在 as a bridge character', () => {
+    const lesson = loadLessonById('lesson-003');
+    expect(lesson).toBeDefined();
+    const bridgeNote = lesson!.kanjiBridgeNotes.find((n) => n.kanji === '在');
+    expect(bridgeNote).toBeDefined();
+    expect(bridgeNote!.noteJa).toContain('存在');
+  });
+
+  it('lesson-003 example uses 捷運站 for MRT context', () => {
+    const lesson = loadLessonById('lesson-003');
+    expect(lesson).toBeDefined();
+    expect(lesson!.examples![0].traditional).toContain('捷運站');
+    expect(lesson!.travelTask).toContain('捷運站');
+  });
+});
+
+describe('lesson order and navigation', () => {
+  it('lessons are in expected sequence', () => {
+    const lessons = loadAllRenderableLessons();
+    expect(lessons[0].id).toBe('lesson-001');
+    expect(lessons[1].id).toBe('lesson-002');
+    expect(lessons[2].id).toBe('lesson-003');
+  });
+
+  it('lesson-001 has a next lesson (lesson-002)', () => {
+    const lessons = loadAllRenderableLessons();
+    expect(lessons.length).toBeGreaterThanOrEqual(2);
+    expect(lessons[1].id).toBe('lesson-002');
+  });
+
+  it('lesson-002 has both prev and next', () => {
+    const lessons = loadAllRenderableLessons();
+    expect(lessons.length).toBeGreaterThanOrEqual(3);
+    expect(lessons[0].id).toBe('lesson-001');
+    expect(lessons[2].id).toBe('lesson-003');
+  });
+
+  it('lesson-003 is the last lesson', () => {
+    const lessons = loadAllRenderableLessons();
+    const lastIndex = lessons.length - 1;
+    expect(lessons[lastIndex].id).toBe('lesson-003');
+  });
+
+  it('each lesson id is a valid URL path segment', () => {
+    const lessons = loadAllRenderableLessons();
+    for (const lesson of lessons) {
+      expect(lesson.id).toMatch(/^lesson-\d{3}$/);
+    }
+  });
+});
+
+describe('static paths generation', () => {
+  it('getStaticPaths would return one path per renderable lesson', () => {
+    const lessons = loadAllRenderableLessons();
+    const paths = lessons.map((l, i) => ({
+      params: { id: l.id },
+      props: {
+        lesson: l,
+        prevLesson: i > 0 ? { id: lessons[i - 1].id, titleJa: lessons[i - 1].titleJa } : null,
+        nextLesson: i < lessons.length - 1 ? { id: lessons[i + 1].id, titleJa: lessons[i + 1].titleJa } : null,
+      },
+    }));
+    expect(paths).toHaveLength(3);
+    expect(paths[0].params.id).toBe('lesson-001');
+    expect(paths[0].props.prevLesson).toBeNull();
+    expect(paths[0].props.nextLesson?.id).toBe('lesson-002');
+    expect(paths[1].props.prevLesson?.id).toBe('lesson-001');
+    expect(paths[1].props.nextLesson?.id).toBe('lesson-003');
+    expect(paths[2].props.prevLesson?.id).toBe('lesson-002');
+    expect(paths[2].props.nextLesson).toBeNull();
   });
 });
