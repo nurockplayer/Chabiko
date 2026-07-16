@@ -49,7 +49,7 @@ VALID_SCENARIOS = frozenset({
 })
 
 VALID_PRACTICE_TYPES = frozenset({
-    "tone-discrimination", "pronunciation-practice", "word-order",
+    "tone-discrimination", "pinyin-contrast", "guided-shadowing", "pronunciation-practice", "word-order",
     "measure-word", "complement", "aspect-particle",
     "script-matching", "region-vocab",
 })
@@ -171,6 +171,43 @@ def _check_generated_not_production(record: dict, path: str) -> list[str]:
                     f"{path}: 'reviewStatus' is '{review_status}' but '{field}' is 'generated' — "
                     f"generated-only form must not be used as production-ready"
                 )
+    return errors
+
+
+def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
+    """Enforce the type-specific authoring contract for pronunciation items."""
+    practice_type = record.get("type")
+    requirements = {
+        "tone-discrimination": (
+            "correctAnswer", "distractors", "contrastId", "toneContourId",
+            "toneContourHintJa", "interferenceJa",
+        ),
+        "pinyin-contrast": (
+            "correctAnswer", "distractors", "contrastId", "contrastNoteJa",
+            "interferenceJa", "articulationJa",
+        ),
+        "guided-shadowing": (
+            "targetTraditional", "targetTraditionalStatus", "targetPinyin",
+            "toneContourId", "shadowStepsJa", "selfCheckJa", "interferenceJa",
+            "articulationJa",
+        ),
+    }
+    required_fields = requirements.get(practice_type)
+    if required_fields is None:
+        if record.get("correctAnswer") is None:
+            return [f"{path}: 'correctAnswer' is required for type '{practice_type}'"]
+        return []
+
+    errors = [
+        f"{path}: '{field}' is required for type '{practice_type}'"
+        for field in required_fields
+        if record.get(field) is None
+    ]
+    if practice_type == "guided-shadowing":
+        if record.get("correctAnswer") is not None:
+            errors.append(
+                f"{path}.correctAnswer must be null for type 'guided-shadowing'"
+            )
     return errors
 
 
@@ -592,24 +629,36 @@ def _build_schemas():
     # Practice Item
     SCHEMAS["practice"] = {
         "required": [
-            "id", "type", "promptJa", "correctAnswer", "reviewStatus",
+            "id", "type", "promptJa", "reviewStatus",
         ],
         "optional": [
-            "distractors", "painPointTags", "relatedVocabulary",
+            "correctAnswer", "distractors", "painPointTags", "relatedVocabulary",
+            "contrastId", "toneContourId", "toneContourHintJa", "interferenceJa",
+            "audioRef", "contrastNoteJa", "articulationJa", "targetTraditional",
+            "targetTraditionalStatus", "targetSimplified", "targetSimplifiedStatus",
+            "targetPinyin", "shadowStepsJa", "selfCheckJa", "requiredForQuest",
         ],
         "field_types": {
             "id": str, "type": str, "promptJa": str,
             "correctAnswer": str, "reviewStatus": str,
             "distractors": list, "relatedVocabulary": list,
-            "painPointTags": list,
+            "painPointTags": list, "contrastId": str, "toneContourId": str,
+            "toneContourHintJa": str, "interferenceJa": str, "audioRef": str,
+            "contrastNoteJa": str, "articulationJa": str, "targetTraditional": str,
+            "targetTraditionalStatus": str, "targetSimplified": str,
+            "targetSimplifiedStatus": str, "targetPinyin": str, "shadowStepsJa": list,
+            "selfCheckJa": list, "requiredForQuest": bool,
         },
         "controlled_fields": {
             "type": VALID_PRACTICE_TYPES,
             "reviewStatus": VALID_REVIEW_STATUSES,
+            "targetTraditionalStatus": CONTROLLED_STATUSES,
+            "targetSimplifiedStatus": CONTROLLED_STATUSES,
         },
         "extra_validators": [
             _check_review_status,
             _check_generated_not_production,
+            _check_pronunciation_practice_fields,
         ],
     }
 
@@ -878,6 +927,12 @@ def run_tests():
         test_practice_valid,
         test_practice_missing_required,
         test_practice_invalid_type,
+        test_tone_discrimination_practice_contract,
+        test_pinyin_contrast_practice_contract,
+        test_guided_shadowing_practice_contract,
+        test_pronunciation_practice_contract_missing_field,
+        test_guided_shadowing_rejects_correct_answer,
+        test_existing_practice_type_still_requires_correct_answer,
 
         # ─── Resource ───
         test_resource_valid,
@@ -1311,6 +1366,11 @@ def _minimal_practice(**overrides):
         "type": "tone-discrimination",
         "promptJa": "次の音声を聴いて、正しい声調を選んでください",
         "correctAnswer": "mā",
+        "distractors": ["mà"],
+        "contrastId": "tone-t1-vs-t4",
+        "toneContourId": "t1-high-flat",
+        "toneContourHintJa": "第一声は高く平ら。",
+        "interferenceJa": "日本語話者は平らに伸ばしやすい。",
         "reviewStatus": "draft",
     }
     data.update(overrides)
@@ -1330,6 +1390,73 @@ def test_practice_missing_required():
 def test_practice_invalid_type():
     errs = validate_single(_minimal_practice(type="translation"), "practice")
     _assert_has_error(errs, "not valid", "practice_type")
+
+
+def test_tone_discrimination_practice_contract():
+    errs = validate_single(_minimal_practice(
+        distractors=["mà"],
+        contrastId="tone-t1-vs-t4",
+        toneContourId="t1-high-flat",
+        toneContourHintJa="第一声は高く平ら。",
+        interferenceJa="日本語話者は平らに伸ばしやすい。",
+    ), "practice")
+    _assert_no_errors(errs, "tone_discrimination_practice_contract")
+
+
+def test_pinyin_contrast_practice_contract():
+    errs = validate_single(_minimal_practice(
+        type="pinyin-contrast",
+        distractors=["z"],
+        contrastId="pinyin-zh-vs-z",
+        contrastNoteJa="zh は巻き舌音。",
+        interferenceJa="日本語には巻き舌音がない。",
+        articulationJa="舌先を後ろに巻く。",
+    ), "practice")
+    _assert_no_errors(errs, "pinyin_contrast_practice_contract")
+
+
+def test_guided_shadowing_practice_contract():
+    errs = validate_single(_minimal_practice(
+        type="guided-shadowing",
+        correctAnswer=None,
+        targetTraditional="謝謝",
+        targetTraditionalStatus="authored",
+        targetPinyin="xièxie",
+        toneContourId="t4-weak",
+        shadowStepsJa=["第四声を短く下げる。"],
+        selfCheckJa=["急降下したか？"],
+        interferenceJa="日本語では平板になりやすい。",
+        articulationJa="x は摩擦を強くする。",
+    ), "practice")
+    _assert_no_errors(errs, "guided_shadowing_practice_contract")
+
+
+def test_pronunciation_practice_contract_missing_field():
+    errs = validate_single(_minimal_practice(toneContourId=None), "practice")
+    _assert_has_error(errs, "toneContourId", "pronunciation_practice_contract_missing_field")
+
+
+def test_guided_shadowing_rejects_correct_answer():
+    errs = validate_single(_minimal_practice(
+        type="guided-shadowing",
+        targetTraditional="謝謝",
+        targetTraditionalStatus="authored",
+        targetPinyin="xièxie",
+        toneContourId="t4-weak",
+        shadowStepsJa=["第四声を短く下げる。"],
+        selfCheckJa=["急降下したか？"],
+        interferenceJa="日本語では平板になりやすい。",
+        articulationJa="x は摩擦を強くする。",
+    ), "practice")
+    _assert_has_error(errs, "must be null", "guided_shadowing_rejects_correct_answer")
+
+
+def test_existing_practice_type_still_requires_correct_answer():
+    errs = validate_single(_minimal_practice(
+        type="pronunciation-practice",
+        correctAnswer=None,
+    ), "practice")
+    _assert_has_error(errs, "correctAnswer", "existing_practice_type_requires_correct_answer")
 
 
 # ─── Resource tests ────────────────────────────────────────────────────────

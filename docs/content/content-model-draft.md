@@ -178,13 +178,20 @@ When full schema validation is implemented (planned #2), these rules must also h
 ## Practice Item
 
 - `id`
-- `type` (tone-discrimination / pronunciation-practice / word-order / measure-word / complement / aspect-particle / script-matching / region-vocab)
+- `type` (tone-discrimination / pinyin-contrast / guided-shadowing / pronunciation-practice / word-order / measure-word / complement / aspect-particle / script-matching / region-vocab)
 - `promptJa`
-- `correctAnswer`
+- `correctAnswer` (required except `guided-shadowing`, where it is `null`)
 - `distractors` (where applicable)
 - `painPointTags` (optional, string[])
 - `relatedVocabulary`
 - `reviewStatus`
+
+### Pronunciation Practice Extensions
+
+- All pronunciation formats may use `contrastId`, `toneContourId`, and optional `audioRef`.
+- `tone-discrimination` requires `contrastId`, `toneContourId`, `toneContourHintJa`, and `interferenceJa`.
+- `pinyin-contrast` requires `contrastId`, `contrastNoteJa`, `interferenceJa`, and `articulationJa`; `toneContourId` is optional.
+- `guided-shadowing` requires `targetTraditional`, `targetTraditionalStatus`, `targetPinyin`, `toneContourId`, `shadowStepsJa`, `selfCheckJa`, `interferenceJa`, and `articulationJa`.
 
 ## Phrasebook Entry
 
