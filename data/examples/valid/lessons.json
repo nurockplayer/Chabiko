@@ -44,17 +44,17 @@
       "travelScenario": "food",
       "coreSentence": "這個多少錢？",
       "sections": [
-        {"headingJa": "基本表現", "contentJa": "「多少錢」＝いくら？「多」＝どれくらい、「少」＝少ない、「錢」＝お金。直訳すると「どれだけ少ないお金？」→いくら？という意味。"}
+        {"headingJa": "基本表現", "contentJa": "「多少錢」＝いくら？「多少」は数量を尋ねる定型の疑問詞。「錢」はお金。値札を見ながら使う表現。"}
       ],
       "chunks": [
         {"chunk": "這個", "meaning": "これ", "notesJa": "lesson-001 で出てきた「這個」と同じ。"},
-        {"chunk": "多少", "meaning": "どれくらい", "notesJa": "「多」は多い、「少」は少ない。組み合わせて数量を尋ねる。"},
-        {"chunk": "錢", "meaning": "お金", "notesJa": "日本語の「銭（ぜに）」と同源だが、中国語では一般的なお金を指す。"}
+        {"chunk": "多少", "meaning": "どれくらい", "notesJa": "数量を尋ねる定型の疑問詞。日本語の「いくら」に相当。"},
+        {"chunk": "錢", "meaning": "お金", "notesJa": "お金のこと。台湾では「元（NTドル）」が通貨の単位。"}
       ],
       "kanjiBridgeNotes": [
-        {"kanji": "錢", "jpReading": "せん／ぜに", "noteJa": "日本語の「銭」とほぼ同じ意味。台湾では「元（NTドル）」が単位だが、「錢」でお金全般を表す。"},
-        {"kanji": "多", "jpReading": "た", "noteJa": "多いという意味。日本語と同じ漢字で意味も近い。"},
-        {"kanji": "少", "jpReading": "しょう", "noteJa": "少ないという意味。日本語と同じ漢字。"}
+        {"kanji": "錢", "jpReading": "せん", "noteJa": "日本語の「銭」に似た字形。中国語ではお金全般を指す。台湾の通貨単位は「元」。共通の漢字字形を覚えの手がかりにしよう。"},
+        {"kanji": "多", "jpReading": "た", "noteJa": "日本語と同じ漢字で意味も近い。"},
+        {"kanji": "少", "jpReading": "しょう", "noteJa": "日本語と同じ漢字。"}
       ],
       "soundFocus": [
         {"item": "多 duō", "noteJa": "第一声。高く平らに。「ドゥオ」と伸ばす。"},
@@ -68,7 +68,7 @@
         {"promptJa": "値段を聞くときの決まり文句は？", "answerJa": "「這個多少錢？」"},
         {"promptJa": "「多少」の意味は？", "answerJa": "どれくらい（数量を尋ねる）"}
       ],
-      "travelTask": "夜市や屋台で氣になる品物を指差して「這個多少錢？」と聞いてみよう。相手の指の数やレジ表示で金額を確認しよう。",
+      "travelTask": "夜市や屋台で気になる品物を指差して「這個多少錢？」と聞いてみよう。相手の指の数やレジ表示で金額を確認しよう。",
       "relatedVocabulary": ["voc-002"],
       "painPointTags": ["tone", "pinyin-pronunciation"],
       "reviewStatus": "draft"
@@ -81,33 +81,32 @@
       "learnerOutcomeJa": "「在哪裡」を使って場所を尋ね、簡単な方向指示が理解できる",
       "hookJa": "MRTの駅、どこにあるかわかる？",
       "travelScenario": "transport",
-      "coreSentence": "車站在哪裡？",
+      "coreSentence": "捷運站在哪裡？",
       "sections": [
         {"headingJa": "基本表現", "contentJa": "「在哪裡」＝どこにある？「在」＝〜にある（存在・位置）、「哪裡」＝どこ。場所を指差しながら使うのがコツ。"}
       ],
       "chunks": [
-        {"chunk": "車站", "meaning": "駅", "notesJa": "「車」＝車両、「站」＝停まる所。日本語の「駅」とは漢字が違うので注意。"},
+        {"chunk": "捷運站", "meaning": "MRTの駅", "notesJa": "「捷運」＝MRT（高速交通機関）、「站」＝駅。台湾の都市部では「捷運」が地下鉄・高架鉄道を指す。"},
         {"chunk": "在", "meaning": "〜にある・いる", "notesJa": "存在や位置を表す基本動詞。"},
         {"chunk": "哪裡", "meaning": "どこ", "notesJa": "「哪」は疑問詞、「裡」は中／内部。組み合わせて「どこ」の意味。"}
       ],
       "kanjiBridgeNotes": [
-        {"kanji": "駅", "jpReading": "えき", "noteJa": "日本語は「駅」だが、台湾中国語では「站」を使う。MRTの駅は「捷運站」。"},
-        {"kanji": "哪", "jpReading": "な", "noteJa": "日本語の「何（なに／なん）」に相当する疑問詞。形が「那（あの・それ）」と似ているが別の字。"}
+        {"kanji": "駅", "jpReading": "えき", "noteJa": "日本語は「駅」だが、台湾中国語では「站」を使う。JRの駅は「火車站」、MRTの駅は「捷運站」、バスターミナルは「轉運站」。"}
       ],
       "soundFocus": [
-        {"item": "站 zhàn", "noteJa": "第四声。急降下。「ヂャン」と短く。"},
-        {"item": "哪 nǎ", "noteJa": "第三声。先に下げてから上げる。「ナー」と伸ばさない。"},
-        {"item": "裡 lǐ", "noteJa": "第三声。nǎ との連続で変調に注意。"}
+        {"item": "站 zhàn", "noteJa": "第四声。舌先を上の歯茎の後ろにつけてから、声を短く急降下させる。"},
+        {"item": "哪 nǎ", "noteJa": "第三声。先に下げてから上げる。n は舌尖を上の歯の裏につけて発音。"},
+        {"item": "裡 lǐ", "noteJa": "第三声。nǎ との連続で変調に注意。ゆっくり区切って練習しよう。"}
       ],
       "examples": [
-        {"traditional": "車站在哪裡？", "pinyin": "chēzhàn zài nǎlǐ?", "japanese": "駅はどこですか？"},
+        {"traditional": "捷運站在哪裡？", "pinyin": "jiéyùn zhàn zài nǎlǐ?", "japanese": "MRTの駅はどこですか？"},
         {"traditional": "廁所在哪裡？", "pinyin": "cèsuǒ zài nǎlǐ?", "japanese": "トイレはどこですか？"}
       ],
       "reviewPrompts": [
         {"promptJa": "場所を尋ねる基本フレーズは？", "answerJa": "「〜在哪裡？」"},
         {"promptJa": "「在」の意味は？", "answerJa": "〜にある・いる（存在・位置）"}
       ],
-      "travelTask": "MRTの駅やトイレを探すときに「車站在哪裡？」「廁所在哪裡？」と聞いてみよう。親切な人が指を差して教えてくれるはず。",
+      "travelTask": "MRTの駅を探すときに「捷運站在哪裡？」と聞いてみよう。トイレを探すときは「廁所在哪裡？」が使える。",
       "painPointTags": ["kanji-false-friend", "tone"],
       "reviewStatus": "draft"
     }

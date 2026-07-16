@@ -256,7 +256,7 @@ describe('lesson content requirements', () => {
   it('lesson-003 has asking-location content', () => {
     const lesson = loadLessonById('lesson-003');
     expect(lesson).toBeDefined();
-    expect(lesson!.coreSentence).toContain('在哪裡');
+    expect(lesson!.coreSentence).toContain('捷運站');
     expect(lesson!.travelScenario).toBe('transport');
     expect(lesson!.painPointTags).toContain('kanji-false-friend');
   });
@@ -267,6 +267,13 @@ describe('lesson content requirements', () => {
     const stationNote = lesson!.kanjiBridgeNotes.find((n) => n.kanji === '駅');
     expect(stationNote).toBeDefined();
     expect(stationNote!.noteJa).toContain('站');
+  });
+
+  it('lesson-003 example uses 捷運站 for MRT context', () => {
+    const lesson = loadLessonById('lesson-003');
+    expect(lesson).toBeDefined();
+    expect(lesson!.examples![0].traditional).toContain('捷運站');
+    expect(lesson!.travelTask).toContain('捷運站');
   });
 });
 
