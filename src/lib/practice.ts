@@ -16,48 +16,19 @@ function shuffle<T>(array: T[]): T[] {
   return out;
 }
 
-function gatherAnswerPool(lesson: Lesson): string[] {
-  const pool: string[] = [];
-  for (const prompt of lesson.reviewPrompts ?? []) {
-    if (prompt.answerJa?.trim()) pool.push(prompt.answerJa.trim());
-  }
-  for (const chunk of lesson.chunks ?? []) {
-    if (chunk.meaning?.trim()) pool.push(chunk.meaning.trim());
-  }
-  return pool;
-}
-
 export function generateQuestions(lesson: Lesson): PracticeQuestion[] {
   const prompts = (lesson.reviewPrompts ?? []).filter(
     (p) => p.promptJa?.trim() && p.answerJa?.trim(),
   );
   if (prompts.length === 0) return [];
 
-  const pool = gatherAnswerPool(lesson);
   const questions: PracticeQuestion[] = [];
 
   for (const prompt of prompts) {
     const correct = prompt.answerJa.trim();
-    const distractors: string[] = [];
-    const seen = new Set<string>([correct]);
-
-    // Exclude chunk meanings for chunks whose text appears in the prompt,
-    // since those meanings may be synonymous with the correct answer.
-    const excludedChunks = new Set<string>();
-    for (const chunk of lesson.chunks ?? []) {
-      if (chunk.meaning?.trim() && prompt.promptJa.includes(chunk.chunk)) {
-        excludedChunks.add(chunk.meaning.trim());
-      }
-    }
-
-    for (const candidate of pool) {
-      if (seen.has(candidate)) continue;
-      if (excludedChunks.has(candidate)) continue;
-      if (seen.has(candidate)) continue;
-      distractors.push(candidate);
-      seen.add(candidate);
-      if (distractors.length >= 3) break;
-    }
+    const distractors = (prompt.distractorsJa ?? []).filter(
+      (d): d is string => typeof d === 'string' && d.trim().length > 0 && d.trim() !== correct,
+    );
 
     const choices = shuffle([correct, ...distractors]);
 

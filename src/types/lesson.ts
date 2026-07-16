@@ -30,6 +30,8 @@ export interface LessonExample {
 export interface ReviewPrompt {
   promptJa: string;
   answerJa: string;
+  /** Explicit wrong-answer options for multiple-choice practice, if available. */
+  distractorsJa?: string[];
 }
 
 export interface Lesson {
