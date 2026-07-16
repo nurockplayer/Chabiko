@@ -26,16 +26,18 @@ const json = JSON.stringify(questions);
 <script>
   import { ProgressStore } from '../lib/progress';
 
-  const root = document.getElementById('practice-root')!;
-  const section = root.closest('[data-questions]') as HTMLElement | null;
-  if (!section) throw new Error('Practice root not found');
+  (function () {
+  const practiceRoot = document.getElementById('practice-root');
+  const practiceSection = practiceRoot?.closest('[data-questions]') as HTMLElement | null;
+  if (!practiceRoot || !practiceSection) return;
+  const root: HTMLElement = practiceRoot;
 
   const questions: Array<{
     promptJa: string;
     correctAnswer: string;
     choices: string[];
     lessonId: string;
-  }> = JSON.parse(section.getAttribute('data-questions') ?? '[]');
+  }> = JSON.parse(practiceSection.getAttribute('data-questions') ?? '[]');
 
   if (questions.length === 0) {
     root.textContent = '';
@@ -136,6 +138,7 @@ const json = JSON.stringify(questions);
 
     render();
   }
+  })();
 </script>
 
 <style>
