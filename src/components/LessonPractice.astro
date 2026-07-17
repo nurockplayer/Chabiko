@@ -162,27 +162,27 @@ const json = JSON.stringify(questions);
     color: var(--c-text-secondary);
     margin-bottom: var(--space-md);
   }
-  :global(.practice-question) {
+  .practice-question {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
   }
-  :global(.practice-progress) {
+  .practice-progress {
     font-size: 0.8rem;
     color: var(--c-text-secondary);
     margin: 0;
   }
-  :global(.practice-prompt) {
+  .practice-prompt {
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
   }
-  :global(.practice-choices) {
+  .practice-choices {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
   }
-  :global(.practice-choice) {
+  .practice-choice {
     display: block;
     width: 100%;
     padding: var(--space-sm) var(--space-md);
@@ -195,47 +195,47 @@ const json = JSON.stringify(questions);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
-  :global(.practice-choice:hover:not(:disabled)) {
+  .practice-choice:hover:not(:disabled) {
     background: var(--c-accent);
     color: #fff;
     border-color: var(--c-accent);
   }
-  :global(.practice-choice:disabled) {
+  .practice-choice:disabled {
     opacity: 0.5;
     cursor: default;
   }
-  :global(.practice-feedback) {
+  .practice-feedback {
     min-height: 0;
     transition: min-height 0.2s;
   }
-  :global(.practice-feedback.feedback-visible) {
+  .practice-feedback.feedback-visible {
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius);
   }
-  :global(.feedback-correct) {
+  .feedback-correct {
     color: #166534;
     font-weight: 700;
     margin: 0;
   }
-  :global(.feedback-incorrect) {
+  .feedback-incorrect {
     color: #991b1b;
     font-weight: 700;
     margin: 0 0 var(--space-xs);
   }
-  :global(.feedback-answer) {
+  .feedback-answer {
     color: var(--c-text-secondary);
     font-size: 0.9rem;
     margin: 0;
   }
-  :global(.practice-complete) {
+  .practice-complete {
     text-align: center;
     padding: var(--space-md) 0;
   }
-  :global(.practice-complete-icon) {
+  .practice-complete-icon {
     font-size: 2rem;
     margin: 0 0 var(--space-sm);
   }
-  :global(.practice-complete-text) {
+  .practice-complete-text {
     font-weight: 700;
     font-size: 1rem;
     margin: 0;
