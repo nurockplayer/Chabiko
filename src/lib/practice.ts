@@ -58,9 +58,13 @@ export function generateQuestions(lesson: Lesson): PracticeQuestion[] {
     const rawDistractors = Array.isArray(prompt.distractorsJa)
       ? prompt.distractorsJa
       : [];
-    const distractors = rawDistractors.filter(
-      (d): d is string => isNonEmptyString(d) && d.trim() !== correct,
-    ).map((d) => d.trim());
+    const distractors = rawDistractors
+      .filter(
+        (d): d is string => typeof d === 'string' && d.trim().length > 0,
+      )
+      .map((d) => d.trim())
+      .filter((d) => d !== correct)
+      .filter((d, i, arr) => arr.indexOf(d) === i);
 
     const choices = deterministicShuffle(
       [correct, ...distractors],
