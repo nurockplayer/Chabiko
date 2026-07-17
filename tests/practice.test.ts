@@ -109,7 +109,7 @@ describe('generateQuestions', () => {
     expect(questions).toHaveLength(2);
   });
 
-  it('handles missing distractorsJa gracefully (single-choice mode)', () => {
+  it('handles missing distractorsJa gracefully (single-question skipped)', () => {
     const lesson: Lesson = {
       ...baseLesson,
       reviewPrompts: [
@@ -117,8 +117,7 @@ describe('generateQuestions', () => {
       ],
     };
     const questions = generateQuestions(lesson);
-    expect(questions).toHaveLength(1);
-    expect(questions[0].choices).toEqual(['正解']);
+    expect(questions).toHaveLength(0);
   });
 
   it('strips empty distractor strings from choices', () => {

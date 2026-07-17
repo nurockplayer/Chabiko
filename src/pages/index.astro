@@ -83,6 +83,9 @@ const lessons = loadAllRenderableLessons();
 
   updateCompletionUI();
 
+  // Refresh on pageshow (browser back/forward navigation)
+  window.addEventListener('pageshow', updateCompletionUI);
+
   const resetBtn = document.getElementById('reset-progress-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {

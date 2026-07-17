@@ -165,16 +165,23 @@ const examples = (lesson?.examples ?? []).filter(
 <script>
   import { ProgressStore } from '../../lib/progress';
 
+  (function () {
   const badge = document.getElementById('lesson-completion-badge');
-  if (badge) {
+  if (!badge) return;
+  const bid = badge.getAttribute('data-lesson-id') ?? '';
+  function refreshBadge() {
     const store = new ProgressStore();
-    if (store.isComplete(badge.getAttribute('data-lesson-id') ?? '')) {
-      badge.textContent = '✔ 完了済み';
-      badge.className = 'completion-badge completion-badge--done';
+    if (store.isComplete(bid)) {
+      badge!.textContent = '✔ 完了済み';
+      badge!.className = 'completion-badge completion-badge--done';
     } else {
-      badge.className = 'completion-badge';
+      badge!.textContent = '';
+      badge!.className = 'completion-badge';
     }
   }
+  refreshBadge();
+  window.addEventListener('pageshow', refreshBadge);
+  })();
 </script>
 
 <style>

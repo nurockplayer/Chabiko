@@ -52,8 +52,8 @@ describe('lesson practice answer visibility', () => {
       answerHandlerStart,
       escapeHelperStart,
     );
-    expect(answerHandler).toContain('if (selected === q.correctAnswer)');
+    expect(answerHandler).toContain('result.feedback.kind');
     expect(answerHandler).toContain('正解：');
-    expect(answerHandler).toContain('escapeHtml(q.correctAnswer)');
+    expect(answerHandler).toContain('result.feedback.correctAnswer');
   });
 });

@@ -6,12 +6,18 @@ export interface StorageLike {
 
 const STORAGE_KEY = 'chabiko_completed_lessons';
 
+const PROBE_KEY = '__chabiko_probe__';
+
 function getDefaultStorage(): StorageLike | null {
   try {
     if (typeof localStorage !== 'undefined') {
-      const probe = '__chabiko_probe__';
-      localStorage.setItem(probe, '1');
-      localStorage.removeItem(probe);
+      const prev = localStorage.getItem(PROBE_KEY);
+      localStorage.setItem(PROBE_KEY, '1');
+      localStorage.removeItem(PROBE_KEY);
+      // Restore original value if it existed
+      if (prev !== null) {
+        localStorage.setItem(PROBE_KEY, prev);
+      }
       return localStorage;
     }
   } catch {

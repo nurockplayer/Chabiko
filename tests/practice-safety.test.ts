@@ -41,7 +41,7 @@ describe('practice generation safety and determinism', () => {
       ],
     } as unknown as Lesson;
 
-    expect(generateQuestions(lesson)[0].choices).toEqual(['answer']);
+    expect(generateQuestions(lesson).length).toBe(0);
   });
 
   it('produces the same choice order for repeated generation', () => {

@@ -25,6 +25,7 @@ const json = JSON.stringify(questions);
 
 <script>
   import { ProgressStore } from '../lib/progress';
+  import { createSession, answer, getCurrentQuestion, getCurrentIndex } from '../lib/practiceSession';
 
   (function () {
   const practiceRoot = document.getElementById('practice-root');
@@ -43,26 +44,32 @@ const json = JSON.stringify(questions);
     root.textContent = '';
   } else {
     const store = new ProgressStore();
-    const lessonId = questions[0].lessonId;
-    let current = 0;
+    let session: import('../lib/practiceSession').PracticeSession = createSession(questions);
+
+    function syncBadge() {
+      const badge = document.getElementById('lesson-completion-badge');
+      if (badge) {
+        badge.textContent = '✔ 完了済み';
+        badge.className = 'completion-badge completion-badge--done';
+      }
+    }
+
+    function renderCompleted() {
+      store.markComplete(session.lessonId);
+      syncBadge();
+      root.innerHTML =
+        '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+    }
 
     function render() {
-      if (current >= questions.length) {
-        store.markComplete(lessonId);
-        // Sync completion badge immediately (not waiting for refresh)
-        const badge = document.getElementById('lesson-completion-badge');
-        if (badge) {
-          badge.textContent = '✔ 完了済み';
-          badge.className = 'completion-badge completion-badge--done';
-        }
-        root.innerHTML =
-          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      const currentQ = getCurrentQuestion(session);
+      if (!currentQ) {
+        renderCompleted();
         return;
       }
 
-      const q = questions[current];
-      const isComplete = store.isComplete(lessonId);
-      if (isComplete && current === 0) {
+      const isComplete = store.isComplete(session.lessonId);
+      if (isComplete && getCurrentIndex(session) === 0) {
         root.innerHTML =
           '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
         return;
@@ -72,15 +79,15 @@ const json = JSON.stringify(questions);
         '<div class="practice-question">' +
         '<p class="practice-progress">' +
         '質問 ' +
-        (current + 1) +
+        (getCurrentIndex(session) + 1) +
         ' / ' +
         questions.length +
         '</p>' +
         '<p class="practice-prompt">' +
-        escapeHtml(q.promptJa) +
+        escapeHtml(currentQ.promptJa) +
         '</p>' +
         '<div class="practice-choices" role="group">' +
-        q.choices
+        currentQ.choices
           .map(
             (choice, i) =>
               '<button class="practice-choice" data-value="' +
@@ -108,26 +115,27 @@ const json = JSON.stringify(questions);
 
       if (!feedback) return;
 
-      const q = questions[current];
-      if (selected === q.correctAnswer) {
+      const result = answer(session, selected);
+      session = result.session;
+
+      if (result.feedback.kind === 'correct') {
         feedback.innerHTML =
           '<p class="feedback-correct">正解！</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        setTimeout(() => {
-          current++;
-          render();
-        }, 1200);
+        if (result.session.status === 'completed') {
+          setTimeout(() => renderCompleted(), 1200);
+        } else {
+          setTimeout(() => render(), 1200);
+        }
       } else {
         feedback.innerHTML =
           '<p class="feedback-incorrect">不正解。</p><p class="feedback-answer">正解：' +
-          escapeHtml(q.correctAnswer) +
+          escapeHtml(result.feedback.correctAnswer ?? '') +
           '</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        setTimeout(() => {
-          render();
-        }, 2000);
+        setTimeout(() => render(), 2000);
       }
     }
 
@@ -141,6 +149,18 @@ const json = JSON.stringify(questions);
     }
 
     render();
+
+    // Refresh state on pageshow (browser back/forward cache)
+    window.addEventListener('pageshow', () => {
+      const reloadedStore = new ProgressStore();
+      if (reloadedStore.isComplete(session.lessonId)) {
+        const completeStore = new ProgressStore();
+        completeStore.markComplete(session.lessonId);
+        syncBadge();
+        root.innerHTML =
+          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      }
+    });
   }
   })();
 </script>

@@ -66,6 +66,9 @@ export function generateQuestions(lesson: Lesson): PracticeQuestion[] {
       .filter((d) => d !== correct)
       .filter((d, i, arr) => arr.indexOf(d) === i);
 
+    // Skip prompts without at least one effective distractor
+    if (distractors.length === 0) continue;
+
     const choices = deterministicShuffle(
       [correct, ...distractors],
       `${lesson.id}\u0000${promptText}`,
