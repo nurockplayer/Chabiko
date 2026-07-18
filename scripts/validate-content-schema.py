@@ -302,15 +302,15 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 
 
 def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
-    """Production-reviewed lessons must have at least one usable review prompt."""
+    """Production-ready lessons (reviewed/published) must have at least one usable review prompt."""
     errors = []
     review_status = record.get("reviewStatus", "")
-    if review_status != "reviewed":
+    if review_status not in ("reviewed", "published"):
         return errors
 
     prompts = record.get("reviewPrompts")
     if not isinstance(prompts, list) or len(prompts) == 0:
-        errors.append(f"{path}.reviewPrompts: 'reviewed' lesson must have at least one review prompt")
+        errors.append(f"{path}.reviewPrompts: '{review_status}' lesson must have at least one review prompt")
         return errors
 
     has_usable = False
@@ -335,7 +335,7 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
 
     if not has_usable:
         errors.append(
-            f"{path}: 'reviewed' lesson must have at least one review prompt "
+            f"{path}: '{review_status}' lesson must have at least one review prompt "
             f"with a non-empty distractor string different from the answer"
         )
     return errors
@@ -943,6 +943,8 @@ def run_tests():
         test_lesson_practice_readiness_missing_distractors,
         test_lesson_practice_readiness_valid,
         test_draft_lesson_missing_distractors_ok,
+        test_lesson_practice_readiness_published_fails,
+        test_lesson_practice_readiness_published_ok,
 
         # ─── Vocabulary ───
         test_vocab_valid,
@@ -1278,6 +1280,26 @@ def test_lesson_practice_readiness_valid():
         "lesson",
     )
     _assert_no_errors(errs, "lesson_practice_readiness_valid")
+
+
+def test_lesson_practice_readiness_published_fails():
+    """published lesson without usable prompt should fail."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="published",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "non-empty distractor", "lesson_practice_published_fails")
+
+
+def test_lesson_practice_readiness_published_ok():
+    """published lesson with usable prompt passes."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="published",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}]),
+        "lesson",
+    )
+    _assert_no_errors(errs, "lesson_practice_published_ok")
 
 
 # ─── Vocabulary tests ──────────────────────────────────────────────────────
