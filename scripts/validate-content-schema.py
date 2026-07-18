@@ -314,7 +314,7 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
         return errors
 
     has_usable = False
-    for i, prompt in enumerate(prompts):
+    for prompt in prompts:
         if not isinstance(prompt, dict):
             continue
         pj = prompt.get("promptJa")
