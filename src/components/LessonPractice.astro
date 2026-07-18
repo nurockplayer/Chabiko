@@ -152,13 +152,21 @@ const json = JSON.stringify(questions);
 
     // Refresh state on pageshow (browser back/forward cache)
     window.addEventListener('pageshow', () => {
-      const reloadedStore = new ProgressStore();
-      if (reloadedStore.isComplete(session.lessonId)) {
-        const completeStore = new ProgressStore();
-        completeStore.markComplete(session.lessonId);
+      const currentStore = new ProgressStore();
+      const isNowComplete = currentStore.isComplete(session.lessonId);
+      if (isNowComplete) {
         syncBadge();
         root.innerHTML =
           '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      } else {
+        // Progress was reset — rebuild active session
+        session = createSession(questions);
+        const badge = document.getElementById('lesson-completion-badge');
+        if (badge) {
+          badge.textContent = '';
+          badge.className = 'completion-badge';
+        }
+        render();
       }
     });
   }

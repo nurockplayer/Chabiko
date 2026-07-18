@@ -57,9 +57,14 @@ const lessons = loadAllRenderableLessons();
 <script>
   import { ProgressStore } from '../lib/progress';
 
-  const store = new ProgressStore();
+  let store = new ProgressStore();
+
+  function refreshStore() {
+    store = new ProgressStore();
+  }
 
   function updateCompletionUI() {
+    // Use current store (which may have been refreshed via pageshow)
     const statusElements = document.querySelectorAll('.lesson-completion-status');
     const lessonIds: string[] = [];
     statusElements.forEach((el) => {
@@ -81,10 +86,15 @@ const lessons = loadAllRenderableLessons();
     }
   }
 
+  function refreshUI() {
+    refreshStore();
+    updateCompletionUI();
+  }
+
   updateCompletionUI();
 
-  // Refresh on pageshow (browser back/forward navigation)
-  window.addEventListener('pageshow', updateCompletionUI);
+  // Refresh on pageshow (browser back/forward navigation) — re-read localStorage
+  window.addEventListener('pageshow', refreshUI);
 
   const resetBtn = document.getElementById('reset-progress-btn');
   if (resetBtn) {
