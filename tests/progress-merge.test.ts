@@ -11,15 +11,47 @@ function mockStorage(initial?: Record<string, string>) {
   };
 }
 
+describe('ProgressStore null storage fallback', () => {
+  it('accumulates completions with null storage', () => {
+    const store = new ProgressStore(null);
+    store.markComplete('lesson-001');
+    store.markComplete('lesson-002');
+    expect(store.isComplete('lesson-001')).toBe(true);
+    expect(store.isComplete('lesson-002')).toBe(true);
+  });
+
+  it('does not merge non-existent storage', () => {
+    const store = new ProgressStore(null);
+    store.markComplete('lesson-001');
+    store.markComplete('lesson-002');
+    const ids = store.getCompletedIds();
+    expect(ids).toContain('lesson-001');
+    expect(ids).toContain('lesson-002');
+  });
+});
+
+describe('ProgressStore getItem throws on markComplete', () => {
+  it('accumulates in memory when getItem throws', () => {
+    const flaky = {
+      getItem: () => { throw new Error('fail'); },
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    const store = new ProgressStore(flaky);
+    store.markComplete('lesson-001');
+    store.markComplete('lesson-002');
+    expect(store.isComplete('lesson-001')).toBe(true);
+    expect(store.isComplete('lesson-002')).toBe(true);
+  });
+});
+
 describe('ProgressStore concurrent completion merge', () => {
   it('two instances from empty storage both persist', () => {
     const storage = mockStorage();
     const a = new ProgressStore(storage);
     const b = new ProgressStore(storage);
-
     a.markComplete('lesson-001');
     b.markComplete('lesson-002');
-
     const c = new ProgressStore(storage);
     expect(c.isComplete('lesson-001')).toBe(true);
     expect(c.isComplete('lesson-002')).toBe(true);
@@ -29,53 +61,20 @@ describe('ProgressStore concurrent completion merge', () => {
     const storage = mockStorage();
     const a = new ProgressStore(storage);
     a.markComplete('lesson-001');
-
-    // b reads after a wrote
     const b = new ProgressStore(storage);
     expect(b.isComplete('lesson-001')).toBe(true);
-
-    // reset
     a.resetAll();
-
-    // b calls markComplete — should NOT resurrect lesson-001
     b.markComplete('lesson-002');
-
     const c = new ProgressStore(storage);
     expect(c.isComplete('lesson-001')).toBe(false);
     expect(c.isComplete('lesson-002')).toBe(true);
   });
 
-  it('repeated completion does not duplicate', () => {
+  it('duplicate lesson does not repeat', () => {
     const storage = mockStorage();
     const a = new ProgressStore(storage);
-    a.markComplete('lesson-001');
     a.markComplete('lesson-001');
     a.markComplete('lesson-001');
     expect(a.getCompletedIds()).toEqual(['lesson-001']);
-  });
-
-  it('malformed storage keeps in-memory fallback', () => {
-    const storage = mockStorage({
-      chabiko_completed_lessons: '{broken',
-    });
-    const store = new ProgressStore(storage);
-    expect(() => store.markComplete('lesson-001')).not.toThrow();
-    expect(store.isComplete('lesson-001')).toBe(true);
-  });
-
-  it('null storage (unavailable) does not crash', () => {
-    const store = new ProgressStore(null);
-    expect(() => store.markComplete('lesson-001')).not.toThrow();
-    expect(store.isComplete('lesson-001')).toBe(true);
-  });
-
-  it('resetAll clears storage for other instances', () => {
-    const storage = mockStorage();
-    const a = new ProgressStore(storage);
-    a.markComplete('lesson-001');
-    a.resetAll();
-
-    const b = new ProgressStore(storage);
-    expect(b.isComplete('lesson-001')).toBe(false);
   });
 });

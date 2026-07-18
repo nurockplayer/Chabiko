@@ -31,9 +31,9 @@ export interface ReviewPrompt {
   promptJa: string;
   answerJa: string;
   /** Explicit wrong-answer options for multiple-choice practice.
-   *  For MVP the type is required; practice generation skips prompts
-   *  without at least one effective distractor at runtime. */
-  distractorsJa: string[];
+   *  Draft content may populate this later; production content is validated
+   *  to have at least one effective distractor by the content schema. */
+  distractorsJa?: string[];
 }
 
 export interface Lesson {

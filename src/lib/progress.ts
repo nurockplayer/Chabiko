@@ -65,26 +65,28 @@ export class ProgressStore {
   }
 
   markComplete(lessonId: string): void {
-    // Replace in-memory state with current storage snapshot to avoid
-    // stale instances resurrecting reset progress, then merge.
-    try {
-      const raw = this.storage?.getItem(STORAGE_KEY);
-      if (typeof raw === 'string') {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          this.completed = new Set(
-            parsed.filter((id): id is string => typeof id === 'string'),
-          );
+    // Sync in-memory state with current storage to prevent stale-instance
+    // resurrection after reset, and to merge concurrent writes from other tabs.
+    if (this.storage !== null) {
+      try {
+        const raw = this.storage.getItem(STORAGE_KEY);
+        if (typeof raw === 'string') {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            this.completed = new Set(
+              parsed.filter((id): id is string => typeof id === 'string'),
+            );
+          } else {
+            this.completed = new Set<string>();
+          }
         } else {
+          // null / absent — storage was cleared (e.g. resetAll)
           this.completed = new Set<string>();
         }
-      } else {
-        // null / absent — storage was cleared (e.g. resetAll)
-        this.completed = new Set<string>();
+      } catch {
+        /* storage malformed — keep existing in-memory state */
       }
-    } catch {
-      /* storage malformed — keep existing in-memory state */
-    }
+    } /* storage === null: keep existing in-memory state */
     this.completed.add(lessonId);
     this.persist();
   }

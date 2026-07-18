@@ -112,9 +112,18 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     return false;
   }
 
-  // At least one review prompt must have a usable distractor for practice
-  const prompts = (lesson.reviewPrompts as unknown[]) ?? [];
-  return prompts.some(hasUsablePracticePrompt);
+  return true;
+}
+
+/**
+ * Check whether a lesson has at least one review prompt with a usable
+ * distractor for practice generation. Separated from isRenderableLesson
+ * so draft content without complete practice data is still visible.
+ */
+export function hasUsableLessonPractice(value: unknown): boolean {
+  const lesson = value as Record<string, unknown> | null | undefined;
+  if (!lesson || !Array.isArray(lesson.reviewPrompts)) return false;
+  return (lesson.reviewPrompts as unknown[]).some(hasUsablePracticePrompt);
 }
 
 /**

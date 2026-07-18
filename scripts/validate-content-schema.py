@@ -301,6 +301,46 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
+    """Production-reviewed lessons must have at least one usable review prompt."""
+    errors = []
+    review_status = record.get("reviewStatus", "")
+    if review_status != "reviewed":
+        return errors
+
+    prompts = record.get("reviewPrompts")
+    if not isinstance(prompts, list) or len(prompts) == 0:
+        errors.append(f"{path}.reviewPrompts: 'reviewed' lesson must have at least one review prompt")
+        return errors
+
+    has_usable = False
+    for i, prompt in enumerate(prompts):
+        if not isinstance(prompt, dict):
+            continue
+        pj = prompt.get("promptJa")
+        aj = prompt.get("answerJa")
+        dj = prompt.get("distractorsJa")
+        if not isinstance(pj, str) or pj.strip() == "":
+            continue
+        if not isinstance(aj, str) or aj.strip() == "":
+            continue
+        if not isinstance(dj, list) or len(dj) == 0:
+            continue
+        for d in dj:
+            if isinstance(d, str) and d.strip() and d.strip() != aj.strip():
+                has_usable = True
+                break
+        if has_usable:
+            break
+
+    if not has_usable:
+        errors.append(
+            f"{path}: 'reviewed' lesson must have at least one review prompt "
+            f"with a non-empty distractor string different from the answer"
+        )
+    return errors
+
+
 def _check_resource_url(record: dict, path: str) -> list[str]:
     """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
@@ -531,6 +571,7 @@ def _build_schemas():
             _check_review_status,
             _check_generated_not_production,
             _check_pain_point_context,
+            _check_lesson_practice_readiness,
         ],
     }
 
@@ -897,6 +938,11 @@ def run_tests():
         test_lesson_chunks_type_string_fails,
         test_lesson_sound_focus_type_string_fails,
         test_lesson_travel_task_type_list_fails,
+        test_lesson_practice_readiness_without_distractors,
+        test_lesson_practice_readiness_all_equal_answer,
+        test_lesson_practice_readiness_missing_distractors,
+        test_lesson_practice_readiness_valid,
+        test_draft_lesson_missing_distractors_ok,
 
         # ─── Vocabulary ───
         test_vocab_valid,
@@ -1183,6 +1229,55 @@ def test_lesson_false_friend_without_context():
     )
     _assert_has_error(errs, "kanji-false-friend", "lesson_false_friend_no_context")
     _assert_has_error(errs, "kanjiBridgeNotes", "lesson_false_friend_no_context")
+
+
+def test_lesson_practice_readiness_without_distractors():
+    """reviewed lesson without usable prompt should fail."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "non-empty distractor", "lesson_practice_no_distractors")
+
+
+def test_lesson_practice_readiness_all_equal_answer():
+    """reviewed lesson with all distractors equal to answer should fail."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["A"]}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "non-empty distractor", "lesson_practice_all_equal")
+
+
+def test_lesson_practice_readiness_missing_distractors():
+    """reviewed lesson without distractorsJa field should fail."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A"}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "non-empty distractor", "lesson_practice_missing_field")
+
+
+def test_draft_lesson_missing_distractors_ok():
+    """draft lesson can have reviewPrompts without usable distractors."""
+    errs = validate_single(
+        _minimal_lesson(reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}]),
+        "lesson",
+    )
+    _assert_no_errors(errs, "draft_lesson_missing_distractors")
+
+
+def test_lesson_practice_readiness_valid():
+    """reviewed lesson with usable prompt passes."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}]),
+        "lesson",
+    )
+    _assert_no_errors(errs, "lesson_practice_readiness_valid")
 
 
 # ─── Vocabulary tests ──────────────────────────────────────────────────────
