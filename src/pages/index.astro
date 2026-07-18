@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import GoalPathSlot from '../components/GoalPathSlot.astro';
-import { loadAllRenderableLessons } from '../content/loadLessons';
+import { loadAllRenderableLessons, hasUsableLessonPractice } from '../content/loadLessons';
 
 const lessons = loadAllRenderableLessons();
 ---
@@ -27,7 +27,7 @@ const lessons = loadAllRenderableLessons();
                   <span class="lesson-info">
                     <span class="lesson-title">{lesson.titleJa}</span>
                     <span class="lesson-can-do">{lesson.canDoJa}</span>
-                    <span class="lesson-completion-status" data-lesson-id={lesson.id}></span>
+                    <span class="lesson-completion-status" data-lesson-id={lesson.id} data-completable={hasUsableLessonPractice(lesson) ? 'true' : 'false'}></span>
                     {example && (
                       <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
                     )}
@@ -66,22 +66,24 @@ const lessons = loadAllRenderableLessons();
   function updateCompletionUI() {
     // Use current store (which may have been refreshed via pageshow)
     const statusElements = document.querySelectorAll('.lesson-completion-status');
-    const lessonIds: string[] = [];
+    const completableIds: string[] = [];
     statusElements.forEach((el) => {
       const id = el.getAttribute('data-lesson-id') ?? '';
-      if (id) lessonIds.push(id);
+      if (!id) return;
+      const completable = el.getAttribute('data-completable') === 'true';
       const done = store.isComplete(id);
       el.textContent = done ? '✔ 完了' : '';
       el.className = done
         ? 'lesson-completion-status lesson-completion-status--done'
         : 'lesson-completion-status';
+      if (completable) completableIds.push(id);
     });
 
-    const completedCount = lessonIds.filter((id) => store.isComplete(id)).length;
+    const completedCount = completableIds.filter((id) => store.isComplete(id)).length;
     const summary = document.getElementById('progress-summary');
     if (summary) {
       summary.textContent = completedCount > 0
-        ? `${completedCount} / ${lessonIds.length} レッスン完了`
+        ? `${completedCount} / ${completableIds.length} レッスン完了`
         : '';
     }
   }
