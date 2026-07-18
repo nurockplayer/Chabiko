@@ -65,6 +65,23 @@ export class ProgressStore {
   }
 
   markComplete(lessonId: string): void {
+    // Merge with current storage before writing to avoid overwriting
+    // concurrent writes from other tabs/instances
+    try {
+      const raw = this.storage?.getItem(STORAGE_KEY);
+      if (typeof raw === 'string') {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          for (const id of parsed) {
+            if (typeof id === 'string') {
+              this.completed.add(id);
+            }
+          }
+        }
+      }
+    } catch {
+      /* storage malformed — keep existing in-memory state */
+    }
     this.completed.add(lessonId);
     this.persist();
   }
