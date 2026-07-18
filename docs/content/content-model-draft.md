@@ -132,7 +132,10 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `kanjiBridgeNotes`
 - `soundFocus`
 - `examples`
-- `reviewPrompts`
+- `reviewPrompts` — array of review prompt objects. Each item:
+  - `promptJa: string` — Japanese prompt/question shown to the learner
+  - `answerJa: string` — the expected correct answer in Japanese
+  - `distractorsJa?: string[]` — explicit wrong-answer options for multiple-choice practice generation. Draft content may omit or provide an empty array. Reviewed/published lessons must have at least one usable prompt (a prompt with at least one non-empty distractor string different from `answerJa`). This field is distinct from `distractors` on the standalone `practice` item schema.
 - `travelTask`
 - `relatedVocabulary`
 - `reviewStatus`

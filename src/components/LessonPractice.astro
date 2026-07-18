@@ -45,6 +45,19 @@ const json = JSON.stringify(questions);
   } else {
     let store = new ProgressStore();
     let session: import('../lib/practiceSession').PracticeSession = createSession(questions);
+    let pendingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    function clearPendingTimeout() {
+      if (pendingTimeout !== null) {
+        clearTimeout(pendingTimeout);
+        pendingTimeout = null;
+      }
+    }
+
+    function scheduleTimeout(fn: () => void, delay: number) {
+      clearPendingTimeout();
+      pendingTimeout = setTimeout(fn, delay);
+    }
 
     function syncBadge() {
       const badge = document.getElementById('lesson-completion-badge');
@@ -126,9 +139,9 @@ const json = JSON.stringify(questions);
         if (result.session.status === 'completed') {
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
-          setTimeout(() => renderCompleted(), 1200);
+          scheduleTimeout(() => renderCompleted(), 1200);
         } else {
-          setTimeout(() => render(), 1200);
+          scheduleTimeout(() => render(), 1200);
         }
       } else {
         feedback.innerHTML =
@@ -137,7 +150,7 @@ const json = JSON.stringify(questions);
           '</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        setTimeout(() => render(), 2000);
+        scheduleTimeout(() => render(), 2000);
       }
     }
 
@@ -154,6 +167,7 @@ const json = JSON.stringify(questions);
 
     // Refresh state on pageshow (browser back/forward cache)
     window.addEventListener('pageshow', () => {
+      clearPendingTimeout();
       store = new ProgressStore();
       if (store.isComplete(session.lessonId)) {
         syncBadge();
