@@ -30,8 +30,10 @@ export interface LessonExample {
 export interface ReviewPrompt {
   promptJa: string;
   answerJa: string;
-  /** Explicit wrong-answer options for multiple-choice practice, if available. */
-  distractorsJa?: string[];
+  /** Explicit wrong-answer options for multiple-choice practice.
+   *  For MVP the type is required; practice generation skips prompts
+   *  without at least one effective distractor at runtime. */
+  distractorsJa: string[];
 }
 
 export interface Lesson {

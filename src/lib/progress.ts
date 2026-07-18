@@ -65,19 +65,22 @@ export class ProgressStore {
   }
 
   markComplete(lessonId: string): void {
-    // Merge with current storage before writing to avoid overwriting
-    // concurrent writes from other tabs/instances
+    // Replace in-memory state with current storage snapshot to avoid
+    // stale instances resurrecting reset progress, then merge.
     try {
       const raw = this.storage?.getItem(STORAGE_KEY);
       if (typeof raw === 'string') {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          for (const id of parsed) {
-            if (typeof id === 'string') {
-              this.completed.add(id);
-            }
-          }
+          this.completed = new Set(
+            parsed.filter((id): id is string => typeof id === 'string'),
+          );
+        } else {
+          this.completed = new Set<string>();
         }
+      } else {
+        // null / absent — storage was cleared (e.g. resetAll)
+        this.completed = new Set<string>();
       }
     } catch {
       /* storage malformed — keep existing in-memory state */

@@ -57,6 +57,22 @@ function isValidPainPointTags(value: unknown): boolean {
   return true;
 }
 
+function hasUsablePracticePrompt(prompt: unknown): boolean {
+  if (!prompt || typeof prompt !== 'object') return false;
+  const p = prompt as Record<string, unknown>;
+  if (!isNonEmptyString(p.promptJa) || !isNonEmptyString(p.answerJa)) return false;
+  // Must have at least one effective distractor
+  if (!Array.isArray(p.distractorsJa)) return false;
+  const answer = (p.answerJa as string).trim();
+  const effective = p.distractorsJa.some(
+    (d: unknown) =>
+      typeof d === 'string' &&
+      d.trim().length > 0 &&
+      d.trim() !== answer,
+  );
+  return effective;
+}
+
 function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][number] {
   if (!value || typeof value !== 'object') return false;
 
@@ -85,14 +101,20 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     'relatedVocabulary',
   ];
 
-  return (
-    requiredTextFields.every((field) => isNonEmptyString(lesson[field])) &&
-    requiredArrayFields.every((field) => Array.isArray(lesson[field])) &&
-    optionalArrayFields.every(
+  if (
+    !requiredTextFields.every((field) => isNonEmptyString(lesson[field])) ||
+    !requiredArrayFields.every((field) => Array.isArray(lesson[field])) ||
+    !optionalArrayFields.every(
       (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
-    ) &&
-    isValidPainPointTags(lesson.painPointTags)
-  );
+    ) ||
+    !isValidPainPointTags(lesson.painPointTags)
+  ) {
+    return false;
+  }
+
+  // At least one review prompt must have a usable distractor for practice
+  const prompts = (lesson.reviewPrompts as unknown[]) ?? [];
+  return prompts.some(hasUsablePracticePrompt);
 }
 
 /**

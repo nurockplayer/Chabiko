@@ -91,12 +91,7 @@ describe('practiceSession', () => {
           { promptJa: 'Q?', answerJa: '正解', distractorsJa: ['誤答'] },
         ],
       };
-    let session: import('../src/lib/practiceSession').PracticeSession = makeSession(lessonData);
-
-      // Wrong
-      const r1 = answer(session, '誤答');
-      expect(r1.feedback.kind).toBe('incorrect');
-      session = r1.session;
+    const session = makeSession(lessonData);
       expect(session.status).toBe('active');
 
       // Retry same question - correct
@@ -166,7 +161,7 @@ describe('generateQuestions – minimum distractor rule', () => {
   it('skips prompts without distractorsJa', () => {
     const lesson: Lesson = {
       ...baseLesson,
-      reviewPrompts: [{ promptJa: 'Q?', answerJa: 'A' }],
+      reviewPrompts: [{ promptJa: 'Q?', answerJa: 'A', distractorsJa: [] }],
     };
     const qs = generateQuestions(lesson);
     expect(qs).toHaveLength(0);

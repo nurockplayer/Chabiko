@@ -83,7 +83,7 @@ describe('generateQuestions', () => {
   it('returns empty array when review prompts have empty strings', () => {
     const lesson: Lesson = {
       ...baseLesson,
-      reviewPrompts: [{ promptJa: '', answerJa: '' }],
+      reviewPrompts: [{ promptJa: '', answerJa: '', distractorsJa: [''] }] as unknown as Lesson['reviewPrompts'],
     };
     expect(generateQuestions(lesson)).toEqual([]);
   });
@@ -113,7 +113,7 @@ describe('generateQuestions', () => {
     const lesson: Lesson = {
       ...baseLesson,
       reviewPrompts: [
-        { promptJa: 'test?', answerJa: '正解' },
+        { promptJa: 'test?', answerJa: '正解', distractorsJa: [] },
       ],
     };
     const questions = generateQuestions(lesson);
