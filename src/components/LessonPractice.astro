@@ -26,6 +26,7 @@ const json = JSON.stringify(questions);
 <script>
   import { ProgressStore } from '../lib/progress';
   import { createSession, answer, getCurrentQuestion, getCurrentIndex } from '../lib/practiceSession';
+  import { createTimeoutManager } from '../lib/timeoutManager';
 
   (function () {
   const practiceRoot = document.getElementById('practice-root');
@@ -45,19 +46,7 @@ const json = JSON.stringify(questions);
   } else {
     let store = new ProgressStore();
     let session: import('../lib/practiceSession').PracticeSession = createSession(questions);
-    let pendingTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    function clearPendingTimeout() {
-      if (pendingTimeout !== null) {
-        clearTimeout(pendingTimeout);
-        pendingTimeout = null;
-      }
-    }
-
-    function scheduleTimeout(fn: () => void, delay: number) {
-      clearPendingTimeout();
-      pendingTimeout = setTimeout(fn, delay);
-    }
+    const timer = createTimeoutManager();
 
     function syncBadge() {
       const badge = document.getElementById('lesson-completion-badge');
@@ -139,9 +128,9 @@ const json = JSON.stringify(questions);
         if (result.session.status === 'completed') {
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
-          scheduleTimeout(() => renderCompleted(), 1200);
+          timer.schedule(() => renderCompleted(), 1200);
         } else {
-          scheduleTimeout(() => render(), 1200);
+          timer.schedule(() => render(), 1200);
         }
       } else {
         feedback.innerHTML =
@@ -150,7 +139,7 @@ const json = JSON.stringify(questions);
           '</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        scheduleTimeout(() => render(), 2000);
+        timer.schedule(() => render(), 2000);
       }
     }
 
@@ -167,7 +156,7 @@ const json = JSON.stringify(questions);
 
     // Refresh state on pageshow (browser back/forward cache)
     window.addEventListener('pageshow', () => {
-      clearPendingTimeout();
+      timer.clear();
       store = new ProgressStore();
       if (store.isComplete(session.lessonId)) {
         syncBadge();
