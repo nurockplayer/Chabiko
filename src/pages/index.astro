@@ -56,6 +56,7 @@ const lessons = loadAllRenderableLessons();
 
 <script>
   import { ProgressStore } from '../lib/progress';
+  import { buildProgressSnapshot } from '../lib/progressSnapshot';
 
   let store = new ProgressStore();
 
@@ -64,7 +65,6 @@ const lessons = loadAllRenderableLessons();
   }
 
   function updateCompletionUI() {
-    // Use current store (which may have been refreshed via pageshow)
     const statusElements = document.querySelectorAll('.lesson-completion-status');
     const completableIds: string[] = [];
     statusElements.forEach((el) => {
@@ -79,12 +79,10 @@ const lessons = loadAllRenderableLessons();
       if (completable) completableIds.push(id);
     });
 
-    const completedCount = completableIds.filter((id) => store.isComplete(id)).length;
+    const snapshot = buildProgressSnapshot(store, completableIds);
     const summary = document.getElementById('progress-summary');
     if (summary) {
-      summary.textContent = completedCount > 0
-        ? `${completedCount} / ${completableIds.length} レッスン完了`
-        : '';
+      summary.textContent = snapshot.summaryText;
     }
   }
 

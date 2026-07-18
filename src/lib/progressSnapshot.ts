@@ -1,53 +1,46 @@
 import { ProgressStore, type StorageLike } from './progress';
 
+export interface ProgressSnapshot {
+  completedCount: number;
+  totalCount: number;
+  /** Human-readable summary string, Japanese-first. Empty string when nothing completed. */
+  summaryText: string;
+}
+
 /**
- * Build a snapshot of the current progress state from a store.
- * Pure function: takes a ProgressStore and lesson IDs, returns derived display data.
+ * Build a progress snapshot for the home page, scoped to completable lessons only.
+ *
+ * The denominator excludes lessons that have no completion path
+ * (e.g. draft content without usable practice), so the progress
+ * bar can always reach 100 %.
+ *
+ * @param store — ProgressStore instance (real or mock-backed)
+ * @param completableLessonIds — lesson IDs that have a usable practice path
  */
 export function buildProgressSnapshot(
   store: ProgressStore,
-  lessonIds: string[],
-): { completedCount: number; totalCount: number; completed: Set<string> } {
-  const completed = new Set<string>();
-  for (const id of lessonIds) {
-    if (store.isComplete(id)) completed.add(id);
-  }
-  return { completedCount: completed.size, totalCount: lessonIds.length, completed };
-}
-
-/**
- * Compute progress counts scoped to completable lessons only.
- * The home page denominator must exclude lessons that have no completion
- * path (e.g. draft content without usable practice).
- *
- * @param completedIds — lesson IDs that have been completed
- * @param completableIds — lesson IDs that have a practice path
- * @returns snapshot with completedCount and totalCount scoped to completableIds
- */
-export function computeProgressSnapshot(
-  completedIds: string[],
-  _allLessonIds: string[],
-  completableIds: string[],
-): { completedCount: number; totalCount: number; completed: Set<string> } {
-  const completed = new Set(completedIds);
-  let totalCount = 0;
+  completableLessonIds: string[],
+): ProgressSnapshot {
   let completedCount = 0;
-  for (const id of completableIds) {
-    totalCount++;
-    if (completed.has(id)) completedCount++;
+  for (const id of completableLessonIds) {
+    if (store.isComplete(id)) completedCount++;
   }
-  return { completedCount, totalCount, completed };
+  const totalCount = completableLessonIds.length;
+  const summaryText =
+    completedCount > 0
+      ? `${completedCount} / ${totalCount} レッスン完了`
+      : '';
+  return { completedCount, totalCount, summaryText };
 }
 
 /**
- * Create a fresh snapshot by constructing a new ProgressStore with the given
- * storage backend. Defaults to the browser localStorage if omitted.
- * Use this on pageshow to read the latest storage state.
+ * Refresh snapshot by constructing a new ProgressStore with the given
+ * storage backend. Defaults to browser localStorage if omitted.
  */
 export function refreshSnapshot(
-  lessonIds: string[],
+  completableLessonIds: string[],
   storage?: StorageLike | null,
-) {
+): ProgressSnapshot {
   const store = new ProgressStore(storage);
-  return buildProgressSnapshot(store, lessonIds);
+  return buildProgressSnapshot(store, completableLessonIds);
 }

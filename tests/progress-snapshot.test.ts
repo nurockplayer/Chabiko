@@ -70,7 +70,6 @@ describe('refreshSnapshot', () => {
     });
     const snapshot = refreshSnapshot(['lesson-001', 'lesson-002'], storage);
     expect(snapshot.completedCount).toBe(1);
-    expect(snapshot.completed.has('lesson-001')).toBe(true);
   });
 
   it('returns empty after reset', () => {
