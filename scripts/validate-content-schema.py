@@ -322,9 +322,22 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
     for pi, prompt in enumerate(prompts):
         if not isinstance(prompt, dict):
             continue
-        pj = prompt.get("promptJa")
+
         aj = prompt.get("answerJa")
         dj = prompt.get("distractorsJa")
+
+        # Check distractor element types regardless of promptJa/answerJa validity,
+        # so non-string elements are always reported for reviewed/published lessons.
+        if isinstance(dj, list):
+            for di, d in enumerate(dj):
+                if not isinstance(d, str):
+                    errors.append(
+                        f"{path}.reviewPrompts[{pi}].distractorsJa[{di}]: "
+                        f"must be a string, got {type(d).__name__}"
+                    )
+
+        # Now check whether the prompt is usable
+        pj = prompt.get("promptJa")
         if not isinstance(pj, str) or pj.strip() == "":
             continue
         if not isinstance(aj, str) or aj.strip() == "":
@@ -333,15 +346,10 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
             continue
 
         for di, d in enumerate(dj):
-            if not isinstance(d, str):
-                errors.append(
-                    f"{path}.reviewPrompts[{pi}].distractorsJa[{di}]: "
-                    f"must be a string, got {type(d).__name__}"
-                )
-                continue
-            stripped = d.strip()
-            if stripped and stripped != aj.strip():
-                has_usable = True
+            if isinstance(d, str):
+                stripped = d.strip()
+                if stripped and stripped != aj.strip():
+                    has_usable = True
 
     if not has_usable:
         errors.append(
@@ -958,6 +966,7 @@ def run_tests():
         test_lesson_practice_reviewed_mixed_distractor_types,
         test_lesson_practice_published_mixed_distractor_types,
         test_lesson_practice_reviewed_only_non_string_distractors,
+        test_lesson_practice_reviewed_invalid_prompt_masks_non_string_distractor,
 
         # ─── Vocabulary ───
         test_vocab_valid,
@@ -1357,6 +1366,22 @@ def test_lesson_practice_reviewed_only_non_string_distractors():
     _assert_has_error(errs, "distractorsJa[1]: must be a string, got int", "reviewed_only_nonstr_int")
     _assert_has_error(errs, "distractorsJa[2]: must be a string, got list", "reviewed_only_nonstr_list")
     _assert_has_error(errs, "non-empty distractor string", "reviewed_only_nonstr_usable")
+
+
+def test_lesson_practice_reviewed_invalid_prompt_masks_non_string_distractor():
+    """reviewed lesson with invalid promptJa/answerJa still reports
+    non-string distractor element types."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=[
+                            {"promptJa": "", "answerJa": "A", "distractorsJa": [42]},
+                            {"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]},
+                        ]),
+        "lesson",
+    )
+    _assert_has_error(errs, "reviewPrompts[0].distractorsJa[0]: must be a string, got int",
+                      "reviewed_invalid_prompt_masks_non_str")
+    # Still passes because prompt 1 has a usable distractor
 
 
 # ─── Vocabulary tests ──────────────────────────────────────────────────────
