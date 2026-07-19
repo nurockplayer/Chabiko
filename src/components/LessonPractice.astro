@@ -27,6 +27,7 @@ const json = JSON.stringify(questions);
   import { ProgressStore } from '../lib/progress';
   import { createSession, answer, getCurrentQuestion, getCurrentIndex } from '../lib/practiceSession';
   import { createTimeoutManager } from '../lib/timeoutManager';
+  import { handleProgressStorageEvent } from '../lib/progressSnapshot';
 
   (function () {
   const practiceRoot = document.getElementById('practice-root');
@@ -154,7 +155,9 @@ const json = JSON.stringify(questions);
 
     render();
 
-    // Refresh state on pageshow (browser back/forward cache)
+    // Refresh state on pageshow (browser back/forward cache).
+    // Preserves active session position so returning via bfcache
+    // keeps the learner at their current question.
     window.addEventListener('pageshow', () => {
       timer.clear();
       store = new ProgressStore();
@@ -162,8 +165,8 @@ const json = JSON.stringify(questions);
         syncBadge();
         root.innerHTML =
           '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
-      } else {
-        // Progress was reset — rebuild active session with fresh store
+      } else if (session.status === 'completed') {
+        // Progress was reset externally — rebuild from question 1
         session = createSession(questions);
         const badge = document.getElementById('lesson-completion-badge');
         if (badge) {
@@ -171,7 +174,36 @@ const json = JSON.stringify(questions);
           badge.className = 'completion-badge';
         }
         render();
+      } else {
+        // Active session: preserve currentIndex, just re-render UI
+        render();
       }
+    });
+
+    // Cross-tab storage synchronisation.
+    // Only reacts to the Chabiko progress key, so unrelated keys
+    // (user preferences, other apps) never affect practice state.
+    window.addEventListener('storage', (event) => {
+      handleProgressStorageEvent(event, () => {
+        timer.clear();
+        store = new ProgressStore();
+        if (store.isComplete(session.lessonId)) {
+          syncBadge();
+          root.innerHTML =
+            '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+        } else if (session.status === 'completed') {
+          // Other tab reset progress while we were showing completion
+          session = createSession(questions);
+          const badge = document.getElementById('lesson-completion-badge');
+          if (badge) {
+            badge.textContent = '';
+            badge.className = 'completion-badge';
+          }
+          render();
+        }
+        // Active session: another tab completed or reset a different
+        // lesson — our session and currentIndex remain unchanged.
+      });
     });
   }
   })();
