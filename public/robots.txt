@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# Sitemap は正式な本番 URL 確定後に追加予定
