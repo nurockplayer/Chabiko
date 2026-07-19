@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { hasUsableLessonPractice } from '../src/content/loadLessons';
+import { loadAllRenderableLessons, hasUsableLessonPractice } from '../src/content/loadLessons';
 import { generateQuestions } from '../src/lib/practice';
-import { buildProgressSnapshot, refreshSnapshot } from '../src/lib/progressSnapshot';
+import { buildProgressSnapshot, refreshSnapshot, type LessonProgressEntry } from '../src/lib/progressSnapshot';
 import { ProgressStore } from '../src/lib/progress';
 import type { Lesson } from '../src/types/lesson';
 
@@ -44,11 +44,11 @@ const draftNoPractice: Lesson = {
 };
 
 describe('mixed completable / draft lessons', () => {
-  it('both lessons are renderable', () => {
-    // Both structually complete — isRenderableLesson is not exported,
-    // but we can verify they load through the normal loader path:
-    expect(completableLesson.id).toBe('lesson-practice-ready');
-    expect(draftNoPractice.id).toBe('lesson-draft-no-practice');
+  it('both lessons load through production loader', () => {
+    const lessons = loadAllRenderableLessons('tests/fixtures/mixed-renderable.json');
+    expect(lessons).toHaveLength(2);
+    expect(lessons[0].id).toBe('lesson-practice-ready');
+    expect(lessons[1].id).toBe('lesson-draft-no-practice');
   });
 
   it('hasUsableLessonPractice distinguishes correctly', () => {
@@ -56,34 +56,47 @@ describe('mixed completable / draft lessons', () => {
     expect(hasUsableLessonPractice(draftNoPractice)).toBe(false);
   });
 
+  it('hasUsableLessonPractice for production-loaded lessons', () => {
+    const lessons = loadAllRenderableLessons('tests/fixtures/mixed-renderable.json');
+    expect(hasUsableLessonPractice(lessons[0])).toBe(true);
+    expect(hasUsableLessonPractice(lessons[1])).toBe(false);
+  });
+
   it('generateQuestions returns questions only for completable lesson', () => {
     expect(generateQuestions(completableLesson).length).toBeGreaterThanOrEqual(1);
     expect(generateQuestions(draftNoPractice).length).toBe(0);
   });
 
-  it('progress denominator counts only completable lessons', () => {
-    // Simulate completedIds coming from storage
-    const completedIds = ['lesson-practice-ready'];
-    const completableIds = ['lesson-practice-ready'];
+  it('production loader loads both lessons from mixed fixture', () => {
+    const lessons = loadAllRenderableLessons('tests/fixtures/mixed-renderable.json');
+    expect(lessons).toHaveLength(2);
+    // Both are structurally renderable
+    expect(lessons[0].id).toBe('lesson-practice-ready');
+    expect(lessons[1].id).toBe('lesson-draft-no-practice');
+    // Only lesson-practice-ready has usable practice
+    const entries: LessonProgressEntry[] = lessons.map((l) => ({
+      id: l.id,
+      completable: hasUsableLessonPractice(l),
+    }));
+    expect(entries[0].completable).toBe(true);
+    expect(entries[1].completable).toBe(false);
+  });
 
-    // Use ProgressStore with mock-backend that has the completed lesson
-    const mockStorage: Record<string, string> = {
-      chabiko_completed_lessons: JSON.stringify(completedIds),
-    };
-
-    // We can't easily inject a map into buildProgressSnapshot because
-    // it takes a ProgressStore. But we can test the logic path:
-    // refreshSnapshot with completableIds should only count completable ones.
-
+  it('shared helper counts only completable lessons in denominator', () => {
     const store = new ProgressStore({
-      getItem: (k: string) => mockStorage[k] ?? null,
-      setItem: (k: string, v: string) => { mockStorage[k] = v; },
-      removeItem: (k: string) => { delete mockStorage[k]; },
+      getItem: () => JSON.stringify(['lesson-practice-ready']),
+      setItem: () => {},
+      removeItem: () => {},
     });
-
-    const snapshot = buildProgressSnapshot(store, completableIds);
+    const lessons = loadAllRenderableLessons('tests/fixtures/mixed-renderable.json');
+    const entries: LessonProgressEntry[] = lessons.map((l) => ({
+      id: l.id,
+      completable: hasUsableLessonPractice(l),
+    }));
+    const snapshot = buildProgressSnapshot(store, entries);
     expect(snapshot.totalCount).toBe(1);
     expect(snapshot.completedCount).toBe(1);
+    expect(snapshot.summaryText).toBe('1 / 1 レッスン完了');
   });
 
   it('non-completable draft is not counted in denominator', () => {
@@ -93,7 +106,6 @@ describe('mixed completable / draft lessons', () => {
       removeItem: () => {},
     });
 
-    // Neither lesson is completable → totalCount should be 0
     const snapshot = buildProgressSnapshot(store, []);
     expect(snapshot.totalCount).toBe(0);
     expect(snapshot.completedCount).toBe(0);
@@ -108,12 +120,36 @@ describe('mixed completable / draft lessons', () => {
       removeItem: (k: string) => { mockStorage.delete(k); },
     });
 
-    // Complete the practice-ready lesson
     store.markComplete('lesson-practice-ready');
 
-    const snapshot = buildProgressSnapshot(store, ['lesson-practice-ready']);
+    const snapshot = buildProgressSnapshot(store, [
+      { id: 'lesson-practice-ready', completable: true },
+      { id: 'lesson-draft-no-practice', completable: false },
+    ]);
     expect(snapshot.completedCount).toBe(1);
     expect(snapshot.totalCount).toBe(1);
+    expect(snapshot.summaryText).toBe('1 / 1 レッスン完了');
+  });
+
+  it('draft lesson does not prevent 1/1 progress attainment', () => {
+    const mockStorage = new Map<string, string>();
+    const store = new ProgressStore({
+      getItem: (k: string) => mockStorage.get(k) ?? null,
+      setItem: (k: string, v: string) => { mockStorage.set(k, v); },
+      removeItem: (k: string) => { mockStorage.delete(k); },
+    });
+    store.markComplete('lesson-practice-ready');
+
+    // Both lessons through the same production path (shared helper)
+    const lessons = loadAllRenderableLessons('tests/fixtures/mixed-renderable.json');
+    const entries: LessonProgressEntry[] = lessons.map((l) => ({
+      id: l.id,
+      completable: hasUsableLessonPractice(l),
+    }));
+    const snapshot = buildProgressSnapshot(store, entries);
+    expect(snapshot.totalCount).toBe(1);
+    expect(snapshot.completedCount).toBe(1);
+    expect(snapshot.summaryText).toBe('1 / 1 レッスン完了');
   });
 });
 
@@ -121,20 +157,20 @@ describe('buildProgressSnapshot — shared helper', () => {
   it('returns summaryText for non-zero progress', () => {
     const store = new ProgressStore(null);
     store.markComplete('lesson-001');
-    const snap = buildProgressSnapshot(store, ['lesson-001']);
+    const snap = buildProgressSnapshot(store, [{ id: 'lesson-001', completable: true }]);
     expect(snap.summaryText).toBe('1 / 1 レッスン完了');
   });
 
   it('returns empty summaryText when nothing completed', () => {
     const store = new ProgressStore(null);
-    const snap = buildProgressSnapshot(store, ['lesson-001']);
+    const snap = buildProgressSnapshot(store, [{ id: 'lesson-001', completable: true }]);
     expect(snap.summaryText).toBe('');
   });
 
   it('summaryText includes completed and total counts', () => {
     const store = new ProgressStore(null);
     store.markComplete('lesson-a');
-    const snap = buildProgressSnapshot(store, ['lesson-a', 'lesson-b']);
+    const snap = buildProgressSnapshot(store, [{ id: 'lesson-a', completable: true }, { id: 'lesson-b', completable: true }]);
     expect(snap.summaryText).toBe('1 / 2 レッスン完了');
   });
 });
@@ -146,7 +182,7 @@ describe('refreshSnapshot', () => {
       setItem: () => {},
       removeItem: () => {},
     };
-    const snap = refreshSnapshot(['lesson-001', 'lesson-002'], storage);
+    const snap = refreshSnapshot([{ id: 'lesson-001', completable: true }, { id: 'lesson-002', completable: true }], storage);
     expect(snap.completedCount).toBe(1);
     expect(snap.totalCount).toBe(2);
   });

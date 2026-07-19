@@ -66,7 +66,7 @@ const lessons = loadAllRenderableLessons();
 
   function updateCompletionUI() {
     const statusElements = document.querySelectorAll('.lesson-completion-status');
-    const completableIds: string[] = [];
+    const entries: { id: string; completable: boolean }[] = [];
     statusElements.forEach((el) => {
       const id = el.getAttribute('data-lesson-id') ?? '';
       if (!id) return;
@@ -76,10 +76,10 @@ const lessons = loadAllRenderableLessons();
       el.className = done
         ? 'lesson-completion-status lesson-completion-status--done'
         : 'lesson-completion-status';
-      if (completable) completableIds.push(id);
+      entries.push({ id, completable });
     });
 
-    const snapshot = buildProgressSnapshot(store, completableIds);
+    const snapshot = buildProgressSnapshot(store, entries);
     const summary = document.getElementById('progress-summary');
     if (summary) {
       summary.textContent = snapshot.summaryText;

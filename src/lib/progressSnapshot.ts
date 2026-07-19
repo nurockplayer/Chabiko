@@ -7,25 +7,31 @@ export interface ProgressSnapshot {
   summaryText: string;
 }
 
+export interface LessonProgressEntry {
+  id: string;
+  completable: boolean;
+}
+
 /**
- * Build a progress snapshot for the home page, scoped to completable lessons only.
+ * Build a progress snapshot for the home page.
  *
- * The denominator excludes lessons that have no completion path
- * (e.g. draft content without usable practice), so the progress
- * bar can always reach 100 %.
+ * Only completable lessons (those with a usable practice path) are counted
+ * in the denominator, so the progress bar can always reach 100 %.
  *
  * @param store — ProgressStore instance (real or mock-backed)
- * @param completableLessonIds — lesson IDs that have a usable practice path
+ * @param lessons — all renderable lessons with their completable status
  */
 export function buildProgressSnapshot(
   store: ProgressStore,
-  completableLessonIds: string[],
+  lessons: LessonProgressEntry[],
 ): ProgressSnapshot {
   let completedCount = 0;
-  for (const id of completableLessonIds) {
+  let totalCount = 0;
+  for (const { id, completable } of lessons) {
+    if (!completable) continue;
+    totalCount++;
     if (store.isComplete(id)) completedCount++;
   }
-  const totalCount = completableLessonIds.length;
   const summaryText =
     completedCount > 0
       ? `${completedCount} / ${totalCount} レッスン完了`
@@ -38,9 +44,9 @@ export function buildProgressSnapshot(
  * storage backend. Defaults to browser localStorage if omitted.
  */
 export function refreshSnapshot(
-  completableLessonIds: string[],
+  lessons: LessonProgressEntry[],
   storage?: StorageLike | null,
 ): ProgressSnapshot {
   const store = new ProgressStore(storage);
-  return buildProgressSnapshot(store, completableLessonIds);
+  return buildProgressSnapshot(store, lessons);
 }

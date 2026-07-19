@@ -68,7 +68,7 @@ describe('refreshSnapshot', () => {
     const storage = mockStorage({
       chabiko_completed_lessons: JSON.stringify(['lesson-001']),
     });
-    const snapshot = refreshSnapshot(['lesson-001', 'lesson-002'], storage);
+    const snapshot = refreshSnapshot([{ id: 'lesson-001', completable: true }, { id: 'lesson-002', completable: true }], storage);
     expect(snapshot.completedCount).toBe(1);
   });
 
@@ -79,7 +79,7 @@ describe('refreshSnapshot', () => {
 
     writer.resetAll();
 
-    const snapshot = refreshSnapshot(['lesson-001', 'lesson-002'], storage);
+    const snapshot = refreshSnapshot([{ id: 'lesson-001', completable: true }, { id: 'lesson-002', completable: true }], storage);
     expect(snapshot.completedCount).toBe(0);
   });
 
@@ -87,8 +87,9 @@ describe('refreshSnapshot', () => {
     const storage = mockStorage({
       chabiko_completed_lessons: JSON.stringify(['lesson-001', 'lesson-003']),
     });
-    const first = refreshSnapshot(['lesson-001', 'lesson-002', 'lesson-003'], storage);
-    const second = refreshSnapshot(['lesson-001', 'lesson-002', 'lesson-003'], storage);
+    const entries = [{ id: 'lesson-001', completable: true }, { id: 'lesson-002', completable: true }, { id: 'lesson-003', completable: true }];
+    const first = refreshSnapshot(entries, storage);
+    const second = refreshSnapshot(entries, storage);
     expect(first).toEqual(second);
   });
 
@@ -96,7 +97,7 @@ describe('refreshSnapshot', () => {
     const storage = mockStorage({
       chabiko_completed_lessons: JSON.stringify(['lesson-001', 'lesson-001', 'lesson-002']),
     });
-    const snapshot = refreshSnapshot(['lesson-001', 'lesson-002'], storage);
+    const snapshot = refreshSnapshot([{ id: 'lesson-001', completable: true }, { id: 'lesson-002', completable: true }], storage);
     expect(snapshot.completedCount).toBe(2);
   });
 });
