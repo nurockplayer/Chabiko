@@ -1,0 +1,46 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-practice-ready",
+      "titleJa": "練習可能なレッスン",
+      "level": "beginner",
+      "canDoJa": "練習できる",
+      "learnerOutcomeJa": "練習を完了できる",
+      "hookJa": "練習しよう",
+      "travelScenario": "food",
+      "coreSentence": "我要這個",
+      "chunks": [
+        {"chunk": "我要", "meaning": "私は〜が欲しい", "notesJa": "意志を表す"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "要", "jpReading": "よう", "noteJa": "日本語の要るに似た用法"}
+      ],
+      "soundFocus": [
+        {"item": "要 yào", "noteJa": "第四声、短く急降下"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「我要這個」はどういう意味？", "answerJa": "これをください", "distractorsJa": ["私は〜が欲しい", "これはいくらですか"]}
+      ],
+      "travelTask": "test",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "lesson-draft-no-practice",
+      "titleJa": "下書きのみ",
+      "level": "beginner",
+      "canDoJa": "まだ未完成",
+      "learnerOutcomeJa": "練習がない",
+      "hookJa": "準備中",
+      "travelScenario": "food",
+      "coreSentence": "我要這個",
+      "chunks": [],
+      "kanjiBridgeNotes": [],
+      "soundFocus": [],
+      "reviewPrompts": [
+        {"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}
+      ],
+      "travelTask": "test",
+      "reviewStatus": "draft"
+    }
+  ]
+}

@@ -30,6 +30,10 @@ export interface LessonExample {
 export interface ReviewPrompt {
   promptJa: string;
   answerJa: string;
+  /** Explicit wrong-answer options for multiple-choice practice.
+   *  Draft content may populate this later; production content is validated
+   *  to have at least one effective distractor by the content schema. */
+  distractorsJa?: string[];
 }
 
 export interface Lesson {

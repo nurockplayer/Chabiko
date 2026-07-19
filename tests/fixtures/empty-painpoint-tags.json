@@ -12,7 +12,9 @@
       "chunks": [],
       "kanjiBridgeNotes": [],
       "soundFocus": [],
-      "reviewPrompts": [],
+      "reviewPrompts": [
+        {"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}
+      ],
       "travelTask": "注文してみよう",
       "painPointTags": [],
       "reviewStatus": "draft"

@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import GoalPathSlot from '../components/GoalPathSlot.astro';
-import { loadAllRenderableLessons } from '../content/loadLessons';
+import { loadAllRenderableLessons, hasUsableLessonPractice } from '../content/loadLessons';
 
 const lessons = loadAllRenderableLessons();
 ---
@@ -27,6 +27,7 @@ const lessons = loadAllRenderableLessons();
                   <span class="lesson-info">
                     <span class="lesson-title">{lesson.titleJa}</span>
                     <span class="lesson-can-do">{lesson.canDoJa}</span>
+                    <span class="lesson-completion-status" data-lesson-id={lesson.id} data-completable={hasUsableLessonPractice(lesson) ? 'true' : 'false'}></span>
                     {example && (
                       <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
                     )}
@@ -38,6 +39,10 @@ const lessons = loadAllRenderableLessons();
           })}
         </ol>
       </section>
+      <div class="progress-footer">
+        <span id="progress-summary" class="progress-summary" aria-live="polite"></span>
+        <button id="reset-progress-btn" class="reset-btn">進捗をリセット</button>
+      </div>
     </>
   ) : (
     <article class="fallback-message">
@@ -49,7 +54,92 @@ const lessons = loadAllRenderableLessons();
   <GoalPathSlot />
 </BaseLayout>
 
+<script>
+  import { ProgressStore } from '../lib/progress';
+  import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot';
+
+  let store = new ProgressStore();
+
+  function updateCompletionUI() {
+    const statusElements = document.querySelectorAll('.lesson-completion-status');
+    const entries: { id: string; completable: boolean }[] = [];
+    statusElements.forEach((el) => {
+      const id = el.getAttribute('data-lesson-id') ?? '';
+      if (!id) return;
+      const completable = el.getAttribute('data-completable') === 'true';
+      const done = store.isComplete(id);
+      el.textContent = done ? '✔ 完了' : '';
+      el.className = done
+        ? 'lesson-completion-status lesson-completion-status--done'
+        : 'lesson-completion-status';
+      entries.push({ id, completable });
+    });
+
+    const snapshot = buildProgressSnapshot(store, entries);
+    const summary = document.getElementById('progress-summary');
+    if (summary) {
+      summary.textContent = snapshot.summaryText;
+    }
+  }
+
+  function refreshUI() {
+    store = new ProgressStore();
+    updateCompletionUI();
+  }
+
+  updateCompletionUI();
+
+  // Refresh on pageshow (browser back/forward navigation) — re-read localStorage
+  window.addEventListener('pageshow', refreshUI);
+
+  // Refresh when another tab writes to the Chabiko progress key
+  window.addEventListener('storage', (event) => {
+    handleProgressStorageEvent(event, refreshUI);
+  });
+
+  const resetBtn = document.getElementById('reset-progress-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (window.confirm('学習進捗をすべてリセットしますか？この操作は元に戻せません。')) {
+        store.resetAll();
+        updateCompletionUI();
+      }
+    });
+  }
+</script>
+
 <style>
+  .lesson-completion-status {
+    font-size: 0.75rem;
+    margin-top: 1px;
+  }
+  .lesson-completion-status--done {
+    color: #166534;
+    font-weight: 700;
+  }
+  .progress-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-md);
+  }
+  .progress-summary {
+    font-size: 0.8rem;
+    color: var(--c-text-secondary);
+  }
+  .reset-btn {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--c-text-secondary);
+    cursor: pointer;
+  }
+  .reset-btn:hover {
+    border-color: #991b1b;
+    color: #991b1b;
+  }
   .fallback-message {
     background: var(--c-surface);
     border: 1px solid var(--c-border);

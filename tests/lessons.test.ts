@@ -164,7 +164,9 @@ describe('loadLessonById', () => {
     expect(lesson?.chunks).toEqual([]);
     expect(lesson?.kanjiBridgeNotes).toEqual([]);
     expect(lesson?.soundFocus).toEqual([]);
-    expect(lesson?.reviewPrompts).toEqual([]);
+    expect(lesson?.reviewPrompts).toEqual([
+      { promptJa: 'Q?', answerJa: 'A', distractorsJa: ['B'] },
+    ]);
     expect(lesson?.sections).toBeUndefined();
     expect(lesson?.examples).toBeUndefined();
     expect(lesson?.relatedVocabulary).toBeUndefined();

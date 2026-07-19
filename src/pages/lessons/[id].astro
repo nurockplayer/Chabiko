@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
+import LessonPractice from '../../components/LessonPractice.astro';
 import { loadAllRenderableLessons } from '../../content/loadLessons';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { Lesson } from '../../types/lesson';
@@ -44,9 +45,6 @@ const soundFocus = (lesson?.soundFocus ?? []).filter(
 const examples = (lesson?.examples ?? []).filter(
   (example) => example && hasText(example.traditional) && hasText(example.japanese),
 );
-const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
-  (prompt) => prompt && hasText(prompt.promptJa) && hasText(prompt.answerJa),
-);
 ---
 
 <BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'}>
@@ -62,6 +60,7 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
           <p class="lesson-label">台湾旅行の中国語</p>
           <h1>{lesson.titleJa}</h1>
           <p class="hook">{lesson.hookJa}</p>
+          <p id="lesson-completion-badge" class="completion-badge" aria-live="polite" data-lesson-id={lesson.id}></p>
         </header>
 
         <section aria-labelledby="can-do-heading">
@@ -129,19 +128,7 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
           </section>
         )}
 
-        {reviewPrompts.length > 0 && (
-          <section aria-labelledby="review-heading">
-            <h2 id="review-heading">振り返り</h2>
-            <dl class="detail-list">
-              {reviewPrompts.map((prompt) => (
-                <div>
-                  <dt>{prompt.promptJa}</dt>
-                  <dd>{prompt.answerJa}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
+        <LessonPractice lesson={lesson} />
 
         <section class="travel-task" aria-labelledby="task-heading">
           <h2 id="task-heading">旅先でやってみよう</h2>
@@ -175,6 +162,28 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   }
 </BaseLayout>
 
+<script>
+  import { ProgressStore } from '../../lib/progress';
+
+  (function () {
+  const badge = document.getElementById('lesson-completion-badge');
+  if (!badge) return;
+  const bid = badge.getAttribute('data-lesson-id') ?? '';
+  function refreshBadge() {
+    const store = new ProgressStore();
+    if (store.isComplete(bid)) {
+      badge!.textContent = '✔ 完了済み';
+      badge!.className = 'completion-badge completion-badge--done';
+    } else {
+      badge!.textContent = '';
+      badge!.className = 'completion-badge';
+    }
+  }
+  refreshBadge();
+  window.addEventListener('pageshow', refreshBadge);
+  })();
+</script>
+
 <style>
   .lesson-page,
   .fallback-message {
@@ -187,6 +196,8 @@ const reviewPrompts = (lesson?.reviewPrompts ?? []).filter(
   .back-link { display: inline-block; margin-bottom: var(--space-lg); font-weight: 600; }
   .lesson-intro { border-bottom: 1px solid var(--c-border); margin-bottom: var(--space-lg); padding-bottom: var(--space-lg); }
   .lesson-label { color: var(--c-accent); font-size: 0.875rem; font-weight: 700; margin-bottom: var(--space-xs); }
+  .completion-badge { margin-top: var(--space-sm); font-size: 0.85rem; }
+  .completion-badge--done { color: #166534; font-weight: 700; }
   h1 { font-size: clamp(1.65rem, 7vw, 2.25rem); line-height: 1.3; }
   h2 { font-size: 1.05rem; margin-bottom: var(--space-sm); }
   section { margin-top: var(--space-xl); }

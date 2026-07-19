@@ -1,0 +1,321 @@
+---
+import { generateQuestions } from '../lib/practice';
+import type { Lesson } from '../types/lesson';
+
+export interface Props {
+  lesson: Lesson;
+}
+
+const { lesson } = Astro.props;
+const questions = generateQuestions(lesson);
+const json = JSON.stringify(questions);
+---
+
+{
+  questions.length > 0 && (
+    <section class="lesson-practice" aria-labelledby="practice-heading" data-questions={json}>
+      <h2 id="practice-heading">練習</h2>
+      <p class="practice-intro">各質問に答えて、レッスンを完了しましょう。</p>
+      <div id="practice-root" role="region" aria-live="polite">
+        <p class="loading-placeholder">読み込み中…</p>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  import { ProgressStore } from '../lib/progress';
+  import { createSession, answer, getCurrentQuestion, getCurrentIndex } from '../lib/practiceSession';
+  import { createTimeoutManager } from '../lib/timeoutManager';
+  import { handleProgressStorageEvent } from '../lib/progressSnapshot';
+  import { computeRefresh } from '../lib/practiceRefresh';
+
+  (function () {
+  const practiceRoot = document.getElementById('practice-root');
+  const practiceSection = practiceRoot?.closest('[data-questions]') as HTMLElement | null;
+  if (!practiceRoot || !practiceSection) return;
+  const root: HTMLElement = practiceRoot;
+
+  const questions: Array<{
+    promptJa: string;
+    correctAnswer: string;
+    choices: string[];
+    lessonId: string;
+  }> = JSON.parse(practiceSection.getAttribute('data-questions') ?? '[]');
+
+  if (questions.length === 0) {
+    root.textContent = '';
+  } else {
+    let store = new ProgressStore();
+    let session: import('../lib/practiceSession').PracticeSession = createSession(questions);
+    const timer = createTimeoutManager();
+
+    function syncBadge() {
+      const badge = document.getElementById('lesson-completion-badge');
+      if (badge) {
+        badge.textContent = '✔ 完了済み';
+        badge.className = 'completion-badge completion-badge--done';
+      }
+    }
+
+    function renderCompleted() {
+      // markComplete already called in handleAnswer for the last correct answer
+      syncBadge();
+      root.innerHTML =
+        '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+    }
+
+    function render() {
+      const currentQ = getCurrentQuestion(session);
+      if (!currentQ) {
+        renderCompleted();
+        return;
+      }
+
+      const isComplete = store.isComplete(session.lessonId);
+      if (isComplete && getCurrentIndex(session) === 0) {
+        root.innerHTML =
+          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
+        return;
+      }
+
+      root.innerHTML =
+        '<div class="practice-question">' +
+        '<p class="practice-progress">' +
+        '質問 ' +
+        (getCurrentIndex(session) + 1) +
+        ' / ' +
+        questions.length +
+        '</p>' +
+        '<p class="practice-prompt">' +
+        escapeHtml(currentQ.promptJa) +
+        '</p>' +
+        '<div class="practice-choices" role="group">' +
+        currentQ.choices
+          .map(
+            (choice, i) =>
+              '<button class="practice-choice" data-value="' +
+              escapeHtml(choice) +
+              '" data-index="' +
+              i +
+              '">' +
+              escapeHtml(choice) +
+              '</button>',
+          )
+          .join('') +
+        '</div>' +
+        '<div class="practice-feedback" aria-live="assertive"></div>' +
+        '</div>';
+
+      root.querySelectorAll('.practice-choice').forEach((btn) => {
+        btn.addEventListener('click', () => handleAnswer(btn as HTMLButtonElement));
+      });
+    }
+
+    function handleAnswer(btn: HTMLButtonElement) {
+      const selected = btn.getAttribute('data-value') ?? '';
+      const feedback = root.querySelector('.practice-feedback') as HTMLElement;
+      const choices = root.querySelectorAll('.practice-choice');
+
+      if (!feedback) return;
+
+      const result = answer(session, selected);
+      session = result.session;
+
+      if (result.feedback.kind === 'correct') {
+        feedback.innerHTML =
+          '<p class="feedback-correct">正解！</p>';
+        feedback.className = 'practice-feedback feedback-visible';
+        choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
+        if (result.session.status === 'completed') {
+          // Write completion to storage immediately, before the animation timeout
+          store.markComplete(session.lessonId);
+          timer.schedule(() => renderCompleted(), 1200);
+        } else {
+          timer.schedule(() => render(), 1200);
+        }
+      } else {
+        feedback.innerHTML =
+          '<p class="feedback-incorrect">不正解。</p><p class="feedback-answer">正解：' +
+          escapeHtml(result.feedback.correctAnswer ?? '') +
+          '</p>';
+        feedback.className = 'practice-feedback feedback-visible';
+        choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
+        timer.schedule(() => render(), 2000);
+      }
+    }
+
+    function escapeHtml(str: string): string {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    render();
+
+    // Refresh state on pageshow (browser back/forward cache).
+    // Preserves active session position so returning via bfcache
+    // keeps the learner at their current question.
+    window.addEventListener('pageshow', () => {
+      timer.clear();
+      store = new ProgressStore();
+      const outcome = computeRefresh(store, session, questions);
+      session = outcome.session;
+      if (outcome.kind === 'completed') {
+        syncBadge();
+        root.innerHTML =
+          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      } else if (outcome.kind === 'reset') {
+        const badge = document.getElementById('lesson-completion-badge');
+        if (badge) {
+          badge.textContent = '';
+          badge.className = 'completion-badge';
+        }
+        render();
+      } else {
+        const badge = document.getElementById('lesson-completion-badge');
+        if (badge) {
+          badge.textContent = '';
+          badge.className = 'completion-badge';
+        }
+        render();
+      }
+    });
+
+    // Cross-tab storage synchronisation.
+    // Only reacts to the Chabiko progress key, so unrelated keys
+    // (user preferences, other apps) never affect practice state.
+    window.addEventListener('storage', (event) => {
+      handleProgressStorageEvent(event, () => {
+        timer.clear();
+        store = new ProgressStore();
+        const outcome = computeRefresh(store, session, questions);
+        session = outcome.session;
+        if (outcome.kind === 'completed') {
+          syncBadge();
+          root.innerHTML =
+            '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+        } else if (outcome.kind === 'reset') {
+          const badge = document.getElementById('lesson-completion-badge');
+          if (badge) {
+            badge.textContent = '';
+            badge.className = 'completion-badge';
+          }
+          render();
+        } else {
+          const badge = document.getElementById('lesson-completion-badge');
+          if (badge) {
+            badge.textContent = '';
+            badge.className = 'completion-badge';
+          }
+          render();
+        }
+      });
+    });
+  }
+  })();
+</script>
+
+<style>
+  .lesson-practice {
+    margin-top: var(--space-xl);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    background: var(--c-slot-bg);
+    border: 1px solid var(--c-border);
+  }
+  .lesson-practice h2 {
+    font-size: 1.05rem;
+    margin-bottom: var(--space-xs);
+  }
+  .practice-intro {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-md);
+  }
+  :global(.practice-question) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  :global(.practice-progress) {
+    font-size: 0.8rem;
+    color: var(--c-text-secondary);
+    margin: 0;
+  }
+  :global(.practice-prompt) {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  :global(.practice-choices) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  :global(.practice-choice) {
+    display: block;
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  :global(.practice-choice:hover:not(:disabled)) {
+    background: var(--c-accent);
+    color: #fff;
+    border-color: var(--c-accent);
+  }
+  :global(.practice-choice:disabled) {
+    opacity: 0.5;
+    cursor: default;
+  }
+  :global(.practice-feedback) {
+    min-height: 0;
+    transition: min-height 0.2s;
+  }
+  :global(.practice-feedback.feedback-visible) {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius);
+  }
+  :global(.feedback-correct) {
+    color: #166534;
+    font-weight: 700;
+    margin: 0;
+  }
+  :global(.feedback-incorrect) {
+    color: #991b1b;
+    font-weight: 700;
+    margin: 0 0 var(--space-xs);
+  }
+  :global(.feedback-answer) {
+    color: var(--c-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  :global(.practice-complete) {
+    text-align: center;
+    padding: var(--space-md) 0;
+  }
+  :global(.practice-complete-icon) {
+    font-size: 2rem;
+    margin: 0 0 var(--space-sm);
+  }
+  :global(.practice-complete-text) {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+  }
+  .loading-placeholder {
+    color: var(--c-text-secondary);
+    font-size: 0.85rem;
+  }
+</style>
