@@ -60,10 +60,6 @@ const lessons = loadAllRenderableLessons();
 
   let store = new ProgressStore();
 
-  function refreshStore() {
-    store = new ProgressStore();
-  }
-
   function updateCompletionUI() {
     const statusElements = document.querySelectorAll('.lesson-completion-status');
     const entries: { id: string; completable: boolean }[] = [];
@@ -87,7 +83,7 @@ const lessons = loadAllRenderableLessons();
   }
 
   function refreshUI() {
-    refreshStore();
+    store = new ProgressStore();
     updateCompletionUI();
   }
 
