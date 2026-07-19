@@ -13,6 +13,25 @@ phrases, recognition, and confidence for a trip to Taiwan.
 - Travel-first scenarios: airport, transport, convenience stores, restaurants, hotels, and emergencies.
 - Curated links to outside resources without copying third-party copyrighted content.
 
+## Production
+
+- **URL:** [https://chabiko.pages.dev](https://chabiko.pages.dev)
+- Deployed via [Cloudflare Pages](https://pages.cloudflare.com/) — connected to the `main` branch of the `nurockplayer/Chabiko` GitHub repository.
+- Build: `pnpm build` → output in `dist/`
+- Node version: `24`, pnpm version: `10.33.0`
+
+## Local Development
+
+```bash
+pnpm install
+pnpm dev       # http://localhost:3000
+pnpm build     # production build → dist/
+pnpm preview   # preview the production build
+pnpm lint      # ESLint
+pnpm typecheck # Astro type checking
+pnpm test      # Vitest
+```
+
 ## Planning
 
 GSD planning artifacts live in `.planning/`:

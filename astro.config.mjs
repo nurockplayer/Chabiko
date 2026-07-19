@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
+  site: 'https://chabiko.pages.dev',
   output: 'static',
   server: {
     host: '0.0.0.0',
