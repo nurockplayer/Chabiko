@@ -321,6 +321,10 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
     has_usable = False
     for pi, prompt in enumerate(prompts):
         if not isinstance(prompt, dict):
+            errors.append(
+                f"{path}.reviewPrompts[{pi}]: "
+                f"must be a dict/object, got {type(prompt).__name__}"
+            )
             continue
 
         aj = prompt.get("answerJa")
@@ -967,6 +971,9 @@ def run_tests():
         test_lesson_practice_published_mixed_distractor_types,
         test_lesson_practice_reviewed_only_non_string_distractors,
         test_lesson_practice_reviewed_invalid_prompt_masks_non_string_distractor,
+        test_lesson_practice_reviewed_non_object_prompt,
+        test_lesson_practice_published_non_object_prompt,
+        test_lesson_practice_reviewed_all_non_object_prompts_fails,
 
         # ─── Vocabulary ───
         test_vocab_valid,
@@ -1382,6 +1389,45 @@ def test_lesson_practice_reviewed_invalid_prompt_masks_non_string_distractor():
     _assert_has_error(errs, "reviewPrompts[0].distractorsJa[0]: must be a string, got int",
                       "reviewed_invalid_prompt_masks_non_str")
     # Still passes because prompt 1 has a usable distractor
+
+
+def test_lesson_practice_reviewed_non_object_prompt():
+    """reviewed lesson with a non-dict reviewPrompt element reports its type."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=["not-an-object", {"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "reviewPrompts[0]: must be a dict/object, got str",
+                      "reviewed_non_object_prompt")
+
+
+def test_lesson_practice_published_non_object_prompt():
+    """published lesson with a null reviewPrompt element reports its type."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="published",
+                        reviewPrompts=[None, {"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}]),
+        "lesson",
+    )
+    _assert_has_error(errs, "reviewPrompts[0]: must be a dict/object, got NoneType",
+                      "published_non_object_prompt")
+
+
+def test_lesson_practice_reviewed_all_non_object_prompts_fails():
+    """reviewed lesson where all reviewPrompts are non-object must fail."""
+    errs = validate_single(
+        _minimal_lesson(reviewStatus="reviewed",
+                        reviewPrompts=["string", 42, None]),
+        "lesson",
+    )
+    _assert_has_error(errs, "reviewPrompts[0]: must be a dict/object, got str",
+                      "reviewed_all_nonobj_str")
+    _assert_has_error(errs, "reviewPrompts[1]: must be a dict/object, got int",
+                      "reviewed_all_nonobj_int")
+    _assert_has_error(errs, "reviewPrompts[2]: must be a dict/object, got NoneType",
+                      "reviewed_all_nonobj_none")
+    _assert_has_error(errs, "non-empty distractor string",
+                      "reviewed_all_nonobj_usable")
 
 
 # ─── Vocabulary tests ──────────────────────────────────────────────────────
