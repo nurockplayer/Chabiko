@@ -15,12 +15,6 @@
   "dependencies": {
     "astro": "^4.16.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp"
-    ]
-  },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@eslint/js": "^9.0.0",

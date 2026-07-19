@@ -13,7 +13,7 @@
       "similarityType": "none",
       "toneNote": "xiè は第四声（急降下）。重ね言葉で二文字目は軽声になる。",
       "examples": [
-        {"traditional": "謝謝你", "pinyin": "xièxie nǐ", "japanese": "ありがとう（あなたに）"}
+        {"traditional": "謝謝你", "traditionalStatus": "authored", "pinyin": "xièxie nǐ", "japanese": "ありがとう（あなたに）"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "authored", "note": "自作者による基本語彙"}
@@ -33,7 +33,7 @@
       "caution": "zhè の zh は日本語の「じ」や「ず」と違い、舌を後ろに巻いて歯茎の後ろで出すそり舌音。日本語話者は舌を平らにして「ジェー」と発音しがちなので、舌先を上あごの奥に向けて意識的に巻く。",
       "travelScenario": "food",
       "examples": [
-        {"traditional": "這個多少錢", "pinyin": "zhège duōshao qián", "japanese": "これはいくらですか？"}
+        {"traditional": "這個多少錢", "traditionalStatus": "authored", "pinyin": "zhège duōshao qián", "japanese": "これはいくらですか？"}
       ],
       "reviewStatus": "reviewed",
       "source": {"type": "authored", "note": "自作者による基本語彙"}

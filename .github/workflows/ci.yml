@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: TypeScript checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Reject non-pnpm lockfiles
+        run: |
+          found=false
+          for f in $(git ls-files 'package-lock.json' '**/package-lock.json' 'yarn.lock' '**/yarn.lock' 'bun.lock' '**/bun.lock' 'bun.lockb' '**/bun.lockb'); do
+            echo "ERROR: $f is not allowed in a pnpm project."
+            echo "::error title=Lockfile policy::$f is not allowed. Use pnpm only."
+            found=true
+          done
+          $found && exit 1 || true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  content:
+    name: Content validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run validator self-tests
+        run: |
+          uv run --locked python scripts/validate-pain-points.py
+          uv run --locked python scripts/validate-script-status.py
+          uv run --locked python scripts/validate-content-schema.py
+
+      - name: Validate checked-in content
+        run: |
+          for f in data/examples/valid/*.json; do
+            uv run --locked python scripts/validate-pain-points.py --check "$f"
+            uv run --locked python scripts/validate-script-status.py --check "$f"
+            uv run --locked python scripts/validate-content-schema.py --check "$f"
+          done
