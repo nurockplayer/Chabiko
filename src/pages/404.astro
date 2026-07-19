@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+---
+
+<BaseLayout title="ページが見つかりません" description="お探しのページは存在しません。URL をご確認いただくか、ホームから目的のコンテンツをお探しください。">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  <article class="not-found">
+    <h1>404</h1>
+    <p class="lead">お探しのページは見つかりませんでした。</p>
+    <p>URL が正しく入力されているかご確認ください。このサイトは現在準備中のため、一時的にアクセスできないページもあります。</p>
+    <a href="/" class="home-link">ホームに戻る</a>
+  </article>
+</BaseLayout>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+  }
+  h1 {
+    font-size: clamp(3rem, 12vw, 5rem);
+    color: var(--c-accent);
+    line-height: 1.1;
+    margin-bottom: var(--space-md);
+  }
+  .lead {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+  }
+  p {
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-md);
+    max-width: 28rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .home-link {
+    display: inline-block;
+    margin-top: var(--space-lg);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--c-accent);
+    color: #fff;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+  }
+  .home-link:hover {
+    background: var(--c-accent-hover);
+    text-decoration: none;
+  }
+</style>
