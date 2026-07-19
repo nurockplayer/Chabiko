@@ -175,7 +175,14 @@ const json = JSON.stringify(questions);
         }
         render();
       } else {
-        // Active session: preserve currentIndex, just re-render UI
+        // Active session: preserve currentIndex, just re-render UI.
+        // Also clear badge in case it was previously set to "completed"
+        // from an earlier storage notification.
+        const badge = document.getElementById('lesson-completion-badge');
+        if (badge) {
+          badge.textContent = '';
+          badge.className = 'completion-badge';
+        }
         render();
       }
     });
@@ -200,9 +207,18 @@ const json = JSON.stringify(questions);
             badge.className = 'completion-badge';
           }
           render();
+        } else {
+          // Active session: another tab completed or reset a different
+          // lesson — our session and currentIndex remain unchanged.
+          // Re-render to clear stale completion UI if we were showing
+          // a completion screen that a reset elsewhere invalidated.
+          const badge = document.getElementById('lesson-completion-badge');
+          if (badge) {
+            badge.textContent = '';
+            badge.className = 'completion-badge';
+          }
+          render();
         }
-        // Active session: another tab completed or reset a different
-        // lesson — our session and currentIndex remain unchanged.
       });
     });
   }

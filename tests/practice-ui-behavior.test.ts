@@ -45,6 +45,19 @@ describe('LessonPractice pageshow handler', () => {
     );
     expect(activeBranch).not.toContain('createSession');
   });
+
+  it('clears badge in active branch when it was previously completed', () => {
+    const activeBranchEnd = source.indexOf('// Cross-tab storage synchronisation.');
+    const activeBranch = source.slice(
+      source.indexOf(
+        "} else {\n        // Active session: preserve currentIndex",
+      ),
+      activeBranchEnd,
+    );
+    expect(activeBranch).toContain("badge.textContent = ''");
+    expect(activeBranch).toContain("badge.className = 'completion-badge'");
+    expect(activeBranch).toContain('render();');
+  });
 });
 
 describe('LessonPractice storage event handler', () => {
@@ -68,11 +81,16 @@ describe('LessonPractice storage event handler', () => {
     expect(section).toContain('createSession(questions)');
   });
 
-  it('preserves active session without creating a new one on storage event', () => {
-    // The comment documents that active session is left untouched
+  it('preserves active session and clears badge on storage event', () => {
+    const section = linesBetween(
+      "} else {\n          // Active session: another tab",
+      "</script>",
+    );
     expect(section).toContain(
       '// Active session: another tab completed or reset a different',
     );
+    expect(section).toContain("badge.textContent = ''");
+    expect(section).toContain('render();');
   });
 });
 
