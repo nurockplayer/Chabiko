@@ -17,19 +17,20 @@ phrases, recognition, and confidence for a trip to Taiwan.
 
 - **URL:** [https://chabiko.pages.dev](https://chabiko.pages.dev)
 - Deployed via [Cloudflare Pages](https://pages.cloudflare.com/) — connected to the `main` branch of the `nurockplayer/Chabiko` GitHub repository.
-- Build: `pnpm build` → output in `dist/`
-- Node version: `24`, pnpm version: `10.33.0`
+- Build command: `pnpm install --frozen-lockfile && pnpm build`
+- Build output directory: `dist`
+- Environment variables: `NODE_VERSION=24.18.0`, `PNPM_VERSION=10.33.0`, `SKIP_DEPENDENCY_INSTALL=1`
 
 ## Local Development
 
 ```bash
 pnpm install
-pnpm dev       # http://localhost:3000
-pnpm build     # production build → dist/
-pnpm preview   # preview the production build
-pnpm lint      # ESLint
-pnpm typecheck # Astro type checking
-pnpm test      # Vitest
+pnpm dev          # http://localhost:4321
+pnpm build        # production build → dist/
+pnpm preview      # preview the production build
+pnpm lint         # ESLint
+pnpm typecheck    # Astro type checking
+pnpm test         # Vitest
 ```
 
 ## Planning
