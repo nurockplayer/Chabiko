@@ -6,6 +6,10 @@
       "promptJa": "次の音声を聴いて「媽」の声調を選んでください",
       "correctAnswer": "第一声",
       "distractors": ["第二声", "第三声", "第四声"],
+      "contrastId": "tone-t1-vs-t2-t3-t4",
+      "toneContourId": "t1-high-flat",
+      "toneContourHintJa": "第一声は高く平らに保ちます。",
+      "interferenceJa": "日本語話者は声の高さを平らに伸ばしやすいので、音の高さを意識しましょう。",
       "painPointTags": ["tone"],
       "relatedVocabulary": ["voc-001"],
       "reviewStatus": "draft"
