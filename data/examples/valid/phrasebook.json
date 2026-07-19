@@ -27,6 +27,76 @@
       "usageNotesJa": "「捷運」は台湾でのMRT/地下鉄の呼称。中国本土では「地铁 (dìtiě)」と言う。",
       "painPointTags": ["taiwan-mainland-usage"],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "phrase-airport-001",
+      "scenario": "airport",
+      "traditional": "我是來台灣旅遊的。",
+      "traditionalStatus": "authored",
+      "simplified": "我是来台湾旅游的。",
+      "simplifiedStatus": "verified",
+      "pinyin": "wǒ shì lái Táiwān lǚyóu de",
+      "japanese": "台湾へ旅行に来ました。",
+      "usageNotesJa": "入国審査で旅行目的を聞かれたときの基本的な答え。「來台灣旅遊」で「台湾へ旅行に来た」という意味。",
+      "painPointTags": ["word-order"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival phrasebook content; no third-party text copied"}
+    },
+    {
+      "id": "phrase-airport-002",
+      "scenario": "airport",
+      "traditional": "我會在台灣待五天。",
+      "traditionalStatus": "authored",
+      "simplified": "我会在台湾待五天。",
+      "simplifiedStatus": "verified",
+      "pinyin": "wǒ huì zài Táiwān dāi wǔ tiān",
+      "japanese": "台湾に5日間滞在します。",
+      "usageNotesJa": "滞在日数を答える表現。「待 (dāi)」は「滞在する」の意味で、dāi と発音する（「待つ」の意味の dài とは声調が異なる）。",
+      "painPointTags": ["word-order"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival phrasebook content; no third-party text copied"}
+    },
+    {
+      "id": "phrase-airport-003",
+      "scenario": "airport",
+      "traditional": "我的行李還沒出來。",
+      "traditionalStatus": "authored",
+      "simplified": "我的行李还没出来。",
+      "simplifiedStatus": "verified",
+      "pinyin": "wǒ de xíngli hái méi chūlái",
+      "japanese": "荷物がまだ出てきません。",
+      "usageNotesJa": "預けた荷物がターンテーブルに出てこないときに使う。「還沒出来」は「まだ出てきていない」という意味。",
+      "painPointTags": ["complement"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival phrasebook content; no third-party text copied"}
+    },
+    {
+      "id": "phrase-airport-004",
+      "scenario": "airport",
+      "traditional": "請問機場捷運在哪裡？",
+      "traditionalStatus": "authored",
+      "simplified": "请问机场捷运在哪里？",
+      "simplifiedStatus": "verified",
+      "pinyin": "qǐngwèn jīchǎng jiéyùn zài nǎlǐ",
+      "japanese": "空港MRTはどこですか？",
+      "usageNotesJa": "「機場捷運」は桃園空港と台北エリアを結ぶ空港MRTを指す台湾独自の呼称。中国本土では「地铁 (dìtiě)」と言う。",
+      "painPointTags": ["taiwan-mainland-usage"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival phrasebook content; no third-party text copied"}
+    },
+    {
+      "id": "phrase-airport-005",
+      "scenario": "airport",
+      "traditional": "不好意思，我聽不懂。可以說慢一點嗎？",
+      "traditionalStatus": "authored",
+      "simplified": "不好意思，我听不懂。可以说慢一点吗？",
+      "simplifiedStatus": "verified",
+      "pinyin": "bù hǎoyìsi, wǒ tīng bù dǒng. kěyǐ shuō màn yìdiǎn ma",
+      "japanese": "すみません、聞き取れません。もう少しゆっくり話してもらえますか？",
+      "usageNotesJa": "相手の中国語が聞き取れなかったときの緊急フレーズ。「慢一點」は「もう少しゆっくり」の意味。",
+      "painPointTags": ["complement"],
+      "reviewStatus": "reviewed",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival phrasebook content; no third-party text copied"}
     }
   ]
 }
