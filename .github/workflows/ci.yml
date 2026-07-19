@@ -22,6 +22,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
 
@@ -33,13 +35,13 @@ jobs:
 
       - name: Reject non-pnpm lockfiles
         run: |
-          for f in package-lock.json yarn.lock bun.lock bun.lockb; do
-            if [ -f "$f" ]; then
-              echo "ERROR: $f is not allowed in a pnpm project."
-              echo "::error title=Lockfile policy::Remove $f and use pnpm only."
-              exit 1
-            fi
+          found=false
+          for f in $(git ls-files 'package-lock.json' '**/package-lock.json' 'yarn.lock' '**/yarn.lock' 'bun.lock' '**/bun.lock' 'bun.lockb' '**/bun.lockb'); do
+            echo "ERROR: $f is not allowed in a pnpm project."
+            echo "::error title=Lockfile policy::$f is not allowed. Use pnpm only."
+            found=true
           done
+          $found && exit 1 || true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -63,6 +65,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
