@@ -56,7 +56,7 @@ const lessons = loadAllRenderableLessons();
 
 <script>
   import { ProgressStore } from '../lib/progress';
-  import { buildProgressSnapshot } from '../lib/progressSnapshot';
+  import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot';
 
   let store = new ProgressStore();
 
@@ -95,6 +95,11 @@ const lessons = loadAllRenderableLessons();
 
   // Refresh on pageshow (browser back/forward navigation) — re-read localStorage
   window.addEventListener('pageshow', refreshUI);
+
+  // Refresh when another tab writes to the Chabiko progress key
+  window.addEventListener('storage', (event) => {
+    handleProgressStorageEvent(event, refreshUI);
+  });
 
   const resetBtn = document.getElementById('reset-progress-btn');
   if (resetBtn) {

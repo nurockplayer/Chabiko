@@ -1,4 +1,18 @@
-import { ProgressStore, type StorageLike } from './progress';
+import { ProgressStore, STORAGE_KEY, type StorageLike } from './progress';
+
+/**
+ * Handle a Window storage event for cross-tab progress synchronisation.
+ * Calls `onProgressChange` when the event targets the Chabiko progress key
+ * or when all storage is cleared (key === null).
+ */
+export function handleProgressStorageEvent(
+  event: StorageEvent,
+  onProgressChange: () => void,
+): void {
+  if (event.key === null || event.key === STORAGE_KEY) {
+    onProgressChange();
+  }
+}
 
 export interface ProgressSnapshot {
   completedCount: number;

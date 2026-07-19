@@ -4,7 +4,7 @@ export interface StorageLike {
   removeItem(key: string): void;
 }
 
-const STORAGE_KEY = 'chabiko_completed_lessons';
+export const STORAGE_KEY = 'chabiko_completed_lessons';
 
 const PROBE_KEY = '__chabiko_probe__';
 
