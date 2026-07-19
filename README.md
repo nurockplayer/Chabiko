@@ -25,7 +25,7 @@ phrases, recognition, and confidence for a trip to Taiwan.
 
 ```bash
 pnpm install
-pnpm dev          # http://localhost:4321
+pnpm dev          # http://localhost:3000
 pnpm build        # production build → dist/
 pnpm preview      # preview the production build
 pnpm lint         # ESLint
