@@ -246,7 +246,7 @@ function applyUnsure(
 // ─── Queue helpers ──────────────────────────────────────────────────────────
 
 /**
- * Re-queue the active item after the first two IDs in `remainingQueue`.
+ * Re-queue the active item at index 2 in `remainingQueue`.
  * When fewer than two IDs remain, append at the end.
  * Never creates a duplicate entry.
  */
@@ -258,7 +258,7 @@ function requeueAfterAgain(
     return [...remainingQueue];
   }
   const result = [...remainingQueue];
-  if (result.length <= 2) {
+  if (result.length < 2) {
     result.push(activeId);
   } else {
     result.splice(2, 0, activeId);
