@@ -403,6 +403,8 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
             errors.append(f"{ep}: missing required field 'traditional'")
         elif not isinstance(ex["traditional"], str):
             errors.append(f"{ep}.traditional must be a string, got {type(ex['traditional']).__name__}")
+        elif ex["traditional"].strip() == "":
+            errors.append(f"{ep}.traditional must be a non-empty string for vocabulary example")
 
         # pinyin and japanese are required for examples
         for field in ("pinyin", "japanese"):
@@ -424,8 +426,11 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
             continue
 
         simplified_present = "simplified" in ex and ex["simplified"] is not None
-        if simplified_present and not isinstance(ex["simplified"], str):
-            errors.append(f"{ep}.simplified must be a string, got {type(ex['simplified']).__name__}")
+        if simplified_present:
+            if not isinstance(ex["simplified"], str):
+                errors.append(f"{ep}.simplified must be a string, got {type(ex['simplified']).__name__}")
+            elif ex["simplified"].strip() == "":
+                errors.append(f"{ep}.simplified must be a non-empty string for vocabulary example")
 
         ss_key_present = "simplifiedStatus" in ex
         ss = ex.get("simplifiedStatus") if ss_key_present else None
@@ -1245,9 +1250,10 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
     # ── kana and category are optional for HSK ──
     # (No error if absent; type-check if present)
     for field in ("kana", "category"):
-        val = record.get(field)
-        if val is not None and not isinstance(val, str):
-            errors.append(f"{path}.{field} must be a string, got {type(val).__name__}")
+        if field in record and record[field] is None:
+            errors.append(f"{path}.{field} cannot be null for HSK record; omit the key if the value is unavailable")
+        elif field in record and not isinstance(record[field], str):
+            errors.append(f"{path}.{field} must be a string, got {type(record[field]).__name__}")
 
     # ── hsk object ──
     hsk = record.get("hsk", {})
