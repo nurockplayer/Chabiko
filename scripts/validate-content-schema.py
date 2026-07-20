@@ -367,7 +367,7 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
     """
     errors = []
     examples = record.get("examples")
-    if not isinstance(examples, list):
+    if not isinstance(examples, list) or len(examples) == 0:
         return errors
     for i, ex in enumerate(examples):
         ep = f"{path}.examples[{i}]"
@@ -396,10 +396,12 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
         elif ts not in EXAMPLE_TRAD_STATUSES:
             errors.append(f"{ep}.traditionalStatus '{ts}' is not a valid status")
 
-        # simplified is optional; when absent, simplifiedStatus must be 'unavailable' or absent
+        # simplified validation - inside for-loop, each example is independently validated
+        if "simplified" in ex and ex["simplified"] is None:
+            errors.append(f"{ep}.simplified must be a string, got NoneType")
+            continue
+
         simplified_present = "simplified" in ex and ex["simplified"] is not None
-    if "simplified" in ex and ex["simplified"] is None:
-        errors.append(f"{ep}.simplified must be a string, got NoneType")
         if simplified_present and not isinstance(ex["simplified"], str):
             errors.append(f"{ep}.simplified must be a string, got {type(ex['simplified']).__name__}")
 
@@ -422,6 +424,20 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
                 errors.append(f"{ep}: 'simplifiedStatus' cannot be 'unavailable' when 'simplified' text exists")
             elif ss not in CONTROLLED_STATUSES:
                 errors.append(f"{ep}.simplifiedStatus '{ss}' is not a valid status")
+
+    # When parent reviewStatus is reviewed/published, example script statuses must not be generated
+    review_status = record.get("reviewStatus")
+    if review_status in ("reviewed", "published"):
+        for i, ex in enumerate(examples):
+            if not isinstance(ex, dict):
+                continue
+            ep = f"{path}.examples[{i}]"
+            for field in ("traditionalStatus", "simplifiedStatus"):
+                if ex.get(field) == "generated":
+                    errors.append(
+                        f"{ep}: 'reviewStatus' is '{review_status}' but '{field}' is "
+                        f"'generated'"
+                    )
 
     return errors
 
@@ -1558,6 +1574,10 @@ def run_tests():
         test_vocab_examples_full_valid,
         test_vocab_examples_non_dict_rejected,
         test_vocab_examples_missing_pinyin_japanese,
+        test_hsk_vocab_examples_generated_reviewed_fails,
+        test_hsk_vocab_examples_generated_published_fails,
+        test_hsk_vocab_examples_generated_draft_ok,
+        test_vocab_examples_empty_array_ok,
     ]
     failures = 0
     for test in tests:
@@ -3489,6 +3509,57 @@ def test_vocab_examples_missing_pinyin_japanese():
     )
     _assert_has_error(errs, "missing required field 'pinyin' for vocabulary example", "vocab_examples_no_pinyin")
     _assert_has_error(errs, "missing required field 'japanese' for vocabulary example", "vocab_examples_no_japanese")
+
+
+
+
+def test_hsk_vocab_examples_generated_reviewed_fails():
+    """Examples with generated simplifiedStatus when parent reviewStatus is reviewed must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(
+            reviewStatus="reviewed",
+            examples=[{"traditional": "\u4f60\u597d", "traditionalStatus": "authored",
+                       "simplified": "\u4f60\u597d", "simplifiedStatus": "generated",
+                       "pinyin": "n\u01d0 h\u01ceo", "japanese": "\u30c6\u30b9\u30c8"}],
+        ),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "reviewStatus' is 'reviewed'", "hsk_examples_gen_reviewed")
+
+
+def test_hsk_vocab_examples_generated_published_fails():
+    """Examples with generated traditionalStatus when parent reviewStatus is published must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(
+            reviewStatus="published",
+            examples=[{"traditional": "\u4f60\u597d", "traditionalStatus": "generated",
+                       "simplified": "\u4f60\u597d", "simplifiedStatus": "authored",
+                       "pinyin": "n\u01d0 h\u01ceo", "japanese": "\u30c6\u30b9\u30c8"}],
+        ),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "reviewStatus' is 'published'", "hsk_examples_gen_published")
+
+
+def test_hsk_vocab_examples_generated_draft_ok():
+    """Examples with generated traditionalStatus when parent is draft may pass."""
+    errs = validate_single(
+        _minimal_hsk_vocab(
+            reviewStatus="draft",
+            examples=[{"traditional": "\u4f60\u597d", "traditionalStatus": "generated",
+                       "simplified": "\u4f60\u597d", "simplifiedStatus": "authored",
+                       "pinyin": "n\u01d0 h\u01ceo", "japanese": "\u30c6\u30b9\u30c8"}],
+        ),
+        "vocabulary",
+    )
+    gen_errors = [e for e in errs if 'generated' in e]
+    assert len(gen_errors) == 0, f"Expected no generated errors for draft, got {gen_errors}"
+
+
+def test_vocab_examples_empty_array_ok():
+    """Empty examples array should not crash or produce errors."""
+    errs = validate_single(_minimal_vocab(examples=[]), "vocabulary")
+    _assert_no_errors(errs, "vocab_examples_empty")
 
 
 if __name__ == "__main__":
