@@ -48,13 +48,13 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - LocalStorage 可用於 v1 練習進度。
 - v1 不需要後端、登入、雲端同步、付款、語音辨識或 AI 自動解釋生成。
 
-## 內容與資料規則
+## 内容與資料規則
 
-- 內容與資料支援繁簡雙語顯示；台灣旅遊路徑以繁體為主，HSK／學校課業／一般中文路徑可預設簡體。
-- 內容必須放在結構化、可審核的資料檔中，不硬塞在 component 裡。
+- 内容與資料支援繁簡雙語顯示；台灣旅遊路徑以繁體為主，HSK／學校課業／一般中文路徑可預設簡體。
+- 内容必須放在結構化、可審核的資料檔中，不硬塞在 component 裡。
 - 每個 vocabulary entry 至少支援：繁體中文、pinyin、日文說明、類別、例句、tone note、caution/source/review metadata。
 - 每個核心 lesson 必須符合 `docs/strategy/learning-and-motivation-strategy.md` 的 lesson loop。
-- false friends、聲調陷阱、台灣用法差異必須明確標示。
+- false friends、声調陷阱、台灣用法差異必須明確標示。
 - 中日音讀相近性只能作為記憶提示；不得在沒有來源時宣稱詞源關係、發音等同或語義等同。
 - 外部教材、字典資料、音訊、圖片或例句不得直接匯入，除非 license、attribution 與 allowed use 已文件化。
 
@@ -62,7 +62,7 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 
 - 設計或重設前端頁面前，先使用 `design-taste-frontend`。
 - UI 應輕快但不幼稚；第一畫面優先呈現實際 lesson/practice/Travel Quest 狀態，不是 landing page。
-- UI 必須 mobile-first、內容導向。
+- UI 必須 mobile-first、内容導向。
 - Lesson 頁面要清楚呈現：hook、can-do goal、core sentence、chunk breakdown、kanji bridge、sound focus、mini practice、travel task。
 - 日文長句、拼音、繁中卡片與按鈕必須在 mobile 與 desktop 檢查不重疊、不截斷。
 
@@ -97,14 +97,15 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - 發現新需求時，開新 issue 或更新 roadmap，不要直接塞進當前 PR。
 - 需要新增依賴、調整架構或擴大功能範圍時，先說明理由、替代方案與風險。
 - 高衝擊自動化（auto-close PR、dependency auto-merge）預設禁止，除非使用者明確確認。
-- 內容型別是合約，不要隨意刪除或破壞向後相容。
+- 内容型別是合約，不要隨意刪除或破壞向後相容。
 - 所有領域邏輯必須在 domain 層，不在 UI 元件裡放商業邏輯。
 
-## 實裝済みコンテキスト
+## 実装済みコンテキスト
 
-- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 でマージ済み。純粋関数型、決定論的、ゼロ外部依存。Active/Completed discriminated union、reveal→rate フロー、again（2番目に再挿入）/unsure（末尾）/known（除去）のキュー配置。35 tests。
-- **HSK 語彙コントラクト** — PR #92（squash merged as `c9c3331`）。型定義 (`src/types/vocabulary.ts`)、Python validator (`scripts/validate-content-schema.py`)、script-status validator (`scripts/validate-script-status.py`)。
-- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — issue #79 ドメイン層。new/learning/learned の状態遷移、knownStreak >= 2 で learned、learning→new→learned の優先順位付け。279 lines + 39 tests。ProgressStore のクラッシュ安全パターンを再利用。PR 作成前。
+- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 squash merged。Active/Completed discriminated union、reveal→rate フロー、again（2番目に再挿入）/unsure（末尾）/known（除去）のキュー配置。35 tests。
+- **HSK 語彙コントラクト** — PR #92 squash merged (`c9c3331`)。型定義 (`src/types/vocabulary.ts`)、Python validators。
+- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 OPEN。new/learning/learned 状態遷移、knownStreak >= 2 で learned、learning→new→learned の安定ソート順。ProgressStore のクラッシュセーフパターンを再利用。285 lines + 39 tests。
+- **進捗ストア** (`src/lib/progress.ts`) — PR #53 squash merged。クラッシュセーフなレッスン完了管理。StorageLike interface、getDefaultStorage probe、markComplete での syncFromStorage パターン。
 
 ## graphify
 
