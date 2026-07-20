@@ -100,11 +100,13 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
     """HSK Simplified-first script validation."""
     errors: list[str] = []
 
-    # simplified is required and must be a string
+    # simplified is required and must be a non-empty string
     if "simplified" not in record:
         errors.append(f"{path}: 'simplified' is required for HSK record")
     elif not isinstance(record["simplified"], str):
         errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
+    elif record["simplified"].strip() == "":
+        errors.append(f"{path}.simplified must be a non-empty string for HSK record")
 
     # simplifiedStatus is required; must be authored or verified
     if "simplifiedStatus" not in record:

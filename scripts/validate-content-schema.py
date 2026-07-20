@@ -115,10 +115,13 @@ def _check_review_status(record: dict, path: str) -> list[str]:
 def _check_script_fields(record: dict, path: str) -> list[str]:
     """Reuse script provenance validation rules from #24.
 
-    HSK records (those with an 'hsk' object) use Simplified-first rules.
+    HSK records (those with an 'hsk' key) use Simplified-first rules.
+    Non-dict hsk values are reported as errors without falling through.
     """
-    is_hsk = isinstance(record.get("hsk"), dict)
-    if is_hsk:
+    if "hsk" in record:
+        hsk_val = record.get("hsk")
+        if not isinstance(hsk_val, dict):
+            return [f"{path}.hsk must be a JSON object when present, got {type(hsk_val).__name__}"]
         return _check_hsk_script_fields(record, path)
 
     errors = []
@@ -1117,7 +1120,7 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
         errors.append(f"{path}.hsk must be a JSON object when present, got null")
         return errors
 
-    has_hsk = "hsk" in record and record["hsk"] is not None
+    has_hsk = "hsk" in record
 
     if has_hsk:
         errors.extend(_check_hsk_fields(record, path))
