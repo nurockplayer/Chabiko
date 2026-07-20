@@ -1,4 +1,4 @@
-外需求或技術債時# Chabiko — Codex Agent Guidelines
+# Chabiko — Agent Guidelines
 
 ## 語言設定
 
