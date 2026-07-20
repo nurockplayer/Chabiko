@@ -29,10 +29,15 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     errors: list[str] = []
 
     # Check if this is an HSK record (Simplified-first subtype)
-    is_hsk = isinstance(record.get("hsk"), dict)
+    # When the key is present, hsk must be a dict/object.
+    if "hsk" in record:
+        hsk_val = record["hsk"]
+        if not isinstance(hsk_val, dict):
+            errors.append(f"{path}.hsk must be a JSON object when present, got {type(hsk_val).__name__}")
+        else:
+            errors.extend(_validate_hsk_script_fields(record, path))
+        return errors
 
-    if is_hsk:
-        return _validate_hsk_script_fields(record, path)
     return _validate_standard_script_fields(record, path)
 
 
@@ -678,6 +683,128 @@ def test_hsk_traditional_absent_with_status_unavailable_ok():
     assert errs == [], f"Expected no errors, got {errs}"
 
 
+
+def test_hsk_dispatch_null_rejected():
+    """hsk: null must fail with hsk type error and not fall through to non-HSK."""
+    errs = validate_script_fields({
+        "id": "hsk-null",
+        "hsk": None,
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "generated",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected hsk object error, got {errs}"
+    # Must NOT get non-HSK traditional-required errors
+    assert not any("traditional" in e and "required" in e for e in errs), (
+        f"Should not fall through to non-HSK contract, got {errs}"
+    )
+
+
+def test_hsk_dispatch_string_rejected():
+    """hsk: string must fail and not fall through to non-HSK."""
+    errs = validate_script_fields({
+        "id": "hsk-str",
+        "hsk": "hsk-3.0",
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "generated",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected hsk object error, got {errs}"
+    # Must NOT get non-HSK traditional-required errors
+    assert not any("traditional" in e and "required" in e for e in errs), (
+        f"Should not fall through to non-HSK contract, got {errs}"
+    )
+
+
+def test_hsk_dispatch_list_rejected():
+    """hsk: [] must fail."""
+    errs = validate_script_fields({
+        "id": "hsk-list",
+        "hsk": [],
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected hsk object error, got {errs}"
+
+
+def test_hsk_dispatch_int_rejected():
+    """hsk: 1 must fail."""
+    errs = validate_script_fields({
+        "id": "hsk-int",
+        "hsk": 1,
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected hsk object error, got {errs}"
+
+
+def test_hsk_dispatch_object_uses_hsk():
+    """hsk object must use HSK validator (traditionalStatus unavailable ok)."""
+    errs = validate_script_fields({
+        "id": "hsk-obj",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert errs == [], f"Expected no errors for valid HSK with absent traditional, got {errs}"
+
+
+def test_hsk_dispatch_absent_uses_non_hsk():
+    """hsk key absent must use non-HSK validator (traditional required)."""
+    errs = validate_script_fields({
+        "id": "non-hsk",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("traditional" in e and "required" in e for e in errs), (
+        f"Expected traditional-required error (non-HSK contract), got {errs}"
+    )
+
+
+def test_hsk_dispatch_null_blocks_non_hsk_escape():
+    """Non-dict hsk must not pass even with legacy Traditional fields filled."""
+    errs = validate_script_fields({
+        "id": "escape",
+        "hsk": None,
+        "traditional": "\u4f60\u597d",
+        "traditionalStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected hsk object error, got {errs}"
+
+
+def test_hsk_dispatch_empty_dict_uses_hsk():
+    """hsk={} should dispatch to HSK validation and report missing required fields."""
+    errs = validate_script_fields({
+        "id": "hsk-empty",
+        "hsk": {},
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+    })
+    # HSK dispatch must succeed (no non-HSK error about missing traditional)
+    assert not any("traditional" in e.lower() for e in errs), (
+        f"Empty dict should dispatch to HSK, not non-HSK traditional check, got {errs}"
+    )
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -720,6 +847,14 @@ def run_tests():
         test_hsk_traditional_null_fails,
         test_hsk_traditional_status_null_fails,
         test_hsk_traditional_absent_with_status_unavailable_ok,
+        test_hsk_dispatch_null_rejected,
+        test_hsk_dispatch_string_rejected,
+        test_hsk_dispatch_list_rejected,
+        test_hsk_dispatch_int_rejected,
+        test_hsk_dispatch_object_uses_hsk,
+        test_hsk_dispatch_absent_uses_non_hsk,
+        test_hsk_dispatch_null_blocks_non_hsk_escape,
+        test_hsk_dispatch_empty_dict_uses_hsk,
     ]
     failures = 0
     for test in tests:

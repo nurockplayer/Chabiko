@@ -1588,6 +1588,25 @@ def run_tests():
         test_hsk_vocab_examples_generated_published_fails,
         test_hsk_vocab_examples_generated_draft_ok,
         test_vocab_examples_empty_array_ok,
+
+        # ─── HSK normalization edges ───
+        test_hsk_normalization_nfkc_composed,
+        test_hsk_normalization_fullwidth_space,
+        test_hsk_normalization_tone_mark_distinct,
+        test_hsk_normalization_case_folded_pinyin,
+
+        # ─── HSK boundary edges ───
+        test_hsk_vocab_simplified_empty_string_fails,
+        test_hsk_vocab_simplified_status_unavailable_fails,
+        test_hsk_vocab_traditional_present_status_unavailable_fails,
+        test_hsk_vocab_kana_non_string_fails,
+        test_hsk_vocab_category_non_string_fails,
+        test_hsk_vocab_source_non_dict_fails,
+        test_hsk_vocab_id_empty_string_fails,
+        test_hsk_vocab_pinyin_empty_string_fails,
+        test_hsk_vocab_japanese_empty_string_fails,
+        test_hsk_vocab_simplified_whitespace_only_fails,
+        test_hsk_vocab_legacy_traditional_without_simplified_fails,
     ]
     failures = 0
     for test in tests:
@@ -3607,6 +3626,155 @@ def test_hsk_vocab_traditional_status_unavailable_ok():
         "vocabulary",
     )
     _assert_no_errors(errs, "hsk_trad_status_unavail")
+
+
+# ─── HSK normalization edge cases ────────────────────────────────────────
+
+def test_hsk_normalization_nfkc_composed():
+    """NFKC composed vs decomposed forms must be treated as duplicates."""
+    # U+00E9 (é) vs U+0065 U+0301 (e + combining acute)
+    composed = "é"
+    decomposed = "é"
+    data = {
+        "vocabulary": [
+            _minimal_hsk_vocab(id="a1", simplified=composed, pinyin=composed,
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+            _minimal_hsk_vocab(id="a2", simplified=decomposed, pinyin=decomposed,
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate HSK identity", "hsk_norm_nfkc")
+
+
+def test_hsk_normalization_fullwidth_space():
+    """Fullwidth spaces in simplified must be removed for identity matching."""
+    data = {
+        "vocabulary": [
+            _minimal_hsk_vocab(id="a1", simplified="你好", pinyin="nǐ hǎo",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+            # Ideographic space (U+3000) between characters
+            _minimal_hsk_vocab(id="a2", simplified="你　好", pinyin="nǐ hǎo",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate HSK identity", "hsk_norm_fullwidth_space")
+
+
+def test_hsk_normalization_tone_mark_distinct():
+    """Different tone marks must NOT match as identity duplicates."""
+    data = {
+        "vocabulary": [
+            _minimal_hsk_vocab(id="a1", simplified="妈", pinyin="mā",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+            _minimal_hsk_vocab(id="a2", simplified="麻", pinyin="má",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+        ]
+    }
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate HSK identity" in e]
+    assert dup_errors == [], f"Tone-distinct pinyin must not match, got {dup_errors}"
+
+
+def test_hsk_normalization_case_folded_pinyin():
+    """Pinyin case folding: uppercase must match lowercase for identity."""
+    data = {
+        "vocabulary": [
+            _minimal_hsk_vocab(id="a1", simplified="你好", pinyin="Nǐ Hǎo",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+            _minimal_hsk_vocab(id="a2", simplified="你好", pinyin="nǐ hǎo",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                    "sourceLevelLabel": "L1"}),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate HSK identity", "hsk_norm_case_fold")
+
+
+# ─── HSK vocabulary boundary tests ───────────────────────────────────────
+
+def test_hsk_vocab_simplified_empty_string_fails():
+    """HSK simplified must be non-empty string."""
+    errs = validate_single(_minimal_hsk_vocab(simplified=""), "vocabulary")
+    _assert_has_error(errs, "non-empty", "hsk_simplified_empty")
+
+
+def test_hsk_vocab_simplified_status_unavailable_fails():
+    """HSK simplifiedStatus=unavailable is never valid (must be authored or verified)."""
+    errs = validate_single(_minimal_hsk_vocab(simplifiedStatus="unavailable"), "vocabulary")
+    _assert_has_error(errs, "must be 'authored' or 'verified'", "hsk_ss_unavailable")
+
+
+def test_hsk_vocab_traditional_present_status_unavailable_fails():
+    """HSK record with traditional text present but status=unavailable is contradictory."""
+    errs = validate_single(
+        _minimal_hsk_vocab(
+            traditional="你好",
+            traditionalStatus="unavailable",
+        ),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must be 'authored' or 'verified'", "hsk_trad_unavailable_contradiction")
+
+
+def test_hsk_vocab_kana_non_string_fails():
+    """HSK kana must be string if present."""
+    errs = validate_single(_minimal_hsk_vocab(kana=123), "vocabulary")
+    _assert_has_error(errs, "kana must be a string", "hsk_kana_non_string")
+
+
+def test_hsk_vocab_category_non_string_fails():
+    """HSK category must be string if present."""
+    errs = validate_single(_minimal_hsk_vocab(category=True), "vocabulary")
+    _assert_has_error(errs, "category must be a string", "hsk_category_non_string")
+
+
+def test_hsk_vocab_source_non_dict_fails():
+    """HSK source must be a dict object (not string/int/list)."""
+    errs = validate_single(_minimal_hsk_vocab(source="string-instead-of-dict"), "vocabulary")
+    _assert_has_error(errs, "source must be dict", "hsk_source_non_dict")
+
+
+def test_hsk_vocab_id_empty_string_fails():
+    """HSK id must be a non-empty string."""
+    errs = validate_single(_minimal_hsk_vocab(id=""), "vocabulary")
+    _assert_has_error(errs, "non-empty", "hsk_id_empty")
+
+
+def test_hsk_vocab_pinyin_empty_string_fails():
+    """HSK pinyin must be a non-empty string."""
+    errs = validate_single(_minimal_hsk_vocab(pinyin=""), "vocabulary")
+    _assert_has_error(errs, "non-empty", "hsk_pinyin_empty")
+
+
+def test_hsk_vocab_japanese_empty_string_fails():
+    """HSK japanese must be a non-empty string."""
+    errs = validate_single(_minimal_hsk_vocab(japanese=""), "vocabulary")
+    _assert_has_error(errs, "non-empty", "hsk_japanese_empty")
+
+
+def test_hsk_vocab_simplified_whitespace_only_fails():
+    """HSK simplified must not be whitespace-only string."""
+    errs = validate_single(_minimal_hsk_vocab(simplified="   "), "vocabulary")
+    _assert_has_error(errs, "non-empty", "hsk_simplified_whitespace")
+
+
+def test_hsk_vocab_legacy_traditional_without_simplified_fails():
+    """Non-HSK record without traditional fails (still Traditional-first required)."""
+    errs = validate_single(
+        {"id": "legacy-no-trad", "pinyin": "x", "japanese": "x",
+         "reviewStatus": "draft"},
+        "vocabulary",
+    )
+    _assert_has_error(errs, "required field 'traditional'", "hsk_legacy_no_traditional")
 
 
 if __name__ == "__main__":
