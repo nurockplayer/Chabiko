@@ -229,13 +229,23 @@ const json = JSON.stringify({
 
     function startSession() {
       state = buildSession();
+      // When restarting after completion, restore card visibility that was
+      // hidden by renderCompleted. The card DOM still exists (we only hide
+      // it, not innerHTML = ''), so bindRefs() finds all elements.
+      container.querySelector('.flashcard-card')?.classList.remove('hidden');
+      const completionEl = container.querySelector('.flashcard-completion');
+      if (completionEl) completionEl.remove();
+      // Reset card to unrevealed state (restart after completion leaves
+      // back/reveal/ratings in their last-completion visibility).
+      backEl.classList.add('hidden');
+      btnReveal.classList.remove('hidden');
+      ratingActions.classList.add('hidden');
       setupPanel.classList.add('hidden');
       sessionArea.classList.remove('hidden');
       bindRefs();
       renderCard();
       updateProgress();
       updateResetButton();
-      bindEvents();
       btnReveal?.focus();
     }
 
@@ -343,7 +353,12 @@ const json = JSON.stringify({
           restartBtn.addEventListener('click', restartToSetup);
         }
       }
-      container.innerHTML = '';
+      // Hide card elements instead of destroying them, so restart can
+      // restore card DOM without a full page reload.
+      const card = container.querySelector('.flashcard-card');
+      if (card) card.classList.add('hidden');
+      const actions = container.querySelector('.flashcard-actions');
+      if (actions) actions.classList.add('hidden');
       container.appendChild(clone);
       if (state?.status === 'completed' && progressEl) {
         progressEl.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length}`;
@@ -368,14 +383,18 @@ const json = JSON.stringify({
       updateResetButton();
     }
 
-    // ── Event binding ─────────────────────────────────────────────────────
+    // ── Event binding (called once at init; card elements persist across
+    // restarts since renderCompleted now hides rather than destroys them) ──
     function bindEvents() {
       btnReveal?.addEventListener('click', revealAnswer);
       btnAgain?.addEventListener('click', () => applyRating('again'));
       btnUnsure?.addEventListener('click', () => applyRating('unsure'));
       btnKnown?.addEventListener('click', () => applyRating('known'));
-      btnReset?.addEventListener('click', handleReset);
     }
+
+    // btnReset lives in sessionArea (outside container), so its listener is
+    // bound once at init to avoid accumulation on repeated startSession calls.
+    document.getElementById('btn-reset-progress')?.addEventListener('click', handleReset);
 
     // ── Global listeners ──────────────────────────────────────────────────
     window.addEventListener('pageshow', () => {
@@ -413,6 +432,7 @@ const json = JSON.stringify({
 
     // ── Initial state ─────────────────────────────────────────────────────
     bindRefs();
+    bindEvents();
     updateResetButton();
     showSetup();
   })();
