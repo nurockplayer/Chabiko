@@ -1,0 +1,405 @@
+---
+import { createVocabularySession } from '../domain/vocabularySession';
+import type { HskRenderableEntry } from '../content/loadHskVocabulary';
+
+export interface Props {
+  entries: HskRenderableEntry[];
+}
+
+const { entries } = Astro.props;
+
+const entryMap = new Map(entries.map((e) => [e.id, e]));
+const ids = entries.map((e) => e.id);
+const session = createVocabularySession(ids, 10, 'zh-to-ja');
+
+const activeEntry = entryMap.get(session.activeItemId);
+
+const json = JSON.stringify({
+  ids,
+  entries: entries.map(({ id, simplified, pinyin, japanese, traditional }) => ({
+    id, simplified, pinyin, japanese, traditional,
+  })),
+});
+---
+
+<div class="flashcard-session-root" data-session={json}>
+  {entries.length === 0 ? (
+    <p class="flashcard-fallback">単語データがありません。</p>
+  ) : (
+    <div class="flashcard-container">
+      <div id="flashcard-progress" class="flashcard-progress" aria-live="polite">
+        <span data-progress-text>0 / {session.selectedItemIds.length}</span>
+      </div>
+
+      <div class="flashcard-card" id="flashcard-card">
+        <p data-front class="flashcard-front" lang="zh-Hans">{activeEntry?.simplified ?? ''}</p>
+        <div data-back class="flashcard-back hidden">
+          <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
+          <p data-japanese class="flashcard-japanese"></p>
+          <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
+        </div>
+      </div>
+
+      <div class="flashcard-actions">
+        <button id="btn-reveal" class="flashcard-btn flashcard-btn--reveal" type="button">
+          答えを見る
+        </button>
+        <div id="rating-actions" class="flashcard-ratings hidden">
+          <button id="btn-again" class="flashcard-btn flashcard-btn--again" type="button">
+            もう一度
+          </button>
+          <button id="btn-unsure" class="flashcard-btn flashcard-btn--unsure" type="button">
+            まだ曖昧
+          </button>
+          <button id="btn-known" class="flashcard-btn flashcard-btn--known" type="button">
+            覚えた
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <template id="completion-template">
+    <div class="flashcard-completion" role="status">
+      <p class="flashcard-completion-icon">&#x2714;</p>
+      <p class="flashcard-completion-text">セッション完了！</p>
+      <button id="btn-restart" class="flashcard-btn flashcard-btn--restart" type="button">
+        もう一度
+      </button>
+    </div>
+  </template>
+</div>
+
+<script>
+  import {
+    createVocabularySession,
+    applyVocabularySessionAction,
+  } from '../domain/vocabularySession';
+  import type { VocabularySessionState } from '../domain/vocabularySession';
+
+  (function () {
+    const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
+    if (!root) return;
+
+    const raw = root.getAttribute('data-session');
+    if (!raw) return;
+    const { ids, entries: rawEntries } = JSON.parse(raw) as {
+      ids: string[];
+      entries: { id: string; simplified: string; pinyin: string; japanese: string; traditional?: string }[];
+    };
+
+    const entryMap = new Map(rawEntries.map((e) => [e.id, e]));
+
+    function getEntry(id: string) {
+      return entryMap.get(id);
+    }
+
+    // DOM refs – populated lazily via bindRefs
+    let progressEl: HTMLElement;
+    let frontEl: HTMLElement;
+    let backEl: HTMLElement;
+    let pinyinEl: HTMLElement;
+    let japaneseEl: HTMLElement;
+    let traditionalEl: HTMLElement;
+    let btnReveal: HTMLButtonElement;
+    let ratingActions: HTMLElement;
+    let btnAgain: HTMLButtonElement;
+    let btnUnsure: HTMLButtonElement;
+    let btnKnown: HTMLButtonElement;
+    let container: HTMLElement;
+
+    const completionTemplate = document.getElementById('completion-template') as HTMLTemplateElement;
+    if (!completionTemplate) return;
+
+    let state: VocabularySessionState = createVocabularySession(ids, 10, 'zh-to-ja');
+
+    function bindRefs() {
+      progressEl = document.querySelector('[data-progress-text]') as HTMLElement;
+      frontEl = document.querySelector('[data-front]') as HTMLElement;
+      backEl = document.querySelector('[data-back]') as HTMLElement;
+      pinyinEl = document.querySelector('[data-pinyin]') as HTMLElement;
+      japaneseEl = document.querySelector('[data-japanese]') as HTMLElement;
+      traditionalEl = document.querySelector('[data-traditional]') as HTMLElement;
+      btnReveal = document.getElementById('btn-reveal') as HTMLButtonElement;
+      ratingActions = document.getElementById('rating-actions') as HTMLElement;
+      btnAgain = document.getElementById('btn-again') as HTMLButtonElement;
+      btnUnsure = document.getElementById('btn-unsure') as HTMLButtonElement;
+      btnKnown = document.getElementById('btn-known') as HTMLButtonElement;
+      container = (root as HTMLElement).querySelector('.flashcard-container') as HTMLElement;
+    }
+
+    function updateProgress() {
+      if (state.status === 'active' && progressEl) {
+        progressEl.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length}`;
+      }
+    }
+
+    function renderCard() {
+      if (state.status !== 'active') return;
+      const entry = getEntry(state.activeItemId);
+      if (!entry) return;
+      frontEl.textContent = entry.simplified;
+      pinyinEl.textContent = entry.pinyin;
+      japaneseEl.textContent = entry.japanese;
+      if (entry.traditional) {
+        traditionalEl.textContent = entry.traditional;
+        traditionalEl.style.display = '';
+      } else {
+        traditionalEl.textContent = '';
+        traditionalEl.style.display = 'none';
+      }
+    }
+
+    function revealAnswer() {
+      const result = applyVocabularySessionAction(state, { kind: 'reveal' });
+      if (result.kind === 'accepted') {
+        state = result.state;
+        backEl.classList.remove('hidden');
+        btnReveal.classList.add('hidden');
+        ratingActions.classList.remove('hidden');
+        btnAgain.focus();
+      }
+    }
+
+    function applyRating(rating: 'again' | 'unsure' | 'known') {
+      const result = applyVocabularySessionAction(state, { kind: 'rate', rating });
+      if (result.kind === 'accepted') {
+        state = result.state;
+      }
+
+      if (state.status === 'completed') {
+        renderCompleted();
+        return;
+      }
+
+      backEl.classList.add('hidden');
+      btnReveal.classList.remove('hidden');
+      ratingActions.classList.add('hidden');
+      renderCard();
+      updateProgress();
+    }
+
+    function renderCompleted() {
+      const clone = completionTemplate.content.cloneNode(true) as DocumentFragment;
+      const completionRoot = clone.firstElementChild as HTMLElement | null;
+      if (completionRoot) {
+        const restartBtn = completionRoot.querySelector('#btn-restart') as HTMLButtonElement | null;
+        if (restartBtn) {
+          restartBtn.addEventListener('click', restartSession);
+        }
+      }
+      container.innerHTML = '';
+      container.appendChild(clone);
+      if (state.status === 'completed') {
+        progressEl.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length}`;
+      }
+    }
+
+    function restartSession() {
+      state = createVocabularySession(ids, 10, 'zh-to-ja');
+      container.innerHTML = `
+        <div id="flashcard-progress" class="flashcard-progress" aria-live="polite">
+          <span data-progress-text>0 / ${state.selectedItemIds.length}</span>
+        </div>
+        <div class="flashcard-card" id="flashcard-card">
+          <p data-front class="flashcard-front" lang="zh-Hans"></p>
+          <div data-back class="flashcard-back hidden">
+            <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
+            <p data-japanese class="flashcard-japanese"></p>
+            <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
+          </div>
+        </div>
+        <div class="flashcard-actions">
+          <button id="btn-reveal" class="flashcard-btn flashcard-btn--reveal" type="button">答えを見る</button>
+          <div id="rating-actions" class="flashcard-ratings hidden">
+            <button id="btn-again" class="flashcard-btn flashcard-btn--again" type="button">もう一度</button>
+            <button id="btn-unsure" class="flashcard-btn flashcard-btn--unsure" type="button">まだ曖昧</button>
+            <button id="btn-known" class="flashcard-btn flashcard-btn--known" type="button">覚えた</button>
+          </div>
+        </div>
+      `;
+      bindRefs();
+      renderCard();
+      updateProgress();
+      bindEvents();
+    }
+
+    function bindEvents() {
+      btnReveal?.addEventListener('click', revealAnswer);
+      btnAgain?.addEventListener('click', () => applyRating('again'));
+      btnUnsure?.addEventListener('click', () => applyRating('unsure'));
+      btnKnown?.addEventListener('click', () => applyRating('known'));
+    }
+
+    // Initial setup
+    bindRefs();
+    renderCard();
+    updateProgress();
+    bindEvents();
+  })();
+</script>
+
+<style>
+  .flashcard-session-root {
+    width: 100%;
+  }
+  .flashcard-fallback {
+    text-align: center;
+    color: var(--c-text-secondary);
+    padding: var(--space-xl);
+  }
+  .flashcard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+  .flashcard-progress {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    align-self: flex-start;
+  }
+  .flashcard-card {
+    width: 100%;
+    min-height: 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-xl);
+    text-align: center;
+  }
+  .flashcard-front {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    font-weight: 700;
+    color: var(--c-text);
+    margin: 0;
+  }
+  .flashcard-back {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    width: 100%;
+  }
+  .flashcard-pinyin {
+    font-size: 1.25rem;
+    color: var(--c-accent);
+    font-weight: 600;
+    margin: 0;
+  }
+  .flashcard-japanese {
+    font-size: 1.1rem;
+    color: var(--c-text);
+    margin: 0;
+  }
+  .flashcard-traditional {
+    font-size: 0.9rem;
+    color: var(--c-text-secondary);
+    margin: var(--space-xs) 0 0;
+  }
+  .hidden {
+    display: none !important;
+  }
+  .flashcard-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .flashcard-ratings {
+    display: flex;
+    gap: var(--space-sm);
+    width: 100%;
+  }
+  .flashcard-ratings.hidden {
+    display: none !important;
+  }
+  .flashcard-btn {
+    display: block;
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .flashcard-btn:hover:not(:disabled) {
+    background: var(--c-slot-bg);
+  }
+  .flashcard-btn:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+  .flashcard-btn--reveal {
+    background: var(--c-accent);
+    color: #fff;
+    border-color: var(--c-accent);
+  }
+  .flashcard-btn--reveal:hover:not(:disabled) {
+    background: var(--c-accent-hover);
+  }
+  .flashcard-btn--reveal.hidden {
+    display: none !important;
+  }
+  .flashcard-btn--again {
+    flex: 1;
+    border-color: #991b1b;
+    color: #991b1b;
+  }
+  .flashcard-btn--again:hover:not(:disabled) {
+    background: #fef2f2;
+  }
+  .flashcard-btn--unsure {
+    flex: 1;
+    border-color: #92400e;
+    color: #92400e;
+  }
+  .flashcard-btn--unsure:hover:not(:disabled) {
+    background: #fffbeb;
+  }
+  .flashcard-btn--known {
+    flex: 1;
+    border-color: #166534;
+    color: #166534;
+  }
+  .flashcard-btn--known:hover:not(:disabled) {
+    background: #f0fdf4;
+  }
+  .flashcard-btn--restart {
+    margin-top: var(--space-md);
+    background: var(--c-accent);
+    color: #fff;
+    border-color: var(--c-accent);
+  }
+  .flashcard-btn--restart:hover:not(:disabled) {
+    background: var(--c-accent-hover);
+  }
+  .flashcard-completion {
+    text-align: center;
+    padding: var(--space-xl) 0;
+  }
+  .flashcard-completion-icon {
+    font-size: 2.5rem;
+    margin: 0 0 var(--space-sm);
+  }
+  .flashcard-completion-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 var(--space-md);
+  }
+  @media (width >= 640px) {
+    .flashcard-ratings {
+      gap: var(--space-md);
+    }
+  }
+</style>

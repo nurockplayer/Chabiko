@@ -100,11 +100,13 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - 內容型別是合約，不要隨意刪除或破壞向後相容。
 - 所有領域邏輯必須在 domain 層，不在 UI 元件裡放商業邏輯。
 
-## 實裝済みコンテキスト
+## 実装済みコンテキスト
 
-- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 でマージ済み。純粋関数型、決定論的、ゼロ外部依存。Active/Completed discriminated union、reveal→rate フロー、again（2番目に再挿入）/unsure（末尾）/known（除去）のキュー配置。35 tests。
-- **HSK 語彙コントラクト** — PR #92（squash merged as `c9c3331`）。型定義 (`src/types/vocabulary.ts`)、Python validator (`scripts/validate-content-schema.py`)、script-status validator (`scripts/validate-script-status.py`)。
-- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — issue #79 ドメイン層。new/learning/learned の状態遷移、knownStreak >= 2 で learned、learning→new→learned の優先順位付け。279 lines + 39 tests。ProgressStore のクラッシュ安全パターンを再利用。PR 作成前。
+- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 squash merged。Active/Completed discriminated union、reveal→rate flow。
+- **HSK 語彙コントラクト** — PR #92 squash merged。型定義＋Python validators。
+- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 OPEN。new/learning/learned 遷移、優先順位付け。
+- **進捗ストア** (`src/lib/progress.ts`) — PR #53 squash merged。クラッシュセーフなレッスン完了管理。
+- **HSK 1 フラッシュカードルート** (`src/pages/vocabulary/hsk/1/index.astro`) — PR 作成前。#77 セッションエンジン使用、zh-to-ja、10語固定。
 
 ## graphify
 

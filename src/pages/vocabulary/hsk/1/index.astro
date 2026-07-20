@@ -1,0 +1,59 @@
+---
+import Header from '../../../../components/Header.astro';
+import FlashcardSession from '../../../../components/FlashcardSession.astro';
+import { loadHskLevelEntries } from '../../../../content/loadHskVocabulary';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+const entries = loadHskLevelEntries(1);
+---
+
+<BaseLayout title="HSK 1 単語フラッシュカード">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  <div class="flashcard-page">
+    <a class="back-link" href="/">← ホームに戻る</a>
+    <h1 class="page-title">HSK 1 単語フラッシュカード</h1>
+    <p class="page-subtitle">簡体字を見て、ピンインと日本語の意味を確認しよう。</p>
+
+    {
+      entries.length > 0 ? (
+        <FlashcardSession entries={entries} />
+      ) : (
+        <div class="empty-fallback" role="alert">
+          <p>現在利用できる HSK 1 単語がありません。データが準備できるまでお待ちください。</p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .flashcard-page {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-lg);
+    font-weight: 600;
+  }
+  .page-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-xs);
+  }
+  .page-subtitle {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-xl);
+  }
+  .empty-fallback {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--c-text-secondary);
+  }
+</style>
