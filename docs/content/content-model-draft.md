@@ -160,50 +160,67 @@ When full schema validation is implemented (planned #2), these rules must also h
 - `source`
 - `reviewStatus`
 
-### HSK Vocabulary Contract
+### HSK Vocabulary Fields
 
-HSK vocabulary records carry an additional `hsk` object that makes the record a **Simplified-first conditional subtype**.
+HSK vocabulary records are a Simplified-first subtype of the base Vocabulary model.
 
-When `hsk` is present:
-- `simplified` + `simplifiedStatus` (`authored` / `verified`) are required.
-- `traditional` is optional. When present, `traditionalStatus` is required and must be `authored` or `verified`. When absent, `traditionalStatus` may be absent or `unavailable`.
-- `pinyin`, `japanese`, `source`, and `reviewStatus` are required.
-- Legacy fields `kana` and `category` are optional.
-- `reviewStatus` must be `reviewed` or `published` (draft is not valid for HSK).
+- `hsk` — optional object. When absent, the record is governed by the Traditional-first contract above.
+- When `hsk` is present, the record is an HSK Simplified-first conditional subtype.
 
-#### hsk Object
+#### `hsk` Object
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `standardVersion` | string enum | yes | `hsk-legacy-6-level` or `hsk-3.0` |
-| `introducedAtLevel` | integer 1–9 | yes | HSK level at which this item is introduced |
-| `sourceLevelLabel` | non-empty string | yes | Original source level label preserved for auditability |
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `standardVersion` | yes | `"hsk-legacy-6-level"` \| `"hsk-3.0"` | Controlled HSK version |
+| `introducedAtLevel` | yes | integer 1–9 | The HSK level at which this word is introduced (this initiative publishes 1–4 initially) |
+| `sourceLevelLabel` | yes | string (non-empty) | Source label preserved for auditability |
+
+#### HSK Conditional Subtype Rules
+
+When `hsk` is present, the record requires:
+
+- non-empty stable `id`
+- non-empty `simplified`
+- `simplifiedStatus` equal to `authored` or `verified` (not `generated` or `unavailable`)
+- non-empty `pinyin`
+- natural, non-empty Japanese `japanese`
+- `source` object
+- `reviewStatus`
+- complete `hsk` object as defined above
+
+For HSK records:
+
+- `traditional` is optional.
+- When `traditional` is present, `traditionalStatus` is required and must be `authored` or `verified`.
+- When `traditional` is absent, `traditionalStatus` may be absent or `"unavailable"`.
+- `generated` Traditional or Simplified forms are not production-eligible for HSK records.
+- Existing legacy Vocabulary fields `kana` and `category` are optional for HSK records only.
+- A draft `reviewStatus` does not make a record production-ready. Record-level review status and per-form provenance remain independent requirements.
 
 #### HSK Identity Normalization
 
 Duplicate HSK identity is the tuple:
 
-```
-hsk.standardVersion + normalized simplified + normalized pinyin
-```
+`hsk.standardVersion + normalized simplified + normalized pinyin`
 
-**Simplified Chinese normalization:**
+**Simplified normalization:**
+
 1. Apply Unicode NFKC normalization.
 2. Remove all Unicode whitespace characters.
 
 **Pinyin normalization:**
+
 1. Apply Unicode NFKC normalization.
-2. Unicode-aware case folding (`str.casefold`).
+2. Apply Unicode-aware case folding.
 3. Remove all Unicode whitespace characters.
 
-Do not convert between pinyin notation systems. Tone marks, tone digits, apostrophes, `ü`, `v`, and `u:` remain distinct after normalization.
+Tone marks, tone digits, apostrophes, `ü`, `v`, and `u:` remain distinct after normalization.
 
 Duplicate identity detection is scoped to records with the same `hsk.standardVersion`. Records under different standard versions do not conflict.
 
-Duplicate errors are deterministic in collection order and report:
-- the duplicated value or normalized identity;
-- the first occurrence position;
-- the current occurrence position.
+#### Duplicate Vocabulary ID Detection
+
+Within a single `vocabulary` collection, two or more entries with the same `id` fail validation. The error message includes the duplicated `id`, the index of the first occurrence, and the index of the current duplicate occurrence. Output order is deterministic — errors appear in the order duplicates are found (by increasing array index).
 
 ## Sentence
 

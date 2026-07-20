@@ -1,74 +1,97 @@
-/** Controlled values for HSK standard version. */
+export type ReviewStatus = 'draft' | 'reviewed' | 'published';
+
 export type HskStandardVersion = 'hsk-legacy-6-level' | 'hsk-3.0';
 
-/** Controlled values for script form provenance. */
-export type ScriptStatus = 'authored' | 'verified' | 'generated' | 'unavailable';
+export type IntroducedAtLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
-/** HSK-specific metadata attached to a Vocabulary record. */
 export interface HskInfo {
-  /** The versioned HSK standard this record belongs to. */
   standardVersion: HskStandardVersion;
-  /** The level at which this vocabulary item is introduced (1–9). */
-  introducedAtLevel: number;
-  /** Original source label from the workbook, preserved for auditability. */
+  /** Integer level 1–9, non-empty sourceLevelLabel */
+  introducedAtLevel: IntroducedAtLevel;
   sourceLevelLabel: string;
 }
 
-/**
- * Vocabulary record (non-HSK, Traditional-first contract).
- *
- * - `traditional` is required
- * - `traditionalStatus` is required
- * - `simplified` is optional
- * - All legacy fields (`kana`, `category`) are present
- */
-export interface NonHskVocabulary {
-  id: string;
+export type VocabularyExample = {
   traditional: string;
-  traditionalStatus: ScriptStatus;
-  simplified?: string;
-  simplifiedStatus?: ScriptStatus;
+  traditionalStatus: 'authored' | 'verified' | 'generated';
   pinyin: string;
   japanese: string;
-  kana?: string;
-  category?: string;
+} & (
+  | { simplified?: never; simplifiedStatus?: never }
+  | { simplified?: never; simplifiedStatus: 'unavailable' }
+  | { simplified: string; simplifiedStatus: 'authored' | 'verified' | 'generated' }
+);
+
+export interface SourceInfo {
+  type: string;
+  note?: string;
+}
+
+export interface VocabularyBase {
+  id: string;
+  pinyin: string;
+  japanese: string;
   similarityType?: string;
   toneNote?: string;
   caution?: string;
   travelScenario?: string;
   painPointTags?: string[];
-  examples?: string[];
-  source?: string;
-  reviewStatus: string;
-  hsk?: undefined;
+  examples?: VocabularyExample[];
+  reviewStatus: ReviewStatus;
 }
 
-/**
- * Vocabulary record (HSK, Simplified-first contract).
- *
- * - `simplified` + `simplifiedStatus` (`authored`/`verified`) are required
- * - `traditional` is optional; when present `traditionalStatus` must be `authored`/`verified`
- * - `kana` and `category` are optional
- */
-export interface HskVocabulary {
-  id: string;
-  traditional?: string;
-  traditionalStatus?: 'unavailable' | ScriptStatus;
+/** Legacy Traditional-first vocabulary record (non-HSK) with both script forms. */
+export interface LegacyVocabulary extends VocabularyBase {
+  hsk?: never;
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified' | 'generated';
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified' | 'generated';
+  kana: string;
+  category: string;
+  source?: SourceInfo;
+}
+
+/** Non-HSK record with only Traditional form (Simplified confirmed unavailable). */
+export interface LegacyVocabularyNoSimplified extends VocabularyBase {
+  hsk?: never;
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified' | 'generated';
+  simplified?: never;
+  simplifiedStatus?: 'unavailable';
+  kana: string;
+  category: string;
+  source?: SourceInfo;
+}
+
+/** HSK Simplified-first vocabulary record. */
+export interface HskVocabulary extends VocabularyBase {
+  hsk: HskInfo;
   simplified: string;
   simplifiedStatus: 'authored' | 'verified';
-  pinyin: string;
-  japanese: string;
+  traditional?: never;
+  traditionalStatus?: 'unavailable';
   kana?: string;
   category?: string;
-  similarityType?: string;
-  toneNote?: string;
-  caution?: string;
-  travelScenario?: string;
-  painPointTags?: string[];
-  examples?: string[];
-  source: string;
-  reviewStatus: string;
-  hsk: HskInfo;
+  source: SourceInfo;
 }
 
-export type Vocabulary = NonHskVocabulary | HskVocabulary;
+/** HSK record with reviewed Traditional form. */
+export interface HskVocabularyWithTraditional extends VocabularyBase {
+  hsk: HskInfo;
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified';
+  kana?: string;
+  category?: string;
+  source: SourceInfo;
+}
+
+export type HskVocabularyType = HskVocabulary | HskVocabularyWithTraditional;
+
+export type Vocabulary = LegacyVocabulary | LegacyVocabularyNoSimplified | HskVocabularyType;
+
+export interface VocabularyBundle {
+  vocabulary: Vocabulary[];
+}

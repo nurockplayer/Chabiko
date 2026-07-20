@@ -1,79 +1,80 @@
 {
   "vocabulary": [
     {
-      "id": "voc-hsk-3-001",
+      "id": "hsk-001",
       "simplified": "爱",
       "simplifiedStatus": "authored",
-      "traditional": "愛",
-      "traditionalStatus": "verified",
       "pinyin": "ài",
       "japanese": "愛する",
-      "source": "HSK Standard Course 1",
-      "reviewStatus": "reviewed",
+      "source": {"type": "hsk-workbook"},
+      "reviewStatus": "draft",
       "hsk": {
         "standardVersion": "hsk-3.0",
         "introducedAtLevel": 1,
-        "sourceLevelLabel": "Level 1"
+        "sourceLevelLabel": "HSK 3.0 Level 1"
       }
     },
     {
-      "id": "voc-hsk-3-002",
-      "simplified": "苹果",
+      "id": "hsk-002",
+      "simplified": "你好",
       "simplifiedStatus": "verified",
-      "pinyin": "píngguǒ",
-      "japanese": "りんご",
-      "source": "HSK Standard Course 1",
+      "traditional": "你好",
+      "traditionalStatus": "authored",
+      "pinyin": "nǐ hǎo",
+      "japanese": "こんにちは",
+      "kana": "こんにちは",
+      "source": {"type": "hsk-workbook"},
       "reviewStatus": "reviewed",
       "hsk": {
         "standardVersion": "hsk-3.0",
         "introducedAtLevel": 1,
-        "sourceLevelLabel": "Level 1"
+        "sourceLevelLabel": "HSK 3.0 Level 1"
       }
     },
     {
-      "id": "voc-hsk-3-003",
-      "simplified": "图书馆",
+      "id": "hsk-003",
+      "simplified": "再见",
       "simplifiedStatus": "authored",
-      "traditional": "圖書館",
-      "traditionalStatus": "authored",
-      "pinyin": "túshūguǎn",
-      "japanese": "図書館",
-      "source": "HSK Standard Course 3",
+      "traditionalStatus": "unavailable",
+      "pinyin": "zàijiàn",
+      "japanese": "さようなら",
+      "category": "greeting",
+      "source": {"type": "hsk-workbook"},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-legacy-6-level",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "HSK Legacy Level 1"
+      }
+    },
+    {
+      "id": "hsk-004",
+      "simplified": "猫",
+      "simplifiedStatus": "authored",
+      "pinyin": "māo",
+      "japanese": "猫",
+      "kana": "ねこ",
+      "category": "animal",
+      "source": {"type": "hsk-workbook"},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "HSK 3.0 Level 4"
+      }
+    },
+    {
+      "id": "hsk-005",
+      "simplified": "狗",
+      "simplifiedStatus": "authored",
+      "pinyin": "gǒu",
+      "japanese": "犬",
+      "source": {"type": "hsk-workbook"},
       "reviewStatus": "published",
       "hsk": {
         "standardVersion": "hsk-3.0",
-        "introducedAtLevel": 3,
-        "sourceLevelLabel": "Level 3"
-      }
-    },
-    {
-      "id": "voc-hsk-legacy-001",
-      "simplified": "人民币",
-      "simplifiedStatus": "authored",
-      "traditional": "人民幣",
-      "traditionalStatus": "verified",
-      "pinyin": "rénmínbì",
-      "japanese": "人民元",
-      "source": "HSK Legacy 4",
-      "reviewStatus": "reviewed",
-      "hsk": {
-        "standardVersion": "hsk-legacy-6-level",
-        "introducedAtLevel": 4,
-        "sourceLevelLabel": "四级"
-      }
-    },
-    {
-      "id": "voc-hsk-legacy-002",
-      "simplified": "电脑",
-      "simplifiedStatus": "verified",
-      "pinyin": "diànnǎo",
-      "japanese": "コンピューター",
-      "source": "HSK Legacy 2",
-      "reviewStatus": "reviewed",
-      "hsk": {
-        "standardVersion": "hsk-legacy-6-level",
-        "introducedAtLevel": 2,
-        "sourceLevelLabel": "二级"
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "HSK 3.0 Level 1"
       }
     }
   ]
