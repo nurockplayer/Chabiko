@@ -196,7 +196,7 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
         val = record["simplifiedStatus"]
         if not isinstance(val, str):
             errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
-        elif val not in ("authored", "verified"):
+        elif val not in HSK_VALID_SCRIPT_STATUSES:
             errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for HSK record")
 
     # traditional is optional for HSK; explicit null must be rejected.
@@ -219,7 +219,7 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
         elif not isinstance(ts, str):
             errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
-        elif ts not in ("authored", "verified"):
+        elif ts not in HSK_VALID_SCRIPT_STATUSES:
             errors.append(f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' for HSK record")
     else:
         ts = record.get("traditionalStatus")
@@ -1203,7 +1203,7 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
         errors.append(f"{path}: missing required field 'simplifiedStatus' for HSK record")
     elif not isinstance(record["simplifiedStatus"], str):
         errors.append(f"{path}.simplifiedStatus must be a string, got {type(record['simplifiedStatus']).__name__}")
-    elif record["simplifiedStatus"] not in ("authored", "verified"):
+    elif record["simplifiedStatus"] not in HSK_VALID_SCRIPT_STATUSES:
         errors.append(
             f"{path}.simplifiedStatus '{record.get('simplifiedStatus')}' must be "
             f"'authored' or 'verified' for HSK record"
@@ -1229,7 +1229,7 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
         elif not isinstance(ts, str):
             errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
-        elif ts not in ("authored", "verified"):
+        elif ts not in HSK_VALID_SCRIPT_STATUSES:
             errors.append(
                 f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
                 f"for HSK record"
