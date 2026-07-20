@@ -1,4 +1,4 @@
-# Chabiko — Codex Agent Guidelines
+外需求或技術債時# Chabiko — Codex Agent Guidelines
 
 ## 語言設定
 
@@ -18,17 +18,21 @@ Chabiko | チャビコ 是給日本人學中文的網站。目標是讓零基礎
 
 ## Source Of Truth
 
-實作前先讀相關 source of truth：
+開始實作前，先讀取當前 GitHub issue body，再只讀取與本次 scope 直接相關的 source of truth。
 
-- `.planning/PROJECT.md` — 專案定位、核心價值、限制、決策。
-- `.planning/REQUIREMENTS.md` — v1 可驗收需求。
-- `.planning/ROADMAP.md` — phase 邊界與 issue 對應。
-- `.planning/phases/*/*-CONTEXT.md` — phase 實作決策。
-- `docs/strategy/learning-and-motivation-strategy.md` — 學習動機、lesson loop、Travel Quest、練習策略。
-- `docs/content/content-model-draft.md` — 內容資料模型草案。
-- GitHub issue body — 當前任務的直接 scope。
+衝突時優先順序：
 
-文件、研究草稿與聊天討論不能自動視為 implementation source of truth；若和上述文件衝突，先更新 source of truth 或另開 issue。
+1. 使用者本次明確指示
+2. 當前 GitHub issue body
+3. 已合併且仍有效的 phase context
+4. `.planning/REQUIREMENTS.md` — v1 可驗收需求。
+5. `.planning/ROADMAP.md` — phase 邊界與 issue 對應。
+6. `.planning/PROJECT.md` — 專案定位、核心價值、限制、決策。
+7. strategy、draft 或研究文件
+
+不得為了確認簡單任務而全面讀取所有規劃文件。
+
+若文件互相衝突且會影響 correctness，停止擴大實作，回報衝突；除非使用者明確要求，不得自行更新 source of truth 或建立 issue。
 
 ## Shell 指令
 
@@ -45,31 +49,33 @@ pnpm test
 sed -n '1,120p' AGENTS.md
 ```
 
-## 技術方向
 
-目前是 greenfield web project。Phase 1 決定具體框架前，預設方向如下：
+## 技術基線
 
-- Static-first web app。
-- pnpm。
-- TypeScript。
-- Structured content files。
-- uv 為 Python validation tooling 的管理工具（Python 3.14+）；Python validators 一律用 `uv run python` 執行；不得使用 Poetry、Pipenv 或 requirements.txt。
-- Docker 是支援的 local dev environment（Dockerfile + docker-compose）；Docker 內仍使用 pnpm 與 uv，不變。
-- LocalStorage 可用於 v1 練習進度。
-- v1 不需要後端、登入、雲端同步、付款、語音辨識或 AI 自動解釋生成。
+目前專案已採用：
+
+- Astro
+- TypeScript
+- pnpm
+- Vitest
+- Structured content files
+- uv + Python 3.14+ validation tooling
+- LocalStorage-based v1 progress
+
+現有架構、schema 與測試是 implementation baseline。除非 issue 明確要求，不得重新選型、替換框架或重建 scaffold。
+
 
 ## Scope 邊界
 
 - PR 只做 GitHub issue 明確列出的任務。
 - 不要把未要求的功能、重構或 future work 混進同一個變更。
-- 發現新需求時，開新 issue 或更新 roadmap，不要直接塞進當前 PR。
+- 發現 scope 外需求或技術債時，不得直接塞進當前 PR。只在回報中簡短列為 deferred finding。
 - 若需要新增依賴、調整架構或擴大功能範圍，先說明理由、替代方案與風險。
-- 空專案初期可以調整腳手架，但仍要避免無關檔案與 metadata churn。
 - 高衝擊自動化，例如 auto-close PR、dependency auto-merge，預設禁止，除非使用者明確確認。
 
 ## Git 規範
 
-- Branch 命名預設使用 `codex/<short-description>`，除非使用者指定其他名稱。
+- Branch 名稱使用 `<agent-or-purpose>/<short-description>`，並優先遵循使用者或當前 workflow 指定的命名方式。
 - Commit 訊息使用簡潔英文祈使句或 `<type>: <short description>`。
 - 在 mixed worktree 中不得使用 `git add -A` 或 `git add .`；只 stage 本次任務需要的檔案。
 - 不要 revert 使用者未要求 revert 的變更。
@@ -79,7 +85,7 @@ sed -n '1,120p' AGENTS.md
 ## JavaScript Package Manager
 
 - 使用 pnpm。
-- 建立 app scaffold 時加入 `"packageManager": "pnpm@10"`，除非 repo 已指定更精確版本。
+- 使用 `package.json` 中既有的精確 `packageManager` 版本。不得自行降級、升級或改寫版本，除非 issue 明確要求。
 - 不得引入 `package-lock.json`、`yarn.lock`、`bun.lock` 或 `bun.lockb`。
 - 不得新增 `preinstall`。
 - 不得用 lifecycle script 強制 package manager。
@@ -104,7 +110,7 @@ sed -n '1,120p' AGENTS.md
 ## 內容與資料規則
 
 - 內容與資料支援繁簡雙語顯示；台灣旅遊路徑以繁體為主，HSK／學校課業／一般中文路徑可預設簡體。
-- 內容必須存在 structured, reviewable files，不要硬塞在 React component 裡。
+- 內容必須存在 structured、reviewable 的資料檔案，不得硬編碼在 Astro page、UI component 或 rendering logic 中。
 - 每個 vocabulary entry 至少支援：繁體中文、pinyin、日文說明、類別、例句、tone note、caution/source/review metadata。
 - 每個核心 lesson 必須符合 `docs/strategy/learning-and-motivation-strategy.md` 的 lesson loop。
 - 中日音讀相近性只能作為 learning bridge，不得在沒有來源時做詞源或語音等同宣稱。
@@ -113,6 +119,8 @@ sed -n '1,120p' AGENTS.md
 ## 測試與驗證
 
 宣稱完成前至少回報實際執行過的驗證。
+只執行與本次變更直接相關的 targeted validation；不得為 bounded change 無條件執行所有測試類別。
+若修改跨越共用 domain、schema、build configuration 或 package metadata，再擴大至相應的完整驗證。
 
 優先測：
 
@@ -131,5 +139,6 @@ sed -n '1,120p' AGENTS.md
 - 只列出關鍵變更：檔案名稱 + 一句說明。
 - 測試結果只報 pass/fail 與失敗原因，不貼完整 log。
 - 有新增依賴、package manager、license 或外部資料風險時必須明確說明。
-- 遇到錯誤時先給診斷與建議修法，再問是否繼續。
+- 遇到可在當前 issue scope 內安全修復的錯誤，先診斷並做最小修正，再重新驗證。
+- 只有在修正會擴大 scope、改變架構、增加依賴、破壞相容性或需要產品決策時，才停止並請使用者決定。
 

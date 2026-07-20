@@ -2,51 +2,86 @@
 
 @~/.claude/CLAUDE.md
 
-本檔繼承 global ~/.claude/CLAUDE.md 的全域規則；repo-specific 與 Codex 共用規則以 AGENTS.md 為並行 source of truth。git、package manager、supply-chain、scope 與安全規則必須同時參照 AGENTS.md 才能取得完整規範。
+本檔只定義 Claude Code 專屬行為。
 
-## 語言設定（覆寫全域規則）
+所有 repo 共用的開發、scope、git、package manager、供應鏈安全、測試與回報規則，以根目錄 `AGENTS.md` 為唯一 source of truth。不得在本檔重複維護同一套規則。
 
-本專案覆寫全域語言限制：
-- 代理人的說明與回報使用台灣正體中文。
-- 學習內容、例句、UI copy、語法說明、面向日本學習者的文案可以使用日文。
-- 繁體中文用於目標語內容（詞彙、例句、拼音標註）。
-- 全域禁止日文的規則不在此限。
+規則衝突時，優先順序如下：
 
-## 專案定位
+1. 使用者本次明確指示
+2. 當前 GitHub issue body
+3. `AGENTS.md`
+4. 本檔
 
-Chabiko | チャビコ 是給日本人學中文的網站。目標是讓零基礎或初學者從「看得懂一些漢字」進到「可以用簡單中文在台灣旅行」。
+## 語言
 
-產品核心不變：
-- Chinese content dual-script：台灣旅遊路徑以繁體為主；HSK／學校課業／一般中文路徑可預設簡體。產品 UI 與解說始終以日文為主。
-- 日文解釋優先（服務日本語使用者）。
-- 內容有趣、短、讓人想繼續看。
-- 中日漢字與音讀相近性只作為記憶提示，必須明確標示 false friends、聲調差異、台灣用法。
-- 學習成果以 Travel Quest / 情境準備度呈現，不只是課程完成數。
+* 分析、進度回報與最終回報使用台灣正體中文。
+* 學習內容、例句、UI copy、語法說明及面向日本學習者的文案可以使用日文。
+* 目標語中文依產品路徑使用繁體或簡體。
 
-## Source Of Truth 與 GSD 工作流程
+## 實作前
 
-実装前に以下を読む：
-- `.planning/PROJECT.md`
-- `.planning/REQUIREMENTS.md`
-- `.planning/ROADMAP.md`
-- GitHub issue body
+開始修改前必須：
 
-GSD ルール：issue の所属 phase/依存関係を先に確認。未要求の機能を混ぜない。
+1. 讀取根目錄 `AGENTS.md`。
+2. 讀取當前 GitHub issue body。
+3. 確認 issue scope、acceptance criteria、依賴及允許修改範圍。
+4. 只讀取完成本次任務所需的相關程式碼、schema、validator、fixture、測試與 source of truth。
+5. 檢查工作區狀態，避免覆蓋或混入其他變更。
 
-## 技術方向
+不得依賴本文件中的 implementation snapshot。當前狀態以 `main` 上的實際程式碼、測試及 GitHub issue／PR 為準。
 
-- Static-first web app, TypeScript, pnpm@10, Astro
-- uv + Python 3.14+ for validation tooling
-- LocalStorage for v1 progress, no backend/login/sync
+## 實作原則
 
-## 実装済みコンテキスト
+* 一次只處理當前 issue 明確要求的內容。
+* 優先採用最小、直接、可驗證的修改。
+* 不得順手重構、擴大 scope 或自動處理 non-blocking finding。
+* 發現 scope 外問題時，只在最終回報中簡短列為 deferred finding。
+* 不得相信 PR body、舊摘要或其他 agent 對完成狀態的宣稱，必須自行驗證。
 
-- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 merged
-- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 merged
-- **進捗ストア** (`src/lib/progress.ts`) — PR #53 merged
-- **HSK 語彙コントラクト** (`src/types/vocabulary.ts`) — PR #92 merged
-- **HSK 1 フラッシュカード** (`/vocabulary/hsk/1/`, `FlashcardSession.astro`) — 進捗統合済み、setup controls（10/20語、zh→ja/ja→zh）、pageshow/storage 対応
+## Subagent
 
-## graphify
+* 普通讀檔、搜尋、實作或 routine 判斷不得啟動 subagent。
+* 同一時間不得啟動用途重疊的 subagent。
+* subagent 任務必須清楚、狹窄且有明確停止條件。
+* subagent 不得再派生其他 agent。
+* 不得讓 background agent 執行 broad repository audit。
 
-This project has a knowledge graph at graphify-out/. Rules: prefer `graphify query/explain/path`, then graphify-out/wiki/, then GRAPH_REPORT.md. Run `graphify update .` after code changes.
+`arbiter` 只用於已明確定義的困難技術決策，不得用於一般實作、routine review 或 repository 探索。
+
+## Reviewer Gate
+
+Implementation 與必要的本地驗證完成後，才可啟動獨立 `reviewer`。
+
+* 每個 implementation cycle 最多只能有一個 reviewer。
+* reviewer 只審查當前 issue、acceptance criteria 與本次 staged diff。
+* reviewer 不得修改檔案、建立工作項目、派生 agent 或展開 broad repository audit。
+* non-blocking finding 只回報，不得阻止交付或自動觸發額外調查。
+* blocking finding 只做最小修正，執行受影響驗證後再審。
+* re-review 只檢查修正後差異與先前 blocker，不重新全面探索 repository。
+* reviewer 明確回覆 `No blocking findings.` 後，review loop 立即停止。
+
+只有在 reviewer 回覆 `No blocking findings.`，且必要驗證通過後，才可依使用者指示 commit、push 或建立 PR。
+
+除非使用者明確要求，否則不得 commit、push、建立 PR、merge，或修改 GitHub issue 與 review thread。
+
+## Graphify
+
+`graphify` 只用於程式碼導航與理解。
+
+除非當前 issue 明確要求更新 knowledge graph，否則不得：
+
+* 執行 `graphify update .`
+* 修改或提交 `graphify-out/`
+* 因一般 code 或 content change 產生 graph metadata churn
+
+## 完成回報
+
+只回報：
+
+* 關鍵修改
+* 實際執行的驗證與結果
+* reviewer 最終結果
+* 尚未解決的 blocking 問題
+* 必要的 deferred non-blocking finding
+
