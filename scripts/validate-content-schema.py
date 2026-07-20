@@ -1187,6 +1187,12 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
         )
 
     # ── Traditional optionality ──
+    # Explicit null is not the same as absent
+    if "traditional" in record and record["traditional"] is None:
+        errors.append(f"{path}: 'traditional' cannot be null for HSK record; omit the key if traditional is unavailable")
+    if "traditionalStatus" in record and record["traditionalStatus"] is None:
+        errors.append(f"{path}: 'traditionalStatus' cannot be null for HSK record; omit the key if traditional is unavailable")
+
     traditional_present = "traditional" in record and record["traditional"] is not None
     if traditional_present:
         if not isinstance(record["traditional"], str):
@@ -1562,6 +1568,10 @@ def run_tests():
         test_hsk_vocab_empty_source_type_fails,
         test_hsk_vocab_source_note_non_string_fails,
         test_hsk_vocab_traditional_empty_string_fails,
+        test_hsk_vocab_traditional_null_fails,
+        test_hsk_vocab_traditional_status_null_fails,
+        test_hsk_vocab_traditional_absent_no_error,
+        test_hsk_vocab_traditional_status_unavailable_ok,
         test_hsk_vocab_examples_invalid_script_status,
         test_hsk_vocab_examples_missing_traditional_status,
         test_hsk_vocab_examples_simplified_without_status_fails,
@@ -3560,6 +3570,43 @@ def test_vocab_examples_empty_array_ok():
     """Empty examples array should not crash or produce errors."""
     errs = validate_single(_minimal_vocab(examples=[]), "vocabulary")
     _assert_no_errors(errs, "vocab_examples_empty")
+
+
+
+def test_hsk_vocab_traditional_null_fails():
+    """HSK record with traditional=null must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(traditional=None, traditionalStatus="authored"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "cannot be null", "hsk_trad_null")
+
+
+def test_hsk_vocab_traditional_status_null_fails():
+    """HSK record with traditionalStatus=null must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(traditional="\u4f60\u597d", traditionalStatus=None),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "cannot be null", "hsk_trad_status_null")
+
+
+def test_hsk_vocab_traditional_absent_no_error():
+    """HSK record without traditional key passes."""
+    errs = validate_single(
+        _minimal_hsk_vocab(),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "hsk_trad_absent")
+
+
+def test_hsk_vocab_traditional_status_unavailable_ok():
+    """HSK record with traditionalStatus=unavailable and no traditional passes."""
+    errs = validate_single(
+        _minimal_hsk_vocab(traditionalStatus="unavailable"),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "hsk_trad_status_unavail")
 
 
 if __name__ == "__main__":

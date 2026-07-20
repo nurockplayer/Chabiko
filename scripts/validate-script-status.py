@@ -111,7 +111,12 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
         elif val not in ("authored", "verified"):
             errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for HSK record")
 
-    # traditional is optional for HSK
+    # traditional is optional for HSK; explicit null must be rejected
+    if "traditional" in record and record["traditional"] is None:
+        errors.append(f"{path}: 'traditional' cannot be null for HSK record; omit the key if traditional is unavailable")
+    if "traditionalStatus" in record and record["traditionalStatus"] is None:
+        errors.append(f"{path}: 'traditionalStatus' cannot be null for HSK record; omit the key if traditional is unavailable")
+
     traditional_present = "traditional" in record and record["traditional"] is not None
     if traditional_present:
         if not isinstance(record["traditional"], str):
@@ -624,6 +629,55 @@ def test_hsk_walk_sentence_unaffected():
     assert errs == [], f"Expected no errors, got {errs}"
 
 
+
+def test_hsk_traditional_null_fails():
+    """HSK record with traditional=null must be rejected."""
+    errs = validate_script_fields({
+        "id": "hsk-7",
+        "traditional": None,
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert any("cannot be null" in e for e in errs), f"Expected null error, got {errs}"
+
+
+def test_hsk_traditional_status_null_fails():
+    """HSK record with traditionalStatus=null must be rejected."""
+    errs = validate_script_fields({
+        "id": "hsk-8",
+        "traditionalStatus": None,
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert any("cannot be null" in e for e in errs), f"Expected null error, got {errs}"
+
+
+def test_hsk_traditional_absent_with_status_unavailable_ok():
+    """HSK record without traditional key and with traditionalStatus unavailable passes."""
+    errs = validate_script_fields({
+        "id": "hsk-9",
+        "traditionalStatus": "unavailable",
+        "simplified": "\u4f60\u597d",
+        "simplifiedStatus": "authored",
+        "pinyin": "n\u01d0 h\u01ceo",
+        "japanese": "\u3053\u3093\u306b\u3061\u306f",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -663,6 +717,9 @@ def run_tests():
         test_hsk_walk_bundle,
         test_hsk_walk_phrasebook_unaffected,
         test_hsk_walk_sentence_unaffected,
+        test_hsk_traditional_null_fails,
+        test_hsk_traditional_status_null_fails,
+        test_hsk_traditional_absent_with_status_unavailable_ok,
     ]
     failures = 0
     for test in tests:
