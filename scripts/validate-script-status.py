@@ -126,6 +126,8 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
     if traditional_present:
         if not isinstance(record["traditional"], str):
             errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+        elif record["traditional"].strip() == "":
+            errors.append(f"{path}.traditional must be a non-empty string for HSK record")
         ts = record.get("traditionalStatus")
         if ts is None:
             errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
@@ -805,6 +807,25 @@ def test_hsk_dispatch_empty_dict_uses_hsk():
     )
 
 
+def test_hsk_traditional_empty_string_fails():
+    """HSK record with empty or whitespace-only traditional must be rejected."""
+    for val in ("", "  "):
+        errs = validate_script_fields({
+            "id": "hsk-empty-trad",
+            "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+            "simplified": "你好",
+            "simplifiedStatus": "authored",
+            "traditional": val,
+            "traditionalStatus": "authored",
+            "pinyin": "nǐ hǎo",
+            "japanese": "こんにちは",
+            "reviewStatus": "draft",
+        })
+        assert any("non-empty" in e for e in errs), (
+            f"Expected non-empty error for traditional={val!r}, got {errs}"
+        )
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -847,6 +868,7 @@ def run_tests():
         test_hsk_traditional_null_fails,
         test_hsk_traditional_status_null_fails,
         test_hsk_traditional_absent_with_status_unavailable_ok,
+        test_hsk_traditional_empty_string_fails,
         test_hsk_dispatch_null_rejected,
         test_hsk_dispatch_string_rejected,
         test_hsk_dispatch_list_rejected,

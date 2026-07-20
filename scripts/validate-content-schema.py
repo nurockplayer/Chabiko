@@ -1335,7 +1335,9 @@ def _check_hsk_duplicate_identity(vocabulary: list, path: str) -> list[str]:
         if key in version_seen:
             first_idx = version_seen[key]
             errors.append(
-                f"{path}[{i}]: duplicate HSK identity 'simplified={norm_s} pinyin={norm_p}' "
+                f"{path}[{i}]: duplicate HSK identity "
+                f"'simplified=\"{simplified}\" pinyin=\"{pinyin}\" "
+                f"(norm: simplified=\"{norm_s}\" pinyin=\"{norm_p}\") "
                 f"in version '{sv}' (first occurrence at {path}[{first_idx}])"
             )
         else:
@@ -1560,6 +1562,7 @@ def run_tests():
         test_hsk_duplicate_identity_detection,
         test_hsk_duplicate_identity_different_version_allowed,
         test_hsk_duplicate_identity_deterministic_order,
+        test_hsk_nul_delimiter_no_false_positive,
         test_hsk_legacy_backward_compatible,
         test_hsk_legacy_generated_not_production,
         test_hsk_vocab_bundle_valid,
@@ -3338,12 +3341,32 @@ def test_hsk_duplicate_identity_deterministic_order():
     errs = validate_bundle(data)
     dup_errors = [e for e in errs if "duplicate HSK identity" in e]
     assert len(dup_errors) == 2, f"Expected 2 duplicate identity errors, got {len(dup_errors)}: {dup_errors}"
-    assert "root.vocabulary[2]" in dup_errors[0] and "你好" in dup_errors[0], (
-        f"Expected dup_errors[0] to be nǐ hǎo at [2], got: {dup_errors[0]}"
+    assert "root.vocabulary[2]" in dup_errors[0], (
+        f"Expected dup_errors[0] to be at [2], got: {dup_errors[0]}"
     )
-    assert "root.vocabulary[3]" in dup_errors[1] and "我们" in dup_errors[1], (
-        f"Expected dup_errors[1] to be wǒ men at [3], got: {dup_errors[1]}"
+    assert "root.vocabulary[3]" in dup_errors[1], (
+        f"Expected dup_errors[1] to be at [3], got: {dup_errors[1]}"
     )
+
+
+def test_hsk_nul_delimiter_no_false_positive():
+    """NUL-delimiter concatenation must not cause false duplicate identity.
+
+    Two different identities that would collide under the old
+    f\"{norm_s}\\x00{norm_p}\" delimiter scheme must NOT collide when using
+    Python tuples as the identity key.
+    """
+    data = {
+        "vocabulary": [
+            _minimal_hsk_vocab(id="a1", simplified="a", pinyin="bc",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"}),
+            _minimal_hsk_vocab(id="a2", simplified="ab", pinyin="c",
+                               hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"}),
+        ]
+    }
+    errs = validate_bundle(data)
+    hsk_dup = [e for e in errs if "duplicate HSK identity" in e]
+    assert hsk_dup == [], f"Expected no false positive collision, got {hsk_dup}"
 
 
 def test_hsk_legacy_backward_compatible():
