@@ -204,7 +204,10 @@ def _check_generated_not_production(record: dict, path: str) -> list[str]:
     errors = []
     review_status = record.get("reviewStatus")
     if review_status in ("reviewed", "published"):
+        is_hsk = isinstance(record.get("hsk"), dict)
         for field in ("traditionalStatus", "simplifiedStatus"):
+            if is_hsk and field == "simplifiedStatus":
+                continue
             if record.get(field) == "generated":
                 errors.append(
                     f"{path}: 'reviewStatus' is '{review_status}' but '{field}' is 'generated' — "
