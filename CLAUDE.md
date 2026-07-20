@@ -102,11 +102,11 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 
 ## 実装済みコンテキスト
 
-- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 squash merged。Active/Completed discriminated union、reveal→rate flow。
-- **HSK 語彙コントラクト** — PR #92 squash merged。型定義＋Python validators。
-- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 OPEN。new/learning/learned 遷移、優先順位付け。
-- **進捗ストア** (`src/lib/progress.ts`) — PR #53 squash merged。クラッシュセーフなレッスン完了管理。
-- **HSK 1 フラッシュカードルート** (`src/pages/vocabulary/hsk/1/index.astro`) — PR 作成前。#77 セッションエンジン使用、zh-to-ja、10語固定。
+- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 merged。Active/Completed discriminated union、reveal→rate フロー。
+- **HSK 語彙コントラクト** — PR #92 merged。型定義＋Python validators。
+- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 merged。new/learning/learned 遷移、優先順位付け、クラッシュセーフ永続化。
+- **進捗ストア** (`src/lib/progress.ts`) — PR #53 merged。クラッシュセーフなレッスン完了管理。
+- **HSK 1 フラッシュカードルート** (`/vocabulary/hsk/1/`) — PR #96 merged。#77 セッションエンジン使用、進捗統合済み、優先順位付けセッション構築、日本語ラベルリセット（確認付き）、pageshow/storage イベント対応。
 
 ## graphify
 
