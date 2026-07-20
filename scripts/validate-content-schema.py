@@ -1120,7 +1120,7 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
         errors.append(f"{path}.hsk must be a JSON object when present, got null")
         return errors
 
-    has_hsk = "hsk" in record
+    has_hsk = "hsk" in record and record["hsk"] is not None
 
     if has_hsk:
         errors.extend(_check_hsk_fields(record, path))
