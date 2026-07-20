@@ -175,7 +175,7 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
     errors = []
 
     # simplified is required
-    if "simplified" not in record:
+    if "simplified" not in record or record["simplified"] is None:
         errors.append(f"{path}: 'simplified' is required for HSK record")
     elif not isinstance(record["simplified"], str):
         errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
@@ -337,6 +337,92 @@ def _check_source_metadata(record: dict, path: str) -> list[str]:
             errors.append(
                 f"{path}: 'source' is required when 'reviewStatus' is '{review_status}'"
             )
+    return errors
+
+
+def _check_source_content(record: dict, path: str) -> list[str]:
+    """Validate source object fields: type must be a non-empty string, note must be a string when present."""
+    errors = []
+    source = record.get("source")
+    if "source" in record and not isinstance(source, dict):
+        errors.append(f"{path}.source must be a JSON object, got {type(source).__name__}")
+        return errors
+    if not isinstance(source, dict):
+        return errors
+    st = source.get("type")
+    if not isinstance(st, str) or st.strip() == "":
+        errors.append(f"{path}.source.type must be a non-empty string when source is present")
+    # When note key is present in source, it must be a non-null string
+    if "note" in source and not isinstance(source["note"], str):
+        errors.append(f"{path}.source.note must be a string when present, got {type(source['note']).__name__}")
+    return errors
+
+
+def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
+    """Validate vocabulary examples script provenance contract.
+
+    Examples contain learner-facing Chinese text and must follow the same
+    script provenance rules: traditionalStatus and simplifiedStatus must be
+    controlled values, matching their respective field presence.
+    """
+    errors = []
+    examples = record.get("examples")
+    if not isinstance(examples, list):
+        return errors
+    for i, ex in enumerate(examples):
+        ep = f"{path}.examples[{i}]"
+        if not isinstance(ex, dict):
+            errors.append(f"{ep}: expected a JSON object for vocabulary example, got {type(ex).__name__}")
+            continue
+
+        # traditional is required for examples
+        if "traditional" not in ex:
+            errors.append(f"{ep}: missing required field 'traditional'")
+        elif not isinstance(ex["traditional"], str):
+            errors.append(f"{ep}.traditional must be a string, got {type(ex['traditional']).__name__}")
+
+        # pinyin and japanese are required for examples
+        for field in ("pinyin", "japanese"):
+            if field not in ex or not isinstance(ex[field], str) or ex[field].strip() == "":
+                errors.append(f"{ep}: missing required field '{field}' for vocabulary example")
+
+        # traditionalStatus is required; unavailable is not valid for examples (traditional always has text)
+        EXAMPLE_TRAD_STATUSES = CONTROLLED_STATUSES - {"unavailable"}
+        ts = ex.get("traditionalStatus")
+        if ts is None:
+            errors.append(f"{ep}: 'traditionalStatus' is required")
+        elif not isinstance(ts, str):
+            errors.append(f"{ep}.traditionalStatus must be a string, got {type(ts).__name__}")
+        elif ts not in EXAMPLE_TRAD_STATUSES:
+            errors.append(f"{ep}.traditionalStatus '{ts}' is not a valid status")
+
+        # simplified is optional; when absent, simplifiedStatus must be 'unavailable' or absent
+        simplified_present = "simplified" in ex and ex["simplified"] is not None
+    if "simplified" in ex and ex["simplified"] is None:
+        errors.append(f"{ep}.simplified must be a string, got NoneType")
+        if simplified_present and not isinstance(ex["simplified"], str):
+            errors.append(f"{ep}.simplified must be a string, got {type(ex['simplified']).__name__}")
+
+        ss_key_present = "simplifiedStatus" in ex
+        ss = ex.get("simplifiedStatus") if ss_key_present else None
+        if not simplified_present:
+            if ss_key_present:
+                if ss is None:
+                    errors.append(f"{ep}.simplifiedStatus must be a string, got NoneType")
+                elif not isinstance(ss, str):
+                    errors.append(f"{ep}.simplifiedStatus must be a string, got {type(ss).__name__}")
+                elif ss != "unavailable":
+                    errors.append(f"{ep}: 'simplifiedStatus' must be 'unavailable' or absent when 'simplified' is absent")
+        else:
+            if ss is None:
+                errors.append(f"{ep}: 'simplifiedStatus' is required when 'simplified' is present")
+            elif not isinstance(ss, str):
+                errors.append(f"{ep}.simplifiedStatus must be a string, got {type(ss).__name__}")
+            elif ss == "unavailable":
+                errors.append(f"{ep}: 'simplifiedStatus' cannot be 'unavailable' when 'simplified' text exists")
+            elif ss not in CONTROLLED_STATUSES:
+                errors.append(f"{ep}.simplifiedStatus '{ss}' is not a valid status")
+
     return errors
 
 
@@ -680,7 +766,9 @@ def _build_schemas():
             _check_generated_not_production,
             _check_pain_point_context,
             _check_source_metadata,
+            _check_source_content,
             _check_vocabulary_fields,
+            _check_vocabulary_examples,
         ],
     }
 
@@ -997,6 +1085,15 @@ def _normalize_pinyin(text: str) -> str:
 def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
     """Validate vocabulary record, branching on HSK vs non-HSK contract."""
     errors = []
+
+    # Reject explicit hsk: null — when hsk key is present, it must be an object
+    if "hsk" in record and record["hsk"] is None:
+        errors.append(f"{path}.hsk must be a JSON object when present, got null")
+        # Don't branch into HSK or non-HSK validation; let the caller
+        # decide based on the remaining (non-HSK) fields.
+        errors.extend(_check_non_hsk_vocabulary_fields(record, path))
+        return errors
+
     has_hsk = "hsk" in record and record["hsk"] is not None
 
     if has_hsk:
@@ -1078,16 +1175,19 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
     if traditional_present:
         if not isinstance(record["traditional"], str):
             errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
-        ts = record.get("traditionalStatus")
-        if ts is None:
-            errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
-        elif not isinstance(ts, str):
-            errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
-        elif ts not in ("authored", "verified"):
-            errors.append(
-                f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
-                f"for HSK record"
-            )
+        elif record["traditional"].strip() == "":
+            errors.append(f"{path}.traditional must be a non-empty string for HSK record")
+        else:
+            ts = record.get("traditionalStatus")
+            if ts is None:
+                errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+            elif not isinstance(ts, str):
+                errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
+            elif ts not in ("authored", "verified"):
+                errors.append(
+                    f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
+                    f"for HSK record"
+                )
     else:
         ts = record.get("traditionalStatus")
         if ts is not None and ts != "unavailable":
@@ -1188,8 +1288,8 @@ def _check_vocabulary_duplicate_ids(vocabulary: list, path: str) -> list[str]:
 def _check_hsk_duplicate_identity(vocabulary: list, path: str) -> list[str]:
     """Detect HSK records with duplicate normalized identity within same standardVersion."""
     errors: list[str] = []
-    # Map: standardVersion → (normalized_simplified + normalized_pinyin) → first index
-    seen: dict[str, dict[str, int]] = {}
+    # Map: standardVersion → (norm_simplified, norm_pinyin) tuple → first index
+    seen: dict[str, dict[tuple[str, str], int]] = {}
     for i, item in enumerate(vocabulary):
         if not isinstance(item, dict):
             continue
@@ -1204,7 +1304,7 @@ def _check_hsk_duplicate_identity(vocabulary: list, path: str) -> list[str]:
 
         norm_s = _normalize_simplified(simplified)
         norm_p = _normalize_pinyin(pinyin)
-        key = f"{norm_s}\x00{norm_p}"
+        key = (norm_s, norm_p)
 
         if sv not in seen:
             seen[sv] = {}
@@ -1442,6 +1542,22 @@ def run_tests():
         test_hsk_legacy_generated_not_production,
         test_hsk_vocab_bundle_valid,
         test_hsk_vocab_bundle_duplicate_id,
+        test_hsk_vocab_null_hsk_rejected,
+        test_hsk_vocab_empty_source_type_fails,
+        test_hsk_vocab_source_note_non_string_fails,
+        test_hsk_vocab_traditional_empty_string_fails,
+        test_hsk_vocab_examples_invalid_script_status,
+        test_hsk_vocab_examples_missing_traditional_status,
+        test_hsk_vocab_examples_simplified_without_status_fails,
+        test_hsk_vocab_examples_simplified_status_unavailable_fails,
+        test_hsk_vocab_unknown_hsk_field_rejected,
+        test_hsk_vocab_examples_traditional_unavailable_rejected,
+        test_hsk_vocab_examples_simplified_status_null_rejected,
+        test_non_hsk_source_non_dict_rejected,
+        test_hsk_vocab_source_note_null_rejected,
+        test_vocab_examples_full_valid,
+        test_vocab_examples_non_dict_rejected,
+        test_vocab_examples_missing_pinyin_japanese,
     ]
     failures = 0
     for test in tests:
@@ -3218,6 +3334,161 @@ def test_hsk_vocab_bundle_duplicate_id():
     }
     errs = validate_bundle(data)
     _assert_has_error(errs, "duplicate vocabulary id 'shared-id'", "hsk_bundle_dup_id")
+
+
+def test_hsk_vocab_null_hsk_rejected():
+    """hsk: null must be rejected explicitly."""
+    errs = validate_single(_minimal_hsk_vocab(hsk=None), "vocabulary")
+    _assert_has_error(errs, "must be a JSON object when present, got null", "hsk_null_rejected")
+
+
+def test_hsk_vocab_empty_source_type_fails():
+    """HSK source.type must be a non-empty string."""
+    for src in ({"type": ""}, {"type": "   "}, {}):
+        errs = validate_single(_minimal_hsk_vocab(source=src), "vocabulary")
+        _assert_has_error(errs, "source.type must be a non-empty string", f"hsk_source_type_{src!r}")
+
+
+def test_hsk_vocab_source_note_non_string_fails():
+    """HSK source.note must be a string when present."""
+    for val in (123, True, []):
+        errs = validate_single(
+            _minimal_hsk_vocab(source={"type": "hsk-workbook", "note": val}),
+            "vocabulary",
+        )
+        _assert_has_error(errs, "source.note must be a string", f"hsk_source_note_{type(val).__name__}")
+
+
+def test_hsk_vocab_traditional_empty_string_fails():
+    """HSK traditional empty or whitespace-only must be rejected."""
+    for val in ("", "  "):
+        errs = validate_single(
+            _minimal_hsk_vocab(traditional=val, traditionalStatus="authored"),
+            "vocabulary",
+        )
+        _assert_has_error(errs, "non-empty string for HSK record", f"hsk_trad_empty_{val!r}")
+
+
+def test_hsk_vocab_examples_invalid_script_status():
+    """Vocabulary examples with invalid script status must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "invalid",
+                                       "pinyin": "nǐ hǎo", "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not a valid status", "hsk_examples_bad_status")
+
+
+def test_hsk_vocab_examples_missing_traditional_status():
+    """Vocabulary examples missing traditionalStatus must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "pinyin": "nǐ hǎo",
+                                       "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "traditionalStatus' is required", "hsk_examples_missing_ts")
+
+
+def test_hsk_vocab_examples_simplified_without_status_fails():
+    """Examples with simplified present but missing simplifiedStatus must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored",
+                                       "simplified": "你好", "pinyin": "nǐ hǎo",
+                                       "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "simplifiedStatus' is required", "hsk_examples_missing_ss")
+
+
+def test_hsk_vocab_examples_simplified_status_unavailable_fails():
+    """Examples with simplified text and simplifiedStatus=unavailable must fail."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored",
+                                       "simplified": "你好", "simplifiedStatus": "unavailable",
+                                       "pinyin": "nǐ hǎo", "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "cannot be 'unavailable'", "hsk_examples_ss_unavailable")
+
+
+def test_hsk_vocab_unknown_hsk_field_rejected():
+    """hsk object must reject unknown nested fields."""
+    errs = validate_single(
+        _minimal_hsk_vocab(hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1,
+                                 "sourceLevelLabel": "L1", "unknownField": "x"}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "unknown field", "hsk_unknown_field")
+
+
+def test_hsk_vocab_examples_traditional_unavailable_rejected():
+    """Examples with traditionalStatus unavailable must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "unavailable",
+                                       "pinyin": "nǐ hǎo", "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not a valid status", "hsk_examples_trad_unavailable")
+
+
+def test_hsk_vocab_examples_simplified_status_null_rejected():
+    """Examples with explicit simplifiedStatus null when simplified absent must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored",
+                                       "simplifiedStatus": None,
+                                       "pinyin": "nǐ hǎo", "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must be a string, got NoneType", "hsk_examples_ss_null")
+
+
+def test_non_hsk_source_non_dict_rejected():
+    """Non-HSK vocabulary source must be an object, not a string."""
+    errs = validate_single(
+        _minimal_vocab(source="not-an-object"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must be a JSON object, got str", "non_hsk_source_string")
+
+
+def test_hsk_vocab_source_note_null_rejected():
+    """source.note: null must be rejected when note key is present."""
+    errs = validate_single(
+        _minimal_hsk_vocab(source={"type": "hsk-workbook", "note": None}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "source.note must be a string when present", "hsk_source_note_null")
+
+
+def test_vocab_examples_full_valid():
+    """Valid vocabulary examples with both script forms pass."""
+    errs = validate_single(
+        _minimal_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored",
+                                   "simplified": "你好", "simplifiedStatus": "verified",
+                                   "pinyin": "nǐ hǎo", "japanese": "こんにちは"}]),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "vocab_examples_full_valid")
+
+
+def test_vocab_examples_non_dict_rejected():
+    """Non-dict example elements must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=["not-an-object", {"traditional": "你好", "traditionalStatus": "authored",
+                                                         "pinyin": "nǐ hǎo", "japanese": "テスト"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "expected a JSON object for vocabulary example", "vocab_examples_non_dict")
+
+
+def test_vocab_examples_missing_pinyin_japanese():
+    """Examples missing pinyin or japanese must be rejected."""
+    errs = validate_single(
+        _minimal_hsk_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "missing required field 'pinyin' for vocabulary example", "vocab_examples_no_pinyin")
+    _assert_has_error(errs, "missing required field 'japanese' for vocabulary example", "vocab_examples_no_japanese")
 
 
 if __name__ == "__main__":
