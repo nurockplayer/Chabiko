@@ -99,3 +99,21 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - 高衝擊自動化（auto-close PR、dependency auto-merge）預設禁止，除非使用者明確確認。
 - 內容型別是合約，不要隨意刪除或破壞向後相容。
 - 所有領域邏輯必須在 domain 層，不在 UI 元件裡放商業邏輯。
+
+## 実装済みコンテキスト
+
+- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 squash merged。Active/Completed discriminated union、reveal→rate flow。
+- **HSK 語彙コントラクト** — PR #92 squash merged。型定義＋Python validators。
+- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — PR #96 OPEN。new/learning/learned 遷移、優先順位付け。
+- **進捗ストア** (`src/lib/progress.ts`) — PR #53 squash merged。クラッシュセーフなレッスン完了管理。
+- **HSK 1 フラッシュカードルート** (`src/pages/vocabulary/hsk/1/index.astro`) — PR 作成前。#77 セッションエンジン使用、zh-to-ja、10語固定。
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
