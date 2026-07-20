@@ -16,6 +16,10 @@ import sys
 
 CONTROLLED_STATUSES = frozenset({"authored", "verified", "generated", "unavailable"})
 
+# HSK records require human-authored or verified script forms only.
+# Generated and unavailable are not production-eligible.
+HSK_VALID_SCRIPT_STATUSES = frozenset({"authored", "verified"})
+
 # Collection keys whose items are always Chinese content.
 CHINESE_CONTENT_COLLECTIONS = frozenset({"vocabulary", "sentences", "phrasebook"})
 

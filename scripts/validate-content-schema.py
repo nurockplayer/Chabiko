@@ -41,6 +41,10 @@ CONTROLLED_TAGS = frozenset({
 
 CONTROLLED_STATUSES = frozenset({"authored", "verified", "generated", "unavailable"})
 
+# HSK records require human-authored or verified script forms only.
+# Generated and unavailable are not production-eligible.
+HSK_VALID_SCRIPT_STATUSES = frozenset({"authored", "verified"})
+
 VALID_LEVELS = frozenset({"beginner", "elementary", "pre-intermediate", "intermediate"})
 
 VALID_REVIEW_STATUSES = frozenset({"draft", "reviewed", "published"})
@@ -182,6 +186,8 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
         errors.append(f"{path}: 'simplified' is required for HSK record")
     elif not isinstance(record["simplified"], str):
         errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
+    elif record["simplified"].strip() == "":
+        errors.append(f"{path}.simplified must be a non-empty string for HSK record")
 
     # simplifiedStatus required; authored or verified only
     if "simplifiedStatus" not in record:
@@ -206,6 +212,8 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
     if traditional_present:
         if not isinstance(record["traditional"], str):
             errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+        elif record["traditional"].strip() == "":
+            errors.append(f"{path}.traditional must be a non-empty string for HSK record")
         ts = record.get("traditionalStatus")
         if ts is None:
             errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
@@ -380,6 +388,7 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
     examples = record.get("examples")
     if not isinstance(examples, list) or len(examples) == 0:
         return errors
+    EXAMPLE_TRAD_STATUSES = CONTROLLED_STATUSES - {"unavailable"}
     for i, ex in enumerate(examples):
         ep = f"{path}.examples[{i}]"
         if not isinstance(ex, dict):
@@ -398,7 +407,6 @@ def _check_vocabulary_examples(record: dict, path: str) -> list[str]:
                 errors.append(f"{ep}: missing required field '{field}' for vocabulary example")
 
         # traditionalStatus is required; unavailable is not valid for examples (traditional always has text)
-        EXAMPLE_TRAD_STATUSES = CONTROLLED_STATUSES - {"unavailable"}
         ts = ex.get("traditionalStatus")
         if ts is None:
             errors.append(f"{ep}: 'traditionalStatus' is required")
@@ -748,7 +756,7 @@ def _build_schemas():
             "sections": list, "chunks": list, "kanjiBridgeNotes": list,
             "soundFocus": list, "examples": list, "reviewPrompts": list,
             "travelTask": str, "relatedVocabulary": list,
-            "painPointTags": list,
+            "painPointTags": list, "source": dict,
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
@@ -815,7 +823,7 @@ def _build_schemas():
             "id": str, "pinyin": str, "japanese": str,
             "scenario": str, "reviewStatus": str,
             "soundFocus": list, "travelTask": str, "relatedVocabulary": list,
-            "painPointTags": list,
+            "painPointTags": list, "source": dict,
         },
         "controlled_fields": {
             "scenario": VALID_SCENARIOS,
@@ -827,6 +835,7 @@ def _build_schemas():
             _check_generated_not_production,
             _check_pain_point_context,
             _check_source_metadata,
+            _check_source_content,
         ],
     }
 
@@ -843,7 +852,7 @@ def _build_schemas():
         "field_types": {
             "id": str, "scenario": str, "pinyin": str,
             "japanese": str, "reviewStatus": str,
-            "relatedVocabulary": list, "painPointTags": list,
+            "relatedVocabulary": list, "painPointTags": list, "source": dict,
         },
         "controlled_fields": {
             "scenario": VALID_SCENARIOS,
@@ -856,6 +865,7 @@ def _build_schemas():
             _check_pain_point_context,
             _check_regional_usage,
             _check_source_metadata,
+            _check_source_content,
         ],
     }
 
@@ -1209,17 +1219,18 @@ def _check_hsk_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
         elif record["traditional"].strip() == "":
             errors.append(f"{path}.traditional must be a non-empty string for HSK record")
-        else:
-            ts = record.get("traditionalStatus")
-            if ts is None:
-                errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
-            elif not isinstance(ts, str):
-                errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
-            elif ts not in ("authored", "verified"):
-                errors.append(
-                    f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
-                    f"for HSK record"
-                )
+        # Validate traditionalStatus regardless of traditional content
+        # (matches validate-script-status.py flat-structure behavior)
+        ts = record.get("traditionalStatus")
+        if ts is None:
+            errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+        elif not isinstance(ts, str):
+            errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
+        elif ts not in ("authored", "verified"):
+            errors.append(
+                f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
+                f"for HSK record"
+            )
     else:
         ts = record.get("traditionalStatus")
         if ts is not None and ts != "unavailable":
@@ -1432,12 +1443,19 @@ def run_tests():
         test_sentence_missing_required,
         test_sentence_false_friend_with_caution,
         test_sentence_scenario_controlled,
+        test_sentence_source_valid,
+        test_sentence_source_non_dict_rejected,
+        test_sentence_source_empty_type_rejected,
+        test_sentence_source_note_non_string_rejected,
 
         # ─── Phrasebook ───
         test_phrasebook_valid,
         test_phrasebook_missing_required,
         test_phrasebook_invalid_scenario,
         test_phrasebook_missing_usage_for_region,
+        test_phrasebook_source_non_dict_rejected,
+        test_phrasebook_source_empty_type_rejected,
+        test_phrasebook_source_note_non_string_rejected,
 
         # ─── Practice ───
         test_practice_valid,
@@ -2079,6 +2097,40 @@ def test_sentence_scenario_controlled():
     _assert_has_error(errs, "not valid", "sentence_scenario")
 
 
+def test_sentence_source_valid():
+    """Sentence with valid source object passes."""
+    errs = validate_single(
+        _minimal_sentence(source={"type": "authored", "note": "test"}),
+        "sentence",
+    )
+    _assert_no_errors(errs, "sentence_source_valid")
+
+
+def test_sentence_source_non_dict_rejected():
+    """Sentence source must be an object, not a string."""
+    errs = validate_single(
+        _minimal_sentence(source="not-an-object"),
+        "sentence",
+    )
+    _assert_has_error(errs, "must be a JSON object", "sentence_source_string")
+
+
+def test_sentence_source_empty_type_rejected():
+    """Sentence source.type must be non-empty."""
+    errs = validate_single(
+        _minimal_sentence(source={"type": ""}),
+        "sentence",
+    )
+    _assert_has_error(errs, "source.type must be a non-empty string", "sentence_source_empty_type")
+
+
+def test_sentence_source_note_non_string_rejected():
+    """Sentence source.note must be a string when present."""
+    errs = validate_single(
+        _minimal_sentence(source={"type": "authored", "note": 123}),
+        "sentence",
+    )
+    _assert_has_error(errs, "source.note must be a string", "sentence_source_note_non_string")
 # ─── Phrasebook tests ──────────────────────────────────────────────────────
 
 def _minimal_phrasebook(**overrides):
@@ -2117,6 +2169,43 @@ def test_phrasebook_missing_usage_for_region():
     )
     _assert_has_error(errs, "usageNotesJa", "phrasebook_region_usage")
 
+
+
+
+def test_phrasebook_source_valid():
+    """Phrasebook with valid source object passes."""
+    errs = validate_single(
+        _minimal_phrasebook(source={"type": "authored", "note": "test"}),
+        "phrasebook",
+    )
+    _assert_no_errors(errs, "phrasebook_source_valid")
+
+
+def test_phrasebook_source_non_dict_rejected():
+    """Phrasebook source must be an object, not a string."""
+    errs = validate_single(
+        _minimal_phrasebook(source="not-an-object"),
+        "phrasebook",
+    )
+    _assert_has_error(errs, "must be a JSON object", "phrasebook_source_string")
+
+
+def test_phrasebook_source_empty_type_rejected():
+    """Phrasebook source.type must be non-empty."""
+    errs = validate_single(
+        _minimal_phrasebook(source={"type": ""}),
+        "phrasebook",
+    )
+    _assert_has_error(errs, "source.type must be a non-empty string", "phrasebook_source_empty_type")
+
+
+def test_phrasebook_source_note_non_string_rejected():
+    """Phrasebook source.note must be a string when present."""
+    errs = validate_single(
+        _minimal_phrasebook(source={"type": "authored", "note": 123}),
+        "phrasebook",
+    )
+    _assert_has_error(errs, "source.note must be a string", "phrasebook_source_note_non_string")
 
 # ─── Practice tests ────────────────────────────────────────────────────────
 
