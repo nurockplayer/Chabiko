@@ -104,6 +104,7 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 
 - **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 でマージ済み。純粋関数型、決定論的、ゼロ外部依存。Active/Completed discriminated union、reveal→rate フロー、again（2番目に再挿入）/unsure（末尾）/known（除去）のキュー配置。35 tests。
 - **HSK 語彙コントラクト** — PR #92（squash merged as `c9c3331`）。型定義 (`src/types/vocabulary.ts`)、Python validator (`scripts/validate-content-schema.py`)、script-status validator (`scripts/validate-script-status.py`)。
+- **語彙進捗ストア** (`src/domain/vocabularyProgress.ts`) — issue #79 ドメイン層。new/learning/learned の状態遷移、knownStreak >= 2 で learned、learning→new→learned の優先順位付け。279 lines + 39 tests。ProgressStore のクラッシュ安全パターンを再利用。PR 作成前。
 
 ## graphify
 
