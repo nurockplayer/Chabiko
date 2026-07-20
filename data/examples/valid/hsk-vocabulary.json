@@ -1,0 +1,80 @@
+{
+  "vocabulary": [
+    {
+      "id": "voc-hsk-3-001",
+      "simplified": "爱",
+      "simplifiedStatus": "authored",
+      "traditional": "愛",
+      "traditionalStatus": "verified",
+      "pinyin": "ài",
+      "japanese": "愛する",
+      "source": "HSK Standard Course 1",
+      "reviewStatus": "reviewed",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "Level 1"
+      }
+    },
+    {
+      "id": "voc-hsk-3-002",
+      "simplified": "苹果",
+      "simplifiedStatus": "verified",
+      "pinyin": "píngguǒ",
+      "japanese": "りんご",
+      "source": "HSK Standard Course 1",
+      "reviewStatus": "reviewed",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "Level 1"
+      }
+    },
+    {
+      "id": "voc-hsk-3-003",
+      "simplified": "图书馆",
+      "simplifiedStatus": "authored",
+      "traditional": "圖書館",
+      "traditionalStatus": "authored",
+      "pinyin": "túshūguǎn",
+      "japanese": "図書館",
+      "source": "HSK Standard Course 3",
+      "reviewStatus": "published",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 3,
+        "sourceLevelLabel": "Level 3"
+      }
+    },
+    {
+      "id": "voc-hsk-legacy-001",
+      "simplified": "人民币",
+      "simplifiedStatus": "authored",
+      "traditional": "人民幣",
+      "traditionalStatus": "verified",
+      "pinyin": "rénmínbì",
+      "japanese": "人民元",
+      "source": "HSK Legacy 4",
+      "reviewStatus": "reviewed",
+      "hsk": {
+        "standardVersion": "hsk-legacy-6-level",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "四级"
+      }
+    },
+    {
+      "id": "voc-hsk-legacy-002",
+      "simplified": "电脑",
+      "simplifiedStatus": "verified",
+      "pinyin": "diànnǎo",
+      "japanese": "コンピューター",
+      "source": "HSK Legacy 2",
+      "reviewStatus": "reviewed",
+      "hsk": {
+        "standardVersion": "hsk-legacy-6-level",
+        "introducedAtLevel": 2,
+        "sourceLevelLabel": "二级"
+      }
+    }
+  ]
+}

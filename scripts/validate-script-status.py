@@ -24,28 +24,83 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     """
     Validate per-form script provenance fields on a content record.
 
-    Returns a list of error messages (empty = valid).
+    When the record has an 'hsk' field (HSK vocabulary):
+    - traditional/traditionalStatus are optional (Simplified-first contract)
+    - simplified + simplifiedStatus are required
+    - simplifiedStatus must be 'authored' or 'verified' (not generated/unavailable)
+
+    Otherwise (non-HSK, Traditional-first):
+    - traditional + traditionalStatus are required
+    - simplified is optional
     """
     errors: list[str] = []
+    has_hsk = record.get("hsk") is not None and isinstance(record.get("hsk"), dict)
 
-    # traditional is required and must be a string
-    if "traditional" not in record:
-        errors.append(f"{path}: 'traditional' is required")
-    elif not isinstance(record["traditional"], str):
-        errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+    if has_hsk:
+        # ─── HSK: Simplified-first contract ───
+        # simplified is required
+        if "simplified" not in record:
+            errors.append(f"{path}: 'simplified' is required for HSK vocabulary")
+        elif not isinstance(record["simplified"], str):
+            errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
 
-    # traditionalStatus is required; unavailable is contradictory because
-    # traditional always has text
-    if "traditionalStatus" not in record:
-        errors.append(f"{path}: 'traditionalStatus' is required")
+        # simplifiedStatus is required
+        if "simplifiedStatus" not in record:
+            errors.append(f"{path}: 'simplifiedStatus' is required for HSK vocabulary")
+        else:
+            val = record["simplifiedStatus"]
+            if not isinstance(val, str):
+                errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
+            elif val not in ("authored", "verified"):
+                errors.append(f"{path}.simplifiedStatus '{val}' — must be 'authored' or 'verified' for HSK")
+
+        # traditional is optional
+        traditional_present = "traditional" in record and record["traditional"] is not None
+        if traditional_present:
+            if not isinstance(record["traditional"], str):
+                errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+            # traditionalStatus must be authored or verified
+            if "traditionalStatus" not in record:
+                errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+            else:
+                val = record["traditionalStatus"]
+                if not isinstance(val, str):
+                    errors.append(f"{path}.traditionalStatus must be a string, got {type(val).__name__}")
+                elif val not in ("authored", "verified"):
+                    errors.append(f"{path}.traditionalStatus '{val}' — must be 'authored' or 'verified' for HSK")
+        else:
+            # traditional absent → traditionalStatus may be absent or 'unavailable'
+            if "traditionalStatus" in record:
+                val = record["traditionalStatus"]
+                if not isinstance(val, str):
+                    errors.append(f"{path}.traditionalStatus must be a string, got {type(val).__name__}")
+                elif val != "unavailable":
+                    errors.append(f"{path}: 'traditionalStatus' must be 'unavailable' when 'traditional' is absent")
+
+        # HSK path is complete — return now to avoid the
+        # generic simplified logic below (which assumes Traditional-first).
+        return errors
+
     else:
-        val = record["traditionalStatus"]
-        if not isinstance(val, str):
-            errors.append(f"{path}.traditionalStatus must be a string, got {type(val).__name__}")
-        elif val == "unavailable":
-            errors.append(f"{path}: 'traditionalStatus' cannot be 'unavailable' when 'traditional' text exists")
-        elif val not in CONTROLLED_STATUSES:
-            errors.append(f"{path}.traditionalStatus '{val}' — not a valid status")
+        # ─── Non-HSK: Traditional-first contract (existing logic) ───
+        # traditional is required and must be a string
+        if "traditional" not in record:
+            errors.append(f"{path}: 'traditional' is required")
+        elif not isinstance(record["traditional"], str):
+            errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+
+        # traditionalStatus is required; unavailable is contradictory because
+        # traditional always has text
+        if "traditionalStatus" not in record:
+            errors.append(f"{path}: 'traditionalStatus' is required")
+        else:
+            val = record["traditionalStatus"]
+            if not isinstance(val, str):
+                errors.append(f"{path}.traditionalStatus must be a string, got {type(val).__name__}")
+            elif val == "unavailable":
+                errors.append(f"{path}: 'traditionalStatus' cannot be 'unavailable' when 'traditional' text exists")
+            elif val not in CONTROLLED_STATUSES:
+                errors.append(f"{path}.traditionalStatus '{val}' — not a valid status")
 
     # simplified is optional; when absent, simplifiedStatus must be absent
     # or explicitly "unavailable" (meaning "confirmed unavailable")
