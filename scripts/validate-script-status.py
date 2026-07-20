@@ -119,7 +119,7 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
         val = record["simplifiedStatus"]
         if not isinstance(val, str):
             errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
-        elif val not in ("authored", "verified"):
+        elif val not in HSK_VALID_SCRIPT_STATUSES:
             errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for HSK record")
 
     # traditional is optional for HSK; explicit null must be rejected
@@ -139,7 +139,7 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
         elif not isinstance(ts, str):
             errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
-        elif ts not in ("authored", "verified"):
+        elif ts not in HSK_VALID_SCRIPT_STATUSES:
             errors.append(
                 f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' for HSK record"
             )
