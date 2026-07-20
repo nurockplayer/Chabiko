@@ -99,3 +99,18 @@ Greenfield web project。Phase 1 決定具體框架前，預設方向：
 - 高衝擊自動化（auto-close PR、dependency auto-merge）預設禁止，除非使用者明確確認。
 - 內容型別是合約，不要隨意刪除或破壞向後相容。
 - 所有領域邏輯必須在 domain 層，不在 UI 元件裡放商業邏輯。
+
+## 實裝済みコンテキスト
+
+- **語彙セッション状態機** (`src/domain/vocabularySession.ts`) — PR #95 でマージ済み。純粋関数型、決定論的、ゼロ外部依存。Active/Completed discriminated union、reveal→rate フロー、again（2番目に再挿入）/unsure（末尾）/known（除去）のキュー配置。35 tests。
+- **HSK 語彙コントラクト** — PR #92（squash merged as `c9c3331`）。型定義 (`src/types/vocabulary.ts`)、Python validator (`scripts/validate-content-schema.py`)、script-status validator (`scripts/validate-script-status.py`)。
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
