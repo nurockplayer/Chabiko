@@ -28,6 +28,18 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     """
     errors: list[str] = []
 
+    # Check if this is an HSK record (Simplified-first subtype)
+    is_hsk = isinstance(record.get("hsk"), dict)
+
+    if is_hsk:
+        return _validate_hsk_script_fields(record, path)
+    return _validate_standard_script_fields(record, path)
+
+
+def _validate_standard_script_fields(record: dict, path: str) -> list[str]:
+    """Standard Traditional-first script validation for non-HSK content."""
+    errors: list[str] = []
+
     # traditional is required and must be a string
     if "traditional" not in record:
         errors.append(f"{path}: 'traditional' is required")
@@ -75,6 +87,51 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
                 errors.append(f"{path}: 'simplifiedStatus' cannot be 'unavailable' when 'simplified' text exists")
             elif val not in CONTROLLED_STATUSES:
                 errors.append(f"{path}.simplifiedStatus '{val}' — not a valid status")
+
+    return errors
+
+
+def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
+    """HSK Simplified-first script validation."""
+    errors: list[str] = []
+
+    # simplified is required and must be a string
+    if "simplified" not in record:
+        errors.append(f"{path}: 'simplified' is required for HSK record")
+    elif not isinstance(record["simplified"], str):
+        errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
+
+    # simplifiedStatus is required; must be authored or verified
+    if "simplifiedStatus" not in record:
+        errors.append(f"{path}: 'simplifiedStatus' is required for HSK record")
+    else:
+        val = record["simplifiedStatus"]
+        if not isinstance(val, str):
+            errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
+        elif val not in ("authored", "verified"):
+            errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for HSK record")
+
+    # traditional is optional for HSK
+    traditional_present = "traditional" in record and record["traditional"] is not None
+    if traditional_present:
+        if not isinstance(record["traditional"], str):
+            errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+        ts = record.get("traditionalStatus")
+        if ts is None:
+            errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+        elif not isinstance(ts, str):
+            errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
+        elif ts not in ("authored", "verified"):
+            errors.append(
+                f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' for HSK record"
+            )
+    else:
+        ts = record.get("traditionalStatus")
+        if ts is not None and ts != "unavailable":
+            errors.append(
+                f"{path}: 'traditionalStatus' must be 'unavailable' or absent "
+                f"when 'traditional' is absent for HSK record"
+            )
 
     return errors
 
@@ -428,6 +485,145 @@ def test_simplified_non_string_fails():
     )
 
 
+def test_hsk_simplified_first_valid():
+    """HSK record with only simplified and no traditional passes."""
+    errs = validate_script_fields({
+        "id": "hsk-1",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_with_traditional_valid():
+    """HSK record with both simplified and reviewed traditional passes."""
+    errs = validate_script_fields({
+        "id": "hsk-2",
+        "simplified": "你好",
+        "simplifiedStatus": "verified",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_traditional_absent_with_unavailable_ok():
+    """HSK record with absent traditional and traditionalStatus=unavailable passes."""
+    errs = validate_script_fields({
+        "id": "hsk-3",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "traditionalStatus": "unavailable",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_simplified_status_generated_fails():
+    """HSK simplifiedStatus must be authored or verified."""
+    errs = validate_script_fields({
+        "id": "hsk-4",
+        "simplified": "你好",
+        "simplifiedStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert any("must be 'authored' or 'verified'" in e for e in errs), (
+        f"Expected authored/verified error, got {errs}"
+    )
+
+
+def test_hsk_traditional_generated_fails():
+    """HSK traditionalStatus generated for HSK record fails."""
+    errs = validate_script_fields({
+        "id": "hsk-5",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "traditional": "你好",
+        "traditionalStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert any("must be 'authored' or 'verified'" in e for e in errs), (
+        f"Expected authored/verified error for HSK traditional, got {errs}"
+    )
+
+
+def test_hsk_missing_traditional_status_without_traditional_ok():
+    """HSK record can omit traditionalStatus when traditional is absent."""
+    errs = validate_script_fields({
+        "id": "hsk-6",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "hsk-workbook"},
+        "reviewStatus": "draft",
+        "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_walk_bundle():
+    """Bundle with mixed HSK and non-HSK vocabulary passes."""
+    data = {
+        "vocabulary": [
+            {"id": "v1", "traditional": "謝謝", "traditionalStatus": "authored"},  # non-HSK
+            {"id": "v2", "simplified": "你好", "simplifiedStatus": "authored",  # HSK
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "hsk"}, "reviewStatus": "draft",
+             "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"}},
+        ]
+    }
+    errs = walk_content_records(data)
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_walk_phrasebook_unaffected():
+    """Existing phrasebook behavior unaffected by HSK changes."""
+    data = {
+        "phrasebook": [
+            {"id": "p1", "scenario": "food", "traditional": "我要這個",
+             "traditionalStatus": "authored", "pinyin": "wǒ yào zhège",
+             "japanese": "これをください", "reviewStatus": "draft"},
+        ]
+    }
+    errs = walk_content_records(data)
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_hsk_walk_sentence_unaffected():
+    """Existing sentence behavior unaffected by HSK changes."""
+    data = {
+        "sentences": [
+            {"id": "s1", "traditional": "我要去車站", "traditionalStatus": "authored",
+             "pinyin": "wǒ yào qù chēzhàn", "japanese": "駅に行きたい",
+             "scenario": "transport", "reviewStatus": "draft"},
+        ]
+    }
+    errs = walk_content_records(data)
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -457,6 +653,16 @@ def run_tests():
         test_missing_check_arg_exits_two,
         test_traditional_non_string_fails,
         test_simplified_non_string_fails,
+        # HSK tests
+        test_hsk_simplified_first_valid,
+        test_hsk_with_traditional_valid,
+        test_hsk_traditional_absent_with_unavailable_ok,
+        test_hsk_simplified_status_generated_fails,
+        test_hsk_traditional_generated_fails,
+        test_hsk_missing_traditional_status_without_traditional_ok,
+        test_hsk_walk_bundle,
+        test_hsk_walk_phrasebook_unaffected,
+        test_hsk_walk_sentence_unaffected,
     ]
     failures = 0
     for test in tests:
