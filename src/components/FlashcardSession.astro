@@ -1,5 +1,4 @@
 ---
-import { createVocabularySession } from '../domain/vocabularySession';
 import type { HskRenderableEntry } from '../content/loadHskVocabulary';
 
 export interface Props {
@@ -8,14 +7,8 @@ export interface Props {
 
 const { entries } = Astro.props;
 
-const entryMap = new Map(entries.map((e) => [e.id, e]));
-const ids = entries.map((e) => e.id);
-const session = createVocabularySession(ids, 10, 'zh-to-ja');
-
-const activeEntry = entryMap.get(session.activeItemId);
-
 const json = JSON.stringify({
-  ids,
+  ids: entries.map((e) => e.id),
   entries: entries.map(({ id, simplified, pinyin, japanese, traditional }) => ({
     id, simplified, pinyin, japanese, traditional,
   })),
@@ -23,57 +16,88 @@ const json = JSON.stringify({
 ---
 
 <div class="flashcard-session-root" data-session={json}>
-  <div id="flashcard-progress-footer" class="flashcard-footer">
-    <div id="flashcard-progress" class="flashcard-progress" aria-live="polite">
-      <span data-progress-text>0 / {session.selectedItemIds.length}</span>
-    </div>
-    <button id="btn-reset-progress" class="flashcard-reset-btn" type="button" hidden>
-      学習記録をリセット
-    </button>
-  </div>
-
   {entries.length === 0 ? (
     <p class="flashcard-fallback">単語データがありません。</p>
   ) : (
-    <div class="flashcard-container">
-      <div class="flashcard-card" id="flashcard-card">
-        <p data-front class="flashcard-front" lang="zh-Hans">{activeEntry?.simplified ?? ''}</p>
-        <div data-back class="flashcard-back hidden">
-          <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
-          <p data-japanese class="flashcard-japanese"></p>
-          <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
-          <p data-progress-hint class="flashcard-progress-hint hidden"></p>
+    <>
+      <!-- Setup panel – visible before session starts and on restart -->
+      <div id="setup-panel" class="setup-panel">
+        <div class="setup-group">
+          <span class="setup-label">セッションサイズ</span>
+          <div class="setup-options" role="radiogroup" aria-label="セッションサイズ">
+            <button id="size-10" class="setup-option setup-option--active" type="button"
+                    role="radio" aria-checked="true" data-size="10">10語</button>
+            <button id="size-20" class="setup-option" type="button"
+                    role="radio" aria-checked="false" data-size="20">20語</button>
+          </div>
+        </div>
+        <div class="setup-group">
+          <span class="setup-label">学習方向</span>
+          <div class="setup-options" role="radiogroup" aria-label="学習方向">
+            <button id="dir-zh-ja" class="setup-option setup-option--active" type="button"
+                    role="radio" aria-checked="true" data-dir="zh-to-ja">中国語 → 日本語</button>
+            <button id="dir-ja-zh" class="setup-option" type="button"
+                    role="radio" aria-checked="false" data-dir="ja-to-zh">日本語 → 中国語</button>
+          </div>
+        </div>
+        <p id="setup-count" class="setup-count"></p>
+        <button id="btn-start" class="flashcard-btn flashcard-btn--reveal" type="button">
+          スタート
+        </button>
+      </div>
+
+      <!-- Active session area – hidden during setup -->
+      <div id="session-area" class="hidden">
+        <div class="flashcard-footer">
+          <div id="flashcard-progress" class="flashcard-progress" aria-live="polite">
+            <span data-progress-text></span>
+          </div>
+          <button id="btn-reset-progress" class="flashcard-reset-btn" type="button" hidden>
+            学習記録をリセット
+          </button>
+        </div>
+
+        <div class="flashcard-container">
+          <div class="flashcard-card" id="flashcard-card">
+            <p data-front class="flashcard-front" lang="zh-Hans"></p>
+            <div data-back class="flashcard-back hidden">
+              <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
+              <p data-japanese class="flashcard-japanese"></p>
+              <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
+              <p data-progress-hint class="flashcard-progress-hint hidden"></p>
+            </div>
+          </div>
+
+          <div class="flashcard-actions">
+            <button id="btn-reveal" class="flashcard-btn flashcard-btn--reveal" type="button">
+              答えを見る
+            </button>
+            <div id="rating-actions" class="flashcard-ratings hidden">
+              <button id="btn-again" class="flashcard-btn flashcard-btn--again" type="button">
+                もう一度
+              </button>
+              <button id="btn-unsure" class="flashcard-btn flashcard-btn--unsure" type="button">
+                まだ曖昧
+              </button>
+              <button id="btn-known" class="flashcard-btn flashcard-btn--known" type="button">
+                覚えた
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="flashcard-actions">
-        <button id="btn-reveal" class="flashcard-btn flashcard-btn--reveal" type="button">
-          答えを見る
-        </button>
-        <div id="rating-actions" class="flashcard-ratings hidden">
-          <button id="btn-again" class="flashcard-btn flashcard-btn--again" type="button">
+      <template id="completion-template">
+        <div class="flashcard-completion" role="status">
+          <p class="flashcard-completion-icon">&#x2714;</p>
+          <p class="flashcard-completion-text">セッション完了！</p>
+          <button id="btn-restart" class="flashcard-btn flashcard-btn--restart" type="button">
             もう一度
           </button>
-          <button id="btn-unsure" class="flashcard-btn flashcard-btn--unsure" type="button">
-            まだ曖昧
-          </button>
-          <button id="btn-known" class="flashcard-btn flashcard-btn--known" type="button">
-            覚えた
-          </button>
         </div>
-      </div>
-    </div>
+      </template>
+    </>
   )}
-
-  <template id="completion-template">
-    <div class="flashcard-completion" role="status">
-      <p class="flashcard-completion-icon">&#x2714;</p>
-      <p class="flashcard-completion-text">セッション完了！</p>
-      <button id="btn-restart" class="flashcard-btn flashcard-btn--restart" type="button">
-        もう一度
-      </button>
-    </div>
-  </template>
 </div>
 
 <script>
@@ -101,7 +125,11 @@ const json = JSON.stringify({
       return entryMap.get(id);
     }
 
-    // Progress store — initialised lazily after DOM is ready
+    // ── Page-memory preferences (not persisted) ───────────────────────────
+    let sessionSize: 10 | 20 = 10;
+    let direction: 'zh-to-ja' | 'ja-to-zh' = 'zh-to-ja';
+
+    // ── Progress store ────────────────────────────────────────────────────
     let progressStore: InstanceType<typeof VocabularyProgressStore> | null = null;
 
     function getProgressStore(): InstanceType<typeof VocabularyProgressStore> {
@@ -111,7 +139,20 @@ const json = JSON.stringify({
       return progressStore;
     }
 
-    // DOM refs – populated lazily via bindRefs
+    // ── Static DOM refs that don't change ─────────────────────────────────
+    const setupPanel = document.getElementById('setup-panel') as HTMLElement;
+    const sessionArea = document.getElementById('session-area') as HTMLElement;
+    const setupCount = document.getElementById('setup-count') as HTMLElement;
+    const completionTemplate = document.getElementById('completion-template') as HTMLTemplateElement;
+
+    if (!setupPanel || !sessionArea || !completionTemplate) return;
+
+    // ── Setup controls ────────────────────────────────────────────────────
+    const sizeButtons = setupPanel.querySelectorAll('[data-size]');
+    const dirButtons = setupPanel.querySelectorAll('[data-dir]');
+    const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
+
+    // ── Refs rebuilt on each bindRefs ─────────────────────────────────────
     let progressEl: HTMLElement;
     let frontEl: HTMLElement;
     let backEl: HTMLElement;
@@ -126,21 +167,6 @@ const json = JSON.stringify({
     let btnKnown: HTMLButtonElement;
     let btnReset: HTMLButtonElement;
     let container: HTMLElement;
-
-    const completionTemplate = document.getElementById('completion-template') as HTMLTemplateElement;
-    if (!completionTemplate) return;
-
-    
-    let state: VocabularySessionState;
-
-    function buildSession(): VocabularySessionState {
-      const store = getProgressStore();
-      const prioritized = store.prioritize(allIds);
-      return createVocabularySession(prioritized, 10, 'zh-to-ja');
-    }
-
-    // Initial session — lazily built on first bind
-    let sessionBuilt = false;
 
     function bindRefs() {
       progressEl = document.querySelector('[data-progress-text]') as HTMLElement;
@@ -157,24 +183,74 @@ const json = JSON.stringify({
       btnKnown = document.getElementById('btn-known') as HTMLButtonElement;
       btnReset = document.getElementById('btn-reset-progress') as HTMLButtonElement;
       container = (root as HTMLElement).querySelector('.flashcard-container') as HTMLElement;
-
-      if (!sessionBuilt) {
-        state = buildSession();
-        sessionBuilt = true;
-      }
     }
 
+    // ── Session state ─────────────────────────────────────────────────────
+    let state: VocabularySessionState | null = null;
+
+    function buildSession(): VocabularySessionState {
+      const store = getProgressStore();
+      const prioritized = store.prioritize(allIds);
+      return createVocabularySession(prioritized, sessionSize, direction);
+    }
+
+    // ── Setup UI ──────────────────────────────────────────────────────────
+    function updateSetupCount() {
+      const count = Math.min(sessionSize, allIds.length);
+      setupCount.textContent = `利用可能な単語: ${allIds.length}語（セッション: ${count}語）`;
+    }
+
+    function selectSize(size: 10 | 20) {
+      sessionSize = size;
+      sizeButtons.forEach((btn) => {
+        const el = btn as HTMLButtonElement;
+        const isActive = el.getAttribute('data-size') === String(size);
+        el.classList.toggle('setup-option--active', isActive);
+        el.setAttribute('aria-checked', String(isActive));
+      });
+      updateSetupCount();
+    }
+
+    function selectDirection(dir: 'zh-to-ja' | 'ja-to-zh') {
+      direction = dir;
+      dirButtons.forEach((btn) => {
+        const el = btn as HTMLButtonElement;
+        const isActive = el.getAttribute('data-dir') === dir;
+        el.classList.toggle('setup-option--active', isActive);
+        el.setAttribute('aria-checked', String(isActive));
+      });
+    }
+
+    function showSetup() {
+      setupPanel.classList.remove('hidden');
+      sessionArea.classList.add('hidden');
+      updateSetupCount();
+    }
+
+    function startSession() {
+      state = buildSession();
+      setupPanel.classList.add('hidden');
+      sessionArea.classList.remove('hidden');
+      bindRefs();
+      renderCard();
+      updateProgress();
+      updateResetButton();
+      bindEvents();
+      btnReveal?.focus();
+    }
+
+    // ── Card rendering ────────────────────────────────────────────────────
     function showProgressHint() {
       if (!progressHintEl) return;
-      const activeId = state.status === 'active' ? state.activeItemId : null;
+      const activeId = state?.status === 'active' ? state.activeItemId : null;
       if (!activeId) { progressHintEl.classList.add('hidden'); return; }
-      const status = getProgressStore().getStatus(activeId);
+      const st = getProgressStore().getStatus(activeId);
       const streak = getProgressStore().getKnownStreak(activeId);
-      if (status === 'new' && streak === 0) {
+      if (st === 'new' && streak === 0) {
         progressHintEl.classList.add('hidden');
       } else {
         progressHintEl.classList.remove('hidden');
-        if (status === 'learned') {
+        if (st === 'learned') {
           progressHintEl.textContent = '習得済み';
         } else if (streak > 0) {
           progressHintEl.textContent = `正解ストリーク: ${streak}`;
@@ -185,18 +261,30 @@ const json = JSON.stringify({
     }
 
     function updateProgress() {
-      if (state.status === 'active' && progressEl) {
+      if (state?.status === 'active' && progressEl) {
         progressEl.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length}`;
       }
     }
 
     function renderCard() {
-      if (state.status !== 'active') return;
+      if (!state || state.status !== 'active') return;
       const entry = getEntry(state.activeItemId);
       if (!entry) return;
-      frontEl.textContent = entry.simplified;
-      pinyinEl.textContent = entry.pinyin;
-      japaneseEl.textContent = entry.japanese;
+
+      if (direction === 'ja-to-zh') {
+        // Front = Japanese, back = Simplified + pinyin + Traditional
+        frontEl.textContent = entry.japanese;
+        frontEl.lang = 'ja';
+        pinyinEl.textContent = entry.pinyin;
+        japaneseEl.textContent = entry.simplified;
+      } else {
+        // Front = Simplified, back = pinyin + Japanese + Traditional
+        frontEl.textContent = entry.simplified;
+        frontEl.lang = 'zh-Hans';
+        pinyinEl.textContent = entry.pinyin;
+        japaneseEl.textContent = entry.japanese;
+      }
+
       if (entry.traditional) {
         traditionalEl.textContent = entry.traditional;
         traditionalEl.style.display = '';
@@ -207,7 +295,9 @@ const json = JSON.stringify({
       showProgressHint();
     }
 
+    // ── Actions ───────────────────────────────────────────────────────────
     function revealAnswer() {
+      if (!state) return;
       const result = applyVocabularySessionAction(state, { kind: 'reveal' });
       if (result.kind === 'accepted') {
         state = result.state;
@@ -220,13 +310,13 @@ const json = JSON.stringify({
     }
 
     function applyRating(rating: 'again' | 'unsure' | 'known') {
-      const activeId = state.status === 'active' ? state.activeItemId : null;
+      const activeId = state?.status === 'active' ? state.activeItemId : null;
+      if (!state) return;
       const result = applyVocabularySessionAction(state, { kind: 'rate', rating });
       if (result.kind === 'accepted') {
         state = result.state;
       }
 
-      // Persist progress for the rated item
       if (activeId) {
         getProgressStore().applyRating(activeId, rating);
         updateResetButton();
@@ -250,57 +340,35 @@ const json = JSON.stringify({
       if (completionRoot) {
         const restartBtn = completionRoot.querySelector('#btn-restart') as HTMLButtonElement | null;
         if (restartBtn) {
-          restartBtn.addEventListener('click', restartSession);
+          restartBtn.addEventListener('click', restartToSetup);
         }
       }
       container.innerHTML = '';
       container.appendChild(clone);
-      if (state.status === 'completed') {
+      if (state?.status === 'completed' && progressEl) {
         progressEl.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length}`;
       }
     }
 
-    function restartSession() {
-      state = buildSession();
-      container.innerHTML = `
-        <div class="flashcard-card" id="flashcard-card">
-          <p data-front class="flashcard-front" lang="zh-Hans"></p>
-          <div data-back class="flashcard-back hidden">
-            <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
-            <p data-japanese class="flashcard-japanese"></p>
-            <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
-            <p data-progress-hint class="flashcard-progress-hint hidden"></p>
-          </div>
-        </div>
-        <div class="flashcard-actions">
-          <button id="btn-reveal" class="flashcard-btn flashcard-btn--reveal" type="button">答えを見る</button>
-          <div id="rating-actions" class="flashcard-ratings hidden">
-            <button id="btn-again" class="flashcard-btn flashcard-btn--again" type="button">もう一度</button>
-            <button id="btn-unsure" class="flashcard-btn flashcard-btn--unsure" type="button">まだ曖昧</button>
-            <button id="btn-known" class="flashcard-btn flashcard-btn--known" type="button">覚えた</button>
-          </div>
-        </div>
-      `;
-      bindRefs();
-      renderCard();
-      updateProgress();
-      bindEvents();
+    function restartToSetup() {
+      state = null;
+      showSetup();
     }
 
+    // ── Reset ─────────────────────────────────────────────────────────────
     function updateResetButton() {
       if (!btnReset) return;
       const all = getProgressStore().getAllEntries();
-      const hasAny = Object.keys(all).length > 0;
-      btnReset.hidden = !hasAny;
+      btnReset.hidden = Object.keys(all).length === 0;
     }
 
     function handleReset() {
       if (!confirm('HSKの学習進捗をリセットしますか？この操作は元に戻せません。')) return;
       getProgressStore().resetAll();
       updateResetButton();
-      // Don't restart the current session – just clear storage
     }
 
+    // ── Event binding ─────────────────────────────────────────────────────
     function bindEvents() {
       btnReveal?.addEventListener('click', revealAnswer);
       btnAgain?.addEventListener('click', () => applyRating('again'));
@@ -309,7 +377,7 @@ const json = JSON.stringify({
       btnReset?.addEventListener('click', handleReset);
     }
 
-    // Pageshow: re-read storage for back/forward cache
+    // ── Global listeners ──────────────────────────────────────────────────
     window.addEventListener('pageshow', () => {
       if (progressStore) {
         progressStore.refresh();
@@ -317,7 +385,6 @@ const json = JSON.stringify({
       }
     });
 
-    // Cross-tab: re-read storage when another tab modifies it
     window.addEventListener('storage', (event) => {
       if (event.key === null || event.key === 'chabiko:hsk-vocabulary-progress:v1') {
         if (progressStore) {
@@ -327,12 +394,27 @@ const json = JSON.stringify({
       }
     });
 
-    // Initial setup
+    // ── Setup control bindings ────────────────────────────────────────────
+    sizeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const sz = Number(btn.getAttribute('data-size')) as 10 | 20;
+        selectSize(sz);
+      });
+    });
+
+    dirButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const d = btn.getAttribute('data-dir') as 'zh-to-ja' | 'ja-to-zh';
+        selectDirection(d);
+      });
+    });
+
+    btnStart.addEventListener('click', startSession);
+
+    // ── Initial state ─────────────────────────────────────────────────────
     bindRefs();
-    renderCard();
-    updateProgress();
     updateResetButton();
-    bindEvents();
+    showSetup();
   })();
 </script>
 
@@ -341,186 +423,169 @@ const json = JSON.stringify({
     width: 100%;
   }
   .flashcard-fallback {
-    text-align: center;
-    color: var(--c-text-secondary);
-    padding: var(--space-xl);
+    text-align: center; color: var(--c-text-secondary); padding: var(--space-xl);
   }
-  .flashcard-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-md);
-  }
-  .flashcard-container {
+
+  /* ── Setup panel ──────────────────────────────────────────────────────── */
+  .setup-panel {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--space-xl);
-    max-width: 36rem;
+    gap: var(--space-lg);
+    max-width: 28rem;
     margin: 0 auto;
-  }
-  .flashcard-progress {
-    font-size: 0.85rem;
-    color: var(--c-text-secondary);
-  }
-  .flashcard-reset-btn {
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: transparent;
-    color: var(--c-text-secondary);
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .flashcard-reset-btn:hover {
-    border-color: #991b1b;
-    color: #991b1b;
-  }
-  .flashcard-card {
-    width: 100%;
-    min-height: 14rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--radius);
-    padding: var(--space-xl);
-    text-align: center;
+    padding: var(--space-lg);
   }
-  .flashcard-front {
-    font-size: clamp(2.5rem, 10vw, 4rem);
+  .setup-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .setup-label {
+    font-size: 0.8rem;
     font-weight: 700;
-    color: var(--c-text);
-    margin: 0;
-  }
-  .flashcard-back {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    width: 100%;
-  }
-  .flashcard-pinyin {
-    font-size: 1.25rem;
-    color: var(--c-accent);
-    font-weight: 600;
-    margin: 0;
-  }
-  .flashcard-japanese {
-    font-size: 1.1rem;
-    color: var(--c-text);
-    margin: 0;
-  }
-  .flashcard-traditional {
-    font-size: 0.9rem;
     color: var(--c-text-secondary);
-    margin: var(--space-xs) 0 0;
   }
-  .flashcard-progress-hint {
-    font-size: 0.75rem;
-    color: #166534;
-    margin: var(--space-xs) 0 0;
-  }
-  .hidden {
-    display: none !important;
-  }
-  .flashcard-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-  .flashcard-ratings {
+  .setup-options {
     display: flex;
     gap: var(--space-sm);
-    width: 100%;
   }
-  .flashcard-ratings.hidden {
-    display: none !important;
-  }
-  .flashcard-btn {
-    display: block;
-    width: 100%;
+  .setup-option {
+    flex: 1;
     padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
+    border: 2px solid var(--c-border);
     border-radius: var(--radius);
     background: var(--c-surface);
     color: var(--c-text);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: border-color 0.15s, background 0.15s;
   }
-  .flashcard-btn:hover:not(:disabled) {
-    background: var(--c-slot-bg);
+  .setup-option:hover {
+    border-color: var(--c-accent);
   }
-  .flashcard-btn:focus-visible {
+  .setup-option--active {
+    border-color: var(--c-accent);
+    background: #eff6ff;
+    color: var(--c-accent);
+  }
+  .setup-option:focus-visible {
     outline: 2px solid var(--c-accent);
     outline-offset: 2px;
   }
+  .setup-count {
+    font-size: 0.8rem;
+    color: var(--c-text-secondary);
+    margin: 0;
+  }
+
+  /* ── Footer ───────────────────────────────────────────────────────────── */
+  .flashcard-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: var(--space-md);
+  }
+  .flashcard-progress {
+    font-size: 0.85rem; color: var(--c-text-secondary);
+  }
+  .flashcard-reset-btn {
+    font-size: 0.7rem; padding: 2px 8px;
+    border: 1px solid var(--c-border); border-radius: var(--radius);
+    background: transparent; color: var(--c-text-secondary); cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .flashcard-reset-btn:hover { border-color: #991b1b; color: #991b1b; }
+
+  /* ── Card ─────────────────────────────────────────────────────────────── */
+  .flashcard-container {
+    display: flex; flex-direction: column; align-items: center;
+    gap: var(--space-xl); max-width: 36rem; margin: 0 auto;
+  }
+  .flashcard-card {
+    width: 100%; min-height: 14rem;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: var(--space-md);
+    background: var(--c-surface); border: 1px solid var(--c-border);
+    border-radius: var(--radius); padding: var(--space-xl); text-align: center;
+  }
+  .flashcard-front {
+    font-size: clamp(2.5rem, 10vw, 4rem); font-weight: 700;
+    color: var(--c-text); margin: 0;
+  }
+  .flashcard-back {
+    display: flex; flex-direction: column; gap: var(--space-xs); width: 100%;
+  }
+  .flashcard-pinyin {
+    font-size: 1.25rem; color: var(--c-accent); font-weight: 600; margin: 0;
+  }
+  .flashcard-japanese {
+    font-size: 1.1rem; color: var(--c-text); margin: 0;
+  }
+  .flashcard-traditional {
+    font-size: 0.9rem; color: var(--c-text-secondary); margin: var(--space-xs) 0 0;
+  }
+  .flashcard-progress-hint {
+    font-size: 0.75rem; color: #166534; margin: var(--space-xs) 0 0;
+  }
+
+  /* ── Actions ──────────────────────────────────────────────────────────── */
+  .flashcard-actions {
+    width: 100%; display: flex; flex-direction: column; gap: var(--space-sm);
+  }
+  .flashcard-ratings {
+    display: flex; gap: var(--space-sm); width: 100%;
+  }
+  .hidden { display: none !important; }
+  .flashcard-ratings.hidden { display: none !important; }
+  .flashcard-btn {
+    display: block; width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border); border-radius: var(--radius);
+    background: var(--c-surface); color: var(--c-text);
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .flashcard-btn:hover:not(:disabled) { background: var(--c-slot-bg); }
+  .flashcard-btn:focus-visible {
+    outline: 2px solid var(--c-accent); outline-offset: 2px;
+  }
   .flashcard-btn--reveal {
-    background: var(--c-accent);
-    color: #fff;
-    border-color: var(--c-accent);
+    background: var(--c-accent); color: #fff; border-color: var(--c-accent);
   }
-  .flashcard-btn--reveal:hover:not(:disabled) {
-    background: var(--c-accent-hover);
-  }
-  .flashcard-btn--reveal.hidden {
-    display: none !important;
-  }
+  .flashcard-btn--reveal:hover:not(:disabled) { background: var(--c-accent-hover); }
+  .flashcard-btn--reveal.hidden { display: none !important; }
   .flashcard-btn--again {
-    flex: 1;
-    border-color: #991b1b;
-    color: #991b1b;
+    flex: 1; border-color: #991b1b; color: #991b1b;
   }
-  .flashcard-btn--again:hover:not(:disabled) {
-    background: #fef2f2;
-  }
+  .flashcard-btn--again:hover:not(:disabled) { background: #fef2f2; }
   .flashcard-btn--unsure {
-    flex: 1;
-    border-color: #92400e;
-    color: #92400e;
+    flex: 1; border-color: #92400e; color: #92400e;
   }
-  .flashcard-btn--unsure:hover:not(:disabled) {
-    background: #fffbeb;
-  }
+  .flashcard-btn--unsure:hover:not(:disabled) { background: #fffbeb; }
   .flashcard-btn--known {
-    flex: 1;
-    border-color: #166534;
-    color: #166534;
+    flex: 1; border-color: #166534; color: #166534;
   }
-  .flashcard-btn--known:hover:not(:disabled) {
-    background: #f0fdf4;
-  }
+  .flashcard-btn--known:hover:not(:disabled) { background: #f0fdf4; }
   .flashcard-btn--restart {
     margin-top: var(--space-md);
-    background: var(--c-accent);
-    color: #fff;
-    border-color: var(--c-accent);
+    background: var(--c-accent); color: #fff; border-color: var(--c-accent);
   }
-  .flashcard-btn--restart:hover:not(:disabled) {
-    background: var(--c-accent-hover);
-  }
+  .flashcard-btn--restart:hover:not(:disabled) { background: var(--c-accent-hover); }
+
+  /* ── Completion ───────────────────────────────────────────────────────── */
   .flashcard-completion {
-    text-align: center;
-    padding: var(--space-xl) 0;
+    text-align: center; padding: var(--space-xl) 0;
   }
   .flashcard-completion-icon {
-    font-size: 2.5rem;
-    margin: 0 0 var(--space-sm);
+    font-size: 2.5rem; margin: 0 0 var(--space-sm);
   }
   .flashcard-completion-text {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 var(--space-md);
+    font-size: 1.25rem; font-weight: 700; margin: 0 0 var(--space-md);
   }
+
   @media (width >= 640px) {
-    .flashcard-ratings {
-      gap: var(--space-md);
-    }
+    .flashcard-ratings { gap: var(--space-md); }
   }
 </style>
