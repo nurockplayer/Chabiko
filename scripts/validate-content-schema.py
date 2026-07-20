@@ -190,7 +190,15 @@ def _check_hsk_script_fields(record: dict, path: str) -> list[str]:
         elif val not in ("authored", "verified"):
             errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for HSK record")
 
-    # traditional is optional for HSK
+    # traditional is optional for HSK; explicit null must be rejected.
+    # These checks are defense-in-depth for non-vocabulary content types
+    # (this function is called by _check_script_fields for sentences etc.).
+    # For vocabulary records, _check_hsk_fields provides the authoritative path.
+    if "traditional" in record and record["traditional"] is None:
+        errors.append(f"{path}: 'traditional' cannot be null for HSK record; omit the key if traditional is unavailable")
+    if "traditionalStatus" in record and record["traditionalStatus"] is None:
+        errors.append(f"{path}: 'traditionalStatus' cannot be null for HSK record; omit the key if traditional is unavailable")
+
     traditional_present = "traditional" in record and record["traditional"] is not None
     if traditional_present:
         if not isinstance(record["traditional"], str):
@@ -1102,12 +1110,11 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
     """Validate vocabulary record, branching on HSK vs non-HSK contract."""
     errors = []
 
-    # Reject explicit hsk: null — when hsk key is present, it must be an object
+    # Reject explicit hsk: null — when hsk key is present, it must be an object.
+    # Do NOT fall through to non-HSK validation; the record declared HSK intent
+    # and non-HSK errors (missing traditional, kana, category) are misleading.
     if "hsk" in record and record["hsk"] is None:
         errors.append(f"{path}.hsk must be a JSON object when present, got null")
-        # Don't branch into HSK or non-HSK validation; let the caller
-        # decide based on the remaining (non-HSK) fields.
-        errors.extend(_check_non_hsk_vocabulary_fields(record, path))
         return errors
 
     has_hsk = "hsk" in record and record["hsk"] is not None
@@ -3409,9 +3416,20 @@ def test_hsk_vocab_bundle_duplicate_id():
 
 
 def test_hsk_vocab_null_hsk_rejected():
-    """hsk: null must be rejected explicitly."""
+    """hsk: null must be rejected explicitly without leaking non-HSK field errors."""
     errs = validate_single(_minimal_hsk_vocab(hsk=None), "vocabulary")
     _assert_has_error(errs, "must be a JSON object when present, got null", "hsk_null_rejected")
+    # Must NOT leak non-HSK required-field errors (traditional, kana, category)
+    # since the record declared HSK intent but failed the hsk type check first.
+    assert not any("traditional" in e and "required" in e for e in errs), (
+        f"hsk:null should not trigger non-HSK traditional-required, got {errs}"
+    )
+    assert not any("kana" in e for e in errs), (
+        f"hsk:null should not trigger non-HSK kana-required, got {errs}"
+    )
+    assert not any("category" in e for e in errs), (
+        f"hsk:null should not trigger non-HSK category-required, got {errs}"
+    )
 
 
 def test_hsk_vocab_empty_source_type_fails():
