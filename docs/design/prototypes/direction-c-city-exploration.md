@@ -115,8 +115,7 @@ and learning flow:
 
 1. **Phrase card** — white surface with a 4px deep indigo top border (evoking
    a platform sign header). Chinese phrase dominates at 3rem, pinyin sits below
-   in muted colour, Japanese meaning follows in body weight, and the hook is
-   styled as a compact note.
+   in muted colour, Japanese meaning follows in body weight.
 
 2. **Route stations as lesson list** — each station row integrates the
    timeline dot, lesson title, can-do, and Chinese example. This replaces both
@@ -131,12 +130,12 @@ and learning flow:
    colour alone.
 
 5. **Progress communication** — the route timeline itself is the primary
-   progress indicator, complemented by the textual "0 / 3 レッスン完了"
-   summary. No thin progress bars or percentage indicators.
+   progress indicator, with the pending path (HSK対策) shown below
+   as a planned expansion. No thin progress bars or percentage indicators.
 
-6. **Desktop sidebar route** — shows all 3 stations at a glance with the
-   learner's current position highlighted. Functions as a "you are here" map
-   reference.
+6. **Desktop sidebar route** — shows the current active lesson at a glance with
+   the learner's position highlighted and a pending path for reference.
+   Functions as a "you are here" map reference.
 
 7. **Wayfinding micro-details** — subtle directional cues (amber dot on active
    station, line solid/dotted shift) that reward attention without distracting
