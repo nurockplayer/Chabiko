@@ -14,12 +14,18 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 import unicodedata
 
 import openpyxl
 from openpyxl import Workbook
+
+
+# ─── Valid standard versions ─────────────────────────────────────────────────
+
+VALID_STANDARD_VERSIONS = frozenset({"hsk-3.0", "hsk-legacy-6-level"})
 
 
 # ─── Column name mappings ───────────────────────────────────────────────────
@@ -130,17 +136,51 @@ def resolve_headers(header_row):
 # ─── Sheet detection ─────────────────────────────────────────────────────────
 
 def find_data_sheets(wb):
-    """Return list of (sheet_name, worksheet, header_mapping) for data sheets."""
-    results = []
+    """Classify workbook sheets and return data sheets.
+
+    Returns (data_sheets, malformed_sheets) where:
+    - data_sheets: list of (sheet_name, worksheet, header_mapping)
+    - malformed_sheets: list of sheet names that have at least one recognised
+      vocabulary header but are missing required columns.
+
+    Sheets with zero recognised vocabulary headers are metadata sheets
+    (silently ignored).
+    """
+    data_sheets = []
+    malformed = []
     for ws in wb.worksheets:
         if ws.max_row is None or ws.max_row < 2:
             continue
         header_row = [cell.value if cell.value is not None else ""
                       for cell in ws[1]]
-        mapping, missing = resolve_headers(header_row)
+        recognised = _count_recognised_headers(header_row)
+        if recognised == 0:
+            continue  # metadata sheet, ignore
+        mapping, _missing = resolve_headers(header_row)
         if mapping is not None:
-            results.append((ws.title, ws, mapping))
-    return results
+            data_sheets.append((ws.title, ws, mapping))
+        else:
+            malformed.append(ws.title)
+    if malformed:
+        raise ValueError(
+            f"Sheets with partial vocabulary headers (missing required "
+            f"columns): {', '.join(sorted(malformed))}"
+        )
+    return data_sheets
+
+
+def _count_recognised_headers(header_row):
+    """Count headers matching any known alias."""
+    count = 0
+    for raw in header_row:
+        text = normalize_text(raw).lower() if raw else ""
+        if not text:
+            continue
+        for aliases in list(REQUIRED_COLUMN_MAPPINGS.values()) + list(OPTIONAL_COLUMN_MAPPINGS.values()):
+            if text in aliases:
+                count += 1
+                break
+    return count
 
 
 # ─── Row parsing ─────────────────────────────────────────────────────────────
@@ -149,25 +189,42 @@ def parse_row(ws, row_idx, mapping):
     """Parse a single data row.
 
     Returns a dict with canonical column values plus ``_sourceSheet`` and
-    ``_sourceRow`` metadata.
+    ``_sourceRow`` metadata.  Formula cells in required columns cause the
+    row to be flagged; formula cells in optional columns are skipped.
     """
     record = {"_sourceSheet": ws.title, "_sourceRow": row_idx}
 
     for canonical_key, col_idx in mapping.items():
         cell = ws.cell(row=row_idx, column=col_idx + 1)  # openpyxl is 1-based
         raw = cell.value
+        is_formula = (cell.data_type == "f")
+
+        if is_formula and canonical_key in REQUIRED_COLUMN_MAPPINGS:
+            record["_formula_required"] = record.get("_formula_required", [])
+            record["_formula_required"].append(canonical_key)
+            record[canonical_key] = ""
+            continue
 
         if canonical_key == "level":
             if raw is not None:
-                if isinstance(raw, (int, float)):
-                    record[canonical_key] = int(raw)
+                if isinstance(raw, bool):
+                    record[canonical_key] = raw  # pass through for validation
+                elif isinstance(raw, int):
+                    record[canonical_key] = raw
+                elif isinstance(raw, float):
+                    if raw == int(raw):
+                        record[canonical_key] = int(raw)
+                    else:
+                        record[canonical_key] = raw  # non-integer float
                 else:
-                    try:
-                        record[canonical_key] = int(str(raw))
-                    except (ValueError, TypeError):
-                        record[canonical_key] = 1
+                    record[canonical_key] = str(raw)
             else:
-                record[canonical_key] = 1
+                record[canonical_key] = None
+            continue
+
+        if is_formula:
+            # Optional field formula: treat as empty
+            record[canonical_key] = ""
             continue
 
         if raw is None:
@@ -187,30 +244,59 @@ def validate_record(record, seen_ids, seen_identities, standard_version):
     """
     simplified = record.get("simplified", "")
     pinyin = record.get("pinyin", "")
+    sheet = record.get("_sourceSheet", "")
+    row = record.get("_sourceRow", 0)
+
+    # Formula in required field → reject
+    formula_fields = record.get("_formula_required")
+    if formula_fields:
+        return None, (f"formula in required column(s) {', '.join(formula_fields)}: "
+                      f"{sheet}:{row}")
 
     if not simplified:
-        return None, f"missing simplified: {record['_sourceSheet']}:{record['_sourceRow']}"
+        return None, f"missing simplified: {sheet}:{row}"
 
     if not pinyin:
-        return None, f"missing pinyin: {record['_sourceSheet']}:{record['_sourceRow']}"
+        return None, f"missing pinyin: {sheet}:{row}"
 
     japanese = record.get("japanese", "")
     if not japanese:
-        return None, f"missing japanese: {record['_sourceSheet']}:{record['_sourceRow']}"
+        return None, f"missing japanese: {sheet}:{row}"
 
-    level = record.get("level", 1)
-    if not isinstance(level, int) or level < 1:
-        level = 1
+    # Level validation
+    level_raw = record.get("level")
+    level_reason = None
+    if level_raw is None:
+        level_reason = "missing level"
+    elif isinstance(level_raw, bool):
+        level_reason = f"invalid level (bool)"
+    elif isinstance(level_raw, int):
+        if level_raw < 1 or level_raw > 9:
+            level_reason = f"invalid level (out of range 1-9: {level_raw})"
+    elif isinstance(level_raw, float):
+        if level_raw != int(level_raw):
+            level_reason = f"invalid level (non-integer: {level_raw})"
+        else:
+            level_raw_int = int(level_raw)
+            if level_raw_int < 1 or level_raw_int > 9:
+                level_reason = f"invalid level (out of range 1-9: {level_raw_int})"
+    else:
+        level_reason = f"invalid level (string: {level_raw})"
+
+    if level_reason:
+        return None, f"{level_reason}: {sheet}:{row}"
+
+    level = int(level_raw)
 
     identity = (_normalize_simplified(simplified), _normalize_pinyin(pinyin))
     if identity in seen_identities:
         return None, (f"duplicate identity ({simplified}, {pinyin}): "
-                      f"{record['_sourceSheet']}:{record['_sourceRow']}")
+                      f"{sheet}:{row}")
 
     vid = generate_stable_id(simplified, pinyin, level)
     if vid in seen_ids:
         return None, (f"collision on ID {vid}: "
-                      f"{record['_sourceSheet']}:{record['_sourceRow']}")
+                      f"{sheet}:{row}")
 
     vocab = {
         "id": vid,
@@ -317,14 +403,21 @@ def import_xlsx(input_path, output_dir, standard_version):
 
     Returns the manifest dict.
     """
+    # 0. Validate standard version (fail BEFORE any output mutation)
+    if standard_version not in VALID_STANDARD_VERSIONS:
+        raise ValueError(
+            f"Unsupported HSK standard version: '{standard_version}'. "
+            f"Valid versions: {', '.join(sorted(VALID_STANDARD_VERSIONS))}"
+        )
+
     # 1. Source checksum
     with open(input_path, "rb") as f:
         checksum = hashlib.sha256(f.read()).hexdigest()
 
-    # 2. Open workbook (data_only ignores formulas -> cached values)
-    wb = openpyxl.load_workbook(input_path, data_only=True)
+    # 2. Open workbook (disable data_only to detect formula cells)
+    wb = openpyxl.load_workbook(input_path, data_only=False)
 
-    # 3. Detect data sheets
+    # 3. Detect data sheets (raises ValueError for malformed sheets)
     data_sheets = find_data_sheets(wb)
     if not data_sheets:
         raise ValueError("No sheets with valid vocabulary headers found")
@@ -355,7 +448,6 @@ def import_xlsx(input_path, output_dir, standard_version):
                 "row": record.get("_sourceRow", 0),
             })
         else:
-            # Store normalized identity to match validator's duplicate detection
             normalized_identity = (
                 _normalize_simplified(vocab["simplified"]),
                 _normalize_pinyin(vocab["pinyin"]),
@@ -368,13 +460,32 @@ def import_xlsx(input_path, output_dir, standard_version):
                 record.get("_sourceRow", 0),
             ))
 
-    # 6. Count by level
+    # 6. Count by level (accepted only)
     accepted_by_level = {}
     for v, _sheet, _row in accepted_entries:
         lvl = v["hsk"]["introducedAtLevel"]
         accepted_by_level[lvl] = accepted_by_level.get(lvl, 0) + 1
 
-    # 7. Write batches
+    # totalByLevel: count every parsed row by its raw level value
+    total_by_level = {}
+    rejected_by_level = {}
+    for record in all_records:
+        lvl_raw = record.get("level")
+        bucket = _level_bucket(lvl_raw)
+        total_by_level[bucket] = total_by_level.get(bucket, 0) + 1
+
+    # rejectedByLevel: count rejected rows by their raw level value
+    for r in rejected:
+        lvl_raw = None
+        # Find the corresponding record
+        for rec in all_records:
+            if rec.get("_sourceSheet") == r["sheet"] and rec.get("_sourceRow") == r["row"]:
+                lvl_raw = rec.get("level")
+                break
+        bucket = _level_bucket(lvl_raw)
+        rejected_by_level[bucket] = rejected_by_level.get(bucket, 0) + 1
+
+    # 7. Write batches (output mutation starts here)
     os.makedirs(output_dir, exist_ok=True)
     batches = write_batches(accepted_entries, output_dir)
 
@@ -389,11 +500,11 @@ def import_xlsx(input_path, output_dir, standard_version):
         "standardVersion": standard_version,
         "sourceSheets": sheet_names,
         "totalRows": len(all_records),
+        "totalByLevel": _serialise_level_counts(total_by_level),
         "accepted": len(accepted_entries),
+        "acceptedByLevel": _serialise_level_counts(accepted_by_level),
         "rejected": len(rejected),
-        "acceptedByLevel": {
-            str(k): v for k, v in sorted(accepted_by_level.items())
-        },
+        "rejectedByLevel": _serialise_level_counts(rejected_by_level),
         "duplicateDiagnostics": duplicate_diagnostics,
         "rejectedRows": rejected,
         "batchCount": len(batches),
@@ -405,7 +516,65 @@ def import_xlsx(input_path, output_dir, standard_version):
         json.dump(manifest, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
+    # 9. Validate every batch against the #74 contract
+    _validate_batches(output_dir, batches)
+
     return manifest
+
+
+def _level_bucket(raw):
+    """Return a level bucket key for a raw level value.
+
+    Valid int 1-9 returns the int itself (for deterministic sort).
+    Missing, boolean, non-integer, out-of-range, etc. return the string
+    ``"invalid"``.
+    """
+    if raw is None:
+        return "invalid"
+    if isinstance(raw, bool):
+        return "invalid"
+    if isinstance(raw, int):
+        if 1 <= raw <= 9:
+            return raw
+        return "invalid"
+    return "invalid"
+
+
+def _serialise_level_counts(counter):
+    """Serialise a level-count dict with deterministic key order.
+
+    Int keys sort before the ``"invalid"`` string.
+    """
+    result = {}
+    for k in sorted(counter, key=_level_sort_key):
+        result[str(k)] = counter[k]
+    return result
+
+
+def _level_sort_key(k):
+    """Sort key: ints first (by value), then strings."""
+    return (0, k) if isinstance(k, int) else (1, k)
+
+
+def _validate_batches(output_dir, batches):
+    """Run the #74 content schema validator on every batch file.
+
+    Reuses the existing validate-content-schema.py via subprocess since
+    the validator is a standalone script without a stable importable API.
+    """
+    validator = os.path.join(os.path.dirname(__file__), "validate-content-schema.py")
+    for b in batches:
+        batch_path = os.path.join(output_dir, b["filename"])
+        result = subprocess.run(
+            [sys.executable, validator, "--check", batch_path],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            lines = [l for l in result.stdout.strip().split("\n") if l.strip()]
+            summary = "; ".join(lines[:3])
+            raise RuntimeError(
+                f"Batch {b['filename']} failed #74 contract validation: {summary}"
+            )
 
 
 # ─── CLI entry point ─────────────────────────────────────────────────────────
@@ -477,7 +646,7 @@ def _make_synthetic_wb(path):
     ws3.append(["老师", "lǎoshī", "老師", 3, "先生", "education"])
     ws3.append(["同学", "tóngxué", "同學", 4, "同級生", "education"])
 
-    # Sheet 4 — missing required column (no pinyin) → skipped entirely
+    # Sheet 4 — missing required column (no pinyin) → metadata
     ws4 = wb.create_sheet("Metadata Only")
     ws4.append(["notes", "description"])
     ws4.append(["foo", "bar"])
@@ -524,6 +693,130 @@ def _check_byte_identical(output_dir):
     """Rerun against the same synthetic file and compare."""
     # Already done once in the caller — diff against a fresh run
     pass  # handled in run_tests logic
+
+
+def _check_manifest_counts(manifest):
+    """Verify by-level count sums equal their top-level totals."""
+    total_accepted = sum(manifest["acceptedByLevel"].values())
+    assert total_accepted == manifest["accepted"], \
+        f"acceptedByLevel sum ({total_accepted}) != accepted ({manifest['accepted']})"
+
+    total_rejected = sum(manifest["rejectedByLevel"].values())
+    assert total_rejected == manifest["rejected"], \
+        f"rejectedByLevel sum ({total_rejected}) != rejected ({manifest['rejected']})"
+
+    total_all = sum(manifest["totalByLevel"].values())
+    assert total_all == manifest["totalRows"], \
+        f"totalByLevel sum ({total_all}) != totalRows ({manifest['totalRows']})"
+
+
+
+
+def _test_invalid_standard_version():
+    """Verify unsupported standardVersion is rejected before any output."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        from openpyxl import Workbook
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "Test"
+        _ws.append(["simplified", "pinyin", "japanese"])
+        _ws.append(["爱", "ài", "愛する"])
+        _path = os.path.join(_td, "x.xlsx")
+        _wb.save(_path)
+        try:
+            import_xlsx(_path, os.path.join(_td, "out"), "hsk-2.0")
+            raise AssertionError("expected ValueError for invalid version")
+        except ValueError as e:
+            assert "hsk-2.0" in str(e)
+            assert not os.path.exists(os.path.join(_td, "out")), \
+                "output directory created before version validation"
+
+
+def _test_invalid_level_rejection():
+    """Verify invalid level values are rejected with sheet/row diagnostics."""
+    import tempfile as _tf
+    from openpyxl import Workbook
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "LevelTest"
+        _ws.append(["simplified", "pinyin", "japanese", "level"])
+        _ws.append(["一", "yī", "一", 1])       # valid
+        _ws.append(["零", "líng", "零", 0])      # out of range
+        _ws.append(["十", "shí", "十", 10])      # out of range
+        _ws.append(["bad", "bād", "bad", "abc"])  # string level
+        _ws.append(["flt", "flt", "flt", 2.5])   # non-integer float
+        _ws.append(["bool_t", "b", "b", True])   # bool level
+        _ws.append(["four", "sì", "四", 4])      # valid
+        _path = os.path.join(_td, "levels.xlsx")
+        _wb.save(_path)
+        _out = os.path.join(_td, "out")
+        _m = import_xlsx(_path, _out, "hsk-3.0")
+        assert _m["accepted"] == 2, \
+            f"expected 2 accepted, got {_m['accepted']}"
+        assert _m["rejected"] == 5, \
+            f"expected 5 rejected, got {_m['rejected']}"
+        for r in _m["rejectedRows"]:
+            assert r["sheet"] == "LevelTest", \
+                f"expected LevelTest sheet, got {r['sheet']}"
+            assert "level" in r["reason"].lower(), \
+                f"level not mentioned in rejection: {r['reason']}"
+
+
+def _test_formula_rejection():
+    """Verify formulas in required fields are rejected; optional formulas are ignored."""
+    import tempfile as _tf
+    from openpyxl import Workbook
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "FormulaTest"
+        _ws.append(["simplified", "pinyin", "japanese", "level"])
+        _ws.append(["爱", "ài", "愛する", 1])
+        _path = os.path.join(_td, "formula.xlsx")
+        _wb.save(_path)
+
+        # Inject a formula into simplified (required column)
+        import openpyxl as _opxl
+        _wb2 = _opxl.load_workbook(_path)
+        _ws2 = _wb2.active
+        _ws2.cell(row=2, column=1).value = "=A2&B2"
+        _wb2.save(_path)
+
+        _out = os.path.join(_td, "out")
+        _m = import_xlsx(_path, _out, "hsk-3.0")
+        assert _m["accepted"] == 0, \
+            f"expected 0 accepted with formula, got {_m['accepted']}"
+        assert _m["rejected"] == 1, \
+            f"expected 1 rejection for formula, got {_m['rejected']}"
+        assert "formula" in _m["rejectedRows"][0]["reason"].lower(), \
+            f"formula not mentioned: {_m['rejectedRows'][0]['reason']}"
+
+
+def _test_sheet_detection_malformed():
+    """Verify a valid sheet + malformed candidate raises ValueError before output."""
+    import tempfile as _tf
+    from openpyxl import Workbook
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws1 = _wb.active
+        _ws1.title = "Good"
+        _ws1.append(["simplified", "pinyin", "japanese"])
+        _ws1.append(["爱", "ài", "愛する"])
+        _ws2 = _wb.create_sheet("Bad")
+        _ws2.append(["simplified", "pinyin"])  # missing japanese (required) with recognised headers
+        _ws2.append(["好", "hǎo"])
+        _path = os.path.join(_td, "mixed.xlsx")
+        _wb.save(_path)
+        _out = os.path.join(_td, "out")
+        try:
+            import_xlsx(_path, _out, "hsk-3.0")
+            raise AssertionError("expected ValueError for malformed sheet")
+        except ValueError as e:
+            assert "partial" in str(e).lower() or "missing" in str(e).lower()
+            assert not os.path.exists(os.path.join(_out, "manifest.json")), \
+                "output created before sheet validation"
 
 
 def run_tests():
@@ -636,8 +929,8 @@ def run_tests():
             assert ma == mb, "Manifests differ between identical runs"
             print("PASS")
 
-            # ── Test 7: Accepted-by-level counts ──
-            print("Test 7: Level distribution ... ", end="")
+            # ── Test 7: Level distribution and manifest counts ──
+            print("Test 7: Level distribution and manifest counts ... ", end="")
             by_level = manifest["acceptedByLevel"]
             assert by_level.get("1") == 5, \
                 f"expected 5 at level 1, got {by_level.get('1')}"
@@ -647,6 +940,8 @@ def run_tests():
                 f"expected 3 at level 3, got {by_level.get('3')}"
             assert by_level.get("4") == 1, \
                 f"expected 1 at level 4, got {by_level.get('4')}"
+            # Verify by-level sum invariants
+            _check_manifest_counts(manifest)
             print("PASS")
 
             # ── Test 8: Verify images ignored (no op needed — openpyxl
@@ -697,6 +992,26 @@ def run_tests():
             # ── Test 12: Missing japanese column is fatal ──
             print("Test 12: Missing japanese column ... ", end="")
             _test_missing_japanese()
+            print("PASS")
+
+            # ── Test 13: Invalid standardVersion ──
+            print("Test 13: Invalid standardVersion ... ", end="")
+            _test_invalid_standard_version()
+            print("PASS")
+
+            # ── Test 14: Invalid level values rejected ──
+            print("Test 14: Invalid level values ... ", end="")
+            _test_invalid_level_rejection()
+            print("PASS")
+
+            # ── Test 15: Formula in required field rejected ──
+            print("Test 15: Formula rejection ... ", end="")
+            _test_formula_rejection()
+            print("PASS")
+
+            # ── Test 16: Malformed sheet fails before output ──
+            print("Test 16: Malformed sheet detection ... ", end="")
+            _test_sheet_detection_malformed()
             print("PASS")
 
     except Exception as e:
