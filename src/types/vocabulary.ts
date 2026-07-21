@@ -90,8 +90,78 @@ export interface HskVocabularyWithTraditional extends VocabularyBase {
 
 export type HskVocabularyType = HskVocabulary | HskVocabularyWithTraditional;
 
-export type Vocabulary = LegacyVocabulary | LegacyVocabularyNoSimplified | HskVocabularyType;
+export type TeacherDifficultyBand = 'star-1' | 'star-2';
+export type TeacherDifficultyLabel = '☆' | '☆☆';
+export type TeacherPartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb';
+
+export interface TeacherCurriculum {
+  sourceId: 'teacher-core-v1';
+  difficultyBand: TeacherDifficultyBand;
+  sourceDifficultyLabel: TeacherDifficultyLabel;
+  partOfSpeech: TeacherPartOfSpeech;
+  sourceSheet: string;
+  sourceRow: number;
+}
+
+/** Teacher-curriculum Simplified-first vocabulary record without Traditional form.
+ * Does NOT inherit from VocabularyBase — teacher records have a stricter, narrower shape. */
+export interface TeacherVocabulary {
+  hsk?: never;
+  id: string;
+  pinyin: string;
+  japanese: string;
+  reviewStatus: ReviewStatus;
+  curriculum: TeacherCurriculum;
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
+  traditional?: never;
+  traditionalStatus?: 'unavailable';
+  kana?: string;
+  category?: string;
+  source: { type: 'teacher-workbook'; note?: string };
+  illustrationRef?: string;
+  similarityType?: never;
+  toneNote?: never;
+  caution?: never;
+  travelScenario?: never;
+  painPointTags?: never;
+  examples?: never;
+}
+
+/** Teacher-curriculum record with a reviewed Traditional form. */
+export interface TeacherVocabularyWithTraditional {
+  hsk?: never;
+  id: string;
+  pinyin: string;
+  japanese: string;
+  reviewStatus: ReviewStatus;
+  curriculum: TeacherCurriculum;
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified';
+  kana?: string;
+  category?: string;
+  source: { type: 'teacher-workbook'; note?: string };
+  illustrationRef?: string;
+  similarityType?: never;
+  toneNote?: never;
+  caution?: never;
+  travelScenario?: never;
+  painPointTags?: never;
+  examples?: never;
+}
+
+export type TeacherVocabularyType = TeacherVocabulary | TeacherVocabularyWithTraditional;
+
+export type Vocabulary =
+  | LegacyVocabulary
+  | LegacyVocabularyNoSimplified
+  | HskVocabularyType
+  | TeacherVocabularyType;
 
 export interface VocabularyBundle {
   vocabulary: Vocabulary[];
+  teacher_vocabulary?: TeacherVocabularyType[];
+  illustrations?: import('./illustration.js').Illustration[];
 }

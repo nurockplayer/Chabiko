@@ -345,3 +345,126 @@ Error priority (ensures at most one error per flag):
 - Output order is deterministic — errors appear in the order duplicates are found (by increasing array index).
 - Entries with a missing or non-string `id` are silently skipped (schema-level validation handles those separately).
 - The check is scoped to the `resources` collection only; identical `id` values across different content types (e.g., a resource and a vocabulary entry) are not flagged.
+
+## Teacher Curriculum Vocabulary
+
+Teacher-curriculum vocabulary records use a Simplified-first contract with an explicit `curriculum` object. They are identified by the presence of a `curriculum` field rather than an `hsk` field.
+
+### Fields
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | yes | string (non-empty) | Stable content identifier |
+| `simplified` | yes | string (non-empty) | Simplified Chinese text |
+| `simplifiedStatus` | yes | `"authored"` \| `"verified"` | Provenance of the Simplified form |
+| `pinyin` | yes | string (non-empty) | Pinyin with tone marks |
+| `japanese` | yes | string (non-empty) | Japanese gloss |
+| `source` | yes | object | See source rules below |
+| `reviewStatus` | yes | `"draft"` \| `"reviewed"` \| `"published"` | Workflow status |
+| `curriculum` | yes | object | See curriculum object below |
+| `traditional` | no | string | Traditional Chinese text when available |
+| `traditionalStatus` | conditional | `"authored"` \| `"verified"` | Required when traditional is present |
+| `kana` | no | string | Katakana reading |
+| `category` | no | string | Semantic category |
+| `illustrationRef` | no | string (non-empty) | Links to illustration record id |
+
+### Source Rules
+
+- `source.type` must be `"teacher-workbook"`.
+- `source.note` is optional string.
+
+### Curriculum Object
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `sourceId` | yes | `"teacher-core-v1"` | Controlled source identifier |
+| `difficultyBand` | yes | `"star-1"` \| `"star-2"` | Difficulty tier |
+| `sourceDifficultyLabel` | yes | `"☆"` \| `"☆☆"` | Display label matching difficulty band |
+| `partOfSpeech` | yes | `"noun"` \| `"verb"` \| `"adjective"` \| `"adverb"` | Grammatical category |
+| `sourceSheet` | yes | string (non-empty) | Source workbook sheet name |
+| `sourceRow` | yes | integer | Source workbook row number |
+
+### Script Provenance Rules
+
+Teacher curriculum records follow the same Simplified-first rules as HSK:
+
+- `simplified` and `simplifiedStatus` (`authored`/`verified`) are required.
+- `traditional` is optional.
+- When `traditional` is present, `traditionalStatus` is required and must be `authored` or `verified`.
+- When `traditional` is absent, `traditionalStatus` may be absent or `"unavailable"`.
+- `generated` is invalid for either script form.
+
+### Teacher Identity Normalization
+
+Duplicate teacher identity is the tuple:
+
+`curriculum.sourceId + normalized simplified + normalized pinyin`
+
+Uses the same normalization functions (NFKC, whitespace-stripped, case-folded pinyin) as HSK identity. Duplicate detection is scoped to records with the same `curriculum.sourceId`.
+
+## Illustration
+
+Illustrations are stored under the `illustrations` collection key.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | yes | string (non-empty) | Stable content identifier |
+| `vocabularyId` | yes | string (non-empty) | Links to the teacher vocabulary record |
+| `assetPath` | yes | string | Must start with `/assets/vocabulary/teacher-core-v1/` and end with `.webp` or `.png` |
+| `sourceChecksumSha256` | yes | string | Exactly 64 lowercase hexadecimal characters |
+| `width` | yes | integer (1–4096) | Image width in pixels, non-boolean |
+| `height` | yes | integer (1–4096) | Image height in pixels, non-boolean |
+| `mimeType` | yes | `"image/webp"` \| `"image/png"` | Controlled MIME type |
+| `fileSizeBytes` | yes | integer (1–1,500,000) | File size, non-boolean |
+| `altJa` | yes | string (non-empty) | Japanese alt text |
+| `rights` | yes | object | See rights object below |
+| `reviewStatus` | yes | `"draft"` \| `"reviewed"` \| `"published"` | Workflow status |
+
+### Rights Object
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `basis` | yes | `"commissioned-for-chabiko"` | Legal basis |
+| `publicWebDisplay` | yes | `true` | Always true for launch |
+| `staticAssetRedistribution` | yes | `true` | Always true for launch |
+| `modificationScope` | yes | `"technical-only"` | Modification allowed for technical purposes only |
+| `attributionRequired` | yes | boolean | Whether attribution is needed |
+| `attributionText` | conditional | string (non-empty) | Required and non-empty exactly when `attributionRequired` is `true`; must be absent otherwise |
+| `reuseOutsideChabiko` | yes | `"not-granted"` \| `"granted"` | Whether the asset can be reused outside Chabiko |
+
+### Illustration Validation Rules
+
+- `id`, `vocabularyId`, `assetPath`, `altJa` are non-empty strings.
+- `sourceChecksumSha256` is exactly 64 lowercase hexadecimal characters.
+- `width`/`height` are non-boolean integers from 1 through 4096.
+- `fileSizeBytes` is a non-boolean integer from 1 through 1,500,000.
+- MIME type is controlled as above.
+- `assetPath` must begin `/assets/vocabulary/teacher-core-v1/` and end with the correct extension for its MIME type.
+- `attributionText` is required and non-empty exactly when `attributionRequired` is true; otherwise it must be absent.
+- Unknown illustration or rights fields fail validation.
+- Duplicate illustration IDs fail deterministically.
+- Duplicate `vocabularyId` links fail (exactly one illustration per vocabulary record).
+
+## Cross-Reference: Teacher Vocabulary ↔ Illustrations
+
+In any bundle containing both collections:
+
+- Every teacher vocabulary `illustrationRef` must match one illustration `id`.
+- That illustration's `vocabularyId` must equal the vocabulary record's `id`.
+- Orphan illustration records fail.
+- Draft teacher records may omit `illustrationRef`.
+- Reviewed/published teacher records must include a valid `illustrationRef`.
+
+## Collection Keys
+
+The validator recognizes the following top-level collection keys:
+
+- `lessons`
+- `vocabulary`
+- `teacher_vocabulary`
+- `sentences`
+- `phrasebook`
+- `practice`
+- `resources`
+- `illustrations`
+

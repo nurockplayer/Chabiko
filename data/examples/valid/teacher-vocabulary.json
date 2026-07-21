@@ -1,0 +1,137 @@
+{
+  "teacher_vocabulary": [
+    {
+      "id": "teacher-voc-001",
+      "simplified": "你好",
+      "simplifiedStatus": "authored",
+      "pinyin": "nǐ hǎo",
+      "japanese": "こんにちは",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "Lesson1",
+        "sourceRow": 1
+      }
+    },
+    {
+      "id": "teacher-voc-002",
+      "simplified": "谢谢",
+      "simplifiedStatus": "verified",
+      "traditional": "謝謝",
+      "traditionalStatus": "authored",
+      "pinyin": "xièxie",
+      "japanese": "ありがとう",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "verb",
+        "sourceSheet": "Lesson1",
+        "sourceRow": 2
+      }
+    },
+    {
+      "id": "teacher-voc-003",
+      "simplified": "很",
+      "simplifiedStatus": "authored",
+      "pinyin": "hěn",
+      "japanese": "とても",
+      "kana": "とても",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "published",
+      "illustrationRef": "ill-003",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "adverb",
+        "sourceSheet": "Lesson1",
+        "sourceRow": 3
+      }
+    },
+    {
+      "id": "teacher-voc-004",
+      "simplified": "大",
+      "simplifiedStatus": "authored",
+      "pinyin": "dà",
+      "japanese": "大きい",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-2",
+        "sourceDifficultyLabel": "☆☆",
+        "partOfSpeech": "adjective",
+        "sourceSheet": "Lesson2",
+        "sourceRow": 1
+      }
+    },
+    {
+      "id": "teacher-voc-005",
+      "simplified": "小",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiǎo",
+      "japanese": "小さい",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "published",
+      "illustrationRef": "ill-005",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "adjective",
+        "sourceSheet": "Lesson2",
+        "sourceRow": 2
+      }
+    }
+  ],
+  "illustrations": [
+    {
+      "id": "ill-003",
+      "vocabularyId": "teacher-voc-003",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/hen.webp",
+      "sourceChecksumSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 512,
+      "height": 512,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 102400,
+      "altJa": "很のイラスト",
+      "rights": {
+        "basis": "commissioned-for-chabiko",
+        "publicWebDisplay": true,
+        "staticAssetRedistribution": true,
+        "modificationScope": "technical-only",
+        "attributionRequired": false,
+        "reuseOutsideChabiko": "not-granted"
+      },
+      "reviewStatus": "published"
+    },
+    {
+      "id": "ill-005",
+      "vocabularyId": "teacher-voc-005",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/xiao.png",
+      "sourceChecksumSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "width": 256,
+      "height": 256,
+      "mimeType": "image/png",
+      "fileSizeBytes": 204800,
+      "altJa": "小のイラスト",
+      "rights": {
+        "basis": "commissioned-for-chabiko",
+        "publicWebDisplay": true,
+        "staticAssetRedistribution": true,
+        "modificationScope": "technical-only",
+        "attributionRequired": true,
+        "attributionText": "Illustration by Example Artist",
+        "reuseOutsideChabiko": "not-granted"
+      },
+      "reviewStatus": "published"
+    }
+  ]
+}

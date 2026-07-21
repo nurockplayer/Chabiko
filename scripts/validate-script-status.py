@@ -21,7 +21,7 @@ CONTROLLED_STATUSES = frozenset({"authored", "verified", "generated", "unavailab
 HSK_VALID_SCRIPT_STATUSES = frozenset({"authored", "verified"})
 
 # Collection keys whose items are always Chinese content.
-CHINESE_CONTENT_COLLECTIONS = frozenset({"vocabulary", "sentences", "phrasebook"})
+CHINESE_CONTENT_COLLECTIONS = frozenset({"vocabulary", "teacher_vocabulary", "sentences", "phrasebook"})
 
 
 def validate_script_fields(record: dict, path: str = "record") -> list[str]:
@@ -31,6 +31,15 @@ def validate_script_fields(record: dict, path: str = "record") -> list[str]:
     Returns a list of error messages (empty = valid).
     """
     errors: list[str] = []
+
+    # Teacher curriculum records (Simplified-first, like HSK)
+    if "curriculum" in record:
+        curriculum_val = record["curriculum"]
+        if not isinstance(curriculum_val, dict):
+            errors.append(f"{path}.curriculum must be a JSON object when present, got {type(curriculum_val).__name__}")
+        else:
+            errors.extend(_validate_teacher_script_fields(record, path))
+        return errors
 
     # Check if this is an HSK record (Simplified-first subtype)
     # When the key is present, hsk must be a dict/object.
@@ -149,6 +158,60 @@ def _validate_hsk_script_fields(record: dict, path: str) -> list[str]:
             errors.append(
                 f"{path}: 'traditionalStatus' must be 'unavailable' or absent "
                 f"when 'traditional' is absent for HSK record"
+            )
+
+    return errors
+
+
+def _validate_teacher_script_fields(record: dict, path: str) -> list[str]:
+    """Teacher curriculum Simplified-first script validation (same as HSK rules)."""
+    errors: list[str] = []
+
+    # simplified is required and must be a non-empty string
+    if "simplified" not in record:
+        errors.append(f"{path}: 'simplified' is required for teacher curriculum record")
+    elif not isinstance(record["simplified"], str):
+        errors.append(f"{path}.simplified must be a string, got {type(record['simplified']).__name__}")
+    elif record["simplified"].strip() == "":
+        errors.append(f"{path}.simplified must be a non-empty string for teacher curriculum record")
+
+    # simplifiedStatus is required; must be authored or verified
+    if "simplifiedStatus" not in record:
+        errors.append(f"{path}: 'simplifiedStatus' is required for teacher curriculum record")
+    else:
+        val = record["simplifiedStatus"]
+        if not isinstance(val, str):
+            errors.append(f"{path}.simplifiedStatus must be a string, got {type(val).__name__}")
+        elif val not in HSK_VALID_SCRIPT_STATUSES:
+            errors.append(f"{path}.simplifiedStatus '{val}' must be 'authored' or 'verified' for teacher curriculum record")
+
+    # traditional is optional for teacher curriculum; explicit null must be rejected
+    if "traditional" in record and record["traditional"] is None:
+        errors.append(f"{path}: 'traditional' cannot be null for teacher curriculum record; omit the key if traditional is unavailable")
+    if "traditionalStatus" in record and record["traditionalStatus"] is None:
+        errors.append(f"{path}: 'traditionalStatus' cannot be null for teacher curriculum record; omit the key if traditional is unavailable")
+
+    traditional_present = "traditional" in record and record["traditional"] is not None
+    if traditional_present:
+        if not isinstance(record["traditional"], str):
+            errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+        elif record["traditional"].strip() == "":
+            errors.append(f"{path}.traditional must be a non-empty string for teacher curriculum record")
+        ts = record.get("traditionalStatus")
+        if ts is None:
+            errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+        elif not isinstance(ts, str):
+            errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
+        elif ts not in HSK_VALID_SCRIPT_STATUSES:
+            errors.append(
+                f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' for teacher curriculum record"
+            )
+    else:
+        ts = record.get("traditionalStatus")
+        if ts is not None and ts != "unavailable":
+            errors.append(
+                f"{path}: 'traditionalStatus' must be 'unavailable' or absent "
+                f"when 'traditional' is absent for teacher curriculum record"
             )
 
     return errors
@@ -832,6 +895,262 @@ def test_hsk_traditional_empty_string_fails():
         )
 
 
+# ─── Teacher curriculum tests ─────────────────────────────────────────────
+
+def test_teacher_simplified_first_valid():
+    """Teacher record with only simplified and no traditional passes."""
+    errs = validate_script_fields({
+        "id": "teacher-1",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_with_traditional_valid():
+    """Teacher record with both simplified and reviewed traditional passes."""
+    errs = validate_script_fields({
+        "id": "teacher-2",
+        "simplified": "你好",
+        "simplifiedStatus": "verified",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_traditional_absent_with_unavailable_ok():
+    """Teacher record with absent traditional and traditionalStatus=unavailable passes."""
+    errs = validate_script_fields({
+        "id": "teacher-3",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "traditionalStatus": "unavailable",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_simplified_status_generated_fails():
+    """Teacher simplifiedStatus must be authored or verified."""
+    errs = validate_script_fields({
+        "id": "teacher-4",
+        "simplified": "你好",
+        "simplifiedStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert any("must be 'authored' or 'verified'" in e for e in errs), (
+        f"Expected authored/verified error, got {errs}"
+    )
+
+
+def test_teacher_traditional_generated_fails():
+    """Teacher traditionalStatus generated for teacher record fails."""
+    errs = validate_script_fields({
+        "id": "teacher-5",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "traditional": "你好",
+        "traditionalStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert any("must be 'authored' or 'verified'" in e for e in errs), (
+        f"Expected authored/verified error for teacher traditional, got {errs}"
+    )
+
+
+def test_teacher_missing_traditional_status_without_traditional_ok():
+    """Teacher record can omit traditionalStatus when traditional is absent."""
+    errs = validate_script_fields({
+        "id": "teacher-6",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_traditional_null_fails():
+    """Teacher record with traditional=null must be rejected."""
+    errs = validate_script_fields({
+        "id": "teacher-7",
+        "traditional": None,
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert any("cannot be null" in e for e in errs), f"Expected null error, got {errs}"
+
+
+def test_teacher_traditional_status_null_fails():
+    """Teacher record with traditionalStatus=null must be rejected."""
+    errs = validate_script_fields({
+        "id": "teacher-8",
+        "traditionalStatus": None,
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                       "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                       "sourceSheet": "S1", "sourceRow": 1},
+    })
+    assert any("cannot be null" in e for e in errs), f"Expected null error, got {errs}"
+
+
+def test_teacher_walk_bundle():
+    """Bundle with teacher_vocabulary and teacher curriculum records passes."""
+    data = {
+        "teacher_vocabulary": [
+            {"id": "tv1", "simplified": "你好", "simplifiedStatus": "authored",
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "teacher-workbook"},
+             "reviewStatus": "draft",
+             "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                            "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                            "sourceSheet": "S1", "sourceRow": 1}},
+        ]
+    }
+    errs = walk_content_records(data)
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_walk_bundle_mixed():
+    """Bundle with mixed teacher, HSK, and non-HSK vocabulary passes."""
+    data = {
+        "vocabulary": [
+            {"id": "v1", "traditional": "謝謝", "traditionalStatus": "authored"},
+            {"id": "v2", "simplified": "你好", "simplifiedStatus": "authored",
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "hsk"}, "reviewStatus": "draft",
+             "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "L1"}},
+        ],
+        "teacher_vocabulary": [
+            {"id": "tv1", "simplified": "你好", "simplifiedStatus": "authored",
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "teacher-workbook"},
+             "reviewStatus": "draft",
+             "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                            "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                            "sourceSheet": "S1", "sourceRow": 1}},
+        ],
+    }
+    errs = walk_content_records(data)
+    assert errs == [], f"Expected no errors, got {errs}"
+
+
+def test_teacher_dispatch_curriculum_absent_falls_to_non_hsk():
+    """Teacher record without curriculum key must use non-HSK contract."""
+    errs = validate_script_fields({
+        "id": "teacher-fallback",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "reviewStatus": "draft",
+    })
+    assert any("traditional" in e and "required" in e for e in errs), (
+        f"Expected traditional-required error (non-HSK fallback), got {errs}"
+    )
+
+
+def test_teacher_dispatch_null_curriculum_rejected():
+    """curriculum: null must fail with curriculum type error."""
+    errs = validate_script_fields({
+        "id": "teacher-null",
+        "curriculum": None,
+        "simplified": "你好",
+        "simplifiedStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected curriculum object error, got {errs}"
+    # Must NOT get non-HSK traditional-required errors
+    assert not any("traditional" in e and "required" in e for e in errs), (
+        f"Should not fall through to non-HSK contract, got {errs}"
+    )
+
+
+def test_teacher_dispatch_string_curriculum_rejected():
+    """curriculum: string must fail and not fall through to non-HSK."""
+    errs = validate_script_fields({
+        "id": "teacher-str",
+        "curriculum": "teacher-core-v1",
+        "simplified": "你好",
+        "simplifiedStatus": "generated",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "reviewStatus": "draft",
+    })
+    assert any("must be a JSON object" in e for e in errs), f"Expected curriculum object error, got {errs}"
+    assert not any("traditional" in e and "required" in e for e in errs), (
+        f"Should not fall through to non-HSK contract, got {errs}"
+    )
+
+
+def test_teacher_traditional_empty_string_fails():
+    """Teacher record with empty or whitespace-only traditional must be rejected."""
+    for val in ("", "  "):
+        errs = validate_script_fields({
+            "id": "teacher-empty-trad",
+            "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                           "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                           "sourceSheet": "S1", "sourceRow": 1},
+            "simplified": "你好",
+            "simplifiedStatus": "authored",
+            "traditional": val,
+            "traditionalStatus": "authored",
+            "pinyin": "nǐ hǎo",
+            "japanese": "こんにちは",
+            "reviewStatus": "draft",
+        })
+        assert any("non-empty" in e for e in errs), (
+            f"Expected non-empty error for traditional={val!r}, got {errs}"
+        )
+
+
 def run_tests():
     tests = [
         test_traditional_fields_required,
@@ -883,6 +1202,21 @@ def run_tests():
         test_hsk_dispatch_absent_uses_non_hsk,
         test_hsk_dispatch_null_blocks_non_hsk_escape,
         test_hsk_dispatch_empty_dict_uses_hsk,
+        # Teacher curriculum tests
+        test_teacher_simplified_first_valid,
+        test_teacher_with_traditional_valid,
+        test_teacher_traditional_absent_with_unavailable_ok,
+        test_teacher_simplified_status_generated_fails,
+        test_teacher_traditional_generated_fails,
+        test_teacher_missing_traditional_status_without_traditional_ok,
+        test_teacher_traditional_null_fails,
+        test_teacher_traditional_status_null_fails,
+        test_teacher_walk_bundle,
+        test_teacher_walk_bundle_mixed,
+        test_teacher_dispatch_curriculum_absent_falls_to_non_hsk,
+        test_teacher_dispatch_null_curriculum_rejected,
+        test_teacher_dispatch_string_curriculum_rejected,
+        test_teacher_traditional_empty_string_fails,
     ]
     failures = 0
     for test in tests:

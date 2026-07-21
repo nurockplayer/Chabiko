@@ -93,6 +93,16 @@ VALID_SCRIPT_RELEVANCE = frozenset({
 
 VALID_HSK_STANDARD_VERSIONS = frozenset({"hsk-legacy-6-level", "hsk-3.0"})
 
+VALID_TEACHER_DIFFICULTY_BANDS = frozenset({"star-1", "star-2"})
+VALID_TEACHER_DIFFICULTY_LABELS = frozenset({"☆", "☆☆"})
+VALID_TEACHER_PARTS_OF_SPEECH = frozenset({"noun", "verb", "adjective", "adverb"})
+
+VALID_ILLUSTRATION_MIME_TYPES = frozenset({"image/webp", "image/png"})
+
+VALID_RIGHTS_BASIS = frozenset({"commissioned-for-chabiko"})
+VALID_MODIFICATION_SCOPES = frozenset({"technical-only"})
+VALID_REUSE_OPTIONS = frozenset({"not-granted", "granted"})
+
 # ─── Content type schemas ──────────────────────────────────────────────────
 # Each schema defines:
 #   required: fields that must be present (non-None)
@@ -789,7 +799,7 @@ def _build_schemas():
             "simplified", "simplifiedStatus", "kana", "category",
             "similarityType", "toneNote", "caution", "travelScenario",
             "painPointTags", "examples", "source",
-            "hsk",
+            "hsk", "curriculum", "illustrationRef",
         ],
         "field_types": {
             "id": str, "pinyin": str, "japanese": str,
@@ -953,16 +963,161 @@ def _build_schemas():
         "extra_validators": [_check_resource_url, _check_resource_review_metadata, _check_resource_permission_policy],
     }
 
+    # Illustration
+    SCHEMAS["illustration"] = {
+        "required": [
+            "id", "vocabularyId", "assetPath", "sourceChecksumSha256",
+            "width", "height", "mimeType", "fileSizeBytes", "altJa",
+            "rights", "reviewStatus",
+        ],
+        "optional": [],
+        "field_types": {
+            "id": str, "vocabularyId": str, "assetPath": str,
+            "sourceChecksumSha256": str,
+            "width": int, "height": int, "mimeType": str,
+            "fileSizeBytes": int, "altJa": str,
+            "rights": dict, "reviewStatus": str,
+        },
+        "controlled_fields": {
+            "mimeType": VALID_ILLUSTRATION_MIME_TYPES,
+            "reviewStatus": VALID_REVIEW_STATUSES,
+        },
+        "extra_validators": [
+            _check_illustration_fields,
+        ],
+    }
+
+
+# ─── Illustration validators ───────────────────────────────────────────────
+
+ILLUSTRATION_RIGHTS_KNOWN_FIELDS = frozenset({
+    "basis", "publicWebDisplay", "staticAssetRedistribution",
+    "modificationScope", "attributionRequired", "attributionText",
+    "reuseOutsideChabiko",
+})
+
+def _check_illustration_fields(record: dict, path: str) -> list[str]:
+    """Validate an illustration record."""
+    errors = []
+
+    # ── Checksum ──
+    checksum = record.get("sourceChecksumSha256")
+    if isinstance(checksum, str):
+        if len(checksum) != 64:
+            errors.append(f"{path}.sourceChecksumSha256 must be exactly 64 characters, got {len(checksum)}")
+        elif not all(c in "0123456789abcdef" for c in checksum):
+            errors.append(f"{path}.sourceChecksumSha256 must be lowercase hexadecimal")
+    elif checksum is not None:
+        errors.append(f"{path}.sourceChecksumSha256 must be a string, got {type(checksum).__name__}")
+
+    # ── width / height ──
+    for dim in ("width", "height"):
+        val = record.get(dim)
+        if isinstance(val, bool):
+            errors.append(f"{path}.{dim} must be a non-boolean integer, got boolean")
+        elif isinstance(val, int):
+            if val < 1 or val > 4096:
+                errors.append(f"{path}.{dim} must be between 1 and 4096, got {val}")
+
+    # ── fileSizeBytes ──
+    fsb = record.get("fileSizeBytes")
+    if isinstance(fsb, bool):
+        errors.append(f"{path}.fileSizeBytes must be a non-boolean integer, got boolean")
+    elif isinstance(fsb, int):
+        if fsb < 1 or fsb > 1500000:
+            errors.append(f"{path}.fileSizeBytes must be between 1 and 1500000, got {fsb}")
+
+    # ── assetPath ──
+    asset_path = record.get("assetPath")
+    mime_type = record.get("mimeType")
+    if isinstance(asset_path, str) and isinstance(mime_type, str):
+        expected_ext = ".webp" if mime_type == "image/webp" else ".png"
+        if not asset_path.startswith("/assets/vocabulary/teacher-core-v1/"):
+            errors.append(f"{path}.assetPath must start with '/assets/vocabulary/teacher-core-v1/'")
+        if not asset_path.endswith(expected_ext):
+            errors.append(
+                f"{path}.assetPath must end with '{expected_ext}' for mimeType '{mime_type}'"
+            )
+
+    # ── rights object ──
+    rights = record.get("rights")
+    if isinstance(rights, dict):
+        errors.extend(_check_illustration_rights(rights, f"{path}.rights"))
+    elif rights is not None:
+        errors.append(f"{path}.rights must be a JSON object, got {type(rights).__name__}")
+
+    return errors
+
+
+def _check_illustration_rights(rights: dict, path: str) -> list[str]:
+    """Validate illustration rights object."""
+    errors = []
+
+    for field in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
+        if field not in rights:
+            # attributionText is only required when attributionRequired is true
+            if field == "attributionText":
+                continue
+            errors.append(f"{path}: missing required field '{field}'")
+
+    # basis
+    if "basis" in rights and rights["basis"] != "commissioned-for-chabiko":
+        errors.append(f"{path}.basis must be 'commissioned-for-chabiko'")
+
+    # publicWebDisplay
+    if "publicWebDisplay" in rights and rights["publicWebDisplay"] is not True:
+        errors.append(f"{path}.publicWebDisplay must be true")
+
+    # staticAssetRedistribution
+    if "staticAssetRedistribution" in rights and rights["staticAssetRedistribution"] is not True:
+        errors.append(f"{path}.staticAssetRedistribution must be true")
+
+    # modificationScope
+    if "modificationScope" in rights and rights["modificationScope"] != "technical-only":
+        errors.append(f"{path}.modificationScope must be 'technical-only'")
+
+    # attributionRequired (boolean)
+    ar = rights.get("attributionRequired")
+    if ar is not None and not isinstance(ar, bool):
+        errors.append(f"{path}.attributionRequired must be a boolean, got {type(ar).__name__}")
+
+    # attributionText — required and non-empty exactly when attributionRequired is true
+    at = rights.get("attributionText")
+    if ar is True:
+        if not isinstance(at, str) or at.strip() == "":
+            errors.append(f"{path}.attributionText is required and must be non-empty when attributionRequired is true")
+    else:
+        if "attributionText" in rights and rights["attributionText"] is not None:
+            errors.append(f"{path}.attributionText must be absent when attributionRequired is not true")
+
+    # reuseOutsideChabiko
+    if "reuseOutsideChabiko" in rights:
+        val = rights["reuseOutsideChabiko"]
+        if val not in VALID_REUSE_OPTIONS:
+            errors.append(
+                f"{path}.reuseOutsideChabiko '{val}' is not valid; "
+                f"must be one of {sorted(VALID_REUSE_OPTIONS)}"
+            )
+
+    # Reject unknown rights fields
+    for field in rights:
+        if field not in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
+            errors.append(f"{path}: unknown field '{field}'")
+
+    return errors
+
 
 # ─── Collection key → schema type mapping ─────────────────────────────────
 
 COLLECTION_MAP = {
     "lessons": "lesson",
     "vocabulary": "vocabulary",
+    "teacher_vocabulary": "vocabulary",
     "sentences": "sentence",
     "phrasebook": "phrasebook",
     "practice": "practice",
     "resources": "resource",
+    "illustrations": "illustration",
 }
 
 
@@ -1077,10 +1232,35 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
         if schema_type == "resource":
             errors.extend(_check_resource_duplicate_ids(value, collection_path))
 
-        # Duplicate vocabulary ID and HSK identity detection
+        # Duplicate vocabulary ID and HSK identity detection for vocabulary collection
         if schema_type == "vocabulary":
             errors.extend(_check_vocabulary_duplicate_ids(value, collection_path))
             errors.extend(_check_hsk_duplicate_identity(value, collection_path))
+            errors.extend(_check_teacher_duplicate_identity(value, collection_path))
+
+        # Illustration duplicate checks
+        if schema_type == "illustration":
+            errors.extend(_check_illustration_duplicate_ids(value, collection_path))
+            errors.extend(_check_illustration_duplicate_vocabulary_id(value, collection_path))
+
+    # Cross-reference: teacher vocabulary ↔ illustrations
+    teacher_vocab = data.get("teacher_vocabulary", data.get("vocabulary", []))
+    illustrations = data.get("illustrations", [])
+
+    if isinstance(teacher_vocab, list) and isinstance(illustrations, list):
+        # Identify teacher records
+        teacher_records = [v for v in teacher_vocab if isinstance(v, dict) and "curriculum" in v]
+        if "teacher_vocabulary" in data:
+            all_teacher = teacher_vocab
+            vocab_path_prefix = "teacher_vocabulary"
+        else:
+            all_teacher = teacher_records
+            vocab_path_prefix = "vocabulary"
+        if all_teacher:
+            errors.extend(_check_teacher_illustration_xref(all_teacher, illustrations, path, vocab_path_prefix))
+        else:
+            # No teacher records — detect orphan illustrations directly
+            errors.extend(_orphan_illustration_detection(illustrations, path))
 
     return errors
 
@@ -1128,7 +1308,7 @@ def _normalize_pinyin(text: str) -> str:
 # ─── HSK vocabulary validation ────────────────────────────────────────────
 
 def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
-    """Validate vocabulary record, branching on HSK vs non-HSK contract."""
+    """Validate vocabulary record, branching on HSK vs non-HSK vs teacher contract."""
     errors = []
 
     # Reject explicit hsk: null — when hsk key is present, it must be an object.
@@ -1140,7 +1320,12 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
 
     has_hsk = "hsk" in record and record["hsk"] is not None
 
-    if has_hsk:
+    # Teacher curriculum records are identified by the presence of a curriculum object
+    has_curriculum = "curriculum" in record and record["curriculum"] is not None
+
+    if has_curriculum:
+        errors.extend(_check_teacher_vocabulary_fields(record, path))
+    elif has_hsk:
         errors.extend(_check_hsk_fields(record, path))
     else:
         errors.extend(_check_non_hsk_vocabulary_fields(record, path))
@@ -1175,6 +1360,154 @@ def _check_non_hsk_vocabulary_fields(record: dict, path: str) -> list[str]:
 
     # Also run script field validation for non-HSK
     errors.extend(_check_script_fields(record, path))
+
+    return errors
+
+
+def _check_teacher_vocabulary_fields(record: dict, path: str) -> list[str]:
+    """Enforce the teacher-curriculum Simplified-first subtype contract."""
+    errors = []
+
+    # ── Required fields for teacher curriculum ──
+    teacher_required = [
+        ("id", str),
+        ("simplified", str),
+        ("pinyin", str),
+        ("japanese", str),
+        ("source", dict),
+        ("reviewStatus", str),
+    ]
+    for field, expected_type in teacher_required:
+        if field not in record or record[field] is None:
+            errors.append(f"{path}: missing required field '{field}' for teacher curriculum record")
+        elif not isinstance(record[field], expected_type):
+            errors.append(
+                f"{path}.{field} must be {expected_type.__name__}, "
+                f"got {type(record[field]).__name__}"
+            )
+        elif expected_type is str and isinstance(record[field], str) and record[field].strip() == "":
+            errors.append(f"{path}.{field} must be a non-empty string for teacher curriculum record")
+
+    # simplifiedStatus is required and must be authored or verified
+    if "simplifiedStatus" not in record or record["simplifiedStatus"] is None:
+        errors.append(f"{path}: missing required field 'simplifiedStatus' for teacher curriculum record")
+    elif not isinstance(record["simplifiedStatus"], str):
+        errors.append(f"{path}.simplifiedStatus must be a string, got {type(record['simplifiedStatus']).__name__}")
+    elif record["simplifiedStatus"] not in HSK_VALID_SCRIPT_STATUSES:
+        errors.append(
+            f"{path}.simplifiedStatus '{record.get('simplifiedStatus')}' must be "
+            f"'authored' or 'verified' for teacher curriculum record"
+        )
+
+    # ── Traditional optionality (same as HSK) ──
+    if "traditional" in record and record["traditional"] is None:
+        errors.append(f"{path}: 'traditional' cannot be null for teacher curriculum record; omit the key if traditional is unavailable")
+    if "traditionalStatus" in record and record["traditionalStatus"] is None:
+        errors.append(f"{path}: 'traditionalStatus' cannot be null for teacher curriculum record; omit the key if traditional is unavailable")
+
+    traditional_present = "traditional" in record and record["traditional"] is not None
+    if traditional_present:
+        if not isinstance(record["traditional"], str):
+            errors.append(f"{path}.traditional must be a string, got {type(record['traditional']).__name__}")
+        elif record["traditional"].strip() == "":
+            errors.append(f"{path}.traditional must be a non-empty string for teacher curriculum record")
+        ts = record.get("traditionalStatus")
+        if ts is None:
+            errors.append(f"{path}: 'traditionalStatus' is required when 'traditional' is present")
+        elif not isinstance(ts, str):
+            errors.append(f"{path}.traditionalStatus must be a string, got {type(ts).__name__}")
+        elif ts not in HSK_VALID_SCRIPT_STATUSES:
+            errors.append(
+                f"{path}.traditionalStatus '{ts}' must be 'authored' or 'verified' "
+                f"for teacher curriculum record"
+            )
+    else:
+        ts = record.get("traditionalStatus")
+        if ts is not None and ts != "unavailable":
+            errors.append(
+                f"{path}: 'traditionalStatus' must be 'unavailable' or absent "
+                f"when 'traditional' is absent"
+            )
+
+    # ── kana and category are optional ──
+    for field in ("kana", "category"):
+        if field in record and record[field] is None:
+            errors.append(f"{path}.{field} cannot be null for teacher curriculum record; omit the key if the value is unavailable")
+        elif field in record and not isinstance(record[field], str):
+            errors.append(f"{path}.{field} must be a string, got {type(record[field]).__name__}")
+
+    # ── source object ──
+    src = record.get("source")
+    if isinstance(src, dict):
+        if "type" not in src or src["type"] is None:
+            errors.append(f"{path}.source: missing required field 'type' for teacher curriculum record")
+        elif src["type"] != "teacher-workbook":
+            errors.append(f"{path}.source.type must be 'teacher-workbook' for teacher curriculum record")
+        if "note" in src and src["note"] is not None and not isinstance(src["note"], str):
+            errors.append(f"{path}.source.note must be a string when present, got {type(src['note']).__name__}")
+        # Reject unknown source fields
+        SOURCE_KNOWN_FIELDS = {"type", "note"}
+        for field in src:
+            if field not in SOURCE_KNOWN_FIELDS:
+                errors.append(f"{path}.source: unknown field '{field}'")
+
+    # ── curriculum object ──
+    curriculum = record.get("curriculum", {})
+    if not isinstance(curriculum, dict):
+        errors.append(f"{path}.curriculum must be a JSON object")
+        return errors
+
+    curriculum_fields = {
+        "sourceId": ("teacher-core-v1", str),
+        "difficultyBand": (VALID_TEACHER_DIFFICULTY_BANDS, str),
+        "sourceDifficultyLabel": (VALID_TEACHER_DIFFICULTY_LABELS, str),
+        "partOfSpeech": (VALID_TEACHER_PARTS_OF_SPEECH, str),
+        "sourceSheet": (None, str),
+        "sourceRow": (None, int),
+    }
+
+    for field, (controlled, expected_type) in curriculum_fields.items():
+        if field not in curriculum or curriculum[field] is None:
+            errors.append(f"{path}.curriculum: missing required field '{field}'")
+            continue
+        if not isinstance(curriculum[field], expected_type):
+            if expected_type is int and isinstance(curriculum[field], bool):
+                errors.append(f"{path}.curriculum.{field} must be an integer, got boolean")
+            else:
+                errors.append(
+                    f"{path}.curriculum.{field} must be {expected_type.__name__}, "
+                    f"got {type(curriculum[field]).__name__}"
+                )
+            continue
+        if controlled is not None and curriculum[field] not in controlled:
+            errors.append(
+                f"{path}.curriculum.{field} '{curriculum[field]}' is not valid; "
+                f"must be one of {sorted(controlled)}"
+            )
+        if expected_type is str and isinstance(curriculum[field], str) and curriculum[field].strip() == "":
+            errors.append(f"{path}.curriculum.{field} must be a non-empty string")
+
+    # Reject unknown curriculum fields
+    CURRICULUM_KNOWN_FIELDS = set(curriculum_fields.keys())
+    for field in curriculum:
+        if field not in CURRICULUM_KNOWN_FIELDS:
+            errors.append(f"{path}.curriculum: unknown field '{field}'")
+
+    # ── illustrationRef ──
+    if "illustrationRef" in record and record["illustrationRef"] is not None:
+        if not isinstance(record["illustrationRef"], str) or record["illustrationRef"].strip() == "":
+            errors.append(f"{path}.illustrationRef must be a non-empty string when present")
+
+    # ── Reject unauthorised top-level fields ──
+    UNAUTHORISED_TEACHER_FIELDS = {
+        "similarityType", "toneNote", "caution",
+        "travelScenario", "painPointTags", "examples",
+    }
+    for field in UNAUTHORISED_TEACHER_FIELDS:
+        if field in record and record[field] is not None:
+            errors.append(
+                f"{path}: '{field}' is not allowed in teacher curriculum record"
+            )
 
     return errors
 
@@ -1368,6 +1701,184 @@ def _check_hsk_duplicate_identity(vocabulary: list, path: str) -> list[str]:
     return errors
 
 
+def _check_teacher_duplicate_identity(vocabulary: list, path: str) -> list[str]:
+    """Detect teacher curriculum records with duplicate normalized identity within sourceId."""
+    errors: list[str] = []
+    seen: dict[str, dict[tuple[str, str], int]] = {}
+    for i, item in enumerate(vocabulary):
+        if not isinstance(item, dict):
+            continue
+        curriculum = item.get("curriculum")
+        if not isinstance(curriculum, dict):
+            continue
+        source_id = curriculum.get("sourceId")
+        simplified = item.get("simplified")
+        pinyin = item.get("pinyin")
+        if not isinstance(source_id, str) or not isinstance(simplified, str) or not isinstance(pinyin, str):
+            continue
+
+        norm_s = _normalize_simplified(simplified)
+        norm_p = _normalize_pinyin(pinyin)
+        if not norm_s or not norm_p:
+            continue
+        key = (norm_s, norm_p)
+
+        if source_id not in seen:
+            seen[source_id] = {}
+        source_seen = seen[source_id]
+
+        if key in source_seen:
+            first_idx = source_seen[key]
+            errors.append(
+                f"{path}[{i}]: duplicate teacher identity "
+                f"'simplified=\"{simplified}\" pinyin=\"{pinyin}\" "
+                f"(norm: simplified=\"{norm_s}\" pinyin=\"{norm_p}\") "
+                f"in sourceId '{source_id}' (first occurrence at {path}[{first_idx}])"
+            )
+        else:
+            source_seen[key] = i
+    return errors
+
+
+# ─── Illustration duplicate checks ──────────────────────────────────────────
+
+def _check_illustration_duplicate_ids(illustrations: list, path: str) -> list[str]:
+    """Detect illustrations with duplicate 'id' values."""
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for i, item in enumerate(illustrations):
+        if not isinstance(item, dict):
+            continue
+        iid = item.get("id")
+        if not isinstance(iid, str):
+            continue
+        if iid in seen:
+            errors.append(
+                f"{path}[{i}]: duplicate illustration id '{iid}' "
+                f"(first occurrence at {path}[{seen[iid]}])"
+            )
+        else:
+            seen[iid] = i
+    return errors
+
+
+def _check_illustration_duplicate_vocabulary_id(illustrations: list, path: str) -> list[str]:
+    """Detect illustrations with duplicate vocabularyId links (exactly one per vocab)."""
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for i, item in enumerate(illustrations):
+        if not isinstance(item, dict):
+            continue
+        vid = item.get("vocabularyId")
+        if not isinstance(vid, str):
+            continue
+        if vid in seen:
+            errors.append(
+                f"{path}[{i}]: duplicate vocabularyId link '{vid}' "
+                f"(first occurrence at {path}[{seen[vid]}])"
+            )
+        else:
+            seen[vid] = i
+    return errors
+
+
+# ─── Cross-reference: teacher vocabulary ↔ illustrations ────────────────────
+
+def _check_teacher_illustration_xref(
+    teacher_records: list, illustrations: list, path: str, vocab_key: str = "vocabulary"
+) -> list[str]:
+    """Validate cross-references between teacher vocabulary and illustrations.
+
+    Rules:
+    - Every teacher vocabulary illustrationRef must match one illustration id.
+    - That illustration's vocabularyId must equal the vocabulary record's id.
+    - Orphan illustration records fail.
+    - Draft teacher records may omit illustrationRef.
+    - Reviewed/published teacher records must include a valid illustrationRef.
+    """
+    errors: list[str] = []
+
+    # Build illustration index: id → record
+    ill_by_id: dict[str, dict] = {}
+    for i, ill in enumerate(illustrations):
+        if not isinstance(ill, dict):
+            continue
+        iid = ill.get("id")
+        if isinstance(iid, str):
+            ill_by_id[iid] = ill
+
+    # Check teacher records
+    for i, record in enumerate(teacher_records):
+        if not isinstance(record, dict):
+            continue
+        rec_path = f"{path}.{vocab_key}[{i}]"
+        ref = record.get("illustrationRef")
+        review_status = record.get("reviewStatus")
+
+        if ref is not None:
+            if not isinstance(ref, str) or ref.strip() == "":
+                continue  # caught by field validation
+            if ref not in ill_by_id:
+                errors.append(
+                    f"{rec_path}: illustrationRef '{ref}' does not match any illustration id"
+                )
+            else:
+                ill = ill_by_id[ref]
+                ill_vocab_id = ill.get("vocabularyId")
+                rec_id = record.get("id")
+                if isinstance(ill_vocab_id, str) and isinstance(rec_id, str):
+                    if ill_vocab_id != rec_id:
+                        errors.append(
+                            f"{rec_path}: illustrationRef '{ref}' has vocabularyId "
+                            f"'{ill_vocab_id}' but teacher id is '{rec_id}'"
+                        )
+
+        # Reviewed/published must have illustrationRef
+        if review_status in ("reviewed", "published"):
+            if ref is None or (isinstance(ref, str) and ref.strip() == ""):
+                errors.append(
+                    f"{rec_path}: 'illustrationRef' is required when "
+                    f"reviewStatus is '{review_status}'"
+                )
+
+    # Orphan illustration check
+    teacher_ids = set()
+    for record in teacher_records:
+        if isinstance(record, dict):
+            rid = record.get("id")
+            if isinstance(rid, str):
+                teacher_ids.add(rid)
+
+    for i, ill in enumerate(illustrations):
+        if not isinstance(ill, dict):
+            continue
+        ill_path = f"{path}.illustrations[{i}]"
+        vid = ill.get("vocabularyId")
+        if isinstance(vid, str) and vid not in teacher_ids:
+            errors.append(
+                f"{ill_path}: orphan illustration with vocabularyId '{vid}' — "
+                f"no matching teacher vocabulary record found"
+            )
+
+    return errors
+
+
+def _orphan_illustration_detection(illustrations: list, path: str) -> list[str]:
+    """Detect orphan illustrations when no teacher vocabulary record is present."""
+    errors: list[str] = []
+    for i, ill in enumerate(illustrations):
+        if not isinstance(ill, dict):
+            continue
+        ill_path = f"{path}.illustrations[{i}]"
+        vid = ill.get("vocabularyId")
+        if isinstance(vid, str):
+            errors.append(
+                f"{ill_path}: orphan illustration with vocabularyId '{vid}' — "
+                f"no teacher vocabulary record exists in this bundle"
+            )
+    return errors
+
+
 _build_schemas()
 
 
@@ -1549,7 +2060,77 @@ def run_tests():
         test_resource_duplicate_different_content_types_not_detected,
         test_resource_duplicate_deterministic_order,
 
-        # ─── Bundle ───
+        # ─── Teacher vocabulary ───
+        test_teacher_vocab_valid,
+        test_teacher_vocab_with_traditional_valid,
+        test_teacher_vocab_traditional_absent_ok,
+        test_teacher_vocab_missing_simplified_fails,
+        test_teacher_vocab_missing_pinyin_fails,
+        test_teacher_vocab_missing_japanese_fails,
+        test_teacher_vocab_missing_source_fails,
+        test_teacher_vocab_generated_simplified_fails,
+        test_teacher_vocab_missing_curriculum_fails,
+        test_teacher_vocab_invalid_curriculum_source_id,
+        test_teacher_vocab_invalid_difficulty_band,
+        test_teacher_vocab_invalid_difficulty_label,
+        test_teacher_vocab_invalid_part_of_speech,
+        test_teacher_vocab_curriculum_unknown_field,
+        test_teacher_vocab_kana_optional,
+        test_teacher_vocab_category_optional,
+        test_teacher_vocab_illustration_ref_present,
+        test_teacher_vocab_source_type_valid,
+        test_teacher_vocab_source_note_valid,
+        test_teacher_vocab_bundle_valid,
+        test_teacher_duplicate_identity_detection,
+        test_teacher_duplicate_identity_deterministic_order,
+        test_teacher_duplicate_identity_bundle,
+        test_teacher_vocab_legacy_hsk_backward_compatible,
+        test_teacher_vocab_null_curriculum_rejected,
+        test_teacher_vocab_source_note_absent_ok,
+        # B2: unauthorised fields rejected
+        test_teacher_vocab_similarity_type_rejected,
+        test_teacher_vocab_tone_note_rejected,
+        test_teacher_vocab_caution_rejected,
+        test_teacher_vocab_travel_scenario_rejected,
+        test_teacher_vocab_pain_point_tags_rejected,
+        test_teacher_vocab_examples_rejected,
+
+        # ─── Illustration ───
+        test_illustration_valid,
+        test_illustration_missing_required,
+        test_illustration_unknown_field,
+        test_illustration_invalid_checksum_length,
+        test_illustration_invalid_checksum_chars,
+        test_illustration_valid_checksum,
+        test_illustration_invalid_width,
+        test_illustration_invalid_height,
+        test_illustration_width_boolean_fails,
+        test_illustration_file_size_over_limit,
+        test_illustration_file_size_boolean_fails,
+        test_illustration_invalid_mime_type,
+        test_illustration_asset_path_prefix,
+        test_illustration_asset_path_extension_mismatch,
+        test_illustration_rights_basis_invalid,
+        test_illustration_rights_public_web_display_false,
+        test_illustration_rights_attribution_required_true_needs_text,
+        test_illustration_rights_attribution_not_required_no_text,
+        test_illustration_rights_unknown_field,
+        test_illustration_rights_reuse_invalid,
+        test_illustration_duplicate_id_detection,
+        test_illustration_duplicate_vocabulary_id_detection,
+        test_illustration_bundle_valid,
+
+        # ─── Cross-reference ───
+        test_teacher_illustration_xref_valid,
+        test_teacher_illustration_xref_missing_illustration,
+        test_teacher_illustration_xref_vocabulary_id_mismatch,
+        test_teacher_illustration_xref_reviewed_missing_ref,
+        test_teacher_illustration_xref_published_missing_ref,
+        test_teacher_illustration_xref_draft_omit_ref_ok,
+        test_teacher_illustration_xref_orphan_illustration,
+        # B3: orphan regression tests
+        test_orphan_illustrations_no_teacher_key,
+        test_orphan_illustrations_empty_teacher_array,
         test_bundle_valid,
         test_bundle_invalid_item,
         test_bundle_non_collection_keys_ok,
@@ -3910,6 +4491,707 @@ def test_hsk_vocab_legacy_traditional_without_simplified_fails():
         "vocabulary",
     )
     _assert_has_error(errs, "required field 'traditional'", "hsk_legacy_no_traditional")
+
+
+# ─── Teacher vocabulary tests ──────────────────────────────────────────────
+
+def _minimal_teacher_vocab(**overrides):
+    data = {
+        "id": "teacher-voc-001",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "curriculum": {
+            "sourceId": "teacher-core-v1",
+            "difficultyBand": "star-1",
+            "sourceDifficultyLabel": "☆",
+            "partOfSpeech": "noun",
+            "sourceSheet": "Sheet1",
+            "sourceRow": 1,
+        },
+    }
+    data.update(overrides)
+    return data
+
+
+def _minimal_teacher_illustration(**overrides):
+    data = {
+        "id": "ill-001",
+        "vocabularyId": "teacher-voc-001",
+        "assetPath": "/assets/vocabulary/teacher-core-v1/hello.webp",
+        "sourceChecksumSha256": "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd",
+        # 64 chars: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
+        "width": 512,
+        "height": 512,
+        "mimeType": "image/webp",
+        "fileSizeBytes": 102400,
+        "altJa": "你好のイラスト",
+        "rights": {
+            "basis": "commissioned-for-chabiko",
+            "publicWebDisplay": True,
+            "staticAssetRedistribution": True,
+            "modificationScope": "technical-only",
+            "attributionRequired": False,
+            "reuseOutsideChabiko": "not-granted",
+        },
+        "reviewStatus": "draft",
+    }
+    data.update(overrides)
+    return data
+
+
+def test_teacher_vocab_valid():
+    """Minimal valid teacher curriculum record."""
+    errs = validate_single(_minimal_teacher_vocab(), "vocabulary")
+    _assert_no_errors(errs, "teacher_vocab_valid")
+
+
+def test_teacher_vocab_with_traditional_valid():
+    """Teacher record with reviewed traditional form passes."""
+    errs = validate_single(
+        _minimal_teacher_vocab(traditional="你好", traditionalStatus="authored"),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "teacher_vocab_with_traditional")
+
+
+def test_teacher_vocab_traditional_absent_ok():
+    """Teacher record without traditional passes when traditionalStatus is absent or unavailable."""
+    errs = validate_single(_minimal_teacher_vocab(), "vocabulary")
+    _assert_no_errors(errs, "teacher_trad_absent")
+
+
+def test_teacher_vocab_missing_simplified_fails():
+    """Teacher record without simplified fails."""
+    errs = validate_single(_minimal_teacher_vocab(simplified=None), "vocabulary")
+    _assert_has_error(errs, "missing required field", "teacher_missing_simplified")
+
+
+def test_teacher_vocab_missing_pinyin_fails():
+    """Teacher record without pinyin fails."""
+    errs = validate_single(_minimal_teacher_vocab(pinyin=None), "vocabulary")
+    _assert_has_error(errs, "missing required field", "teacher_missing_pinyin")
+
+
+def test_teacher_vocab_missing_japanese_fails():
+    """Teacher record without japanese fails."""
+    errs = validate_single(_minimal_teacher_vocab(japanese=None), "vocabulary")
+    _assert_has_error(errs, "missing required field", "teacher_missing_japanese")
+
+
+def test_teacher_vocab_missing_source_fails():
+    """Teacher record without source fails."""
+    errs = validate_single(_minimal_teacher_vocab(source=None), "vocabulary")
+    _assert_has_error(errs, "missing required field", "teacher_missing_source")
+
+
+def test_teacher_vocab_generated_simplified_fails():
+    """Teacher simplifiedStatus must be authored or verified, not generated."""
+    errs = validate_single(_minimal_teacher_vocab(simplifiedStatus="generated"), "vocabulary")
+    _assert_has_error(errs, "must be 'authored' or 'verified'", "teacher_generated")
+
+
+def test_teacher_vocab_missing_curriculum_fails():
+    """Teacher record without curriculum fails."""
+    errs = validate_single(_minimal_teacher_vocab(curriculum=None), "vocabulary")
+    _assert_has_error(errs, "required field", "teacher_missing_curriculum")
+
+
+def test_teacher_vocab_invalid_curriculum_source_id():
+    """Invalid curriculum.sourceId fails."""
+    errs = validate_single(
+        _minimal_teacher_vocab(curriculum={**{"sourceId": "wrong", "difficultyBand": "star-1", "sourceDifficultyLabel": "☆", "partOfSpeech": "noun", "sourceSheet": "S", "sourceRow": 1}}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not valid", "teacher_bad_source_id")
+
+
+def test_teacher_vocab_invalid_difficulty_band():
+    """Invalid difficultyBand fails."""
+    errs = validate_single(
+        _minimal_teacher_vocab(curriculum={**{"sourceId": "teacher-core-v1", "difficultyBand": "star-3", "sourceDifficultyLabel": "☆", "partOfSpeech": "noun", "sourceSheet": "S", "sourceRow": 1}}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not valid", "teacher_bad_band")
+
+
+def test_teacher_vocab_invalid_difficulty_label():
+    """Invalid sourceDifficultyLabel fails."""
+    errs = validate_single(
+        _minimal_teacher_vocab(curriculum={**{"sourceId": "teacher-core-v1", "difficultyBand": "star-1", "sourceDifficultyLabel": "☆☆☆", "partOfSpeech": "noun", "sourceSheet": "S", "sourceRow": 1}}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not valid", "teacher_bad_label")
+
+
+def test_teacher_vocab_invalid_part_of_speech():
+    """Invalid partOfSpeech fails."""
+    errs = validate_single(
+        _minimal_teacher_vocab(curriculum={**{"sourceId": "teacher-core-v1", "difficultyBand": "star-1", "sourceDifficultyLabel": "☆", "partOfSpeech": "preposition", "sourceSheet": "S", "sourceRow": 1}}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not valid", "teacher_bad_pos")
+
+
+def test_teacher_vocab_curriculum_unknown_field():
+    """Curriculum object with unknown fields fails."""
+    errs = validate_single(
+        _minimal_teacher_vocab(curriculum={**{"sourceId": "teacher-core-v1", "difficultyBand": "star-1", "sourceDifficultyLabel": "☆", "partOfSpeech": "noun", "sourceSheet": "S", "sourceRow": 1, "unknownField": "x"}}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "unknown field", "teacher_curriculum_unknown")
+
+
+def test_teacher_vocab_kana_optional():
+    """kana is optional for teacher records."""
+    errs = validate_single(_minimal_teacher_vocab(kana="カタカナ"), "vocabulary")
+    _assert_no_errors(errs, "teacher_kana_present")
+    errs2 = validate_single(_minimal_teacher_vocab(), "vocabulary")
+    _assert_no_errors(errs2, "teacher_kana_absent")
+
+
+def test_teacher_vocab_category_optional():
+    """category is optional for teacher records."""
+    errs = validate_single(_minimal_teacher_vocab(category="greeting"), "vocabulary")
+    _assert_no_errors(errs, "teacher_category_present")
+    errs2 = validate_single(_minimal_teacher_vocab(), "vocabulary")
+    _assert_no_errors(errs2, "teacher_category_absent")
+
+
+def test_teacher_vocab_illustration_ref_present():
+    """Teacher record with non-empty illustrationRef passes."""
+    errs = validate_single(_minimal_teacher_vocab(illustrationRef="ill-001"), "vocabulary")
+    _assert_no_errors(errs, "teacher_illustration_ref")
+
+
+def test_teacher_vocab_source_type_valid():
+    """Teacher source type must be teacher-workbook."""
+    errs = validate_single(
+        _minimal_teacher_vocab(source={"type": "teacher-workbook"}),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "teacher_source_type_ok")
+    errs2 = validate_single(
+        _minimal_teacher_vocab(source={"type": "hsk-workbook"}),
+        "vocabulary",
+    )
+    _assert_has_error(errs2, "must be 'teacher-workbook'", "teacher_source_type_bad")
+
+
+def test_teacher_vocab_source_note_valid():
+    """Teacher source with note passes."""
+    errs = validate_single(
+        _minimal_teacher_vocab(source={"type": "teacher-workbook", "note": "test note"}),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "teacher_source_note")
+
+
+def test_teacher_vocab_bundle_valid():
+    """Valid bundle with mixed teacher and HSK vocabulary passes."""
+    data = {
+        "vocabulary": [
+            _minimal_vocab(),
+            _minimal_hsk_vocab(),
+            _minimal_teacher_vocab(),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "teacher_bundle_valid")
+
+
+def test_teacher_duplicate_identity_detection():
+    """Duplicate teacher identity within same sourceId fails."""
+    data = {
+        "vocabulary": [
+            _minimal_teacher_vocab(id="a1", simplified="你好", pinyin="nǐ hǎo"),
+            _minimal_teacher_vocab(id="a2", simplified="你 好", pinyin="Nǐ Hǎo"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate teacher identity", "teacher_dup_identity")
+
+
+def test_teacher_duplicate_identity_deterministic_order():
+    """Duplicate teacher identity errors appear in deterministic order."""
+    data = {
+        "vocabulary": [
+            _minimal_teacher_vocab(id="a1", simplified="你好", pinyin="nǐ hǎo"),
+            _minimal_teacher_vocab(id="a2", simplified="我们", pinyin="wǒ men"),
+            _minimal_teacher_vocab(id="a3", simplified="你好", pinyin="nǐ hǎo"),
+            _minimal_teacher_vocab(id="a4", simplified="我们", pinyin="wǒ men"),
+        ]
+    }
+    errs = validate_bundle(data)
+    dup_errors = [e for e in errs if "duplicate teacher identity" in e]
+    assert len(dup_errors) == 2, f"Expected 2 duplicate identity errors, got {len(dup_errors)}: {dup_errors}"
+    assert "root.vocabulary[2]" in dup_errors[0], f"Expected dup_errors[0] at [2], got: {dup_errors[0]}"
+    assert "root.vocabulary[3]" in dup_errors[1], f"Expected dup_errors[1] at [3], got: {dup_errors[1]}"
+
+
+def test_teacher_duplicate_identity_bundle():
+    """Duplicate teacher identity across teacher_vocabulary collection fails."""
+    data = {
+        "teacher_vocabulary": [
+            _minimal_teacher_vocab(id="a1", simplified="你好", pinyin="nǐ hǎo"),
+            _minimal_teacher_vocab(id="a2", simplified="你好", pinyin="nǐ hǎo"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate teacher identity", "teacher_dup_bundle")
+
+
+def test_teacher_vocab_legacy_hsk_backward_compatible():
+    """Existing non-HSK and HSK vocabulary still passes."""
+    errs = validate_single(_minimal_vocab(), "vocabulary")
+    _assert_no_errors(errs, "teacher_legacy_backward")
+    errs2 = validate_single(_minimal_hsk_vocab(), "vocabulary")
+    _assert_no_errors(errs2, "teacher_hsk_backward")
+
+
+def test_teacher_vocab_null_curriculum_rejected():
+    """curriculum: null must be rejected (not treated as teacher record)."""
+    errs = validate_single(_minimal_teacher_vocab(curriculum=None), "vocabulary")
+    _assert_has_error(errs, "required field", "teacher_curriculum_null")
+
+
+def test_teacher_vocab_source_note_absent_ok():
+    """source without note key should pass for teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(source={"type": "teacher-workbook"}),
+        "vocabulary",
+    )
+    _assert_no_errors(errs, "teacher_source_no_note")
+
+
+def test_teacher_vocab_similarity_type_rejected():
+    """similarityType must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(similarityType="none"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_similarity_rejected")
+
+
+def test_teacher_vocab_tone_note_rejected():
+    """toneNote must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(toneNote="first tone"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_tone_note_rejected")
+
+
+def test_teacher_vocab_caution_rejected():
+    """caution must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(caution="be careful"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_caution_rejected")
+
+
+def test_teacher_vocab_travel_scenario_rejected():
+    """travelScenario must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(travelScenario="food"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_travel_scenario_rejected")
+
+
+def test_teacher_vocab_pain_point_tags_rejected():
+    """painPointTags must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(painPointTags=["tone"]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_pain_tags_rejected")
+
+
+def test_teacher_vocab_examples_rejected():
+    """examples must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored", "pinyin": "nǐ hǎo", "japanese": "こんにちは"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_examples_rejected")
+
+
+# ─── Illustration tests ──────────────────────────────────────────────────
+
+def test_illustration_valid():
+    """Minimal valid illustration."""
+    errs = validate_single(_minimal_teacher_illustration(), "illustration")
+    _assert_no_errors(errs, "illustration_valid")
+
+
+def test_illustration_missing_required():
+    """Illustration missing required fields fails."""
+    errs = validate_single({"id": "ill-001"}, "illustration")
+    _assert_has_error(errs, "required field", "illustration_missing")
+
+
+def test_illustration_unknown_field():
+    """Illustration with unknown field fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(randomField="x"),
+        "illustration",
+    )
+    _assert_has_error(errs, "unknown field", "illustration_unknown")
+
+
+def test_illustration_invalid_checksum_length():
+    """Checksum must be exactly 64 chars."""
+    errs = validate_single(
+        _minimal_teacher_illustration(sourceChecksumSha256="abc123"),
+        "illustration",
+    )
+    _assert_has_error(errs, "exactly 64", "ill_checksum_len")
+
+
+def test_illustration_invalid_checksum_chars():
+    """Checksum must be lowercase hex."""
+    errs = validate_single(
+        _minimal_teacher_illustration(sourceChecksumSha256="Z" + "a" * 63),
+        "illustration",
+    )
+    _assert_has_error(errs, "lowercase hexadecimal", "ill_checksum_chars")
+
+
+def test_illustration_valid_checksum():
+    """Valid 64-char hex checksum passes."""
+    errs = validate_single(
+        _minimal_teacher_illustration(
+            sourceChecksumSha256="abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd"
+        ),
+        "illustration",
+    )
+    _assert_no_errors(errs, "ill_checksum_valid")
+
+
+def test_illustration_invalid_width():
+    """Width 0 fails."""
+    errs = validate_single(_minimal_teacher_illustration(width=0), "illustration")
+    _assert_has_error(errs, "between 1 and 4096", "ill_width_zero")
+
+
+def test_illustration_invalid_height():
+    """Height 4097 fails."""
+    errs = validate_single(_minimal_teacher_illustration(height=4097), "illustration")
+    _assert_has_error(errs, "between 1 and 4096", "ill_height_over")
+
+
+def test_illustration_width_boolean_fails():
+    """Boolean width fails."""
+    errs = validate_single(_minimal_teacher_illustration(width=True), "illustration")
+    _assert_has_error(errs, "non-boolean integer", "ill_width_bool")
+
+
+def test_illustration_file_size_over_limit():
+    """fileSizeBytes over 1.5M fails."""
+    errs = validate_single(_minimal_teacher_illustration(fileSizeBytes=1500001), "illustration")
+    _assert_has_error(errs, "between 1 and 1500000", "ill_fsb_over")
+
+
+def test_illustration_file_size_boolean_fails():
+    """Boolean fileSizeBytes fails."""
+    errs = validate_single(_minimal_teacher_illustration(fileSizeBytes=False), "illustration")
+    _assert_has_error(errs, "non-boolean integer", "ill_fsb_bool")
+
+
+def test_illustration_invalid_mime_type():
+    """Invalid MIME type fails."""
+    errs = validate_single(_minimal_teacher_illustration(mimeType="image/jpeg"), "illustration")
+    _assert_has_error(errs, "not valid", "ill_mime")
+
+
+def test_illustration_asset_path_prefix():
+    """assetPath must start with correct prefix."""
+    errs = validate_single(
+        _minimal_teacher_illustration(assetPath="/assets/vocabulary/hsk/hello.webp"),
+        "illustration",
+    )
+    _assert_has_error(errs, "must start with '/assets/vocabulary/teacher-core-v1/'", "ill_path_prefix")
+
+
+def test_illustration_asset_path_extension_mismatch():
+    """assetPath must have correct extension for MIME type."""
+    errs = validate_single(
+        _minimal_teacher_illustration(mimeType="image/png", assetPath="/assets/vocabulary/teacher-core-v1/hello.webp"),
+        "illustration",
+    )
+    _assert_has_error(errs, "must end with '.png' for mimeType 'image/png'", "ill_path_ext")
+
+
+def test_illustration_rights_basis_invalid():
+    """Invalid rights.basis fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "basis": "unknown"}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be 'commissioned-for-chabiko'", "ill_rights_basis")
+
+
+def test_illustration_rights_public_web_display_false():
+    """publicWebDisplay must be true."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "publicWebDisplay": False}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be true", "ill_rights_pwd")
+
+
+def test_illustration_rights_attribution_required_true_needs_text():
+    """attributionText required when attributionRequired is true."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "attributionRequired": True}),
+        "illustration",
+    )
+    _assert_has_error(errs, "attributionText is required", "ill_rights_attr_true")
+
+
+def test_illustration_rights_attribution_not_required_no_text():
+    """attributionText must be absent when attributionRequired is not true."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "attributionText": "someone"}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be absent", "ill_rights_attr_false")
+
+
+def test_illustration_rights_unknown_field():
+    """Unknown rights field fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "unknownField": "x"}),
+        "illustration",
+    )
+    _assert_has_error(errs, "unknown field", "ill_rights_unknown")
+
+
+def test_illustration_rights_reuse_invalid():
+    """Invalid reuseOutsideChabiko fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "reuseOutsideChabiko": "maybe"}),
+        "illustration",
+    )
+    _assert_has_error(errs, "not valid", "ill_reuse")
+
+
+def test_illustration_duplicate_id_detection():
+    """Duplicate illustration IDs must be detected."""
+    data = {
+        "illustrations": [
+            _minimal_teacher_illustration(id="ill-dup"),
+            _minimal_teacher_illustration(id="ill-other"),
+            _minimal_teacher_illustration(id="ill-dup"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate illustration id 'ill-dup'", "ill_dup_id")
+    _assert_has_error(errs, "first occurrence at root.illustrations[0]", "ill_dup_first")
+    _assert_has_error(errs, "root.illustrations[2]: duplicate", "ill_dup_current")
+
+
+def test_illustration_duplicate_vocabulary_id_detection():
+    """Duplicate vocabularyId links must be detected."""
+    data = {
+        "illustrations": [
+            _minimal_teacher_illustration(id="ill-a", vocabularyId="voc-a"),
+            _minimal_teacher_illustration(id="ill-b", vocabularyId="voc-a"),
+        ]
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate vocabularyId link 'voc-a'", "ill_dup_vocab")
+
+
+def test_illustration_bundle_valid():
+    """Valid bundle with illustrations and teacher vocabulary passes."""
+    data = {
+        "teacher_vocabulary": [
+            {"id": "teacher-voc-001", "simplified": "你好", "simplifiedStatus": "authored",
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "teacher-workbook"},
+             "reviewStatus": "draft",
+             "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                            "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                            "sourceSheet": "S1", "sourceRow": 1}},
+        ],
+        "illustrations": [_minimal_teacher_illustration(vocabularyId="teacher-voc-001")],
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "ill_bundle_valid")
+
+
+# ─── Cross-reference tests ────────────────────────────────────────────────
+
+def _teacher_xref_vocab(**overrides):
+    data = {
+        "id": "teacher-voc-001",
+        "simplified": "你好",
+        "simplifiedStatus": "authored",
+        "pinyin": "nǐ hǎo",
+        "japanese": "こんにちは",
+        "source": {"type": "teacher-workbook"},
+        "reviewStatus": "draft",
+        "illustrationRef": "ill-001",
+        "curriculum": {
+            "sourceId": "teacher-core-v1",
+            "difficultyBand": "star-1",
+            "sourceDifficultyLabel": "☆",
+            "partOfSpeech": "noun",
+            "sourceSheet": "Sheet1",
+            "sourceRow": 1,
+        },
+    }
+    data.update(overrides)
+    return data
+
+
+def _teacher_xref_illustration(**overrides):
+    data = {
+        "id": "ill-001",
+        "vocabularyId": "teacher-voc-001",
+        "assetPath": "/assets/vocabulary/teacher-core-v1/hello.webp",
+        "sourceChecksumSha256": "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd",
+        # 64 chars: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
+        "width": 512,
+        "height": 512,
+        "mimeType": "image/webp",
+        "fileSizeBytes": 102400,
+        "altJa": "你好のイラスト",
+        "rights": {
+            "basis": "commissioned-for-chabiko",
+            "publicWebDisplay": True,
+            "staticAssetRedistribution": True,
+            "modificationScope": "technical-only",
+            "attributionRequired": False,
+            "reuseOutsideChabiko": "not-granted",
+        },
+        "reviewStatus": "draft",
+    }
+    data.update(overrides)
+    return data
+
+
+def test_teacher_illustration_xref_valid():
+    """Valid cross-reference passes."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "xref_valid")
+
+
+def test_teacher_illustration_xref_missing_illustration():
+    """illustrationRef referencing a non-existent illustration fails."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(illustrationRef="ill-nonexistent"),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "does not match any illustration id", "xref_missing_ill")
+
+
+def test_teacher_illustration_xref_vocabulary_id_mismatch():
+    """illustrationRef whose vocabularyId doesn't match the teacher id fails."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(id="teacher-voc-001", illustrationRef="ill-001"),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(id="ill-001", vocabularyId="teacher-voc-other"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "vocabularyId", "xref_vocab_id_mismatch")
+
+
+def test_teacher_illustration_xref_reviewed_missing_ref():
+    """Reviewed teacher record without illustrationRef fails."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(reviewStatus="reviewed", illustrationRef=None),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "illustrationRef' is required when reviewStatus is 'reviewed'", "xref_reviewed_missing")
+
+
+def test_teacher_illustration_xref_published_missing_ref():
+    """Published teacher record without illustrationRef fails."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(reviewStatus="published", illustrationRef=None),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "illustrationRef' is required when reviewStatus is 'published'", "xref_published_missing")
+
+
+def test_teacher_illustration_xref_draft_omit_ref_ok():
+    """Draft teacher record without illustrationRef passes."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(illustrationRef=None),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "xref_draft_omit")
+
+
+def test_teacher_illustration_xref_orphan_illustration():
+    """Illustration with vocabularyId not matching any teacher record fails."""
+    data = {
+        "teacher_vocabulary": [
+            _teacher_xref_vocab(id="teacher-voc-001", illustrationRef="ill-001"),
+        ],
+        "illustrations": [
+            _teacher_xref_illustration(vocabularyId="nonexistent-vocab"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "orphan illustration", "xref_orphan")
+
+
+def test_orphan_illustrations_no_teacher_key():
+    """Illustrations without teacher_vocabulary key must fail with orphan error."""
+    data = {
+        "illustrations": [
+            _minimal_teacher_illustration(vocabularyId="voc-nonexistent"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "orphan illustration", "orphan_no_teacher_key")
+
+
+def test_orphan_illustrations_empty_teacher_array():
+    """Illustrations with teacher_vocabulary=[] must fail with orphan error."""
+    data = {
+        "teacher_vocabulary": [],
+        "illustrations": [
+            _minimal_teacher_illustration(vocabularyId="voc-nonexistent"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "orphan illustration", "orphan_empty_teacher")
 
 
 if __name__ == "__main__":
