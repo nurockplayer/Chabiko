@@ -25,7 +25,7 @@ sans-serif, single-column cards), Direction C uses:
 
 - A **deep indigo and warm amber** palette evoking Taipei evening streets and MRT signage
 - A **route/timeline** progress metaphor — the current lesson is an active station on a route line
-- **Station markers** (numbered circles) as progress indicators, not generic progress bars
+- **Station markers** as progress indicators, not generic progress bars
 - **Two-column desktop layout** — sticky route panel (persistent wayfinding reference) + content panel
 - Route motifs that directly communicate **"where you are" and "what's next"** in the learning journey
 
@@ -58,9 +58,9 @@ lantern light, and the calm readability of urban wayfinding.
 
 | Role | Font | Scale | Weight |
 |------|------|-------|--------|
-| Traditional Chinese | `PingFang TC`, `Noto Sans TC`, `Hiragino Sans` (sans-serif) | 3rem (hero), 0.875rem (examples), 1rem (labels) | 700 (hero), 600 (examples) |
-| Pinyin | `Noto Sans`, `Helvetica Neue` (sans-serif) | 1rem (hero), 0.875rem (inline) | 400, letter-spaced 0.04em |
-| Japanese UI | `Noto Sans JP`, `Hiragino Sans` (sans-serif) | 0.9375rem–0.75rem (body/labels) | 500–400 |
+| Traditional Chinese | `PingFang TC`, `Noto Sans TC`, `Hiragino Sans`, sans-serif | 2.75rem (hero), 0.875rem (examples), 1rem (labels) · desktop 1024px+: 3rem · 375–389px: 2.5rem · 320–374px: 2.25rem | 700 (hero), 600 (examples) |
+| Pinyin | `Hiragino Sans`, `Noto Sans`, `Helvetica Neue`, Arial, sans-serif | 1rem (hero), 0.875rem (inline) | 400, letter-spaced 0.04em |
+| Japanese UI | `Hiragino Sans`, `Noto Sans JP`, `Helvetica Neue`, Arial, sans-serif | 0.9375rem–0.75rem (body/labels) | 500–400 |
 
 Chinese uses a **bold sans-serif** with generous letter-spacing, evoking station
 signage legibility. Pinyin is set in a lighter colour and weight, clearly
@@ -77,8 +77,9 @@ The route motif is a focused "one active stop" wayfinding system. Unlike a multi
    current lesson.
 
 2. **Active station marker** — circular indicator (18px diameter): filled
-   indigo circle, amber inner dot, amber glow
-   (`box-shadow: 0 0 0 4px var(--color-accent-light)`).
+   indigo circle with amber inner dot, amber glow
+   (`box-shadow: 0 0 0 4px var(--color-accent-light)`). The lesson number
+   sits next to the marker, not inside it.
 
 3. **Active station card** — shows the lesson number, title, can-do
    description, and example Chinese phrase for Lesson 1.
@@ -104,7 +105,7 @@ The route motif is a focused "one active stop" wayfinding system. Unlike a multi
   "where you are" context while the learner focuses on content.
 
 - **Fluid mobile layout**: content width is determined by horizontal padding
-  (16px at 390px, 12px at 320–374px) rather than a fixed max-width.
+  (24px at default viewports, 16px at 320–374px) rather than a fixed max-width.
 - **Desktop content max-width**: 720px within the right content column on
   viewports 1024px and wider.
 - **Narrow mobile breakpoint** (320–374px): reduced padding and smaller font
@@ -116,7 +117,7 @@ The route motif is a focused "one active stop" wayfinding system. Unlike a multi
 ## Key Design Details
 
 1. **Phrase card** — white surface with a 4px deep indigo top border (evoking
-   a platform sign header). Chinese phrase dominates at 3rem, pinyin sits below
+   a platform sign header). Chinese phrase dominates at 2.75rem (3rem on desktop), pinyin sits below
    in muted colour, Japanese meaning follows in body weight.
 
 2. **Route station as wayfinding point** — a single active station row
