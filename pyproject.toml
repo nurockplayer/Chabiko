@@ -3,3 +3,6 @@ name = "chabiko-validation"
 version = "0.1.0"
 description = "Chabiko content validation tooling"
 requires-python = ">=3.14"
+dependencies = [
+    "openpyxl>=3.1",
+]
