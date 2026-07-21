@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chabiko — 台湾旅行で使える中国語</title>
+<style>
+  /* ============================================================
+     Direction C: Taiwan City Exploration
+     Wayfinding-inspired learning journey with Taipei transit/
+     route motifs — stations, route lines, and timeline progress.
+     ============================================================ */
+
+  /* --- Reset & Base ------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a2e;
+    background: #f4f1ec;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- CSS Variables ------------------------------------------ */
+  :root {
+    --color-bg: #f4f1ec;
+    --color-surface: #ffffff;
+    --color-text: #1a1a2e;
+    --color-text-secondary: #555570;
+    --color-text-muted: #6a6a7d;
+    --color-primary: #1a2744;
+    --color-primary-light: #e8ecf3;
+    --color-accent: #d48c2b;
+    --color-accent-light: #f5e8d0;
+    --color-route-line: #d0ccc4;
+    --color-border: #e0dcd4;
+    --color-success: #3d7b80;
+    --color-success-bg: #e8f0f0;
+    --color-error: #b84a3a;
+    --color-error-bg: #f5e8e4;
+    --font-zh: "PingFang TC", "Noto Sans TC", "Hiragino Sans", sans-serif;
+    --font-ja: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    --font-pinyin: "Hiragino Sans", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+  }
+
+  /* --- Typography --------------------------------------------- */
+  h1, h2, h3 { line-height: 1.3; font-weight: 700; }
+  h1 { font-size: 1.375rem; letter-spacing: 0.01em; color: var(--color-text); }
+  h2 { font-size: 1.125rem; letter-spacing: 0.01em; }
+  h3 { font-size: 0.9375rem; }
+
+  /* --- Header ------------------------------------------------ */
+  .app-header {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .app-header__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+  }
+  .app-header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    min-height: 44px;
+    border-radius: 0;
+  }
+  .app-header__brand:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .app-header__brand-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .app-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+  .app-header__nav a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+  }
+  .app-header__nav a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .app-header__script-toggle {
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+  }
+
+  /* --- App Layout (desktop two-column) ------------------------- */
+  .app-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* --- Route Sidebar ------------------------------------------ */
+  .route-panel {
+    padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  }
+
+  .route-panel__path-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* --- Route Timeline ----------------------------------------- */
+  .route-timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  /* Vertical route line — solid before active, continues */
+  .route-timeline::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 16px;
+    left: 15px;
+    width: 2px;
+    background: var(--color-route-line);
+  }
+
+  /* Station node */
+  .station {
+    position: relative;
+    padding-bottom: var(--space-xl);
+  }
+  .station:last-child {
+    padding-bottom: 0;
+  }
+
+  /* Station dot */
+  .station__dot {
+    position: absolute;
+    left: -24px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 2px solid var(--color-route-line);
+    z-index: 1;
+  }
+
+  /* Active station: filled indigo + amber ring */
+  .station--active .station__dot {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-accent-light);
+  }
+  .station--active .station__dot::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    display: block;
+  }
+
+  /* Station content */
+  .station__header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+  .station__num {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+  }
+  .station--active .station__num {
+    color: var(--color-primary);
+  }
+  .station__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .station--active .station__title {
+    color: var(--color-primary);
+  }
+  .station--upcoming .station__title {
+    color: var(--color-text-muted);
+  }
+
+  .station__can-do {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+  .station--upcoming .station__can-do {
+    color: var(--color-text-muted);
+  }
+
+  .station__example {
+    font-family: var(--font-zh);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-top: 4px;
+  }
+  .station--upcoming .station__example {
+    color: var(--color-text-muted);
+  }
+
+  .station__status {
+    display: inline-block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-top: 6px;
+  }
+  .station__status--active {
+    background: var(--color-accent-light);
+    color: #7a5a18;
+  }
+  .station__status--locked {
+    background: var(--color-primary-light);
+    color: var(--color-text-secondary);
+  }
+
+  /* Progress summary */
+  .progress-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Main Content Panel -------------------------------------- */
+  .content-panel {
+    padding: var(--space-xl) var(--space-lg) var(--space-3xl);
+  }
+
+  /* --- Path Section -------------------------------------------- */
+  .path-section {
+    margin-bottom: var(--space-2xl);
+  }
+  .path-section__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+  .path-section__description {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-sm);
+  }
+
+  /* --- Section Label ------------------------------------------- */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-md);
+  }
+
+  /* --- Phrase Card --------------------------------------------- */
+  .phrase-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .phrase-card {
+    background: var(--color-surface);
+    border-top: 4px solid var(--color-primary);
+    padding: var(--space-xl) var(--space-lg);
+  }
+  .phrase-card__chinese {
+    font-family: var(--font-zh);
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
+  }
+  .phrase-card__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+    margin-top: var(--space-sm);
+  }
+  .phrase-card__meaning {
+    font-size: 1rem;
+    color: var(--color-text);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+  }
+  .phrase-card__hook {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-accent-light);
+    border-radius: 4px;
+    line-height: 1.6;
+  }
+
+  /* --- Quiz Section -------------------------------------------- */
+  .quiz-section {
+    margin-bottom: var(--space-2xl);
+  }
+  .quiz-progress {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+  }
+  .quiz-prompt {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+  }
+  .quiz-choices {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .quiz-choice {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    text-align: left;
+    min-height: 52px;
+  }
+  .quiz-choice--correct {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+    position: relative;
+  }
+  .quiz-choice__indicator {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .quiz-choice--correct .quiz-choice__indicator {
+    border-color: var(--color-success);
+    background: var(--color-success);
+  }
+  .quiz-choice--correct .quiz-choice__indicator::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    display: block;
+  }
+
+  /* --- Feedback ------------------------------------------------ */
+  .feedback {
+    margin-top: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 4px solid var(--color-success);
+    background: var(--color-success-bg);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+  .feedback__icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .feedback__text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  /* --- Desktop Layout (1024px+) --------------------------------- */
+  @media (min-width: 1024px) {
+    .app-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 56px);
+    }
+    .route-panel {
+      position: sticky;
+      top: 0;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      border-right: 1px solid var(--color-border);
+      background: var(--color-bg);
+      padding: var(--space-xl) var(--space-lg);
+    }
+    .route-panel__path-name {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .content-panel {
+      max-width: 720px;
+      padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
+    }
+    .phrase-card__chinese {
+      font-size: 3rem;
+    }
+    .path-section__title {
+      font-size: 1.625rem;
+    }
+  }
+
+  /* --- Narrow Mobile (320px–374px) ------------------------------ */
+  @media (max-width: 374px) {
+    .app-header__inner {
+      padding: 0 var(--space-md);
+    }
+    .app-header__script-toggle {
+      font-size: 0.6875rem;
+    }
+    .content-panel {
+      padding: var(--space-lg) var(--space-md) var(--space-2xl);
+    }
+    .route-panel {
+      padding: var(--space-lg) var(--space-md) var(--space-xl);
+    }
+    .phrase-card {
+      padding: var(--space-lg) var(--space-md);
+    }
+    .phrase-card__chinese {
+      font-size: 2.25rem;
+    }
+    .path-section__title {
+      font-size: 1.25rem;
+    }
+    .route-timeline {
+      padding-left: 28px;
+    }
+    .station__dot {
+      left: -20px;
+    }
+  }
+
+  /* --- 375px–389px adjustments ---------------------------------- */
+  @media (min-width: 375px) and (max-width: 389px) {
+    .phrase-card__chinese {
+      font-size: 2.5rem;
+    }
+  }
+
+  /* --- Focus visible ------------------------------------------- */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  /* --- Print --------------------------------------------------- */
+  @media print {
+    .app-header {
+      background: #fff !important;
+      color: #000 !important;
+      border-bottom: 1px solid #ccc;
+    }
+    .app-header__brand,
+    .app-header__nav a {
+      color: #000 !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== Header ====== -->
+<header class="app-header">
+  <div class="app-header__inner">
+    <a href="#" class="app-header__brand">
+      <span class="app-header__brand-icon" aria-hidden="true">C</span>
+      Chabiko / チャビコ
+    </a>
+    <nav class="app-header__nav" aria-label="メインナビゲーション">
+      <a href="#">ホーム</a>
+      <span class="app-header__script-toggle" aria-label="簡体字・繁体字切り替え（準備中）">繁｜簡 — 準備中</span>
+    </nav>
+  </div>
+</header>
+
+<!-- ====== App Layout ====== -->
+<div class="app-layout">
+
+  <!-- ====== Route Sidebar (desktop) / Lesson List (mobile) ====== -->
+  <aside class="route-panel" aria-label="レッスン一覧">
+    <div class="route-panel__path-name">台湾旅行で使える中国語</div>
+
+    <div class="route-timeline">
+      <!-- Station 1 — active / in progress -->
+      <div class="station station--active" aria-current="step">
+        <span class="station__dot" aria-hidden="true"></span>
+        <div class="station__header">
+          <span class="station__num">レッスン 1</span>
+          <span class="station__title">夜市で注文してみよう</span>
+        </div>
+        <div class="station__can-do">台湾の夜市で簡単に食べ物を注文できる</div>
+        <div class="station__example" lang="zh-Hant">我要這個</div>
+        <span class="station__status station__status--active">進行中</span>
+      </div>
+
+      <!-- Station 2 — upcoming / locked -->
+      <div class="station station--upcoming">
+        <span class="station__dot" aria-hidden="true"></span>
+        <div class="station__header">
+          <span class="station__num">レッスン 2</span>
+          <span class="station__title">値段を聞いてみよう</span>
+        </div>
+        <div class="station__can-do">値段を尋ね、値札やレジ表示で金額を確認できる</div>
+        <div class="station__example" lang="zh-Hant">這個多少錢？</div>
+        <span class="station__status station__status--locked">準備中</span>
+      </div>
+
+      <!-- Station 3 — upcoming / locked -->
+      <div class="station station--upcoming">
+        <span class="station__dot" aria-hidden="true"></span>
+        <div class="station__header">
+          <span class="station__num">レッスン 3</span>
+          <span class="station__title">場所を尋ねてみよう</span>
+        </div>
+        <div class="station__can-do">駅やトイレなど、目的の場所がどこにあるか聞ける</div>
+        <div class="station__example" lang="zh-Hant">捷運站在哪裡？</div>
+        <span class="station__status station__status--locked">準備中</span>
+      </div>
+    </div>
+
+    <div class="progress-summary">0 / 3 レッスン完了</div>
+  </aside>
+
+  <!-- ====== Main Content ====== -->
+  <main class="content-panel">
+
+    <!-- ----- Path Section ----- -->
+    <section class="path-section">
+      <h1 class="path-section__title">台湾旅行で使える中国語</h1>
+      <p class="path-section__description">全3レッスン。指差し・値段・場所の順に覚えよう。</p>
+    </section>
+
+    <!-- ----- Phrase Section ----- -->
+    <section class="phrase-section" aria-labelledby="phrase-label">
+      <h2 id="phrase-label" class="section-label">今日のコア表現</h2>
+      <div class="phrase-card">
+        <div class="phrase-card__chinese" lang="zh-Hant">我要這個</div>
+        <div class="phrase-card__pinyin" lang="zh-Latn">wǒ yào zhège</div>
+        <div class="phrase-card__meaning">これをください</div>
+        <div class="phrase-card__hook">台湾の夜市と言えば…臭豆腐？それともタピオカ？</div>
+      </div>
+    </section>
+
+    <!-- ----- Quiz Section ----- -->
+    <section class="quiz-section" aria-labelledby="quiz-label">
+      <h2 id="quiz-label" class="section-label">確認クイズ</h2>
+      <div class="quiz-progress">質問 1 / 2</div>
+      <p class="quiz-prompt">「我要這個」はどういう意味？</p>
+      <ul class="quiz-choices">
+        <li class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
+          <span class="quiz-choice__indicator" aria-hidden="true"></span>
+          これをください
+        </li>
+        <li class="quiz-choice">
+          <span class="quiz-choice__indicator" aria-hidden="true"></span>
+          私は〜が欲しい
+        </li>
+        <li class="quiz-choice">
+          <span class="quiz-choice__indicator" aria-hidden="true"></span>
+          これはいくらですか
+        </li>
+      </ul>
+
+      <!-- Correct feedback state -->
+      <div class="feedback" role="status" aria-live="polite">
+        <span class="feedback__icon" aria-hidden="true">✓</span>
+        <span class="feedback__text">正解！</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>
