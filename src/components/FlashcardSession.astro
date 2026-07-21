@@ -233,6 +233,7 @@ const json = JSON.stringify({
       // hidden by renderCompleted. The card DOM still exists (we only hide
       // it, not innerHTML = ''), so bindRefs() finds all elements.
       container.querySelector('.flashcard-card')?.classList.remove('hidden');
+      container.querySelector('.flashcard-actions')?.classList.remove('hidden');
       const completionEl = container.querySelector('.flashcard-completion');
       if (completionEl) completionEl.remove();
       // Reset card to unrevealed state (restart after completion leaves
