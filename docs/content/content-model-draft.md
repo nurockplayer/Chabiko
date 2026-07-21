@@ -367,12 +367,6 @@ Teacher-curriculum vocabulary records use a Simplified-first contract with an ex
 | `kana` | no | string | Katakana reading |
 | `category` | no | string | Semantic category |
 | `illustrationRef` | no | string (non-empty) | Links to illustration record id |
-| `similarityType` | no | string | Kanji similarity |
-| `toneNote` | no | string | Tone pronunciation note |
-| `caution` | no | string | Learner caution |
-| `travelScenario` | no | string | Travel scenario tag |
-| `painPointTags` | no | string[] | Controlled pain point taxonomy |
-| `examples` | no | object[] | Vocabulary example sentences |
 
 ### Source Rules
 

@@ -1258,6 +1258,9 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             vocab_path_prefix = "vocabulary"
         if all_teacher:
             errors.extend(_check_teacher_illustration_xref(all_teacher, illustrations, path, vocab_path_prefix))
+        else:
+            # No teacher records — detect orphan illustrations directly
+            errors.extend(_orphan_illustration_detection(illustrations, path))
 
     return errors
 
@@ -1494,6 +1497,17 @@ def _check_teacher_vocabulary_fields(record: dict, path: str) -> list[str]:
     if "illustrationRef" in record and record["illustrationRef"] is not None:
         if not isinstance(record["illustrationRef"], str) or record["illustrationRef"].strip() == "":
             errors.append(f"{path}.illustrationRef must be a non-empty string when present")
+
+    # ── Reject unauthorised top-level fields ──
+    UNAUTHORISED_TEACHER_FIELDS = {
+        "similarityType", "toneNote", "caution",
+        "travelScenario", "painPointTags", "examples",
+    }
+    for field in UNAUTHORISED_TEACHER_FIELDS:
+        if field in record and record[field] is not None:
+            errors.append(
+                f"{path}: '{field}' is not allowed in teacher curriculum record"
+            )
 
     return errors
 
@@ -2072,7 +2086,14 @@ def run_tests():
         test_teacher_duplicate_identity_bundle,
         test_teacher_vocab_legacy_hsk_backward_compatible,
         test_teacher_vocab_null_curriculum_rejected,
-        test_teacher_vocab_source_note_null_passes,
+        test_teacher_vocab_source_note_absent_ok,
+        # B2: unauthorised fields rejected
+        test_teacher_vocab_similarity_type_rejected,
+        test_teacher_vocab_tone_note_rejected,
+        test_teacher_vocab_caution_rejected,
+        test_teacher_vocab_travel_scenario_rejected,
+        test_teacher_vocab_pain_point_tags_rejected,
+        test_teacher_vocab_examples_rejected,
 
         # ─── Illustration ───
         test_illustration_valid,
@@ -2107,6 +2128,9 @@ def run_tests():
         test_teacher_illustration_xref_published_missing_ref,
         test_teacher_illustration_xref_draft_omit_ref_ok,
         test_teacher_illustration_xref_orphan_illustration,
+        # B3: orphan regression tests
+        test_orphan_illustrations_no_teacher_key,
+        test_orphan_illustrations_empty_teacher_array,
         test_bundle_valid,
         test_bundle_invalid_item,
         test_bundle_non_collection_keys_ok,
@@ -4734,13 +4758,67 @@ def test_teacher_vocab_null_curriculum_rejected():
     _assert_has_error(errs, "required field", "teacher_curriculum_null")
 
 
-def test_teacher_vocab_source_note_null_passes():
-    """source.note null should be skipped if no note key is present."""
+def test_teacher_vocab_source_note_absent_ok():
+    """source without note key should pass for teacher curriculum record."""
     errs = validate_single(
         _minimal_teacher_vocab(source={"type": "teacher-workbook"}),
         "vocabulary",
     )
     _assert_no_errors(errs, "teacher_source_no_note")
+
+
+def test_teacher_vocab_similarity_type_rejected():
+    """similarityType must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(similarityType="none"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_similarity_rejected")
+
+
+def test_teacher_vocab_tone_note_rejected():
+    """toneNote must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(toneNote="first tone"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_tone_note_rejected")
+
+
+def test_teacher_vocab_caution_rejected():
+    """caution must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(caution="be careful"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_caution_rejected")
+
+
+def test_teacher_vocab_travel_scenario_rejected():
+    """travelScenario must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(travelScenario="food"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_travel_scenario_rejected")
+
+
+def test_teacher_vocab_pain_point_tags_rejected():
+    """painPointTags must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(painPointTags=["tone"]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_pain_tags_rejected")
+
+
+def test_teacher_vocab_examples_rejected():
+    """examples must not be allowed in teacher curriculum record."""
+    errs = validate_single(
+        _minimal_teacher_vocab(examples=[{"traditional": "你好", "traditionalStatus": "authored", "pinyin": "nǐ hǎo", "japanese": "こんにちは"}]),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "not allowed", "teacher_examples_rejected")
 
 
 # ─── Illustration tests ──────────────────────────────────────────────────
@@ -4931,9 +5009,17 @@ def test_illustration_duplicate_vocabulary_id_detection():
 
 
 def test_illustration_bundle_valid():
-    """Valid bundle with illustrations passes."""
+    """Valid bundle with illustrations and teacher vocabulary passes."""
     data = {
-        "illustrations": [_minimal_teacher_illustration()],
+        "teacher_vocabulary": [
+            {"id": "teacher-voc-001", "simplified": "你好", "simplifiedStatus": "authored",
+             "pinyin": "nǐ hǎo", "japanese": "こんにちは", "source": {"type": "teacher-workbook"},
+             "reviewStatus": "draft",
+             "curriculum": {"sourceId": "teacher-core-v1", "difficultyBand": "star-1",
+                            "sourceDifficultyLabel": "☆", "partOfSpeech": "noun",
+                            "sourceSheet": "S1", "sourceRow": 1}},
+        ],
+        "illustrations": [_minimal_teacher_illustration(vocabularyId="teacher-voc-001")],
     }
     errs = validate_bundle(data)
     _assert_no_errors(errs, "ill_bundle_valid")
@@ -5083,6 +5169,29 @@ def test_teacher_illustration_xref_orphan_illustration():
     }
     errs = validate_bundle(data)
     _assert_has_error(errs, "orphan illustration", "xref_orphan")
+
+
+def test_orphan_illustrations_no_teacher_key():
+    """Illustrations without teacher_vocabulary key must fail with orphan error."""
+    data = {
+        "illustrations": [
+            _minimal_teacher_illustration(vocabularyId="voc-nonexistent"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "orphan illustration", "orphan_no_teacher_key")
+
+
+def test_orphan_illustrations_empty_teacher_array():
+    """Illustrations with teacher_vocabulary=[] must fail with orphan error."""
+    data = {
+        "teacher_vocabulary": [],
+        "illustrations": [
+            _minimal_teacher_illustration(vocabularyId="voc-nonexistent"),
+        ],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "orphan illustration", "orphan_empty_teacher")
 
 
 if __name__ == "__main__":

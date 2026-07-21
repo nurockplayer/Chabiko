@@ -103,9 +103,14 @@ export interface TeacherCurriculum {
   sourceRow: number;
 }
 
-/** Teacher-curriculum Simplified-first vocabulary record without Traditional form. */
-export interface TeacherVocabulary extends VocabularyBase {
+/** Teacher-curriculum Simplified-first vocabulary record without Traditional form.
+ * Does NOT inherit from VocabularyBase — teacher records have a stricter, narrower shape. */
+export interface TeacherVocabulary {
   hsk?: never;
+  id: string;
+  pinyin: string;
+  japanese: string;
+  reviewStatus: ReviewStatus;
   curriculum: TeacherCurriculum;
   simplified: string;
   simplifiedStatus: 'authored' | 'verified';
@@ -115,11 +120,21 @@ export interface TeacherVocabulary extends VocabularyBase {
   category?: string;
   source: { type: 'teacher-workbook'; note?: string };
   illustrationRef?: string;
+  similarityType?: never;
+  toneNote?: never;
+  caution?: never;
+  travelScenario?: never;
+  painPointTags?: never;
+  examples?: never;
 }
 
 /** Teacher-curriculum record with a reviewed Traditional form. */
-export interface TeacherVocabularyWithTraditional extends VocabularyBase {
+export interface TeacherVocabularyWithTraditional {
   hsk?: never;
+  id: string;
+  pinyin: string;
+  japanese: string;
+  reviewStatus: ReviewStatus;
   curriculum: TeacherCurriculum;
   simplified: string;
   simplifiedStatus: 'authored' | 'verified';
@@ -129,6 +144,12 @@ export interface TeacherVocabularyWithTraditional extends VocabularyBase {
   category?: string;
   source: { type: 'teacher-workbook'; note?: string };
   illustrationRef?: string;
+  similarityType?: never;
+  toneNote?: never;
+  caution?: never;
+  travelScenario?: never;
+  painPointTags?: never;
+  examples?: never;
 }
 
 export type TeacherVocabularyType = TeacherVocabulary | TeacherVocabularyWithTraditional;

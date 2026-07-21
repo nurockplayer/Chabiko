@@ -71,6 +71,24 @@
         "sourceSheet": "Lesson2",
         "sourceRow": 1
       }
+    },
+    {
+      "id": "teacher-voc-005",
+      "simplified": "小",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiǎo",
+      "japanese": "小さい",
+      "source": {"type": "teacher-workbook"},
+      "reviewStatus": "published",
+      "illustrationRef": "ill-005",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "adjective",
+        "sourceSheet": "Lesson2",
+        "sourceRow": 2
+      }
     }
   ],
   "illustrations": [
@@ -90,6 +108,27 @@
         "staticAssetRedistribution": true,
         "modificationScope": "technical-only",
         "attributionRequired": false,
+        "reuseOutsideChabiko": "not-granted"
+      },
+      "reviewStatus": "published"
+    },
+    {
+      "id": "ill-005",
+      "vocabularyId": "teacher-voc-005",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/xiao.png",
+      "sourceChecksumSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "width": 256,
+      "height": 256,
+      "mimeType": "image/png",
+      "fileSizeBytes": 204800,
+      "altJa": "小のイラスト",
+      "rights": {
+        "basis": "commissioned-for-chabiko",
+        "publicWebDisplay": true,
+        "staticAssetRedistribution": true,
+        "modificationScope": "technical-only",
+        "attributionRequired": true,
+        "attributionText": "Illustration by Example Artist",
         "reuseOutsideChabiko": "not-granted"
       },
       "reviewStatus": "published"
