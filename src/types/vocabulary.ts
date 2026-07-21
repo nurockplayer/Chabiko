@@ -90,8 +90,57 @@ export interface HskVocabularyWithTraditional extends VocabularyBase {
 
 export type HskVocabularyType = HskVocabulary | HskVocabularyWithTraditional;
 
-export type Vocabulary = LegacyVocabulary | LegacyVocabularyNoSimplified | HskVocabularyType;
+export type TeacherDifficultyBand = 'star-1' | 'star-2';
+export type TeacherDifficultyLabel = '☆' | '☆☆';
+export type TeacherPartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb';
+
+export interface TeacherCurriculum {
+  sourceId: 'teacher-core-v1';
+  difficultyBand: TeacherDifficultyBand;
+  sourceDifficultyLabel: TeacherDifficultyLabel;
+  partOfSpeech: TeacherPartOfSpeech;
+  sourceSheet: string;
+  sourceRow: number;
+}
+
+/** Teacher-curriculum Simplified-first vocabulary record without Traditional form. */
+export interface TeacherVocabulary extends VocabularyBase {
+  hsk?: never;
+  curriculum: TeacherCurriculum;
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
+  traditional?: never;
+  traditionalStatus?: 'unavailable';
+  kana?: string;
+  category?: string;
+  source: { type: 'teacher-workbook'; note?: string };
+  illustrationRef?: string;
+}
+
+/** Teacher-curriculum record with a reviewed Traditional form. */
+export interface TeacherVocabularyWithTraditional extends VocabularyBase {
+  hsk?: never;
+  curriculum: TeacherCurriculum;
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified';
+  kana?: string;
+  category?: string;
+  source: { type: 'teacher-workbook'; note?: string };
+  illustrationRef?: string;
+}
+
+export type TeacherVocabularyType = TeacherVocabulary | TeacherVocabularyWithTraditional;
+
+export type Vocabulary =
+  | LegacyVocabulary
+  | LegacyVocabularyNoSimplified
+  | HskVocabularyType
+  | TeacherVocabularyType;
 
 export interface VocabularyBundle {
   vocabulary: Vocabulary[];
+  teacher_vocabulary?: TeacherVocabularyType[];
+  illustrations?: import('./illustration.js').Illustration[];
 }
