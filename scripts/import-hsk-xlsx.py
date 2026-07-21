@@ -27,12 +27,12 @@ from openpyxl import Workbook
 REQUIRED_COLUMN_MAPPINGS = {
     "simplified": frozenset({"simplified", "简体", "简体字", "简"}),
     "pinyin": frozenset({"pinyin", "拼音"}),
+    "japanese": frozenset({"japanese", "日文", "日本語", "日语", "jpn"}),
 }
 
 OPTIONAL_COLUMN_MAPPINGS = {
     "traditional": frozenset({"traditional", "繁体", "繁体字", "繁"}),
     "level": frozenset({"level", "hsk level", "级别", "等级", "lev"}),
-    "japanese": frozenset({"japanese", "日文", "日本語", "日语", "jpn"}),
     "category": frozenset({"category", "类别", "分類"}),
     "kana": frozenset({"kana", "假名", "仮名", "よみ", "reading"}),
 }
@@ -194,6 +194,10 @@ def validate_record(record, seen_ids, seen_identities, standard_version):
     if not pinyin:
         return None, f"missing pinyin: {record['_sourceSheet']}:{record['_sourceRow']}"
 
+    japanese = record.get("japanese", "")
+    if not japanese:
+        return None, f"missing japanese: {record['_sourceSheet']}:{record['_sourceRow']}"
+
     level = record.get("level", 1)
     if not isinstance(level, int) or level < 1:
         level = 1
@@ -213,6 +217,7 @@ def validate_record(record, seen_ids, seen_identities, standard_version):
         "simplified": simplified,
         "simplifiedStatus": "authored",
         "pinyin": pinyin,
+        "japanese": japanese,
         "source": {"type": "hsk-workbook"},
         "reviewStatus": "draft",
         "hsk": {
@@ -226,10 +231,6 @@ def validate_record(record, seen_ids, seen_identities, standard_version):
     if traditional:
         vocab["traditional"] = traditional
         vocab["traditionalStatus"] = "authored"
-
-    japanese = record.get("japanese", "")
-    if japanese:
-        vocab["japanese"] = japanese
 
     category = record.get("category", "")
     if category:
@@ -288,6 +289,25 @@ def write_batches(accepted_entries, output_dir):
         })
 
     return batches
+
+
+def _test_missing_japanese():
+    """Verify a workbook without japanese column is rejected."""
+    import tempfile as _tf
+    from openpyxl import Workbook
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "Test"
+        _ws.append(["simplified", "pinyin"])
+        _ws.append(["爱", "ài"])
+        _path = os.path.join(_td, "no_jp.xlsx")
+        _wb.save(_path)
+        try:
+            import_xlsx(_path, os.path.join(_td, "out"), "hsk-3.0")
+            raise AssertionError("expected ValueError for missing japanese column")
+        except ValueError:
+            pass
 
 
 # ─── Main import pipeline ────────────────────────────────────────────────────
@@ -674,7 +694,10 @@ def run_tests():
                 "simplified normalization must be NFKC-stable"
             print("PASS")
 
-            print(f"\nAll tests PASSED ({errors} failures)")
+            # ── Test 12: Missing japanese column is fatal ──
+            print("Test 12: Missing japanese column ... ", end="")
+            _test_missing_japanese()
+            print("PASS")
 
     except Exception as e:
         print(f"\nFAILED: {e}", file=sys.stderr)
