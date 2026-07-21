@@ -19,7 +19,7 @@ slim Taiwan guidebooks sold at Maruzen and Kinokuniya.
 | Surface | `#fffcf8` — warm white | Cards, info blocks, flashcard |
 | Text | `#2c2420` — deep warm brown | Main body and headings |
 | Secondary text | `#7a7068` — warm grey | Can-do descriptions, labels |
-| Muted text | `#9e948c` — light warm grey | Pinyin, metadata, secondary labels |
+| Muted text | `#736b64` — warm grey | Pinyin, metadata, secondary labels |
 | Accent | `#b8432f` — restrained red | Section numbers, active paths, CTAs |
 | Accent warm | `#d4764a` — terracotta | Alternate section markers, note cards |
 | Accent soft | `#e8d5cc` — blush | Status pills, hover states |
