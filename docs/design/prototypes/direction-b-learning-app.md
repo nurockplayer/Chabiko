@@ -36,7 +36,7 @@ palette, magazine layout), direction B uses:
 | Elevated | `#ffffff` — white | Key surfaces with shadow |
 | Text primary | `#0f172a` — dark slate | Main body, headings |
 | Text secondary | `#475569` — medium slate | Can-do descriptions, labels |
-| Text muted | `#6b7280` — medium slate | Pinyin, secondary metadata |
+| Text muted | `#5b6570` — medium-dark slate | Pinyin, secondary metadata |
 | Accent | `#0f766e` — teal | Progress fill, active states, focus ring |
 | Accent light | `#f0fdfa` — pale teal | Active item background |
 | Accent border | `#ccfbf1` — light teal | Selected item border |
