@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chabiko — 台湾旅行で使える中国語</title>
+<style>
+  /* ============================================================
+     Direction A: Japanese Editorial Travel Guide
+     Warm, editorial, travel-guide presentation inspired by
+     Tokyo-published Taiwan guidebooks.
+     ============================================================ */
+
+  /* --- Reset & Base ------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Noto Sans JP", "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
+    color: #2c2420;
+    background: #faf7f2;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Variables ---------------------------------------------- */
+  :root {
+    --color-bg: #faf7f2;
+    --color-surface: #fffcf8;
+    --color-text: #2c2420;
+    --color-text-secondary: #7a7068;
+    --color-text-muted: #736b64;
+    --color-accent: #b8432f;
+    --color-accent-soft: #e8d5cc;
+    --color-accent-warm: #d4764a;
+    --color-border: #e8e0d8;
+    --color-border-light: #f0eae4;
+    --color-success: #4a7c59;
+    --color-success-bg: #edf4ef;
+    --color-error: #b84a4a;
+    --color-error-bg: #f7edec;
+    --color-link: #2c2420;
+    --font-zh: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "Times New Roman", serif;
+    --font-ja: "Noto Sans JP", "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
+    --font-pinyin: "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    --max-width: 640px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+  }
+
+  /* --- Typography --------------------------------------------- */
+  h1, h2, h3 { font-weight: 700; line-height: 1.3; }
+  h1 { font-size: 1.5rem; letter-spacing: 0.02em; }
+  h2 { font-size: 1.125rem; letter-spacing: 0.01em; }
+  h3 { font-size: 0.9375rem; }
+
+  /* --- Layout ------------------------------------------------ */
+  .page { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--space-md); }
+
+  /* --- Header ------------------------------------------------ */
+  .app-header {
+    padding: var(--space-lg) 0 var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    min-height: 44px;
+    border-radius: 0;
+  }
+  .app-header__brand:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .app-header__icon {
+    width: 28px; height: 28px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .app-header__title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+    letter-spacing: 0.04em;
+  }
+  .app-header__nav {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  .app-header__link {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+  }
+  .app-header__link:hover { color: var(--color-accent); }
+  .app-header__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Section Heading (editorial style) --------------------- */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-accent);
+  }
+  .section-heading__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-heading__text {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+  }
+
+  /* --- Path / Lesson List ------------------------------------ */
+  .path-card {
+    background: var(--color-surface);
+    border-radius: 0;
+    border-left: 4px solid var(--color-accent);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-md);
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+  }
+  .path-card--pending {
+    border-left-color: var(--color-border);
+    opacity: 0.6;
+  }
+  .path-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+  .path-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 50%;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .path-card--pending .path-card__badge {
+    border-color: var(--color-text-muted);
+    color: var(--color-text-muted);
+  }
+  .path-card__title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .path-card__can-do {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-sm);
+  }
+  .path-card__example {
+    font-family: var(--font-zh);
+    font-size: 1.25rem;
+    color: var(--color-accent);
+    line-height: 1.4;
+    margin-top: var(--space-sm);
+  }
+  .path-card__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: var(--space-sm);
+  }
+
+  /* --- Path row (goal-path slot) ----------------------------- */
+  .path-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+  .path-row:last-child { border-bottom: none; }
+  .path-row__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  .path-row__status {
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 99px;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+  .path-row__status--pending {
+    background: var(--color-border-light);
+    color: var(--color-text-muted);
+  }
+  .path-row__count {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  /* --- Goal Paths Container (editorial listing) -------------- */
+  .goal-paths {
+    background: var(--color-surface);
+    padding: 0 var(--space-md);
+    margin-bottom: var(--space-xl);
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+  }
+
+  /* --- Lesson Content ---------------------------------------- */
+  .lesson-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  /* --- Core Sentence (Chinese hero block) -------------------- */
+  .sentence-hero {
+    background: var(--color-surface);
+    padding: var(--space-xl) var(--space-md);
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    position: relative;
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+  }
+  .sentence-hero::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-warm));
+  }
+  .sentence-hero__zh {
+    font-family: var(--font-zh);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-sm);
+  }
+  .sentence-hero__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+    letter-spacing: 0.03em;
+  }
+  .sentence-hero__ja {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Info Block (editorial sidebar-like) ------------------- */
+  .info-block {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+  .info-block__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-bottom: var(--space-sm);
+  }
+
+  /* --- Chunk Breakdown --------------------------------------- */
+  .chunk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .chunk-table th {
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .chunk-table td {
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    vertical-align: top;
+  }
+  .chunk-table tr:last-child td { border-bottom: none; }
+  .chunk-zh {
+    font-family: var(--font-zh);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .chunk-pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .chunk-meaning {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+  }
+  .chunk-note {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* --- Example Sentence --------------------------------------- */
+  .example-sentence {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-md) 0;
+  }
+  .example-sentence + .example-sentence {
+    border-top: 1px solid var(--color-border-light);
+  }
+  .example-sentence__zh {
+    font-family: var(--font-zh);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .example-sentence__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .example-sentence__ja {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Note Cards (sound focus / kanji bridge) --------------- */
+  .note-card {
+    background: var(--color-surface);
+    border-left: 3px solid var(--color-accent-warm);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+  .note-card__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+  }
+  .note-card__item {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .note-card__text {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-top: var(--space-xs);
+  }
+
+  /* --- Quiz --------------------------------------------------- */
+  .quiz-prompt {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    line-height: 1.5;
+  }
+  .quiz-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  .quiz-choice {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.5;
+    border-radius: 0;
+  }
+  .quiz-choice:hover {
+    border-color: var(--color-accent);
+    background: #fdf8f4;
+  }
+  .quiz-choice:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .quiz-choice:active {
+    background: var(--color-accent-soft);
+  }
+
+  /* --- Feedback States --------------------------------------- */
+  .feedback {
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+  .feedback--correct {
+    background: var(--color-success-bg);
+    border-left: 3px solid var(--color-success);
+  }
+  .feedback--incorrect {
+    background: var(--color-error-bg);
+    border-left: 3px solid var(--color-error);
+  }
+  .feedback__icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .feedback__text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .feedback__text strong {
+    font-weight: 700;
+  }
+  .feedback__correct-answer {
+    color: var(--color-success);
+    font-weight: 600;
+  }
+
+  /* --- Completion State --------------------------------------- */
+  .completion {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-md);
+    background: var(--color-surface);
+    margin-bottom: var(--space-xl);
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+  }
+  .completion__icon {
+    width: 56px; height: 56px;
+    background: var(--color-success);
+    color: #fff;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+  .completion__text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Lesson Navigation ------------------------------------- */
+  .lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-lg);
+  }
+  .lesson-nav__link {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+  }
+  .lesson-nav__link:hover { color: var(--color-accent); }
+  .lesson-nav__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .lesson-nav__link--next { margin-left: auto; }
+  .lesson-nav__divider { color: var(--color-border); }
+  .lesson-nav__index {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  /* --- Flashcard Section (Vocabulary) ------------------------ */
+  .flashcard-controls {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  .control-group__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+  .control-group__options {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--color-border);
+  }
+  .control-option {
+    padding: 12px var(--space-md);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    background: var(--color-surface);
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .control-option + .control-option {
+    border-left: 1px solid var(--color-border);
+  }
+  .control-option--active {
+    background: var(--color-accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .control-option:hover:not(.control-option--active) {
+    background: #f5f0ea;
+  }
+  .control-option:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .flashcard {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-2xl) var(--space-md);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .flashcard__front {
+    font-family: var(--font-zh);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--space-sm);
+  }
+  .flashcard__back {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .flashcard__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+  }
+  .flashcard__ja {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .flashcard-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+  .flashcard-btn {
+    padding: 14px var(--space-lg);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 72px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flashcard-btn:hover { border-color: var(--color-accent); }
+  .flashcard-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .flashcard-btn--primary {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+  .flashcard-btn--primary:hover {
+    background: #a03a28;
+  }
+
+  /* --- Progress Summary -------------------------------------- */
+  .progress-summary {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgba(44,36,32,0.06);
+  }
+  .progress-stat {
+    text-align: center;
+    flex: 1;
+  }
+  .progress-stat__value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+  }
+  .progress-stat__label {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* --- Desktop Adaptation (≥1024px) -------------------------- */
+  @media (min-width: 1024px) {
+    .page { max-width: 840px; }
+    .sentence-hero { padding: var(--space-2xl) var(--space-xl); }
+    .sentence-hero__zh { font-size: 3rem; }
+    .info-block { padding: var(--space-xl); }
+    .quiz-choices { flex-direction: row; flex-wrap: wrap; }
+    .quiz-choice { flex: 1; min-width: 200px; }
+    .flashcard { min-height: 240px; }
+    .flashcard__front { font-size: 2.5rem; }
+
+    .desktop-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+    }
+
+    /* Two-column layout for desktop content sections */
+    .desktop-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+  }
+
+  /* --- Wider Desktop (1440px reference) ---------------------- */
+  @media (min-width: 1200px) {
+    .page { max-width: 960px; }
+    .desktop-two-col-wide {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+    }
+  }
+
+  /* --- Small Mobile Safeguards ------------------------------- */
+  @media (max-width: 360px) {
+    html { font-size: 15px; }
+    .sentence-hero__zh { font-size: 2rem; }
+    .progress-summary { flex-direction: column; gap: var(--space-sm); }
+  }
+
+  /* --- Utility ----------------------------------------------- */
+  .mt-lg { margin-top: var(--space-lg); }
+  .mb-lg { margin-bottom: var(--space-lg); }
+  .mb-xl { margin-bottom: var(--space-xl); }
+
+  /* --- Interactive toggle simulation (JS-free) -------------- */
+  .feedback--hidden { display: none; }
+  .show-feedback:target { display: flex; }
+  .completion--hidden { display: none; }
+  .show-completion:target { display: block; }
+
+  /* Target-based toggle for demo interactivity */
+  .demo-section:not(:target) { display: block; }
+  #feedback-correct-target:target ~ .demo-section .feedback--correct { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ==========================================================
+       Header
+       ========================================================== -->
+  <header class="app-header">
+    <a href="#" class="app-header__brand">
+      <span class="app-header__icon">知</span>
+      <span class="app-header__title">Chabiko</span>
+    </a>
+    <nav class="app-header__nav">
+      <a href="#home" class="app-header__link">ホーム</a>
+      <a href="#lesson" class="app-header__link">レッスン</a>
+      <a href="#vocabulary" class="app-header__link">単語</a>
+    </nav>
+  </header>
+
+  <!-- ==========================================================
+       HOME SECTION
+       ========================================================== -->
+  <section id="home" class="lesson-section">
+
+    <div class="section-heading">
+      <span class="section-heading__number">1</span>
+      <span class="section-heading__text">台湾旅行コース</span>
+    </div>
+
+    <!-- Progress Summary -->
+    <div class="progress-summary">
+      <div class="progress-stat">
+        <div class="progress-stat__value">1</div>
+        <div class="progress-stat__label">完了レッスン</div>
+      </div>
+      <div class="progress-stat">
+        <div class="progress-stat__value">3</div>
+        <div class="progress-stat__label">全レッスン</div>
+      </div>
+      <div class="progress-stat">
+        <div class="progress-stat__value">33%</div>
+        <div class="progress-stat__label">進捗</div>
+      </div>
+    </div>
+
+    <!-- Active Path Card -->
+    <article class="path-card">
+      <div class="path-card__header">
+        <span class="path-card__badge">1</span>
+        <h2 class="path-card__title">夜市で注文してみよう</h2>
+      </div>
+      <p class="path-card__can-do">台湾の夜市で簡単に食べ物を注文できる</p>
+      <div class="path-card__example">我要這個</div>
+      <div class="path-card__meta">レッスン 1 · 所要時間 5分</div>
+    </article>
+
+    <!-- Goal Paths -->
+    <div class="section-heading" style="margin-top: var(--space-xl);">
+      <span class="section-heading__number" style="background: var(--color-accent-warm);">路</span>
+      <span class="section-heading__text">学習パス</span>
+    </div>
+
+    <div class="goal-paths">
+      <div class="path-row">
+        <div>
+          <div class="path-row__label">台湾旅行で使える中国語</div>
+          <div class="path-row__count">3 レッスン</div>
+        </div>
+        <span class="path-row__status">進行中</span>
+      </div>
+      <div class="path-row">
+        <div>
+          <div class="path-row__label">HSK対策</div>
+        </div>
+        <span class="path-row__status path-row__status--pending">準備中</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================================
+       LESSON SECTION
+       ========================================================== -->
+  <section id="lesson" class="lesson-section">
+
+    <div class="section-heading">
+      <span class="section-heading__number">2</span>
+      <span class="section-heading__text">フレーズを学ぶ</span>
+    </div>
+
+    <!-- Core Sentence -->
+    <div class="sentence-hero">
+      <div class="sentence-hero__zh">我要這個</div>
+      <div class="sentence-hero__pinyin">wǒ yào zhège</div>
+      <div class="sentence-hero__ja">これをください</div>
+    </div>
+
+    <!-- Chunk Breakdown -->
+    <div class="info-block">
+      <div class="info-block__label">単語の分解</div>
+      <table class="chunk-table">
+        <thead>
+          <tr>
+            <th>語句</th>
+            <th>ピンイン</th>
+            <th>意味</th>
+            <th>備考</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="chunk-zh">我要</td>
+            <td class="chunk-pinyin">wǒ yào</td>
+            <td class="chunk-meaning">私は〜が欲しい</td>
+            <td class="chunk-note">日本語の「欲しい」と違い、中国語では「要」が意志を表す</td>
+          </tr>
+          <tr>
+            <td class="chunk-zh">這個</td>
+            <td class="chunk-pinyin">zhège</td>
+            <td class="chunk-meaning">これ</td>
+            <td class="chunk-note">「這」＝これ、「個」＝量詞。指差しで使う</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Example Sentence -->
+    <div class="info-block">
+      <div class="info-block__label">例文</div>
+      <div class="example-sentence">
+        <div class="example-sentence__zh">我要那個</div>
+        <div class="example-sentence__pinyin">wǒ yào nàge</div>
+        <div class="example-sentence__ja">それをください</div>
+      </div>
+    </div>
+
+    <!-- Sound Focus -->
+    <div class="note-card">
+      <div class="note-card__label">発音のポイント</div>
+      <div class="note-card__item">要 yào</div>
+      <div class="note-card__text">第四声。yào は「ヤオ」と伸ばさず、短く急降下。</div>
+    </div>
+
+    <!-- Kanji Bridge -->
+    <div class="note-card">
+      <div class="note-card__label">漢字ブリッジ</div>
+      <div class="note-card__item">要</div>
+      <div class="note-card__text">
+        日本語の「要る（いる）」に近いが、中国語では欲求・意思を表す。
+        日本語音読み：よう
+      </div>
+    </div>
+
+    <!-- Quiz -->
+    <div class="section-heading" style="margin-top: var(--space-xl);">
+      <span class="section-heading__number" style="background: var(--color-accent-warm);">3</span>
+      <span class="section-heading__text">練習問題</span>
+    </div>
+
+    <p class="quiz-prompt">「我要這個」はどういう意味？</p>
+
+    <div class="quiz-choices">
+      <button class="quiz-choice">これをください</button>
+      <button class="quiz-choice">私は〜が欲しい</button>
+      <button class="quiz-choice">これはいくらですか</button>
+      <button class="quiz-choice">どこにありますか</button>
+    </div>
+
+    <!-- Feedback: Correct -->
+    <div class="feedback feedback--correct" id="feedback-correct">
+      <span class="feedback__icon">✓</span>
+      <span class="feedback__text"><strong>正解！</strong></span>
+    </div>
+
+    <!-- Feedback: Incorrect -->
+    <div class="feedback feedback--incorrect" id="feedback-incorrect">
+      <span class="feedback__icon">✕</span>
+      <span class="feedback__text">
+        <strong>不正解。</strong><br>
+        正解：<span class="feedback__correct-answer">これをください</span>
+      </span>
+    </div>
+
+    <!-- Completion State -->
+    <div class="completion" id="completion">
+      <div class="completion__icon">✓</div>
+      <div class="completion__text">練習完了！レッスンをクリアしました。</div>
+    </div>
+
+    <!-- Lesson Navigation -->
+    <nav class="lesson-nav">
+      <a href="#" class="lesson-nav__link">← 前のレッスン</a>
+      <span class="lesson-nav__index">1 / 3</span>
+      <a href="#" class="lesson-nav__link lesson-nav__link--next">次のレッスン →</a>
+    </nav>
+
+  </section>
+
+  <!-- ==========================================================
+       VOCABULARY SECTION (Flashcard)
+       ========================================================== -->
+  <section id="vocabulary" class="lesson-section">
+
+    <div class="section-heading">
+      <span class="section-heading__number">4</span>
+      <span class="section-heading__text">単語カード</span>
+    </div>
+
+    <!-- Session Setup -->
+    <div class="flashcard-controls">
+      <div class="control-group">
+        <span class="control-group__label">セッションサイズ</span>
+        <div class="control-group__options">
+          <button class="control-option control-option--active">10語</button>
+          <button class="control-option">20語</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-group__label">出題方向</span>
+        <div class="control-group__options">
+          <button class="control-option control-option--active">中国語 → 日本語</button>
+          <button class="control-option">日本語 → 中国語</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flashcard -->
+    <div class="flashcard">
+      <div class="flashcard__front">我</div>
+      <div class="flashcard__back">
+        <div class="flashcard__pinyin">wǒ</div>
+        <div class="flashcard__ja">私</div>
+        <div class="flashcard__pinyin" style="margin-top: var(--space-xs);">繁體：我</div>
+      </div>
+    </div>
+
+    <div class="flashcard-actions">
+      <button class="flashcard-btn">✕ 覚えていない</button>
+      <button class="flashcard-btn">△ 微妙</button>
+      <button class="flashcard-btn flashcard-btn--primary">✓ 覚えた</button>
+    </div>
+
+  </section>
+
+  <!-- ==========================================================
+       Footer
+       ========================================================== -->
+  <footer style="padding: var(--space-2xl) 0 var(--space-xl); text-align: center; border-top: 1px solid var(--color-border); margin-top: var(--space-xl);">
+    <p style="font-size: 0.75rem; color: var(--color-text-muted);">
+      プロトタイプ · 方向性A
+    </p>
+  </footer>
+
+</div>
+
+</body>
+</html>
