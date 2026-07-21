@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chabiko — 台湾旅行で使える中国語</title>
+<style>
+  /* ============================================================
+     Direction B: Premium Modern Learning App
+     Clean, polished, adult-oriented learning experience with
+     cool slate-teal palette and sans-serif Chinese typography.
+     ============================================================ */
+
+  /* --- Reset & Base ------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    color: #0f172a;
+    background: #f4f7fc;
+    line-height: 1.7;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Variables ---------------------------------------------- */
+  :root {
+    --color-bg: #f4f7fc;
+    --color-surface: #ffffff;
+    --color-elevated: #ffffff;
+    --color-text: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #5b6570;
+    --color-accent: #0f766e;
+    --color-accent-light: #f0fdfa;
+    --color-accent-border: #ccfbf1;
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+    --color-success: #047857;
+    --color-success-bg: #ecfdf5;
+    --color-error: #dc2626;
+    --color-error-bg: #fef2f2;
+    --color-progress-bg: #e2e8f0;
+    --font-zh: "Hiragino Sans", "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+    --font-ja: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    --font-pinyin: "Hiragino Sans", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    --max-width: 640px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --radius-card: 10px;
+    --radius-btn: 8px;
+    --radius-progress: 99px;
+    --shadow-card: 0 1px 3px rgba(15,23,42,0.05);
+  }
+
+  /* --- Typography --------------------------------------------- */
+  h1, h2, h3 { font-weight: 700; line-height: 1.3; }
+  h1 { font-size: 1.375rem; letter-spacing: 0.01em; color: var(--color-text); }
+  h2 { font-size: 1.125rem; letter-spacing: 0.01em; }
+  h3 { font-size: 0.9375rem; }
+
+  /* --- Layout -------------------------------------------------- */
+  .app-wrapper {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+  }
+
+  /* --- Header -------------------------------------------------- */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg) 0 var(--space-md);
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .app-header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    min-height: 44px;
+  }
+  .app-header__logo {
+    width: 28px;
+    height: 28px;
+    background: var(--color-accent);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .app-header__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+  }
+  .app-header__nav {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  .app-header__link {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--space-xs);
+    transition: color 0.15s;
+    border-radius: 4px;
+  }
+  .app-header__link:hover { color: var(--color-accent); }
+  .app-header__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .app-header__meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  /* --- Section Headings (clean app style) --------------------- */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    line-height: 1.3;
+  }
+
+  /* --- Progress Bar -------------------------------------------- */
+  .path-progress {
+    margin-bottom: var(--space-xl);
+  }
+  .path-progress__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+  .path-progress__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+  .path-progress__percent {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .path-progress__track {
+    width: 100%;
+    height: 4px;
+    background: var(--color-progress-bg);
+    border-radius: var(--radius-progress);
+    overflow: hidden;
+  }
+  .path-progress__fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent);
+    border-radius: var(--radius-progress);
+    transition: width 0.3s ease;
+  }
+  .path-progress__fill--active {
+    width: 33%;
+  }
+
+  /* --- Lesson List (clean rows) -------------------------------- */
+  .lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+  }
+
+  .lesson-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    transition: box-shadow 0.15s;
+    min-height: 72px;
+  }
+  .lesson-item:hover {
+    box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+  }
+  .lesson-item:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .lesson-item__number {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .lesson-item__number--active {
+    background: var(--color-accent);
+    color: #fff;
+  }
+  .lesson-item__number--pending {
+    background: var(--color-border-light);
+    color: var(--color-text-muted);
+  }
+
+  .lesson-item__body {
+    flex: 1;
+    min-width: 0;
+  }
+  .lesson-item__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 2px;
+  }
+  .lesson-item__can-do {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .lesson-item__example {
+    font-family: var(--font-zh);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-top: var(--space-xs);
+  }
+
+  .lesson-item__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: var(--radius-progress);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .lesson-item__status--active {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+  }
+  .lesson-item__status--pending {
+    background: var(--color-border-light);
+    color: var(--color-text-muted);
+  }
+
+  /* --- Progress Summary Bar ----------------------------------- */
+  .summary-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    margin-bottom: var(--space-xl);
+  }
+  .summary-bar__stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+  .summary-bar__value {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .summary-bar__divider {
+    width: 1px;
+    height: 16px;
+    background: var(--color-border);
+  }
+
+  /* --- Phrase Card -------------------------------------------- */
+  .phrase-card {
+    background: var(--color-elevated);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-2xl) var(--space-lg);
+    text-align: center;
+    margin-bottom: var(--space-xl);
+  }
+  .phrase-card__zh {
+    font-family: var(--font-zh);
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    margin-bottom: var(--space-md);
+  }
+  .phrase-card__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.06em;
+    margin-bottom: var(--space-sm);
+  }
+  .phrase-card__ja {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+  .phrase-card__hook {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border-light);
+    line-height: 1.6;
+  }
+
+  /* --- Info Section (app-style detail blocks) ----------------- */
+  .info-section {
+    margin-bottom: var(--space-xl);
+  }
+  .info-section__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+  }
+  .info-block {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+  }
+
+  /* --- Chunk Items (word breakdown) ---------------------------- */
+  .chunk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+  }
+  .chunk-item + .chunk-item {
+    border-top: 1px solid var(--color-border-light);
+  }
+  .chunk-item__zh {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+    min-width: 5rem;
+  }
+  .chunk-item__details {
+    flex: 1;
+  }
+  .chunk-item__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2px;
+  }
+  .chunk-item__ja {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+  }
+  .chunk-item__note {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* --- Example inline ------------------------------------------ */
+  .example-inline {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+    flex-wrap: wrap;
+  }
+  .example-inline + .example-inline {
+    border-top: 1px solid var(--color-border-light);
+  }
+  .example-inline__zh {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    min-width: 6rem;
+  }
+  .example-inline__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .example-inline__ja {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Tip cards (sound / kanji bridge) ----------------------- */
+  .tip-card {
+    background: var(--color-accent-light);
+    border-radius: var(--radius-card);
+    padding: var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-md);
+  }
+  .tip-card__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-accent);
+    margin-bottom: var(--space-xs);
+  }
+  .tip-card__item {
+    font-family: var(--font-zh);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .tip-card__text {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-top: var(--space-xs);
+  }
+
+  /* --- Quiz ----------------------------------------------------- */
+  .quiz-section {
+    margin-bottom: var(--space-xl);
+  }
+  .quiz-progress {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+  }
+  .quiz-prompt {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--space-lg);
+    line-height: 1.5;
+  }
+  .quiz-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  .quiz-choice {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.5;
+    min-height: 52px;
+  }
+  .quiz-choice:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+  }
+  .quiz-choice:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .quiz-choice:active {
+    border-color: var(--color-accent);
+    background: var(--color-accent-border);
+  }
+
+  /* --- Feedback States ----------------------------------------- */
+  .feedback {
+    border-radius: var(--radius-card);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+    border-left: 4px solid transparent;
+  }
+  .feedback--correct {
+    background: var(--color-success-bg);
+    border-left-color: var(--color-success);
+  }
+  .feedback--incorrect {
+    background: var(--color-error-bg);
+    border-left-color: var(--color-error);
+  }
+  .feedback__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .feedback__icon--correct {
+    background: var(--color-success);
+    color: #fff;
+  }
+  .feedback__icon--incorrect {
+    background: var(--color-error);
+    color: #fff;
+  }
+  .feedback__body {
+    flex: 1;
+  }
+  .feedback__title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+  }
+  .feedback__text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .feedback__correct-answer {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  /* --- Lesson Navigation (clean app style) --------------------- */
+  .lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-lg);
+  }
+  .lesson-nav__link {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    transition: color 0.15s;
+    padding: 0 var(--space-xs);
+    border-radius: 4px;
+  }
+  .lesson-nav__link:hover { color: var(--color-accent); }
+  .lesson-nav__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .lesson-nav__link--next { margin-left: auto; }
+  .lesson-nav__index {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  /* --- Footer -------------------------------------------------- */
+  .app-footer {
+    text-align: center;
+    padding: var(--space-2xl) 0 var(--space-xl);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-xl);
+  }
+  .app-footer__text {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  /* --- Completion state ----------------------------------------- */
+  .completion {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    border-radius: var(--radius-card);
+    background: var(--color-accent-light);
+    margin-bottom: var(--space-xl);
+  }
+  .completion__icon {
+    width: 48px;
+    height: 48px;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 1.25rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+  .completion__text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Desktop Adaptation (1024px+) ----------------------------- */
+  @media (min-width: 1024px) {
+    :root {
+      --max-width: 768px;
+    }
+    .phrase-card__zh {
+      font-size: 3.25rem;
+    }
+    .phrase-card {
+      padding: var(--space-3xl) var(--space-2xl);
+    }
+    .quiz-choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    .info-block {
+      padding: var(--space-xl);
+    }
+    .lesson-item {
+      padding: var(--space-lg);
+    }
+    .summary-bar {
+      padding: var(--space-lg);
+    }
+  }
+
+  /* --- Small Mobile Safeguards (360px and below) ---------------- */
+  @media (max-width: 360px) {
+    html { font-size: 15px; }
+    .phrase-card__zh { font-size: 2.25rem; }
+    .app-header__nav { gap: var(--space-sm); }
+    .chunk-item { flex-direction: column; gap: var(--space-sm); }
+  }
+
+  /* --- Demo: JS-free feedback toggle --------------------------- */
+  .feedback { display: none; }
+  .feedback:target { display: flex; }
+  .completion { display: none; }
+  .completion:target { display: block; }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ==========================================================
+       Header
+       ========================================================== -->
+  <header class="app-header">
+    <a href="#" class="app-header__brand">
+      <span class="app-header__logo">知</span>
+      <span class="app-header__title">Chabiko</span>
+    </a>
+    <nav class="app-header__nav">
+      <a href="#" class="app-header__link">ホーム</a>
+      <a href="#home" class="app-header__link">レッスン</a>
+      <span class="app-header__meta">繁｜簡 — 準備中</span>
+    </nav>
+  </header>
+
+  <!-- ==========================================================
+       LEARNING-PATH HOME SECTION
+       ========================================================== -->
+  <section id="home">
+
+    <!-- Path Title -->
+    <p class="section-label">コース</p>
+    <h1 class="section-title">台湾旅行で使える中国語</h1>
+
+    <!-- Progress Bar -->
+    <div class="path-progress">
+      <div class="path-progress__header">
+        <span class="path-progress__label">進捗状況</span>
+        <span class="path-progress__percent">0%</span>
+      </div>
+      <div class="path-progress__track">
+        <div class="path-progress__fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Progress Summary -->
+    <div class="summary-bar">
+      <span class="summary-bar__stat">
+        <span class="summary-bar__value">0</span> / 3 レッスン完了
+      </span>
+      <span class="summary-bar__divider" aria-hidden="true"></span>
+      <span class="summary-bar__stat" style="color: var(--color-text-muted);">
+        次の：レッスン 1
+      </span>
+    </div>
+
+    <!-- Lesson List -->
+    <p class="section-label">レッスン一覧</p>
+
+    <div class="lesson-list">
+
+      <!-- Lesson 1: Active / In progress -->
+      <article class="lesson-item" tabindex="0" role="link">
+        <span class="lesson-item__number lesson-item__number--active">1</span>
+        <div class="lesson-item__body">
+          <div class="lesson-item__title">夜市で注文してみよう</div>
+          <div class="lesson-item__can-do">台湾の夜市で簡単に食べ物を注文できる</div>
+          <div class="lesson-item__example">我要這個</div>
+        </div>
+        <span class="lesson-item__status lesson-item__status--active">
+          <span aria-hidden="true">●</span> 進行中
+        </span>
+      </article>
+
+      <!-- Pending Path: HSK対策 -->
+      <article class="lesson-item" tabindex="0" role="link">
+        <span class="lesson-item__number lesson-item__number--pending">–</span>
+        <div class="lesson-item__body">
+          <div class="lesson-item__title">HSK対策</div>
+          <div class="lesson-item__can-do"></div>
+        </div>
+        <span class="lesson-item__status lesson-item__status--pending">
+          <span aria-hidden="true">◷</span> 準備中
+        </span>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================
+       LESSON PHRASE SECTION
+       ========================================================== -->
+  <section>
+
+    <p class="section-label">今日のコア表現</p>
+
+    <!-- Phrase Hero -->
+    <div class="phrase-card">
+      <div class="phrase-card__zh">我要這個</div>
+      <div class="phrase-card__pinyin">wǒ yào zhège</div>
+      <div class="phrase-card__ja">これをください</div>
+      </div>
+
+    <!-- Word Breakdown -->
+    <div class="info-section">
+      <p class="info-section__label">単語の分解</p>
+      <div class="info-block">
+        <div class="chunk-item">
+          <div class="chunk-item__zh">我要</div>
+          <div class="chunk-item__details">
+            <div class="chunk-item__pinyin">wǒ yào</div>
+            <div class="chunk-item__ja">私は〜が欲しい</div>
+            <div class="chunk-item__note">日本語の「欲しい」と違い、中国語では「要」が意志を表す</div>
+          </div>
+        </div>
+        <div class="chunk-item">
+          <div class="chunk-item__zh">這個</div>
+          <div class="chunk-item__details">
+            <div class="chunk-item__pinyin">zhège</div>
+            <div class="chunk-item__ja">これ</div>
+            <div class="chunk-item__note">「這」＝これ、「個」＝量詞。指差しで使う</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example -->
+    <div class="info-section">
+      <p class="info-section__label">例文</p>
+      <div class="info-block">
+        <div class="example-inline">
+          <span class="example-inline__zh">我要那個</span>
+          <span class="example-inline__pinyin">wǒ yào nàge</span>
+          <span class="example-inline__ja">それをください</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sound Focus -->
+    <div class="tip-card">
+      <p class="tip-card__label">発音のポイント</p>
+      <div class="tip-card__item">要 yào</div>
+      <div class="tip-card__text">第四声。yào は「ヤオ」と伸ばさず、短く急降下。</div>
+    </div>
+
+    <!-- Kanji Bridge -->
+    <div class="tip-card">
+      <p class="tip-card__label">漢字ブリッジ</p>
+      <div class="tip-card__item">要</div>
+      <div class="tip-card__text">
+        日本語の「要る（いる）」に近いが、中国語では欲求・意思を表す。
+        日本語音読み：よう
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================================
+       QUIZ PROMPT
+       ========================================================== -->
+  <section class="quiz-section">
+
+    <p class="section-label">練習問題</p>
+    <p class="quiz-progress">質問 1 / 2</p>
+    <p class="quiz-prompt">「我要這個」はどういう意味？</p>
+
+    <div class="quiz-choices">
+      <button class="quiz-choice">これをください</button>
+      <button class="quiz-choice">私は〜が欲しい</button>
+      <button class="quiz-choice">これはいくらですか</button>
+    </div>
+
+    <!-- ==========================================================
+         FEEDBACK STATES
+         ========================================================== -->
+
+    <!-- Correct Feedback -->
+    <div class="feedback feedback--correct" id="feedback-correct">
+      <span class="feedback__icon feedback__icon--correct" aria-hidden="true">✓</span>
+      <div class="feedback__body">
+        <div class="feedback__title">正解！</div>
+      </div>
+    </div>
+
+    <!-- Incorrect Feedback -->
+    <div class="feedback feedback--incorrect" id="feedback-incorrect">
+      <span class="feedback__icon feedback__icon--incorrect" aria-hidden="true">✕</span>
+      <div class="feedback__body">
+        <div class="feedback__title">不正解。</div>
+        <div class="feedback__text">
+          正解：<span class="feedback__correct-answer">これをください</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================================
+       Lesson Navigation
+       ========================================================== -->
+  <nav class="lesson-nav">
+    <a href="#" class="lesson-nav__link">← 前のレッスン</a>
+    <span class="lesson-nav__index">1 / 3</span>
+    <a href="#" class="lesson-nav__link lesson-nav__link--next">次のレッスン →</a>
+  </nav>
+
+  <!-- ==========================================================
+       Footer
+       ========================================================== -->
+  <footer class="app-footer">
+    <p class="app-footer__text">
+      Chabiko チャビコ · Prototype Direction B · Premium Modern Learning App
+    </p>
+  </footer>
+
+</div>
+
+</body>
+</html>
