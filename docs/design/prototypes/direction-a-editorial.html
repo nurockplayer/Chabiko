@@ -29,7 +29,7 @@
     --color-surface: #fffcf8;
     --color-text: #2c2420;
     --color-text-secondary: #7a7068;
-    --color-text-muted: #9e948c;
+    --color-text-muted: #736b64;
     --color-accent: #b8432f;
     --color-accent-soft: #e8d5cc;
     --color-accent-warm: #d4764a;
@@ -105,6 +105,10 @@
     color: var(--color-text-secondary);
     text-decoration: none;
     transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
   }
   .app-header__link:hover { color: var(--color-accent); }
 
@@ -536,7 +540,7 @@
     border: 1px solid var(--color-border);
   }
   .control-option {
-    padding: var(--space-sm) var(--space-md);
+    padding: 12px var(--space-md);
     font-family: inherit;
     font-size: 0.8125rem;
     background: var(--color-surface);
@@ -544,6 +548,9 @@
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.15s;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
   .control-option + .control-option {
     border-left: 1px solid var(--color-border);
@@ -551,6 +558,7 @@
   .control-option--active {
     background: var(--color-accent);
     color: #fff;
+    font-weight: 700;
   }
   .control-option:hover:not(.control-option--active) {
     background: #f5f0ea;
@@ -598,7 +606,7 @@
     flex-wrap: wrap;
   }
   .flashcard-btn {
-    padding: var(--space-sm) var(--space-lg);
+    padding: 14px var(--space-lg);
     font-family: inherit;
     font-size: 0.8125rem;
     border: 1px solid var(--color-border);
@@ -607,6 +615,10 @@
     cursor: pointer;
     transition: all 0.15s;
     min-width: 72px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .flashcard-btn:hover { border-color: var(--color-accent); }
   .flashcard-btn:focus-visible {
@@ -925,8 +937,8 @@
       <div class="control-group">
         <span class="control-group__label">出題方向</span>
         <div class="control-group__options">
-          <button class="control-option control-option--active">中国語→日本語</button>
-          <button class="control-option">日本語→中国語</button>
+          <button class="control-option control-option--active">中国語 → 日本語</button>
+          <button class="control-option">日本語 → 中国語</button>
         </div>
       </div>
     </div>
@@ -954,7 +966,7 @@
        ========================================================== -->
   <footer style="padding: var(--space-2xl) 0 var(--space-xl); text-align: center; border-top: 1px solid var(--color-border); margin-top: var(--space-xl);">
     <p style="font-size: 0.75rem; color: var(--color-text-muted);">
-      Chabiko チャビコ · Prototype Direction A · Editorial Travel Guide
+      プロトタイプ · 方向性A
     </p>
   </footer>
 

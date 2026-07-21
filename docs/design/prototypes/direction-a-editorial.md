@@ -89,7 +89,7 @@ chapter numbering in Japanese guidebooks (第1章, 第2章).
 
 ## Accessibility Notes
 
-- All text meets WCAG AA contrast (4.5:1 minimum)
-- Interactive elements have visible `:focus-visible` outlines
-- Touch targets are ≥44px tap area
-- Colour is never the only differentiator for state changes
+- All normal text meets WCAG AA contrast (4.5:1 minimum); large text (≥24px/19px bold) meets 3:1.
+- Interactive elements have visible `:focus-visible` outlines.
+- Interactive touch targets meet ≥44px height; non-interactive badges may be smaller.
+- State differentiation (e.g. active control button) uses both colour and font-weight.
