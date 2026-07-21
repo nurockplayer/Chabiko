@@ -36,8 +36,8 @@ sans-serif, single-column cards), Direction C uses:
 | Background | `#f4f1ec` — warm stone | Page backdrop, urban plaza warmth |
 | Surface | `#ffffff` — white | Phrase card, quiz options, feedback |
 | Text primary | `#1a1a2e` — deep navy-black | Headings, main body, Chinese hero |
-| Text secondary | `#5a5a72` — medium slate | Can-do descriptions, section labels |
-| Text muted | `#8e8ea0` — muted slate | Pinyin, secondary metadata, timestamps |
+| Text secondary | `#555570` — medium slate | Can-do descriptions, section labels |
+| Text muted | `#6a6a7d` — muted slate | Pinyin, secondary metadata, timestamps |
 | Primary | `#1a2744` — deep indigo | Route line, active station markers, focus rings, CTAs |
 | Primary light | `#e8ecf3` — pale indigo | Hover states, subtle indicators |
 | Accent | `#d48c2b` — warm amber | Active station glow, emphasis markers, success highlights |
@@ -73,43 +73,44 @@ pinyin.
 The route motif is the core visual system that communicates progress, location,
 and learning flow:
 
-1. **Vertical route line** — a continuous 2px line connects all lesson
-   "stations," solid from start to current position, dotted after.
+1. **Vertical route line** — a continuous 2px line connects the active
+   lesson station, reinforcing the "one current stop" wayfinding metaphor.
 
-2. **Station markers** — numbered circles (32px diameter) at each lesson:
-   - **Active** (current lesson): filled indigo outer ring, amber inner glow,
-     bold number
-   - **Completed** (future implementation): filled indigo with checkmark
-   - **Upcoming** (locked): hollow circle with light border, muted number
+2. **Station markers** — circular indicators (18px diameter) for each lesson:
+   - **Active** (current lesson): filled indigo circle, amber inner dot,
+     amber glow (`box-shadow: 0 0 0 4px var(--color-accent-light)`)
+   - **Pending** (HSK対策): hollow circle with light warm-grey border,
+     visually distinct from active stations
 
-3. **Station cards** — each lesson station shows its title, can-do description,
-   and example Chinese phrase, creating a preview of what's ahead.
+3. **Station display** — the active lesson station shows its title, can-do
+   description, and example Chinese phrase.
 
-4. **Progress summary** — displayed as a clear "X / Y lessons complete" line at
-   the route terminus, avoiding gamified streak counters.
-
-5. **Station-to-station transition** — the solid-to-dotted line shift
-   intuitively shows how far the learner has come and how far remains.
+4. **Pending path** — the HSK対策 plan appears below the route line with a
+   border-top separator, showing its label and "準備中" status badge. This
+   communicates where the learner is and what additional content is planned
+   without inventing lesson details.
 
 ## Layout Principles
 
-- **Mobile-first single column** (default): route stations flow inline as the
-  lesson list, followed by content sections. Route line runs along the left
-  edge of the station list.
+- **Mobile-first single column** (default): route panel flows above the
+  lesson content as a compact wayfinding reference. Route line runs along the
+  left edge of the active station.
 
-- **Desktop two-column** (1024px+): sticky route panel (minmax 260–320px) on
-  the left with a border-right separator. Content panel on the right with a
-  comfortable max-width (680px) for reading.
+- **Desktop two-column** (1024px+): sticky route panel (300px) on
+  the left with a `border-right` separator. Content panel on the right with a
+  comfortable max-width (720px) for reading.
 
 - **Conscious wide-screen adaptation**: the left route panel is not merely a
   navigation bar — it is a persistent wayfinding reference that anchors the
   "where you are" context while the learner focuses on content.
 
-- **Content max-width**: 640px on mobile, 680px within the desktop content
-  column. Text measure stays readable at all widths.
+- **Content max-width**: 640px on mobile (via padding), 720px within the
+  desktop content column. Text measure stays readable at all widths.
+- **Narrow mobile breakpoint** (320–374px): reduced padding and smaller font
+  sizes (Chinese 2.25rem, title 1.25rem) to prevent overflow.
 
-- **Generous vertical rhythm**: 32–48px between major sections, 16–24px within
-  sections.
+- **Generous vertical rhythm**: 32–48px between major sections (`--space-xl` to
+  `--space-2xl`), 16–24px within sections.
 
 ## Key Design Details
 
@@ -117,29 +118,32 @@ and learning flow:
    a platform sign header). Chinese phrase dominates at 3rem, pinyin sits below
    in muted colour, Japanese meaning follows in body weight.
 
-2. **Route stations as lesson list** — each station row integrates the
-   timeline dot, lesson title, can-do, and Chinese example. This replaces both
-   Direction A's numbered badges and Direction B's single-column card list.
+2. **Route station as wayfinding point** — a single active station row
+   integrates the timeline dot, lesson title, can-do, and Chinese example.
+   A separate pending-path row follows with its own visual style for the
+   HSK対策 plan. This replaces both Direction A's numbered badges and
+   Direction B's single-column card list.
 
 3. **Quiz options** — styled with radio-button-like circular indicators
-   (indigo border, filled on selection). Selected state uses amber accent.
-   Focus-visible uses 2px indigo outline. 44px min touch target.
+   (22px diameter, `border: 2px solid var(--color-border)`). Selected state
+   fills the indicator with `var(--color-success)`. Focus-visible uses 2px
+   indigo outline. 52px min height touch target.
 
 4. **Feedback blocks** — left-border accent (teal for correct, warm red for
    incorrect) plus icon and text, ensuring state differentiation without
    colour alone.
 
-5. **Progress communication** — the route timeline itself is the primary
-   progress indicator, with the pending path (HSK対策) shown below
-   as a planned expansion. No thin progress bars or percentage indicators.
+5. **Progress communication** — the route timeline with its active station
+   is the primary progress indicator, with the HSK対策 pending path shown
+   below as a planned expansion. No thin progress bars or percentage
+   indicators.
 
-6. **Desktop sidebar route** — shows the current active lesson at a glance with
-   the learner's position highlighted and a pending path for reference.
-   Functions as a "you are here" map reference.
+6. **Desktop sidebar route** — shows the active lesson station at a glance
+   with the learner's position highlighted and a pending path below for
+   reference. Functions as a "you are here" map reference.
 
-7. **Wayfinding micro-details** — subtle directional cues (amber dot on active
-   station, line solid/dotted shift) that reward attention without distracting
-   from content.
+7. **Wayfinding micro-details** — subtle amber dot on the active station
+   that rewards attention without distracting from content.
 
 ## Anti-patterns Avoided
 
