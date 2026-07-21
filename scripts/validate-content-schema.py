@@ -1000,6 +1000,12 @@ def _check_illustration_fields(record: dict, path: str) -> list[str]:
     """Validate an illustration record."""
     errors = []
 
+    # ── Non-empty string fields (Gap 3) ──
+    for field in ("id", "vocabularyId", "assetPath", "altJa"):
+        val = record.get(field)
+        if isinstance(val, str) and val.strip() == "":
+            errors.append(f"{path}.{field} must be a non-empty string, got empty or whitespace-only")
+
     # ── Checksum ──
     checksum = record.get("sourceChecksumSha256")
     if isinstance(checksum, str):
@@ -1076,24 +1082,35 @@ def _check_illustration_rights(rights: dict, path: str) -> list[str]:
     if "modificationScope" in rights and rights["modificationScope"] != "technical-only":
         errors.append(f"{path}.modificationScope must be 'technical-only'")
 
-    # attributionRequired (boolean)
+    # attributionRequired must be a non-null boolean
     ar = rights.get("attributionRequired")
-    if ar is not None and not isinstance(ar, bool):
+    if "attributionRequired" in rights and ar is None:
+        errors.append(f"{path}.attributionRequired must be a non-null boolean")
+    elif ar is not None and not isinstance(ar, bool):
         errors.append(f"{path}.attributionRequired must be a boolean, got {type(ar).__name__}")
 
-    # attributionText — required and non-empty exactly when attributionRequired is true
+    # attributionText — required and non-empty exactly when attributionRequired is true;
+    # explicit null is invalid in either branch.
     at = rights.get("attributionText")
     if ar is True:
-        if not isinstance(at, str) or at.strip() == "":
-            errors.append(f"{path}.attributionText is required and must be non-empty when attributionRequired is true")
+        if "attributionText" not in rights:
+            errors.append(f"{path}.attributionText is required when attributionRequired is true")
+        elif not isinstance(at, str) or at.strip() == "":
+            errors.append(f"{path}.attributionText must be a non-empty string when attributionRequired is true")
     else:
-        if "attributionText" in rights and rights["attributionText"] is not None:
+        if "attributionText" in rights:
             errors.append(f"{path}.attributionText must be absent when attributionRequired is not true")
 
-    # reuseOutsideChabiko
+    # reuseOutsideChabiko — must be a string in the controlled set;
+    # non-string values produce deterministic errors rather than exceptions
     if "reuseOutsideChabiko" in rights:
         val = rights["reuseOutsideChabiko"]
-        if val not in VALID_REUSE_OPTIONS:
+        if not isinstance(val, str):
+            errors.append(
+                f"{path}.reuseOutsideChabiko must be a string, "
+                f"got {type(val).__name__}"
+            )
+        elif val not in VALID_REUSE_OPTIONS:
             errors.append(
                 f"{path}.reuseOutsideChabiko '{val}' is not valid; "
                 f"must be one of {sorted(VALID_REUSE_OPTIONS)}"
@@ -1311,6 +1328,14 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
     """Validate vocabulary record, branching on HSK vs non-HSK vs teacher contract."""
     errors = []
 
+    has_curriculum = "curriculum" in record and record["curriculum"] is not None
+
+    # Gap 1: Teacher/HSK exclusivity — a teacher record must not contain any hsk key.
+    if has_curriculum and "hsk" in record:
+        errors.append(f"{path}: teacher curriculum record must not contain 'hsk'")
+        errors.extend(_check_teacher_vocabulary_fields(record, path))
+        return errors
+
     # Reject explicit hsk: null — when hsk key is present, it must be an object.
     # Do NOT fall through to non-HSK validation; the record declared HSK intent
     # and non-HSK errors (missing traditional, kana, category) are misleading.
@@ -1319,9 +1344,6 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
         return errors
 
     has_hsk = "hsk" in record and record["hsk"] is not None
-
-    # Teacher curriculum records are identified by the presence of a curriculum object
-    has_curriculum = "curriculum" in record and record["curriculum"] is not None
 
     if has_curriculum:
         errors.extend(_check_teacher_vocabulary_fields(record, path))
@@ -1494,17 +1516,22 @@ def _check_teacher_vocabulary_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}.curriculum: unknown field '{field}'")
 
     # ── illustrationRef ──
-    if "illustrationRef" in record and record["illustrationRef"] is not None:
-        if not isinstance(record["illustrationRef"], str) or record["illustrationRef"].strip() == "":
+    if "illustrationRef" in record:
+        ref = record["illustrationRef"]
+        if ref is None:
+            errors.append(f"{path}.illustrationRef must be a non-empty string when present, got null")
+        elif not isinstance(ref, str):
+            errors.append(f"{path}.illustrationRef must be a non-empty string when present, got {type(ref).__name__}")
+        elif ref.strip() == "":
             errors.append(f"{path}.illustrationRef must be a non-empty string when present")
 
-    # ── Reject unauthorised top-level fields ──
+    # ── Reject unauthorised top-level fields (including null) ──
     UNAUTHORISED_TEACHER_FIELDS = {
         "similarityType", "toneNote", "caution",
         "travelScenario", "painPointTags", "examples",
     }
     for field in UNAUTHORISED_TEACHER_FIELDS:
-        if field in record and record[field] is not None:
+        if field in record:
             errors.append(
                 f"{path}: '{field}' is not allowed in teacher curriculum record"
             )
@@ -2094,6 +2121,18 @@ def run_tests():
         test_teacher_vocab_travel_scenario_rejected,
         test_teacher_vocab_pain_point_tags_rejected,
         test_teacher_vocab_examples_rejected,
+        # Gap 1: Teacher/HSK exclusivity
+        test_teacher_vocab_hsk_both_keys,
+        test_teacher_vocab_hsk_both_null,
+        test_teacher_vocab_hsk_non_branching,
+        # Gap 2: Forbidden teacher fields with null
+        test_teacher_vocab_similarity_type_null,
+        test_teacher_vocab_tone_note_null,
+        test_teacher_vocab_caution_null,
+        test_teacher_vocab_travel_scenario_null,
+        test_teacher_vocab_pain_point_tags_null,
+        test_teacher_vocab_examples_null,
+        test_teacher_vocab_illustration_ref_null,
 
         # ─── Illustration ───
         test_illustration_valid,
@@ -2116,6 +2155,27 @@ def run_tests():
         test_illustration_rights_attribution_not_required_no_text,
         test_illustration_rights_unknown_field,
         test_illustration_rights_reuse_invalid,
+        # Gap 3: Illustration non-empty string fields
+        test_illustration_id_empty_fails,
+        test_illustration_id_whitespace_fails,
+        test_illustration_vocabulary_id_empty_fails,
+        test_illustration_vocabulary_id_whitespace_fails,
+        test_illustration_asset_path_empty_fails,
+        test_illustration_asset_path_whitespace_fails,
+        test_illustration_alt_ja_empty_fails,
+        test_illustration_alt_ja_whitespace_fails,
+        # Gap 4: Rights boundary tests
+        test_illustration_rights_attribution_required_null,
+        test_illustration_rights_attribution_text_null_not_required,
+        test_illustration_rights_reuse_non_string_list,
+        test_illustration_rights_reuse_non_string_object,
+        test_illustration_rights_reuse_non_string_number,
+        test_illustration_rights_attribution_text_null_when_required,
+        test_illustration_rights_attribution_text_empty_when_required,
+        # Backward compatibility
+        test_teacher_vocab_hsk_backward_absent,
+        test_hsk_record_without_curriculum_backward,
+        test_legacy_vocab_without_hsk_or_curriculum_backward,
         test_illustration_duplicate_id_detection,
         test_illustration_duplicate_vocabulary_id_detection,
         test_illustration_bundle_valid,
@@ -4821,6 +4881,83 @@ def test_teacher_vocab_examples_rejected():
     _assert_has_error(errs, "not allowed", "teacher_examples_rejected")
 
 
+# ─── Gap 1: Teacher/HSK exclusivity tests ─────────────────────────────
+
+def test_teacher_vocab_hsk_both_keys():
+    """Teacher record with both curriculum and hsk must reject hsk."""
+    errs = validate_single(
+        _minimal_teacher_vocab(hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "HSK 1"}),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must not contain 'hsk'", "teacher_hsk_both")
+
+
+def test_teacher_vocab_hsk_both_null():
+    """Teacher record with curriculum and hsk:null must reject hsk."""
+    errs = validate_single(
+        _minimal_teacher_vocab(hsk=None),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must not contain 'hsk'", "teacher_hsk_both_null")
+
+
+def test_teacher_vocab_hsk_non_branching():
+    """Teacher record with both curriculum and hsk must report teacher errors, not silently dispatch as HSK."""
+    errs = validate_single(
+        _minimal_teacher_vocab(hsk={"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "HSK 1"}),
+        "vocabulary",
+    )
+    # Must NOT produce HSK-specific errors like "missing required field 'simplified' for HSK record"
+    hsk_field_errors = [e for e in errs if "for HSK record" in e]
+    assert len(hsk_field_errors) == 0, (
+        f"Teacher+HSK record must not dispatch as HSK, got HSK errors: {hsk_field_errors}"
+    )
+
+
+# ─── Gap 2: Forbidden teacher field null tests ─────────────────────────
+
+def test_teacher_vocab_similarity_type_null():
+    """similarityType present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(similarityType=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_similarity_null")
+
+
+def test_teacher_vocab_tone_note_null():
+    """toneNote present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(toneNote=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_tone_note_null")
+
+
+def test_teacher_vocab_caution_null():
+    """caution present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(caution=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_caution_null")
+
+
+def test_teacher_vocab_travel_scenario_null():
+    """travelScenario present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(travelScenario=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_travel_scenario_null")
+
+
+def test_teacher_vocab_pain_point_tags_null():
+    """painPointTags present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(painPointTags=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_pain_tags_null")
+
+
+def test_teacher_vocab_examples_null():
+    """examples present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(examples=None), "vocabulary")
+    _assert_has_error(errs, "not allowed", "teacher_examples_null")
+
+
+def test_teacher_vocab_illustration_ref_null():
+    """illustrationRef present with null is rejected."""
+    errs = validate_single(_minimal_teacher_vocab(illustrationRef=None), "vocabulary")
+    _assert_has_error(errs, "non-empty string when present, got null", "teacher_illref_null")
+
+
 # ─── Illustration tests ──────────────────────────────────────────────────
 
 def test_illustration_valid():
@@ -4981,6 +5118,145 @@ def test_illustration_rights_reuse_invalid():
     _assert_has_error(errs, "not valid", "ill_reuse")
 
 
+# ─── Gap 3: Illustration non-empty string tests ────────────────────────
+
+def test_illustration_id_empty_fails():
+    """Illustration id must be non-empty."""
+    errs = validate_single(_minimal_teacher_illustration(id=""), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_id_empty")
+
+
+def test_illustration_id_whitespace_fails():
+    """Illustration id must be non-whitespace."""
+    errs = validate_single(_minimal_teacher_illustration(id="   "), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_id_whitespace")
+
+
+def test_illustration_vocabulary_id_empty_fails():
+    """Illustration vocabularyId must be non-empty."""
+    errs = validate_single(_minimal_teacher_illustration(vocabularyId=""), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_vocab_id_empty")
+
+
+def test_illustration_vocabulary_id_whitespace_fails():
+    """Illustration vocabularyId must be non-whitespace."""
+    errs = validate_single(_minimal_teacher_illustration(vocabularyId="   "), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_vocab_id_whitespace")
+
+
+def test_illustration_asset_path_empty_fails():
+    """Illustration assetPath must be non-empty."""
+    errs = validate_single(_minimal_teacher_illustration(assetPath=""), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_path_empty")
+
+
+def test_illustration_asset_path_whitespace_fails():
+    """Illustration assetPath must be non-whitespace."""
+    errs = validate_single(_minimal_teacher_illustration(assetPath="   "), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_path_whitespace")
+
+
+def test_illustration_alt_ja_empty_fails():
+    """Illustration altJa must be non-empty."""
+    errs = validate_single(_minimal_teacher_illustration(altJa=""), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_alt_empty")
+
+
+def test_illustration_alt_ja_whitespace_fails():
+    """Illustration altJa must be non-whitespace."""
+    errs = validate_single(_minimal_teacher_illustration(altJa="   "), "illustration")
+    _assert_has_error(errs, "non-empty string", "ill_alt_whitespace")
+
+
+# ─── Gap 4: Rights boundary tests ──────────────────────────────────────
+
+def test_illustration_rights_attribution_required_null():
+    """attributionRequired null is rejected."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "attributionRequired": None}),
+        "illustration",
+    )
+    _assert_has_error(errs, "non-null boolean", "ill_attr_req_null")
+
+
+def test_illustration_rights_attribution_text_null_not_required():
+    """attributionText null when attribution is not required fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "attributionText": None}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be absent", "ill_attr_text_null")
+
+
+def test_illustration_rights_reuse_non_string_list():
+    """reuseOutsideChabiko as a list must not crash validator."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "reuseOutsideChabiko": []}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be a string", "ill_reuse_list")
+
+
+def test_illustration_rights_reuse_non_string_object():
+    """reuseOutsideChabiko as an object must not crash validator."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "reuseOutsideChabiko": {"key": "val"}}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be a string", "ill_reuse_obj")
+
+
+def test_illustration_rights_reuse_non_string_number():
+    """reuseOutsideChabiko as a number must not crash validator."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights={**_minimal_teacher_illustration()["rights"], "reuseOutsideChabiko": 42}),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be a string", "ill_reuse_number")
+
+
+def test_illustration_rights_attribution_text_null_when_required():
+    """attributionText null when attributionRequired is true fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(
+            rights={**_minimal_teacher_illustration()["rights"], "attributionRequired": True, "attributionText": None},
+        ),
+        "illustration",
+    )
+    _assert_has_error(errs, "non-empty string", "ill_attr_text_null_required")
+
+
+def test_illustration_rights_attribution_text_empty_when_required():
+    """attributionText empty when attributionRequired is true fails."""
+    errs = validate_single(
+        _minimal_teacher_illustration(
+            rights={**_minimal_teacher_illustration()["rights"], "attributionRequired": True, "attributionText": ""},
+        ),
+        "illustration",
+    )
+    _assert_has_error(errs, "non-empty string", "ill_attr_text_empty_required")
+
+
+# ─── Backward compatibility: existing behavior still passes ────────────
+
+def test_teacher_vocab_hsk_backward_absent():
+    """Teacher record without hsk still passes (backward compat)."""
+    errs = validate_single(_minimal_teacher_vocab(), "vocabulary")
+    _assert_no_errors(errs, "teacher_no_hsk_backward")
+
+
+def test_hsk_record_without_curriculum_backward():
+    """HSK record without curriculum still passes (backward compat)."""
+    errs = validate_single(_minimal_hsk_vocab(), "vocabulary")
+    _assert_no_errors(errs, "hsk_no_curriculum_backward")
+
+
+def test_legacy_vocab_without_hsk_or_curriculum_backward():
+    """Legacy vocabulary without hsk or curriculum still passes (backward compat)."""
+    errs = validate_single(_minimal_vocab(), "vocabulary")
+    _assert_no_errors(errs, "legacy_no_hsk_curriculum_backward")
+
+
 def test_illustration_duplicate_id_detection():
     """Duplicate illustration IDs must be detected."""
     data = {
@@ -5120,10 +5396,10 @@ def test_teacher_illustration_xref_vocabulary_id_mismatch():
 
 def test_teacher_illustration_xref_reviewed_missing_ref():
     """Reviewed teacher record without illustrationRef fails."""
+    vocab = _teacher_xref_vocab(reviewStatus="reviewed")
+    del vocab["illustrationRef"]
     data = {
-        "teacher_vocabulary": [
-            _teacher_xref_vocab(reviewStatus="reviewed", illustrationRef=None),
-        ],
+        "teacher_vocabulary": [vocab],
         "illustrations": [
             _teacher_xref_illustration(),
         ],
@@ -5134,10 +5410,10 @@ def test_teacher_illustration_xref_reviewed_missing_ref():
 
 def test_teacher_illustration_xref_published_missing_ref():
     """Published teacher record without illustrationRef fails."""
+    vocab = _teacher_xref_vocab(reviewStatus="published")
+    del vocab["illustrationRef"]
     data = {
-        "teacher_vocabulary": [
-            _teacher_xref_vocab(reviewStatus="published", illustrationRef=None),
-        ],
+        "teacher_vocabulary": [vocab],
         "illustrations": [
             _teacher_xref_illustration(),
         ],
@@ -5148,10 +5424,10 @@ def test_teacher_illustration_xref_published_missing_ref():
 
 def test_teacher_illustration_xref_draft_omit_ref_ok():
     """Draft teacher record without illustrationRef passes."""
+    vocab = _teacher_xref_vocab()
+    del vocab["illustrationRef"]
     data = {
-        "teacher_vocabulary": [
-            _teacher_xref_vocab(illustrationRef=None),
-        ],
+        "teacher_vocabulary": [vocab],
     }
     errs = validate_bundle(data)
     _assert_no_errors(errs, "xref_draft_omit")
