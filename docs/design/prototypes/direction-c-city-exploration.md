@@ -14,8 +14,8 @@ metadata:
 ## Design Concept
 
 This direction positions Chabiko as a **wayfinding-guided city exploration
-journey** — the learner navigates Chinese through a structured route of
-"stations," each representing a real-world travel scenario. The visual language
+journey** — the learner navigates Chinese through real-world travel scenarios
+anchored by a route-line and station motif. The visual language
 is inspired by Taipei's transit signage, night-market warmth, and the calm
 authority of urban wayfinding systems.
 
@@ -24,9 +24,9 @@ magazine layout) and Direction B (premium productivity app — cool slate/teal,
 sans-serif, single-column cards), Direction C uses:
 
 - A **deep indigo and warm amber** palette evoking Taipei evening streets and MRT signage
-- A **route/timeline** progress metaphor — lessons are "stations" connected by a vertical line
+- A **route/timeline** progress metaphor — the current lesson is an active station on a route line
 - **Station markers** (numbered circles) as progress indicators, not generic progress bars
-- **Two-column desktop layout** — route map panel (persistent wayfinding reference) + content panel
+- **Two-column desktop layout** — sticky route panel (persistent wayfinding reference) + content panel
 - Route motifs that directly communicate **"where you are" and "what's next"** in the learning journey
 
 ## Colour Palette
@@ -42,7 +42,7 @@ sans-serif, single-column cards), Direction C uses:
 | Primary light | `#e8ecf3` — pale indigo | Hover states, subtle indicators |
 | Accent | `#d48c2b` — warm amber | Active station glow, emphasis markers, success highlights |
 | Accent light | `#f5e8d0` — pale amber | Active item background, warm notes |
-| Route line | `#d0ccc4` — light warm grey | Connecting line between stations |
+| Route line | `#d0ccc4` — light warm grey | Route line alongside active station |
 | Border | `#e0dcd4` — light stone | Dividers, card outlines, separators |
 | Success | `#3d7b80` — muted teal-green | Correct feedback accent |
 | Success bg | `#e8f0f0` — pale teal | Correct feedback surface |
@@ -58,7 +58,7 @@ lantern light, and the calm readability of urban wayfinding.
 
 | Role | Font | Scale | Weight |
 |------|------|-------|--------|
-| Traditional Chinese | `Noto Sans TC`, `PingFang TC` (sans-serif) | 3rem (hero), 1.25rem (examples), 1rem (labels) | 700 (hero), 600 (examples) |
+| Traditional Chinese | `PingFang TC`, `Noto Sans TC`, `Hiragino Sans` (sans-serif) | 3rem (hero), 0.875rem (examples), 1rem (labels) | 700 (hero), 600 (examples) |
 | Pinyin | `Noto Sans`, `Helvetica Neue` (sans-serif) | 1rem (hero), 0.875rem (inline) | 400, letter-spaced 0.04em |
 | Japanese UI | `Noto Sans JP`, `Hiragino Sans` (sans-serif) | 0.9375rem–0.75rem (body/labels) | 500–400 |
 
@@ -70,25 +70,24 @@ pinyin.
 
 ## Route / Wayfinding Motif
 
-The route motif is the core visual system that communicates progress, location,
-and learning flow:
+The route motif is a focused "one active stop" wayfinding system. Unlike a multi-station route, this prototype renders exactly one active lesson station served by a vertical route line, with a separate pending-path marker for the HSK対策 plan.
 
-1. **Vertical route line** — a continuous 2px line connects the active
-   lesson station, reinforcing the "one current stop" wayfinding metaphor.
+1. **Vertical route line** — a continuous 2px line running alongside the active
+   lesson station, reinforcing a "you are here" wayfinding metaphor for the
+   current lesson.
 
-2. **Station markers** — circular indicators (18px diameter) for each lesson:
-   - **Active** (current lesson): filled indigo circle, amber inner dot,
-     amber glow (`box-shadow: 0 0 0 4px var(--color-accent-light)`)
-   - **Pending** (HSK対策): hollow circle with light warm-grey border,
-     visually distinct from active stations
+2. **Active station marker** — circular indicator (18px diameter): filled
+   indigo circle, amber inner dot, amber glow
+   (`box-shadow: 0 0 0 4px var(--color-accent-light)`).
 
-3. **Station display** — the active lesson station shows its title, can-do
-   description, and example Chinese phrase.
+3. **Active station card** — shows the lesson number, title, can-do
+   description, and example Chinese phrase for Lesson 1.
 
-4. **Pending path** — the HSK対策 plan appears below the route line with a
-   border-top separator, showing its label and "準備中" status badge. This
-   communicates where the learner is and what additional content is planned
-   without inventing lesson details.
+4. **Pending marker** — a separate `HSK対策` row sits below the route timeline
+   with a border-top divider, a hollow circle, and a "準備中" status badge.
+   It is visually distinct from the active station (muted label, hollow dot,
+   light background badge) and communicates planned expansion without
+   inventing lesson details.
 
 ## Layout Principles
 
@@ -104,8 +103,10 @@ and learning flow:
   navigation bar — it is a persistent wayfinding reference that anchors the
   "where you are" context while the learner focuses on content.
 
-- **Content max-width**: 640px on mobile (via padding), 720px within the
-  desktop content column. Text measure stays readable at all widths.
+- **Fluid mobile layout**: content width is determined by horizontal padding
+  (16px at 390px, 12px at 320–374px) rather than a fixed max-width.
+- **Desktop content max-width**: 720px within the right content column on
+  viewports 1024px and wider.
 - **Narrow mobile breakpoint** (320–374px): reduced padding and smaller font
   sizes (Chinese 2.25rem, title 1.25rem) to prevent overflow.
 
@@ -133,7 +134,7 @@ and learning flow:
    incorrect) plus icon and text, ensuring state differentiation without
    colour alone.
 
-5. **Progress communication** — the route timeline with its active station
+5. **Progress communication** — the route line with its active station
    is the primary progress indicator, with the HSK対策 pending path shown
    below as a planned expansion. No thin progress bars or percentage
    indicators.
@@ -143,7 +144,7 @@ and learning flow:
    reference. Functions as a "you are here" map reference.
 
 7. **Wayfinding micro-details** — subtle amber dot on the active station
-   that rewards attention without distracting from content.
+   marker that rewards attention without distracting from content.
 
 ## Anti-patterns Avoided
 
