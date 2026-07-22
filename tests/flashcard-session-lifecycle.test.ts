@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   mountFlashcardSession,
 } from '../src/client/flashcardSession';
@@ -269,5 +269,222 @@ describe('FlashcardSession DOM lifecycle', () => {
     // Should show completion (not crash)
     const completion = root.querySelector('.flashcard-completion');
     expect(completion).not.toBeNull();
+  });
+});
+
+describe('FlashcardSession setup controls', () => {
+  let root: HTMLElement;
+
+  beforeEach(() => {
+    localStorage.clear();
+    root = createFlashcardHTML(SAMPLE_ENTRIES);
+    document.body.appendChild(root);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('shows the available word count on mount', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const count = root.querySelector('#setup-count') as HTMLElement;
+    // 2 available ids, default session size 10 → session clamps to 2.
+    expect(count.textContent).toContain('利用可能な単語: 2語');
+    expect(count.textContent).toContain('セッション: 2語');
+  });
+
+  it('selecting the 20-word size updates active state and aria-checked', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const size10 = root.querySelector('#size-10') as HTMLButtonElement;
+    const size20 = root.querySelector('#size-20') as HTMLButtonElement;
+
+    size20.click();
+
+    expect(size20.classList.contains('setup-option--active')).toBe(true);
+    expect(size20.getAttribute('aria-checked')).toBe('true');
+    expect(size10.classList.contains('setup-option--active')).toBe(false);
+    expect(size10.getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('selecting a direction updates active state and aria-checked', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const dirZh = root.querySelector('#dir-zh-ja') as HTMLButtonElement;
+    const dirJa = root.querySelector('#dir-ja-zh') as HTMLButtonElement;
+
+    dirJa.click();
+
+    expect(dirJa.classList.contains('setup-option--active')).toBe(true);
+    expect(dirJa.getAttribute('aria-checked')).toBe('true');
+    expect(dirZh.classList.contains('setup-option--active')).toBe(false);
+    expect(dirZh.getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('renders the card in ja-to-zh direction when selected', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const dirJa = root.querySelector('#dir-ja-zh') as HTMLButtonElement;
+
+    dirJa.click();
+    el.startBtn.click();
+
+    // Front shows Japanese, front lang switches to ja.
+    expect(el.front.textContent).toBe('こんにちは');
+    expect(el.front.getAttribute('lang')).toBe('ja');
+
+    // Reveal shows the simplified form in the japanese slot.
+    el.revealBtn.click();
+    expect(el.pinyin.textContent).toBe('nǐ hǎo');
+    expect(el.japanese.textContent).toBe('你好');
+  });
+
+  it('hides the traditional line for entries without a traditional form', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const traditional = root.querySelector('[data-traditional]') as HTMLElement;
+
+    el.startBtn.click();
+    // First card (你好) has a traditional form → visible.
+    expect(traditional.style.display).toBe('');
+
+    // Advance to second card (再见) which has no traditional form.
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(traditional.style.display).toBe('none');
+  });
+});
+
+describe('FlashcardSession progress reset', () => {
+  let root: HTMLElement;
+
+  beforeEach(() => {
+    localStorage.clear();
+    root = createFlashcardHTML(SAMPLE_ENTRIES);
+    document.body.appendChild(root);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('reveals the reset button once progress has been recorded', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    expect(resetBtn.hidden).toBe(true);
+
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+
+    expect(resetBtn.hidden).toBe(false);
+  });
+
+  it('clears progress and hides the reset button when confirmed', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(resetBtn.hidden).toBe(false);
+
+    resetBtn.click();
+
+    expect(resetBtn.hidden).toBe(true);
+  });
+
+  it('does not clear progress when the confirm dialog is dismissed', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+
+    resetBtn.click();
+
+    // Cancelled → progress remains, button stays visible.
+    expect(resetBtn.hidden).toBe(false);
+  });
+});
+
+describe('FlashcardSession cross-tab / lifecycle listeners', () => {
+  let root: HTMLElement;
+
+  beforeEach(() => {
+    localStorage.clear();
+    root = createFlashcardHTML(SAMPLE_ENTRIES);
+    document.body.appendChild(root);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('refreshes progress state on pageshow', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    // Create the progress store and record progress.
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(resetBtn.hidden).toBe(false);
+
+    // Another tab clears the shared progress key, then this tab is restored.
+    localStorage.removeItem('chabiko:hsk-vocabulary-progress:v1');
+    window.dispatchEvent(new Event('pageshow'));
+
+    expect(resetBtn.hidden).toBe(true);
+  });
+
+  it('refreshes progress state on a matching storage event', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(resetBtn.hidden).toBe(false);
+
+    localStorage.removeItem('chabiko:hsk-vocabulary-progress:v1');
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'chabiko:hsk-vocabulary-progress:v1' }),
+    );
+
+    expect(resetBtn.hidden).toBe(true);
+  });
+
+  it('ignores storage events for unrelated keys', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+    const resetBtn = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(resetBtn.hidden).toBe(false);
+
+    // Clear the underlying store but fire an unrelated storage event.
+    localStorage.removeItem('chabiko:hsk-vocabulary-progress:v1');
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'some-other-key' }),
+    );
+
+    // Unrelated key → no refresh, button stays as it was.
+    expect(resetBtn.hidden).toBe(false);
   });
 });
