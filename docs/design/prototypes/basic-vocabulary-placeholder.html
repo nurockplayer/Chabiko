@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chabiko — ベーシック単語カード (Dev Prototype)</title>
+<script src="basic-vocabulary-placeholder.fixture.js"></script>
 <style>
   /* ============================================================
      Basic Vocabulary Flashcard Prototype — Dev Only
@@ -595,6 +596,8 @@
           <div class="flashcard-back__label">繁体字</div>
           <div class="flashcard-back__traditional" id="backTraditional" lang="zh-Hant">—</div>
         </div>
+        <!-- Answer focus target (revealed content accessible container) -->
+        <div id="answerFocusTarget" tabindex="-1" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap" aria-live="polite"></div>
       </div>
     </div>
 
@@ -657,32 +660,9 @@
 (function() {
   "use strict";
 
-  /* ─── Synthetic vocabulary data (20 records, teacher-shaped) ── */
-  const ALL_WORDS = [
-    { zh: "猫",    pinyin: "māo",      ja: "猫",       trad: "貓" },
-    { zh: "犬",    pinyin: "quǎn",     ja: "犬",       trad: "犬" },
-    { zh: "鱼",    pinyin: "yú",       ja: "魚",       trad: "魚" },
-    { zh: "花",    pinyin: "huā",      ja: "花",       trad: "花" },
-    { zh: "山",    pinyin: "shān",     ja: "山",       trad: "山" },
-    { zh: "水",    pinyin: "shuǐ",     ja: "水",       trad: "水" },
-    { zh: "火",    pinyin: "huǒ",      ja: "火",       trad: "火" },
-    { zh: "月",    pinyin: "yuè",      ja: "月",       trad: "月" },
-    { zh: "星",    pinyin: "xīng",     ja: "星",       trad: "星" },
-    { zh: "雨",    pinyin: "yǔ",       ja: "雨",       trad: "雨" },
-    { zh: "云",    pinyin: "yún",      ja: "雲",       trad: "雲" },
-    { zh: "海",    pinyin: "hǎi",      ja: "海",       trad: "海" },
-    { zh: "风",    pinyin: "fēng",     ja: "風",       trad: "風" },
-    { zh: "林",    pinyin: "lín",      ja: "林",       trad: "林" },
-    { zh: "空",    pinyin: "kōng",     ja: "空",       trad: "空" },
-    { zh: "石",    pinyin: "shí",      ja: "石",       trad: "石" },
-    { zh: "太阳",  pinyin: "tài yáng", ja: "太陽",     trad: "太陽" },
-    { zh: "鸟",    pinyin: "niǎo",     ja: "鳥",       trad: "鳥" },
-    { zh: "虫",    pinyin: "chóng",    ja: "虫",       trad: "蟲" },
-    { zh: "竹",    pinyin: "zhú",      ja: "竹",       trad: "竹" },
-  ];
-
-  /* ─── Session state ───────────────────────────────────────── */
-  const WORDS = ALL_WORDS.slice(0, 10);  // fixed first 10
+  /* ─── Synthetic vocabulary data (loaded from external fixture) ── */
+  // ALL_WORDS and SESSION_WORDS from basic-vocabulary-placeholder.fixture.js
+  const WORDS = SESSION_WORDS; // first 10
   let currentIndex = 0;
   let revealed = false;
   let results = [];   // 'retry' | 'shaky' | 'knew'
@@ -720,6 +700,9 @@
     revealed = false;
     tapHint.classList.remove("flashcard__hint--hidden");
     assessmentGroup.classList.add("assessment-group--hidden");
+    // Restore button role and tab stop for front state
+    flashcardInner.setAttribute("role", "button");
+    flashcardInner.setAttribute("tabindex", "0");
     flashcardInner.setAttribute("aria-labelledby", "frontZh");
     flashcardInner.setAttribute("aria-describedby", "tapHint");
 
@@ -737,8 +720,14 @@
     flashcardFront.style.display = "none";
     tapHint.classList.add("flashcard__hint--hidden");
     assessmentGroup.classList.remove("assessment-group--hidden");
+    // Remove button semantics on reveal so the card is no longer actionable
+    flashcardInner.removeAttribute("role");
+    flashcardInner.removeAttribute("tabindex");
     flashcardInner.setAttribute("aria-labelledby", "backPinyin backJa backTraditional");
     flashcardInner.removeAttribute("aria-describedby");
+    // Move focus to the answer container so the revealed content is announced
+    const answerTarget = document.getElementById("answerFocusTarget");
+    if (answerTarget) answerTarget.focus();
   }
 
   /* ─── Self-assessment ──────────────────────────────────────── */

@@ -22,24 +22,31 @@ no illustration metadata, no approved alt text.
 | File | Path |
 |------|------|
 | HTML prototype | `docs/design/prototypes/basic-vocabulary-placeholder.html` |
+| Structured fixture | `docs/design/prototypes/basic-vocabulary-placeholder.fixture.js` |
 | Mobile screenshot | `docs/design/prototypes/basic-vocabulary-placeholder-mobile.png` |
 | Desktop screenshot | `docs/design/prototypes/basic-vocabulary-placeholder-desktop.png` |
 
 ## Interaction Flow
 
 1. **Front**: illustration placeholder (SVG silhouette + "DEV PLACEHOLDER" label)
-   + Simplified Chinese word.
+   + Simplified Chinese word (`lang="zh-Hans"`). Card has `role="button"`.
 2. **Tap / Enter / Space** → reveal.
-3. **Back**: pinyin, Japanese translation, Traditional Chinese (optional).
+3. **Back**: pinyin (`lang="zh-Latn"`), Japanese, Traditional Chinese (`lang="zh-Hant"`).
+   Card button role is removed; answer container receives focus.
 4. **Self-assessment**: `もう一度` (retry), `まだ曖昧` (shaky), `覚えた` (knew).
-5. Each assessment advances to the next card (fixed order, first 10 of 20).
-6. After 10 cards: completion screen with stats breakdown + restart button.
+   Focus moves to next card (cards 1–9) or completion title (card 10).
+5. After 10 cards: completion screen with stats breakdown + restart button.
+6. Restart returns focus to the first card.
 
 ## Synthetic Data
 
-20 records in `ALL_WORDS` array. Each session uses a fixed slice of the first
-10. Shape mimics teacher-vocabulary records: simplified, pinyin, japanese,
-traditional. No real workbook data or preflight records used.
+20 records in `docs/design/prototypes/basic-vocabulary-placeholder.fixture.js`.
+Each record includes: stable ID, simplified, traditional, pinyin, japanese,
+category, source marker, and review status.
+
+Each session uses a fixed slice of the first 10 records (`SESSION_WORDS`).
+No real workbook data or preflight records used. All content is synthetic,
+unreviewed, and not for production.
 
 ## Visual Design
 
@@ -74,8 +81,11 @@ No horizontal overflow at 320 / 375 / 390 px.
 
 - `focus-visible` outlines on all interactive elements (2px teal + offset)
 - Native `<button>` elements, min 44px touch targets
-- Reveal gating via `aria-label` change
+- Front card: `role="button"`, `aria-labelledby` referencing the Simplified Chinese word, `aria-describedby` referencing the tap hint
+- After reveal: button role removed, answer container focused, `aria-labelledby` references pinyin/Japanese/Traditional with correct `lang` attributes
 - Assessment strip uses `role="status"` + `aria-live="polite"`
+- Completion heading receives programmatic focus for assistive technology notification
+- Focus returns to the card on restart
 - Colour is never the only differentiator: text labels accompany all states
 
 ## Anti-patterns Avoided
@@ -84,4 +94,4 @@ No horizontal overflow at 320 / 375 / 390 px.
 - No `/vocabulary/basic/` production route
 - No production loaders, storage, or domain logic
 - No illustration metadata or approved alt text
-- No dependencies beyond the single HTML file
+- No dependencies beyond the HTML file and its fixture JS
