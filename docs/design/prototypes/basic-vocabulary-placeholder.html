@@ -588,7 +588,7 @@
           <div class="flashcard-front__zh" id="frontZh" lang="zh-Hans">—</div>
         </div>
         <!-- Back -->
-        <div class="flashcard-back" id="flashcardBack">
+        <div class="flashcard-back" id="flashcardBack" tabindex="-1">
           <div class="flashcard-back__label">ピンイン</div>
           <div class="flashcard-back__pinyin" id="backPinyin" lang="zh-Latn">—</div>
           <div class="flashcard-back__label">日本語</div>
@@ -596,8 +596,6 @@
           <div class="flashcard-back__label">繁体字</div>
           <div class="flashcard-back__traditional" id="backTraditional" lang="zh-Hant">—</div>
         </div>
-        <!-- Answer focus target (revealed content accessible container) -->
-        <div id="answerFocusTarget" tabindex="-1" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap" aria-live="polite"></div>
       </div>
     </div>
 
@@ -696,6 +694,7 @@
 
     // Reset reveal state
     flashcardBack.classList.remove("flashcard-back--visible");
+    flashcardBack.removeAttribute("tabindex");
     flashcardFront.style.display = "flex";
     revealed = false;
     tapHint.classList.remove("flashcard__hint--hidden");
@@ -725,9 +724,9 @@
     flashcardInner.removeAttribute("tabindex");
     flashcardInner.setAttribute("aria-labelledby", "backPinyin backJa backTraditional");
     flashcardInner.removeAttribute("aria-describedby");
-    // Move focus to the answer container so the revealed content is announced
-    const answerTarget = document.getElementById("answerFocusTarget");
-    if (answerTarget) answerTarget.focus();
+    // Move focus to the back container so the revealed content is announced
+    flashcardBack.setAttribute("tabindex", "-1");
+    flashcardBack.focus();
   }
 
   /* ─── Self-assessment ──────────────────────────────────────── */
