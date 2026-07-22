@@ -153,10 +153,12 @@ def _sheet_has_any_data(ws):
 
 # ─── Header resolution ──────────────────────────────────────────────────────
 
-def resolve_teacher_headers(header_row):
+def resolve_teacher_headers(header_row, sheet_name=""):
     """Parse headers from a data sheet header row.
 
     Returns (canonical_mapping, ignored_column_names, unknown_column_names).
+
+    Raises ValueError if a required header appears more than once.
     """
     canonical_mapping = {}
     ignored_headers_found = []
@@ -168,7 +170,15 @@ def resolve_teacher_headers(header_row):
             continue
 
         if text in REQUIRED_HEADERS:
-            canonical_mapping[HEADER_TO_CANONICAL[text]] = idx
+            canonical = HEADER_TO_CANONICAL[text]
+            if canonical in canonical_mapping:
+                prev_pos = canonical_mapping[canonical]
+                loc = f"'{sheet_name}'" if sheet_name else "header row"
+                raise ValueError(
+                    f"Duplicate required header '{text}' (mapped to '{canonical}') "
+                    f"at columns {prev_pos + 1} and {idx + 1} in sheet {loc}"
+                )
+            canonical_mapping[canonical] = idx
         elif text in IGNORED_HEADERS:
             ignored_headers_found.append(text)
         else:
@@ -430,7 +440,7 @@ def import_xlsx(input_path, output_dir):
     sheet_info = []
     for name, ws, classification in data_sheets:
         header_row = [cell.value for cell in ws[1]]
-        col_mapping, ignored_cols, unknown_cols = resolve_teacher_headers(header_row)
+        col_mapping, ignored_cols, unknown_cols = resolve_teacher_headers(header_row, sheet_name=name)
 
         missing = check_required_headers(col_mapping)
         if missing:
@@ -1263,6 +1273,31 @@ def _test_ignored_column_formula():
         assert "B2" not in str(_entry)
 
 
+def _test_duplicate_header_fatal():
+    """Verify duplicate required header fails before any output mutation."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        # Two 单词 columns (column A and column E)
+        _ws.append(["单词", "拼音", "日语翻译", "难易度", "单词"])
+        _ws.append(["爱", "ài", "愛する", "☆", "extra_word"])
+        _xlsx = os.path.join(_td, "dup_header.xlsx")
+        _wb.save(_xlsx)
+
+        _out = os.path.join(_td, "out")
+        try:
+            import_xlsx(_xlsx, _out)
+            raise AssertionError("expected ValueError for duplicate header")
+        except ValueError as e:
+            assert "Duplicate" in str(e) or "duplicate" in str(e).lower()
+            assert "单词" in str(e)
+            assert "名词1" in str(e)
+            # No output directory created
+            assert not os.path.exists(_out)
+
+
 # ─── Run all tests ───────────────────────────────────────────────────────────
 
 def run_tests():
@@ -1280,6 +1315,7 @@ def run_tests():
             ("Required formula rejection", _test_required_formula_rejection),
             ("Unknown column reporting", _test_unknown_column_reporting),
             ("Unknown sheet fatal", _test_unknown_sheet_fatal),
+            ("Duplicate header fatal", _test_duplicate_header_fatal),
         ]
         for _label, _test_fn in tests_p1:
             print(f"  {_label} ... ", end="")
