@@ -11,6 +11,16 @@ uv run python scripts/import-teacher-vocabulary-xlsx.py <input.xlsx> <output-dir
 uv run python scripts/import-teacher-vocabulary-xlsx.py --test
 ```
 
+### Output directory requirement
+
+The output directory **must not exist** or be completely empty. If the
+directory already has any content (files or subdirectories), the importer
+fails immediately with an error before making any changes. This prevents
+accidental overwrites or mixing old batch files with new output. Empty
+(but pre-created) directories are allowed.
+
+The importer never deletes user files.
+
 ## Overview
 
 Reads the teacher-curriculum XLSX workbook, parses text-only content from

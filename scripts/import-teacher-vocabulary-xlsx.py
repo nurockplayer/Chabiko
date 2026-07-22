@@ -381,6 +381,32 @@ def _dimension_key(classification):
     return f"{classification['difficultyBand']}:{classification['partOfSpeech']}"
 
 
+# ─── Output directory safety ─────────────────────────────────────────────────
+
+def prepare_output_dir(output_dir):
+    """Prepare the output directory with fail-fast semantics.
+
+    - Does not exist → creates it.
+    - Exists and is empty (no files nor directories inside) → allowed.
+    - Exists and is non-empty, or exists but is not a directory → raises ValueError
+      before any output mutation.
+    - Never deletes user files.
+    """
+    if os.path.exists(output_dir):
+        if not os.path.isdir(output_dir):
+            raise ValueError(
+                f"Output path '{output_dir}' exists but is not a directory"
+            )
+        entries = os.listdir(output_dir)
+        if entries:
+            raise ValueError(
+                f"Output directory '{output_dir}' already exists and is "
+                f"non-empty ({len(entries)} entries). Refusing to overwrite."
+            )
+    else:
+        os.makedirs(output_dir)
+
+
 # ─── Main import pipeline ────────────────────────────────────────────────────
 
 def import_xlsx(input_path, output_dir):
@@ -483,8 +509,10 @@ def import_xlsx(input_path, output_dir):
             key = _dimension_key(SHEET_MAP[sheet])
             rejected_by_dim[key] = rejected_by_dim.get(key, 0) + 1
 
-    # 6. Write batches (output mutation starts here)
-    os.makedirs(output_dir, exist_ok=True)
+    # 6. Validate output directory (before any output mutation)
+    prepare_output_dir(output_dir)
+
+    # 7. Write batches (output mutation starts here)"
     batches = write_teacher_batches(accepted_entries, output_dir)
 
     # 7. Build manifest
@@ -1129,6 +1157,112 @@ def _test_output_mutation_safety():
             f"Output directory {_out} must not be created on fatal error"
 
 
+def _test_nonempty_output_dir_fails():
+    """Verify non-empty output directory fails with existing files untouched."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        _ws.append(["单词", "拼音", "日语翻译", "难易度"])
+        _ws.append(["爱", "ài", "愛する", "☆"])
+        _xlsx = os.path.join(_td, "x.xlsx")
+        _wb.save(_xlsx)
+
+        # Create output dir with an existing file
+        _out = os.path.join(_td, "out")
+        os.makedirs(_out)
+        _existing = os.path.join(_out, "existing.txt")
+        with open(_existing, "w") as _f:
+            _f.write("original")
+
+        try:
+            import_xlsx(_xlsx, _out)
+            raise AssertionError("expected ValueError for non-empty output dir")
+        except ValueError as e:
+            assert "non-empty" in str(e).lower()
+            # Existing file must be untouched
+            with open(_existing, "r") as _f:
+                assert _f.read() == "original", "Existing file was modified"
+
+
+def _test_empty_output_dir_ok():
+    """Verify a pre-existing empty output directory is allowed."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        _ws.append(["单词", "拼音", "日语翻译", "难易度"])
+        _ws.append(["爱", "ài", "愛する", "☆"])
+        _xlsx = os.path.join(_td, "x.xlsx")
+        _wb.save(_xlsx)
+
+        _out = os.path.join(_td, "out")
+        os.makedirs(_out)
+        _m = import_xlsx(_xlsx, _out)  # should work
+        assert _m["accepted"] == 1
+
+
+def _test_only_ignored_columns_row():
+    """Verify a row with content only in ignored/unknown columns is a
+    candidate and rejected for missing required fields (not silently skipped)."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        _ws.append(["单词", "拼音", "日语翻译", "难易度", "造词/造句", "备注", "ExtraCol"])
+        # Row with content only in ignored and unknown columns
+        _ws.append(["", "", "", "", "造句内容", "備考", "extra"])
+        # Valid row to confirm import runs
+        _ws.append(["爱", "ài", "愛する", "☆", "", "", ""])
+        _xlsx = os.path.join(_td, "x.xlsx")
+        _wb.save(_xlsx)
+        _out = os.path.join(_td, "out")
+        _m = import_xlsx(_xlsx, _out)
+
+        # Row 2 has content in ignored/unknown columns → not an empty row →
+        # it's a candidate. Missing required text → rejected.
+        assert _m["totalRows"] == 2
+        assert _m["rejected"] == 1
+        assert _m["accepted"] == 1
+        # Verify the rejected row is row 2 with missing simplified
+        _rej = _m["rejectedRows"][0]
+        assert _rej["sheet"] == "名词1"
+        assert _rej["row"] == 2
+
+
+def _test_ignored_column_formula():
+    """Verify formula in an ignored column is not copied and does not
+    trigger required-formula rejection."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _path = os.path.join(_td, "x.xlsx")
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        _ws.append(["单词", "拼音", "日语翻译", "难易度", "造词/造句"])
+        _ws.append(["爱", "ài", "愛する", "☆", ""])
+        _wb.save(_path)
+
+        # Inject formula into the ignored column (造词/造句, column E = 5)
+        _inject_formula(_path, "名词1", 2, 5, "=B2&C2")
+
+        _out = os.path.join(_td, "out")
+        _m = import_xlsx(_path, _out)
+        # Formula in ignored column must not cause rejection
+        assert _m["accepted"] == 1
+        assert _m["rejected"] == 0
+        # Verify output record does NOT contain the ignored-column formula
+        _bp = os.path.join(_out, _m["batches"][0]["filename"])
+        with open(_bp, "r", encoding="utf-8") as _f:
+            _batch = json.load(_f)
+        _entry = _batch["vocabulary"][0]
+        assert "造词" not in str(_entry)
+        assert "B2" not in str(_entry)
+
+
 # ─── Run all tests ───────────────────────────────────────────────────────────
 
 def run_tests():
@@ -1174,6 +1308,10 @@ def run_tests():
             ("Manifest counts", _test_manifest_counts),
             ("Deterministic ordering", _test_deterministic_ordering),
             ("Output mutation safety", _test_output_mutation_safety),
+            ("Non-empty output dir fails", _test_nonempty_output_dir_fails),
+            ("Empty output dir ok", _test_empty_output_dir_ok),
+            ("Only ignored columns row", _test_only_ignored_columns_row),
+            ("Ignored column formula", _test_ignored_column_formula),
         ]
         for _label, _test_fn in tests_p3:
             print(f"  {_label} ... ", end="")
