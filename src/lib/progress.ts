@@ -1,29 +1,13 @@
-export interface StorageLike {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
+import { probeLocalStorage, type StorageLike } from './storage';
+
+export type { StorageLike } from './storage';
 
 export const STORAGE_KEY = 'chabiko_completed_lessons';
 
 const PROBE_KEY = '__chabiko_probe__';
 
 function getDefaultStorage(): StorageLike | null {
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const prev = localStorage.getItem(PROBE_KEY);
-      localStorage.setItem(PROBE_KEY, '1');
-      localStorage.removeItem(PROBE_KEY);
-      // Restore original value if it existed
-      if (prev !== null) {
-        localStorage.setItem(PROBE_KEY, prev);
-      }
-      return localStorage;
-    }
-  } catch {
-    /* localStorage unavailable (SSR, private browsing, etc.) */
-  }
-  return null;
+  return probeLocalStorage(PROBE_KEY);
 }
 
 export class ProgressStore {

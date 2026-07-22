@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { LessonBundle } from '../types/lesson';
+import { isNonEmptyString } from '../lib/text';
+import { parseArrayBundle } from './parseBundle';
 
 const DEFAULT_DATA_PATH = 'data/examples/valid/lessons.json';
 
@@ -19,28 +21,13 @@ const CONTROLLED_PAIN_POINT_TAGS = new Set([
 ]);
 
 function parseLessonBundle(raw: string, path: string): LessonBundle {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error(
-      `Failed to parse lesson bundle at ${path}: file does not contain valid JSON`,
-    );
-  }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    !Array.isArray((parsed as Record<string, unknown>).lessons)
-  ) {
-    throw new Error(
-      `Invalid lesson bundle structure at ${path}: expected {lessons: [...]}`,
-    );
-  }
-  return parsed as LessonBundle;
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
+  return parseArrayBundle<LessonBundle>(
+    raw,
+    path,
+    'lessons',
+    (p) => `Failed to parse lesson bundle at ${p}: file does not contain valid JSON`,
+    (p) => `Invalid lesson bundle structure at ${p}: expected {lessons: [...]}`,
+  );
 }
 
 function isValidPainPointTags(value: unknown): boolean {

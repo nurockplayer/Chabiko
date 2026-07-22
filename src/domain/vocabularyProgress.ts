@@ -1,4 +1,4 @@
-import type { StorageLike } from '../lib/progress';
+import { probeLocalStorage, type StorageLike } from '../lib/storage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -126,20 +126,7 @@ function isValidProgressEntry(entry: unknown): boolean {
 // ─── Storage probe ────────────────────────────────────────────────────────────
 
 function getDefaultStorage(): StorageLike | null {
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const prev = localStorage.getItem(PROBE_KEY);
-      localStorage.setItem(PROBE_KEY, '1');
-      localStorage.removeItem(PROBE_KEY);
-      if (prev !== null) {
-        localStorage.setItem(PROBE_KEY, prev);
-      }
-      return localStorage;
-    }
-  } catch {
-    /* localStorage unavailable (SSR, private browsing, etc.) */
-  }
-  return null;
+  return probeLocalStorage(PROBE_KEY);
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────

@@ -15,7 +15,11 @@ import {
   applyVocabularySessionAction,
 } from '../domain/vocabularySession';
 import type { VocabularySessionState } from '../domain/vocabularySession';
-import { VocabularyProgressStore } from '../domain/vocabularyProgress';
+import {
+  VocabularyProgressStore,
+  VOCABULARY_PROGRESS_KEY,
+} from '../domain/vocabularyProgress';
+import { isRelevantStorageEvent } from '../lib/storage';
 
 export interface SessionEntry {
   id: string;
@@ -324,7 +328,7 @@ export function mountFlashcardSession(data: SessionData): void {
   });
 
   window.addEventListener('storage', (event) => {
-    if (event.key === null || event.key === 'chabiko:hsk-vocabulary-progress:v1') {
+    if (isRelevantStorageEvent(event, VOCABULARY_PROGRESS_KEY)) {
       if (progressStore) {
         progressStore.refresh();
         updateResetButton();

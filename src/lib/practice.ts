@@ -1,4 +1,5 @@
 import type { Lesson } from '../types/lesson';
+import { isNonEmptyString } from './text';
 
 export interface PracticeQuestion {
   promptJa: string;
@@ -11,10 +12,6 @@ interface ValidReviewPrompt {
   promptJa: string;
   answerJa: string;
   distractorsJa?: unknown;
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isValidReviewPrompt(value: unknown): value is ValidReviewPrompt {

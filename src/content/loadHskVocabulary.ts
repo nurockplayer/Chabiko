@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { HskVocabularyType } from '../types/vocabulary';
+import { parseArrayBundle } from './parseBundle';
 
 const DEFAULT_HSK_PATH = 'data/examples/valid/hsk-vocabulary.json';
 
@@ -9,20 +10,13 @@ interface HskBundle {
 }
 
 function parseHskBundle(raw: string, path: string): HskBundle {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error(`Failed to parse HSK vocabulary at ${path}: not valid JSON`);
-  }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    !Array.isArray((parsed as Record<string, unknown>).vocabulary)
-  ) {
-    throw new Error(`Invalid HSK vocabulary structure at ${path}: expected {vocabulary: [...]}`);
-  }
-  return parsed as HskBundle;
+  return parseArrayBundle<HskBundle>(
+    raw,
+    path,
+    'vocabulary',
+    (p) => `Failed to parse HSK vocabulary at ${p}: not valid JSON`,
+    (p) => `Invalid HSK vocabulary structure at ${p}: expected {vocabulary: [...]}`,
+  );
 }
 
 const PRODUCTION_REVIEW_STATUSES = new Set(['reviewed', 'published']);

@@ -1,4 +1,5 @@
 import { ProgressStore, STORAGE_KEY, type StorageLike } from './progress';
+import { isRelevantStorageEvent } from './storage';
 
 /**
  * Handle a Window storage event for cross-tab progress synchronisation.
@@ -9,7 +10,7 @@ export function handleProgressStorageEvent(
   event: StorageEvent,
   onProgressChange: () => void,
 ): void {
-  if (event.key === null || event.key === STORAGE_KEY) {
+  if (isRelevantStorageEvent(event, STORAGE_KEY)) {
     onProgressChange();
   }
 }
