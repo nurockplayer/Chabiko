@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chabiko — ベーシック単語カード (Dev Prototype)</title>
+<style>
+  /* ============================================================
+     Basic Vocabulary Flashcard Prototype — Dev Only
+     Standalone prototype, no production dependencies.
+     Follows Direction B palette conventions.
+     ============================================================ */
+
+  /* --- Reset & Base ------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    color: #0f172a;
+    background: #f4f7fc;
+    line-height: 1.7;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Variables (Direction B palette) ------------------------ */
+  :root {
+    --color-bg: #f4f7fc;
+    --color-surface: #ffffff;
+    --color-text: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #5b6570;
+    --color-accent: #0f766e;
+    --color-accent-light: #f0fdfa;
+    --color-accent-border: #ccfbf1;
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+    --color-success: #047857;
+    --color-warning: #b45309;
+    --color-retry: #6b7280;
+    --color-knewit: #7c3aed;
+    --color-knewit-bg: #f5f3ff;
+    --font-zh: "Hiragino Sans", "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+    --font-ja: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    --font-pinyin: "Hiragino Sans", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    --max-width: 480px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --radius-card: 12px;
+    --radius-btn: 8px;
+    --radius-progress: 99px;
+    --shadow-card: 0 1px 3px rgba(15,23,42,0.06);
+    --shadow-elevated: 0 4px 12px rgba(15,23,42,0.08);
+  }
+
+  /* --- Typography --------------------------------------------- */
+  h1 { font-size: 1.375rem; font-weight: 700; line-height: 1.3; letter-spacing: 0.01em; }
+  h2 { font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
+
+  /* --- Layout -------------------------------------------------- */
+  .app-wrapper {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* --- Header -------------------------------------------------- */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg) 0 var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .app-header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    min-height: 44px;
+  }
+  .app-header__logo {
+    width: 28px; height: 28px;
+    background: var(--color-accent);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .app-header__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+  }
+  .app-header__badge {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-progress);
+    background: #fef9c3;
+    color: #854d0e;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  /* --- Section label ------------------------------------------ */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+  }
+
+  /* --- Progress bar -------------------------------------------- */
+  .progress-section {
+    margin-bottom: var(--space-lg);
+    flex-shrink: 0;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xs);
+  }
+  .progress-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+  .progress-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .progress-track {
+    width: 100%;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: var(--radius-progress);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--color-accent);
+    border-radius: var(--radius-progress);
+    transition: width 0.3s ease;
+  }
+
+  /* --- Assessment result strip (between cards) ---------------- */
+  .assessment-strip {
+    text-align: center;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-btn);
+    margin-bottom: var(--space-lg);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+  .assessment-strip--retry {
+    background: #f3f4f6;
+    color: var(--color-retry);
+  }
+  .assessment-strip--shaky {
+    background: #fffbeb;
+    color: var(--color-warning);
+  }
+  .assessment-strip--knew {
+    background: var(--color-knewit-bg);
+    color: var(--color-knewit);
+  }
+  .assessment-strip--empty {
+    background: transparent;
+    color: transparent;
+  }
+
+  /* --- Flashcard container ------------------------------------- */
+  .card-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    min-height: 0;
+  }
+
+  /* --- Flashcard ----------------------------------------------- */
+  .flashcard {
+    perspective: 1000px;
+    flex: 1;
+    min-height: 320px;
+    display: flex;
+  }
+  .flashcard__inner {
+    position: relative;
+    width: 100%;
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-elevated);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl) var(--space-lg);
+    transition: box-shadow 0.15s;
+    cursor: pointer;
+    min-height: 320px;
+    gap: var(--space-lg);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flashcard__inner:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Front: Illustration + Simplified ----------------------- */
+  .flashcard-front {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+  }
+  .flashcard-front__image {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-card);
+    background: var(--color-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .flashcard-front__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 0.625rem;
+    font-weight: 500;
+    gap: 4px;
+    line-height: 1.3;
+  }
+  .flashcard-front__placeholder svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.25;
+  }
+  .flashcard-front__zh {
+    font-family: var(--font-zh);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  /* --- Back: revealed content ---------------------------------- */
+  .flashcard-back {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+  }
+  .flashcard-back--visible {
+    display: flex;
+  }
+  .flashcard-back__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.06em;
+  }
+  .flashcard-back__ja {
+    font-family: var(--font-ja);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+  }
+  .flashcard-back__traditional {
+    font-family: var(--font-zh);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    margin-top: var(--space-xs);
+    padding: 2px 12px;
+    border-radius: var(--radius-progress);
+    background: var(--color-border-light);
+  }
+  .flashcard-back__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-top: var(--space-sm);
+  }
+
+  /* --- Reveal hint -------------------------------------------- */
+  .flashcard__hint {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+    padding-bottom: var(--space-xs);
+  }
+  .flashcard__hint--hidden {
+    display: none;
+  }
+
+  /* --- Self-assessment buttons --------------------------------- */
+  .assessment-group {
+    display: flex;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+  }
+  .assessment-group--hidden {
+    display: none;
+  }
+  .btn-assessment {
+    flex: 1;
+    min-height: 52px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: var(--space-sm) var(--space-xs);
+    line-height: 1.3;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 0;
+  }
+  .btn-assessment:hover {
+    border-color: var(--color-accent);
+  }
+  .btn-assessment:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .btn-assessment:active {
+    transform: scale(0.97);
+  }
+  .btn-assessment__secondary {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .btn-assessment--retry {
+    color: var(--color-retry);
+  }
+  .btn-assessment--retry:hover {
+    border-color: var(--color-retry);
+    background: #f9fafb;
+  }
+  .btn-assessment--shaky {
+    color: var(--color-warning);
+  }
+  .btn-assessment--shaky:hover {
+    border-color: var(--color-warning);
+    background: #fffbeb;
+  }
+  .btn-assessment--knew {
+    color: var(--color-knewit);
+  }
+  .btn-assessment--knew:hover {
+    border-color: var(--color-knewit);
+    background: var(--color-knewit-bg);
+  }
+
+  /* --- Completion screen -------------------------------------- */
+  .completion {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    gap: var(--space-lg);
+  }
+  .completion--visible {
+    display: flex;
+  }
+  .completion__icon {
+    width: 64px;
+    height: 64px;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .completion__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .completion__text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    max-width: 320px;
+  }
+  .completion__stats {
+    display: flex;
+    gap: var(--space-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .completion__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  .completion__stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .completion__stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+  .btn-restart {
+    min-height: 52px;
+    padding: var(--space-md) var(--space-2xl);
+    border: none;
+    border-radius: var(--radius-btn);
+    background: var(--color-accent);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-restart:hover {
+    background: #0d6b62;
+  }
+  .btn-restart:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .btn-restart:active {
+    transform: scale(0.97);
+  }
+
+  /* --- Footer -------------------------------------------------- */
+  .app-footer {
+    text-align: center;
+    padding: var(--space-md) 0 var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+  .app-footer__text {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  /* --- Responsive: narrow mobile (320–374px) ------------------ */
+  @media (max-width: 374px) {
+    html { font-size: 15px; }
+    .flashcard-front__zh { font-size: 2.5rem; }
+    .flashcard-front__image { width: 100px; height: 100px; }
+    .flashcard__inner { padding: var(--space-lg) var(--space-md); min-height: 280px; }
+    .flashcard { min-height: 280px; }
+    .assessment-group { gap: 6px; }
+    .btn-assessment { font-size: 0.6875rem; padding: var(--space-sm) 6px; }
+    .app-wrapper { padding: 0 12px; }
+  }
+
+  /* --- Responsive: 375–389px ---------------------------------- */
+  @media (min-width: 375px) and (max-width: 389px) {
+    .flashcard-front__zh { font-size: 2.75rem; }
+    .flashcard-front__image { width: 110px; height: 110px; }
+  }
+
+  /* --- Responsive: desktop (1024px+) --------------------------- */
+  @media (min-width: 1024px) {
+    :root { --max-width: 560px; }
+    .flashcard-front__zh { font-size: 3.5rem; }
+    .flashcard-front__image { width: 140px; height: 140px; }
+    .flashcard__inner { padding: var(--space-2xl) var(--space-xl); min-height: 380px; }
+    .flashcard { min-height: 380px; }
+    .btn-assessment { font-size: 0.8125rem; }
+    .btn-assessment__secondary { font-size: 0.6875rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper" role="main">
+
+  <!-- ==========================================================
+       Header
+       ========================================================== -->
+  <header class="app-header">
+    <div class="app-header__brand">
+      <span class="app-header__logo">知</span>
+      <span class="app-header__title">Chabiko</span>
+    </div>
+    <span class="app-header__badge">DEV PROTOTYPE</span>
+  </header>
+
+  <!-- ==========================================================
+       Progress
+       ========================================================== -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-label" id="progressLabel">進捗</span>
+      <span class="progress-count" id="progressCount">0 / 10</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       Assessment strip
+       ========================================================== -->
+  <div class="assessment-strip assessment-strip--empty" id="assessmentStrip" role="status" aria-live="polite"></div>
+
+  <!-- ==========================================================
+       Card area (flashcard + buttons)
+       ========================================================== -->
+  <div class="card-area" id="cardArea">
+
+    <!-- Flashcard -->
+    <div class="flashcard">
+      <div class="flashcard__inner"
+           id="flashcardInner"
+           tabindex="0"
+           role="button"
+           aria-label="カードをめくる">
+        <!-- Front -->
+        <div class="flashcard-front" id="flashcardFront">
+          <div class="flashcard-front__image">
+            <div class="flashcard-front__placeholder">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="40" height="40" rx="6" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="24" cy="20" r="6" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M14 36c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span>DEV PLACEHOLDER</span>
+            </div>
+          </div>
+          <div class="flashcard-front__zh" id="frontZh">—</div>
+        </div>
+        <!-- Back -->
+        <div class="flashcard-back" id="flashcardBack">
+          <div class="flashcard-back__label">ピンイン</div>
+          <div class="flashcard-back__pinyin" id="backPinyin">—</div>
+          <div class="flashcard-back__label">日本語</div>
+          <div class="flashcard-back__ja" id="backJa">—</div>
+          <div class="flashcard-back__label">繁体字</div>
+          <div class="flashcard-back__traditional" id="backTraditional">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tap hint -->
+    <p class="flashcard__hint" id="tapHint">タップして答えを表示</p>
+
+    <!-- Assessment buttons -->
+    <div class="assessment-group assessment-group--hidden" id="assessmentGroup">
+      <button class="btn-assessment btn-assessment--retry" id="btnRetry" type="button">
+        もう一度
+        <span class="btn-assessment__secondary">忘れた</span>
+      </button>
+      <button class="btn-assessment btn-assessment--shaky" id="btnShaky" type="button">
+        まだ曖昧
+        <span class="btn-assessment__secondary">もう少し</span>
+      </button>
+      <button class="btn-assessment btn-assessment--knew" id="btnKnew" type="button">
+        覚えた
+        <span class="btn-assessment__secondary">大丈夫</span>
+      </button>
+    </div>
+
+    <!-- Completion screen -->
+    <div class="completion" id="completionScreen">
+      <div class="completion__icon" aria-hidden="true">✓</div>
+      <div class="completion__title">お疲れ様でした</div>
+      <div class="completion__text">
+        ベーシック単語カードの練習が終了しました。
+      </div>
+      <div class="completion__stats">
+        <div class="completion__stat">
+          <span class="completion__stat-value" id="statKnew">0</span>
+          <span class="completion__stat-label">覚えた</span>
+        </div>
+        <div class="completion__stat">
+          <span class="completion__stat-value" id="statShaky">0</span>
+          <span class="completion__stat-label">まだ曖昧</span>
+        </div>
+        <div class="completion__stat">
+          <span class="completion__stat-value" id="statRetry">0</span>
+          <span class="completion__stat-label">もう一度</span>
+        </div>
+      </div>
+      <button class="btn-restart" id="btnRestart" type="button">もう一度挑戦する</button>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       Footer
+       ========================================================== -->
+  <footer class="app-footer">
+    <p class="app-footer__text">
+      Chabiko · Basic Vocabulary Flashcards · Dev Prototype · Not Production
+    </p>
+  </footer>
+
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  /* ─── Synthetic vocabulary data (20 records, teacher-shaped) ── */
+  const ALL_WORDS = [
+    { zh: "猫",    pinyin: "māo",      ja: "猫",       trad: "貓" },
+    { zh: "犬",    pinyin: "quǎn",     ja: "犬",       trad: "犬" },
+    { zh: "魚",    pinyin: "yú",       ja: "魚",       trad: "魚" },
+    { zh: "花",    pinyin: "huā",      ja: "花",       trad: "花" },
+    { zh: "山",    pinyin: "shān",     ja: "山",       trad: "山" },
+    { zh: "水",    pinyin: "shuǐ",     ja: "水",       trad: "水" },
+    { zh: "火",    pinyin: "huǒ",      ja: "火",       trad: "火" },
+    { zh: "月",    pinyin: "yuè",      ja: "月",       trad: "月" },
+    { zh: "星",    pinyin: "xīng",     ja: "星",       trad: "星" },
+    { zh: "雨",    pinyin: "yǔ",       ja: "雨",       trad: "雨" },
+    { zh: "雲",    pinyin: "yún",      ja: "雲",       trad: "雲" },
+    { zh: "海",    pinyin: "hǎi",      ja: "海",       trad: "海" },
+    { zh: "風",    pinyin: "fēng",     ja: "風",       trad: "風" },
+    { zh: "林",    pinyin: "lín",      ja: "林",       trad: "林" },
+    { zh: "空",    pinyin: "kōng",     ja: "空",       trad: "空" },
+    { zh: "石",    pinyin: "shí",      ja: "石",       trad: "石" },
+    { zh: "太陽",  pinyin: "tài yáng", ja: "太陽",     trad: "太陽" },
+    { zh: "鳥",    pinyin: "niǎo",     ja: "鳥",       trad: "鳥" },
+    { zh: "虫",    pinyin: "chóng",    ja: "虫",       trad: "蟲" },
+    { zh: "竹",    pinyin: "zhú",      ja: "竹",       trad: "竹" },
+  ];
+
+  /* ─── Session state ───────────────────────────────────────── */
+  const WORDS = ALL_WORDS.slice(0, 10);  // fixed first 10
+  let currentIndex = 0;
+  let revealed = false;
+  let results = [];   // 'retry' | 'shaky' | 'knew'
+
+  /* ─── DOM refs ─────────────────────────────────────────────── */
+  const frontZh       = document.getElementById("frontZh");
+  const backPinyin    = document.getElementById("backPinyin");
+  const backJa        = document.getElementById("backJa");
+  const backTraditional = document.getElementById("backTraditional");
+  const flashcardFront  = document.getElementById("flashcardFront");
+  const flashcardBack   = document.getElementById("flashcardBack");
+  const flashcardInner  = document.getElementById("flashcardInner");
+  const tapHint         = document.getElementById("tapHint");
+  const progressFill    = document.getElementById("progressFill");
+  const progressCount   = document.getElementById("progressCount");
+  const assessmentGroup = document.getElementById("assessmentGroup");
+  const assessmentStrip = document.getElementById("assessmentStrip");
+  const completionScreen = document.getElementById("completionScreen");
+  const cardArea        = document.getElementById("cardArea");
+  const statKnew  = document.getElementById("statKnew");
+  const statShaky = document.getElementById("statShaky");
+  const statRetry = document.getElementById("statRetry");
+
+  /* ─── Render current card ──────────────────────────────────── */
+  function renderCard() {
+    const w = WORDS[currentIndex];
+    frontZh.textContent = w.zh;
+    backPinyin.textContent = w.pinyin;
+    backJa.textContent = w.ja;
+    backTraditional.textContent = w.trad;
+
+    // Reset reveal state
+    flashcardBack.classList.remove("flashcard-back--visible");
+    flashcardFront.style.display = "flex";
+    revealed = false;
+    tapHint.classList.remove("flashcard__hint--hidden");
+    assessmentGroup.classList.add("assessment-group--hidden");
+    assessmentStrip.className = "assessment-strip assessment-strip--empty";
+    assessmentStrip.textContent = "";
+    flashcardInner.setAttribute("aria-label", "カードをめくる");
+
+    updateProgress();
+  }
+
+  /* ─── Reveal ────────────────────────────────────────────────── */
+  function revealCard() {
+    if (revealed) return;
+    revealed = true;
+    flashcardBack.classList.add("flashcard-back--visible");
+    flashcardFront.style.display = "none";
+    tapHint.classList.add("flashcard__hint--hidden");
+    assessmentGroup.classList.remove("assessment-group--hidden");
+    flashcardInner.setAttribute("aria-label", "答えが表示されています");
+  }
+
+  /* ─── Self-assessment ──────────────────────────────────────── */
+  function assess(outcome) {
+    if (!revealed) return;
+    results.push(outcome);
+    currentIndex++;
+
+    // Show strip
+    const labels = {
+      retry: "もう一度 — 忘れた",
+      shaky: "まだ曖昧 — もう少し",
+      knew: "覚えた — 大丈夫",
+    };
+    const classes = {
+      retry: "assessment-strip assessment-strip--retry",
+      shaky: "assessment-strip assessment-strip--shaky",
+      knew: "assessment-strip assessment-strip--knew",
+    };
+    assessmentStrip.className = classes[outcome];
+    assessmentStrip.textContent = labels[outcome];
+
+    if (currentIndex >= WORDS.length) {
+      showCompletion();
+    } else {
+      renderCard();
+    }
+  }
+
+  /* ─── Progress update ──────────────────────────────────────── */
+  function updateProgress() {
+    const done = results.length;
+    const pct = (done / WORDS.length) * 100;
+    progressFill.style.width = pct + "%";
+    progressCount.textContent = done + " / " + WORDS.length;
+  }
+
+  /* ─── Completion ────────────────────────────────────────────── */
+  function showCompletion() {
+    // Hide flashcard & assessment
+    flashcardInner.style.display = "none";
+    tapHint.classList.add("flashcard__hint--hidden");
+    assessmentGroup.classList.add("assessment-group--hidden");
+    assessmentStrip.className = "assessment-strip assessment-strip--empty";
+    assessmentStrip.textContent = "";
+
+    // Show completion
+    completionScreen.classList.add("completion--visible");
+
+    // Stats
+    const c = { retry: 0, shaky: 0, knew: 0 };
+    results.forEach(r => { if (r in c) c[r]++; });
+    statRetry.textContent = c.retry;
+    statShaky.textContent = c.shaky;
+    statKnew.textContent = c.knew;
+
+    updateProgress();
+    progressFill.style.width = "100%";
+    progressCount.textContent = WORDS.length + " / " + WORDS.length;
+  }
+
+  /* ─── Restart ───────────────────────────────────────────────── */
+  function restart() {
+    currentIndex = 0;
+    results = [];
+    completionScreen.classList.remove("completion--visible");
+    flashcardInner.style.display = "flex";
+    assessmentStrip.className = "assessment-strip assessment-strip--empty";
+    assessmentStrip.textContent = "";
+    renderCard();
+  }
+
+  /* ─── Event wiring ─────────────────────────────────────────── */
+  // Reveal on click / Enter / Space
+  flashcardInner.addEventListener("click", function(e) {
+    if (completionScreen.classList.contains("completion--visible")) return;
+    revealCard();
+  });
+  flashcardInner.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (completionScreen.classList.contains("completion--visible")) return;
+      revealCard();
+    }
+  });
+
+  document.getElementById("btnRetry").addEventListener("click", function() { assess("retry"); });
+  document.getElementById("btnShaky").addEventListener("click", function() { assess("shaky"); });
+  document.getElementById("btnKnew").addEventListener("click", function() { assess("knew"); });
+  document.getElementById("btnRestart").addEventListener("click", restart);
+
+  /* ─── Init ──────────────────────────────────────────────────── */
+  renderCard();
+})();
+</script>
+
+</body>
+</html>
