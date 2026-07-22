@@ -327,10 +327,8 @@
   /* --- Reveal hint -------------------------------------------- */
   .flashcard__hint {
     font-size: 0.75rem;
-    color: var(--color-text-muted);
+    color: #5b6570;
     text-align: center;
-    opacity: 0.6;
-    transition: opacity 0.2s;
     flex-shrink: 0;
     padding-bottom: var(--space-xs);
   }
@@ -585,16 +583,16 @@
               <span>DEV PLACEHOLDER</span>
             </div>
           </div>
-          <div class="flashcard-front__zh" id="frontZh">—</div>
+          <div class="flashcard-front__zh" id="frontZh" lang="zh-Hans">—</div>
         </div>
         <!-- Back -->
         <div class="flashcard-back" id="flashcardBack">
           <div class="flashcard-back__label">ピンイン</div>
-          <div class="flashcard-back__pinyin" id="backPinyin">—</div>
+          <div class="flashcard-back__pinyin" id="backPinyin" lang="zh-Latn">—</div>
           <div class="flashcard-back__label">日本語</div>
           <div class="flashcard-back__ja" id="backJa">—</div>
           <div class="flashcard-back__label">繁体字</div>
-          <div class="flashcard-back__traditional" id="backTraditional">—</div>
+          <div class="flashcard-back__traditional" id="backTraditional" lang="zh-Hant">—</div>
         </div>
       </div>
     </div>
@@ -621,7 +619,7 @@
     <!-- Completion screen -->
     <div class="completion" id="completionScreen">
       <div class="completion__icon" aria-hidden="true">✓</div>
-      <div class="completion__title">お疲れ様でした</div>
+      <div class="completion__title" id="completionTitle" tabindex="-1">お疲れ様でした</div>
       <div class="completion__text">
         ベーシック単語カードの練習が終了しました。
       </div>
@@ -670,14 +668,14 @@
     { zh: "月",    pinyin: "yuè",      ja: "月",       trad: "月" },
     { zh: "星",    pinyin: "xīng",     ja: "星",       trad: "星" },
     { zh: "雨",    pinyin: "yǔ",       ja: "雨",       trad: "雨" },
-    { zh: "雲",    pinyin: "yún",      ja: "雲",       trad: "雲" },
+    { zh: "云",    pinyin: "yún",      ja: "雲",       trad: "雲" },
     { zh: "海",    pinyin: "hǎi",      ja: "海",       trad: "海" },
-    { zh: "風",    pinyin: "fēng",     ja: "風",       trad: "風" },
+    { zh: "风",    pinyin: "fēng",     ja: "風",       trad: "風" },
     { zh: "林",    pinyin: "lín",      ja: "林",       trad: "林" },
     { zh: "空",    pinyin: "kōng",     ja: "空",       trad: "空" },
     { zh: "石",    pinyin: "shí",      ja: "石",       trad: "石" },
-    { zh: "太陽",  pinyin: "tài yáng", ja: "太陽",     trad: "太陽" },
-    { zh: "鳥",    pinyin: "niǎo",     ja: "鳥",       trad: "鳥" },
+    { zh: "太阳",  pinyin: "tài yáng", ja: "太陽",     trad: "太陽" },
+    { zh: "鸟",    pinyin: "niǎo",     ja: "鳥",       trad: "鳥" },
     { zh: "虫",    pinyin: "chóng",    ja: "虫",       trad: "蟲" },
     { zh: "竹",    pinyin: "zhú",      ja: "竹",       trad: "竹" },
   ];
@@ -797,6 +795,10 @@
     updateProgress();
     progressFill.style.width = "100%";
     progressCount.textContent = WORDS.length + " / " + WORDS.length;
+
+    // Focus the completion title for assistive technology notification
+    const completionTitle = document.getElementById("completionTitle");
+    if (completionTitle) completionTitle.focus();
   }
 
   /* ─── Restart ───────────────────────────────────────────────── */
@@ -808,6 +810,8 @@
     assessmentStrip.className = "assessment-strip assessment-strip--empty";
     assessmentStrip.textContent = "";
     renderCard();
+    // Move focus back to the card for keyboard users
+    flashcardInner.focus();
   }
 
   /* ─── Event wiring ─────────────────────────────────────────── */
