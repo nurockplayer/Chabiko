@@ -1919,14 +1919,34 @@ def _orphan_illustration_detection(illustrations: list, path: str) -> list[str]:
 _build_schemas()
 
 
+def load_content_file(filepath):
+    """Read and parse a JSON content file.
+
+    Exits with code 2 and a clean stderr message on a missing file, an
+    unreadable file, or invalid JSON, so I/O failures are not conflated
+    with content validation failures (exit code 1) or dumped as tracebacks.
+    """
+    try:
+        with open(filepath, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"Error: file not found: {filepath}", file=sys.stderr)
+        sys.exit(2)
+    except OSError as e:
+        print(f"Error: could not read {filepath}: {e}", file=sys.stderr)
+        sys.exit(2)
+    except json.JSONDecodeError as e:
+        print(f"Error: {filepath} is not valid JSON: {e}", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--check":
         if len(sys.argv) < 3:
             print("Usage: python3 scripts/validate-content-schema.py --check <file>", file=sys.stderr)
             sys.exit(2)
         filepath = sys.argv[2]
-        with open(filepath, encoding="utf-8") as f:
-            data = json.load(f)
+        data = load_content_file(filepath)
         errors = validate_bundle(data)
         for e in errors:
             print(f"{filepath}: {e}")
@@ -2294,6 +2314,10 @@ def run_tests():
         test_hsk_vocab_japanese_empty_string_fails,
         test_hsk_vocab_simplified_whitespace_only_fails,
         test_hsk_vocab_legacy_traditional_without_simplified_fails,
+        # ─── CLI error handling ───
+        test_check_missing_arg_exits_two,
+        test_check_missing_file_exits_two,
+        test_check_invalid_json_exits_two,
     ]
     failures = 0
     for test in tests:
@@ -2320,6 +2344,47 @@ def _assert_has_error(errors, keyword, label=""):
     assert any(keyword in e for e in errors), (
         f"{label}: Expected error containing '{keyword}', got {errors}"
     )
+
+
+# ─── CLI error-handling tests ──────────────────────────────────────────────
+
+def test_check_missing_arg_exits_two():
+    """--check without a file argument prints usage and exits with code 2."""
+    import subprocess
+    result = subprocess.run(
+        [sys.executable, __file__, "--check"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+    assert "Usage:" in result.stderr, f"Expected usage in stderr, got: {result.stderr}"
+
+
+def test_check_missing_file_exits_two():
+    """--check on a nonexistent file exits 2 with a clean stderr message."""
+    import subprocess
+    result = subprocess.run(
+        [sys.executable, __file__, "--check", "/nonexistent/path/to/file.json"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+    assert "not found" in result.stderr, f"Expected 'not found' in stderr, got: {result.stderr}"
+
+
+def test_check_invalid_json_exits_two():
+    """--check on a malformed JSON file exits 2 rather than raising a traceback."""
+    import subprocess
+    import tempfile
+    import os
+    with tempfile.TemporaryDirectory() as td:
+        bad = os.path.join(td, "bad.json")
+        with open(bad, "w", encoding="utf-8") as f:
+            f.write("{not valid json")
+        result = subprocess.run(
+            [sys.executable, __file__, "--check", bad],
+            capture_output=True, text=True,
+        )
+    assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+    assert "not valid JSON" in result.stderr, f"Expected JSON error in stderr, got: {result.stderr}"
 
 
 # ─── Lesson tests ──────────────────────────────────────────────────────────

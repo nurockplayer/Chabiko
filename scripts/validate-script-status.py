@@ -501,6 +501,34 @@ def test_missing_check_arg_exits_two():
         pass  # skip if subprocess unavailable (unlikely)
 
 
+def test_check_missing_file_exits_two():
+    """--check on a nonexistent file exits 2 with a clean stderr message."""
+    import subprocess
+    result = subprocess.run(
+        [sys.executable, __file__, "--check", "/nonexistent/path/to/file.json"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+    assert "not found" in result.stderr, f"Expected 'not found' in stderr, got: {result.stderr}"
+
+
+def test_check_invalid_json_exits_two():
+    """--check on a malformed JSON file exits 2 rather than raising a traceback."""
+    import subprocess
+    import tempfile
+    import os
+    with tempfile.TemporaryDirectory() as td:
+        bad = os.path.join(td, "bad.json")
+        with open(bad, "w", encoding="utf-8") as f:
+            f.write("{not valid json")
+        result = subprocess.run(
+            [sys.executable, __file__, "--check", bad],
+            capture_output=True, text=True,
+        )
+    assert result.returncode == 2, f"Expected exit 2, got {result.returncode}"
+    assert "not valid JSON" in result.stderr, f"Expected JSON error in stderr, got: {result.stderr}"
+
+
 def test_walk_catches_missing_traditional_with_pinyin():
     """A record with pinyin but no traditional must be caught."""
     data = {
@@ -1178,6 +1206,8 @@ def run_tests():
         test_simplified_status_unavailable_with_simplified_fails,
         test_simplified_status_valid_with_simplified_passes,
         test_missing_check_arg_exits_two,
+        test_check_missing_file_exits_two,
+        test_check_invalid_json_exits_two,
         test_traditional_non_string_fails,
         test_simplified_non_string_fails,
         # HSK tests
@@ -1229,14 +1259,34 @@ def run_tests():
     return failures
 
 
+def load_content_file(filepath):
+    """Read and parse a JSON content file.
+
+    Exits with code 2 and a clean stderr message on a missing file, an
+    unreadable file, or invalid JSON, so I/O failures are not conflated
+    with content validation failures (exit code 1) or dumped as tracebacks.
+    """
+    try:
+        with open(filepath, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"Error: file not found: {filepath}", file=sys.stderr)
+        sys.exit(2)
+    except OSError as e:
+        print(f"Error: could not read {filepath}: {e}", file=sys.stderr)
+        sys.exit(2)
+    except json.JSONDecodeError as e:
+        print(f"Error: {filepath} is not valid JSON: {e}", file=sys.stderr)
+        sys.exit(2)
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--check":
         if len(sys.argv) < 3:
             print("Usage: python3 scripts/validate-script-status.py --check <file>", file=sys.stderr)
             sys.exit(2)
         filepath = sys.argv[2]
-        with open(filepath, encoding="utf-8") as f:
-            data = json.load(f)
+        data = load_content_file(filepath)
         errors = walk_content_records(data)
         for e in errors:
             print(f"{filepath}: {e}")
