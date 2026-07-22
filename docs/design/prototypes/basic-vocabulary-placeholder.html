@@ -570,7 +570,8 @@
            id="flashcardInner"
            tabindex="0"
            role="button"
-           aria-label="カードをめくる">
+           aria-labelledby="frontZh"
+           aria-describedby="tapHint">
         <!-- Front -->
         <div class="flashcard-front" id="flashcardFront">
           <div class="flashcard-front__image">
@@ -719,7 +720,8 @@
     revealed = false;
     tapHint.classList.remove("flashcard__hint--hidden");
     assessmentGroup.classList.add("assessment-group--hidden");
-    flashcardInner.setAttribute("aria-label", "カードをめくる");
+    flashcardInner.setAttribute("aria-labelledby", "frontZh");
+    flashcardInner.setAttribute("aria-describedby", "tapHint");
 
     updateProgress();
   }
@@ -735,7 +737,8 @@
     flashcardFront.style.display = "none";
     tapHint.classList.add("flashcard__hint--hidden");
     assessmentGroup.classList.remove("assessment-group--hidden");
-    flashcardInner.setAttribute("aria-label", "答えが表示されています");
+    flashcardInner.setAttribute("aria-labelledby", "backPinyin backJa backTraditional");
+    flashcardInner.removeAttribute("aria-describedby");
   }
 
   /* ─── Self-assessment ──────────────────────────────────────── */
@@ -762,6 +765,8 @@
       showCompletion();
     } else {
       renderCard();
+      // Move focus to the next card so screen reader announces the new word
+      flashcardInner.focus();
     }
   }
 
