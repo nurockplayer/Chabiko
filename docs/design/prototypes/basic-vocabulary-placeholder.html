@@ -662,7 +662,7 @@
   const ALL_WORDS = [
     { zh: "猫",    pinyin: "māo",      ja: "猫",       trad: "貓" },
     { zh: "犬",    pinyin: "quǎn",     ja: "犬",       trad: "犬" },
-    { zh: "魚",    pinyin: "yú",       ja: "魚",       trad: "魚" },
+    { zh: "鱼",    pinyin: "yú",       ja: "魚",       trad: "魚" },
     { zh: "花",    pinyin: "huā",      ja: "花",       trad: "花" },
     { zh: "山",    pinyin: "shān",     ja: "山",       trad: "山" },
     { zh: "水",    pinyin: "shuǐ",     ja: "水",       trad: "水" },
@@ -721,8 +721,6 @@
     revealed = false;
     tapHint.classList.remove("flashcard__hint--hidden");
     assessmentGroup.classList.add("assessment-group--hidden");
-    assessmentStrip.className = "assessment-strip assessment-strip--empty";
-    assessmentStrip.textContent = "";
     flashcardInner.setAttribute("aria-label", "カードをめくる");
 
     updateProgress();
@@ -731,6 +729,9 @@
   /* ─── Reveal ────────────────────────────────────────────────── */
   function revealCard() {
     if (revealed) return;
+    // Clear previous assessment strip now, before showing next card
+    assessmentStrip.className = "assessment-strip assessment-strip--empty";
+    assessmentStrip.textContent = "";
     revealed = true;
     flashcardBack.classList.add("flashcard-back--visible");
     flashcardFront.style.display = "none";
@@ -776,8 +777,8 @@
 
   /* ─── Completion ────────────────────────────────────────────── */
   function showCompletion() {
-    // Hide flashcard & assessment
-    flashcardInner.style.display = "none";
+    // Hide the entire outer flashcard container (removes flex/min-height space)
+    document.querySelector(".flashcard").style.display = "none";
     tapHint.classList.add("flashcard__hint--hidden");
     assessmentGroup.classList.add("assessment-group--hidden");
     assessmentStrip.className = "assessment-strip assessment-strip--empty";
@@ -803,7 +804,7 @@
     currentIndex = 0;
     results = [];
     completionScreen.classList.remove("completion--visible");
-    flashcardInner.style.display = "flex";
+    document.querySelector(".flashcard").style.display = "flex";
     assessmentStrip.className = "assessment-strip assessment-strip--empty";
     assessmentStrip.textContent = "";
     renderCard();
