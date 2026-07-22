@@ -1328,22 +1328,32 @@ def _check_vocabulary_fields(record: dict, path: str) -> list[str]:
     """Validate vocabulary record, branching on HSK vs non-HSK vs teacher contract."""
     errors = []
 
-    has_curriculum = "curriculum" in record and record["curriculum"] is not None
+    curriculum_key_present = "curriculum" in record
+    hsk_key_present = "hsk" in record
 
-    # Gap 1: Teacher/HSK exclusivity — a teacher record must not contain any hsk key.
-    if has_curriculum and "hsk" in record:
+    # Gap 1: Teacher/HSK exclusivity — when both keys exist, report subtype conflict
+    # and validate both sides deterministically without single-subtype dispatch.
+    # This catches curriculum:null + hsk:object cases that the value-based
+    # has_curriculum check would miss.
+    if curriculum_key_present and hsk_key_present:
         errors.append(f"{path}: teacher curriculum record must not contain 'hsk'")
         errors.extend(_check_teacher_vocabulary_fields(record, path))
+        if record.get("hsk") is None:
+            errors.append(f"{path}.hsk must be a JSON object when present, got null")
+        elif not isinstance(record["hsk"], dict):
+            errors.append(f"{path}.hsk must be a JSON object when present, got {type(record['hsk']).__name__}")
         return errors
+
+    has_curriculum = curriculum_key_present and record["curriculum"] is not None
 
     # Reject explicit hsk: null — when hsk key is present, it must be an object.
     # Do NOT fall through to non-HSK validation; the record declared HSK intent
     # and non-HSK errors (missing traditional, kana, category) are misleading.
-    if "hsk" in record and record["hsk"] is None:
+    if hsk_key_present and record["hsk"] is None:
         errors.append(f"{path}.hsk must be a JSON object when present, got null")
         return errors
 
-    has_hsk = "hsk" in record and record["hsk"] is not None
+    has_hsk = hsk_key_present and record["hsk"] is not None
 
     if has_curriculum:
         errors.extend(_check_teacher_vocabulary_fields(record, path))
@@ -2125,6 +2135,9 @@ def run_tests():
         test_teacher_vocab_hsk_both_keys,
         test_teacher_vocab_hsk_both_null,
         test_teacher_vocab_hsk_non_branching,
+        test_teacher_vocab_curriculum_null_hsk_object,
+        test_teacher_vocab_curriculum_null_hsk_null,
+        test_teacher_vocab_bad_curriculum_bad_hsk,
         # Gap 2: Forbidden teacher fields with null
         test_teacher_vocab_similarity_type_null,
         test_teacher_vocab_tone_note_null,
@@ -4893,12 +4906,13 @@ def test_teacher_vocab_hsk_both_keys():
 
 
 def test_teacher_vocab_hsk_both_null():
-    """Teacher record with curriculum and hsk:null must reject hsk."""
+    """Teacher record with curriculum and hsk:null must reject both the conflict and the null hsk."""
     errs = validate_single(
         _minimal_teacher_vocab(hsk=None),
         "vocabulary",
     )
     _assert_has_error(errs, "must not contain 'hsk'", "teacher_hsk_both_null")
+    _assert_has_error(errs, "must be a JSON object when present, got null", "teacher_hsk_null_msg")
 
 
 def test_teacher_vocab_hsk_non_branching():
@@ -4912,6 +4926,44 @@ def test_teacher_vocab_hsk_non_branching():
     assert len(hsk_field_errors) == 0, (
         f"Teacher+HSK record must not dispatch as HSK, got HSK errors: {hsk_field_errors}"
     )
+
+
+def test_teacher_vocab_curriculum_null_hsk_object():
+    """curriculum:null with valid hsk object must report subtype conflict, not dispatch as HSK."""
+    record = {"id": "test", "simplified": "好", "simplifiedStatus": "authored",
+              "pinyin": "hǎo", "japanese": "よい", "source": {"type": "teacher-workbook"},
+              "reviewStatus": "draft", "curriculum": None,
+              "hsk": {"standardVersion": "hsk-3.0", "introducedAtLevel": 1, "sourceLevelLabel": "HSK 1"}}
+    errs = validate_single(record, "vocabulary")
+    _assert_has_error(errs, "must not contain 'hsk'", "curr_null_hsk_obj_conflict")
+    # Must not silently dispatch as HSK
+    hsk_field_errors = [e for e in errs if "for HSK record" in e]
+    assert len(hsk_field_errors) == 0, (
+        f"curriculum:null + hsk must not dispatch as HSK, got HSK errors: {hsk_field_errors}"
+    )
+
+
+def test_teacher_vocab_curriculum_null_hsk_null():
+    """curriculum:null with hsk:null must report subtype conflict and both null errors."""
+    record = {"id": "test", "simplified": "好", "simplifiedStatus": "authored",
+              "pinyin": "hǎo", "japanese": "よい", "source": {"type": "teacher-workbook"},
+              "reviewStatus": "draft", "curriculum": None,
+              "hsk": None}
+    errs = validate_single(record, "vocabulary")
+    _assert_has_error(errs, "must not contain 'hsk'", "curr_null_hsk_null_conflict")
+    _assert_has_error(errs, "must be a JSON object when present, got null", "curr_null_hsk_null_msg")
+
+
+def test_teacher_vocab_bad_curriculum_bad_hsk():
+    """Non-object curriculum and non-object hsk must not crash and must report both conflict and type errors."""
+    record = {"id": "test", "simplified": "好", "simplifiedStatus": "authored",
+              "pinyin": "hǎo", "japanese": "よい", "source": {"type": "teacher-workbook"},
+              "reviewStatus": "draft", "curriculum": "string-curriculum",
+              "hsk": [1, 2, 3]}
+    errs = validate_single(record, "vocabulary")
+    _assert_has_error(errs, "must not contain 'hsk'", "bad_curr_bad_hsk_conflict")
+    _assert_has_error(errs, "curriculum must be a JSON object", "bad_curr_type")
+    _assert_has_error(errs, "must be a JSON object when present, got list", "bad_hsk_type")
 
 
 # ─── Gap 2: Forbidden teacher field null tests ─────────────────────────
