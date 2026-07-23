@@ -235,6 +235,8 @@ When reviewing AI-generated or AI-assisted content:
 4. **Taiwan/Mainland hallucination.** AI may guess region-specific usage without evidence. Only tag `taiwan-mainland-usage` when the regional variant is confirmed.
 5. **Script over-tagging.** AI may apply `traditional-simplified` to every Traditional-only entry. Only use this tag when the script difference itself is the teaching point.
 
+For the broader AI-assisted authoring pipeline that defines when model-generated content enters the repository, see [ai-assisted-authoring-workflow.md](ai-assisted-authoring-workflow.md).
+
 ### Taiwan/Mainland Usage and Simplified/Traditional Tagging
 
 - These two tags are **separate dimensions**. A content item may have one, both, or neither.

@@ -3,6 +3,7 @@
 This draft guides Phase 1 implementation. It is not an executable schema yet.
 
 For the dual-script and regional variant strategy that governs the fields and rules below, see [dual-script-and-regional-variant-strategy.md](dual-script-and-regional-variant-strategy.md).
+For the AI-assisted authoring workflow that governs content creation and review status transitions, see [ai-assisted-authoring-workflow.md](ai-assisted-authoring-workflow.md).
 
 ## Dual-Script Support
 
