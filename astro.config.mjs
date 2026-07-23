@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: 'https://chabiko.pages.dev',
   output: 'static',
+  compressHTML: true,
   server: {
     host: '0.0.0.0',
     port: 3000,
