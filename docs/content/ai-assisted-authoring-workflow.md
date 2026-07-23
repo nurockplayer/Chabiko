@@ -136,6 +136,8 @@ DeepSeek Flash 必須停止並回報 blocker，當：
 
 AI-authored content 以 `draft` 狀態開始，除非 maintainer 已提供 pre-reviewed canonical text。Model-to-model review 本身不能建立 human review provenance。
 
+**Hard rule：** `draft` → `reviewed` 必須由 human language reviewer 以該角色具名執行，並記錄 review artifact。Maintainer 角色本身沒有獨立的語言核准權。若 maintainer 本人同時也是 human language reviewer，必須以 reviewer 身分紀錄，而非 maintainer 身分。
+
 **Human review triggers（在 promotion 至 `reviewed` 或 `published` 前必要）：**
 
 | Category | Examples |
@@ -174,10 +176,10 @@ Codex findings 改變 semantics、specification 或 public contract 時，需要
 | Role | Owns | Deliverable | Must not do |
 |------|------|-------------|-------------|
 | **Gemini** | Candidate generation, alternatives, coverage analysis, language warnings | Bounded candidate set with coverage rationale and warnings | Write production files, assign final review status, invent product scope |
-| **Maintainer / PM** | Record selection, canonical string freeze, exact issue contract | Frozen implementation issue with exact canonical content | Delegate unresolved content choices to implementation agent |
+| **Maintainer / PM** | Record selection, canonical string freeze, exact issue contract | Frozen implementation issue with exact canonical content | Delegate unresolved content choices to implementation agent; approve human language review as maintainer alone (must act as named human reviewer with artifact) |
 | **DeepSeek Flash** | Mechanical implementation and validation | Validated content files matching frozen specification | Select content, broaden scope, self-certify language review, silently fix schema conflicts |
 | **DeepSeek Pro reviewer** | Read-only blocking review | `No blocking findings.` verdict or list of blockers | Edit files, approve human provenance, publish content, claim native-speaker authority |
-| **Human language reviewer** | Language, regional, cultural, and risk-sensitive approval | `reviewed` status assignment with reviewer identity | Be replaced by model consensus; approve without verification |
+| **Human language reviewer** | Language, regional, cultural, and risk-sensitive approval | `reviewed` status assignment with named reviewer identity and recorded review artifact | Be replaced by model consensus; approve without verification; delegate approval authority to maintainer role |
 | **Codex** | Final PR engineering review | Independent engineering review verdict | Serve as the sole content-language authority |
 
 ---
@@ -347,14 +349,17 @@ This verdict confirms no blocking issue was found. It is not a native-speaker ce
 
 ### 5.2 Allowed Transitions
 
-`draft` --(human reviewer)--> `reviewed` --(maintainer)--> `published`
-`draft` --(maintainer)--> `reviewed` (when canonical strings are pre-reviewed)
-`reviewed` --(human edits)--> `draft` (revision opens in new cycle)
+`draft` --(human reviewer, with recorded identity and review artifact)--> `reviewed` --(maintainer)--> `published`
+
+Maintainer 可以記錄既有的人工核准（例如來自外部 reviewer 的確認），但 `draft` → `reviewed` transition 的 actor 永遠是 human language reviewer，不是 maintainer 角色本身。若 maintainer 本人同時擔任 human language reviewer，必須以該角色具名並記錄 review artifact。
+
+Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 pipeline。
 
 ### 5.3 Forbidden Transitions
 
 - `draft` --(any model)--> `reviewed` — Model-to-model review cannot promote
 - `draft` --(any model)--> `published` — No model may publish
+- `draft` --(maintainer)--> `reviewed` — Maintainer alone cannot approve human language
 - `draft` --(DeepSeek Pro reviewer)--> `reviewed` — Reviewer is read-only; verdict is not approval
 - `reviewed` --(any model)--> `published` — Publication requires human action
 
@@ -365,9 +370,18 @@ This verdict confirms no blocking issue was found. It is not a native-speaker ce
 | `generated` | `verified` | Human verifier | Allowed |
 | `generated` | `verified` | Any model | Forbidden — verification requires human judgment |
 | `generated` | `authored` | Any actor | Forbidden — "authored" implies original human authorship |
-| `verified` | `draft` | Human editor | Allowed — re-edited content re-enters as draft |
 | `unavailable` | `authored` | Human author | Allowed |
 | `unavailable` | `verified` | Any actor | Forbidden — must be authored or generated first |
+
+### 5.5 reviewStatus and Script Provenance Separation
+
+`reviewStatus`（`draft` / `reviewed` / `published`）與 script provenance（`authored` / `verified` / `generated` / `unavailable`）是完全獨立的兩個維度，使用不同的 controlled values。`draft` 不是 script provenance value，`generated` 不是 reviewStatus value。
+
+**當內容被重新編輯時：**
+
+- Record 的 `reviewStatus` 回到 `draft`（表示內容進入新的 review cycle）
+- 受影響 script form 的 provenance 依實際來源重新判定：人工修改的欄位設為 `authored`；LLM 重新生成的欄位設為 `generated`；未變動的欄位保留原有 provenance
+- 兩個維度的變更各自獨立記錄，不得互相替代
 
 ---
 
@@ -413,6 +427,8 @@ This verdict confirms no blocking issue was found. It is not a native-speaker ce
 - **DeepSeek Flash** must not select characters, rephrase, or fill unspecified content. It implements frozen canonical strings verbatim.
 - **DeepSeek Pro `No blocking findings.`** confirms no blocking issue in the diff. It does not equal human language approval and does not change content status.
 - **AI-to-AI review** alone cannot promote content to `reviewed` or `published`. Human approval is required.
+- **Maintainer alone cannot promote `draft` to `reviewed`.** Human language approval by a named reviewer with recorded review artifact is required. A maintainer acting as reviewer must do so in the reviewer role with full provenance.
+- **reviewStatus and script provenance are independent dimensions.** `draft` is not a script provenance value; `generated` is not a reviewStatus value. Changes to one do not imply changes to the other.
 - **Templates** in this document use `{{PLACEHOLDER}}` syntax. They are workflow artifacts, not production content generators.
 
 ---
