@@ -1,0 +1,291 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import { SESSION_WORDS } from '../../../../fixtures/basicVocabularyPreview';
+
+const json = JSON.stringify({ words: SESSION_WORDS });
+---
+
+<BaseLayout title="DEV — ベーシック単語カード プレビュー">
+  <meta name="robots" content="noindex, nofollow" />
+  <div class="dev-banner" role="note">
+    DEVELOPMENT PREVIEW — MOCK VOCABULARY AND IMAGES — NOT PRODUCTION CONTENT
+  </div>
+
+  <div class="app-wrapper" role="main">
+    <!-- Header -->
+    <header class="app-header">
+      <span class="app-header__title">Chabiko</span>
+      <span class="app-header__badge">DEV PREVIEW</span>
+    </header>
+
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label" id="progressLabel">進捗</span>
+        <span class="progress-count" id="progressCount">0 / 10</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Assessment strip -->
+    <div class="assessment-strip assessment-strip--empty" id="assessmentStrip" role="status" aria-live="polite"></div>
+
+    <!-- Card area -->
+    <div class="card-area" id="cardArea">
+      <div class="flashcard">
+        <div class="flashcard__inner"
+             id="flashcardInner"
+             tabindex="0"
+             role="button"
+             aria-labelledby="frontZh"
+             aria-describedby="tapHint">
+          <div class="flashcard-front" id="flashcardFront">
+            <div class="flashcard-front__image">
+              <img id="mockImage" class="mock-img" src="" alt="MOCK IMAGE" width="960" height="720" loading="lazy" />
+              <div class="mock-img-fallback" id="imgFallback">
+                <span>MOCK IMAGE</span>
+              </div>
+            </div>
+            <div class="flashcard-front__zh" id="frontZh" lang="zh-Hans">—</div>
+          </div>
+          <div class="flashcard-back" id="flashcardBack" tabindex="-1">
+            <div class="flashcard-back__label">ピンイン</div>
+            <div class="flashcard-back__pinyin" id="backPinyin" lang="zh-Latn">—</div>
+            <div class="flashcard-back__label">日本語</div>
+            <div class="flashcard-back__ja" id="backJa">—</div>
+            <div class="flashcard-back__label">繁体字</div>
+            <div class="flashcard-back__traditional" id="backTraditional" lang="zh-Hant">—</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="flashcard__hint" id="tapHint">タップして答えを表示</p>
+
+      <div class="assessment-group assessment-group--hidden" id="assessmentGroup">
+        <button class="btn-assessment btn-assessment--retry" id="btnRetry" type="button">
+          もう一度<span class="btn-assessment__secondary">忘れた</span>
+        </button>
+        <button class="btn-assessment btn-assessment--shaky" id="btnShaky" type="button">
+          まだ曖昧<span class="btn-assessment__secondary">もう少し</span>
+        </button>
+        <button class="btn-assessment btn-assessment--knew" id="btnKnew" type="button">
+          覚えた<span class="btn-assessment__secondary">大丈夫</span>
+        </button>
+      </div>
+
+      <div class="completion" id="completionScreen">
+        <div class="completion__icon" aria-hidden="true">✓</div>
+        <div class="completion__title" id="completionTitle" tabindex="-1">お疲れ様でした</div>
+        <div class="completion__text">ベーシック単語カードの練習が終了しました。</div>
+        <div class="completion__stats">
+          <div class="completion__stat">
+            <span class="completion__stat-value" id="statKnew">0</span>
+            <span class="completion__stat-label">覚えた</span>
+          </div>
+          <div class="completion__stat">
+            <span class="completion__stat-value" id="statShaky">0</span>
+            <span class="completion__stat-label">まだ曖昧</span>
+          </div>
+          <div class="completion__stat">
+            <span class="completion__stat-value" id="statRetry">0</span>
+            <span class="completion__stat-label">もう一度</span>
+          </div>
+        </div>
+        <button class="btn-restart" id="btnRestart" type="button">もう一度挑戦する</button>
+      </div>
+      </div>
+
+      <script id="session-data" type="application/json">{json}</script>
+
+      <footer class="app-footer">
+        <p class="app-footer__text">Chabiko · Dev Preview · Not Production</p>
+      </footer>
+    </div>
+
+  <script define:vars={{ json }}>
+    import { mountPreviewSession } from '../../../../client/previewSession';
+      (function () {
+        const el = document.getElementById('session-data');
+        const data = JSON.parse(el?.textContent || '{"words":[]}');
+        mountPreviewSession(data);
+      })();
+    </script>
+  </BaseLayout>
+
+<style>
+  /* ── Dev banner ───── */
+  .dev-banner {
+    background: #fef3c7; border: 2px solid #f59e0b; color: #92400e;
+    text-align: center; font-weight: 700; font-size: 0.8125rem;
+    padding: 10px 16px; letter-spacing: 0.02em;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Hiragino Sans","Noto Sans JP","Helvetica Neue",Arial,sans-serif;
+    color: #0f172a; background: #f4f7fc; line-height: 1.7;
+    overflow-wrap: break-word; -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    --color-bg: #f4f7fc; --color-surface: #fff; --color-text: #0f172a;
+    --color-text-secondary: #475569; --color-text-muted: #5b6570;
+    --color-accent: #0f766e; --color-border: #e2e8f0; --color-border-light: #f1f5f9;
+    --color-retry: #6b7280; --color-warning: #b45309;
+    --color-knewit: #7c3aed; --color-knewit-bg: #f5f3ff;
+    --font-zh: "Hiragino Sans","PingFang TC","Noto Sans TC",sans-serif;
+    --font-ja: "Hiragino Sans","Noto Sans JP","Helvetica Neue",Arial,sans-serif;
+    --font-pinyin: "Hiragino Sans","Noto Sans","Helvetica Neue",Arial,sans-serif;
+    --max-width: 480px;
+    --space-xs: 4px; --space-sm: 8px; --space-md: 16px;
+    --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px;
+    --radius-card: 12px; --radius-btn: 8px; --radius-progress: 99px;
+  }
+
+  .app-wrapper {
+    max-width: var(--max-width); margin: 0 auto; padding: 0 var(--space-md);
+    min-height: 100dvh; display: flex; flex-direction: column;
+  }
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-lg) 0 var(--space-md);
+    border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+  }
+  .app-header__title { font-size: 1rem; font-weight: 600; color: var(--color-text); letter-spacing: 0.02em; }
+  .app-header__badge {
+    font-size: 0.6875rem; font-weight: 700; padding: 2px 8px;
+    border-radius: var(--radius-progress); background: #fef9c3; color: #854d0e;
+    letter-spacing: 0.02em; white-space: nowrap;
+  }
+
+  /* ── Progress ── */
+  .progress-section { margin-bottom: var(--space-lg); flex-shrink: 0; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); }
+  .progress-label { font-size: 0.75rem; font-weight: 500; color: var(--color-text-secondary); }
+  .progress-count { font-size: 0.75rem; font-weight: 600; color: var(--color-accent); }
+  .progress-track { width: 100%; height: 4px; background: var(--color-border); border-radius: var(--radius-progress); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--color-accent); border-radius: var(--radius-progress); transition: width 0.3s ease; }
+
+  /* ── Assessment strip ── */
+  .assessment-strip {
+    text-align: center; padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-btn); margin-bottom: var(--space-lg);
+    font-size: 0.8125rem; font-weight: 600; flex-shrink: 0;
+    min-height: 40px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s ease;
+  }
+  .assessment-strip--retry { background: #f3f4f6; color: var(--color-retry); }
+  .assessment-strip--shaky { background: #fffbeb; color: var(--color-warning); }
+  .assessment-strip--knew { background: var(--color-knewit-bg); color: var(--color-knewit); }
+  .assessment-strip--empty { background: transparent; color: transparent; }
+
+  /* ── Card area ── */
+  .card-area { flex: 1; display: flex; flex-direction: column; gap: var(--space-lg); padding-bottom: var(--space-lg); min-height: 0; }
+  .flashcard { perspective: 1000px; flex: 1; min-height: 320px; display: flex; }
+  .flashcard__inner {
+    position: relative; width: 100%; background: var(--color-surface);
+    border-radius: var(--radius-card); box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: var(--space-xl) var(--space-lg); cursor: pointer;
+    min-height: 320px; gap: var(--space-lg); -webkit-tap-highlight-color: transparent;
+  }
+  .flashcard__inner:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  .flashcard-front { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); width: 100%; }
+  .flashcard-front__image {
+    width: 200px; height: 150px; border-radius: var(--radius-card);
+    background: var(--color-border-light); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; position: relative; overflow: hidden;
+  }
+  .flashcard-front__image img { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: var(--radius-card); }
+  .mock-img-fallback {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; color: var(--color-text-muted); font-size: 0.75rem; font-weight: 600;
+  }
+  .flashcard-front__zh {
+    font-family: var(--font-zh); font-size: 3rem; font-weight: 700;
+    color: var(--color-text); line-height: 1.2; letter-spacing: 0.04em; text-align: center;
+  }
+
+  .flashcard-back { display: none; flex-direction: column; align-items: center; gap: var(--space-sm); width: 100%; }
+  .flashcard-back--visible { display: flex; }
+  .flashcard-back__pinyin { font-family: var(--font-pinyin); font-size: 1.125rem; color: var(--color-text-muted); letter-spacing: 0.06em; }
+  .flashcard-back__ja { font-family: var(--font-ja); font-size: 1.25rem; font-weight: 600; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+  .flashcard-back__traditional { font-family: var(--font-zh); font-size: 1rem; color: var(--color-text-muted); margin-top: var(--space-xs); padding: 2px 12px; border-radius: var(--radius-progress); background: var(--color-border-light); }
+  .flashcard-back__label { font-size: 0.6875rem; font-weight: 700; color: var(--color-text-muted); letter-spacing: 0.03em; text-transform: uppercase; margin-top: var(--space-sm); }
+  .flashcard__hint { font-size: 0.75rem; color: #5b6570; text-align: center; flex-shrink: 0; padding-bottom: var(--space-xs); }
+  .flashcard__hint--hidden { display: none; }
+
+  /* ── Assessment buttons ── */
+  .assessment-group { display: flex; gap: var(--space-sm); flex-shrink: 0; }
+  .assessment-group--hidden { display: none; }
+  .btn-assessment {
+    flex: 1; min-height: 52px; border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-btn); background: var(--color-surface);
+    font-family: inherit; font-size: 0.75rem; font-weight: 600; color: var(--color-text);
+    cursor: pointer; transition: all 0.15s ease;
+    padding: var(--space-sm) var(--space-xs); line-height: 1.3; text-align: center;
+    -webkit-tap-highlight-color: transparent; min-width: 0;
+  }
+  .btn-assessment:hover { border-color: var(--color-accent); }
+  .btn-assessment:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .btn-assessment:active { transform: scale(0.97); }
+  .btn-assessment__secondary { display: block; font-size: 0.625rem; font-weight: 400; color: var(--color-text-muted); margin-top: 2px; }
+  .btn-assessment--retry { color: var(--color-retry); }
+  .btn-assessment--retry:hover { border-color: var(--color-retry); background: #f9fafb; }
+  .btn-assessment--shaky { color: var(--color-warning); }
+  .btn-assessment--shaky:hover { border-color: var(--color-warning); background: #fffbeb; }
+  .btn-assessment--knew { color: var(--color-knewit); }
+  .btn-assessment--knew:hover { border-color: var(--color-knewit); background: var(--color-knewit-bg); }
+
+  /* ── Completion ── */
+  .completion { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: var(--space-xl) var(--space-md); gap: var(--space-lg); }
+  .completion--visible { display: flex; }
+  .completion__icon { width: 64px; height: 64px; background: var(--color-accent); color: #fff; font-size: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+  .completion__title { font-size: 1.25rem; font-weight: 700; color: var(--color-text); }
+  .completion__text { font-size: 0.875rem; color: var(--color-text-secondary); max-width: 320px; }
+  .completion__stats { display: flex; gap: var(--space-lg); justify-content: center; flex-wrap: wrap; }
+  .completion__stat { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
+  .completion__stat-value { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+  .completion__stat-label { font-size: 0.75rem; color: var(--color-text-muted); }
+  .btn-restart {
+    min-height: 52px; padding: var(--space-md) var(--space-2xl);
+    border: none; border-radius: var(--radius-btn); background: var(--color-accent);
+    color: #fff; font-family: inherit; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .btn-restart:hover { background: #0d6b62; }
+  .btn-restart:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .btn-restart:active { transform: scale(0.97); }
+
+  /* ── Footer ── */
+  .app-footer { text-align: center; padding: var(--space-md) 0 var(--space-lg); border-top: 1px solid var(--color-border); flex-shrink: 0; }
+  .app-footer__text { font-size: 0.6875rem; color: var(--color-text-muted); }
+
+  /* ── Responsive ── */
+  @media (max-width: 374px) {
+    html { font-size: 15px; }
+    .flashcard-front__zh { font-size: 2.5rem; }
+    .flashcard-front__image { width: 160px; height: 120px; }
+    .flashcard__inner { padding: var(--space-lg) var(--space-md); min-height: 280px; }
+    .flashcard { min-height: 280px; }
+    .assessment-group { gap: 6px; }
+    .btn-assessment { font-size: 0.6875rem; padding: var(--space-sm) 6px; }
+    .app-wrapper { padding: 0 12px; }
+  }
+  @media (min-width: 375px) and (max-width: 389px) {
+    .flashcard-front__zh { font-size: 2.75rem; }
+    .flashcard-front__image { width: 180px; height: 135px; }
+  }
+  @media (min-width: 1024px) {
+    :root { --max-width: 560px; }
+    .flashcard-front__zh { font-size: 3.5rem; }
+    .flashcard-front__image { width: 240px; height: 180px; }
+    .flashcard__inner { padding: var(--space-2xl) var(--space-xl); min-height: 380px; }
+    .flashcard { min-height: 380px; }
+    .btn-assessment { font-size: 0.8125rem; }
+    .btn-assessment__secondary { font-size: 0.6875rem; }
+  }
+</style>
