@@ -8,7 +8,7 @@
 
 ## 1. Purpose
 
-本文件定義 Chabiko 的 AI-assisted content authoring pipeline，從 source specification 到 final engineering review。每個階段有明確的 owner、deliverable 與 quality gate，任何單一模型或個人不得跳過階段或合併角色。
+本文件定義 Chabiko 的 AI-assisted content authoring pipeline，從 source specification 到 final engineering review。每個階段有明確的 owner、deliverable 與 quality gate，任一 pipeline stage、責任與 quality gate 都不得被跳過或語意合併。同一位合格人員可以兼任多個 human roles，但每次行為必須以實際角色具名，並分別留下對應 artifact。DeepSeek Pro reviewer 必須保持 read-only independence。Codex final engineering review 不得被 maintainer 或 human language review 取代。Model-to-model review 仍不得建立 human approval provenance。
 
 ### Related Documents
 
@@ -81,6 +81,15 @@ Maintainer 或 PM 必須：
 - 所有 content-selection 與 product decisions 必須在 issue 到達 DeepSeek Flash 前解決
 - Issue 必須包含精確的 canonical strings，不得僅參照外部輸出
 
+**Schema-aware provenance requirements：**
+
+部分 executable schema（如 HSK、teacher curriculum）不接受 `generated` script provenance，即使 record 的 `reviewStatus` 是 `draft`。此時：
+
+- Gemini candidates 與未經驗證的 canonical content 必須保留在 non-production artifact，不得直接寫入 production-shaped file。
+- 所需 human script verification 必須在 Stage 4 寫入 production-shaped file 前完成。
+- Implementation issue 必須附上 named human verifier、review artifact 與合法的 `authored`／`verified` provenance。
+- DeepSeek Flash 不得為通過 validator 自行提升 provenance。
+
 ### Stage 4: DeepSeek Flash Implementation
 
 **Owner:** DeepSeek Flash（`deepseek-v4-flash`）
@@ -100,8 +109,9 @@ DeepSeek Flash 必須停止並回報 blocker，當：
 - Canonical issue 與 executable schema 衝突
 - Frozen specification 遺漏必要欄位
 - Frozen content 無法在不修改的前提下通過 validation
+- **Frozen specification 指定 `generated` provenance，但目標 schema 不接受 `generated`（如 HSK、teacher curriculum 要求 `authored` 或 `verified`）。**
 
-上述情況發生時，Flash 將問題退回 maintainer（Stage 3）並附上具體衝突。Flash 不得自行修正 schema 衝突或填補未指定的欄位。
+上述情況發生時，Flash 將問題退回 maintainer（Stage 3）並附上具體衝突。Flash 不得自行修正 schema 衝突、填補未指定的欄位或提升 provenance 以通過 validator。
 
 ### Stage 5: DeepSeek Pro Reviewer
 
@@ -134,7 +144,14 @@ DeepSeek Flash 必須停止並回報 blocker，當：
 
 **Owner:** Human language reviewer
 
-AI-authored content 以 `draft` 狀態開始，除非 maintainer 已提供 pre-reviewed canonical text。Model-to-model review 本身不能建立 human review provenance。
+AI-authored content 以 `draft` 狀態開始，除非 implementation issue 明確附帶所有以下證據：
+
+- named human language reviewer；
+- recorded review artifact；
+- 已核准 canonical strings；
+- 明確的 `reviewed` status 與合法 script provenance。
+
+缺少上述任一證據時，一律使用 `draft`，不得自行推定已核准。Model-to-model review 本身不能建立 human review provenance。
 
 **Hard rule：** `draft` → `reviewed` 必須由 human language reviewer 以該角色具名執行，並記錄 review artifact。Maintainer 角色本身沒有獨立的語言核准權。若 maintainer 本人同時也是 human language reviewer，必須以 reviewer 身分紀錄，而非 maintainer 身分。
 
@@ -177,7 +194,7 @@ Codex findings 改變 semantics、specification 或 public contract 時，需要
 |------|------|-------------|-------------|
 | **Gemini** | Candidate generation, alternatives, coverage analysis, language warnings | Bounded candidate set with coverage rationale and warnings | Write production files, assign final review status, invent product scope |
 | **Maintainer / PM** | Record selection, canonical string freeze, exact issue contract | Frozen implementation issue with exact canonical content | Delegate unresolved content choices to implementation agent; approve human language review as maintainer alone (must act as named human reviewer with artifact) |
-| **DeepSeek Flash** | Mechanical implementation and validation | Validated content files matching frozen specification | Select content, broaden scope, self-certify language review, silently fix schema conflicts |
+| **DeepSeek Flash** | Mechanical implementation and validation | Validated content files matching frozen specification | Select content, broaden scope, self-certify language review, silently fix schema conflicts, upgrade provenance to bypass validator limitations |
 | **DeepSeek Pro reviewer** | Read-only blocking review | `No blocking findings.` verdict or list of blockers | Edit files, approve human provenance, publish content, claim native-speaker authority |
 | **Human language reviewer** | Language, regional, cultural, and risk-sensitive approval | `reviewed` status assignment with named reviewer identity and recorded review artifact | Be replaced by model consensus; approve without verification; delegate approval authority to maintainer role |
 | **Codex** | Final PR engineering review | Independent engineering review verdict | Serve as the sole content-language authority |
@@ -251,6 +268,7 @@ Output as a JSON array of candidate objects. Do not write to any file.
   - [ ] Taiwan/Mainland usage resolved per dual-script strategy
   - [ ] Script form provenance decision made per record
 - [ ] Schema compliance verified — frozen strings fit existing schema and controlled values
+- [ ] Schema provenance requirements checked — if target schema rejects `generated`, issue supplies `authored`/`verified` with named human verifier and artifact
 - [ ] Deduplication confirmed — no overlap with existing published or in-progress content
 - [ ] Coverage gaps resolved — required scenarios are covered or explicitly deferred
 - [ ] Initial status assigned — reviewStatus = "draft"; provenance = "generated" unless human-supplied
@@ -275,19 +293,31 @@ You are implementing frozen canonical content in the Chabiko repository.
 ## Task
 Write the exact frozen records from the implementation issue into the target content file.
 
+## Status Rules
+
+1. **Default (no pre-review evidence):**
+   - Set reviewStatus to "draft". Do not assign "reviewed" or "published".
+   - Set provenance to "generated" for all generated fields unless the issue explicitly supplies "authored" or "verified".
+2. **Pre-reviewed canonical content:** When the implementation issue explicitly includes all of the following:
+   - named human language reviewer;
+   - recorded review artifact;
+   - approved canonical strings;
+   - explicit "reviewed" reviewStatus and valid script provenance values;
+   Then preserve the issue-specified statuses exactly. Do not reset to "draft".
+3. **Missing evidence:** If any of the above four elements is absent, use the default (draft/generated). Do not infer approval.
+
 ## Rules
 1. Preserve canonical strings exactly. Do not rephrase, rewrite, select characters, or fill gaps.
 2. Apply existing schema. Use controlled values, required fields, and valid statuses.
-3. Set reviewStatus to "draft". Do not assign "reviewed" or "published".
-4. Set provenance to "generated" for all generated fields unless the issue explicitly supplies "authored" or "verified".
-5. Do not expand scope. Do not add related content, cross-references, or bonus entries.
-6. Validate. Run the required validators after writing.
-7. Report blockers. If the frozen specification conflicts with the schema or leaves a required field unresolved, stop and report the exact conflict.
+3. Do not expand scope. Do not add related content, cross-references, or bonus entries.
+4. Validate. Run the required validators after writing.
+5. Report blockers. If the frozen specification conflicts with the schema or leaves a required field unresolved, stop and report the exact conflict.
 
 ## Prohibited
 - Do not select content, choose scenarios, or make product decisions
 - Do not self-certify language review
 - Do not change reviewStatus or provenance beyond what the issue specifies
+- Do not infer or fabricate review evidence — use draft/generated defaults unless the issue explicitly supplies named reviewer, artifact, and approved strings
 - Do not add unrelated content, refactor existing files, or modify UI
 ~~~
 
@@ -308,7 +338,7 @@ Write the exact frozen records from the implementation issue into the target con
 
 ### Schema and Provenance
 - [ ] All new records use valid controlled values
-- [ ] reviewStatus is "draft" (not "reviewed" or "published") unless the issue supplied human-reviewed canonical strings
+- [ ] reviewStatus is "draft" (not "reviewed" or "published") unless the implementation issue explicitly supplies a named human reviewer, recorded review artifact, approved canonical strings, and explicit "reviewed" status
 - [ ] Script provenance fields (traditionalStatus/simplifiedStatus) are correct and non-contradictory
 - [ ] Required fields are present and non-empty
 
@@ -343,7 +373,7 @@ This verdict confirms no blocking issue was found. It is not a native-speaker ce
 
 | Status | Meaning | Eligible assignor |
 |--------|---------|-------------------|
-| `draft` | Initial or in-progress. Not production-ready. | Any model or maintainer |
+| `draft` | Initial or in-progress. Not production-ready. | Any model, maintainer, or human editor |
 | `reviewed` | Human language reviewer has approved. Ready for path assignment. | Human reviewer only |
 | `published` | Live in production for a specific path. | Maintainer / PM |
 
@@ -367,11 +397,14 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 
 | From | To | By | Result |
 |------|----|----|--------|
-| `generated` | `verified` | Human verifier | Allowed |
+| `generated` | `verified` | Human verifier | Allowed — human checks, corrects, or makes minor edits to an AI-generated form |
 | `generated` | `verified` | Any model | Forbidden — verification requires human judgment |
-| `generated` | `authored` | Any actor | Forbidden — "authored" implies original human authorship |
+| `generated` | `authored` | Human author | Allowed — human completely rewrites and replaces the original form, recording human authorship |
+| `generated` | `authored` | Any model | Forbidden — "authored" implies original human authorship |
 | `unavailable` | `authored` | Human author | Allowed |
 | `unavailable` | `verified` | Any actor | Forbidden — must be authored or generated first |
+
+**Key rule：** 人工檢查、校正或小幅修改 AI-generated form 應使用 `generated → verified`。`generated → authored` 僅在人類完全重新撰寫並取代原 form 且記錄 human authorship 時適用。不得僅因有人類修改就自動設為 `authored`。
 
 ### 5.5 reviewStatus and Script Provenance Separation
 
@@ -380,7 +413,7 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 **當內容被重新編輯時：**
 
 - Record 的 `reviewStatus` 回到 `draft`（表示內容進入新的 review cycle）
-- 受影響 script form 的 provenance 依實際來源重新判定：人工修改的欄位設為 `authored`；LLM 重新生成的欄位設為 `generated`；未變動的欄位保留原有 provenance
+- 受影響 script form 的 provenance 依實際來源重新判定：人工小幅修改的欄位設為 `verified`；人類完全重新撰寫並取代原 form 的欄位可設為 `authored`（需記錄 human authorship）；LLM 重新生成的欄位設為 `generated`；未變動的欄位保留原有 provenance
 - 兩個維度的變更各自獨立記錄，不得互相替代
 
 ---
@@ -415,7 +448,8 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 
 | Situation | Behavior |
 |-----------|----------|
-| Validator fails after Flash implementation | Flash fixes the issue and re-runs validation. If the fix requires changing frozen canonical strings, return to Stage 3. |
+| Validator fails after Flash implementation and the fix is mechanical (formatting, missing optional field) | Flash fixes the issue and re-runs validation. |
+| Validator fails because schema rejects `generated` provenance and the issue provided only generated strings | Flash reports blocker to maintainer. Requires human script verification (Stage 3 update with named verifier) before re-implementation. Flash must not upgrade provenance. |
 | Validator passes but reviewer identifies a semantic issue | Reviewer lists the blocker. Flash fixes (if mechanical) or escalates to maintainer (if requires content decision). |
 | Validator itself has a bug | Report the validator bug separately. Do not bypass validation. Do not modify the validator as part of content work. |
 
@@ -424,7 +458,9 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 ## 7. Key Boundaries
 
 - **Gemini output** is never a production candidate artifact. It must be selected and frozen by a maintainer before implementation.
+- **When schema rejects `generated` provenance**, human script verification with named verifier and artifact must complete before Stage 4 writes to production-shaped files. Flash must not upgrade provenance to bypass validators.
 - **DeepSeek Flash** must not select characters, rephrase, or fill unspecified content. It implements frozen canonical strings verbatim.
+- **Flash preserves pre-reviewed status when evidence is complete.** If the implementation issue supplies named reviewer, artifact, approved strings, and explicit `reviewed` status, Flash preserves them. Otherwise, default to `draft`/`generated`.
 - **DeepSeek Pro `No blocking findings.`** confirms no blocking issue in the diff. It does not equal human language approval and does not change content status.
 - **AI-to-AI review** alone cannot promote content to `reviewed` or `published`. Human approval is required.
 - **Maintainer alone cannot promote `draft` to `reviewed`.** Human language approval by a named reviewer with recorded review artifact is required. A maintainer acting as reviewer must do so in the reviewer role with full provenance.
