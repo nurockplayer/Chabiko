@@ -186,6 +186,23 @@ Codex 必須確認：
 
 Codex findings 改變 semantics、specification 或 public contract 時，需要修正並重新審查後才能 merge。
 
+#### Post-Review Change Invalidation
+
+Codex review（或任何 DeepSeek Pro review）完成後若 diff 有任何修改，適用以下規則：
+
+**General rule：** 舊 verdict 不得套用到後續修改過的 diff。任何修改後都必須對最新完整 diff 重新執行 validation commands 與 DeepSeek Pro review。
+
+**Semantic change：** 若修改影響 learner-facing strings、pinyin、Japanese explanation、regional usage、reviewStatus、script provenance 或其他已經 human language reviewer 核准的 canonical content：
+
+- 受影響的 human review artifact 立即失效；
+- 必須由 named human language／script reviewer 重新審查變更後內容；
+- 記錄新的或更新後的 review artifact；
+- 再重新執行 DeepSeek Pro review。
+
+**Non-semantic change：** 純格式、拼字或不改變語意的文件修正不需要重新做 human language review，但仍必須重新執行 validation 與 DeepSeek Pro review。
+
+**Merge gate：** Merge 前必須確認所有 verdict 與 review artifacts 都對應最終 head 的實際內容，不得只確認 PR 中曾經存在過。
+
 ---
 
 ## 3. Responsibility Matrix
@@ -363,6 +380,8 @@ Otherwise, report exactly:
 No blocking findings.
 
 This verdict confirms no blocking issue was found. It is not a native-speaker certification and does not change content status.
+
+**Note：** This verdict applies only to the current diff at the time of review. If the diff changes after this verdict, the review must be re-run on the updated diff. Old verdicts do not carry over to modified diffs.
 ~~~
 
 ---
@@ -453,6 +472,15 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 | Validator passes but reviewer identifies a semantic issue | Reviewer lists the blocker. Flash fixes (if mechanical) or escalates to maintainer (if requires content decision). |
 | Validator itself has a bug | Report the validator bug separately. Do not bypass validation. Do not modify the validator as part of content work. |
 
+### 6.5 Invalidation After Change
+
+| Situation | Behavior |
+|-----------|----------|
+| Diff modified after any review verdict (DeepSeek Pro or Codex) | Old verdict invalidated. Must re-run validation commands and DeepSeek Pro review on the new diff. |
+| Modification affects human-reviewed canonical content (learner-facing strings, pinyin, Japanese explanation, reviewStatus, script provenance, etc.) | Human review artifact also invalidated. Must obtain new human language/script review before proceeding. |
+| Modification is purely cosmetic (formatting, spelling, no semantic change) | Must re-run validation and DeepSeek Pro review. Human language review not required. |
+| PR ready for merge | Confirm that all verdicts and artifacts correspond to the final head content, not that they merely existed at some point in the PR history. |
+
 ---
 
 ## 7. Key Boundaries
@@ -465,6 +493,7 @@ Content 經 human edits 後，其 `reviewStatus` 回到 `draft`，重新進入 p
 - **AI-to-AI review** alone cannot promote content to `reviewed` or `published`. Human approval is required.
 - **Maintainer alone cannot promote `draft` to `reviewed`.** Human language approval by a named reviewer with recorded review artifact is required. A maintainer acting as reviewer must do so in the reviewer role with full provenance.
 - **reviewStatus and script provenance are independent dimensions.** `draft` is not a script provenance value; `generated` is not a reviewStatus value. Changes to one do not imply changes to the other.
+- **Review verdicts are scoped to a specific diff.** Any modification after verdict invalidates the old verdict. Re-run validation and review on the new diff. Semantic changes to human-approved content also invalidate the associated human review artifact.
 - **Templates** in this document use `{{PLACEHOLDER}}` syntax. They are workflow artifacts, not production content generators.
 
 ---
