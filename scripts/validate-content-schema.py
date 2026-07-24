@@ -639,6 +639,16 @@ def _check_resource_review_metadata(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_resource_warnings(record: dict, path: str) -> list[str]:
+    """Collect non-fatal quality warnings for a resource record."""
+    notes = record.get("notes")
+    if isinstance(notes, str) and not notes.strip():
+        return [
+            f"{path}.notes should explain why this resource is useful or risky"
+        ]
+    return []
+
+
 def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
     """Validate permission flags and cross-field consistency for resources."""
     errors = []
@@ -1280,6 +1290,28 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             errors.extend(_orphan_illustration_detection(illustrations, path))
 
     return errors
+
+
+def collect_bundle_warnings(data: dict, path: str = "root") -> list[str]:
+    """Collect resource warnings without changing validation error semantics."""
+    warnings = []
+
+    if not isinstance(data, dict):
+        return warnings
+
+    for key, value in data.items():
+        if COLLECTION_MAP.get(key) != "resource" or not isinstance(value, list):
+            continue
+
+        collection_path = f"{path}.{key}"
+        for i, item in enumerate(value):
+            if not isinstance(item, dict):
+                continue
+            warnings.extend(
+                _check_resource_warnings(item, f"{collection_path}[{i}]")
+            )
+
+    return warnings
 
 
 def _check_resource_duplicate_ids(resources: list, path: str) -> list[str]:
@@ -1927,7 +1959,10 @@ def main():
         filepath = sys.argv[2]
         with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
+        warnings = collect_bundle_warnings(data)
         errors = validate_bundle(data)
+        for warning in warnings:
+            print(f"WARNING: {warning}")
         for e in errors:
             print(f"{filepath}: {e}")
         sys.exit(1 if errors else 0)
@@ -2031,6 +2066,9 @@ def run_tests():
         test_resource_reviewed_date_whitespace_fails,
         test_resource_attribution_required_rejects_present_non_booleans,
         test_resource_attribution_required_needs_instructions,
+        test_resource_attribution_required_with_instructions,
+        test_resource_attribution_required_false_or_absent,
+        test_resource_production_import_does_not_bypass_attribution,
         test_resource_missing_license_status,
         test_resource_missing_allowed_use,
         test_resource_missing_review_status,
@@ -2054,6 +2092,13 @@ def run_tests():
         test_resource_bundle_with_resources,
         test_resource_bundle_invalid_resource,
         test_resource_bundle_non_list,
+        test_resource_notes_empty_warning,
+        test_resource_notes_whitespace_warning,
+        test_resource_notes_non_empty_no_warning,
+        test_resource_warning_only_bundle_has_no_errors,
+        test_resource_invalid_notes_do_not_warn,
+        test_resource_warning_order,
+        test_resource_relevance_fields,
 
         # ─── Resource permission policy ───
         test_resource_all_permissions_false_ok,
@@ -3063,8 +3108,62 @@ def test_resource_attribution_required_rejects_present_non_booleans():
 
 
 def test_resource_attribution_required_needs_instructions():
-    errs = validate_single(_minimal_resource(attributionRequired=True), "resource")
-    _assert_has_error(errs, "attributionInstructions", "resource_attribution_instructions")
+    cases = {
+        "missing": _minimal_resource(attributionRequired=True),
+        "empty": _minimal_resource(
+            attributionRequired=True, attributionInstructions=""
+        ),
+        "whitespace": _minimal_resource(
+            attributionRequired=True, attributionInstructions="   "
+        ),
+    }
+    for label, record in cases.items():
+        errs = validate_single(record, "resource")
+        _assert_has_error(
+            errs,
+            "attributionInstructions",
+            f"resource_attribution_instructions_{label}",
+        )
+
+
+def test_resource_attribution_required_with_instructions():
+    errs = validate_single(
+        _minimal_resource(
+            attributionRequired=True,
+            attributionInstructions="Credit the owner and link the source.",
+        ),
+        "resource",
+    )
+    _assert_no_errors(errs, "resource_attribution_instructions_present")
+
+
+def test_resource_attribution_required_false_or_absent():
+    for label, record in (
+        ("false", _minimal_resource(attributionRequired=False)),
+        ("absent", _minimal_resource()),
+    ):
+        errs = validate_single(record, "resource")
+        _assert_no_errors(errs, f"resource_attribution_required_{label}")
+
+
+def test_resource_production_import_does_not_bypass_attribution():
+    errs = validate_single(
+        _minimal_resource(
+            licenseStatus="approved",
+            allowedUse="attributed-use",
+            reviewStatus="approved",
+            reviewedBy="content-reviewer",
+            reviewedDate="2026-07-12",
+            attributionRequired=True,
+            productionImportAllowed=True,
+        ),
+        "resource",
+    )
+    _assert_has_error(
+        errs,
+        "attributionInstructions",
+        "resource_production_import_attribution_instructions",
+    )
 
 
 def test_resource_missing_license_status():
@@ -3201,6 +3300,92 @@ def test_resource_bundle_non_list():
     data = {"resources": "not-a-list"}
     errs = validate_bundle(data)
     _assert_has_error(errs, "expected a list", "bundle_resource_non_list")
+
+
+def test_resource_notes_empty_warning():
+    warnings = collect_bundle_warnings(
+        {"resources": [_minimal_resource(notes="")]}
+    )
+    assert warnings == [
+        "root.resources[0].notes should explain why this resource is useful or risky"
+    ], f"Expected one empty-notes warning, got {warnings}"
+
+
+def test_resource_notes_whitespace_warning():
+    warnings = collect_bundle_warnings(
+        {"resources": [_minimal_resource(notes=" \t ")]}
+    )
+    assert warnings == [
+        "root.resources[0].notes should explain why this resource is useful or risky"
+    ], f"Expected one whitespace-notes warning, got {warnings}"
+
+
+def test_resource_notes_non_empty_no_warning():
+    warnings = collect_bundle_warnings(
+        {"resources": [_minimal_resource(notes="Useful reference.")]}
+    )
+    assert warnings == [], f"Expected no notes warning, got {warnings}"
+
+
+def test_resource_warning_only_bundle_has_no_errors():
+    data = {"resources": [_minimal_resource(notes="")]}
+    _assert_no_errors(
+        validate_bundle(data),
+        "resource_warning_only_bundle",
+    )
+    assert len(collect_bundle_warnings(data)) == 1
+
+
+def test_resource_invalid_notes_do_not_warn():
+    missing_notes = _minimal_resource()
+    del missing_notes["notes"]
+    for label, record in (
+        ("missing", missing_notes),
+        ("non_string", _minimal_resource(notes=123)),
+    ):
+        data = {"resources": [record]}
+        _assert_has_error(validate_bundle(data), "notes", f"resource_notes_{label}")
+        warnings = collect_bundle_warnings(data)
+        assert warnings == [], (
+            f"Expected invalid {label} notes not to warn, got {warnings}"
+        )
+
+
+def test_resource_warning_order():
+    warnings = collect_bundle_warnings({
+        "resources": [
+            _minimal_resource(id="resource-warning-a", notes=""),
+            _minimal_resource(id="resource-warning-b", notes="  "),
+        ],
+    })
+    assert warnings == [
+        "root.resources[0].notes should explain why this resource is useful or risky",
+        "root.resources[1].notes should explain why this resource is useful or risky",
+    ], f"Expected collection/index warning order, got {warnings}"
+
+
+def test_resource_relevance_fields():
+    controlled_fields = {
+        "languageRelevance": VALID_LANGUAGE_RELEVANCE,
+        "regionalRelevance": VALID_REGIONAL_RELEVANCE,
+        "scriptRelevance": VALID_SCRIPT_RELEVANCE,
+    }
+    for field, controlled_values in controlled_fields.items():
+        for value in sorted(controlled_values):
+            errs = validate_single(_minimal_resource(**{field: value}), "resource")
+            _assert_no_errors(errs, f"resource_{field}_{value}")
+
+        errs = validate_single(
+            _minimal_resource(**{field: "unknown-value"}), "resource"
+        )
+        _assert_has_error(errs, f"item.{field}", f"resource_{field}_unknown")
+
+        errs = validate_single(_minimal_resource(**{field: 123}), "resource")
+        _assert_has_error(errs, f"item.{field}", f"resource_{field}_type")
+        _assert_has_error(errs, "must be str", f"resource_{field}_type")
+
+        errs = validate_single(_minimal_resource(), "resource")
+        _assert_no_errors(errs, f"resource_{field}_absent")
 
 
 # ─── Resource permission policy tests ───────────────────────────────────────
