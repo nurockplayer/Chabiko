@@ -337,6 +337,7 @@ To avoid cognitive overload, regional variant and script contrast information mu
 | Document | Relationship | Action |
 |----------|--------------|--------|
 | `docs/content/content-model-draft.md` | Defines the per-form provenance fields (traditionalStatus/simplifiedStatus) and fallback rules. This strategy extends those rules with path-default and toggle interaction. | Reference this strategy for path-default and toggle-provenance interaction. |
+| `docs/content/ai-assisted-authoring-workflow.md` | Defines the AI-assisted authoring pipeline and human review requirements for script-form provenance promotion. | Reference this strategy for human review triggers related to script and regional content. |
 | `docs/product/japanese-learner-personas-and-jtbd.md` | Each persona defines script expectations and regional usage needs. Path defaults in section 3 of this strategy derive directly from persona data. | Reference this strategy for path-default definitions. |
 | `.planning/REQUIREMENTS.md` | SCRIPT-01, SCRIPT-02, SCRIPT-03, PATH-02, HSK-01 are directly informed by this strategy. | SCRIPT-03 references this strategy explicitly. |
 | `.planning/ROADMAP.md` | Phase 1 plan 01-04 is scoped to this strategy. Phase 3 implements the toggle (#22) based on this strategy. | This strategy is the upstream design doc for #22 toggle. |
