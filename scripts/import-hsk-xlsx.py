@@ -21,6 +21,7 @@ import unicodedata
 
 import openpyxl
 from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 
 
 # ─── Valid standard versions ─────────────────────────────────────────────────
@@ -235,6 +236,13 @@ def parse_row(ws, row_idx, mapping):
     return record
 
 
+def _is_fully_empty_record(record, mapping):
+    """Return whether every mapped source cell is empty after normalization."""
+    if record.get("_formula_required"):
+        return False
+    return not any(normalize_text(record.get(key)) for key in mapping)
+
+
 # ─── Record validation ───────────────────────────────────────────────────────
 
 def validate_record(record, seen_ids, seen_identities, standard_version):
@@ -429,6 +437,8 @@ def import_xlsx(input_path, output_dir, standard_version):
     for _sheet_name, ws, mapping in data_sheets:
         for row_idx in range(2, ws.max_row + 1):
             record = parse_row(ws, row_idx, mapping)
+            if _is_fully_empty_record(record, mapping):
+                continue
             all_records.append(record)
 
     # 5. Validate and categorise
@@ -657,6 +667,35 @@ def _make_synthetic_wb(path):
     wb.save(path)
 
 
+def _make_empty_row_wb(path, include_trailing_empty_rows, include_internal_empty_row=False):
+    """Create equivalent fixtures with or without empty worksheet rows."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Empty Rows"
+    ws.append(["simplified", "pinyin", "traditional", "level", "japanese"])
+    ws.append(["爱", "ài", "愛", 1, "愛する"])
+
+    if include_internal_empty_row:
+        ws.append([None, None, None, None, None])
+
+    ws.append(["书", "shū", "書", 1, "本"])
+    ws.append(["", "shénme", "什麼", 1, "何"])
+    ws.append(["", "", "", "", "日本語だけ"])
+    ws.append(["吃", "chī", "吃", 1, "食べる"])
+
+    if include_trailing_empty_rows:
+        ws.append([None, None, None, None, None])
+        ws.append(["  ", "\t", " ", "   ", "\n"])
+        styled_row = ws.max_row + 1
+        for column in range(1, 6):
+            ws.cell(row=styled_row, column=column).fill = PatternFill(
+                fill_type="solid",
+                fgColor="FFFF00",
+            )
+
+    wb.save(path)
+
+
 def _check_batch_order_and_size(output_dir):
     """Verify every batch contains 1-50 entries with stable ordering."""
     manifest_path = os.path.join(output_dir, "manifest.json")
@@ -687,12 +726,6 @@ def _check_batch_order_and_size(output_dir):
                 f"batch {b['batchNumber']} not sorted at index {i}"
 
     return manifest
-
-
-def _check_byte_identical(output_dir):
-    """Rerun against the same synthetic file and compare."""
-    # Already done once in the caller — diff against a fresh run
-    pass  # handled in run_tests logic
 
 
 def _check_manifest_counts(manifest):
@@ -817,6 +850,113 @@ def _test_sheet_detection_malformed():
             assert "partial" in str(e).lower() or "missing" in str(e).lower()
             assert not os.path.exists(os.path.join(_out, "manifest.json")), \
                 "output created before sheet validation"
+
+
+def _test_empty_rows_ignored():
+    """Verify empty rows do not affect diagnostics or deterministic output."""
+    with tempfile.TemporaryDirectory() as test_dir:
+        control_path = os.path.join(test_dir, "control.xlsx")
+        trailing_rows_path = os.path.join(test_dir, "with-trailing-rows.xlsx")
+        all_empty_rows_path = os.path.join(test_dir, "with-all-empty-rows.xlsx")
+        control_output = os.path.join(test_dir, "control-out")
+        trailing_output = os.path.join(test_dir, "trailing-out")
+        all_empty_output_a = os.path.join(test_dir, "all-empty-out-a")
+        all_empty_output_b = os.path.join(test_dir, "all-empty-out-b")
+
+        _make_empty_row_wb(
+            control_path,
+            include_trailing_empty_rows=False,
+        )
+        _make_empty_row_wb(
+            trailing_rows_path,
+            include_trailing_empty_rows=True,
+        )
+        _make_empty_row_wb(
+            all_empty_rows_path,
+            include_trailing_empty_rows=True,
+            include_internal_empty_row=True,
+        )
+
+        control_manifest = import_xlsx(
+            control_path, control_output, "hsk-3.0",
+        )
+        trailing_manifest = import_xlsx(
+            trailing_rows_path, trailing_output, "hsk-3.0",
+        )
+        all_empty_manifest_a = import_xlsx(
+            all_empty_rows_path, all_empty_output_a, "hsk-3.0",
+        )
+        all_empty_manifest_b = import_xlsx(
+            all_empty_rows_path, all_empty_output_b, "hsk-3.0",
+        )
+
+        for manifest in (
+            control_manifest,
+            trailing_manifest,
+            all_empty_manifest_a,
+        ):
+            assert manifest["totalRows"] == 5
+            assert manifest["accepted"] == 3
+            assert manifest["rejected"] == 2
+            assert manifest["batchCount"] == 1
+            _check_manifest_counts(manifest)
+
+        expected_reasons = [
+            "missing simplified: Empty Rows:5",
+            "missing simplified: Empty Rows:6",
+        ]
+        assert [
+            row["reason"] for row in all_empty_manifest_a["rejectedRows"]
+        ] == expected_reasons, (
+            "partially populated rows must retain exact sheet/row diagnostics"
+        )
+
+        for field in control_manifest:
+            if field in {"sourceFile", "sourceChecksumSha256"}:
+                continue
+            assert control_manifest[field] == trailing_manifest[field], (
+                f"trailing empty rows changed manifest field {field}"
+            )
+
+        def read_batch_bytes(output_dir, manifest):
+            payloads = []
+            for batch in manifest["batches"]:
+                batch_path = os.path.join(output_dir, batch["filename"])
+                with open(batch_path, "rb") as f:
+                    payloads.append(f.read())
+            return payloads
+
+        control_batches = read_batch_bytes(control_output, control_manifest)
+        trailing_batches = read_batch_bytes(trailing_output, trailing_manifest)
+        all_empty_batches_a = read_batch_bytes(
+            all_empty_output_a, all_empty_manifest_a,
+        )
+        all_empty_batches_b = read_batch_bytes(
+            all_empty_output_b, all_empty_manifest_b,
+        )
+        assert control_batches == trailing_batches == all_empty_batches_a, (
+            "empty rows changed stable IDs, batch boundaries, or ordering"
+        )
+        assert all_empty_batches_a == all_empty_batches_b, (
+            "repeated import with empty rows changed batch bytes"
+        )
+        assert all_empty_manifest_a == all_empty_manifest_b, (
+            "repeated import with empty rows changed the manifest"
+        )
+        with open(
+            os.path.join(all_empty_output_a, "manifest.json"), "rb",
+        ) as manifest_a_file:
+            manifest_bytes_a = manifest_a_file.read()
+        with open(
+            os.path.join(all_empty_output_b, "manifest.json"), "rb",
+        ) as manifest_b_file:
+            manifest_bytes_b = manifest_b_file.read()
+        assert manifest_bytes_a == manifest_bytes_b, (
+            "repeated import with empty rows changed manifest bytes"
+        )
+        assert "_check_byte_identical" not in globals(), (
+            "dead _check_byte_identical helper must remain absent"
+        )
 
 
 def run_tests():
@@ -1012,6 +1152,11 @@ def run_tests():
             # ── Test 16: Malformed sheet fails before output ──
             print("Test 16: Malformed sheet detection ... ", end="")
             _test_sheet_detection_malformed()
+            print("PASS")
+
+            # ── Test 17: Fully empty rows are ignored deterministically ──
+            print("Test 17: Empty row handling ... ", end="")
+            _test_empty_rows_ignored()
             print("PASS")
 
     except Exception as e:
