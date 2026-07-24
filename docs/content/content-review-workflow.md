@@ -122,6 +122,7 @@ The following template can be copied into a GitHub issue, PR comment, or review 
 - [ ] Pronunciation guidance (toneNote, pinyin-pronunciation notes)
 - [ ] Kanji bridge accuracy
 - [ ] Content scope compliance (no out-of-scope additions)
+- [ ] Lesson loop completeness and Travel Quest usefulness (lesson-loop-quest)
 
 ### Unresolved Issues
 
@@ -222,6 +223,23 @@ Covers Traditional Chinese, Simplified Chinese, pinyin, and Japanese explanation
 - [ ] No duplicate content was introduced (compared to existing published or in-progress records)
 - [ ] Coverage is complete per the issue specification, or gaps are explicitly deferred
 
+### 5.7 Lesson Loop and Travel Quest Checklist
+
+Covers lesson structure completeness, lesson-to-practice connections, and Travel Quest usefulness.
+
+- [ ] Lesson includes a hook that engages the learner (scenario-before-rules)
+- [ ] Lesson states a clear can-do goal (`canDoJa` / `learnerOutcomeJa`)
+- [ ] Lesson provides a core sentence with chunk breakdown
+- [ ] Kanji bridge notes (when present) are accurate and do not overstate similarity
+- [ ] Sound focus section addresses a Japanese-native pronunciation pain point
+- [ ] Mini practice or review prompts reinforce the lesson's core teaching point
+- [ ] Practical task (`travelTask`) is concrete, actionable, and matches the target scenario
+- [ ] `travelTask` specifies what the learner can actually say or do (not a generic "practice the lesson")
+- [ ] Cross-links between lesson, vocabulary, phrasebook, practice, and roleplay/recovery flow are logical and consistent
+- [ ] Travel Quest usefulness: the content bundle (lesson + vocabulary + practice) supports a real can-do outcome the learner would encounter in their target scenario
+- [ ] Roleplay or recovery flow (when present) fills a realistic gap the learner might face (wrong order, lost, misunderstanding)
+- [ ] Content bundle does not introduce contradictions or conflicting usage advice across linked items
+
 ---
 
 ## 6. Approval Scope Types
@@ -239,6 +257,7 @@ When recording a review outcome, specify which of the following scope types are 
 | `pronunciation-guidance` | `toneNote`, pronunciation notes, pinyin contrasts | `human-language-reviewer` or `human-teaching-reviewer` |
 | `kanji-bridge` | Kanji bridge accuracy, similarity claims, false-friend warnings | `human-teaching-reviewer` |
 | `scope-compliance` | Issue scope alignment, no out-of-scope additions | `maintainer` |
+| `lesson-loop-quest` | Lesson structure completeness, Travel Quest usefulness, cross-link consistency | `human-teaching-reviewer` |
 
 A review that covers multiple scope types must list each separately. Partial approval is possible: e.g., `learner-facing-strings: accepted` while `script-provenance: needs-changes`.
 
@@ -254,7 +273,7 @@ When content changes after a review, existing approvals may become invalid. This
 |----------|------------|----------|
 | **Learner-facing string change** | Any modification to Traditional, Simplified, pinyin, or Japanese text | Correcting a character, updating pinyin tone marks, rephrasing Japanese explanation |
 | **Script provenance change** | Modification to `traditionalStatus` or `simplifiedStatus` | Promoting `generated` → `verified`, demoting `verified` → `generated` |
-| **reviewStatus change** | Modification to `reviewStatus` field | Changing `draft` → `reviewed`, resetting `reviewed` → `draft` |
+| **Unauthorized reviewStatus modification** | Modification to `reviewStatus` field that is not an authorized transition per the artifact. Excludes: `draft` → `reviewed` by human reviewer with valid artifact, and `reviewed` → `published` by maintainer with all required approvals. | Resetting `reviewed` → `draft` without cause, promoting past `draft` without completing required review dimensions |
 | **Teaching metadata change** | Modification to tone notes, cautions, false-friend warnings, pain-point tags | Adding a caution, correcting a kanji bridge note, adjusting pain point tags |
 | **Regional metadata change** | Modification to regional usage notes or tags | Adding a Taiwan/Mainland contrast note, changing a regional tag |
 | **Source/license change** | Modification to source attribution, license status, or allowed use | Adding attribution text, updating license URL |
@@ -267,24 +286,26 @@ When content changes after a review, existing approvals may become invalid. This
 
 For each change category, the matrix shows which scope types are invalidated:
 
-| Change Category | learner-facing-strings | script-provenance | review-status | teaching-accuracy | regional-accuracy | source-license | scope-compliance |
-|----------------|:---------------------:|:-----------------:|:-------------:|:-----------------:|:-----------------:|:--------------:|:----------------:|
-| Learner-facing string change | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected |
-| Script provenance change | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected |
-| reviewStatus change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected |
-| Teaching metadata change | Unaffected | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected |
-| Regional metadata change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | **INVALIDATED** | Unaffected | Unaffected |
-| Source/license change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** | Unaffected |
-| Additive change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
-| Removal change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
-| Formatting-only change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
-| Scope change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | **INVALIDATED** |
+| Change Category | learner-facing-strings | script-provenance | review-status | teaching-accuracy | regional-accuracy | pronunciation-guidance | kanji-bridge | source-license | scope-compliance | lesson-loop-quest |
+|----------------|:---------------------:|:-----------------:|:-------------:|:-----------------:|:-----------------:|:----------------------:|:------------:|:--------------:|:----------------:|:-----------------:|
+| Learner-facing string change | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected |
+| Script provenance change | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
+| Unauthorized reviewStatus modification | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
+| Teaching metadata change | Unaffected | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** if change affects lesson content |
+| Regional metadata change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
+| Source/license change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected |
+| Additive change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** for new records only |
+| Removal change | Unaffected | Unaffected | **INVALIDATED** if removal breaks coverage or lesson integrity | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** if removal breaks scope | **INVALIDATED** if removal breaks lesson bundle |
+| Formatting-only change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
+| Scope change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** | **INVALIDATED** |
 
 ### 7.3 Recovery Rules
 
 - **INVALIDATED** approval: Must be re-obtained from the same reviewer role before the content can proceed. A new review artifact must be recorded.
 - **Unaffected** approval: Remains valid. No re-review needed for that dimension.
-- Additive changes do not invalidate existing approvals for unchanged records, but the new records themselves require their own review.
+- **Additive changes** (adding new records without modifying existing ones): Unchanged records retain their existing approvals. The new records themselves require their own mandatory reviews per §8.5 before they can be promoted past `draft`. Adding records does not automatically invalidate existing approvals for unchanged content.
+- **Removal changes** that affect coverage completeness, lesson loop integrity, Travel Quest usefulness, or content bundle consistency: the affected `scope-compliance` and `review-status` approvals are invalidated for the bundle. A maintainer must assess whether the removal breaks the content set's stated scope or learning outcome.
+- **Removal changes** that remove only peripheral or redundant records (e.g., a duplicate entry): the maintainer may confirm no re-review is needed, but must document this decision.
 - After any invalidation, all affected review artifacts must be updated or superseded before the content can be published.
 
 ### 7.4 Practical Application
@@ -295,7 +316,7 @@ Before re-review after a change:
 2. Look up invalidated scope types using §7.2.
 3. For each invalidated scope type, determine if the same reviewer is available or a new reviewer is needed.
 4. Record new review artifacts for invalidated dimensions only. Unaffected approvals do not need to be re-recorded.
-5. If `review-status` was invalidated, the record returns to `draft` and must go through `draft` → `reviewed` promotion again.
+5. If `review-status` was invalidated by an unauthorized modification, the record returns to `draft` and must go through `draft` → `reviewed` promotion again. Authorized transitions (`draft` → `reviewed` by human reviewer with valid artifact, `reviewed` → `published` by maintainer with all approvals) never cause self-invalidation or a return to `draft`.
 
 ---
 
