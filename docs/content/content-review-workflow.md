@@ -98,7 +98,7 @@ Every human review of Chabiko content must produce a review artifact. The artifa
 
 ### 3.3 Artifact Format (Checklist Template)
 
-The following template can be copied into a GitHub issue, PR comment, or review document. Fill in all required fields before the review is considered complete.
+The following template can be copied into a GitHub issue, PR comment, or review document. Fill in all required fields before the review is considered complete. When a single artifact covers multiple scope types with different outcomes, record each scope type's outcome in the approval scope table below.
 
 ```markdown
 ## Review Artifact
@@ -108,21 +108,23 @@ The following template can be copied into a GitHub issue, PR comment, or review 
 **Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** {{RECORD_IDS or FILE_PATHS}}
 **Review version:** {{COMMIT_HASH or PR_NUMBER}}
-**Review outcome:** {{accepted | rejected | needs-changes}}
+**Overall review outcome:** {{accepted | rejected | needs-changes}}
 
 ### Approval Scope
 
-- [ ] Learner-facing strings (Traditional, Simplified, pinyin, Japanese)
-- [ ] Script provenance (traditionalStatus, simplifiedStatus)
-- [ ] reviewStatus assignment
-- [ ] Source / license metadata
-- [ ] Pain-point tags
-- [ ] Teaching accuracy (tone notes, false-friend warnings, grammar explanations)
-- [ ] Regional usage accuracy (Taiwan / Mainland)
-- [ ] Pronunciation guidance (toneNote, pinyin-pronunciation notes)
-- [ ] Kanji bridge accuracy
-- [ ] Content scope compliance (no out-of-scope additions)
-- [ ] Lesson loop completeness and Travel Quest usefulness (lesson-loop-quest)
+| Scope Type | Outcome |
+|------------|---------|
+| Learner-facing strings (Traditional, Simplified, pinyin, Japanese) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Script provenance (traditionalStatus, simplifiedStatus) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| reviewStatus assignment | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Source / license metadata | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Pain-point tags | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Teaching accuracy (tone notes, false-friend warnings, grammar explanations) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Regional usage accuracy (Taiwan / Mainland) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Pronunciation guidance (toneNote, pinyin-pronunciation notes) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Kanji bridge accuracy | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Content scope compliance (no out-of-scope additions) | {{accepted / rejected / needs-changes / not-reviewed}} |
+| Lesson loop completeness and Travel Quest usefulness (lesson-loop-quest) | {{accepted / rejected / needs-changes / not-reviewed}} |
 
 ### Unresolved Issues
 
@@ -213,6 +215,13 @@ Covers Traditional Chinese, Simplified Chinese, pinyin, and Japanese explanation
 - [ ] `licenseStatus` is not `unknown` for resources marked for production import
 - [ ] `productionImportAllowed` is consistent with `licenseStatus` and `allowedUse`
 - [ ] Attribution requirements are correctly documented where needed
+- [ ] **Unconfirmed license blocking**: When a resource's license has not been confirmed by `human-source-reviewer`:
+  - `licenseStatus` must be `needs-review` or `under-review` (not `approved`)
+  - `productionImportAllowed` must be `false` or absent
+  - Resource `reviewStatus` must not be `approved`
+  - The resource may only be used as a candidate or reference, never imported into production content
+  - Only a `human-source-reviewer` may approve production import after verifying license terms
+  - If license status cannot be determined, the resource remains blocked; it must never be treated as usable by default
 
 ### 5.6 Content Scope Checklist
 
@@ -271,7 +280,11 @@ When content changes after a review, existing approvals may become invalid. This
 
 | Category | Definition | Examples |
 |----------|------------|----------|
-| **Learner-facing string change** | Any modification to Traditional, Simplified, pinyin, or Japanese text | Correcting a character, updating pinyin tone marks, rephrasing Japanese explanation |
+| **Script form change (Traditional/Simplified text)** | Modification to `traditional` or `simplified` Chinese text | Correcting a Traditional character, replacing a Simplified form |
+| **Pronunciation string change (pinyin/tone note)** | Modification to pinyin, `toneNote`, or pronunciation guidance | Updating tone marks, correcting pinyin romanisation, rephrasing pronunciation note |
+| **Teaching string change (kanji bridge/false-friend)** | Modification to kanji bridge notes, false-friend cautions, or `caution` field | Correcting a false-friend warning, updating a kanji bridge similarity claim |
+| **Lesson structure string change** | Modification to lesson hook, can-do goal, core sentence, chunks, `travelTask`, or cross-links | Rewriting the can-do goal, replacing core sentence examples, updating `travelTask` |
+| **Japanese explanation change** | Modification to Japanese explanation text | Rephrasing Japanese explanation, correcting kana reading |
 | **Script provenance change** | Modification to `traditionalStatus` or `simplifiedStatus` | Promoting `generated` → `verified`, demoting `verified` → `generated` |
 | **Unauthorized reviewStatus modification** | Modification to `reviewStatus` field that is not an authorized transition per the artifact. Excludes: `draft` → `reviewed` by human reviewer with valid artifact, and `reviewed` → `published` by maintainer with all required approvals. | Resetting `reviewed` → `draft` without cause, promoting past `draft` without completing required review dimensions |
 | **Teaching metadata change** | Modification to tone notes, cautions, false-friend warnings, pain-point tags | Adding a caution, correcting a kanji bridge note, adjusting pain point tags |
@@ -288,10 +301,14 @@ For each change category, the matrix shows which scope types are invalidated:
 
 | Change Category | learner-facing-strings | script-provenance | review-status | teaching-accuracy | regional-accuracy | pronunciation-guidance | kanji-bridge | source-license | scope-compliance | lesson-loop-quest |
 |----------------|:---------------------:|:-----------------:|:-------------:|:-----------------:|:-----------------:|:----------------------:|:------------:|:--------------:|:----------------:|:-----------------:|
-| Learner-facing string change | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected |
+| Script form change (Traditional/Simplified text) | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** | **INVALIDATED** if regional variant text changed | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
+| Pronunciation string change (pinyin/tone note) | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** if tone note changed | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected |
+| Teaching string change (kanji bridge/false-friend) | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** if lesson content changed |
+| Lesson structure string change | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** if includes teaching content | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** |
+| Japanese explanation change | **INVALIDATED** | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
 | Script provenance change | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
 | Unauthorized reviewStatus modification | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
-| Teaching metadata change | Unaffected | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** if change affects lesson content |
+| Teaching metadata change | Unaffected | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | **INVALIDATED** | **INVALIDATED** | Unaffected | Unaffected | **INVALIDATED** if change affects lesson content |
 | Regional metadata change | Unaffected | Unaffected | **INVALIDATED** | Unaffected | **INVALIDATED** | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected |
 | Source/license change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** | Unaffected | Unaffected |
 | Additive change | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | Unaffected | **INVALIDATED** for new records only |
@@ -302,6 +319,7 @@ For each change category, the matrix shows which scope types are invalidated:
 ### 7.3 Recovery Rules
 
 - **INVALIDATED** approval: Must be re-obtained from the same reviewer role before the content can proceed. A new review artifact must be recorded.
+- **Approvals scoped to specific text**: A `learner-facing-strings`, `pronunciation-guidance`, `kanji-bridge`, or `lesson-loop-quest` approval obtained for one version of the text does not carry over to modified text. The new text must receive its own independent approval.
 - **Unaffected** approval: Remains valid. No re-review needed for that dimension.
 - **Additive changes** (adding new records without modifying existing ones): Unchanged records retain their existing approvals. The new records themselves require their own mandatory reviews per §8.5 before they can be promoted past `draft`. Adding records does not automatically invalidate existing approvals for unchanged content.
 - **Removal changes** that affect coverage completeness, lesson loop integrity, Travel Quest usefulness, or content bundle consistency: the affected `scope-compliance` and `review-status` approvals are invalidated for the bundle. A maintainer must assess whether the removal breaks the content set's stated scope or learning outcome.
@@ -326,7 +344,7 @@ Before re-review after a change:
 
 1. Read the relevant issue to understand scope, acceptance criteria, and source of truth.
 2. Check existing content to avoid duplication.
-3. Confirm any source materials have compatible licenses before using them.
+3. Confirm any source materials have compatible licenses before using them. If license status cannot be confirmed, the material must remain as a candidate/reference only and must not be imported into production content. Set `licenseStatus` to `needs-review`, keep `productionImportAllowed` as `false` (or absent), and resource `reviewStatus` must not be `approved`.
 
 ### 8.2 What to Include in a Content Proposal
 
@@ -341,7 +359,7 @@ Every content proposal should include:
 ### 8.3 How to Propose
 
 - **Lessons, vocabulary, phrasebook, sentences, practice items**: Open a GitHub issue using the Content template, or submit a PR with the structured content files.
-- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use.
+- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review`, keep `productionImportAllowed` as `false` (or absent), and resource `reviewStatus` must not be `approved`.
 - **Roleplay or dialogue content**: Open a GitHub issue describing the scenario, learner level, and required vocabulary.
 
 ### 8.4 What Happens Next
@@ -360,6 +378,10 @@ The following content types and changes trigger mandatory human review before pr
 | New or modified learner-facing Chinese strings | `human-language-reviewer` |
 | New or modified pinyin | `human-language-reviewer` |
 | New or modified Japanese explanation | `human-language-reviewer` |
+| New or modified lesson (any lesson structure change, hook, can-do goal, core sentence, chunks, or lesson metadata) | `human-teaching-reviewer` (`lesson-loop-quest`) |
+| Lesson loop structure modification (sound focus, mini practice, review prompts, chunk breakdown) | `human-teaching-reviewer` (`lesson-loop-quest`) |
+| New or modified `travelTask` | `human-teaching-reviewer` (`lesson-loop-quest`) |
+| New or modified Travel Quest linkage or roleplay/recovery flow | `human-teaching-reviewer` (`lesson-loop-quest`) |
 | Script provenance promotion (`generated` → `verified` or `generated` → `authored`) | `human-script-verifier` |
 | HSK or teacher-curriculum content with `generated` provenance | `human-script-verifier` |
 | Taiwan or Mainland regional usage claims | `human-regional-reviewer` |
@@ -367,6 +389,7 @@ The following content types and changes trigger mandatory human review before pr
 | Tone or pronunciation guidance for Japanese speakers | `human-teaching-reviewer` or `human-language-reviewer` |
 | New resource with license metadata | `human-source-reviewer` |
 | Existing resource with license status change | `human-source-reviewer` |
+| Unconfirmed license (resource must stay blocked until human-source-reviewer approves) | `human-source-reviewer` |
 
 ---
 

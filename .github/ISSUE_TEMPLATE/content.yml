@@ -41,6 +41,7 @@ body:
         - [ ] Language accuracy (human-language-reviewer)
         - [ ] Script provenance (human-script-verifier) — needed if provenance includes `generated`
         - [ ] Teaching accuracy (human-teaching-reviewer) — needed if content has tone notes, false-friend warnings, or pain-point tags
+        - [ ] Lesson loop / Travel Quest (human-teaching-reviewer) — needed for new or modified lessons
         - [ ] Regional usage (human-regional-reviewer) — needed if content includes Taiwan/Mainland claims
         - [ ] Source / license (human-source-reviewer) — needed for resource entries
     validations:
