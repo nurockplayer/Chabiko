@@ -15,6 +15,7 @@
 | Document | Relationship |
 |----------|--------------|
 | [content-model-draft.md](content-model-draft.md) | 定義 executable schema、provenance fields 與 reviewStatus values |
+| [content-review-workflow.md](content-review-workflow.md) | 定義 human review artifact format、per-dimension checklists 與 gate invalidation |
 | [dual-script-and-regional-variant-strategy.md](dual-script-and-regional-variant-strategy.md) | 定義 script form 與 regional usage 策略 |
 | [japanese-native-pain-point-taxonomy.md](japanese-native-pain-point-taxonomy.md) | 定義 controlled pain-point taxonomy，於 content review 時套用 |
 

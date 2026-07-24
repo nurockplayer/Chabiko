@@ -12,6 +12,14 @@ body:
     validations:
       required: true
   - type: textarea
+    id: source-of-truth
+    attributes:
+      label: Source of truth
+      description: Planning doc, requirements reference, or governing issue.
+      placeholder: ".planning/REQUIREMENTS.md FEAT-01, #42, or similar"
+    validations:
+      required: true
+  - type: textarea
     id: scope
     attributes:
       label: Scope
@@ -31,7 +39,7 @@ body:
       label: Acceptance criteria
       description: Checkable criteria.
       value: |
-        - [ ] 
+        - [ ]
     validations:
       required: true
   - type: textarea

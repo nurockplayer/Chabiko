@@ -5,6 +5,14 @@ labels:
   - type:content
 body:
   - type: textarea
+    id: source-of-truth
+    attributes:
+      label: Source of truth
+      description: Issue, planning doc, or reference material that governs this content.
+      placeholder: "#12, .planning/REQUIREMENTS.md CONT-01, or similar"
+    validations:
+      required: true
+  - type: textarea
     id: learner-outcome
     attributes:
       label: Learner outcome
@@ -15,18 +23,26 @@ body:
     id: content-scope
     attributes:
       label: Content scope
-      description: Lesson, vocabulary, sentences, examples, and review prompts.
+      description: What content is included and what is explicitly out of scope?
+      value: |
+        ### In scope
+
+        ### Out of scope
+
     validations:
       required: true
   - type: textarea
     id: review
     attributes:
       label: Review requirements
-      description: Accuracy, Japanese explanation quality, source attribution, or native-speaker review.
+      description: Required review types per docs/content/content-review-workflow.md.
       value: |
-        - [ ] Traditional Chinese reviewed
-        - [ ] Japanese explanation reviewed
-        - [ ] Source/license noted where applicable
+        Required review dimensions:
+        - [ ] Language accuracy (human-language-reviewer)
+        - [ ] Script provenance (human-script-verifier) — needed if provenance includes `generated`
+        - [ ] Teaching accuracy (human-teaching-reviewer) — needed if content has tone notes, false-friend warnings, or pain-point tags
+        - [ ] Regional usage (human-regional-reviewer) — needed if content includes Taiwan/Mainland claims
+        - [ ] Source / license (human-source-reviewer) — needed for resource entries
     validations:
       required: true
 
