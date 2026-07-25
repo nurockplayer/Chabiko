@@ -7,111 +7,54 @@ metadata:
 
 # Direction B: Premium Modern Learning App — Visual Rules
 
-> Part of Issue #58. This document explains the visual design rules used in
-> `direction-b-learning-app.html`, a standalone prototype for Chabiko's premium
-> modern learning-app direction.
+> Part of Issues #58 and #145. The standalone prototype is an evidence-complete candidate for the #60 comparison.
 
-## Design Concept
+## Design concept
 
-This direction positions Chabiko as a **polished, adult-oriented mobile learning
-application** — confident, calm, and content-focused. The visual language is
-inspired by premium productivity and learning tools that prioritise clarity
-over decoration.
+Direction B presents Chabiko as a polished, adult-oriented mobile learning application. It prioritises clarity over decoration and deliberately avoids both Direction A's editorial serif treatment and Direction C's route-map metaphor.
 
-Unlike the editorial warmth of direction A (serif Chinese, red/terracotta
-palette, magazine layout), direction B uses:
+## Visual system
 
-- A cool slate-based neutral palette with a restrained teal accent
-- Sans-serif Chinese throughout for a clean, modern reading experience
-- Selective rounded geometry and subtle elevation instead of decorative borders
-- Progress communicated through thin, elegant indicators rather than numbered
-  badges
+- Cool light slate background with white content surfaces.
+- Dark slate text and one restrained teal accent.
+- Bold sans-serif Traditional Chinese as the dominant learning object.
+- Pinyin and Japanese support remain calm, legible, and subordinate.
+- Selective 8–12px radii and very light elevation, not rounded-everything cards.
+- Thin progress indicators and compact text-plus-icon status labels.
+- Single-column reading flow on mobile and desktop, with bounded desktop width.
 
-## Colour Palette
+## Learner hierarchy
 
-| Role | Value | Usage |
-|------|-------|-------|
-| Background | `#f4f7fc` — cool light gray-blue | Page backdrop, clean app feel |
-| Surface | `#ffffff` — white | Cards, phrase block, quiz choices |
-| Elevated | `#ffffff` — white | Key surfaces with shadow |
-| Text primary | `#0f172a` — dark slate | Main body, headings |
-| Text secondary | `#475569` — medium slate | Can-do descriptions, labels |
-| Text muted | `#5b6570` — medium-dark slate | Pinyin, secondary metadata |
-| Accent | `#0f766e` — teal | Progress fill, active states, focus ring |
-| Accent light | `#f0fdfa` — pale teal | Active item background |
-| Accent border | `#ccfbf1` — light teal | Selected item border |
-| Border | `#e2e8f0` — light slate | Dividers, card outlines |
-| Border light | `#f1f5f9` — very light slate | Subtle separators |
-| Success | `#047857` — emerald | Correct feedback background accent |
-| Success bg | `#ecfdf5` — pale emerald | Correct feedback surface |
-| Error | `#dc2626` — red | Incorrect feedback background accent |
-| Error bg | `#fef2f2` — pale red | Incorrect feedback surface |
-| Progress bg | `#e2e8f0` — light slate | Empty progress bar track |
+1. Traditional Chinese phrase
+2. Pinyin
+3. Japanese meaning and explanation
+4. Controls, status, and progress
 
-The teal accent avoids generic blue SaaS colours while evoking Taiwan's jade
-and mountain landscapes — subtle, never tourist-poster.
+The phrase and flashcard use the largest, heaviest type. Supporting text uses progressively quieter colour and size.
 
-## Typography
+## Component behaviour
 
-| Role | Font | Scale |
-|------|------|-------|
-| Traditional Chinese | Hiragino Sans / PingFang TC (sans-serif) | 2.75rem (hero), 1.125rem (examples) |
-| Pinyin | Hiragino Sans / Noto Sans (sans-serif) | 0.875rem, muted colour, letter-spaced |
-| Japanese UI | Hiragino Sans / Noto Sans JP (sans-serif) | 0.9375rem–0.75rem (body/labels) |
+- Lesson rows use small numeric markers, restrained status pills, and subtle elevation.
+- Quiz options are full-width native buttons with ≥44px targets and visible focus.
+- Correct and incorrect feedback use text, icon, background, and a left rule so state is never colour-only.
+- Vocabulary setup uses compact segmented native buttons; the selected option is expressed by colour and weight.
+- Completion is a quiet teal-tinted surface rather than a game reward.
 
-Chinese uses a bold sans-serif weight to establish visual authority and a modern
-feel — directly contrasting direction A's serif treatment. The Chinese phrase is
-the largest element on every surface, implementing the design brief's learner
-hierarchy (section 1).
+## Shared fixture coverage
 
-## Layout Principles
+The final prototype renders the complete `docs/design/prototype-content.md` evidence set:
 
-- **Single-column, app-like layout** on all viewports — no magazine-style
-  two-column grids even on desktop (unlike direction A).
-- **Content max-width 640px** (768px on desktop) — comfortable reading measure.
-- **Generous vertical rhythm** between sections with no boxing of every block.
-- **Cards use subtle shadow** (`box-shadow: 0 1px 3px rgba(15,23,42,0.05)`)
-  rather than borders for surface distinction.
-- **Selective border-radius** — `10px` on cards, `8px` on buttons, square on
-  structural containers.
-- **Thin progress bar** (4px, rounded) for path-level progress — understated
-  and adult-oriented.
+- active and pending learning paths plus progress;
+- core phrase, chunk breakdown, example, pronunciation and kanji notes;
+- quiz choices, correct and incorrect feedback, completion, and lesson navigation;
+- vocabulary session sizes and directions, canonical `我 / wǒ / 私` flashcard, reveal/rating controls, and completion.
 
-## Key Design Details
+## Responsive and accessibility rules
 
-1. **Phrase card** is a floating white surface with subtle shadow and a large
-   Chinese hero — no decorative top bar or left border, letting typography lead.
-2. **Lesson list** uses clean rows with small numeric markers (not circled
-   badges) and status badges with text + icon (not colour-only).
-3. **Progress bar** is thin (4px) with rounded ends and a centered percentage
-   label — visible but not dominant.
-4. **Quiz choices** are full-width buttons with hover/active state styling and
-   `focus-visible` outlines.
-5. **Feedback blocks** use icon + title + background, ensuring states are
-   distinguishable without colour alone.
-6. **Status badges** show text labels ("進行中", "準備中") with distinct
-   background tints — never colour-only.
-
-## Anti-patterns Avoided
-
-- No generic blue accent or SaaS admin appearance
-- No serif Chinese or editorial magazine styling
-- No large numbered circles or chapter-marker badges
-- No Duolingo-style mascot, streak, or game-board elements
-- No heavy card shadows or rounded-everything approach
-- No decorative borders on content cards
-- No competing colours or information density
-- No tourism-poster imagery or scenery
-
-## Accessibility Notes
-
-- All text meets WCAG AA contrast (4.5:1 minimum for normal text)
-- Interactive elements have visible `:focus-visible` outlines (2px teal + 2px
-  offset)
-- All touch targets are ≥44px tall (buttons, badges, interactive rows)
-- Colour is never the only differentiator for state changes — feedback uses
-  icons, text labels, and structural layout
-- Correct/incorrect states show semantic text (正解！/ 不正解。) plus
-  matching icons
-- Japanese text uses `overflow-wrap: break-word` to prevent overflow at narrow
-  widths
+- Mobile-first at 390px, with safeguards below 360px.
+- Desktop widens the reading column and allows two-column option/feedback groupings without becoming a dashboard.
+- All interactive targets are at least 44px high.
+- `:focus-visible` uses a 2px teal outline with offset.
+- Text and controls target WCAG AA contrast.
+- Chinese and pinyin carry explicit language metadata in the HTML.
+- No remote assets or runtime dependencies.
