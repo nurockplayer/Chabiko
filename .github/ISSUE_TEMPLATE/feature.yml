@@ -34,6 +34,14 @@ body:
     validations:
       required: true
   - type: textarea
+    id: forbidden-surfaces
+    attributes:
+      label: Forbidden surfaces
+      description: Code, schemas, validators, dependencies, or CI that must NOT be modified.
+      placeholder: "e.g. No content files, no UI components, no AGENTS.md changes."
+    validations:
+      required: true
+  - type: textarea
     id: acceptance
     attributes:
       label: Acceptance criteria
@@ -43,8 +51,37 @@ body:
     validations:
       required: true
   - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: Executable validation commands that must pass before merge.
+      value: |
+        - [ ] git diff --check
+    validations:
+      required: true
+  - type: textarea
+    id: branch-isolation
+    attributes:
+      label: Branch and PR isolation
+      description: How this work stays isolated from unrelated changes.
+      value: |
+        - Branch name:
+        - Files allowed to change:
+        - Files prohibited from changes:
+    validations:
+      required: true
+  - type: textarea
+    id: external-recheck
+    attributes:
+      label: External state recheck
+      description: Before implementation, verify that external dependencies, reference materials, or schemas are still current.
+      placeholder: "Confirm that the target API, reference standard, or external data source has not changed since this issue was created."
+    validations:
+      required: true
+  - type: textarea
     id: refs
     attributes:
       label: References
       description: Planning docs, external resources, or related issues.
-
+    validations:
+      required: false

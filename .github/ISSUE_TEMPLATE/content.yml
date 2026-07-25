@@ -5,14 +5,6 @@ labels:
   - type:content
 body:
   - type: textarea
-    id: source-of-truth
-    attributes:
-      label: Source of truth
-      description: Issue, planning doc, or reference material that governs this content.
-      placeholder: "#12, .planning/REQUIREMENTS.md CONT-01, or similar"
-    validations:
-      required: true
-  - type: textarea
     id: learner-outcome
     attributes:
       label: Learner outcome
@@ -32,6 +24,34 @@ body:
     validations:
       required: true
   - type: textarea
+    id: frozen-decisions
+    attributes:
+      label: Frozen implementation decisions
+      description: Content selection and canonical strings that are already frozen and must not be changed during implementation.
+      placeholder: "Record IDs chosen, canonical Traditional/Simplified/pinyin strings, source of truth reference."
+    validations:
+      required: true
+  - type: textarea
+    id: forbidden-surfaces
+    attributes:
+      label: Forbidden surfaces
+      description: Code, schemas, validators, UI, dependencies, CI, or other surfaces that must NOT be modified.
+      placeholder: "e.g. No UI changes, no schema modifications, no CI changes."
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: Executable validation commands and edge cases that must pass.
+      value: |
+        ### Commands
+        - [ ]
+        ### Edge cases
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
     id: review
     attributes:
       label: Review requirements
@@ -44,6 +64,25 @@ body:
         - [ ] Lesson loop / Travel Quest (human-teaching-reviewer) — needed for new or modified lessons
         - [ ] Regional usage (human-regional-reviewer) — needed if content includes Taiwan/Mainland claims
         - [ ] Source / license (human-source-reviewer) — needed for resource entries
+    validations:
+      required: true
+  - type: textarea
+    id: branch-isolation
+    attributes:
+      label: Branch and PR isolation
+      description: How this work stays isolated from unrelated changes.
+      value: |
+        - Branch name:
+        - Files allowed to change:
+        - Files prohibited from changes:
+    validations:
+      required: true
+  - type: textarea
+    id: external-recheck
+    attributes:
+      label: External state recheck
+      description: Before implementation, verify that external dependencies, reference materials, or upstream schemas have not changed since this issue was created.
+      placeholder: "Check that the reference workbook version, HSK standard version, or API schema version is still current."
     validations:
       required: true
 

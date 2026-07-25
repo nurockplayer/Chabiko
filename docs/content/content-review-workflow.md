@@ -48,22 +48,37 @@ Content review operates along independent dimensions. Each dimension has its own
 | `generated` | Produced by an automated process. Not yet human-verified. | Any actor |
 | `unavailable` | This script form does not exist for this content item. | Human editor |
 
-### 2.3 License reviewStatus (for resource entries)
+### 2.3 Resource reviewStatus
+
+Resource records have their own `reviewStatus` field, separate from content reviewStatus and license status.
+
+| Value | Meaning | Eligible to assign |
+|-------|---------|-------------------|
+| `candidate` | Initial state. Not yet reviewed. | Any actor |
+| `under-review` | Review in progress. | Maintainer |
+| `approved` | Human source reviewer has approved. Production import allowed. | `human-source-reviewer` |
+| `rejected` | License does not permit use. No production import. | `human-source-reviewer` |
+
+### 2.4 Resource licenseStatus
+
+Resource records also carry a `licenseStatus` field that tracks the legal status of the license itself, independent of the workflow reviewStatus.
 
 | Value | Meaning |
 |-------|---------|
-| `candidate` | Initial state. Not yet reviewed. |
-| `under-review` | Review in progress. |
+| `unknown` | License status has not been determined. Blocked from production. |
+| `needs-review` | License status known but not yet reviewed by a human. Blocked from production. |
 | `approved` | License permits use per project policy. |
-| `rejected` | License does not permit use. |
+| `restricted` | License permits limited use; attribution or other conditions apply. |
+| `prohibited` | License does not permit use. |
 
-### 2.4 Dimension Separation Rules
+### 2.5 Dimension Separation Rules
 
 The following rules must never be violated:
 
 - `draft` / `reviewed` / `published` are **reviewStatus values**. They must never be used as script provenance values or as license statuses.
 - `authored` / `verified` / `generated` / `unavailable` are **script provenance values**. They must never be used as reviewStatus values or as license statuses.
-- `candidate` / `under-review` / `approved` / `rejected` are **license reviewStatus values**. They must never replace content reviewStatus or script provenance.
+- `candidate` / `under-review` / `approved` / `rejected` are **resource reviewStatus values**. They must never be used as content reviewStatus, script provenance, or license status values.
+- `unknown` / `needs-review` / `approved` / `restricted` / `prohibited` are **resource licenseStatus values**. They must never replace content reviewStatus, script provenance, or resource reviewStatus.
 - A record can have `reviewStatus: "draft"` while one script form is `"authored"` and the other is `"generated"`. These are independent facts.
 - Moving a record from `draft` to `reviewed` does not change any script provenance value. Changing a script form from `generated` to `verified` does not change reviewStatus.
 
@@ -211,14 +226,19 @@ Covers Traditional Chinese, Simplified Chinese, pinyin, and Japanese explanation
 - [ ] Every content record has a valid `source` object (or the content type does not require one)
 - [ ] Source type is valid: `teacher-workbook`, `standard-reference`, `expert-authored`, `generated-with-review`, etc.
 - [ ] Source notes (when present) are accurate and not misleading
-- [ ] Resource license entries have accurate `licenseStatus`, `allowedUse`, and attribution fields
-- [ ] `licenseStatus` is not `unknown` for resources marked for production import
+- [ ] Resource `licenseStatus` is one of: `unknown`, `needs-review`, `approved`, `restricted`, `prohibited`
+- [ ] Resource `reviewStatus` is one of: `candidate`, `under-review`, `approved`, `rejected`
+- [ ] `licenseStatus: approved` and `reviewStatus: approved` are consistent (both present when production import is allowed)
+- [ ] `licenseStatus: unknown`, `needs-review`, or `prohibited` requires `allowedUse` to be `reference-only` or `citation`
+- [ ] `reviewStatus: rejected` requires `allowedUse` to be `reference-only` or `citation`
+- [ ] Resource `reviewStatus: approved` requires non-empty `reviewedBy` and `reviewedDate`
 - [ ] `productionImportAllowed` is consistent with `licenseStatus` and `allowedUse`
 - [ ] Attribution requirements are correctly documented where needed
 - [ ] **Unconfirmed license blocking**: When a resource's license has not been confirmed by `human-source-reviewer`:
-  - `licenseStatus` must be `needs-review` or `under-review` (not `approved`)
+  - `licenseStatus` must be `needs-review` (not `approved`, not `under-review` — `under-review` is a `reviewStatus` value, not a `licenseStatus`)
   - `productionImportAllowed` must be `false` or absent
-  - Resource `reviewStatus` must not be `approved`
+  - Resource `reviewStatus` must be `candidate` or `under-review` (not `approved`)
+  - `allowedUse` must be `reference-only` or `citation`
   - The resource may only be used as a candidate or reference, never imported into production content
   - Only a `human-source-reviewer` may approve production import after verifying license terms
   - If license status cannot be determined, the resource remains blocked; it must never be treated as usable by default
@@ -276,6 +296,8 @@ A review that covers multiple scope types must list each separately. Partial app
 
 When content changes after a review, existing approvals may become invalid. This section defines which approvals are affected by which types of changes.
 
+**Overlapping categories.** A single change may belong to multiple change categories. For example, rewriting `canDoJa` is both a Japanese explanation change and a lesson structure string change. When a change falls into multiple categories, combine the invalidation results from all applicable rows in §7.2 — the most restrictive result wins for each scope type. A scope marked **INVALIDATED** in any applicable row is invalidated, even if another row marks it Unaffected. You must not choose a single category to minimize the number of invalidated scopes.
+
 ### 7.1 Change Categories
 
 | Category | Definition | Examples |
@@ -330,11 +352,12 @@ For each change category, the matrix shows which scope types are invalidated:
 
 Before re-review after a change:
 
-1. Identify the change category using §7.1.
-2. Look up invalidated scope types using §7.2.
-3. For each invalidated scope type, determine if the same reviewer is available or a new reviewer is needed.
-4. Record new review artifacts for invalidated dimensions only. Unaffected approvals do not need to be re-recorded.
-5. If `review-status` was invalidated by an unauthorized modification, the record returns to `draft` and must go through `draft` → `reviewed` promotion again. Authorized transitions (`draft` → `reviewed` by human reviewer with valid artifact, `reviewed` → `published` by maintainer with all approvals) never cause self-invalidation or a return to `draft`.
+1. Identify **all** applicable change categories using §7.1. A change may match multiple categories (e.g., rewriting `canDoJa` is both a Japanese explanation change and a lesson structure string change).
+2. For each applicable category, look up the invalidated scope types using §7.2.
+3. Combine results: a scope type is invalidated if **any** applicable category marks it **INVALIDATED**. The most restrictive result wins — you must not pick a single category to minimise invalidations.
+4. For each invalidated scope type, determine if the same reviewer is available or a new reviewer is needed.
+5. Record new review artifacts for invalidated dimensions only. Unaffected approvals do not need to be re-recorded.
+6. If `review-status` was invalidated by an unauthorized modification, the record returns to `draft` and must go through `draft` → `reviewed` promotion again. Authorized transitions (`draft` → `reviewed` by human reviewer with valid artifact, `reviewed` → `published` by maintainer with all approvals) never cause self-invalidation or a return to `draft`.
 
 ---
 
@@ -344,7 +367,7 @@ Before re-review after a change:
 
 1. Read the relevant issue to understand scope, acceptance criteria, and source of truth.
 2. Check existing content to avoid duplication.
-3. Confirm any source materials have compatible licenses before using them. If license status cannot be confirmed, the material must remain as a candidate/reference only and must not be imported into production content. Set `licenseStatus` to `needs-review`, keep `productionImportAllowed` as `false` (or absent), and resource `reviewStatus` must not be `approved`.
+3. Confirm any source materials have compatible licenses before using them. If license status cannot be confirmed, the material must remain as a candidate/reference only and must not be imported into production content. Set `licenseStatus` to `needs-review`, resource `reviewStatus` to `candidate` or `under-review`, keep `productionImportAllowed` as `false` (or absent), and set `allowedUse` to `reference-only` or `citation`. Do not set `licenseStatus` to `under-review` — that value belongs to `reviewStatus`, not `licenseStatus`.
 
 ### 8.2 What to Include in a Content Proposal
 
@@ -359,7 +382,7 @@ Every content proposal should include:
 ### 8.3 How to Propose
 
 - **Lessons, vocabulary, phrasebook, sentences, practice items**: Open a GitHub issue using the Content template, or submit a PR with the structured content files.
-- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review`, keep `productionImportAllowed` as `false` (or absent), and resource `reviewStatus` must not be `approved`.
+- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review` (not `under-review` — that is a `reviewStatus` value), resource `reviewStatus` to `candidate` or `under-review`, keep `productionImportAllowed` as `false` (or absent), and set `allowedUse` to `reference-only` or `citation`.
 - **Roleplay or dialogue content**: Open a GitHub issue describing the scenario, learner level, and required vocabulary.
 
 ### 8.4 What Happens Next
