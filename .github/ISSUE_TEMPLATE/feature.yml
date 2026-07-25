@@ -7,8 +7,9 @@ body:
   - type: textarea
     id: goal
     attributes:
-      label: Goal
-      description: What user-visible outcome should exist when this is done?
+      label: Goal and completion conditions
+      description: What user-visible outcome should exist when this is done? What checkable condition proves this issue is complete?
+      placeholder: "Goal: ... Done when: ..."
     validations:
       required: true
   - type: textarea
@@ -20,62 +21,94 @@ body:
     validations:
       required: true
   - type: textarea
+    id: dependency-and-start-conditions
+    attributes:
+      label: Dependency and start conditions
+      description: Issues that must be closed first, APIs that must be final, or blockers that must be resolved before this work begins.
+      placeholder: "Blocked by: ... Prerequisite: ..."
+    validations:
+      required: true
+  - type: textarea
+    id: frozen-decisions
+    attributes:
+      label: Frozen architecture and behavior contract
+      description: Exact APIs, data/state behaviour, or implementation contract that is frozen. If this issue is tracking/research/human-review only (no implementation), state that explicitly here.
+      placeholder: "Frozen: API contracts, data shape, state transitions. OR: This issue is tracking/research only."
+    validations:
+      required: true
+  - type: textarea
     id: scope
     attributes:
       label: Scope
-      description: What is included?
-    validations:
-      required: true
-  - type: textarea
-    id: out-of-scope
-    attributes:
-      label: Out of scope
-      description: What should this issue explicitly not do?
-    validations:
-      required: true
-  - type: textarea
-    id: forbidden-surfaces
-    attributes:
-      label: Forbidden surfaces
-      description: Code, schemas, validators, dependencies, or CI that must NOT be modified.
-      placeholder: "e.g. No content files, no UI components, no AGENTS.md changes."
-    validations:
-      required: true
-  - type: textarea
-    id: acceptance
-    attributes:
-      label: Acceptance criteria
-      description: Checkable criteria.
       value: |
+        Exact allowed files/surfaces:
+        Forbidden files/surfaces:
+    validations:
+      required: true
+  - type: textarea
+    id: test-matrix
+    attributes:
+      label: Test matrix and preserved behavior
+      value: |
+        ### Edge cases
+        - [ ]
+
+        ### Preserved behavior (must not regress)
         - [ ]
     validations:
       required: true
   - type: textarea
     id: validation
     attributes:
-      label: Validation
-      description: Executable validation commands that must pass before merge.
+      label: Validation commands
       value: |
         - [ ] git diff --check
+        - [ ] pnpm lint
+        - [ ] pnpm typecheck
+        - [ ] pnpm test
+        - [ ] pnpm build
+        - [ ] Issue-specific checks:
     validations:
       required: true
   - type: textarea
-    id: branch-isolation
+    id: branch-and-pr
     attributes:
-      label: Branch and PR isolation
-      description: How this work stays isolated from unrelated changes.
+      label: Branch, PR, and isolation
       value: |
         - Branch name:
         - Files allowed to change:
         - Files prohibited from changes:
+        - Existing PR reference (if continuing active work):
+        - ⚠️ Failed or unmerged work from this issue must NOT be reused as the base of a subsequent issue. Open a fresh branch for each new ticket.
+    validations:
+      required: true
+  - type: textarea
+    id: reviewer-gate
+    attributes:
+      label: Reviewer gate
+      value: |
+        - [ ] Foreground read-only deepseek-v4-pro reviewer: No blocking findings.
+        - [ ] Codex final review passed (pre-merge only).
     validations:
       required: true
   - type: textarea
     id: external-recheck
     attributes:
-      label: External state recheck
-      description: Before implementation, verify that external dependencies, reference materials, or schemas are still current.
-      placeholder: "Confirm that the target API, reference standard, or external data source has not changed since this issue was created."
+      label: Pre-implementation freshness check
+      description: Before implementation begins, verify that external dependencies, reference materials, or upstream schemas have not changed since this issue was created.
+      placeholder: "Confirm that the target API, reference standard, or external data source version is still current."
+    validations:
+      required: true
+  - type: textarea
+    id: post-merge-recheck
+    attributes:
+      label: Post-merge external state recheck
+      description: After merge, re-fetch main, this issue, and the merged PR to confirm merge is present, this issue is closed, and no duplicate implementation PR remains open.
+      value: |
+        Named responsibility: {{NAME}}
+        - [ ] main contains the merge commit.
+        - [ ] This issue is closed.
+        - [ ] No duplicate implementation PR remains open.
     validations:
       required: true
   - type: textarea
