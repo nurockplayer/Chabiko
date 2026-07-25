@@ -18,7 +18,10 @@ Usage:
 """
 
 import json
+import os
+import subprocess
 import sys
+import tempfile
 import unicodedata
 from datetime import date
 from urllib.parse import urlparse
@@ -2099,6 +2102,13 @@ def run_tests():
         test_resource_invalid_notes_do_not_warn,
         test_resource_warning_order,
         test_resource_relevance_fields,
+
+        # ─── CLI regression tests ───
+        test_cli_warning_prefix_and_message,
+        test_cli_warning_before_error,
+        test_cli_warning_only_exits_zero,
+        test_cli_validation_error_exits_non_zero,
+        test_cli_warning_order,
 
         # ─── Resource permission policy ───
         test_resource_all_permissions_false_ok,
@@ -5705,6 +5715,146 @@ def test_orphan_illustrations_empty_teacher_array():
     }
     errs = validate_bundle(data)
     _assert_has_error(errs, "orphan illustration", "orphan_empty_teacher")
+
+
+# ─── CLI regression tests ──────────────────────────────────────────────────
+# These tests invoke the script through --check with temp JSON fixtures,
+# capturing stdout and process exit code to prove deterministic CLI behavior.
+
+
+def _cli_check_result(fixture_data: dict) -> tuple[int, str]:
+    """Run --check against a temporary fixture and return (exit_code, stdout)."""
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as f:
+        json.dump(fixture_data, f)
+        tmp_path = f.name
+    try:
+        result = subprocess.run(
+            [sys.executable, __file__, "--check", tmp_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        return result.returncode, result.stdout
+    finally:
+        os.unlink(tmp_path)
+
+
+def test_cli_warning_prefix_and_message():
+    exit_code, stdout = _cli_check_result({
+        "resources": [
+            {
+                "id": "cli-warn-001", "title": "Test", "url": "https://example.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                "notes": "",
+            },
+        ],
+    })
+    assert "WARNING: " in stdout, f"Expected 'WARNING: ' prefix in stdout: {stdout}"
+    assert "notes should explain why this resource is useful or risky" in stdout, (
+        f"Expected warning message in stdout: {stdout}"
+    )
+    assert exit_code == 0, f"Expected exit 0 for warning-only, got {exit_code}"
+
+
+def test_cli_warning_before_error():
+    """Warnings print before validation errors when both exist."""
+    exit_code, stdout = _cli_check_result({
+        "resources": [
+            {
+                "id": "cli-both-001", "title": "Test", "url": "https://example.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                "notes": "",
+            },
+            {
+                "id": "cli-both-002", "title": "Test", "url": "https://example.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                # notes is missing → validation error
+            },
+        ],
+    })
+    warning_idx = stdout.find("WARNING: ")
+    # Find first non-WARNING line (the error)
+    error_lines = [l for l in stdout.splitlines() if not l.startswith("WARNING: ")]
+    assert error_lines, f"Expected at least one error line in stdout: {stdout}"
+    first_error = error_lines[0]
+    error_idx = stdout.find(first_error)
+    assert warning_idx >= 0, f"Expected WARNING: in stdout: {stdout}"
+    assert error_idx >= 0, f"Expected error in stdout: {stdout}"
+    assert warning_idx < error_idx, (
+        f"WARNING at {warning_idx} should appear before error at {error_idx}: {stdout}"
+    )
+    assert exit_code != 0, "Expected non-zero exit when both warnings and errors exist"
+
+
+def test_cli_warning_only_exits_zero():
+    exit_code, stdout = _cli_check_result({
+        "resources": [
+            {
+                "id": "cli-zero-001", "title": "Test", "url": "https://example.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                "notes": "  ",
+            },
+        ],
+    })
+    assert exit_code == 0, f"Expected exit 0 for warning-only, got {exit_code}"
+    assert "WARNING: " in stdout, f"Expected WARNING in stdout: {stdout}"
+
+
+def test_cli_validation_error_exits_non_zero():
+    exit_code, stdout = _cli_check_result({
+        "resources": [
+            {
+                "id": "cli-err-001", "title": "Test", "url": "https://example.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                # notes is missing
+            },
+        ],
+    })
+    assert exit_code != 0, f"Expected non-zero exit for validation error, got {exit_code}"
+    assert "WARNING: " not in stdout, (
+        f"Expected no WARNING for missing notes (wrong type): {stdout}"
+    )
+
+
+def test_cli_warning_order():
+    """Multiple warnings preserve collection/index order."""
+    exit_code, stdout = _cli_check_result({
+        "resources": [
+            {
+                "id": "cli-ord-001", "title": "A", "url": "https://a.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                "notes": "",
+            },
+            {
+                "id": "cli-ord-002", "title": "B", "url": "https://b.com",
+                "owner": "Owner", "resourceType": "dictionary",
+                "licenseStatus": "approved", "allowedUse": "reference-only",
+                "attribution": "Credit", "reviewStatus": "candidate",
+                "notes": "  ",
+            },
+        ],
+    })
+    warning_lines = [l for l in stdout.splitlines() if l.startswith("WARNING: ")]
+    assert len(warning_lines) == 2, f"Expected 2 warnings, got {len(warning_lines)}"
+    assert "root.resources[0]" in warning_lines[0], (
+        f"First warning should reference index 0: {warning_lines[0]}"
+    )
+    assert "root.resources[1]" in warning_lines[1], (
+        f"Second warning should reference index 1: {warning_lines[1]}"
+    )
+    assert exit_code == 0, f"Expected exit 0, got {exit_code}"
 
 
 if __name__ == "__main__":
