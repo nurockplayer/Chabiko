@@ -1,5 +1,5 @@
 /**
- * Mount the basic-vocabulary preview flashcard session.
+ * Mount a preview flashcard session.
  * Uses the production vocabularySession domain for deterministic
  * queue semantics, requeue, and completion logic.
  */
@@ -16,9 +16,16 @@ export interface PreviewWord {
   traditional: string;
   pinyin: string;
   japanese: string;
+  localImagePath?: string;
+  localImageAlt?: string;
 }
 
-export function mountPreviewSession(data: { words: PreviewWord[] }): void {
+export type ImageMode = 'picsum' | 'placeholder';
+
+export function mountPreviewSession(
+  data: { words: PreviewWord[] },
+  imageMode: ImageMode = 'picsum',
+): void {
   const WORDS = data.words;
   const ids = WORDS.map((w) => w.id);
   const entryMap = new Map(WORDS.map((w) => [w.id, w]));
@@ -52,19 +59,44 @@ export function mountPreviewSession(data: { words: PreviewWord[] }): void {
 
   // ── Image loading ─────────────────────────────────────────────
   function loadImage(word: PreviewWord): void {
-    const url = 'https://picsum.photos/seed/' + word.id + '/960/720';
-    mockImage.src = url;
-    mockImage.alt = 'MOCK IMAGE — ' + word.simplified;
-    if (imgFallback) imgFallback.style.display = 'flex';
-    mockImage.style.display = 'none';
-    mockImage.onload = function () {
-      if (imgFallback) imgFallback.style.display = 'none';
-      mockImage.style.display = 'block';
-    };
-    mockImage.onerror = function () {
+    if (word.localImagePath) {
+      // Local image from teacher source
+      mockImage.src = word.localImagePath;
+      mockImage.alt = word.localImageAlt || 'preview image';
       if (imgFallback) imgFallback.style.display = 'flex';
       mockImage.style.display = 'none';
-    };
+      mockImage.onload = function () {
+        if (imgFallback) imgFallback.style.display = 'none';
+        mockImage.style.display = 'block';
+      };
+      mockImage.onerror = function () {
+        if (imgFallback) imgFallback.style.display = 'flex';
+        mockImage.style.display = 'none';
+      };
+    } else if (imageMode === 'picsum') {
+      // Picsum fallback for basic preview
+      const url = 'https://picsum.photos/seed/' + word.id + '/960/720';
+      mockImage.src = url;
+      mockImage.alt = 'MOCK IMAGE — ' + word.simplified;
+      if (imgFallback) imgFallback.style.display = 'flex';
+      mockImage.style.display = 'none';
+      mockImage.onload = function () {
+        if (imgFallback) imgFallback.style.display = 'none';
+        mockImage.style.display = 'block';
+      };
+      mockImage.onerror = function () {
+        if (imgFallback) imgFallback.style.display = 'flex';
+        mockImage.style.display = 'none';
+      };
+    } else {
+      // Placeholder mode: show fallback only, never request Picsum
+      mockImage.removeAttribute('src');
+      mockImage.alt = '';
+      if (imgFallback) imgFallback.style.display = 'flex';
+      mockImage.style.display = 'none';
+      mockImage.onload = null;
+      mockImage.onerror = null;
+    }
   }
 
   // ── Render ────────────────────────────────────────────────────
@@ -175,7 +207,6 @@ export function mountPreviewSession(data: { words: PreviewWord[] }): void {
     }
     if (completionScreen) completionScreen.classList.add('completion--visible');
 
-    // Completion stats from state's attempt records
     if (statRetry) statRetry.textContent = '—';
     if (statShaky) statShaky.textContent = '—';
     if (statKnew) statKnew.textContent = String(state.completedUniqueCount);
