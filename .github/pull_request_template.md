@@ -21,13 +21,13 @@
 
 ## Validation Results
 
-- [ ] git diff --check
-- [ ] pnpm lint
-- [ ] pnpm typecheck
-- [ ] pnpm test
-- [ ] pnpm build
-- [ ] Schema/content validators (if content files changed):
-- [ ] Issue-specific checks:
+- [ ] git diff --check … {{result}}
+- [ ] pnpm lint … {{result}}
+- [ ] pnpm typecheck … {{result}}
+- [ ] pnpm test … {{result}}
+- [ ] pnpm build … {{result}}
+- [ ] Schema/content validators (if content files changed): {{result}}
+- [ ] Issue-specific check: {{description}} … {{result}}
 
 ## Branch and PR Isolation
 
