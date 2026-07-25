@@ -5751,10 +5751,9 @@ def test_cli_warning_prefix_and_message():
             },
         ],
     })
-    assert "WARNING: " in stdout, f"Expected 'WARNING: ' prefix in stdout: {stdout}"
-    assert "notes should explain why this resource is useful or risky" in stdout, (
-        f"Expected warning message in stdout: {stdout}"
-    )
+    assert stdout.strip() == (
+        "WARNING: root.resources[0].notes should explain why this resource is useful or risky"
+    ), f"Expected exact warning line, got: {stdout.strip()!r}"
     assert exit_code == 0, f"Expected exit 0 for warning-only, got {exit_code}"
 
 
