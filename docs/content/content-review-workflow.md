@@ -228,10 +228,10 @@ Covers Traditional Chinese, Simplified Chinese, pinyin, and Japanese explanation
 - [ ] Source notes (when present) are accurate and not misleading
 - [ ] Resource `licenseStatus` is one of: `unknown`, `needs-review`, `approved`, `restricted`, `prohibited`
 - [ ] Resource `reviewStatus` is one of: `candidate`, `under-review`, `approved`, `rejected`
-- [ ] `licenseStatus: approved` and `reviewStatus: approved` are consistent (both present when production import is allowed)
+- [ ] `licenseStatus: approved` or `restricted` may permit production import when `allowedUse`, human approval, and permission flags are compatible
 - [ ] `licenseStatus: unknown`, `needs-review`, or `prohibited` requires `allowedUse` to be `reference-only` or `citation`
 - [ ] `reviewStatus: rejected` requires `allowedUse` to be `reference-only` or `citation`
-- [ ] Resource `reviewStatus: approved` requires non-empty `reviewedBy` and `reviewedDate`
+- [ ] Resource `reviewStatus: approved` is not sufficient alone for production import — the resource must also have compatible `licenseStatus`, `allowedUse`, named human reviewer approval, and consistent permission flags
 - [ ] `productionImportAllowed` is consistent with `licenseStatus` and `allowedUse`
 - [ ] Attribution requirements are correctly documented where needed
 - [ ] **Unconfirmed license blocking**: When a resource's license has not been confirmed by `human-source-reviewer`:
@@ -268,6 +268,30 @@ Covers lesson structure completeness, lesson-to-practice connections, and Travel
 - [ ] Travel Quest usefulness: the content bundle (lesson + vocabulary + practice) supports a real can-do outcome the learner would encounter in their target scenario
 - [ ] Roleplay or recovery flow (when present) fills a realistic gap the learner might face (wrong order, lost, misunderstanding)
 - [ ] Content bundle does not introduce contradictions or conflicting usage advice across linked items
+
+### 5.8 Illustration Checklist
+
+Covers illustration asset metadata, technical constraints, and rights review.
+
+- [ ] Illustration `id` is non-empty and unique within its collection
+- [ ] `vocabularyId` links to an existing teacher vocabulary record
+- [ ] `assetPath` starts with `/assets/vocabulary/teacher-core-v1/` and ends with `.webp` or `.png`
+- [ ] `assetPath` extension matches `mimeType` (`image/webp` → `.webp`, `image/png` → `.png`)
+- [ ] `sourceChecksumSha256` is exactly 64 lowercase hexadecimal characters
+- [ ] `width` and `height` are integers between 1 and 4096 (not boolean)
+- [ ] `fileSizeBytes` is an integer between 1 and 1,500,000 (not boolean)
+- [ ] `mimeType` is `image/webp` or `image/png`
+- [ ] `altJa` is non-empty Japanese alt text
+- [ ] Rights object basis is `commissioned-for-chabiko`
+- [ ] `publicWebDisplay` is `true`
+- [ ] `staticAssetRedistribution` is `true`
+- [ ] `modificationScope` is `technical-only`
+- [ ] `attributionRequired` is a boolean; when `true`, `attributionText` is non-empty and present
+- [ ] `reuseOutsideChabiko` is `not-granted` or `granted`
+- [ ] Illustration `reviewStatus` is present and valid: `draft`, `reviewed`, or `published`
+- [ ] Draft illustrations may omit `illustrationRef` linkage; reviewed/published must have a valid link
+- [ ] No orphan illustration records (every `vocabularyId` matches an existing vocabulary record)
+- [ ] Rights and metadata have been reviewed by `human-source-reviewer` before promotion past `draft`
 
 ---
 
@@ -382,7 +406,13 @@ Every content proposal should include:
 ### 8.3 How to Propose
 
 - **Lessons, vocabulary, phrasebook, sentences, practice items**: Open a GitHub issue using the Content template, or submit a PR with the structured content files.
-- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review` (not `under-review` — that is a `reviewStatus` value), resource `reviewStatus` to `candidate` or `under-review`, keep `productionImportAllowed` as `false` (or absent), and set `allowedUse` to `reference-only` or `citation`.
+- **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review` (not `under-review` — that is a `reviewStatus` value), resource `reviewStatus` to `candidate` or `under-review`, keep `productionImportAllowed` as `false` (or absent), and set `allowedUse` to `reference-only` or `citation`. Even when `licenseStatus` is `approved` or `restricted`, production import requires compatible `allowedUse`, `productionImportAllowed`, and permission flags — `reviewStatus: approved` alone does not automatically allow import.
+- **Illustrations**: Open a GitHub issue or include illustration records alongside the linked vocabulary. Each illustration must include its `id`, `vocabularyId`, `assetPath`, `sourceChecksumSha256`, `width`, `height`, `mimeType`, `fileSizeBytes`, `altJa`, `rights` object, and `reviewStatus`. Illustration review requires:
+  - `human-source-reviewer` to verify rights metadata, attribution, and reuse terms
+  - The rights object must be `commissioned-for-chabiko` with `publicWebDisplay: true`, `staticAssetRedistribution: true`, and `modificationScope: technical-only`
+  - Checksum and file constraints (MIME type, extension, dimensions, size) are enforced by schema validation
+  - Orphan illustrations (no matching vocabulary record) must be rejected
+  - Reviewed/published illustrations must have a valid `illustrationRef` cross-link to the vocabulary record
 - **Roleplay or dialogue content**: Open a GitHub issue describing the scenario, learner level, and required vocabulary.
 
 ### 8.4 What Happens Next
@@ -413,6 +443,8 @@ The following content types and changes trigger mandatory human review before pr
 | New resource with license metadata | `human-source-reviewer` |
 | Existing resource with license status change | `human-source-reviewer` |
 | Unconfirmed license (resource must stay blocked until human-source-reviewer approves) | `human-source-reviewer` |
+| New or modified illustration asset metadata or rights | `human-source-reviewer` |
+| Illustration rights basis, attribution, or reuse terms | `human-source-reviewer` |
 
 ---
 
