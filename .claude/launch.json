@@ -5,8 +5,7 @@
       "name": "chabiko-preview",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["preview"],
-      "port": 4321,
-      "autoPort": true
+      "port": 4321
     }
   ]
 }
