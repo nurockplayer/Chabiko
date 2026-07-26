@@ -1,0 +1,353 @@
+{
+  "sourceId": "teacher-core-v1",
+  "sourceChecksumSha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37",
+  "manifestBatchFilename": "teacher-vocabulary-batch-01.json",
+  "reviewMode": "ai-provisional-first-pass",
+  "reviewer": {
+    "name": "deepseek-v4-flash",
+    "role": "AI provisional content and visual reviewer",
+    "reviewedAt": "2026-07-26T13:02:15Z"
+  },
+  "rows": [
+    {
+      "vocabularyId": "teacher-star-1-37e0eb213f0f",
+      "sourceSheet": "名词1",
+      "sourceRow": 2,
+      "expectedIllustrationId": "ill-teacher-star-1-37e0eb213f0f",
+      "simplified": "大家",
+      "pinyin": "dà jiā",
+      "japanese": "みんな",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "大家",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "5c7f48f22066c2888948e3c6782ecd30ce06f3623855de8134d0870b393e00fa",
+      "altJa": "年齢や見た目の異なる6人が、笑顔で並んでいるイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-a66948a76fda",
+      "sourceSheet": "名词1",
+      "sourceRow": 3,
+      "expectedIllustrationId": "ill-teacher-star-1-a66948a76fda",
+      "simplified": "人",
+      "pinyin": "rén",
+      "japanese": "人（ひと）",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "人",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "aa29beb399089e706f7644e8bd3a656c52ad299d99e22e5aadba67f6f748fe1f",
+      "decision": "rejected",
+      "note": "候選圖片人物的衣服上直接寫有英文「people」，屬於提示答案的文字，而且複數語義與「人／一個人」不完全一致，因此不適合作為此詞彙的學習圖片。"
+    },
+    {
+      "vocabularyId": "teacher-star-1-86f5cdb6e25c",
+      "sourceSheet": "名词1",
+      "sourceRow": 7,
+      "expectedIllustrationId": "ill-teacher-star-1-86f5cdb6e25c",
+      "simplified": "客人",
+      "pinyin": "kè ren",
+      "japanese": "お客さん",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "客人",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "5963f602e4484e9d089c86ea6b0597dbc71fe65b2324c10d269defa9371adcd5",
+      "altJa": "女性が、椅子に座って笑っている男性客に果物と飲み物を出しているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-bdc7865a507e",
+      "sourceSheet": "名词1",
+      "sourceRow": 8,
+      "expectedIllustrationId": "ill-teacher-star-1-bdc7865a507e",
+      "simplified": "朋友",
+      "pinyin": "péng you",
+      "japanese": "友達",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "朋友",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "6e87f0bca09ed7fb14ea0fd259d068f6035b55538d25a6ed82f37ef767c80dda",
+      "altJa": "二人の女性が楽しそうに会話しているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-86367b2d53f6",
+      "sourceSheet": "名词1",
+      "sourceRow": 9,
+      "expectedIllustrationId": "ill-teacher-star-1-86367b2d53f6",
+      "simplified": "先生",
+      "pinyin": "xiān sheng",
+      "japanese": "先生（男性）",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "先生",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "cd28d97e3df15d7bd162395c7c7c8872db8f7390254d62d8f312076d76b3c8fd",
+      "altJa": "黒板の前で授業をしている男性教師のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-8b957a100bd4",
+      "sourceSheet": "名词1",
+      "sourceRow": 10,
+      "expectedIllustrationId": "ill-teacher-star-1-8b957a100bd4",
+      "simplified": "小姐/女士",
+      "pinyin": "xiǎo jiě/nǚ shì",
+      "japanese": "～さん（女性）",
+      "traditionalDecision": {
+        "status": "unavailable",
+        "reason": "「小姐/女士」は候補圖片が存在しないため、追跡可能なソースなしではTraditional形式を確認できません。"
+      },
+      "decision": "rejected",
+      "note": "候補圖片が存在しないため、このticketでは却下します。"
+    },
+    {
+      "vocabularyId": "teacher-star-1-2cfcacc0503e",
+      "sourceSheet": "名词1",
+      "sourceRow": 11,
+      "expectedIllustrationId": "ill-teacher-star-1-2cfcacc0503e",
+      "simplified": "自己",
+      "pinyin": "zì jǐ",
+      "japanese": "自分",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "自己",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "579d0a4d100895611c5d230e5f355dc020b3d89def41d562a8a0bbb72b6e3d4f",
+      "altJa": "自分自身を指さしている人物のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-e7bc12c4f23a",
+      "sourceSheet": "名词1",
+      "sourceRow": 14,
+      "expectedIllustrationId": "ill-teacher-star-1-e7bc12c4f23a",
+      "simplified": "爸爸",
+      "pinyin": "bà ba",
+      "japanese": "お父さん",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "爸爸",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "fdd6c3206c7dfdde6da42132840d19764d3663d7f5a128fc9fbf8d3620b4834a",
+      "altJa": "眼鏡をかけて笑っている中年男性のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-e64490a207eb",
+      "sourceSheet": "名词1",
+      "sourceRow": 15,
+      "expectedIllustrationId": "ill-teacher-star-1-e64490a207eb",
+      "simplified": "妈妈",
+      "pinyin": "mā ma",
+      "japanese": "お母さん",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "媽媽",
+        "provenance": "AI first-pass verification: converted from Simplified"
+      },
+      "candidateSourceChecksumSha256": "52c6e1a4ef1f030184354c26c096593e410b91800209eccb1dbe689b51dc7b99",
+      "altJa": "エプロンを着て優しく微笑んでいる中年女性のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-bada4e11125d",
+      "sourceSheet": "名词1",
+      "sourceRow": 16,
+      "expectedIllustrationId": "ill-teacher-star-1-bada4e11125d",
+      "simplified": "父亲",
+      "pinyin": "fù qin",
+      "japanese": "父親",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "父親",
+        "provenance": "AI first-pass verification: converted from Simplified"
+      },
+      "candidateSourceChecksumSha256": "fdd6c3206c7dfdde6da42132840d19764d3663d7f5a128fc9fbf8d3620b4834a",
+      "altJa": "眼鏡をかけて笑っている中年男性のイラスト。",
+      "decision": "approved",
+      "note": "Row 14（爸爸）と同じ画像（爸爸 父亲.png）を父親の絵として獨立に判斷。"
+    },
+    {
+      "vocabularyId": "teacher-star-1-d903f490725f",
+      "sourceSheet": "名词1",
+      "sourceRow": 17,
+      "expectedIllustrationId": "ill-teacher-star-1-d903f490725f",
+      "simplified": "母亲",
+      "pinyin": "mǔ qin",
+      "japanese": "母親",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "母親",
+        "provenance": "AI first-pass verification: converted from Simplified"
+      },
+      "candidateSourceChecksumSha256": "52c6e1a4ef1f030184354c26c096593e410b91800209eccb1dbe689b51dc7b99",
+      "altJa": "エプロンを着て優しく微笑んでいる中年女性のイラスト。",
+      "decision": "approved",
+      "note": "Row 15（妈妈）と同じ画像（妈妈 母亲.png）を母親の絵として獨立に判斷。"
+    },
+    {
+      "vocabularyId": "teacher-star-1-7420330fee5c",
+      "sourceSheet": "名词1",
+      "sourceRow": 18,
+      "expectedIllustrationId": "ill-teacher-star-1-7420330fee5c",
+      "simplified": "哥哥",
+      "pinyin": "gē ge",
+      "japanese": "お兄さん",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "哥哥",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "f65aefab1e5c6757d97715aead6d40b28d7f3642c123e24190e838cec6cc19e3",
+      "altJa": "若い男性が笑顔で手を振っているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-ed096023b3be",
+      "sourceSheet": "名词1",
+      "sourceRow": 19,
+      "expectedIllustrationId": "ill-teacher-star-1-ed096023b3be",
+      "simplified": "姐姐",
+      "pinyin": "jiě jie",
+      "japanese": "お姉さん",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "姐姐",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "164649c69ef812c4bfd87d4a41e2b239f0098e515f4453d81811bd586ebfda9d",
+      "altJa": "若い女性が笑顔で手を振っているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-cb42fb8775e5",
+      "sourceSheet": "名词1",
+      "sourceRow": 20,
+      "expectedIllustrationId": "ill-teacher-star-1-cb42fb8775e5",
+      "simplified": "弟弟",
+      "pinyin": "dì di",
+      "japanese": "弟",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "弟弟",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "cf0e5e7c71aa9720ed59b4d8f769fbcd488003c2e4fa3aa592233a08099d7467",
+      "altJa": "元気そうな少年が笑顔で立っているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-c39a19585434",
+      "sourceSheet": "名词1",
+      "sourceRow": 23,
+      "expectedIllustrationId": "ill-teacher-star-1-c39a19585434",
+      "simplified": "妹妹",
+      "pinyin": "mèi mei",
+      "japanese": "妹",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "妹妹",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "a3252c5b20ad937441482d270139c23d304201c5254fc5e3a679e552632ec77e",
+      "altJa": "かわいらしい少女が笑っているイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-3e6fabf09358",
+      "sourceSheet": "名词1",
+      "sourceRow": 26,
+      "expectedIllustrationId": "ill-teacher-star-1-3e6fabf09358",
+      "simplified": "爱人",
+      "pinyin": "ài rén",
+      "japanese": "配偶者",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "愛人",
+        "provenance": "AI first-pass verification: converted from Simplified"
+      },
+      "candidateSourceChecksumSha256": "29b23c72642519f6272102b9eff17023b5c304c10d28e2a223a71dc83d5514b6",
+      "altJa": "寄り添って笑顔の男女カップルのイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-1c0cdf0b2b9c",
+      "sourceSheet": "名词1",
+      "sourceRow": 27,
+      "expectedIllustrationId": "ill-teacher-star-1-1c0cdf0b2b9c",
+      "simplified": "丈夫",
+      "pinyin": "zhàng fu",
+      "japanese": "夫",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "丈夫",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "f223a0d766945884475fe361413102b9e62da80617cd9490e043aa0f4e7eacfb",
+      "altJa": "スーツを着て笑顔の男性のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-8fea4ac29b4c",
+      "sourceSheet": "名词1",
+      "sourceRow": 28,
+      "expectedIllustrationId": "ill-teacher-star-1-8fea4ac29b4c",
+      "simplified": "妻子",
+      "pinyin": "qī zi",
+      "japanese": "妻",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "妻子",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "27628bab84145d9acb41da356fe6b8fbf0d6aac453b5c943953f279a451e34cf",
+      "altJa": "笑顔の女性のイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-94757170c2b0",
+      "sourceSheet": "名词1",
+      "sourceRow": 29,
+      "expectedIllustrationId": "ill-teacher-star-1-94757170c2b0",
+      "simplified": "孩子",
+      "pinyin": "hái zi",
+      "japanese": "子ども",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "孩子",
+        "provenance": "AI first-pass verification: Simplified and Traditional are identical"
+      },
+      "candidateSourceChecksumSha256": "9e1c8eacc0b8a1c39cf6c032fc733f1a292a1e07d72d323e0008e6ed57553f87",
+      "altJa": "両手を挙げて笑っている子どものイラスト。",
+      "decision": "approved"
+    },
+    {
+      "vocabularyId": "teacher-star-1-0cc5799cdbbc",
+      "sourceSheet": "名词1",
+      "sourceRow": 30,
+      "expectedIllustrationId": "ill-teacher-star-1-0cc5799cdbbc",
+      "simplified": "儿子",
+      "pinyin": "ér zi",
+      "japanese": "息子",
+      "traditionalDecision": {
+        "status": "verified",
+        "value": "兒子",
+        "provenance": "AI first-pass verification: converted from Simplified"
+      },
+      "candidateSourceChecksumSha256": "9075fde996581ecf9997bc391ae1d0a52c798f005f73aac423b0e4ccdc9d7af8",
+      "altJa": "ランドセルを背負った男の子のイラスト。",
+      "decision": "approved"
+    }
+  ]
+}
