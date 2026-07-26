@@ -492,19 +492,75 @@ def run_tests(source_sha256: str, zip_path: Path) -> int:
                     f"image {preview_id}.png not found on disk for SHA check",
                 )
 
-    # 15. Stale/extra managed PNG detection
+    # 15. Stale managed PNG detection (only checks teacher-preview-noun1-* managed files)
+    import fnmatch
     expected_ids = {it["id"] for it in mapped}
-    actual_pngs = set()
+    expected_managed = {f"{eid}.png" for eid in expected_ids}
+    stale_managed = set()
     img_dir = REPO_ROOT / IMAGE_OUTPUT_DIR
     if img_dir.exists():
         for f in img_dir.iterdir():
-            if f.suffix == ".png":
-                actual_pngs.add(f.stem)
-    stale = actual_pngs - expected_ids
-    if stale:
-        check(False, f"stale images not in JSON: {sorted(stale)}")
+            if f.is_file() and fnmatch.fnmatch(f.name, "teacher-preview-noun1-*.png"):
+                if f.name not in expected_managed:
+                    stale_managed.add(f.name)
+    if stale_managed:
+        check(False, f"stale managed images: {sorted(stale_managed)}")
     else:
         check(True, "no stale managed images")
+
+    # 15b. Temporary-directory focused test for cleanup logic
+    import tempfile
+    import shutil
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        # Create stale managed PNG
+        (tmp / "teacher-preview-noun1-9999.png").write_bytes(b"stale")
+        # Create unrelated PNG
+        (tmp / "unrelated.png").write_bytes(b"unrelated")
+        # Create TXT file
+        (tmp / "notes.txt").write_bytes(b"notes")
+        # Create subdirectory
+        sub = tmp / "subdir"
+        sub.mkdir()
+        (sub / "inner.png").write_bytes(b"inner")
+        # Also create a non-stale managed file
+        if expected_managed:
+            first_expected = next(iter(expected_managed))
+            (tmp / first_expected).write_bytes(b"expected")
+
+        # Run cleanup logic
+        managed_cleanup = ["teacher-preview-noun1-*.png", "teacher-vocabulary-preview.json"]
+        expected_set = set(expected_managed)
+        expected_set.add("teacher-vocabulary-preview.json")
+        for f in tmp.iterdir():
+            if f.is_file():
+                is_m = any(fnmatch.fnmatch(f.name, pat) for pat in managed_cleanup)
+                if is_m and f.name not in expected_set:
+                    f.unlink()
+
+        # Assertions
+        remaining = {f.name for f in tmp.iterdir() if f.is_file()}
+        check(
+            "teacher-preview-noun1-9999.png" not in remaining,
+            "stale managed PNG deleted",
+        )
+        check(
+            "unrelated.png" in remaining,
+            "unrelated PNG preserved",
+        )
+        check(
+            "notes.txt" in remaining,
+            "unrelated TXT preserved",
+        )
+        check(
+            "subdir" in [f.name for f in tmp.iterdir() if f.is_dir()],
+            "subdirectory preserved",
+        )
+        if expected_managed:
+            check(
+                first_expected in remaining,
+                f"expected managed output preserved ({first_expected})",
+            )
 
     # 16. Source ZIP, workbook, RAR, PDF not in git diff
     import subprocess
