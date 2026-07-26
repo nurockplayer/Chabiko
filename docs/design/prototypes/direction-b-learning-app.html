@@ -763,7 +763,15 @@
     color: var(--color-text-secondary);
     font-weight: 500;
     min-height: 1.5em;
+    margin-bottom: var(--space-md);
+  }
+  .vocab-card__zh-traditional {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
     margin-bottom: var(--space-lg);
+    letter-spacing: 0.04em;
   }
   .vocab-card__action {
     min-height: 44px;
@@ -794,6 +802,9 @@
 
   /* Rating buttons */
   .vocab-rating {
+    display: none;
+  }
+  #vocab-revealed-1:target ~ .vocab-rating {
     display: flex;
     gap: var(--space-sm);
     justify-content: center;
@@ -1132,18 +1143,17 @@
     <!-- Flashcard (hidden state — pre-reveal) -->
     <div class="vocab-card" id="vocab-hidden-1">
       <div class="vocab-card__count">1 / 10</div>
-      <div class="vocab-card__zh">我</div>
-      <div class="vocab-card__pinyin" aria-hidden="true">···</div>
-      <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
+      <div class="vocab-card__zh" lang="zh-Hans">我</div>
       <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
     </div>
 
     <!-- Flashcard (revealed state) -->
     <div class="vocab-card" id="vocab-revealed-1">
       <div class="vocab-card__count">1 / 10</div>
-      <div class="vocab-card__zh">我</div>
-      <div class="vocab-card__pinyin">wǒ</div>
-      <div class="vocab-card__ja-revealed">私</div>
+      <div class="vocab-card__zh" lang="zh-Hans">我</div>
+      <div class="vocab-card__pinyin" lang="zh-Latn">wǒ</div>
+      <div class="vocab-card__ja-revealed" lang="ja">私</div>
+      <div class="vocab-card__zh-traditional"><span class="vocab-label" lang="ja">繁体字</span> <span lang="zh-Hant">我</span></div>
       <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
     </div>
 
