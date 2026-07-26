@@ -285,12 +285,16 @@ def copy_selected_images(
             sha_map[preview_id] = file_sha
             expected_files.add(out_filename)
 
-    # Clean stale PNGs and JSON from the output directory
-    expected_files.add("teacher-vocabulary-preview.json")
+    # Clean stale managed files only: teacher-preview-noun1-*.png and teacher-vocabulary-preview.json
+    # Do NOT delete unrelated files or subdirectories
+    import fnmatch
+    managed_patterns = ["teacher-preview-noun1-*.png", "teacher-vocabulary-preview.json"]
     if output_dir.exists():
         for f in output_dir.iterdir():
-            if f.is_file() and f.name not in expected_files:
-                f.unlink()
+            if f.is_file():
+                is_managed = any(fnmatch.fnmatch(f.name, pat) for pat in managed_patterns)
+                if is_managed and f.name not in expected_files:
+                    f.unlink()
 
     return sha_map
 

@@ -53,6 +53,8 @@ import { mountPreviewSession } from '../client/previewSession';
     // Hide empty state, show flashcard
     if (flashcard) flashcard.classList.remove('flashcard--hidden');
     if (emptyState) emptyState.classList.remove('source-not-generated--visible');
+    if (tapHint) tapHint.classList.remove('flashcard__hint--hidden');
+    if (assessmentGroup) assessmentGroup.classList.remove('assessment-group--hidden');
 
     mountPreviewSession({ words: sessionItems }, 'placeholder');
   } catch {

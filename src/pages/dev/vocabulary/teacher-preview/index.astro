@@ -36,7 +36,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 
     <!-- Card area -->
     <div class="card-area" id="cardArea">
-      <div class="flashcard" id="flashcard">
+      <div class="flashcard flashcard--hidden" id="flashcard">
         <div class="flashcard__inner"
              id="flashcardInner"
              tabindex="0"
@@ -62,7 +62,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
       </div>
 
       <!-- Empty state — shown when local source has not been generated -->
-      <div class="source-not-generated" id="emptyState">
+      <div class="source-not-generated source-not-generated--visible" id="emptyState">
         <div class="source-not-generated__icon" aria-hidden="true">!</div>
         <div class="source-not-generated__text">LOCAL SOURCE NOT GENERATED</div>
         <div class="source-not-generated__hint">

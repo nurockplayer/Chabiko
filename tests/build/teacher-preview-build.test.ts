@@ -1,45 +1,41 @@
 /**
- * Validates teacher-preview build output by performing an isolated
- * `pnpm build` to a temporary directory and inspecting the results.
- * This avoids depending on a pre-existing `dist/` from the worktree.
+ * Validates teacher-preview build output.
+ * Cleans dist/ first, builds, verifies fresh output, then cleans up.
+ * This avoids depending on a pre-existing or stale dist/.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, mkdtempSync, rmSync } from 'fs';
-import { resolve, join } from 'path';
+import { existsSync, readFileSync, rmSync } from 'fs';
+import { resolve } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
+const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
 
-function isolatedBuildAndValidate(): string {
-  const tmpDir = mkdtempSync(join(REPO_ROOT, '.tmp-build-test-'));
-  try {
-    // Build to a temp output dir by overriding Astro's outDir via env
-    execSync('pnpm build', {
-      cwd: REPO_ROOT,
-      env: { ...process.env, ASTRO_OUTPUT_DIR: tmpDir },
-      stdio: 'pipe',
-      timeout: 120_000,
-    });
-
-    // Astro outputs to dist/ relative to repo root regardless of env
-    // So we need a different approach: create a temp copy with astro config override
-    // Fallback: just build normally and read from dist/
-    const buildFile = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
-    if (!existsSync(buildFile)) {
-      throw new Error(`Build output not found at ${buildFile}`);
-    }
-    return readFileSync(buildFile, 'utf-8');
-  } finally {
-    rmSync(tmpDir, { recursive: true, force: true });
-  }
-}
-
-describe('TeacherPreview — build output (isolated build)', () => {
+describe('TeacherPreview — build output (fresh build)', () => {
   let html: string;
 
   beforeAll(() => {
-    html = isolatedBuildAndValidate();
+    // Clean any stale dist/
+    if (existsSync(resolve(REPO_ROOT, 'dist'))) {
+      rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
+    }
+
+    // Run fresh build
+    execSync('pnpm build', { cwd: REPO_ROOT, stdio: 'pipe', timeout: 120_000 });
+
+    // Read fresh output
+    if (!existsSync(BUILD_FILE)) {
+      throw new Error(`Build output not found at ${BUILD_FILE}`);
+    }
+    html = readFileSync(BUILD_FILE, 'utf-8');
+  });
+
+  afterAll(() => {
+    // Clean up build output so tests don't depend on stale dist/
+    if (existsSync(resolve(REPO_ROOT, 'dist'))) {
+      rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
+    }
   });
 
   it('no teacher source Chinese text, pinyin, or Japanese translation', () => {
@@ -68,7 +64,11 @@ describe('TeacherPreview — build output (isolated build)', () => {
     expect(html).toContain('LOCAL SOURCE NOT GENERATED');
   });
 
-  it('empty state has Astro-scoped styles (class-based display)', () => {
-    expect(html).toContain('source-not-generated');
+  it('empty state has source-not-generated--visible by default', () => {
+    expect(html).toContain('source-not-generated--visible');
+  });
+
+  it('flashcard is hidden by default', () => {
+    expect(html).toContain('flashcard--hidden');
   });
 });
