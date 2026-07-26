@@ -562,13 +562,16 @@
   /* --- Completion state ----------------------------------------- */
   .completion {
     text-align: center;
-    padding: var(--space-xl) var(--space-md);
+    padding: var(--space-lg) var(--space-md);
     background: var(--color-primary-light);
-    margin-bottom: var(--space-xl);
+    margin-bottom: 0;
   }
   .completion__icon {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1rem;
     background: var(--color-primary);
     color: #fff;
     font-size: 1.25rem;
@@ -621,7 +624,7 @@
 
   /* --- Vocabulary Session --------------------------------------- */
   .vocab-section {
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--space-md);
     padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
   }
@@ -630,8 +633,8 @@
   .vocab-setup {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-xl);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
   }
   .vocab-setup__row {
     display: flex;
@@ -697,9 +700,9 @@
   .vocab-card {
     background: var(--color-surface);
     border-top: 4px solid var(--color-primary);
-    padding: var(--space-xl) var(--space-lg);
+    padding: var(--space-lg) var(--space-lg);
     text-align: center;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
   }
   .vocab-card__count {
     font-size: 0.75rem;
@@ -794,7 +797,7 @@
     gap: var(--space-sm);
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
   }
   .vocab-rating__btn {
     min-height: 52px;
