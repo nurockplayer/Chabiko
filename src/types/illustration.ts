@@ -11,6 +11,10 @@ export interface IllustrationRights {
   attributionRequired: boolean;
   attributionText?: string;
   reuseOutsideChabiko: 'not-granted' | 'granted';
+  /** Exclude pending-rights-only fields structurally. */
+  status?: never;
+  source?: never;
+  note?: never;
 }
 
 /** Provisional pending-rights draft — rights verification not yet complete.
@@ -19,6 +23,14 @@ export interface TeacherProvidedPendingRights {
   status: 'pending';
   source: 'teacher-provided';
   note: string;
+  /** Exclude all cleared-rights fields structurally. */
+  basis?: never;
+  publicWebDisplay?: never;
+  staticAssetRedistribution?: never;
+  modificationScope?: never;
+  attributionRequired?: never;
+  attributionText?: never;
+  reuseOutsideChabiko?: never;
 }
 
 /** Fields common to all illustration variants. */

@@ -77,6 +77,40 @@ describe('illustration type contract – cleared rights with every status', () =
   }
 });
 
+describe('type-level contract – mixed (pending + cleared) rights rejected for all statuses', () => {
+  // A variable holding both pending and cleared fields must be structurally
+  // rejected for every reviewStatus, not just via excess-property checking.
+  const mixedRights = {
+    status: 'pending' as const,
+    source: 'teacher-provided' as const,
+    note: 'test note',
+    basis: 'commissioned-for-chabiko' as const,
+    publicWebDisplay: true as const,
+    staticAssetRedistribution: true as const,
+    modificationScope: 'technical-only' as const,
+    attributionRequired: false as const,
+    reuseOutsideChabiko: 'not-granted' as const,
+  };
+
+  it('mixed rights + draft is a compile-time error', () => {
+    // @ts-expect-error – mixed pending+cleared is structurally invalid for Illustration
+    const _ill: Illustration = { ...makeBase(), reviewStatus: 'draft' as const, rights: mixedRights };
+    expect(_ill).toBeDefined();
+  });
+
+  it('mixed rights + reviewed is a compile-time error', () => {
+    // @ts-expect-error – mixed pending+cleared is structurally invalid for Illustration
+    const _ill: Illustration = { ...makeBase(), reviewStatus: 'reviewed' as const, rights: mixedRights };
+    expect(_ill).toBeDefined();
+  });
+
+  it('mixed rights + published is a compile-time error', () => {
+    // @ts-expect-error – mixed pending+cleared is structurally invalid for Illustration
+    const _ill: Illustration = { ...makeBase(), reviewStatus: 'published' as const, rights: mixedRights };
+    expect(_ill).toBeDefined();
+  });
+});
+
 describe('type-level contract – pending rights rejected for non-draft statuses', () => {
   const pendingRights = {
     status: 'pending' as const,
