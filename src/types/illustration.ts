@@ -21,7 +21,8 @@ export interface TeacherProvidedPendingRights {
   note: string;
 }
 
-export interface Illustration {
+/** Fields common to all illustration variants. */
+interface IllustrationBase {
   id: string;
   vocabularyId: string;
   assetPath: string;
@@ -31,6 +32,20 @@ export interface Illustration {
   mimeType: IllustrationMimeType;
   fileSizeBytes: number;
   altJa: string;
-  rights: IllustrationRights | TeacherProvidedPendingRights;
-  reviewStatus: ReviewStatus;
 }
+
+/** Illustration whose rights are a discriminated union on reviewStatus.
+ *
+ * - `reviewStatus: 'draft'` permits either pending or cleared rights.
+ * - `reviewStatus: 'reviewed' | 'published'` requires cleared rights only.
+ */
+export type Illustration = IllustrationBase & (
+  | {
+      reviewStatus: 'draft';
+      rights: IllustrationRights | TeacherProvidedPendingRights;
+    }
+  | {
+      reviewStatus: Exclude<ReviewStatus, 'draft'>;
+      rights: IllustrationRights;
+    }
+);
