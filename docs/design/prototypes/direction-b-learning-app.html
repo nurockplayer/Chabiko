@@ -830,9 +830,32 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+  .vocab-rating__btn {
+    min-height: 52px;
+    min-width: 52px;
+    padding: var(--space-sm) var(--space-md);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    max-width: 120px;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
   .vocab-rating__label {
     font-size: 0.6875rem;
     font-weight: 500;
+    white-space: nowrap;
   }
 
   /* Completion variants */
