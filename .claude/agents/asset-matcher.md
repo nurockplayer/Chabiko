@@ -69,7 +69,7 @@ Return a single structured result. Omit the JSON code block fence — return raw
         "unrelated_image"
       ],
       "altJa": "string (only for match; describes visible scene, not the label)",
-      "alternatives": ["string | null"]
+      "alternatives": ["path/to/alternative-candidate.png"]
     }
   ]
 }
@@ -83,4 +83,5 @@ Return a single structured result. Omit the JSON code block fence — return raw
 - Shared or repeated source images must be flagged with `"duplicate_source"`, not silently hidden.
 - The result must include every supplied vocabulary row exactly once.
 - Unused candidate images must be listed in `batchSummary.unusedCandidateImages`.
+- `alternatives` is an optional `string[]`. Omit the field when no alternatives exist. Entries must not be `null`.
 - Report only what you observe. Do not fabricate certainty about ambiguous candidates.
