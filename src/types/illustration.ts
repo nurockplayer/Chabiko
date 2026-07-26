@@ -2,6 +2,7 @@ import type { ReviewStatus } from './vocabulary';
 
 export type IllustrationMimeType = 'image/webp' | 'image/png';
 
+/** Cleared illustration rights — formal permission granted. */
 export interface IllustrationRights {
   basis: 'commissioned-for-chabiko';
   publicWebDisplay: true;
@@ -10,6 +11,14 @@ export interface IllustrationRights {
   attributionRequired: boolean;
   attributionText?: string;
   reuseOutsideChabiko: 'not-granted' | 'granted';
+}
+
+/** Provisional pending-rights draft — rights verification not yet complete.
+ * Only valid when the illustration reviewStatus is 'draft'. */
+export interface TeacherProvidedPendingRights {
+  status: 'pending';
+  source: 'teacher-provided';
+  note: string;
 }
 
 export interface Illustration {
@@ -22,6 +31,6 @@ export interface Illustration {
   mimeType: IllustrationMimeType;
   fileSizeBytes: number;
   altJa: string;
-  rights: IllustrationRights;
+  rights: IllustrationRights | TeacherProvidedPendingRights;
   reviewStatus: ReviewStatus;
 }

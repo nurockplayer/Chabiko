@@ -423,6 +423,12 @@ Illustrations are stored under the `illustrations` collection key.
 
 ### Rights Object
 
+Illustration rights have two mutually exclusive variants.
+
+#### Variant A: Cleared Rights
+
+Formal permission granted. Required when `reviewStatus` is `"reviewed"` or `"published"`.
+
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `basis` | yes | `"commissioned-for-chabiko"` | Legal basis |
@@ -432,6 +438,16 @@ Illustrations are stored under the `illustrations` collection key.
 | `attributionRequired` | yes | boolean | Whether attribution is needed |
 | `attributionText` | conditional | string (non-empty) | Required and non-empty exactly when `attributionRequired` is `true`; must be absent otherwise |
 | `reuseOutsideChabiko` | yes | `"not-granted"` \| `"granted"` | Whether the asset can be reused outside Chabiko |
+
+#### Variant B: Pending Rights (Draft Only)
+
+Provisional rights metadata for draft illustrations where formal verification is still in progress. May only appear when `reviewStatus` is `"draft"`. Does not claim any usage or redistribution permission.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `status` | yes | `"pending"` | Rights status |
+| `source` | yes | `"teacher-provided"` | Provider of the image |
+| `note` | yes | string (non-empty) | Rights context or status note |
 
 ### Illustration Validation Rules
 
@@ -443,6 +459,10 @@ Illustrations are stored under the `illustrations` collection key.
 - `assetPath` must begin `/assets/vocabulary/teacher-core-v1/` and end with the correct extension for its MIME type.
 - `attributionText` is required and non-empty exactly when `attributionRequired` is true; otherwise it must be absent.
 - Unknown illustration or rights fields fail validation.
+- `rights` is a discriminated union. Pending-rights variant (`rights.status === "pending"`) is only valid when `reviewStatus` is `"draft"`. Cleared-rights variant (`rights.basis === "commissioned-for-chabiko"`) is valid at any `reviewStatus`.
+- Reviewed or published illustrations with the pending-rights variant fail validation.
+- Pending-rights `note` must be non-empty.
+- Pending-rights objects must not contain fields outside `{status, source, note}`.
 - Duplicate illustration IDs fail deterministically.
 - Duplicate `vocabularyId` links fail (exactly one illustration per vocabulary record).
 
