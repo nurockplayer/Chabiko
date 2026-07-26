@@ -6,8 +6,8 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, rmSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync, readFileSync, readdirSync, rmSync } from 'fs';
+import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
@@ -69,6 +69,27 @@ describe('TeacherPreview — build output (fresh build)', () => {
   });
 
   it('flashcard is hidden by default', () => {
+    expect(html).toContain('flashcard--hidden');
+  });
+
+  it('flashcard hidden rule has higher specificity than .flashcard default', () => {
+    // The CSS file must have a higher-specificity selector like
+    // .flashcard[data-astro-cid-XXX].flashcard--hidden
+    // that beats .flashcard[data-astro-cid-XXX] { display: flex }
+    const cssDir = resolve(REPO_ROOT, 'dist/_astro');
+    if (existsSync(cssDir)) {
+      const cssFiles = readdirSync(cssDir).filter((f) => f.endsWith('.css'));
+      for (const cf of cssFiles) {
+        const css = readFileSync(join(cssDir, cf), 'utf-8');
+        if (css.includes('flashcard--hidden')) {
+          // Must contain a selector with both class scoped and hidden
+          expect(css).toMatch(/\.flashcard\[data-astro-cid-[\w]+\]\.flashcard--hidden/);
+          expect(css).not.toMatch(/[^.\]]\.flashcard--hidden\{/);
+          return;
+        }
+      }
+    }
+    // Fallback: if no CSS files found (shouldn't happen after build), at least check class present
     expect(html).toContain('flashcard--hidden');
   });
 });
