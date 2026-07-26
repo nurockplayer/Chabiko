@@ -381,15 +381,25 @@
     padding: var(--space-md) var(--space-lg);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
+    font-family: inherit;
     font-size: 0.9375rem;
     color: var(--color-text);
     text-align: left;
     min-height: 52px;
+    cursor: pointer;
+  }
+  .quiz-choice:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
   .quiz-choice--correct {
     border-color: var(--color-success);
     background: var(--color-success-bg);
     position: relative;
+  }
+  .quiz-choice--incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
   }
   .quiz-choice__indicator {
     width: 22px;
@@ -414,6 +424,17 @@
     background: var(--color-surface);
     display: block;
   }
+  .quiz-choice--incorrect .quiz-choice__indicator {
+    border-color: var(--color-error);
+    background: var(--color-error);
+  }
+  .quiz-choice--incorrect .quiz-choice__indicator::after {
+    content: '✕';
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    display: block;
+  }
 
   /* --- Feedback ------------------------------------------------ */
   .feedback {
@@ -424,6 +445,10 @@
     display: flex;
     align-items: flex-start;
     gap: var(--space-md);
+  }
+  .feedback--incorrect {
+    border-left-color: var(--color-error);
+    background: var(--color-error-bg);
   }
   .feedback__icon {
     width: 24px;
@@ -439,10 +464,371 @@
     flex-shrink: 0;
     margin-top: 2px;
   }
+  .feedback__icon--incorrect {
+    background: var(--color-error);
+  }
+  .feedback__body {
+    flex: 1;
+  }
   .feedback__text {
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-text);
+  }
+  .feedback__detail {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+    line-height: 1.5;
+  }
+  .feedback__correct-answer {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  /* --- Info Section (chunk / example) --------------------------- */
+  .info-section {
+    margin-bottom: var(--space-xl);
+  }
+  .info-section__content {
+    background: var(--color-surface);
+    padding: var(--space-lg);
+    border-top: 4px solid var(--color-primary);
+  }
+
+  /* Chunk item */
+  .chunk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+  }
+  .chunk-item + .chunk-item {
+    border-top: 1px solid var(--color-border);
+  }
+  .chunk-item__zh {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+    min-width: 5rem;
+  }
+  .chunk-item__details {
+    flex: 1;
+  }
+  .chunk-item__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2px;
+  }
+  .chunk-item__ja {
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+  }
+  .chunk-item__note {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Example inline */
+  .example-inline {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+  .example-inline__zh {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    min-width: 6rem;
+  }
+  .example-inline__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .example-inline__ja {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Completion state ----------------------------------------- */
+  .completion {
+    text-align: center;
+    padding: var(--space-lg) var(--space-md);
+    background: var(--color-primary-light);
+    margin-bottom: 0;
+  }
+  .completion__icon {
+    width: 40px;
+    height: 40px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1rem;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1.25rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+  .completion__text {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Lesson Navigation ---------------------------------------- */
+  .lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-xl);
+  }
+  .lesson-nav__link {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0 var(--space-sm);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .lesson-nav__link:hover { color: var(--color-primary); }
+  .lesson-nav__link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  .lesson-nav__link--next { margin-left: auto; }
+  .lesson-nav__index {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  /* --- Vocabulary Session --------------------------------------- */
+  .vocab-section {
+    margin-bottom: var(--space-md);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Setup panel */
+  .vocab-setup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+  .vocab-setup__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  .vocab-setup__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    min-width: 5rem;
+  }
+  .vocab-setup__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+  .vocab-setup__btn {
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    min-width: 64px;
+  }
+  .vocab-setup__btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .vocab-setup__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  .vocab-setup__btn--active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .vocab-setup__start {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-xl);
+    border: none;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .vocab-setup__start:hover { filter: brightness(0.85); }
+  .vocab-setup__start:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Flashcard */
+  .vocab-card {
+    background: var(--color-surface);
+    border-top: 4px solid var(--color-primary);
+    padding: var(--space-lg) var(--space-lg);
+    text-align: center;
+    margin-bottom: var(--space-md);
+  }
+  .vocab-card__count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-lg);
+  }
+  .vocab-card__zh {
+    font-family: var(--font-zh);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    margin-bottom: var(--space-md);
+  }
+  .vocab-card__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.06em;
+    margin-bottom: var(--space-sm);
+  }
+  .vocab-card__ja-revealed {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    min-height: 1.5em;
+    margin-bottom: var(--space-lg);
+  }
+  .vocab-card__ja-hidden {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    min-height: 1.5em;
+    margin-bottom: var(--space-lg);
+    letter-spacing: 0.2em;
+  }
+  .vocab-card__zh-simplified {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+    letter-spacing: 0.04em;
+  }
+  .vocab-label {
+    display: inline-block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: var(--color-text-secondary);
+    padding: 1px 5px;
+    margin-right: 4px;
+    border-radius: 3px;
+    vertical-align: middle;
+  }
+  .vocab-card__action {
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-xl);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+  .vocab-card__action:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+  }
+  .vocab-card__action:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Flashcard hide/reveal toggle */
+  .vocab-card { display: none; }
+  .vocab-section:not(:has(.vocab-card:target)) #vocab-hidden-1 { display: block; }
+  .vocab-card:target { display: block; }
+
+  /* Rating buttons */
+  .vocab-rating {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-md);
+  }
+  .vocab-rating__btn {
+    min-height: 52px;
+    min-width: 52px;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    max-width: 110px;
+  }
+  .vocab-rating__btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+  }
+  .vocab-rating__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  .vocab-rating__label {
+    font-size: 0.6875rem;
+    font-weight: 500;
   }
 
   /* --- Desktop Layout (1024px+) --------------------------------- */
@@ -605,30 +991,154 @@
       </div>
     </section>
 
+    <!-- ----- Chunk Breakdown ----- -->
+    <section class="info-section" aria-labelledby="chunk-label">
+      <h2 id="chunk-label" class="section-label">単語の分解</h2>
+      <div class="info-section__content">
+        <div class="chunk-item">
+          <div class="chunk-item__zh" lang="zh-Hant">我要</div>
+          <div class="chunk-item__details">
+            <div class="chunk-item__pinyin" lang="zh-Latn">wǒ yào</div>
+            <div class="chunk-item__ja">私は〜が欲しい</div>
+            <div class="chunk-item__note">日本語の「欲しい」と違い、中国語では「要」が意志を表す</div>
+          </div>
+        </div>
+        <div class="chunk-item">
+          <div class="chunk-item__zh" lang="zh-Hant">這個</div>
+          <div class="chunk-item__details">
+            <div class="chunk-item__pinyin" lang="zh-Latn">zhège</div>
+            <div class="chunk-item__ja">これ</div>
+            <div class="chunk-item__note">「這」＝これ、「個」＝量詞。指差しで使う</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----- Example Sentence ----- -->
+    <section class="info-section" aria-labelledby="example-label">
+      <h2 id="example-label" class="section-label">例文</h2>
+      <div class="info-section__content">
+        <div class="example-inline">
+          <span class="example-inline__zh" lang="zh-Hant">我要那個</span>
+          <span class="example-inline__pinyin" lang="zh-Latn">wǒ yào nàge</span>
+          <span class="example-inline__ja">それをください</span>
+        </div>
+      </div>
+    </section>
+
     <!-- ----- Quiz Section ----- -->
     <section class="quiz-section" aria-labelledby="quiz-label">
       <h2 id="quiz-label" class="section-label">確認クイズ</h2>
       <div class="quiz-progress">質問 1 / 2</div>
-      <p class="quiz-prompt">「我要這個」はどういう意味？</p>
-      <ul class="quiz-choices">
-        <li class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
+      <p class="quiz-prompt" lang="ja">「<span lang="zh-Hant">我要這個</span>」はどういう意味？</p>
+      <div class="quiz-choices">
+        <button class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           これをください
-        </li>
-        <li class="quiz-choice">
+        </button>
+        <button class="quiz-choice quiz-choice--incorrect">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           私は〜が欲しい
-        </li>
-        <li class="quiz-choice">
+        </button>
+        <button class="quiz-choice">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           これはいくらですか
-        </li>
-      </ul>
+        </button>
+      </div>
 
-      <!-- Correct feedback state -->
+      <!-- Correct feedback -->
       <div class="feedback" role="status" aria-live="polite">
         <span class="feedback__icon" aria-hidden="true">✓</span>
         <span class="feedback__text">正解！</span>
+      </div>
+
+      <!-- Incorrect feedback -->
+      <div class="feedback feedback--incorrect" role="status" aria-live="polite">
+        <span class="feedback__icon feedback__icon--incorrect" aria-hidden="true">✕</span>
+        <div class="feedback__body">
+          <span class="feedback__text">不正解。</span>
+          <div class="feedback__detail">
+            正解：<span class="feedback__correct-answer">これをください</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----- Completion State ----- -->
+    <div class="completion" id="completion" role="alert" aria-live="polite">
+      <div class="completion__icon" aria-hidden="true">✔</div>
+      <div class="completion__text">練習完了！レッスンをクリアしました。</div>
+    </div>
+
+    <!-- ----- Lesson Navigation ----- -->
+    <nav class="lesson-nav" aria-label="レッスンナビゲーション">
+      <button class="lesson-nav__link">← 前のレッスン</button>
+      <span class="lesson-nav__index">1 / 3</span>
+      <button class="lesson-nav__link lesson-nav__link--next">次のレッスン →</button>
+    </nav>
+
+    <!-- ----- Vocabulary Session ----- -->
+    <section class="vocab-section" aria-labelledby="vocab-label">
+      <h2 id="vocab-label" class="section-label">単語練習</h2>
+
+      <!-- Setup -->
+      <div class="vocab-setup">
+        <div class="vocab-setup__row">
+          <span class="vocab-setup__label">単語数</span>
+          <div class="vocab-setup__options">
+            <button class="vocab-setup__btn vocab-setup__btn--active" aria-pressed="true">10語</button>
+            <button class="vocab-setup__btn" aria-pressed="false">20語</button>
+          </div>
+        </div>
+        <div class="vocab-setup__row">
+          <span class="vocab-setup__label">方向</span>
+          <div class="vocab-setup__options">
+            <button class="vocab-setup__btn vocab-setup__btn--active" aria-pressed="true">中国語 → 日本語</button>
+            <button class="vocab-setup__btn" aria-pressed="false">日本語 → 中国語</button>
+          </div>
+        </div>
+        <button class="vocab-setup__start">セッションを開始</button>
+      </div>
+
+      <!-- Flashcard (hidden state) -->
+      <div class="vocab-card" id="vocab-hidden-1">
+        <div class="vocab-card__count">1 / 10</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label" lang="ja">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label" lang="ja">簡</span> 我</div>
+        <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
+        <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
+      </div>
+
+      <!-- Flashcard (revealed state) -->
+      <div class="vocab-card" id="vocab-revealed-1">
+        <div class="vocab-card__count">1 / 10</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label" lang="ja">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label" lang="ja">簡</span> 我</div>
+        <div class="vocab-card__pinyin" lang="zh-Latn">wǒ</div>
+        <div class="vocab-card__ja-revealed">私</div>
+        <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
+      </div>
+
+      <!-- Rating -->
+      <div class="vocab-rating">
+        <button class="vocab-rating__btn">
+          <span class="vocab-rating__label">また忘れた</span>
+        </button>
+        <button class="vocab-rating__btn">
+          <span class="vocab-rating__label">難しい</span>
+        </button>
+        <button class="vocab-rating__btn">
+          <span class="vocab-rating__label">まあまあ</span>
+        </button>
+        <a href="#vocab-complete" class="vocab-rating__btn">
+          <span class="vocab-rating__label">できた！</span>
+        </a>
+      </div>
+
+      <!-- Completion -->
+      <div class="completion" id="vocab-complete" role="alert" aria-live="polite">
+        <div class="completion__icon" aria-hidden="true">✔</div>
+        <div class="completion__text">練習完了！レッスンをクリアしました。</div>
       </div>
     </section>
 
