@@ -752,10 +752,11 @@
   }
   .vocab-card__ja-hidden {
     font-size: 0.9375rem;
-    color: transparent;
+    color: var(--color-text-muted);
     font-weight: 500;
     min-height: 1.5em;
     margin-bottom: var(--space-lg);
+    letter-spacing: 0.2em;
   }
   .vocab-card__ja-revealed {
     font-size: 0.9375rem;
@@ -813,6 +814,8 @@
     gap: 2px;
     flex: 1;
     max-width: 120px;
+    text-decoration: none;
+    box-sizing: border-box;
   }
   .vocab-rating__btn:hover {
     border-color: var(--color-accent);
@@ -870,8 +873,15 @@
   /* --- Demo: JS-free feedback toggle --------------------------- */
   .feedback { display: none; }
   .feedback:target { display: flex; }
-  .completion { display: none; }
-  .completion:target { display: block; }
+  /* Completion always visible as fixture state */
+  .completion { display: block; }
+
+  /* JS-free flashcard toggle: use anchors on each card */
+  .vocab-card { display: none; }
+  /* When no card is targeted in this section, show the hidden card (default) */
+  .vocab-section:not(:has(.vocab-card:target)) #vocab-hidden-1 { display: block; }
+  /* When a card IS targeted, show only that one */
+  .vocab-card:target { display: block; }
 </style>
 </head>
 <body>
@@ -1091,13 +1101,22 @@
       <button class="vocab-setup__start">セッションを開始</button>
     </div>
 
+    <!-- Flashcard (hidden state — pre-reveal) -->
+    <div class="vocab-card" id="vocab-hidden-1">
+      <div class="vocab-card__count">1 / 10</div>
+      <div class="vocab-card__zh">我</div>
+      <div class="vocab-card__pinyin">wǒ</div>
+      <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
+      <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
+    </div>
+
     <!-- Flashcard (revealed state) -->
-    <div class="vocab-card">
+    <div class="vocab-card" id="vocab-revealed-1">
       <div class="vocab-card__count">1 / 10</div>
       <div class="vocab-card__zh">我</div>
       <div class="vocab-card__pinyin">wǒ</div>
       <div class="vocab-card__ja-revealed">私</div>
-      <button class="vocab-card__action">意味を隠す</button>
+      <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
     </div>
 
     <!-- Rating -->
@@ -1111,13 +1130,13 @@
       <button class="vocab-rating__btn">
         <span class="vocab-rating__label">まあまあ</span>
       </button>
-      <button class="vocab-rating__btn">
+      <a href="#vocab-complete" class="vocab-rating__btn">
         <span class="vocab-rating__label">できた！</span>
-      </button>
+      </a>
     </div>
 
     <!-- Completion -->
-    <div class="completion completion--vocab" id="vocab-complete">
+    <div class="completion" id="vocab-complete">
       <div class="completion__icon" aria-hidden="true">✔</div>
       <div class="completion__text">練習完了！レッスンをクリアしました。</div>
     </div>
