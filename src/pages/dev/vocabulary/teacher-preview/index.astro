@@ -1,21 +1,24 @@
 ---
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import { SESSION_WORDS } from '../../../../fixtures/basicVocabularyPreview';
-
-const json = JSON.stringify({ words: SESSION_WORDS });
 ---
 
-<BaseLayout title="DEV — ベーシック単語カード プレビュー" robots="noindex, nofollow">
-  <div class="dev-banner" role="note">
-    DEVELOPMENT PREVIEW — MOCK VOCABULARY AND IMAGES — NOT PRODUCTION CONTENT
+<BaseLayout title="DEV — 教師単語カード プレビュー" robots="noindex, nofollow">
+  <div class="dev-banner dev-banner--teacher" role="note">
+    DEVELOPMENT PREVIEW — UNREVIEWED TEACHER CONTENT AND IMAGES — NOT PRODUCTION CONTENT
   </div>
 
   <div class="app-wrapper" role="main">
     <!-- Header -->
     <header class="app-header">
       <span class="app-header__title">Chabiko</span>
-      <span class="app-header__badge">DEV PREVIEW</span>
+      <span class="app-header__badge">DEV TEACHER</span>
     </header>
+
+    <!-- Source info -->
+    <div class="source-info" id="sourceInfo">
+      <span class="source-info__sha" id="sourceSha">—</span>
+      <span class="source-info__status" id="sourceStatus">loading…</span>
+    </div>
 
     <!-- Progress -->
     <div class="progress-section">
@@ -33,7 +36,7 @@ const json = JSON.stringify({ words: SESSION_WORDS });
 
     <!-- Card area -->
     <div class="card-area" id="cardArea">
-      <div class="flashcard">
+      <div class="flashcard flashcard--hidden" id="flashcard">
         <div class="flashcard__inner"
              id="flashcardInner"
              tabindex="0"
@@ -42,9 +45,9 @@ const json = JSON.stringify({ words: SESSION_WORDS });
              aria-describedby="tapHint">
           <div class="flashcard-front" id="flashcardFront">
             <div class="flashcard-front__image">
-              <img id="mockImage" class="mock-img" src="" alt="MOCK IMAGE" width="960" height="720" loading="lazy" />
+              <img id="mockImage" class="mock-img" src="" alt="" width="960" height="720" loading="lazy" />
               <div class="mock-img-fallback" id="imgFallback">
-                <span>MOCK IMAGE</span>
+                <span>NO IMAGE</span>
               </div>
             </div>
             <div class="flashcard-front__zh" id="frontZh" lang="zh-Hans">—</div>
@@ -54,13 +57,21 @@ const json = JSON.stringify({ words: SESSION_WORDS });
             <div class="flashcard-back__pinyin" id="backPinyin" lang="zh-Latn">—</div>
             <div class="flashcard-back__label">日本語</div>
             <div class="flashcard-back__ja" id="backJa">—</div>
-            <div class="flashcard-back__label">繁体字</div>
-            <div class="flashcard-back__traditional" id="backTraditional" lang="zh-Hant">—</div>
           </div>
         </div>
       </div>
 
-      <p class="flashcard__hint" id="tapHint">タップして答えを表示</p>
+      <!-- Empty state — shown when local source has not been generated -->
+      <div class="source-not-generated source-not-generated--visible" id="emptyState">
+        <div class="source-not-generated__icon" aria-hidden="true">!</div>
+        <div class="source-not-generated__text">LOCAL SOURCE NOT GENERATED</div>
+        <div class="source-not-generated__hint">
+          Run <code>uv run --locked python scripts/build-teacher-vocabulary-preview.py</code>
+          from the repository root to generate the teacher vocabulary preview data.
+        </div>
+      </div>
+
+      <p class="flashcard__hint flashcard__hint--hidden" id="tapHint">タップして答えを表示</p>
 
       <div class="assessment-group assessment-group--hidden" id="assessmentGroup">
         <button class="btn-assessment btn-assessment--retry" id="btnRetry" type="button">
@@ -77,7 +88,7 @@ const json = JSON.stringify({ words: SESSION_WORDS });
       <div class="completion" id="completionScreen">
         <div class="completion__icon" aria-hidden="true">✓</div>
         <div class="completion__title" id="completionTitle" tabindex="-1">お疲れ様でした</div>
-        <div class="completion__text">ベーシック単語カードの練習が終了しました。</div>
+        <div class="completion__text">教師プレビュー単語カードの練習が終了しました。</div>
         <div class="completion__stats">
           <div class="completion__stat">
             <span class="completion__stat-value" id="statKnew">0</span>
@@ -94,31 +105,52 @@ const json = JSON.stringify({ words: SESSION_WORDS });
         </div>
         <button class="btn-restart" id="btnRestart" type="button">もう一度挑戦する</button>
       </div>
-      </div>
-
-      <script id="session-data" type="application/json" set:html={json}></script>
-
-      <footer class="app-footer">
-        <p class="app-footer__text">Chabiko · Dev Preview · Not Production</p>
-      </footer>
     </div>
 
-  <script>
-    import { mountPreviewSession } from '../../../../client/previewSession';
-      (function () {
-        const el = document.getElementById('session-data');
-        const data = JSON.parse(el?.textContent || '{"words":[]}');
-        mountPreviewSession(data);
-      })();
-    </script>
-  </BaseLayout>
+    <footer class="app-footer">
+      <p class="app-footer__text">Chabiko · Teacher Dev Preview · Not Production</p>
+    </footer>
+  </div>
+
+  <script src="../../../../scripts/teacher-preview-init.ts"></script>
+</BaseLayout>
 
 <style>
-  /* ── Dev banner ───── */
   .dev-banner {
     background: #fef3c7; border: 2px solid #f59e0b; color: #92400e;
     text-align: center; font-weight: 700; font-size: 0.8125rem;
     padding: 10px 16px; letter-spacing: 0.02em;
+  }
+  .dev-banner--teacher {
+    background: #eef2ff; border-color: #6366f1; color: #3730a3;
+  }
+  .source-info {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-sm) 0;
+    font-size: 0.625rem; color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .source-info__sha { font-family: monospace; }
+  .source-info__status {
+    background: #fef3c7; border-radius: 99px;
+    padding: 1px 8px; color: #92400e; font-weight: 600;
+  }
+  .source-not-generated {
+    display: none; flex-direction: column; align-items: center;
+    justify-content: center; flex: 1; text-align: center;
+    padding: var(--space-xl) var(--space-md); gap: var(--space-md);
+  }
+  .source-not-generated--visible { display: flex; }
+  .flashcard.flashcard--hidden { display: none; }
+  .source-not-generated__icon {
+    font-size: 1.5rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .source-not-generated__text {
+    font-size: 1rem; font-weight: 600; color: var(--color-text);
+  }
+  .source-not-generated__hint {
+    font-size: 0.8125rem; color: var(--color-text-secondary); max-width: 320px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -128,7 +160,7 @@ const json = JSON.stringify({ words: SESSION_WORDS });
     color: #0f172a; background: #f4f7fc; line-height: 1.7;
     overflow-wrap: break-word; -webkit-font-smoothing: antialiased;
   }
-  :root {
+  :global(:root) {
     --color-bg: #f4f7fc; --color-surface: #fff; --color-text: #0f172a;
     --color-text-secondary: #475569; --color-text-muted: #5b6570;
     --color-accent: #0f766e; --color-border: #e2e8f0; --color-border-light: #f1f5f9;
@@ -142,7 +174,6 @@ const json = JSON.stringify({ words: SESSION_WORDS });
     --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px;
     --radius-card: 12px; --radius-btn: 8px; --radius-progress: 99px;
   }
-
   .app-wrapper {
     max-width: var(--max-width); margin: 0 auto; padding: 0 var(--space-md);
     min-height: 100dvh; display: flex; flex-direction: column;
@@ -155,19 +186,15 @@ const json = JSON.stringify({ words: SESSION_WORDS });
   .app-header__title { font-size: 1rem; font-weight: 600; color: var(--color-text); letter-spacing: 0.02em; }
   .app-header__badge {
     font-size: 0.6875rem; font-weight: 700; padding: 2px 8px;
-    border-radius: var(--radius-progress); background: #fef9c3; color: #854d0e;
+    border-radius: var(--radius-progress); background: #e0e7ff; color: #3730a3;
     letter-spacing: 0.02em; white-space: nowrap;
   }
-
-  /* ── Progress ── */
   .progress-section { margin-bottom: var(--space-lg); flex-shrink: 0; }
   .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); }
   .progress-label { font-size: 0.75rem; font-weight: 500; color: var(--color-text-secondary); }
   .progress-count { font-size: 0.75rem; font-weight: 600; color: var(--color-accent); }
   .progress-track { width: 100%; height: 4px; background: var(--color-border); border-radius: var(--radius-progress); overflow: hidden; }
   .progress-fill { height: 100%; width: 0%; background: var(--color-accent); border-radius: var(--radius-progress); transition: width 0.3s ease; }
-
-  /* ── Assessment strip ── */
   .assessment-strip {
     text-align: center; padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius-btn); margin-bottom: var(--space-lg);
@@ -179,8 +206,6 @@ const json = JSON.stringify({ words: SESSION_WORDS });
   .assessment-strip--shaky { background: #fffbeb; color: var(--color-warning); }
   .assessment-strip--knew { background: var(--color-knewit-bg); color: var(--color-knewit); }
   .assessment-strip--empty { background: transparent; color: transparent; }
-
-  /* ── Card area ── */
   .card-area { flex: 1; display: flex; flex-direction: column; gap: var(--space-lg); padding-bottom: var(--space-lg); min-height: 0; }
   .flashcard { perspective: 1000px; flex: 1; min-height: 320px; display: flex; }
   .flashcard__inner {
@@ -191,7 +216,6 @@ const json = JSON.stringify({ words: SESSION_WORDS });
     min-height: 320px; gap: var(--space-lg); -webkit-tap-highlight-color: transparent;
   }
   .flashcard__inner:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-
   .flashcard-front { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); width: 100%; }
   .flashcard-front__image {
     width: 200px; height: 150px; border-radius: var(--radius-card);
@@ -207,17 +231,13 @@ const json = JSON.stringify({ words: SESSION_WORDS });
     font-family: var(--font-zh); font-size: 3rem; font-weight: 700;
     color: var(--color-text); line-height: 1.2; letter-spacing: 0.04em; text-align: center;
   }
-
   .flashcard-back { display: none; flex-direction: column; align-items: center; gap: var(--space-sm); width: 100%; }
   .flashcard-back--visible { display: flex; }
   .flashcard-back__pinyin { font-family: var(--font-pinyin); font-size: 1.125rem; color: var(--color-text-muted); letter-spacing: 0.06em; }
   .flashcard-back__ja { font-family: var(--font-ja); font-size: 1.25rem; font-weight: 600; color: var(--color-text-secondary); margin-top: var(--space-xs); }
-  .flashcard-back__traditional { font-family: var(--font-zh); font-size: 1rem; color: var(--color-text-muted); margin-top: var(--space-xs); padding: 2px 12px; border-radius: var(--radius-progress); background: var(--color-border-light); }
   .flashcard-back__label { font-size: 0.6875rem; font-weight: 700; color: var(--color-text-muted); letter-spacing: 0.03em; text-transform: uppercase; margin-top: var(--space-sm); }
   .flashcard__hint { font-size: 0.75rem; color: #5b6570; text-align: center; flex-shrink: 0; padding-bottom: var(--space-xs); }
   .flashcard__hint--hidden { display: none; }
-
-  /* ── Assessment buttons ── */
   .assessment-group { display: flex; gap: var(--space-sm); flex-shrink: 0; }
   .assessment-group--hidden { display: none; }
   .btn-assessment {
@@ -238,8 +258,6 @@ const json = JSON.stringify({ words: SESSION_WORDS });
   .btn-assessment--shaky:hover { border-color: var(--color-warning); background: #fffbeb; }
   .btn-assessment--knew { color: var(--color-knewit); }
   .btn-assessment--knew:hover { border-color: var(--color-knewit); background: var(--color-knewit-bg); }
-
-  /* ── Completion ── */
   .completion { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: var(--space-xl) var(--space-md); gap: var(--space-lg); }
   .completion--visible { display: flex; }
   .completion__icon { width: 64px; height: 64px; background: var(--color-accent); color: #fff; font-size: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
@@ -258,12 +276,8 @@ const json = JSON.stringify({ words: SESSION_WORDS });
   .btn-restart:hover { background: #0d6b62; }
   .btn-restart:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
   .btn-restart:active { transform: scale(0.97); }
-
-  /* ── Footer ── */
   .app-footer { text-align: center; padding: var(--space-md) 0 var(--space-lg); border-top: 1px solid var(--color-border); flex-shrink: 0; }
   .app-footer__text { font-size: 0.6875rem; color: var(--color-text-muted); }
-
-  /* ── Responsive ── */
   @media (max-width: 374px) {
     html { font-size: 15px; }
     .flashcard-front__zh { font-size: 2.5rem; }
@@ -274,12 +288,12 @@ const json = JSON.stringify({ words: SESSION_WORDS });
     .btn-assessment { font-size: 0.6875rem; padding: var(--space-sm) 6px; }
     .app-wrapper { padding: 0 12px; }
   }
-  @media (min-width: 375px) and (max-width: 389px) {
+  @media (max-width: 389px) {
     .flashcard-front__zh { font-size: 2.75rem; }
     .flashcard-front__image { width: 180px; height: 135px; }
   }
   @media (min-width: 1024px) {
-    :root { --max-width: 560px; }
+    :global(:root) { --max-width: 560px; }
     .flashcard-front__zh { font-size: 3.5rem; }
     .flashcard-front__image { width: 240px; height: 180px; }
     .flashcard__inner { padding: var(--space-2xl) var(--space-xl); min-height: 380px; }
