@@ -381,6 +381,7 @@
     padding: var(--space-md) var(--space-lg);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
+    font-family: inherit;
     font-size: 0.9375rem;
     color: var(--color-text);
     text-align: left;
@@ -729,6 +730,22 @@
     min-height: 1.5em;
     margin-bottom: var(--space-lg);
   }
+  .vocab-card__ja-hidden {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    min-height: 1.5em;
+    margin-bottom: var(--space-lg);
+    letter-spacing: 0.2em;
+  }
+  .vocab-card__zh-simplified {
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+    letter-spacing: 0.04em;
+  }
   .vocab-card__action {
     min-height: 44px;
     padding: var(--space-sm) var(--space-xl);
@@ -739,6 +756,11 @@
     font-weight: 600;
     color: var(--color-text);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-sizing: border-box;
   }
   .vocab-card__action:hover {
     border-color: var(--color-primary);
@@ -748,6 +770,11 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+
+  /* Flashcard hide/reveal toggle */
+  .vocab-card { display: none; }
+  .vocab-section:not(:has(.vocab-card:target)) #vocab-hidden-1 { display: block; }
+  .vocab-card:target { display: block; }
 
   /* Rating buttons */
   .vocab-rating {
@@ -953,17 +980,17 @@
       <h2 id="chunk-label" class="section-label">単語の分解</h2>
       <div class="info-section__content">
         <div class="chunk-item">
-          <div class="chunk-item__zh">我要</div>
+          <div class="chunk-item__zh" lang="zh-Hant">我要</div>
           <div class="chunk-item__details">
-            <div class="chunk-item__pinyin">wǒ yào</div>
+            <div class="chunk-item__pinyin" lang="zh-Latn">wǒ yào</div>
             <div class="chunk-item__ja">私は〜が欲しい</div>
             <div class="chunk-item__note">日本語の「欲しい」と違い、中国語では「要」が意志を表す</div>
           </div>
         </div>
         <div class="chunk-item">
-          <div class="chunk-item__zh">這個</div>
+          <div class="chunk-item__zh" lang="zh-Hant">這個</div>
           <div class="chunk-item__details">
-            <div class="chunk-item__pinyin">zhège</div>
+            <div class="chunk-item__pinyin" lang="zh-Latn">zhège</div>
             <div class="chunk-item__ja">これ</div>
             <div class="chunk-item__note">「這」＝これ、「個」＝量詞。指差しで使う</div>
           </div>
@@ -977,7 +1004,7 @@
       <div class="info-section__content">
         <div class="example-inline">
           <span class="example-inline__zh" lang="zh-Hant">我要那個</span>
-          <span class="example-inline__pinyin">wǒ yào nàge</span>
+          <span class="example-inline__pinyin" lang="zh-Latn">wǒ yào nàge</span>
           <span class="example-inline__ja">それをください</span>
         </div>
       </div>
@@ -988,20 +1015,20 @@
       <h2 id="quiz-label" class="section-label">確認クイズ</h2>
       <div class="quiz-progress">質問 1 / 2</div>
       <p class="quiz-prompt">「我要這個」はどういう意味？</p>
-      <ul class="quiz-choices">
-        <li class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
+      <div class="quiz-choices">
+        <button class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           これをください
-        </li>
-        <li class="quiz-choice quiz-choice--incorrect" aria-label="不正解">
+        </button>
+        <button class="quiz-choice quiz-choice--incorrect" aria-label="不正解">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           私は〜が欲しい
-        </li>
-        <li class="quiz-choice">
+        </button>
+        <button class="quiz-choice">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           これはいくらですか
-        </li>
-      </ul>
+        </button>
+      </div>
 
       <!-- Correct feedback -->
       <div class="feedback" role="status" aria-live="polite">
@@ -1029,9 +1056,9 @@
 
     <!-- ----- Lesson Navigation ----- -->
     <nav class="lesson-nav" aria-label="レッスンナビゲーション">
-      <span class="lesson-nav__link" tabindex="0" role="button">← 前のレッスン</span>
+      <button class="lesson-nav__link">← 前のレッスン</button>
       <span class="lesson-nav__index">1 / 3</span>
-      <span class="lesson-nav__link lesson-nav__link--next" tabindex="0" role="button">次のレッスン →</span>
+      <button class="lesson-nav__link lesson-nav__link--next">次のレッスン →</button>
     </nav>
 
     <!-- ----- Vocabulary Session ----- -->
@@ -1057,13 +1084,23 @@
         <button class="vocab-setup__start">セッションを開始</button>
       </div>
 
-      <!-- Flashcard -->
-      <div class="vocab-card">
+      <!-- Flashcard (hidden state) -->
+      <div class="vocab-card" id="vocab-hidden-1">
         <div class="vocab-card__count">1 / 10</div>
         <div class="vocab-card__zh" lang="zh-Hant">我</div>
-        <div class="vocab-card__pinyin">wǒ</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans">我</div>
+        <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
+        <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
+      </div>
+
+      <!-- Flashcard (revealed state) -->
+      <div class="vocab-card" id="vocab-revealed-1">
+        <div class="vocab-card__count">1 / 10</div>
+        <div class="vocab-card__zh" lang="zh-Hant">我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans">我</div>
+        <div class="vocab-card__pinyin" lang="zh-Latn">wǒ</div>
         <div class="vocab-card__ja-revealed">私</div>
-        <button class="vocab-card__action">意味を隠す</button>
+        <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
       </div>
 
       <!-- Rating -->
@@ -1077,9 +1114,9 @@
         <button class="vocab-rating__btn">
           <span class="vocab-rating__label">まあまあ</span>
         </button>
-        <button class="vocab-rating__btn">
+        <a href="#vocab-complete" class="vocab-rating__btn">
           <span class="vocab-rating__label">できた！</span>
-        </button>
+        </a>
       </div>
 
       <!-- Completion -->
