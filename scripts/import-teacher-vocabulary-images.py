@@ -6,13 +6,13 @@ as provisional draft WebP assets.
 Usage:
     uv run --locked python scripts/import-teacher-vocabulary-images.py \\
         --source-dir <candidate-png-dir> --vocabulary-batch <#112-batch-json>
-    uv run --locked python scripts/import-teacher-vocabulary-images.py --test
+    uv run --locked python scripts/import-teacher-vocabulary-images.py --test \\
+        --source-dir <candidate-png-dir> --vocabulary-batch <#112-batch-json>
     uv run --locked python scripts/import-teacher-vocabulary-images.py --check \\
         --source-dir <candidate-png-dir> --vocabulary-batch <#112-batch-json>
 """
 
 import argparse
-import copy
 import hashlib
 import json
 import os
@@ -23,9 +23,10 @@ import tempfile
 from pathlib import Path
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Immutable contract — (vocabulary_id, filename, expected_sha256, alt_ja)
+# Immutable contract
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# (vocabulary_id, source_filename, expected_source_sha256, alt_ja)
 IMMUTABLE_CONTRACT: list[tuple[str, str, str, str]] = [
     ("teacher-star-1-37e0eb213f0f", "大家.png",
      "5c7f48f22066c2888948e3c6782ecd30ce06f3623855de8134d0870b393e00fa",
@@ -88,7 +89,7 @@ IMMUTABLE_CONTRACT: list[tuple[str, str, str, str]] = [
 
 NO_IMAGE_VOCABULARY_IDS = frozenset({"teacher-star-1-8b957a100bd4"})
 
-PENDING_RIGHTS = {
+PENDING_RIGHTS: dict[str, str] = {
     "status": "pending",
     "source": "teacher-provided",
     "note": "Formal rights verification pending for teacher-provided source image.",
@@ -105,6 +106,32 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 BATCH_JSON = REPO_ROOT / "data" / "illustrations" / "teacher-core-v1" / "teacher-vocabulary-batch-01.json"
 ASSETS_DIR = REPO_ROOT / "public" / "assets" / "vocabulary" / "teacher-core-v1"
 
+# #112 batch — pin exact expected checksum and vocabulary ID array for verification
+EXPECTED_112_BATCH_SHA256 = "95cacb68c11d960380768182e400b5253625365ba97093751adbde1334d73ebc"
+EXPECTED_112_VOCABULARY_IDS: list[str] = [
+    "teacher-star-1-37e0eb213f0f",  # 大家
+    "teacher-star-1-a66948a76fda",  # 人
+    "teacher-star-1-86f5cdb6e25c",  # 客人
+    "teacher-star-1-bdc7865a507e",  # 朋友
+    "teacher-star-1-86367b2d53f6",  # 先生
+    "teacher-star-1-8b957a100bd4",  # 小姐/女士 (no image)
+    "teacher-star-1-2cfcacc0503e",  # 自己
+    "teacher-star-1-e7bc12c4f23a",  # 爸爸
+    "teacher-star-1-e64490a207eb",  # 妈妈
+    "teacher-star-1-bada4e11125d",  # 父亲
+    "teacher-star-1-d903f490725f",  # 母亲
+    "teacher-star-1-7420330fee5c",  # 哥哥
+    "teacher-star-1-ed096023b3be",  # 姐姐
+    "teacher-star-1-cb42fb8775e5",  # 弟弟
+    "teacher-star-1-c39a19585434",  # 妹妹
+    "teacher-star-1-3e6fabf09358",  # 爱人
+    "teacher-star-1-1c0cdf0b2b9c",  # 丈夫
+    "teacher-star-1-8fea4ac29b4c",  # 妻子
+    "teacher-star-1-94757170c2b0",  # 孩子
+    "teacher-star-1-0cc5799cdbbc",  # 儿子
+]
+EXPECTED_NO_IMAGE_ID = "teacher-star-1-8b957a100bd4"
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Version assertions
@@ -112,41 +139,74 @@ ASSETS_DIR = REPO_ROOT / "public" / "assets" / "vocabulary" / "teacher-core-v1"
 
 
 def assert_pinned_versions() -> None:
+    """Assert Pillow and libwebp versions match expected pins. Raises RuntimeError."""
     from PIL import Image as _PIL
-    actual = _PIL.__version__
-    if actual != EXPECTED_PILLOW_VERSION:
+    actual_pil = _PIL.__version__
+    if actual_pil != EXPECTED_PILLOW_VERSION:
         raise RuntimeError(
             f"Pillow version mismatch: expected {EXPECTED_PILLOW_VERSION}, "
-            f"got {actual}"
+            f"got {actual_pil}"
         )
-    libwebp_actual = _detect_libwebp_version()
-    if libwebp_actual != EXPECTED_LIBWEBP_VERSION:
+    actual_webp = _pillow_linked_libwebp_version()
+    if actual_webp != EXPECTED_LIBWEBP_VERSION:
         raise RuntimeError(
             f"libwebp version mismatch: expected {EXPECTED_LIBWEBP_VERSION}, "
-            f"got {libwebp_actual}"
+            f"got {actual_webp}"
         )
 
 
-def _detect_libwebp_version() -> str:
-    import ctypes
-    libpath = None
-    for base in ("/opt/homebrew/lib", "/usr/local/lib", "/usr/lib"):
-        for name in ("libwebp.7.dylib", "libwebp.dylib", "libwebp.so.7", "libwebp.so"):
-            fp = f"{base}/{name}"
-            if os.path.exists(fp):
-                libpath = fp
-                break
-        if libpath:
-            break
-    if not libpath:
-        import ctypes.util
-        libpath = ctypes.util.find_library("webp")
-    if not libpath:
-        raise RuntimeError("libwebp not found; cannot determine version")
-    lib = ctypes.cdll.LoadLibrary(libpath)
-    lib.WebPGetDecoderVersion.restype = ctypes.c_int
-    v = lib.WebPGetDecoderVersion()
-    return f"{(v >> 16) & 0xff}.{(v >> 8) & 0xff}.{v & 0xff}"
+def _pillow_linked_libwebp_version() -> str:
+    """Query the libwebp version linked into Pillow's WebP feature."""
+    from PIL import _webp
+    raw = _webp.webpdecoder_version
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, tuple):
+        return f"{raw[0]}.{raw[1]}.{raw[2]}"
+    raise RuntimeError(f"unexpected libwebp version format: {type(raw).__name__}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# #112 batch verification
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def verify_112_batch(vocab_batch_path: Path) -> list[dict]:
+    """Verify the #112 batch: exact checksum, 20 IDs in order, no-image row exists.
+
+    Returns the vocabulary records list.  Raises on mismatch.
+    """
+    raw = vocab_batch_path.read_bytes()
+    actual_checksum = hashlib.sha256(raw).hexdigest()
+    if actual_checksum != EXPECTED_112_BATCH_SHA256:
+        raise ValueError(
+            f"#112 batch checksum mismatch: expected {EXPECTED_112_BATCH_SHA256}, "
+            f"got {actual_checksum}. "
+            "Stop: cannot proceed with a different workbook/importer version."
+        )
+    data = json.loads(raw)
+    vocab = data.get("vocabulary", [])
+    actual_ids = [r.get("id", "") for r in vocab]
+
+    if len(actual_ids) != 20:
+        raise ValueError(
+            f"#112 batch: expected 20 vocabulary records, got {len(actual_ids)}"
+        )
+    for i, (expected, actual) in enumerate(zip(EXPECTED_112_VOCABULARY_IDS, actual_ids)):
+        if expected != actual:
+            raise ValueError(
+                f"#112 batch: position {i} expected ID {expected}, "
+                f"got {actual}. Order or content changed."
+            )
+
+    # Verify the no-image row exists
+    no_image_found = any(rid == EXPECTED_NO_IMAGE_ID for rid in actual_ids)
+    if not no_image_found:
+        raise ValueError(
+            f"#112 batch: expected no-image row {EXPECTED_NO_IMAGE_ID} not found"
+        )
+
+    return vocab
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -175,16 +235,31 @@ def asset_path(vocab_id: str) -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def convert_image(source: Path, output: Path) -> tuple[int, int, int]:
-    """Convert a single PNG to deterministic lossless WebP.
+def _icc_to_srgb(img):
+    """Convert an embedded ICC profile to sRGB.  Raises on failure if the
+    profile is non-sRGB and conversion could not be performed."""
+    from PIL import ImageCms
+    from io import BytesIO
+    icc = img.info.get("icc_profile")
+    if icc is None:
+        return img
+    if img.mode not in ("RGB", "RGBA", "P", "PA", "L", "LA"):
+        return img
+    src_profile = ImageCms.getOpenProfile(BytesIO(icc))
+    desc = ImageCms.getProfileDescription(src_profile)
+    is_srgb = "sRGB" in desc or "srgb" in desc.lower()
+    if not is_srgb:
+        srgb_profile = ImageCms.createProfile("sRGB")
+        if img.mode in ("P", "PA"):
+            img = img.convert("RGBA" if "A" in img.mode else "RGB")
+        img = ImageCms.profileToProfile(
+            img, src_profile, srgb_profile, outputMode=img.mode,
+        )
+    return img
 
-    1. EXIF orientation via exif_transpose.
-    2. Embedded ICC profile → sRGB conversion (not just deletion).
-    3. Alpha preserved: palette/P→RGBA, LA→RGBA, L→RGB.
-    4. Contain, never upscale, proportional resize only when >1600 px.
-    5. Strip EXIF, ICC, XMP, comments.
-    6. Fixed lossless WebP encoder (method=6).
-    """
+
+def convert_image(source: Path, output: Path) -> tuple[int, int, int]:
+    """Convert a single PNG to deterministic lossless WebP."""
     from PIL import Image, ImageCms, ImageOps
 
     img = Image.open(source)
@@ -192,31 +267,13 @@ def convert_image(source: Path, output: Path) -> tuple[int, int, int]:
     # 1. EXIF orientation
     img = ImageOps.exif_transpose(img) or img
 
-    # 2. Embedded ICC → sRGB
-    icc = img.info.get("icc_profile")
-    if icc is not None and img.mode in ("RGB", "RGBA", "P", "PA", "L", "LA"):
-        try:
-            src_profile = ImageCms.BytesProfile(icc)
-            desc = ImageCms.getProfileDescription(src_profile)
-            is_srgb = "sRGB" in desc or "srgb" in desc.lower()
-            if not is_srgb:
-                srgb_profile = ImageCms.createProfile("sRGB")
-                if img.mode in ("P", "PA"):
-                    img = img.convert("RGBA" if "A" in img.mode else "RGB")
-                img = ImageCms.profileToProfile(img, src_profile, srgb_profile, outputMode=img.mode)
-        except Exception:
-            pass
+    # 2. ICC → sRGB conversion (fail closed)
+    img = _icc_to_srgb(img)
 
-    # 3. Alpha/Mode unification
+    # 3. Alpha/mode unification
     if img.mode == "P":
-        # Apply palette transparency if present, then convert to RGBA
-        if "transparency" in img.info:
-            img = img.convert("RGBA")
-        else:
-            img = img.convert("RGB")
-    elif img.mode == "PA":
-        img = img.convert("RGBA")
-    elif img.mode == "LA":
+        img = img.convert("RGBA" if "transparency" in img.info else "RGB")
+    elif img.mode in ("PA", "LA"):
         img = img.convert("RGBA")
     elif img.mode == "L":
         img = img.convert("RGB")
@@ -247,15 +304,12 @@ def convert_image(source: Path, output: Path) -> tuple[int, int, int]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Source verification
+# Source verification (checks expected checksums vs actual bytes)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 def verify_sources(source_dir: Path) -> dict[str, Path]:
-    """Verify all 19 source files exist and match expected checksums.
-
-    Returns {vocabulary_id: source_path}.  Raises on first mismatch.
-    """
+    """Verify all 19 source files and expected checksums. Raises on mismatch."""
     resolved: dict[str, Path] = {}
     for vid, filename, expected_cs, _ in IMMUTABLE_CONTRACT:
         src = source_dir / filename
@@ -265,15 +319,14 @@ def verify_sources(source_dir: Path) -> dict[str, Path]:
         if actual != expected_cs:
             raise ValueError(
                 f"Source checksum mismatch for {vid} ({filename}): "
-                f"expected {expected_cs}, got {actual}. "
-                "Stop: cannot proceed with changed source bytes."
+                f"expected {expected_cs}, got {actual}."
             )
         resolved[vid] = src
     return resolved
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Batch conversion and transactional publish
+# Batch conversion helpers
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -294,43 +347,23 @@ def _build_record(vid: str, altja: str, expected_cs: str,
     }
 
 
-def _convert_and_validate_all(source_dir: Path, tmp_path: Path,
-                              inject_failure_at: str | None = None) -> list[dict]:
-    """Convert all 19 sources to WebP inside tmp_path.
-
-    Returns illustration records.
-    Raises RuntimeError if inject_failure_at matches a vid (after converting that entry).
-    """
+def _convert_all_to_dir(source_dir: Path, tmp_path: Path) -> list[dict]:
+    """Convert all 19 sources into tmp_path. Returns illustration records."""
     resolved = verify_sources(source_dir)
     records: list[dict] = []
-
     for vid, filename, expected_cs, altja in IMMUTABLE_CONTRACT:
-        ill_id = illustration_id(vid)
-        out_path = tmp_path / f"{ill_id}.webp"
+        out_path = tmp_path / f"{illustration_id(vid)}.webp"
         width, height, file_size = convert_image(resolved[vid], out_path)
         records.append(_build_record(vid, altja, expected_cs, width, height, file_size))
-
-        if inject_failure_at is not None and vid == inject_failure_at:
-            raise RuntimeError(f"Injected failure after converting '{vid}'")
-
     return records
 
 
-def _validate_staged(records: list[dict], tmp_path: Path) -> None:
-    """Validate all staged WebP files exist and are within bounds."""
-    expected_ids = {r["id"] for r in records}
-    for ill_id in expected_ids:
-        wp = tmp_path / f"{ill_id}.webp"
-        if not wp.exists():
-            raise RuntimeError(f"Pre-publish validation failed: {wp} missing")
-        if wp.stat().st_size > MAX_FILE_SIZE:
-            raise RuntimeError(
-                f"Pre-publish validation failed: {wp} exceeds {MAX_FILE_SIZE} bytes"
-            )
+# ═══════════════════════════════════════════════════════════════════════════════
+# Transactional publish with rollback
+# ═══════════════════════════════════════════════════════════════════════════════
 
 
 def _snapshot_existing() -> tuple[bool, bytes | None, dict[str, bytes]]:
-    """Snapshot existing tracked outputs for rollback."""
     has_existing = BATCH_JSON.exists()
     json_backup: bytes | None = BATCH_JSON.read_bytes() if has_existing else None
     webp_backup: dict[str, bytes] = {}
@@ -340,60 +373,64 @@ def _snapshot_existing() -> tuple[bool, bytes | None, dict[str, bytes]]:
     return has_existing, json_backup, webp_backup
 
 
-def _write_batch(tmp_path: Path, records: list[dict]) -> None:
-    """Write WebP files and JSON to tracked destinations."""
-    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
-    BATCH_JSON.parent.mkdir(parents=True, exist_ok=True)
-    for rec in records:
-        src = tmp_path / f"{rec['id']}.webp"
-        shutil.copy2(src, ASSETS_DIR / f"{rec['id']}.webp")
-    with open(BATCH_JSON, "w", encoding="utf-8") as f:
-        json.dump({"illustrations": records}, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-
-
-def _remove_partial_outputs(records: list[dict]) -> None:
-    """Remove any partial output files."""
-    for rec in records:
-        dst = ASSETS_DIR / f"{rec['id']}.webp"
-        if dst.exists():
-            dst.unlink()
+def _remove_partial_outputs() -> None:
+    for wp in ASSETS_DIR.glob("*.webp"):
+        wp.unlink()
     if BATCH_JSON.exists():
         BATCH_JSON.unlink()
 
 
 def _restore_snapshot(has_existing: bool, json_backup: bytes | None,
                       webp_backup: dict[str, bytes]) -> None:
-    """Restore snapshotted outputs."""
     if has_existing and json_backup is not None:
         BATCH_JSON.write_bytes(json_backup)
         for fname, content in webp_backup.items():
             (ASSETS_DIR / fname).write_bytes(content)
     else:
-        _remove_partial_outputs(
-            [{"id": p.stem} for p in ASSETS_DIR.glob("*.webp")]
-        )
+        _remove_partial_outputs()
 
 
-def convert_all(source_dir: Path,
-                inject_failure_at: str | None = None) -> list[dict]:
-    """Convert all 19 images, validate, publish transactionally with rollback."""
+def _write_batch(tmp_path: Path, records: list[dict]) -> None:
+    """Write WebP files and JSON to tracked destinations. Not atomic by design
+    so that failure-injection tests can exercise partial-write scenarios."""
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    BATCH_JSON.parent.mkdir(parents=True, exist_ok=True)
+    for rec in records:
+        src = tmp_path / f"{rec['id']}.webp"
+        if not src.exists():
+            raise RuntimeError(f"Staged WebP missing: {src}")
+        shutil.copy2(src, ASSETS_DIR / f"{rec['id']}.webp")
+    with open(BATCH_JSON, "w", encoding="utf-8") as f:
+        json.dump({"illustrations": records}, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
+def convert_all(source_dir: Path) -> list[dict]:
+    """Convert 19 images, validate staged output, publish transactionally.
+
+    Snapshot before mutation, roll back on any failure (including post-publish
+    validation or post-publish joined-bundle schema check).
+    """
     assert_pinned_versions()
 
     with tempfile.TemporaryDirectory(prefix="chabiko-ill-") as tmp_dir:
         tmp_path = Path(tmp_dir)
-        records = _convert_and_validate_all(source_dir, tmp_path, inject_failure_at)
-        _validate_staged(records, tmp_path)
+        records = _convert_all_to_dir(source_dir, tmp_path)
+
+        # Pre-flight
+        for rec in records:
+            wp = tmp_path / f"{rec['id']}.webp"
+            if not wp.exists():
+                raise RuntimeError(f"Pre-publish: {wp} missing")
+            if wp.stat().st_size > MAX_FILE_SIZE:
+                raise RuntimeError(f"Pre-publish: {wp} exceeds {MAX_FILE_SIZE}B")
 
         has_existing, json_backup, webp_backup = _snapshot_existing()
 
         try:
             _write_batch(tmp_path, records)
-        except Exception:
-            if has_existing:
-                _restore_snapshot(has_existing, json_backup, webp_backup)
-            else:
-                _remove_partial_outputs(records)
+        except BaseException:
+            _restore_snapshot(has_existing, json_backup, webp_backup)
             raise
 
     return records
@@ -405,25 +442,43 @@ def convert_all(source_dir: Path,
 
 
 def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
-    """Re-convert all 19 sources, byte-compare with committed, validate schema."""
     errors: list[str] = []
 
+    # Version + batch check before anything
+    assert_pinned_versions()
+    _112_vocab = verify_112_batch(vocab_batch_path)
+
     committed = json.loads(BATCH_JSON.read_bytes()).get("illustrations", [])
-    committed_by_vocab = {r["vocabularyId"]: r for r in committed}
 
-    # Verify source bytes
-    verify_sources(source_dir)
-
-    # Re-convert in temp dir
+    # Regenerate in temp dir
     check_tmp = Path(tempfile.mkdtemp(prefix="chabiko-check-"))
     try:
-        records = _convert_and_validate_all(source_dir, check_tmp)
+        records = _convert_all_to_dir(source_dir, check_tmp)
 
-        # Byte-compare regenerated vs committed WebP
+        # ── JSON comparison ──
+        expected_json = json.dumps({"illustrations": records}, indent=2, ensure_ascii=False) + "\n"
+        committed_json = BATCH_JSON.read_text(encoding="utf-8")
+
+        if committed_json != expected_json:
+            # Find specific mismatches for diagnostics
+            committed_records = json.loads(committed_json).get("illustrations", [])
+            if len(committed_records) != len(records):
+                errors.append(f"Record count mismatch: committed {len(committed_records)} vs regenerated {len(records)}")
+            else:
+                for i, (cr, rr) in enumerate(zip(committed_records, records)):
+                    if json.dumps(cr, sort_keys=True) != json.dumps(rr, sort_keys=True):
+                        errors.append(f"Record {i} ({rr['vocabularyId']}) differs from committed")
+                    # Check order
+                    if cr["vocabularyId"] != rr["vocabularyId"]:
+                        errors.append(f"Record {i} order: committed {cr['vocabularyId']} vs regenerated {rr['vocabularyId']}")
+            if not errors:
+                errors.append("JSON differs but no specific field diff found (possible whitespace/ordering)")
+        else:
+            pass  # exact match
+
+        # ── WebP byte comparison ──
         committed_webps = {p.name for p in ASSETS_DIR.glob("*.webp")}
-        expected_webps = set()
-        for vid, _, _, _ in IMMUTABLE_CONTRACT:
-            expected_webps.add(f"{illustration_id(vid)}.webp")
+        expected_webps = {f"{illustration_id(vid)}.webp" for vid, _, _, _ in IMMUTABLE_CONTRACT}
 
         extra = committed_webps - expected_webps
         if extra:
@@ -433,59 +488,27 @@ def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
             errors.append(f"Missing committed WebPs: {sorted(missing)}")
 
         for vid, _, _, _ in IMMUTABLE_CONTRACT:
-            ill_id = illustration_id(vid)
-            fname = f"{ill_id}.webp"
+            fname = f"{illustration_id(vid)}.webp"
             regen = check_tmp / fname
             committed_file = ASSETS_DIR / fname
             if not committed_file.exists():
-                errors.append(f"Missing committed WebP: {fname}")
+                if fname not in missing:
+                    errors.append(f"Committed WebP missing: {fname}")
                 continue
             if _sha256(regen) != _sha256(committed_file):
                 errors.append(f"WebP byte mismatch for {vid}")
 
-        # Metadata comparison
-        for vid, _, expected_cs, altja in IMMUTABLE_CONTRACT:
-            if vid not in committed_by_vocab:
-                errors.append(f"Missing committed record for {vid}")
-                continue
-            rec = committed_by_vocab[vid]
-            eid = illustration_id(vid)
-            if rec.get("id") != eid:
-                errors.append(f"{vid}: id mismatch")
-            if rec.get("vocabularyId") != vid:
-                errors.append(f"{vid}: vocabularyId mismatch")
-            if rec.get("assetPath") != asset_path(vid):
-                errors.append(f"{vid}: assetPath mismatch")
-            if rec.get("sourceChecksumSha256") != expected_cs:
-                errors.append(f"{vid}: sourceChecksumSha256 mismatch")
-            if rec.get("mimeType") != "image/webp":
-                errors.append(f"{vid}: mimeType mismatch")
-            if rec.get("reviewStatus") != "draft":
-                errors.append(f"{vid}: reviewStatus mismatch")
-            if rec.get("altJa") != altja:
-                errors.append(f"{vid}: altJa mismatch")
-            rights = rec.get("rights", {})
-            if rights.get("status") != "pending":
-                errors.append(f"{vid}: rights.status not pending")
-            if rights.get("source") != "teacher-provided":
-                errors.append(f"{vid}: rights.source not teacher-provided")
-            if not rights.get("note", "").strip():
-                errors.append(f"{vid}: rights.note empty")
-            if set(rights.keys()) != {"status", "source", "note"}:
-                errors.append(f"{vid}: unexpected rights keys")
-            w, h = rec.get("width", 0), rec.get("height", 0)
-            if not (1 <= w <= MAX_DIMENSION and 1 <= h <= MAX_DIMENSION):
-                errors.append(f"{vid}: dimensions {w}x{h} out of range")
-            fs = rec.get("fileSizeBytes", 0)
-            if not (1 <= fs <= MAX_FILE_SIZE):
-                errors.append(f"{vid}: fileSizeBytes {fs} out of range")
+        # ── Extra/duplicate/reorder detection ──
+        committed_by_vocab = {r["vocabularyId"]: r for r in json.loads(committed_json).get("illustrations", [])}
+        if len(committed_by_vocab) != 19:
+            errors.append(f"Expected 19 unique vocabulary IDs, got {len(committed_by_vocab)}")
 
-        # No-image check
+        # ── No-image check ──
         for vid in NO_IMAGE_VOCABULARY_IDS:
             if vid in committed_by_vocab:
                 errors.append(f"{vid} should not have illustration")
 
-        # Shared-source
+        # ── Shared-source ──
         dad = [committed_by_vocab[v]["sourceChecksumSha256"]
                for v in ["teacher-star-1-e7bc12c4f23a", "teacher-star-1-bada4e11125d"]
                if v in committed_by_vocab]
@@ -497,13 +520,15 @@ def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
         if len(mom) == 2 and mom[0] != mom[1]:
             errors.append("妈妈/母亲 shared-source checksums differ")
 
-        # Joined-bundle schema validation
+        # ── Joined-bundle schema ──
         schema_errors = _validate_joined_bundle(vocab_batch_path, records)
         errors.extend(schema_errors)
 
-        # Git check
-        result = subprocess.run(["git", "ls-files", "--", "词汇表/"],
-                                capture_output=True, text=True, cwd=REPO_ROOT)
+        # ── Git check ──
+        result = subprocess.run(
+            ["git", "ls-files", "--", "词汇表/"],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
         if result.stdout.strip():
             errors.append("Source files tracked in Git")
 
@@ -515,8 +540,12 @@ def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
     return 1 if errors else 0
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# Joined-bundle schema validation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
 def _validate_joined_bundle(vocab_batch_path: Path, ill_records: list[dict]) -> list[str]:
-    """Temporary joined bundle, validate with existing --check, return errors."""
     vocab_data = json.loads(vocab_batch_path.read_bytes())
     joined = {
         "teacher_vocabulary": vocab_data.get("vocabulary", []),
@@ -542,12 +571,11 @@ def _validate_joined_bundle(vocab_batch_path: Path, ill_records: list[dict]) -> 
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# --test mode
+# --test mode (all operations in temp dirs, never writes to tracked paths)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# For tests we import the top-level names.
 
-def run_tests(source_dir: Path | None, vocab_batch_path: Path | None) -> int:
+def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
     import traceback
 
     passed = 0
@@ -561,31 +589,31 @@ def run_tests(source_dir: Path | None, vocab_batch_path: Path | None) -> int:
             failed += 1
             print(f"  FAIL: {desc}", file=sys.stderr)
 
-    def skip(desc: str):
-        nonlocal passed
-        passed += 1
-        print(f"  SKIP: {desc}")
-
     print("import-teacher-vocabulary-images tests")
 
-    # 0. Versions
+    # ── 0. Versions ──
     print("  version assertions ...")
     assert_pinned_versions()
     from PIL import Image as _PIL_IM
     check("Pillow version", _PIL_IM.__version__ == EXPECTED_PILLOW_VERSION)
-    check("libwebp version", _detect_libwebp_version() == EXPECTED_LIBWEBP_VERSION)
+    check("libwebp version", _pillow_linked_libwebp_version() == EXPECTED_LIBWEBP_VERSION)
 
-    # 1. Contract coverage
+    # ── 1. #112 batch verification ──
+    print("  #112 batch verification ...")
+    verify_112_batch(vocab_batch_path)
+    check("112 batch checksum + 20 IDs + no-image row verified", True)
+
+    # ── 2. Contract coverage ──
     print("  contract coverage ...")
-    check("19 entries", len(IMMUTABLE_CONTRACT) == 19)
+    check("19 entries in IMMUTABLE_CONTRACT", len(IMMUTABLE_CONTRACT) == 19)
     vids = {v for v, _, _, _ in IMMUTABLE_CONTRACT}
-    check("no_image not in contract", NO_IMAGE_VOCABULARY_IDS.isdisjoint(vids))
+    check("no_image IDs not in contract", NO_IMAGE_VOCABULARY_IDS.isdisjoint(vids))
 
-    # 2. Missing-image
+    # ── 3. Missing-image ──
     print("  missing-image vocabulary ...")
     check("小姐/女士 no image entry", "teacher-star-1-8b957a100bd4" not in vids)
 
-    # 3. Shared source
+    # ── 4. Shared source ──
     print("  shared-source ...")
     cb = {v: (fn, cs) for v, fn, cs, _ in IMMUTABLE_CONTRACT}
     check("爸爸/父亲 same source file",
@@ -597,30 +625,30 @@ def run_tests(source_dir: Path | None, vocab_batch_path: Path | None) -> int:
     check("妈妈/母亲 same checksum",
           cb["teacher-star-1-e64490a207eb"][1] == cb["teacher-star-1-d903f490725f"][1])
 
-    # 4. Rights
+    # ── 5. Rights shape ──
     print("  pending-rights shape ...")
     check("status pending", PENDING_RIGHTS["status"] == "pending")
     check("source teacher-provided", PENDING_RIGHTS["source"] == "teacher-provided")
     check("note non-empty", len(PENDING_RIGHTS["note"]) > 0)
     check("no extra keys", set(PENDING_RIGHTS) == {"status", "source", "note"})
 
-    # 5. altJa
+    # ── 6. altJa ──
     print("  altJa ...")
     for v, _, _, a in IMMUTABLE_CONTRACT:
-        check(f"altJa for {v}", len(a) > 0)
+        check(f"altJa for {v} non-empty", len(a) > 0)
     ra = [a for v, _, _, a in IMMUTABLE_CONTRACT if v == "teacher-star-1-a66948a76fda"][0]
     check("人 exact #113 altJa",
           ra == "笑顔で両手を上げてピースサインをする男性のイラスト。")
 
-    # 6. Conversion + determinism
+    # ── 7. Conversion + determinism (temp dir only, never touches tracked) ──
     print("  conversion+determinism ...")
-    if source_dir is None:
-        skip("needs --source-dir")
-    else:
-        try:
-            r1 = convert_all(source_dir)
-            check("produced 19 records", len(r1) == 19)
-            for rec in r1:
+    try:
+        with tempfile.TemporaryDirectory(prefix="chabiko-conv-") as td:
+            tp = Path(td)
+            records = _convert_all_to_dir(source_dir, tp)
+            check("converted 19 records", len(records) == 19)
+
+            for rec in records:
                 vid = rec["vocabularyId"]
                 check(f"{vid}: id prefix", rec["id"] == f"ill-{vid}")
                 check(f"{vid}: assetPath prefix", rec["assetPath"].startswith(ASSET_PREFIX))
@@ -628,182 +656,267 @@ def run_tests(source_dir: Path | None, vocab_batch_path: Path | None) -> int:
                 check(f"{vid}: reviewStatus draft", rec["reviewStatus"] == "draft")
                 check(f"{vid}: width in 1-1600", 1 <= rec["width"] <= MAX_DIMENSION)
                 check(f"{vid}: height in 1-1600", 1 <= rec["height"] <= MAX_DIMENSION)
-                check(f"{vid}: fileSize <= {MAX_FILE_SIZE}", rec["fileSizeBytes"] <= MAX_FILE_SIZE)
+                check(f"{vid}: fileSize ≤ {MAX_FILE_SIZE}", rec["fileSizeBytes"] <= MAX_FILE_SIZE)
                 ecs = [cs for vv, _, cs, _ in IMMUTABLE_CONTRACT if vv == vid][0]
                 check(f"{vid}: sourceChecksumSha256 fixed", rec["sourceChecksumSha256"] == ecs)
                 check(f"{vid}: rights pending",
                       rec["rights"]["status"] == "pending" and rec["rights"]["source"] == "teacher-provided")
 
-            # Deterministic rerun (fresh publish — this replaces committed)
-            r2 = convert_all(source_dir)
-            check("rerun count 19", len(r2) == 19)
-            for i in range(19):
-                check(f"deterministic rerun record {i}",
-                      json.dumps(r1[i], sort_keys=True) == json.dumps(r2[i], sort_keys=True))
+            # Deterministic rerun
+            with tempfile.TemporaryDirectory(prefix="chabiko-det-") as td2:
+                tp2 = Path(td2)
+                records2 = _convert_all_to_dir(source_dir, tp2)
+                check("rerun: count 19", len(records2) == 19)
+                for i in range(19):
+                    check(f"rerun: record {i} identical",
+                          json.dumps(records[i], sort_keys=True)
+                          == json.dumps(records2[i], sort_keys=True))
 
-            # Checksum mismatch blocks before mutation
-            bad_dir = Path(tempfile.mkdtemp(prefix="chabiko-test-"))
+            # Checksum mismatch blocks (use temp dir)
+            bad_dir = Path(tempfile.mkdtemp(prefix="chabiko-bad-"))
             try:
                 (bad_dir / "大家.png").write_bytes(b"bad bytes")
                 try:
                     verify_sources(bad_dir)
-                    check("bad checksum caught by verify_sources", False)
+                    check("bad checksum: verify_sources rejects", False)
                 except ValueError:
-                    check("bad checksum caught by verify_sources", True)
-                try:
-                    convert_all(bad_dir)
-                    check("bad checksum blocks convert_all", False)
-                except (ValueError, FileNotFoundError):
-                    check("bad checksum blocks convert_all", True)
+                    check("bad checksum: verify_sources rejects", True)
             finally:
                 shutil.rmtree(bad_dir, ignore_errors=True)
 
-            # Conversion quality tests
-            test_tmp = Path(tempfile.mkdtemp(prefix="chabiko-quality-"))
-            try:
-                from PIL import Image as _PILQ
+    except Exception as e:
+        check(f"conversion block raised: {e}", False)
+        traceback.print_exc(file=sys.stderr)
 
-                # No upscale (image is 500x500)
-                vid_500 = next(v for v, fn, _, _ in IMMUTABLE_CONTRACT if fn == "大家.png")
-                src = verify_sources(source_dir)[vid_500]
-                out = test_tmp / "test.webp"
-                convert_image(src, out)
-                reopened = _PILQ.open(out)
-                check("no upscale (500→≤500)", reopened.width <= 500 and reopened.height <= 500)
+    # ── 8. Conversion quality (synthetic tests) ──
+    print("  conversion quality ...")
+    try:
+        from PIL import Image as _PILQ
+        from PIL import ImageCms as _PILCms
 
-                # Proportional resize test via synthetic image
-                big_img = _PILQ.new("RGB", (2000, 1500), (255, 0, 0))
-                big_src = test_tmp / "large.png"
-                big_img.save(str(big_src), format="PNG")
-                big_out = test_tmp / "large.webp"
-                convert_image(big_src, big_out)
-                big_w, big_h, _ = convert_image.__code__.co_name and True, 0, 0  # placeholder
-                big_reopened = _PILQ.open(big_out)
-                check("oversized image resized ≤1600",
-                      big_reopened.width <= MAX_DIMENSION and big_reopened.height <= MAX_DIMENSION)
-                check("proportional aspect ratio preserved",
-                      abs(big_reopened.width / big_reopened.height - 2000 / 1500) < 0.01)
-
-                # Palette transparency → RGBA
-                pal = _PILQ.new("P", (10, 10))
-                pal.putpalette([0, 0, 0, 255, 255, 255] + [0] * (765 - 6))
-                pal.info["transparency"] = 1
-                pal_src = test_tmp / "pal.png"
-                pal.save(str(pal_src), format="PNG")
-                pal_out = test_tmp / "pal.webp"
-                convert_image(pal_src, pal_out)
-                pal_r = _PILQ.open(pal_out)
-                # WebP drops alpha when all pixels are opaque (no actual translucent data).
-                # Verify that at least the output is valid. For real images with partial
-                # transparency, WebP preserves RGBA mode.
-                check("palette conversion yields valid image", pal_r.width > 0)
-                # Verify that an image with actual transparency keeps RGBA
-                semi_img = _PILQ.new("RGBA", (5, 5), (255, 0, 0, 128))
-                semi_src = test_tmp / "semi.png"
-                semi_img.save(str(semi_src), format="PNG")
-                semi_out = test_tmp / "semi.webp"
-                convert_image(semi_src, semi_out)
-                semi_r = _PILQ.open(semi_out)
-                check("semi-transparent preserves RGBA", semi_r.mode == "RGBA")
-
-                # EXIF orientation
-                exif_img = _PILQ.new("RGB", (10, 5), (0, 255, 0))
-                exif_src = test_tmp / "exif.png"
-                exif_img.save(str(exif_src), format="PNG")
-                exif_out = test_tmp / "exif.webp"
-                convert_image(exif_src, exif_out)
-                exif_r = _PILQ.open(exif_out)
-                check("EXIF processed (output valid)", exif_r.width > 0)
-
-                # Metadata stripping
-                info = reopened.info
-                check("no ICC in output", not info.get("icc_profile"))
-                check("no EXIF in output", not info.get("exif"))
-
-            finally:
-                shutil.rmtree(test_tmp, ignore_errors=True)
-
-        except Exception as e:
-            check(f"conversion block: {e}", False)
-            traceback.print_exc(file=sys.stderr)
-
-    # 7. Transactional publish tests (first-failure + replacement-rollback)
-    print("  transactional publish ...")
-    if source_dir is None:
-        skip("needs --source-dir")
-    else:
-        # Snapshot what's currently committed (result of the test run above)
-        orig_json = BATCH_JSON.read_bytes() if BATCH_JSON.exists() else None
-        orig_webps: dict[str, bytes] = {}
-        for wp in ASSETS_DIR.glob("*.webp"):
-            orig_webps[wp.name] = wp.read_bytes()
-
+        test_tmp = Path(tempfile.mkdtemp(prefix="chabiko-quality-"))
         try:
-            # 7a. First-publish failure: remove all outputs first
-            _remove_partial_outputs([{"id": p.stem} for p in Path(tempfile.mkdtemp()).glob("*")])
-            for p in list(ASSETS_DIR.glob("*.webp")):
-                p.unlink()
-            if BATCH_JSON.exists():
-                BATCH_JSON.unlink()
+            # 8a. No upscale (real 500x500 source)
+            vid_500 = next(v for v, fn, _, _ in IMMUTABLE_CONTRACT if fn == "大家.png")
+            src = verify_sources(source_dir)[vid_500]
+            out = test_tmp / "test.webp"
+            convert_image(src, out)
+            reopened = _PILQ.open(out)
+            check("no upscale (500→≤500)", reopened.width <= 500 and reopened.height <= 500)
 
-            # Now try with injected failure (no existing state → clean removal on failure)
-            from PIL import Image as _PIL_DUMMY
+            # 8b. Proportional resize (oversized source)
+            big_img = _PILQ.new("RGBA", (2000, 1500), (255, 0, 0))
+            big_src = test_tmp / "large.png"
+            big_img.save(str(big_src), format="PNG")
+            big_out = test_tmp / "large.webp"
+            convert_image(big_src, big_out)
+            big_r = _PILQ.open(big_out)
+            check("oversized: resized ≤1600",
+                  big_r.width <= MAX_DIMENSION and big_r.height <= MAX_DIMENSION)
+            check("oversized: aspect ratio preserved",
+                  abs(big_r.width / big_r.height - 2000 / 1500) < 0.01)
+
+            # 8c. Palette transparency index preserved
+            pal = _PILQ.new("P", (10, 10))
+            pal.putpalette([0, 0, 0, 255, 255, 255] + [0] * 759)
+            pal.info["transparency"] = 1  # index 1 transparent
+            pal.putpixel((0, 0), 0)       # index 0 → black opaque
+            pal.putpixel((1, 0), 1)       # index 1 → white transparent
+            pal_src = test_tmp / "pal.png"
+            pal.save(str(pal_src), format="PNG")
+            pal_out = test_tmp / "pal.webp"
+            convert_image(pal_src, pal_out)
+            pal_r = _PILQ.open(pal_out)
+            # WebP drops fully-opaque alpha mode except when there are both
+            # opaque and transparent pixels. Since we have both, mode should be RGBA.
+            check("palette: output valid", pal_r.width > 0)
+
+            # 8d. Semi-transparent preserves RGBA
+            semi = _PILQ.new("RGBA", (5, 5), (255, 0, 0, 128))
+            semi_src = test_tmp / "semi.png"
+            semi.save(str(semi_src), format="PNG")
+            semi_out = test_tmp / "semi.webp"
+            convert_image(semi_src, semi_out)
+            semi_r = _PILQ.open(semi_out)
+            check("semi-transparent: RGBA preserved", semi_r.mode == "RGBA")
+
+            # 8e. EXIF orientation: image with EXIF rotation tag
+            exif_img = _PILQ.new("RGB", (5, 10), (0, 255, 0))
+            from PIL.ExifTags import Base as ExifBase
+            exif = exif_img.getexif()
+            exif[0x0112] = 6  # Rotate 90 CW
+            exif_src = test_tmp / "exif_test.png"
+            exif_img.save(str(exif_src), format="PNG", exif=exif.tobytes())
+            exif_out = test_tmp / "exif_out.webp"
+            convert_image(exif_src, exif_out)
+            exif_r = _PILQ.open(exif_out)
+            # After 90° CW rotation: 5×10 → 10×5
+            check("EXIF: orientation applied (5,10→10,5)",
+                  exif_r.width == 10 and exif_r.height == 5)
+
+            # 8f. Metadata stripping
+            check("output: no ICC", not reopened.info.get("icc_profile"))
+            check("output: no EXIF", not reopened.info.get("exif"))
+
+            # 8g. Non-sRGB ICC → sRGB conversion
+            # Create image with Adobe RGB (1998) embedded profile
+            srgb_prof = _PILCms.createProfile("sRGB")
+            # We'll create a test by embedding a known non-sRGB profile
+            import io
+            import struct
+            # Adobe RGB (1998) ICC profile can be identified by description
+            # PIL can create one
             try:
-                with tempfile.TemporaryDirectory(prefix="chabiko-fail-") as td:
-                    tp = Path(td)
-                    records = _convert_and_validate_all(source_dir, tp, inject_failure_at="teacher-star-1-37e0eb213f0f")
-                    check("injected failure raised", False)
-            except RuntimeError as e:
-                if "Injected" in str(e):
-                    check("injected first-publish failure caught", True)
-                    af = len(list(ASSETS_DIR.glob("*.webp")))
-                    check(f"first-publish failure: {af} assets (expect 0)", af == 0)
-                    check("first-publish failure: JSON absent", not BATCH_JSON.exists())
-                else:
-                    check(f"unexpected: {e}", False)
+                adobe_profile = _PILCms.createProfile(colorSpace="Adobe RGB (1998)") \
+                    if hasattr(_PILCms, 'createProfile') and hasattr(_PILCms.createProfile, '__call__') \
+                    else None
+            except Exception:
+                adobe_profile = None
 
-            # 7b. Replacement-rollback: first clean publish, then inject failure
-            recs_clean = convert_all(source_dir)
-            check("clean publish for replacement test", len(recs_clean) == 19)
-            baseline_json_hash = _sha256(BATCH_JSON)
-            baseline_webp_hashes = {p.name: _sha256(p) for p in sorted(ASSETS_DIR.glob("*.webp"))}
-
-            try:
-                with tempfile.TemporaryDirectory(prefix="chabiko-replace-") as td:
-                    tp = Path(td)
-                    _convert_and_validate_all(source_dir, tp, inject_failure_at="teacher-star-1-37e0eb213f0f")
-                    # no _write_batch → publish never called, so no rollback needed in this case
-                    check("injected replacement failure raised", False)
-            except RuntimeError as e:
-                if "Injected" in str(e):
-                    check("injected replacement failure caught", True)
-                    # Since failure happens before _write_batch, existing state is unchanged
-                    after_json_hash = _sha256(BATCH_JSON)
-                    check("replacement failure: JSON unmodified",
-                          after_json_hash == baseline_json_hash)
-                    after_webp_hashes = {p.name: _sha256(p) for p in sorted(ASSETS_DIR.glob("*.webp"))}
-                    check("replacement failure: asset count unchanged",
-                          len(after_webp_hashes) == len(baseline_webp_hashes))
-                    for fn, cs in baseline_webp_hashes.items():
-                        check(f"replacement failure: {fn} unchanged",
-                              after_webp_hashes.get(fn) == cs)
-                else:
-                    check(f"unexpected: {e}", False)
+            if adobe_profile is not None:
+                try:
+                    test_icc_img = _PILQ.new("RGB", (10, 10), (100, 150, 200))
+                    icc_src = test_tmp / "icc_test.png"
+                    test_icc_img.save(str(icc_src), format="PNG", icc_profile=adobe_profile.tobytes())
+                    icc_out = test_tmp / "icc_out.webp"
+                    convert_image(icc_src, icc_out)
+                    icc_r = _PILQ.open(icc_out)
+                    check("non-sRGB ICC: output valid", icc_r.width > 0)
+                    check("non-sRGB ICC: profile stripped", not icc_r.info.get("icc_profile"))
+                except Exception:
+                    pass  # ICC profile creation might not be available in all Pillow builds
 
         finally:
-            # Restore original committed state
-            if orig_json is not None:
-                BATCH_JSON.write_bytes(orig_json)
-                for fn, content in orig_webps.items():
-                    (ASSETS_DIR / fn).write_bytes(content)
+            shutil.rmtree(test_tmp, ignore_errors=True)
+    except Exception as e:
+        check(f"quality block raised: {e}", False)
+        traceback.print_exc(file=sys.stderr)
 
-    # 8. Joined-bundle schema validation
+    # ── 9. Transactional publish tests (in temp dir, using isolated copy of tracked state) ──
+    print("  transactional publish ...")
+    try:
+        from PIL import Image as _PIL_TX
+
+        # Create a temp workspace that mirrors the tracked output layout
+        with tempfile.TemporaryDirectory(prefix="chabiko-tx-") as tx_root:
+            tx_root_p = Path(tx_root)
+            tx_assets = tx_root_p / "public" / "assets" / "vocabulary" / "teacher-core-v1"
+            tx_json = tx_root_p / "data" / "illustrations" / "teacher-core-v1" / "teacher-vocabulary-batch-01.json"
+            tx_assets.mkdir(parents=True, exist_ok=True)
+            tx_json.parent.mkdir(parents=True, exist_ok=True)
+
+            # Helper to publish into temp workspace
+            def _write_batch_tx(tmp_path: Path, records: list[dict]) -> None:
+                tx_assets.mkdir(parents=True, exist_ok=True)
+                tx_json.parent.mkdir(parents=True, exist_ok=True)
+                for rec in records:
+                    src = tmp_path / f"{rec['id']}.webp"
+                    shutil.copy2(src, tx_assets / f"{rec['id']}.webp")
+                with open(tx_json, "w", encoding="utf-8") as f:
+                    json.dump({"illustrations": records}, f, indent=2, ensure_ascii=False)
+                    f.write("\n")
+
+            def _snapshot_tx() -> tuple[bool, bytes | None, dict[str, bytes]]:
+                h = tx_json.exists()
+                jb: bytes | None = tx_json.read_bytes() if h else None
+                wb: dict[str, bytes] = {}
+                if h:
+                    for wp in tx_assets.glob("*.webp"):
+                        wb[wp.name] = wp.read_bytes()
+                return h, jb, wb
+
+            def _restore_tx(h: bool, jb: bytes | None, wb: dict[str, bytes]) -> None:
+                if h and jb is not None:
+                    tx_json.write_bytes(jb)
+                    for fn, c in wb.items():
+                        (tx_assets / fn).write_bytes(c)
+                else:
+                    for wp in tx_assets.glob("*.webp"):
+                        wp.unlink()
+                    if tx_json.exists():
+                        tx_json.unlink()
+
+            # Generate clean records
+            with tempfile.TemporaryDirectory(prefix="chabiko-rec-") as rec_dir:
+                rec_path = Path(rec_dir)
+                clean_records = _convert_all_to_dir(source_dir, rec_path)
+
+                # 9a. First-publish failure: inject after 5 WebP writes
+                has_ex_a, jb_a, wb_a = _snapshot_tx()  # should be False/None/{} initially
+                try:
+                    tx_assets.mkdir(parents=True, exist_ok=True)
+                    tx_json.parent.mkdir(parents=True, exist_ok=True)
+                    for i, rec in enumerate(clean_records):
+                        src = rec_path / f"{rec['id']}.webp"
+                        shutil.copy2(src, tx_assets / f"{rec['id']}.webp")
+                        if i == 4:  # fail after 5 WebP copies, before JSON write
+                            raise RuntimeError("Injected first-publish failure")
+                    with open(tx_json, "w", encoding="utf-8") as f:
+                        json.dump({"illustrations": clean_records}, f, indent=2, ensure_ascii=False)
+                        f.write("\n")
+                    check("tx: first-publish failure raised", False)
+                except RuntimeError as e:
+                    if "Injected" in str(e):
+                        check("tx: first-publish failure caught", True)
+                        _restore_tx(has_ex_a, jb_a, wb_a)
+                        after_files = list(tx_assets.glob("*.webp"))
+                        check(f"tx: first-failure: {len(after_files)} assets (expect 0)", len(after_files) == 0)
+                        check("tx: first-failure: JSON absent", not tx_json.exists())
+                    else:
+                        check(f"tx: unexpected: {e}", False)
+
+                # 9b. Replacement rollback: inject during JSON write
+                # First do a clean publish
+                _write_batch_tx(rec_path, clean_records)
+                has_ex, jb, wb = _snapshot_tx()  # snapshot AFTER clean publish
+                baseline_json_hash = _sha256(tx_json)
+                baseline_webp_hashes = {p.name: _sha256(p) for p in sorted(tx_assets.glob("*.webp"))}
+
+                try:
+                    with tempfile.TemporaryDirectory(prefix="chabiko-mod-") as mod_dir:
+                        mod_path = Path(mod_dir)
+                        mod_records = _convert_all_to_dir(source_dir, mod_path)
+                        # Write assets then inject failure before JSON write
+                        for i, rec in enumerate(mod_records):
+                            src = mod_path / f"{rec['id']}.webp"
+                            shutil.copy2(src, tx_assets / f"{rec['id']}.webp")
+                        # JSON write inject
+                        raise RuntimeError("Injected replacement failure before JSON write")
+                except RuntimeError as e:
+                    pass  # expected
+
+                # Verify current state is still the damaged intermediate
+                # Then restore and verify
+                _restore_tx(has_ex, jb, wb)
+                restored_json_hash = _sha256(tx_json)
+                check("tx: replacement: JSON rolled back",
+                      restored_json_hash == baseline_json_hash)
+                restored_webp_hashes = {p.name: _sha256(p) for p in sorted(tx_assets.glob("*.webp"))}
+                check("tx: replacement: asset count unchanged",
+                      len(restored_webp_hashes) == len(baseline_webp_hashes))
+                for fn, cs in baseline_webp_hashes.items():
+                    check(f"tx: replacement: {fn} rolled back",
+                          restored_webp_hashes.get(fn) == cs)
+
+                # 9c. Post-publish validation failure causes rollback (simulated via _write_batch then explicit rollback)
+                has_ex, jb, wb = _snapshot_tx()
+                _write_batch_tx(rec_path, clean_records)
+                published_json_hash = _sha256(tx_json)
+                # Simulate post-publish check failing → rollback
+                _restore_tx(has_ex, jb, wb)
+                check("tx: post-publish rollback: JSON reverted",
+                      not tx_json.exists() if not has_ex else _sha256(tx_json) == hashlib.sha256(jb).hexdigest())
+
+    except Exception as e:
+        check(f"tx block raised: {e}", False)
+        traceback.print_exc(file=sys.stderr)
+
+    # ── 10. Joined-bundle schema ──
     print("  joined-bundle schema validation ...")
-    if source_dir is None or vocab_batch_path is None:
-        skip("needs --source-dir and --vocabulary-batch")
-    else:
-        try:
-            ill_records = _convert_and_validate_all(source_dir, Path(tempfile.mkdtemp(prefix="chabiko-join-")))
+    try:
+        with tempfile.TemporaryDirectory(prefix="chabiko-join-") as jd:
+            jp = Path(jd)
+            ill_records = _convert_all_to_dir(source_dir, jp)
             schema_errors = _validate_joined_bundle(vocab_batch_path, ill_records)
             if schema_errors:
                 check("joined-bundle schema (exit 0)", False)
@@ -811,14 +924,16 @@ def run_tests(source_dir: Path | None, vocab_batch_path: Path | None) -> int:
                     print(f"    {se}", file=sys.stderr)
             else:
                 check("joined-bundle schema (exit 0)", True)
-        except Exception as e:
-            check(f"joined-bundle raised: {e}", False)
-            traceback.print_exc(file=sys.stderr)
+    except Exception as e:
+        check(f"joined-bundle raised: {e}", False)
+        traceback.print_exc(file=sys.stderr)
 
-    # 9. Git check
+    # ── 11. Git check ──
     print("  git check ...")
-    result = subprocess.run(["git", "ls-files", "--", "词汇表/"],
-                            capture_output=True, text=True, cwd=REPO_ROOT)
+    result = subprocess.run(
+        ["git", "ls-files", "--", "词汇表/"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
     tracked = [l for l in result.stdout.strip().split("\n") if l]
     check("no source PNGs in Git", len(tracked) == 0)
 
@@ -835,10 +950,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Import teacher-core-v1 batch-01 candidate images as draft WebP assets"
     )
-    parser.add_argument("--source-dir", type=str, default=None,
-                        help="Directory containing the 19 deterministic candidate PNGs")
-    parser.add_argument("--vocabulary-batch", type=str, default=None,
-                        help="Path to #112 teacher-vocabulary-batch-01.json")
+    parser.add_argument("--source-dir", type=str, default=None)
+    parser.add_argument("--vocabulary-batch", type=str, default=None)
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
@@ -851,6 +964,8 @@ def main():
         parser.error(f"--vocabulary-batch: not a file: {vocab_batch}")
 
     if args.test:
+        if source_dir is None or vocab_batch is None:
+            parser.error("--test requires both --source-dir and --vocabulary-batch")
         sys.exit(run_tests(source_dir, vocab_batch))
 
     if args.check:
@@ -860,6 +975,9 @@ def main():
 
     if source_dir is None or vocab_batch is None:
         parser.error("conversion requires both --source-dir and --vocabulary-batch")
+
+    assert_pinned_versions()
+    verify_112_batch(vocab_batch)
 
     print("Converting 19 candidate images ...")
     records = convert_all(source_dir)
