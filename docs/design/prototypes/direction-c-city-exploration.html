@@ -687,7 +687,7 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .vocab-setup__start:hover { background: #111d35; }
+  .vocab-setup__start:hover { filter: brightness(0.85); }
   .vocab-setup__start:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
@@ -745,6 +745,18 @@
     color: var(--color-text-muted);
     margin-bottom: var(--space-md);
     letter-spacing: 0.04em;
+  }
+  .vocab-label {
+    display: inline-block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    background: var(--color-border);
+    padding: 1px 5px;
+    margin-right: 4px;
+    border-radius: 3px;
+    vertical-align: middle;
   }
   .vocab-card__action {
     min-height: 44px;
@@ -1014,13 +1026,13 @@
     <section class="quiz-section" aria-labelledby="quiz-label">
       <h2 id="quiz-label" class="section-label">確認クイズ</h2>
       <div class="quiz-progress">質問 1 / 2</div>
-      <p class="quiz-prompt">「我要這個」はどういう意味？</p>
+      <p class="quiz-prompt" lang="ja">「<span lang="zh-Hant">我要這個</span>」はどういう意味？</p>
       <div class="quiz-choices">
         <button class="quiz-choice quiz-choice--correct" aria-label="正解: これをください">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           これをください
         </button>
-        <button class="quiz-choice quiz-choice--incorrect" aria-label="不正解">
+        <button class="quiz-choice quiz-choice--incorrect">
           <span class="quiz-choice__indicator" aria-hidden="true"></span>
           私は〜が欲しい
         </button>
@@ -1070,15 +1082,15 @@
         <div class="vocab-setup__row">
           <span class="vocab-setup__label">単語数</span>
           <div class="vocab-setup__options">
-            <button class="vocab-setup__btn vocab-setup__btn--active">10語</button>
-            <button class="vocab-setup__btn">20語</button>
+            <button class="vocab-setup__btn vocab-setup__btn--active" aria-pressed="true">10語</button>
+            <button class="vocab-setup__btn" aria-pressed="false">20語</button>
           </div>
         </div>
         <div class="vocab-setup__row">
           <span class="vocab-setup__label">方向</span>
           <div class="vocab-setup__options">
-            <button class="vocab-setup__btn vocab-setup__btn--active">中国語 → 日本語</button>
-            <button class="vocab-setup__btn">日本語 → 中国語</button>
+            <button class="vocab-setup__btn vocab-setup__btn--active" aria-pressed="true">中国語 → 日本語</button>
+            <button class="vocab-setup__btn" aria-pressed="false">日本語 → 中国語</button>
           </div>
         </div>
         <button class="vocab-setup__start">セッションを開始</button>
@@ -1087,8 +1099,8 @@
       <!-- Flashcard (hidden state) -->
       <div class="vocab-card" id="vocab-hidden-1">
         <div class="vocab-card__count">1 / 10</div>
-        <div class="vocab-card__zh" lang="zh-Hant">我</div>
-        <div class="vocab-card__zh-simplified" lang="zh-Hans">我</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label">簡</span> 我</div>
         <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
         <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
       </div>
@@ -1096,8 +1108,8 @@
       <!-- Flashcard (revealed state) -->
       <div class="vocab-card" id="vocab-revealed-1">
         <div class="vocab-card__count">1 / 10</div>
-        <div class="vocab-card__zh" lang="zh-Hant">我</div>
-        <div class="vocab-card__zh-simplified" lang="zh-Hans">我</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label">簡</span> 我</div>
         <div class="vocab-card__pinyin" lang="zh-Latn">wǒ</div>
         <div class="vocab-card__ja-revealed">私</div>
         <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
