@@ -160,7 +160,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
     color: #0f172a; background: #f4f7fc; line-height: 1.7;
     overflow-wrap: break-word; -webkit-font-smoothing: antialiased;
   }
-  :root {
+  :global(:root) {
     --color-bg: #f4f7fc; --color-surface: #fff; --color-text: #0f172a;
     --color-text-secondary: #475569; --color-text-muted: #5b6570;
     --color-accent: #0f766e; --color-border: #e2e8f0; --color-border-light: #f1f5f9;
@@ -293,7 +293,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
     .flashcard-front__image { width: 180px; height: 135px; }
   }
   @media (min-width: 1024px) {
-    :root { --max-width: 560px; }
+    :global(:root) { --max-width: 560px; }
     .flashcard-front__zh { font-size: 3.5rem; }
     .flashcard-front__image { width: 240px; height: 180px; }
     .flashcard__inner { padding: var(--space-2xl) var(--space-xl); min-height: 380px; }
