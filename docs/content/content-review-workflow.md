@@ -282,13 +282,12 @@ Covers illustration asset metadata, technical constraints, and rights review.
 - [ ] `fileSizeBytes` is an integer between 1 and 1,500,000 (not boolean)
 - [ ] `mimeType` is `image/webp` or `image/png`
 - [ ] `altJa` is non-empty Japanese alt text
-- [ ] Rights object basis is `commissioned-for-chabiko`
-- [ ] `publicWebDisplay` is `true`
-- [ ] `staticAssetRedistribution` is `true`
-- [ ] `modificationScope` is `technical-only`
-- [ ] `attributionRequired` is a boolean; when `true`, `attributionText` is non-empty and present
-- [ ] `reuseOutsideChabiko` is `not-granted` or `granted`
 - [ ] Illustration `reviewStatus` is present and valid: `draft`, `reviewed`, or `published`
+- [ ] Rights object uses the variant appropriate to the illustration's review status:
+  - **Draft illustration** (`reviewStatus: "draft"`): may use either the full cleared-rights object (`basis: "commissioned-for-chabiko"` with all required permission fields) or the pending-rights object (`status: "pending"`, `source: "teacher-provided"`, `note`: non-empty). Pending rights do **not** claim public-display, redistribution, modification, attribution, or reuse permission.
+  - **Reviewed or published illustration** (`reviewStatus: "reviewed"` or `"published"`): must use the full cleared-rights object (`basis: "commissioned-for-chabiko"`) with all required fields (`publicWebDisplay: true`, `staticAssetRedistribution: true`, `modificationScope: "technical-only"`, `attributionRequired`, `attributionText` if required, `reuseOutsideChabiko`). Pending rights are **not** valid at these statuses.
+- [ ] When `attributionRequired` is `true`, `attributionText` is non-empty and present (cleared-rights variant only)
+- [ ] Promotion from `draft` to `reviewed` or `published` requires replacing any pending-rights object with the full cleared-rights object and completing source-rights review by `human-source-reviewer`
 - [ ] Draft illustrations may omit `illustrationRef` linkage; reviewed/published must have a valid link
 - [ ] No orphan illustration records (every `vocabularyId` matches an existing vocabulary record)
 - [ ] Rights and metadata have been reviewed by `human-source-reviewer` before promotion past `draft`
@@ -409,7 +408,9 @@ Every content proposal should include:
 - **Resource entries**: Open a GitHub issue that includes the source URL, license information, and intended use. If license status is unconfirmed, the resource is treated as a candidate only — it must not be imported into production content until a `human-source-reviewer` approves it. Set `licenseStatus` to `needs-review` (not `under-review` — that is a `reviewStatus` value), resource `reviewStatus` to `candidate` or `under-review`, keep `productionImportAllowed` as `false` (or absent), and set `allowedUse` to `reference-only` or `citation`. Even when `licenseStatus` is `approved` or `restricted`, production import requires compatible `allowedUse`, `productionImportAllowed`, and permission flags — `reviewStatus: approved` alone does not automatically allow import.
 - **Illustrations**: Open a GitHub issue or include illustration records alongside the linked vocabulary. Each illustration must include its `id`, `vocabularyId`, `assetPath`, `sourceChecksumSha256`, `width`, `height`, `mimeType`, `fileSizeBytes`, `altJa`, `rights` object, and `reviewStatus`. Illustration review requires:
   - `human-source-reviewer` to verify rights metadata, attribution, and reuse terms
-  - The rights object must be `commissioned-for-chabiko` with `publicWebDisplay: true`, `staticAssetRedistribution: true`, and `modificationScope: technical-only`
+  - The rights object depends on the illustration's review status:
+    - **Draft illustrations** (`reviewStatus: "draft"`) may use either the full cleared-rights object (`basis: "commissioned-for-chabiko"` with `publicWebDisplay: true`, `staticAssetRedistribution: true`, and `modificationScope: "technical-only"`) or the pending-rights object (`status: "pending"`, `source: "teacher-provided"`, `note`: non-empty). Pending rights do **not** claim public-display, redistribution, modification, attribution, or reuse permission.
+    - **Reviewed or published illustrations** (`reviewStatus: "reviewed"` or `"published"`) must use the full cleared-rights object. The pending-rights variant is not valid at these statuses. Promotion from `draft` requires replacing any pending-rights object with the cleared-rights object and completing source-rights review.
   - Checksum and file constraints (MIME type, extension, dimensions, size) are enforced by schema validation
   - Orphan illustrations (no matching vocabulary record) must be rejected
   - Reviewed/published illustrations must have a valid `illustrationRef` cross-link to the vocabulary record

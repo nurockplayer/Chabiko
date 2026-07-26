@@ -1009,6 +1009,13 @@ ILLUSTRATION_RIGHTS_KNOWN_FIELDS = frozenset({
     "reuseOutsideChabiko",
 })
 
+PENDING_RIGHTS_KNOWN_FIELDS = frozenset({
+    "status", "source", "note",
+})
+
+VALID_PENDING_RIGHTS_STATUS = frozenset({"pending"})
+VALID_PENDING_RIGHTS_SOURCE = frozenset({"teacher-provided"})
+
 def _check_illustration_fields(record: dict, path: str) -> list[str]:
     """Validate an illustration record."""
     errors = []
@@ -1061,78 +1068,126 @@ def _check_illustration_fields(record: dict, path: str) -> list[str]:
     # ── rights object ──
     rights = record.get("rights")
     if isinstance(rights, dict):
-        errors.extend(_check_illustration_rights(rights, f"{path}.rights"))
+        review_status = record.get("reviewStatus", "")
+        errors.extend(_check_illustration_rights(rights, f"{path}.rights", review_status))
     elif rights is not None:
         errors.append(f"{path}.rights must be a JSON object, got {type(rights).__name__}")
 
     return errors
 
 
-def _check_illustration_rights(rights: dict, path: str) -> list[str]:
-    """Validate illustration rights object."""
+def _check_illustration_rights(rights: dict, path: str, review_status: str = "") -> list[str]:
+    """Validate illustration rights object.
+
+    Supports two mutually exclusive variants:
+
+    1. Cleared rights (commissioned-for-chabiko) — the original contract fields.
+       Required when reviewStatus is 'reviewed' or 'published'.
+    2. Pending teacher-provided rights (status: 'pending', source: 'teacher-provided', note)
+       Only valid when reviewStatus is 'draft'.
+    """
     errors = []
 
-    for field in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
-        if field not in rights:
-            # attributionText is only required when attributionRequired is true
-            if field == "attributionText":
-                continue
-            errors.append(f"{path}: missing required field '{field}'")
+    # Determine which variant: pending vs cleared
+    is_pending = isinstance(rights.get("status"), str) and rights.get("status") == "pending"
 
-    # basis
-    if "basis" in rights and rights["basis"] != "commissioned-for-chabiko":
-        errors.append(f"{path}.basis must be 'commissioned-for-chabiko'")
+    if is_pending:
+        # ── Pending-rights variant ──
+        # Only valid for draft illustrations
+        if review_status not in ("draft", ""):
+            errors.append(
+                f"{path}: pending-rights variant is only valid when reviewStatus is 'draft'"
+            )
 
-    # publicWebDisplay
-    if "publicWebDisplay" in rights and rights["publicWebDisplay"] is not True:
-        errors.append(f"{path}.publicWebDisplay must be true")
+        # status must be 'pending'
+        if "status" in rights and rights["status"] != "pending":
+            errors.append(f"{path}.status must be 'pending'")
 
-    # staticAssetRedistribution
-    if "staticAssetRedistribution" in rights and rights["staticAssetRedistribution"] is not True:
-        errors.append(f"{path}.staticAssetRedistribution must be true")
+        # source must be 'teacher-provided'
+        source = rights.get("source")
+        if source is not None:
+            if not isinstance(source, str):
+                errors.append(f"{path}.source must be a string, got {type(source).__name__}")
+            elif source not in VALID_PENDING_RIGHTS_SOURCE:
+                errors.append(f"{path}.source must be 'teacher-provided'")
+        else:
+            errors.append(f"{path}: missing required field 'source'")
 
-    # modificationScope
-    if "modificationScope" in rights and rights["modificationScope"] != "technical-only":
-        errors.append(f"{path}.modificationScope must be 'technical-only'")
+        # note must be non-empty
+        note = rights.get("note")
+        if note is not None:
+            if not isinstance(note, str) or note.strip() == "":
+                errors.append(f"{path}.note must be a non-empty string")
+        else:
+            errors.append(f"{path}: missing required field 'note'")
 
-    # attributionRequired must be a non-null boolean
-    ar = rights.get("attributionRequired")
-    if "attributionRequired" in rights and ar is None:
-        errors.append(f"{path}.attributionRequired must be a non-null boolean")
-    elif ar is not None and not isinstance(ar, bool):
-        errors.append(f"{path}.attributionRequired must be a boolean, got {type(ar).__name__}")
-
-    # attributionText — required and non-empty exactly when attributionRequired is true;
-    # explicit null is invalid in either branch.
-    at = rights.get("attributionText")
-    if ar is True:
-        if "attributionText" not in rights:
-            errors.append(f"{path}.attributionText is required when attributionRequired is true")
-        elif not isinstance(at, str) or at.strip() == "":
-            errors.append(f"{path}.attributionText must be a non-empty string when attributionRequired is true")
+        # Reject unknown fields for pending rights
+        for field in rights:
+            if field not in PENDING_RIGHTS_KNOWN_FIELDS:
+                errors.append(f"{path}: unknown field '{field}'")
     else:
-        if "attributionText" in rights:
-            errors.append(f"{path}.attributionText must be absent when attributionRequired is not true")
+        # ── Cleared-rights variant (original contract) ──
+        for field in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
+            if field not in rights:
+                # attributionText is only required when attributionRequired is true
+                if field == "attributionText":
+                    continue
+                errors.append(f"{path}: missing required field '{field}'")
 
-    # reuseOutsideChabiko — must be a string in the controlled set;
-    # non-string values produce deterministic errors rather than exceptions
-    if "reuseOutsideChabiko" in rights:
-        val = rights["reuseOutsideChabiko"]
-        if not isinstance(val, str):
-            errors.append(
-                f"{path}.reuseOutsideChabiko must be a string, "
-                f"got {type(val).__name__}"
-            )
-        elif val not in VALID_REUSE_OPTIONS:
-            errors.append(
-                f"{path}.reuseOutsideChabiko '{val}' is not valid; "
-                f"must be one of {sorted(VALID_REUSE_OPTIONS)}"
-            )
+        # basis
+        if "basis" in rights and rights["basis"] != "commissioned-for-chabiko":
+            errors.append(f"{path}.basis must be 'commissioned-for-chabiko'")
 
-    # Reject unknown rights fields
-    for field in rights:
-        if field not in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
-            errors.append(f"{path}: unknown field '{field}'")
+        # publicWebDisplay
+        if "publicWebDisplay" in rights and rights["publicWebDisplay"] is not True:
+            errors.append(f"{path}.publicWebDisplay must be true")
+
+        # staticAssetRedistribution
+        if "staticAssetRedistribution" in rights and rights["staticAssetRedistribution"] is not True:
+            errors.append(f"{path}.staticAssetRedistribution must be true")
+
+        # modificationScope
+        if "modificationScope" in rights and rights["modificationScope"] != "technical-only":
+            errors.append(f"{path}.modificationScope must be 'technical-only'")
+
+        # attributionRequired must be a non-null boolean
+        ar = rights.get("attributionRequired")
+        if "attributionRequired" in rights and ar is None:
+            errors.append(f"{path}.attributionRequired must be a non-null boolean")
+        elif ar is not None and not isinstance(ar, bool):
+            errors.append(f"{path}.attributionRequired must be a boolean, got {type(ar).__name__}")
+
+        # attributionText — required and non-empty exactly when attributionRequired is true;
+        # explicit null is invalid in either branch.
+        at = rights.get("attributionText")
+        if ar is True:
+            if "attributionText" not in rights:
+                errors.append(f"{path}.attributionText is required when attributionRequired is true")
+            elif not isinstance(at, str) or at.strip() == "":
+                errors.append(f"{path}.attributionText must be a non-empty string when attributionRequired is true")
+        else:
+            if "attributionText" in rights:
+                errors.append(f"{path}.attributionText must be absent when attributionRequired is not true")
+
+        # reuseOutsideChabiko — must be a string in the controlled set;
+        # non-string values produce deterministic errors rather than exceptions
+        if "reuseOutsideChabiko" in rights:
+            val = rights["reuseOutsideChabiko"]
+            if not isinstance(val, str):
+                errors.append(
+                    f"{path}.reuseOutsideChabiko must be a string, "
+                    f"got {type(val).__name__}"
+                )
+            elif val not in VALID_REUSE_OPTIONS:
+                errors.append(
+                    f"{path}.reuseOutsideChabiko '{val}' is not valid; "
+                    f"must be one of {sorted(VALID_REUSE_OPTIONS)}"
+                )
+
+        # Reject unknown rights fields
+        for field in rights:
+            if field not in ILLUSTRATION_RIGHTS_KNOWN_FIELDS:
+                errors.append(f"{path}: unknown field '{field}'")
 
     return errors
 
@@ -2240,6 +2295,23 @@ def run_tests():
         test_illustration_rights_reuse_non_string_number,
         test_illustration_rights_attribution_text_null_when_required,
         test_illustration_rights_attribution_text_empty_when_required,
+
+        # Pending-rights draft illustration
+        test_illustration_pending_rights_draft_valid,
+        test_illustration_pending_rights_empty_note_fails,
+        test_illustration_pending_rights_unknown_field_fails,
+        test_illustration_pending_rights_reviewed_fails,
+        test_illustration_pending_rights_published_fails,
+        test_illustration_pending_rights_missing_source_fails,
+        test_illustration_pending_rights_missing_note_fails,
+        test_illustration_pending_rights_bad_source_fails,
+        test_illustration_pending_rights_cleared_fields_rejected,
+
+        # Existing cleared-rights backward compatibility
+        test_illustration_cleared_rights_draft_valid,
+        test_illustration_cleared_rights_reviewed_valid,
+        test_illustration_cleared_rights_published_valid,
+
         # Backward compatibility
         test_teacher_vocab_hsk_backward_absent,
         test_hsk_record_without_curriculum_backward,
@@ -5482,6 +5554,161 @@ def test_illustration_rights_attribution_text_empty_when_required():
         "illustration",
     )
     _assert_has_error(errs, "non-empty string", "ill_attr_text_empty_required")
+
+
+# ─── Pending-rights draft illustration tests ────────────────────────────
+
+
+def test_illustration_pending_rights_draft_valid():
+    """Draft illustration with pending teacher-provided rights passes."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "Awaiting rights confirmation from teacher",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_no_errors(errs, "pending_rights_draft")
+
+
+def test_illustration_pending_rights_empty_note_fails():
+    """Pending rights with empty note fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "non-empty string", "pending_rights_empty_note")
+
+
+def test_illustration_pending_rights_unknown_field_fails():
+    """Pending rights with unknown field fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "Awaiting confirmation",
+            "unknownField": "x",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "unknown field", "pending_rights_unknown")
+
+
+def test_illustration_pending_rights_reviewed_fails():
+    """Reviewed illustration with pending rights fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="reviewed",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "Awaiting confirmation",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "pending-rights variant is only valid when reviewStatus is 'draft'", "pending_rights_reviewed")
+
+
+def test_illustration_pending_rights_published_fails():
+    """Published illustration with pending rights fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="published",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "Awaiting confirmation",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "pending-rights variant is only valid when reviewStatus is 'draft'", "pending_rights_published")
+
+
+def test_illustration_pending_rights_missing_source_fails():
+    """Pending rights without source field fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "note": "Awaiting confirmation",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "missing required field 'source'", "pending_rights_missing_source")
+
+
+def test_illustration_pending_rights_missing_note_fails():
+    """Pending rights without note field fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "missing required field 'note'", "pending_rights_missing_note")
+
+
+def test_illustration_pending_rights_bad_source_fails():
+    """Pending rights with invalid source fails."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "ai-generated",
+            "note": "Awaiting confirmation",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "must be 'teacher-provided'", "pending_rights_bad_source")
+
+
+def test_illustration_pending_rights_cleared_fields_rejected():
+    """Pending rights with cleared-rights fields must be rejected as unknown."""
+    ill = _minimal_teacher_illustration(
+        reviewStatus="draft",
+        rights={
+            "status": "pending",
+            "source": "teacher-provided",
+            "note": "Awaiting confirmation",
+            "basis": "commissioned-for-chabiko",
+        },
+    )
+    errs = validate_single(ill, "illustration")
+    _assert_has_error(errs, "unknown field", "pending_rights_cleared_fields")
+
+
+# ─── Existing cleared-rights backward compatibility ──────────────────────
+
+
+def test_illustration_cleared_rights_draft_valid():
+    """Draft illustration with cleared rights still passes (backward compat)."""
+    errs = validate_single(
+        _minimal_teacher_illustration(reviewStatus="draft"),
+        "illustration",
+    )
+    _assert_no_errors(errs, "cleared_rights_draft")
+
+
+def test_illustration_cleared_rights_reviewed_valid():
+    """Reviewed illustration with cleared rights passes (backward compat)."""
+    ill = _minimal_teacher_illustration(reviewStatus="reviewed")
+    errs = validate_single(ill, "illustration")
+    _assert_no_errors(errs, "cleared_rights_reviewed")
+
+
+def test_illustration_cleared_rights_published_valid():
+    """Published illustration with cleared rights passes (backward compat)."""
+    ill = _minimal_teacher_illustration(reviewStatus="published")
+    errs = validate_single(ill, "illustration")
+    _assert_no_errors(errs, "cleared_rights_published")
 
 
 # ─── Backward compatibility: existing behavior still passes ────────────
