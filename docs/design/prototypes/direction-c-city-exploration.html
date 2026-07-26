@@ -650,11 +650,12 @@
   }
   .vocab-setup__options {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-sm);
   }
   .vocab-setup__btn {
     min-height: 44px;
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-sm) var(--space-md);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     font-family: inherit;
@@ -1102,8 +1103,8 @@
       <!-- Flashcard (hidden state) -->
       <div class="vocab-card" id="vocab-hidden-1">
         <div class="vocab-card__count">1 / 10</div>
-        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label">繁</span> 我</div>
-        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label">簡</span> 我</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label" lang="ja">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label" lang="ja">簡</span> 我</div>
         <div class="vocab-card__ja-hidden" aria-hidden="true">？？？</div>
         <a href="#vocab-revealed-1" class="vocab-card__action">意味を表示</a>
       </div>
@@ -1111,8 +1112,8 @@
       <!-- Flashcard (revealed state) -->
       <div class="vocab-card" id="vocab-revealed-1">
         <div class="vocab-card__count">1 / 10</div>
-        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label">繁</span> 我</div>
-        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label">簡</span> 我</div>
+        <div class="vocab-card__zh" lang="zh-Hant"><span class="vocab-label" lang="ja">繁</span> 我</div>
+        <div class="vocab-card__zh-simplified" lang="zh-Hans"><span class="vocab-label" lang="ja">簡</span> 我</div>
         <div class="vocab-card__pinyin" lang="zh-Latn">wǒ</div>
         <div class="vocab-card__ja-revealed">私</div>
         <a href="#vocab-hidden-1" class="vocab-card__action">意味を隠す</a>
