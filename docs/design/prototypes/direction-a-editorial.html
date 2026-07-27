@@ -555,6 +555,12 @@
     gap: 0;
     border: 1px solid var(--color-border);
   }
+  .control-group__options input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
   .control-option {
     padding: 12px var(--space-md);
     font-family: inherit;
@@ -571,12 +577,12 @@
   .control-option + .control-option {
     border-left: 1px solid var(--color-border);
   }
-  .control-option--active {
+  .control-group__options input[type="radio"]:checked + .control-option {
     background: var(--color-accent);
     color: #fff;
     font-weight: 700;
   }
-  .control-option:hover:not(.control-option--active) {
+  .control-option:hover:not(:checked + .control-option) {
     background: #f5f0ea;
   }
   .control-option:focus-visible {
@@ -604,11 +610,6 @@
     color: var(--color-text);
     margin-bottom: var(--space-sm);
   }
-  .flashcard__back {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
   .flashcard__pinyin {
     font-family: var(--font-pinyin);
     font-size: 0.9375rem;
@@ -617,6 +618,19 @@
   .flashcard__ja {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
+  }
+  .flashcard__trad {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+  }
+  .flashcard__trad-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+  .flashcard__reveal-action,
+  .flashcard__hide-action {
+    margin-top: var(--space-sm);
   }
 
   .flashcard-actions {
@@ -636,9 +650,10 @@
     transition: all 0.15s;
     min-width: 72px;
     min-height: 44px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    text-decoration: none;
   }
   .flashcard-btn:hover { border-color: var(--color-accent); }
   .flashcard-btn:focus-visible {
@@ -653,6 +668,28 @@
   .flashcard-btn--primary:hover {
     background: #a03a28;
   }
+
+  /* --- State Toggles (JS-free: checkbox + target) ------------ */
+  .state-toggle {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* Default hidden state: only front + reveal control */
+  .flashcard__revealed-only { display: none; }
+  .flashcard__hidden-only { display: flex; flex-direction: column; align-items: center; }
+  .flashcard-actions { display: none; }
+  .completion { display: none; }
+
+  /* Revealed state: hide hidden-only, show revealed-only + rating */
+  #vocabulary:has(#reveal-cb:checked) .flashcard__hidden-only { display: none; }
+  #vocabulary:has(#reveal-cb:checked) .flashcard__revealed-only { display: block; }
+  #vocabulary:has(#reveal-cb:checked) .flashcard-actions { display: flex; }
+
+  /* Completion state */
+  #vocabulary:has(#completed-cb:checked) .completion { display: block; }
 
   /* --- Progress Summary -------------------------------------- */
   .progress-summary {
@@ -948,35 +985,65 @@
     <!-- Session Setup -->
     <div class="flashcard-controls">
       <div class="control-group">
-        <span class="control-group__label">セッションサイズ</span>
-        <div class="control-group__options">
-          <button class="control-option control-option--active">10語</button>
-          <button class="control-option">20語</button>
+        <span class="control-group__label" id="size-label" lang="ja">セッションサイズ</span>
+        <div class="control-group__options" role="group" aria-labelledby="size-label">
+          <input type="radio" name="size" id="size-10" value="10" checked>
+          <label for="size-10" class="control-option" role="button" aria-pressed="true" tabindex="0" lang="ja">10語</label>
+          <input type="radio" name="size" id="size-20" value="20">
+          <label for="size-20" class="control-option" role="button" aria-pressed="false" tabindex="0" lang="ja">20語</label>
         </div>
       </div>
       <div class="control-group">
-        <span class="control-group__label">出題方向</span>
-        <div class="control-group__options">
-          <button class="control-option control-option--active">中国語 → 日本語</button>
-          <button class="control-option">日本語 → 中国語</button>
+        <span class="control-group__label" id="direction-label" lang="ja">出題方向</span>
+        <div class="control-group__options" role="group" aria-labelledby="direction-label">
+          <input type="radio" name="direction" id="dir-cn-ja" value="cn-ja" checked>
+          <label for="dir-cn-ja" class="control-option" role="button" aria-pressed="true" tabindex="0" lang="ja">中国語 → 日本語</label>
+          <input type="radio" name="direction" id="dir-ja-cn" value="ja-cn">
+          <label for="dir-ja-cn" class="control-option" role="button" aria-pressed="false" tabindex="0" lang="ja">日本語 → 中国語</label>
         </div>
       </div>
     </div>
 
+    <!-- State toggles (hidden checkboxes, must precede controlled siblings) -->
+    <input type="checkbox" id="reveal-cb" class="state-toggle">
+    <input type="checkbox" id="completed-cb" class="state-toggle">
+
     <!-- Flashcard -->
     <div class="flashcard">
-      <div class="flashcard__front">我</div>
-      <div class="flashcard__back">
-        <div class="flashcard__pinyin">wǒ</div>
-        <div class="flashcard__ja">私</div>
-        <div class="flashcard__pinyin" style="margin-top: var(--space-xs);">繁體：我</div>
+      <div class="flashcard__front" lang="zh-Hans">我</div>
+
+      <!-- Hidden state (default): only front + reveal control -->
+      <div class="flashcard__hidden-only">
+        <div class="flashcard__reveal-action">
+          <label for="reveal-cb" class="flashcard-btn" tabindex="0" role="button" lang="ja">表示</label>
+        </div>
+      </div>
+
+      <!-- Revealed state: all fields + hide control -->
+      <div class="flashcard__revealed-only">
+        <div class="flashcard__pinyin" lang="zh-Latn">wǒ</div>
+        <div class="flashcard__ja" lang="ja">私</div>
+        <div class="flashcard__trad">
+          <span class="flashcard__trad-label" lang="ja">繁体字：</span>
+          <span lang="zh-Hant">我</span>
+        </div>
+        <div class="flashcard__hide-action">
+          <label for="reveal-cb" class="flashcard-btn" tabindex="0" role="button" lang="ja">非表示</label>
+        </div>
       </div>
     </div>
 
+    <!-- Rating actions (shown only after reveal) -->
     <div class="flashcard-actions">
-      <button class="flashcard-btn">✕ 覚えていない</button>
-      <button class="flashcard-btn">△ 微妙</button>
-      <button class="flashcard-btn flashcard-btn--primary">✓ 覚えた</button>
+      <label for="completed-cb" class="flashcard-btn" tabindex="0" role="button" lang="ja">✕ 覚えていない</label>
+      <label for="completed-cb" class="flashcard-btn" tabindex="0" role="button" lang="ja">△ 微妙</label>
+      <label for="completed-cb" class="flashcard-btn flashcard-btn--primary" tabindex="0" role="button" lang="ja">✓ 覚えた</label>
+    </div>
+
+    <!-- Completion State -->
+    <div class="completion" id="vocab-completion">
+      <div class="completion__icon">✓</div>
+      <div class="completion__text" lang="ja">練習完了！レッスンをクリアしました。</div>
     </div>
 
   </section>
