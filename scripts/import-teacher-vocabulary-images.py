@@ -440,92 +440,83 @@ def _validate_joined_bundle(vocab_batch_path: Path, ill_records: list[dict]) -> 
 # ─── Portable non-sRGB ICC fixture ──────────────────────────────────────────
 
 def _create_portable_non_srgb_icc_data() -> bytes:
-    """Create a non-sRGB ICC profile portable across macOS/Linux/Windows.
+    """Create a deterministic non-sRGB ICC profile portable across platforms.
 
-    Strategy: use the sRGB built-in profile — but that's sRGB.  We need a
-    non-sRGB profile.  On macOS, /System/Library/ColorSync/Profiles/Generic
-    RGB Profile.icc exists and is non-sRGB.  On Linux and Windows we fall
-    back to creating a Lab profile via lcms2.
+    Embeds the Apple Generic RGB Profile (non-sRGB, matrix-shaper, RGB
+    color space) as a base64 constant.  This profile:
+    - Has description "Generic RGB Profile" (does NOT contain "sRGB")
+    - Is a valid RGB-to-RGB matrix-shaper profile usable with PIL's
+      profileToProfile
+    - Preserves alpha on RGBA→sRGB RGBA conversion
+    - Produces identical bytes on every platform (embedded constant)
 
-    The fallback searches:
-    - Absolute filesystem paths (checked with Path.exists first)
-    - ctypes.util.find_library result (soname like liblcms2.so.2) loaded
-      directly via CDLL without Path.exists guard (the soname is virtual)
-
-    Raises RuntimeError on failure — never silently skips.
+    Raises RuntimeError on load/validation failure — never silently skips.
     """
     from PIL import ImageCms, Image as _Img
     from io import BytesIO
-    import ctypes, ctypes.util
+    import base64
 
-    # macOS system Generic RGB Profile (non-sRGB, matrix-shaper, works with PIL)
-    system_path = Path("/System/Library/ColorSync/Profiles/Generic RGB Profile.icc")
-    if system_path.exists():
-        data = system_path.read_bytes()
-    else:
-        # Fallback: lcms2 Lab profile (works on any platform)
-        data = _create_lcms_non_srgb_bytes()
+    # Apple Generic RGB Profile.icc (non-sRGB, RGB color space, matrix-shaper)
+    ICC_B64 = (
+        "AAAHyGFwcGwCIAAAbW50clJHQiBYWVogB9kAAgAZAAsAGgALYWNzcEFQUEwAAAAAYXBwbAAA"
+        "AAAAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALZGVzYwAAAQgAAABvZHNjbQAAAXgAAAWKY3BydAAA"
+        "BwQAAAA4d3RwdAAABzwAAAAUclhZWgAAB1AAAAAUZ1hZWgAAB2QAAAAUYlhZWgAAB3gAAAAU"
+        "clRSQwAAB4wAAAAOY2hhZAAAB5wAAAAsYlRSQwAAB4wAAAAOZ1RSQwAAB4wAAAAOZGVzYwAA"
+        "AAAAAAAUR2VuZXJpYyBSR0IgUHJvZmlsZQAAAAAAAAAAAAAAFEdlbmVyaWMgUkdCIFByb2Zp"
+        "bGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG1s"
+        "dWMAAAAAAAAAHwAAAAxza1NLAAAAKAAAAYRkYURLAAAAJAAAAaxjYUVTAAAAJAAAAdB2aVZO"
+        "AAAAJAAAAfRwdEJSAAAAJgAAAhh1a1VBAAAAKgAAAj5mckZVAAAAKAAAAmhodUhVAAAAKAAA"
+        "ApB6aFRXAAAAEgAAArhrb0tSAAAAFgAAAspuYk5PAAAAJgAAAuBjc0NaAAAAIgAAAwZoZUlM"
+        "AAAAHgAAAyhyb1JPAAAAJAAAA0ZkZURFAAAALAAAA2ppdElUAAAAKAAAA5ZzdlNFAAAAJgAA"
+        "AuB6aENOAAAAEgAAA75qYUpQAAAAGgAAA9BlbEdSAAAAIgAAA+pwdFBPAAAAJgAABAxubE5M"
+        "AAAAKAAABDJlc0VTAAAAJgAABAx0aFRIAAAAJAAABFp0clRSAAAAIgAABH5maUZJAAAAKAAA"
+        "BKBockhSAAAAKAAABMhwbFBMAAAALAAABPBydVJVAAAAIgAABRxlblVTAAAAJgAABT5hckVH"
+        "AAAAJgAABWQAVgFhAGUAbwBiAGUAYwBuAP0AIABSAEcAQgAgAHAAcgBvAGYAaQBsAEcAZQBu"
+        "AGUAcgBlAGwAIABSAEcAQgAtAHAAcgBvAGYAaQBsAFAAZQByAGYAaQBsACAAUgBHAEIAIABn"
+        "AGUAbgDoAHIAaQBjAEMepQB1ACAAaADsAG4AaAAgAFIARwBCACAAQwBoAHUAbgBnAFAAZQBy"
+        "AGYAaQBsACAAUgBHAEIAIABHAGUAbgDpAHIAaQBjAG8EFwQwBDMEMAQ7BEwEPQQ4BDkAIAQ/"
+        "BEAEPgREBDAEOQQ7ACAAUgBHAEIAUAByAG8AZgBpAGwAIABnAOkAbgDpAHIAaQBxAHUAZQAg"
+        "AFIAVgBCAMEAbAB0AGEAbADhAG4AbwBzACAAUgBHAEIAIABwAHIAbwBmAGkAbJAadSgAUgBH"
+        "AEKCcl9pY8+P8Md8vBgAIABSAEcAQgAg1QS4XNMMx3wARwBlAG4AZQByAGkAcwBrACAAUgBH"
+        "AEIALQBwAHIAbwBmAGkAbABPAGIAZQBjAG4A/QAgAFIARwBCACAAcAByAG8AZgBpAGwF5AXo"
+        "BdUF5AXZBdwAIABSAEcAQgAgBdsF3AXcBdkAUAByAG8AZgBpAGwAIABSAEcAQgAgAGcAZQBu"
+        "AGUAcgBpAGMAQQBsAGwAZwBlAG0AZQBpAG4AZQBzACAAUgBHAEIALQBQAHIAbwBmAGkAbABQ"
+        "AHIAbwBmAGkAbABvACAAUgBHAEIAIABnAGUAbgBlAHIAaQBjAG9mbpAaAFIARwBCY8+P8GWH"
+        "TvZOAIIsACAAUgBHAEIAIDDXMO0w1TChMKQw6wOTA7UDvQO5A7oDzAAgA8ADwQO/A8YDrwO7"
+        "ACAAUgBHAEIAUABlAHIAZgBpAGwAIABSAEcAQgAgAGcAZQBuAOkAcgBpAGMAbwBBAGwAZwBl"
+        "AG0AZQBlAG4AIABSAEcAQgAtAHAAcgBvAGYAaQBlAGwOQg4bDiMORA4fDiUOTAAgAFIARwBC"
+        "ACAOFw4xDkgOJw5EDhsARwBlAG4AZQBsACAAUgBHAEIAIABQAHIAbwBmAGkAbABpAFkAbABl"
+        "AGkAbgBlAG4AIABSAEcAQgAtAHAAcgBvAGYAaQBpAGwAaQBHAGUAbgBlAHIAaQENAGsAaQAg"
+        "AFIARwBCACAAcAByAG8AZgBpAGwAVQBuAGkAdwBlAHIAcwBhAGwAbgB5ACAAcAByAG8AZgBp"
+        "AGwAIABSAEcAQgQeBDEESQQ4BDkAIAQ/BEAEPgREBDgEOwRMACAAUgBHAEIARwBlAG4AZQBy"
+        "AGkAYwAgAFIARwBCACAAUAByAG8AZgBpAGwAZQZFBkQGQQAgBioGOQYxBkoGQQAgAFIARwBC"
+        "ACAGJwZEBjkGJwZFAAB0ZXh0AAAAAENvcHlyaWdodCAyMDA3IEFwcGxlIEluYy4sIGFsbCBy"
+        "aWdodHMgcmVzZXJ2ZWQuAFhZWiAAAAAAAADzUgABAAAAARbPWFlaIAAAAAAAAHRNAAA97gAA"
+        "A9BYWVogAAAAAAAAWnUAAKxzAAAXNFhZWiAAAAAAAAAoGgAAFZ8AALg2Y3VydgAAAAAAAAAB"
+        "Ac0AAHNmMzIAAAAAAAEMQgAABd7///MmAAAHkgAA/ZH///ui///9owAAA9wAAMBs"
+    )
+    data = base64.b64decode(ICC_B64)
 
-    # Validate: non-sRGB, RGBA conversion works
+    # Validate: non-sRGB, RGB → sRGB works, RGBA alpha preserved
     prof = ImageCms.getOpenProfile(BytesIO(data))
     desc = ImageCms.getProfileDescription(prof)
     if "sRGB" in desc or "srgb" in desc.lower():
         raise RuntimeError(f"ICC fixture unexpectedly sRGB: {desc}")
     srgb = ImageCms.createProfile("sRGB")
-    test = _Img.new("RGBA", (5, 5), (100, 150, 200, 80))
-    result = ImageCms.profileToProfile(test, prof, srgb, outputMode="RGBA")
-    if result.mode != "RGBA":
-        raise RuntimeError(f"ICC conversion got mode {result.mode}")
+    test_rgb = _Img.new("RGB", (5, 5), (100, 150, 200))
+    result_rgb = ImageCms.profileToProfile(test_rgb, prof, srgb, outputMode="RGB")
+    if result_rgb.mode != "RGB":
+        raise RuntimeError(f"RGB conversion got mode {result_rgb.mode}")
+    test_rgba = _Img.new("RGBA", (5, 5), (100, 150, 200, 80))
+    result_rgba = ImageCms.profileToProfile(test_rgba, prof, srgb, outputMode="RGBA")
+    if result_rgba.mode != "RGBA":
+        raise RuntimeError(f"RGBA conversion got mode {result_rgba.mode}")
+    orig_alpha = test_rgba.getpixel((0, 0))[3]
+    conv_alpha = result_rgba.getpixel((0, 0))[3]
+    if orig_alpha != conv_alpha:
+        raise RuntimeError(f"Alpha changed: {orig_alpha} -> {conv_alpha}")
     return data
-
-
-def _create_lcms_non_srgb_bytes() -> bytes:
-    """Create a non-sRGB profile via lcms2 cmsCreateLab4Profile.
-
-    Tries known absolute paths first (exist-checked), then ctypes.util results
-    (loaded directly — the soname is a virtual name, not a real path to check)."""
-    import ctypes, ctypes.util
-
-    lib = None
-    # Absolute filesystem candidates — check existence first
-    abs_candidates = ["/opt/homebrew/lib/liblcms2.dylib",
-                      "/usr/local/lib/liblcms2.dylib"]
-    for p in abs_candidates:
-        if Path(p).exists():
-            lib = ctypes.cdll.LoadLibrary(p)
-            break
-
-    # Loader-resolved library name — do NOT check Path.exists on the result.
-    # find_library may return a soname like "liblcms2.so.2" that doesn't exist
-    # as a real file path; CDLL can still load it via the dynamic loader.
-    if lib is None:
-        soname = ctypes.util.find_library("lcms2")
-        if soname is not None:
-            try:
-                lib = ctypes.cdll.LoadLibrary(soname)
-            except OSError:
-                lib = None
-
-    if lib is None:
-        raise RuntimeError("lcms2 not found — cannot create non-sRGB ICC fixture")
-
-    lib.cmsCreateLab4Profile.argtypes = [ctypes.c_void_p]
-    lib.cmsCreateLab4Profile.restype = ctypes.c_void_p
-    lib.cmsSaveProfileToMem.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
-                                        ctypes.POINTER(ctypes.c_uint)]
-    lib.cmsSaveProfileToMem.restype = ctypes.c_bool
-    lib.cmsCloseProfile.argtypes = [ctypes.c_void_p]
-    lib.cmsCloseProfile.restype = None
-
-    lab = lib.cmsCreateLab4Profile(None)
-    if not lab:
-        raise RuntimeError("cmsCreateLab4Profile failed")
-    sz = ctypes.c_uint(0)
-    lib.cmsSaveProfileToMem(lab, None, ctypes.byref(sz))
-    buf = ctypes.create_string_buffer(sz.value)
-    lib.cmsSaveProfileToMem(lab, buf, ctypes.byref(sz))
-    lib.cmsCloseProfile(lab)
-    return buf.raw[:sz.value]
 
 
 # ─── Tests ──────────────────────────────────────────────────────────────────
