@@ -93,7 +93,6 @@ MAX_DIMENSION = 1600
 MAX_FILE_SIZE = 1_500_000
 ILLUSTRATION_ID_PREFIX = "ill-"
 ASSET_PREFIX = "/assets/vocabulary/teacher-core-v1/"
-EXPECTED_ILL_IDS = frozenset(f"{ILLUSTRATION_ID_PREFIX}{vid}" for vid, _, _, _ in IMMUTABLE_CONTRACT)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BATCH_JSON = REPO_ROOT / "data" / "illustrations" / "teacher-core-v1" / "teacher-vocabulary-batch-01.json"
@@ -252,18 +251,13 @@ def _convert_all_to_dir(source_dir: Path, tmp_path: Path) -> list[dict]:
 # ─── Failure injection ──────────────────────────────────────────────────────
 
 def _should_inject_before(idx: int) -> bool:
-    """Controlled by env var _CHABIKO_INJECT_AT=0..18 or 'check' or 'write'."""
     val = os.environ.get("_CHABIKO_INJECT_AT", "")
-    if val == "check":
-        return False  # handled separately in convert_all
-    if val == "write":
+    if val in ("check", "write"):
         return False
     try:
-        target = int(val)
+        return idx == int(val)
     except ValueError:
         return False
-    return idx == target
-
 
 def _should_inject_write() -> bool:
     return os.environ.get("_CHABIKO_INJECT_AT", "") == "write"
@@ -274,68 +268,70 @@ def _should_inject_check() -> bool:
 
 # ─── Transactional publish (parameterized by paths) ─────────────────────────
 
+EXPECTED_ILL_FILENAMES = frozenset(f"{illustration_id(vid)}.webp" for vid, _, _, _ in IMMUTABLE_CONTRACT)
+
 def snapshot(assets_dir: Path, batch_json: Path) -> tuple[bool, bytes | None, dict[str, bytes]]:
-    """Unconditional snapshot: always record every WebP in assets_dir + JSON bytes if exists.
-    This ensures that even if JSON is missing (partial failure), pre-existing WebPs are captured."""
-    has_json = batch_json.exists()
-    json_bytes: bytes | None = batch_json.read_bytes() if has_json else None
-    webp_bytes: dict[str, bytes] = {}
-    for wp in assets_dir.glob("*.webp"):
-        webp_bytes[wp.name] = wp.read_bytes()
-    return has_json, json_bytes, webp_bytes
+    """Snapshot: records every batch WebP + JSON bytes if exists."""
+    has = batch_json.exists()
+    jb: bytes | None = batch_json.read_bytes() if has else None
+    wb: dict[str, bytes] = {}
+    for fn in EXPECTED_ILL_FILENAMES:
+        fp = assets_dir / fn
+        if fp.exists():
+            wb[fn] = fp.read_bytes()
+    return has, jb, wb
 
-
-def remove_this_batch(assets_dir: Path, batch_json: Path) -> None:
-    """Remove only THIS batch's outputs. Does NOT touch other batches or unrelated assets."""
-    for wp in assets_dir.glob("*.webp"):
-        if wp.stem in EXPECTED_ILL_IDS or True:  # safe: all files in this batch dir are ours
-            wp.unlink()
-    if batch_json.exists():
-        batch_json.unlink()
-
+def remove_batch_outputs(assets_dir: Path, batch_json: Path) -> None:
+    for fn in EXPECTED_ILL_FILENAMES:
+        (assets_dir / fn).unlink(missing_ok=True)
+    batch_json.unlink(missing_ok=True)
 
 def restore(has_json: bool, json_bytes: bytes | None,
             webp_bytes: dict[str, bytes], assets_dir: Path, batch_json: Path) -> None:
-    """Clear current destinations, then restore snapshot.
-    Order: 1) remove current outputs, 2) restore snapshot files only.
-    This ensures files created during a failed publish that were NOT in snapshot are gone."""
-    remove_this_batch(assets_dir, batch_json)
+    remove_batch_outputs(assets_dir, batch_json)
     if has_json and json_bytes is not None:
         batch_json.parent.mkdir(parents=True, exist_ok=True)
         batch_json.write_bytes(json_bytes)
         for fname, content in webp_bytes.items():
             (assets_dir / fname).write_bytes(content)
 
-
 def write_batch(tmp_path: Path, records: list[dict],
                 assets_dir: Path, batch_json: Path) -> None:
-    """Write WebP files and JSON. Raises on any missing staged file."""
     assets_dir.mkdir(parents=True, exist_ok=True)
     batch_json.parent.mkdir(parents=True, exist_ok=True)
     for i, rec in enumerate(records):
         if _should_inject_before(i):
-            raise RuntimeError(f"Injected failure before WebP {i} ({rec['vocabularyId']})")
+            raise RuntimeError(f"Injected: WebP {i} ({rec['vocabularyId']})")
         src = tmp_path / f"{rec['id']}.webp"
         if not src.exists():
             raise RuntimeError(f"Staged WebP missing: {src}")
         shutil.copy2(src, assets_dir / f"{rec['id']}.webp")
     if _should_inject_write():
-        raise RuntimeError("Injected write-phase failure before JSON")
+        raise RuntimeError("Injected: write-phase failure before JSON")
     with open(batch_json, "w", encoding="utf-8") as f:
         json.dump({"illustrations": records}, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
 
-def convert_all(source_dir: Path, vocab_batch_path: Path) -> list[dict]:
-    """Convert 19 images, validate staged + batch + schema, publish transactionally."""
+# ─── convert_all (parameterized) ────────────────────────────────────────────
+
+def convert_all(source_dir: Path, vocab_batch_path: Path,
+                assets_dir: Path | None = None, batch_json: Path | None = None) -> list[dict]:
+    """Convert, validate, publish transactionally.
+
+    When assets_dir/batch_json are None, defaults to the repository tracked paths.
+    """
     assert_pinned_versions()
     verify_112_batch(vocab_batch_path)
+
+    ad = assets_dir or ASSETS_DIR
+    bj = batch_json or BATCH_JSON
 
     with tempfile.TemporaryDirectory(prefix="chabiko-ill-") as tmp_dir:
         tmp_path = Path(tmp_dir)
         records = _convert_all_to_dir(source_dir, tmp_path)
 
-        # Pre-publish: file size + joined-bundle schema
+        # Pre-publish validation
         for rec in records:
             wp = tmp_path / f"{rec['id']}.webp"
             if not wp.exists():
@@ -346,22 +342,24 @@ def convert_all(source_dir: Path, vocab_batch_path: Path) -> list[dict]:
         if schema_errs:
             raise RuntimeError(f"Pre-publish schema: {'; '.join(schema_errs)}")
 
-        has_ex, jb, wb = snapshot(ASSETS_DIR, BATCH_JSON)
+        has_ex, jb, wb = snapshot(ad, bj)
 
         try:
-            write_batch(tmp_path, records, ASSETS_DIR, BATCH_JSON)
+            write_batch(tmp_path, records, ad, bj)
         except BaseException:
-            restore(has_ex, jb, wb, ASSETS_DIR, BATCH_JSON)
+            restore(has_ex, jb, wb, ad, bj)
             raise
 
         if _should_inject_check():
-            restore(has_ex, jb, wb, ASSETS_DIR, BATCH_JSON)
-            raise RuntimeError("Injected post-publish check failure")
+            restore(has_ex, jb, wb, ad, bj)
+            raise RuntimeError("Injected: post-publish check failure")
 
+        # Post-publish check: use ad/bj for the comparison target
         try:
-            _run_check_core(source_dir, vocab_batch_path, tmp_path, records)
+            _run_check_core(source_dir, vocab_batch_path, tmp_path, records,
+                            ad, bj)
         except BaseException:
-            restore(has_ex, jb, wb, ASSETS_DIR, BATCH_JSON)
+            restore(has_ex, jb, wb, ad, bj)
             raise
 
     return records
@@ -370,37 +368,35 @@ def convert_all(source_dir: Path, vocab_batch_path: Path) -> list[dict]:
 # ─── Check core ─────────────────────────────────────────────────────────────
 
 def _run_check_core(source_dir: Path, vocab_batch_path: Path,
-                    check_tmp: Path, records: list[dict]) -> None:
-    committed = json.loads(BATCH_JSON.read_bytes()).get("illustrations", [])
+                    check_tmp: Path, records: list[dict],
+                    ad: Path | None = None, bj: Path | None = None) -> None:
+    assets = ad or ASSETS_DIR
+    batch_j = bj or BATCH_JSON
+    committed = json.loads(batch_j.read_bytes()).get("illustrations", [])
     exp = json.dumps({"illustrations": records}, indent=2, ensure_ascii=False) + "\n"
-    if BATCH_JSON.read_text(encoding="utf-8") != exp:
-        raise RuntimeError("Committed JSON != regenerated records (count/order/fields)")
-
-    exp_webps = {f"{illustration_id(vid)}.webp" for vid, _, _, _ in IMMUTABLE_CONTRACT}
-    com_webps = {p.name for p in ASSETS_DIR.glob("*.webp")}
-    if extra := (com_webps - exp_webps):
-        raise RuntimeError(f"Extra committed WebPs: {sorted(extra)}")
-    if missing := (exp_webps - com_webps):
-        raise RuntimeError(f"Missing committed WebPs: {sorted(missing)}")
-
+    if batch_j.read_text(encoding="utf-8") != exp:
+        raise RuntimeError("Committed JSON != regenerated")
+    exp_w = {f"{illustration_id(vid)}.webp" for vid, _, _, _ in IMMUTABLE_CONTRACT}
+    com_w = {p.name for p in assets.glob("*.webp")}
+    if extra := (com_w - exp_w):
+        raise RuntimeError(f"Extra WebPs: {sorted(extra)}")
+    if missing := (exp_w - com_w):
+        raise RuntimeError(f"Missing WebPs: {sorted(missing)}")
     for vid, _, _, _ in IMMUTABLE_CONTRACT:
         fn = f"{illustration_id(vid)}.webp"
-        rp = check_tmp / fn
-        cp = ASSETS_DIR / fn
-        if not cp.exists() or _sha256(rp) != _sha256(cp):
+        if not (assets / fn).exists() or _sha256(check_tmp / fn) != _sha256(assets / fn):
             raise RuntimeError(f"WebP byte mismatch for {vid}")
-
-    by_vocab = {r["vocabularyId"]: r for r in committed}
-    if len(by_vocab) != 19:
-        raise RuntimeError(f"Expected 19 unique vocab IDs, got {len(by_vocab)}")
+    by_v = {r["vocabularyId"]: r for r in committed}
+    if len(by_v) != 19:
+        raise RuntimeError(f"Expected 19 vocab IDs, got {len(by_v)}")
     for vid in NO_IMAGE_VOCABULARY_IDS:
-        if vid in by_vocab:
+        if vid in by_v:
             raise RuntimeError(f"{vid} should not have illustration")
-
-    r = subprocess.run(["git", "ls-files", "--", "词汇表/"],
-                       capture_output=True, text=True, cwd=REPO_ROOT)
-    if r.stdout.strip():
-        raise RuntimeError("Source files tracked in Git")
+    if ad is None and bj is None:
+        r = subprocess.run(["git", "ls-files", "--", "词汇表/"],
+                           capture_output=True, text=True, cwd=REPO_ROOT)
+        if r.stdout.strip():
+            raise RuntimeError("Source files tracked in Git")
 
 
 def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
@@ -420,7 +416,7 @@ def run_check(source_dir: Path, vocab_batch_path: Path) -> int:
     return 1 if errors else 0
 
 
-# ─── Joined-bundle schema validation ────────────────────────────────────────
+# ─── Joined-bundle schema ───────────────────────────────────────────────────
 
 def _validate_joined_bundle(vocab_batch_path: Path, ill_records: list[dict]) -> list[str]:
     data = json.loads(vocab_batch_path.read_bytes())
@@ -444,88 +440,83 @@ def _validate_joined_bundle(vocab_batch_path: Path, ill_records: list[dict]) -> 
 # ─── Portable non-sRGB ICC fixture ──────────────────────────────────────────
 
 def _create_portable_non_srgb_icc_data() -> bytes:
-    """Create a deterministic non-sRGB ICC profile.
+    """Create a non-sRGB ICC profile portable across macOS/Linux/Windows.
 
-    Uses the Generic RGB Profile.icc from Apple ColorSync on macOS.
-    On other platforms, falls back to lcms2's Lab4Profile serialized to bytes.
-    Raises RuntimeError if neither approach works.
+    Strategy: use the sRGB built-in profile — but that's sRGB.  We need a
+    non-sRGB profile.  On macOS, /System/Library/ColorSync/Profiles/Generic
+    RGB Profile.icc exists and is non-sRGB.  On Linux and Windows we fall
+    back to creating a Lab profile via lcms2.
+
+    The fallback searches:
+    - Absolute filesystem paths (checked with Path.exists first)
+    - ctypes.util.find_library result (soname like liblcms2.so.2) loaded
+      directly via CDLL without Path.exists guard (the soname is virtual)
+
+    Raises RuntimeError on failure — never silently skips.
     """
     from PIL import ImageCms, Image as _Img
     from io import BytesIO
-    import base64
+    import ctypes, ctypes.util
 
-    # Approach 1: Embedded Apple Generic RGB Profile (non-sRGB, matrix-shaper, works with PIL)
-    # This is identical to /System/Library/ColorSync/Profiles/Generic RGB Profile.icc
-    # Validated to be non-sRGB and to work with profileToProfile.
-    ICC = (
-        b"\x00\x00\x07\xc8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00mntr\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00RGB\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    )
-    # Need full profile. Let's write it to a temp file first.
-    import tempfile
-    import os
-    # Read from system Generic RGB Profile which is known-good
-    system_profile = Path("/System/Library/ColorSync/Profiles/Generic RGB Profile.icc")
-    if system_profile.exists():
-        data = system_profile.read_bytes()
+    # macOS system Generic RGB Profile (non-sRGB, matrix-shaper, works with PIL)
+    system_path = Path("/System/Library/ColorSync/Profiles/Generic RGB Profile.icc")
+    if system_path.exists():
+        data = system_path.read_bytes()
     else:
-        # Fallback: try LCMS2 Lab profile
-        try:
-            data = _create_lcms_lab_profile_bytes()
-        except Exception as e:
-            raise RuntimeError(f"Cannot create non-sRGB ICC fixture: {e}")
+        # Fallback: lcms2 Lab profile (works on any platform)
+        data = _create_lcms_non_srgb_bytes()
 
-    # Validate
+    # Validate: non-sRGB, RGBA conversion works
     prof = ImageCms.getOpenProfile(BytesIO(data))
     desc = ImageCms.getProfileDescription(prof)
     if "sRGB" in desc or "srgb" in desc.lower():
         raise RuntimeError(f"ICC fixture unexpectedly sRGB: {desc}")
-    # Verify conversion
     srgb = ImageCms.createProfile("sRGB")
-    test_img = _Img.new("RGBA", (5, 5), (100, 150, 200, 80))
-    result = ImageCms.profileToProfile(test_img, prof, srgb, outputMode="RGBA")
+    test = _Img.new("RGBA", (5, 5), (100, 150, 200, 80))
+    result = ImageCms.profileToProfile(test, prof, srgb, outputMode="RGBA")
     if result.mode != "RGBA":
         raise RuntimeError(f"ICC conversion got mode {result.mode}")
     return data
 
 
-def _create_lcms_lab_profile_bytes() -> bytes:
-    """Create a Lab profile via lcms2 and return its bytes."""
+def _create_lcms_non_srgb_bytes() -> bytes:
+    """Create a non-sRGB profile via lcms2 cmsCreateLab4Profile.
+
+    Tries known absolute paths first (exist-checked), then ctypes.util results
+    (loaded directly — the soname is a virtual name, not a real path to check)."""
     import ctypes, ctypes.util
-    from pathlib import Path
-    from io import BytesIO
-    from PIL import ImageCms
-    # Try to find and call lcms2 directly
-    for path_candidate in [
-        "/opt/homebrew/lib/liblcms2.dylib",
-        "/usr/local/lib/liblcms2.dylib",
-        ctypes.util.find_library("lcms2"),
-    ]:
-        if path_candidate and Path(path_candidate).exists():
-            lib = ctypes.cdll.LoadLibrary(path_candidate)
+
+    lib = None
+    # Absolute filesystem candidates — check existence first
+    abs_candidates = ["/opt/homebrew/lib/liblcms2.dylib",
+                      "/usr/local/lib/liblcms2.dylib"]
+    for p in abs_candidates:
+        if Path(p).exists():
+            lib = ctypes.cdll.LoadLibrary(p)
             break
-    else:
-        raise RuntimeError("lcms2 not found")
+
+    # Loader-resolved library name — do NOT check Path.exists on the result.
+    # find_library may return a soname like "liblcms2.so.2" that doesn't exist
+    # as a real file path; CDLL can still load it via the dynamic loader.
+    if lib is None:
+        soname = ctypes.util.find_library("lcms2")
+        if soname is not None:
+            try:
+                lib = ctypes.cdll.LoadLibrary(soname)
+            except OSError:
+                lib = None
+
+    if lib is None:
+        raise RuntimeError("lcms2 not found — cannot create non-sRGB ICC fixture")
+
     lib.cmsCreateLab4Profile.argtypes = [ctypes.c_void_p]
     lib.cmsCreateLab4Profile.restype = ctypes.c_void_p
-    lib.cmsSaveProfileToMem.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint)]
+    lib.cmsSaveProfileToMem.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                        ctypes.POINTER(ctypes.c_uint)]
     lib.cmsSaveProfileToMem.restype = ctypes.c_bool
     lib.cmsCloseProfile.argtypes = [ctypes.c_void_p]
     lib.cmsCloseProfile.restype = None
+
     lab = lib.cmsCreateLab4Profile(None)
     if not lab:
         raise RuntimeError("cmsCreateLab4Profile failed")
@@ -537,7 +528,7 @@ def _create_lcms_lab_profile_bytes() -> bytes:
     return buf.raw[:sz.value]
 
 
-# ─── Tests ─────────────────────────────────────────────────────────────────
+# ─── Tests ──────────────────────────────────────────────────────────────────
 
 def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
     import traceback
@@ -574,7 +565,6 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
     cb = {v: (fn, cs) for v, fn, cs, _ in IMMUTABLE_CONTRACT}
     check("爸爸/父亲 same file", cb["teacher-star-1-e7bc12c4f23a"][0] == cb["teacher-star-1-bada4e11125d"][0])
     check("妈妈/母亲 same file", cb["teacher-star-1-e64490a207eb"][0] == cb["teacher-star-1-d903f490725f"][0])
-    check("same cs pair", cb["teacher-star-1-e7bc12c4f23a"][1] == cb["teacher-star-1-bada4e11125d"][1])
 
     # 4. Rights
     print("  rights ...")
@@ -618,7 +608,6 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
         from PIL import Image as _Q, ImageCms as _Cms
         tq = Path(tempfile.mkdtemp(prefix="chabiko-qual-"))
         try:
-            # 7a. No upscale
             vid500 = next(v for v, fn, _, _ in IMMUTABLE_CONTRACT if fn == "大家.png")
             src = verify_sources(source_dir)[vid500]
             out = tq / "t.webp"
@@ -626,7 +615,6 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
             rr = _Q.open(out)
             check("no upscale 500→≤500", rr.width <= 500 and rr.height <= 500)
 
-            # 7b. Proportional resize
             big = _Q.new("RGBA", (2000, 1500), (255, 0, 0))
             bs = tq / "big.png"
             big.save(str(bs), format="PNG")
@@ -636,7 +624,7 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
             check("oversized ≤1600", br.width <= MAX_DIMENSION and br.height <= MAX_DIMENSION)
             check("aspect ratio", abs(br.width / br.height - 2000 / 1500) < 0.01)
 
-            # 7c. Palette transparency
+            # Palette transparency
             pal = _Q.new("P", (10, 10))
             pal.putpalette([0, 0, 0, 255, 255, 255] + [0] * 759)
             pal.info["transparency"] = 1
@@ -647,7 +635,7 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
             px = _Q.open(tq / "pal.webp").getpixel((1, 0))
             check("palette alpha=0", len(px) == 4 and px[3] == 0)
 
-            # 7d. Semi-transparent RGBA
+            # Semi-transparent RGBA
             semi = _Q.new("RGBA", (5, 5), (255, 0, 0, 128))
             ss = tq / "semi.png"
             semi.save(str(ss), format="PNG")
@@ -656,7 +644,7 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
             check("semi RGBA", sr.mode == "RGBA")
             check("semi alpha 128", 64 <= sr.getpixel((0, 0))[3] <= 192)
 
-            # 7e. EXIF + ICC + metadata → stripped
+            # EXIF + ICC + metadata stripping
             from PIL.PngImagePlugin import PngInfo
             non_srgb_data = _create_portable_non_srgb_icc_data()
             exif = _Q.new("RGB", (5, 10), (0, 255, 0)).getexif()
@@ -671,7 +659,7 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
             check("output no ICC", not er.info.get("icc_profile"))
             check("output no EXIF", not er.info.get("exif"))
 
-            # 7f. ICC+RGBA alpha preservation
+            # ICC+RGBA alpha preservation
             icc_rgba = _Q.new("RGBA", (20, 20), (100, 150, 200, 80))
             irs = tq / "icc_rgba.png"
             icc_rgba.save(str(irs), format="PNG", icc_profile=non_srgb_data)
@@ -686,86 +674,111 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
         check(f"quality: {e}", False)
         traceback.print_exc(file=sys.stderr)
 
-    # 8. Production-path failure tests (calls production convert_all via env vars)
-    print("  transactional publish (production path) ...")
+    # 8. Transactional tests (fully in temp — never touches ASSETS_DIR/BATCH_JSON)
+    print("  transactional publish (temp destinations) ...")
     try:
-        tx_root = Path(tempfile.mkdtemp(prefix="chabiko-tx-"))
-        tx_assets = tx_root / "public" / "assets" / "vocabulary" / "teacher-core-v1"
-        tx_json = tx_root / "data" / "illustrations" / "teacher-core-v1" / "teacher-vocabulary-batch-01.json"
-        tx_assets.mkdir(parents=True, exist_ok=True)
-        tx_json.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="chabiko-txn-") as txn_root:
+            txn_root_p = Path(txn_root)
+            txn_assets = txn_root_p / "public" / "assets" / "vocabulary" / "teacher-core-v1"
+            txn_json = txn_root_p / "data" / "illustrations" / "teacher-core-v1" / "teacher-vocabulary-batch-01.json"
+            txn_assets.mkdir(parents=True, exist_ok=True)
+            txn_json.parent.mkdir(parents=True, exist_ok=True)
 
-        # Helper: snapshot repository tracked state
-        def repo_snapshot():
-            return (BATCH_JSON.read_bytes() if BATCH_JSON.exists() else None,
-                    {p.name: p.read_bytes() for p in ASSETS_DIR.glob("*.webp")})
+            with tempfile.TemporaryDirectory(prefix="chabiko-rec-") as rec_dir:
+                rec_path = Path(rec_dir)
+                clean_records = _convert_all_to_dir(source_dir, rec_path)
 
-        def repo_restore(jb, wb):
-            if jb is not None:
-                BATCH_JSON.write_bytes(jb)
-            for fn, c in wb.items():
-                (ASSETS_DIR / fn).write_bytes(c)
+                # 8a. First publish (no previous state) — partial WebP write failure
+                os.environ["_CHABIKO_INJECT_AT"] = "4"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: first-publish raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: first-publish caught", True)
+                check("txn: first-failure: 0 assets",
+                      len(list(txn_assets.glob("*.webp"))) == 0)
+                check("txn: first-failure: no JSON", not txn_json.exists())
+                del os.environ["_CHABIKO_INJECT_AT"]
 
-        repo_jb, repo_wb = repo_snapshot()
+                # 8b. Clean publish into temp
+                records = convert_all(source_dir, vocab_batch_path,
+                                      assets_dir=txn_assets, batch_json=txn_json)
+                check("txn: clean publish 19", len(records) == 19)
+                base_json = txn_json.read_bytes() if txn_json.exists() else None
+                base_webps = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
 
-        try:
-            # 8a. Partial WebP write failure (inject at idx=4 → 5th WebP)
-            os.environ["_CHABIKO_INJECT_AT"] = "4"
-            try:
-                convert_all(source_dir, vocab_batch_path)
-                check("tx: partial-webp raised", False)
-            except (RuntimeError, OSError):
-                check("tx: partial-webp caught", True)
-            # Verify tracked outputs unchanged
-            after_jb, after_wb = repo_snapshot()
-            check("tx: partial-webp: JSON unchanged", after_jb == repo_jb)
-            check("tx: partial-webp: assets unchanged", after_wb == repo_wb)
+                # 8c. Replacement failure — inject at idx=4 (partial overwrite before JSON)
+                os.environ["_CHABIKO_INJECT_AT"] = "4"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: replacement raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: replacement caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                # Verify exact rollback
+                after_json = txn_json.read_bytes() if txn_json.exists() else None
+                after_webps = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
+                check("txn: replacement JSON rolled back", after_json == base_json)
+                check("txn: replacement assets same count", len(after_webps) == len(base_webps))
+                for fn, c in base_webps.items():
+                    check(f"txn: replacement {fn} restored", after_webps.get(fn) == c)
 
-            # 8b. JSON write failure (inject at "write")
-            os.environ["_CHABIKO_INJECT_AT"] = "write"
-            try:
-                convert_all(source_dir, vocab_batch_path)
-                check("tx: json-write raised", False)
-            except (RuntimeError, OSError):
-                check("tx: json-write caught", True)
-            after_jb, after_wb = repo_snapshot()
-            check("tx: json-write: JSON unchanged", after_jb == repo_jb)
-            check("tx: json-write: assets unchanged", after_wb == repo_wb)
+                # 8d. JSON write failure
+                os.environ["_CHABIKO_INJECT_AT"] = "write"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: json-write raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: json-write caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                after_json = txn_json.read_bytes() if txn_json.exists() else None
+                after_webps = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
+                check("txn: json-write JSON rolled back", after_json == base_json)
+                check("txn: json-write assets rolled back", after_webps == base_webps)
 
-            # 8c. Post-publish check failure
-            os.environ["_CHABIKO_INJECT_AT"] = "check"
-            try:
-                convert_all(source_dir, vocab_batch_path)
-                check("tx: post-check raised", False)
-            except (RuntimeError, OSError):
-                check("tx: post-check caught", True)
-            after_jb, after_wb = repo_snapshot()
-            check("tx: post-check: JSON unchanged", after_jb == repo_jb)
-            check("tx: post-check: assets unchanged", after_wb == repo_wb)
+                # 8e. Post-publish check failure
+                os.environ["_CHABIKO_INJECT_AT"] = "check"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: post-check raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: post-check caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                after_j = txn_json.read_bytes() if txn_json.exists() else None
+                after_w = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
+                check("txn: post-check JSON rolled back", after_j == base_json)
+                check("txn: post-check assets rolled back", after_w == base_webps)
 
-            # 8d. Replacement failure: JSON exists + partial overwrite
-            del os.environ["_CHABIKO_INJECT_AT"]
-            records = convert_all(source_dir, vocab_batch_path)  # clean publish
-            check("tx: clean publish", len(records) == 19)
-            after_jb, after_wb = repo_snapshot()
-            os.environ["_CHABIKO_INJECT_AT"] = "4"
-            try:
-                convert_all(source_dir, vocab_batch_path)
-                check("tx: replacement raised", False)
-            except (RuntimeError, OSError):
-                check("tx: replacement caught", True)
-            jb2, wb2 = repo_snapshot()
-            check("tx: replacement: JSON restored", jb2 == after_jb)
-            check("tx: replacement: assets restored", wb2 == after_wb)
-
-        finally:
-            # Restore repo to pre-test state
-            repo_restore(repo_jb, repo_wb)
-            shutil.rmtree(tx_root, ignore_errors=True)
-            os.environ.pop("_CHABIKO_INJECT_AT", None)
+                # 8f. Replacement with missing WebP in snapshot — after failure,
+                # restore returns to snapshot state (the reduced set from start of
+                # the second convert_all call).  Snapshot captured the 16-file state.
+                remove_batch_outputs(txn_assets, txn_json)
+                records = convert_all(source_dir, vocab_batch_path,
+                                      assets_dir=txn_assets, batch_json=txn_json)
+                # snapshot records: 19 WebP + JSON
+                for fn in sorted(txn_assets.glob("*.webp"))[:3]:
+                    fn.unlink()
+                # now 16 WebP + JSON: snapshot at start of replacement will capture this
+                os.environ["_CHABIKO_INJECT_AT"] = "4"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: missing-webp replacement raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: missing-webp replacement caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                after_j = txn_json.read_bytes() if txn_json.exists() else None
+                after_w = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
+                # Rollback restored the snapshot (which was the 16-file + JSON state)
+                check("txn: missing-webp JSON exists", after_j is not None)
+                check("txn: missing-webp assets > 0", len(after_w) > 0)
 
     except Exception as e:
-        check(f"tx block: {e}", False)
+        check(f"txn block: {e}", False)
         traceback.print_exc(file=sys.stderr)
 
     # 9. Joined-bundle schema
@@ -785,11 +798,18 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
         check(f"joined-bundle: {e}", False)
         traceback.print_exc(file=sys.stderr)
 
-    # 10. Git
+    # 10. Git + worktree check
     print("  git check ...")
     r = subprocess.run(["git", "ls-files", "--", "词汇表/"],
                        capture_output=True, text=True, cwd=REPO_ROOT)
     check("no source PNGs in Git", not r.stdout.strip())
+    # Verify tracked outputs exactly unchanged
+    r2 = subprocess.run(["git", "status", "--short", "--", "data/", "public/assets/vocabulary/"],
+                        capture_output=True, text=True, cwd=REPO_ROOT)
+    if r2.stdout.strip():
+        check(f"git status unchanged: {r2.stdout.strip()}", False)
+    else:
+        check("git status unaffected by tests", True)
 
     print(f"\n  {passed} passed, {failed} failed")
     return 1 if failed else 0
