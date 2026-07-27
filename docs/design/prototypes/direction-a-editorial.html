@@ -656,8 +656,9 @@
     min-width: 72px;
   }
   .flashcard-details summary::-webkit-details-marker { display: none; }
-  .flashcard-details summary::after { content: "表示"; }
-  .flashcard-details[open] summary::after { content: "非表示"; }
+  .flashcard-details summary .summary-hide { display: none; }
+  .flashcard-details[open] summary .summary-show { display: none; }
+  .flashcard-details[open] summary .summary-hide { display: inline; }
   .flashcard-details summary:hover { border-color: var(--color-accent); }
   .flashcard-details summary:focus-visible {
     outline: 2px solid var(--color-accent);
@@ -1038,7 +1039,7 @@
       <div class="flashcard__front" lang="zh-Hans">我</div>
 
       <details class="flashcard-details">
-        <summary lang="ja">表示</summary>
+        <summary lang="ja"><span class="summary-show">表示</span><span class="summary-hide">非表示</span></summary>
         <div class="flashcard-details__body">
           <div class="flashcard__pinyin" lang="zh-Latn">wǒ</div>
           <div class="flashcard__ja" lang="ja">私</div>
