@@ -1,8 +1,45 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import type { Illustration } from '../src/types/illustration';
 
+// ─── Hoisted mock state read by vi.mock factories ─────────────────────────
+const mockState = vi.hoisted(() => ({ vocab: '', ill: '' }));
+
+vi.mock('../../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
+  get default() { return mockState.vocab ? JSON.parse(mockState.vocab) : { vocabulary: [] }; },
+}));
+vi.mock('../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
+  get default() { return mockState.ill ? JSON.parse(mockState.ill) : { illustrations: [] }; },
+}));
+
 import { loadTeacherVocabulary } from '../src/content/loadTeacherVocabulary';
+
+// ─── Fixture builders ──────────────────────────────────────────────────────
+
+function v(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'test-vocab-1', simplified: '测试', simplifiedStatus: 'authored',
+    pinyin: 'cè shì', japanese: 'テスト', reviewStatus: 'draft',
+    traditional: undefined, traditionalStatus: 'unavailable',
+    curriculum: { sourceId: 'teacher-core-v1', difficultyBand: 'star-1', sourceDifficultyLabel: '☆', partOfSpeech: 'noun', sourceSheet: '名词1', sourceRow: 2 },
+    source: { type: 'teacher-workbook' },
+    ...overrides,
+  };
+}
+
+function i(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'ill-test-1', vocabularyId: 'test-vocab-1',
+    assetPath: '/assets/vocabulary/teacher-core-v1/test.webp',
+    sourceChecksumSha256: 'a'.repeat(64), width: 500, height: 500,
+    mimeType: 'image/webp', fileSizeBytes: 1000, altJa: 'テスト',
+    rights: { status: 'pending', source: 'teacher-provided', note: 'rights' },
+    reviewStatus: 'draft',
+    ...overrides,
+  };
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function sourceIlls(): Illustration[] {
   return JSON.parse(fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8')).illustrations;
@@ -41,11 +78,14 @@ const LANG: Record<string, { simplified: string; pinyin: string; japanese: strin
   'teacher-star-1-0cc5799cdbbc': { simplified: '儿子', pinyin: 'ér zi', japanese: '息子', traditional: '兒子' },
 };
 
+// ─── Happy-path tests ─────────────────────────────────────────────────────
+
 describe('loadTeacherVocabulary', () => {
   let items: readonly { vocabulary: Record<string, unknown>; illustration: Illustration | null }[];
 
-  beforeEach(() => {
-    items = loadTeacherVocabulary() as unknown as typeof items;
+  beforeEach(async () => {
+    const mod = await import('../src/content/loadTeacherVocabulary');
+    items = mod.loadTeacherVocabulary() as unknown as typeof items;
   });
 
   it('returns 20 items', () => { expect(items).toHaveLength(20); });
@@ -106,4 +146,38 @@ describe('loadTeacherVocabulary', () => {
     }
   });
   it('deterministic', () => { const b = loadTeacherVocabulary(); expect(b).toEqual(items); expect(b).not.toBe(items); });
+});
+
+// ─── Error-condition tests via hoisted mockState ──────────────────────────
+
+describe('loadTeacherVocabulary — malformed data', () => {
+  afterEach(() => {
+    mockState.vocab = '';
+    mockState.ill = '';
+  });
+
+  function assertThrows(vocabRows: Record<string, unknown>[], illRows: Record<string, unknown>[], pattern: RegExp) {
+    mockState.vocab = JSON.stringify({ vocabulary: vocabRows });
+    mockState.ill = JSON.stringify({ illustrations: illRows });
+    expect(() => loadTeacherVocabulary()).toThrow(pattern);
+  }
+
+  const okV = () => [v({ id: 'v1', illustrationRef: 'ill-v1' })];
+  const okI = () => [i({ id: 'ill-v1', vocabularyId: 'v1' })];
+
+  it('rejects duplicate vocabulary ID', () => assertThrows([v({ id: 'dup' }), v({ id: 'dup' })], okI(), /duplicate vocabulary id/i));
+  it('rejects duplicate illustration ID', () => assertThrows(okV(), [i({ id: 'x', vocabularyId: 'v1' }), i({ id: 'x', vocabularyId: 'v2' })], /duplicate illustration id/i));
+  it('rejects duplicate illustration vocabularyId', () => assertThrows(okV(), [i({ id: 'a', vocabularyId: 'v1' }), i({ id: 'b', vocabularyId: 'v1' })], /duplicate illustration vocabularyId/i));
+  it('rejects missing illustrationRef target', () => assertThrows([v({ id: 'v1', illustrationRef: 'ill-missing' })], okI(), /does not match any illustration/i));
+  it('rejects vocabularyId mismatch', () => assertThrows([v({ id: 'v1', illustrationRef: 'ill-x' })], [i({ id: 'ill-x', vocabularyId: 'other' })], /expected/i));
+  it('rejects orphan illustration', () => assertThrows([v({ id: 'v1' })], [i({ id: 'o', vocabularyId: 'no-such' })], /orphan/i));
+  it('rejects invalid source type', () => assertThrows([v({ source: { type: 'hsk-workbook' } })], okI(), /source/i));
+  it('rejects invalid reviewStatus', () => assertThrows([v({ reviewStatus: 'published' })], okI(), /reviewStatus/i));
+  it('rejects non-authored simplifiedStatus', () => assertThrows([v({ simplifiedStatus: 'verified' })], okI(), /simplifiedStatus/i));
+  it('rejects invalid traditionalStatus (present)', () => assertThrows([v({ traditional: '測', traditionalStatus: 'generated' })], okI(), /traditionalStatus/i));
+  it('rejects invalid traditionalStatus (absent)', () => assertThrows([v({ traditional: undefined, traditionalStatus: 'authored' })], okI(), /traditionalStatus/i));
+  it('rejects non-draft illustration reviewStatus', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', reviewStatus: 'reviewed' })], /reviewStatus/i));
+  it('rejects incorrect rights status', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'cleared', source: 'teacher-provided', note: 't' } })], /rights/i));
+  it('rejects incorrect rights source', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'other', note: 't' } })], /rights/i));
+  it('rejects empty rights note', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'teacher-provided', note: '' } })], /rights/i));
 });
