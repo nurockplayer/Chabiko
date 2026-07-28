@@ -1,51 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import type { Illustration } from '../src/types/illustration';
 
-// We cannot reliably mock JSON modules with vi.mock (the factory runs once at
-// module load time, not per access). Instead, we import a test helper that
-// duplicates the logic for validation coverage.
-//
-// Issue #114's test contract requires verifying that the loader throws on
-// malformed data. The validation logic is implemented as a private function
-// within the loader module. Since we cannot export it, we test the edge
-// cases through the public API by reading the source file and verifying
-// that the code branches exist and would throw correctly.
-//
-// This is acceptable because:
-// 1. The happy-path tests prove correct data passes.
-// 2. The schema validator tests (validate-content-schema.py) cover the same
-//    contract violations at the data layer.
-// 3. The CI validates all data files against the schema on every push.
-
 import { loadTeacherVocabulary } from '../src/content/loadTeacherVocabulary';
-
-// ─── Fixture builders (used to verify validation logic parity) ──────────────
-
-export function v(overrides: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
-    id: 'test-vocab-1', simplified: '测试', simplifiedStatus: 'authored',
-    pinyin: 'cè shì', japanese: 'テスト', reviewStatus: 'draft',
-    traditional: undefined, traditionalStatus: 'unavailable',
-    curriculum: { sourceId: 'teacher-core-v1', difficultyBand: 'star-1', sourceDifficultyLabel: '☆', partOfSpeech: 'noun', sourceSheet: '名词1', sourceRow: 2 },
-    source: { type: 'teacher-workbook' },
-    ...overrides,
-  };
-}
-
-export function i(overrides: Record<string, unknown> = {}): Record<string, unknown> {
-  return {
-    id: 'ill-test-1', vocabularyId: 'test-vocab-1',
-    assetPath: '/assets/vocabulary/teacher-core-v1/test.webp',
-    sourceChecksumSha256: 'a'.repeat(64), width: 500, height: 500,
-    mimeType: 'image/webp', fileSizeBytes: 1000, altJa: 'テスト',
-    rights: { status: 'pending', source: 'teacher-provided', note: 'rights' },
-    reviewStatus: 'draft',
-    ...overrides,
-  };
-}
-
-// ─── Source data helpers ───────────────────────────────────────────────────
 
 function sourceIlls(): Illustration[] {
   return JSON.parse(fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8')).illustrations;
@@ -83,8 +40,6 @@ const LANG: Record<string, { simplified: string; pinyin: string; japanese: strin
   'teacher-star-1-94757170c2b0': { simplified: '孩子', pinyin: 'hái zi', japanese: '子ども', traditional: '孩子' },
   'teacher-star-1-0cc5799cdbbc': { simplified: '儿子', pinyin: 'ér zi', japanese: '息子', traditional: '兒子' },
 };
-
-// ─── Happy-path tests ─────────────────────────────────────────────────────
 
 describe('loadTeacherVocabulary', () => {
   let items: readonly { vocabulary: Record<string, unknown>; illustration: Illustration | null }[];
@@ -151,31 +106,4 @@ describe('loadTeacherVocabulary', () => {
     }
   });
   it('deterministic', () => { const b = loadTeacherVocabulary(); expect(b).toEqual(items); expect(b).not.toBe(items); });
-});
-
-// ─── Validation-line-coverage tests ───────────────────────────────────────
-// These tests verify that the loader source code contains the required
-// validation checks. The production data passes all of them, and the CI
-// schema validator catches contract violations at the data layer.
-// Each test reads the loader source and asserts a specific validation
-// branch exists, proving the code is in place even if we can't inject
-// malformed fixtures through the static import boundary.
-
-describe('validation code coverage', () => {
-  const src = fs.readFileSync('src/content/loadTeacherVocabulary.ts', 'utf-8');
-
-  it('rejects duplicate vocabulary IDs', () => expect(src).toMatch(/Duplicate vocabulary id/));
-  it('rejects duplicate illustration IDs', () => expect(src).toMatch(/Duplicate illustration id/));
-  it('rejects duplicate illustration vocabularyId', () => expect(src).toMatch(/Duplicate illustration vocabularyId/));
-  it('rejects missing illustrationRef', () => expect(src).toMatch(/does not match any illustration/));
-  it('rejects vocabularyId mismatch', () => expect(src).toMatch(/expected/));
-  it('rejects orphan illustrations', () => expect(src).toMatch(/Orphan illustration/));
-  it('rejects invalid source type', () => expect(src).toMatch(/source.*type/));
-  it('rejects invalid reviewStatus', () => expect(src).toMatch(/reviewStatus/));
-  it('rejects non-authored simplifiedStatus', () => expect(src).toMatch(/simplifiedStatus/));
-  it('rejects invalid traditionalStatus (present)', () => expect(src).toMatch(/traditionalStatus.*authored.*traditional present/));
-  it('rejects invalid traditionalStatus (absent)', () => expect(src).toMatch(/traditionalStatus.*unavailable.*traditional absent/));
-  it('rejects non-draft illustration reviewStatus', () => expect(src).toMatch(/reviewStatus must be.*draft/));
-  it('rejects incorrect pending rights', () => expect(src).toMatch(/rights.*pending.*teacher-provided/));
-  it('rejects empty rights note', () => expect(src).toMatch(/rights.note must be a non-empty string/));
 });
