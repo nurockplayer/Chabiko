@@ -10,7 +10,7 @@ export interface TeacherVocabularyLearningItem {
   readonly illustration: Illustration | null;
 }
 
-export type VocabRow = Record<string, unknown>;
+type VocabRow = Record<string, unknown>;
 
 // ─── Deep freezing helpers ──────────────────────────────────────────────────
 
@@ -22,9 +22,9 @@ function deepFreeze<T>(value: T): T {
   return Object.freeze(value);
 }
 
-// ─── Public validation function (testable without mock imports) ─────────────
+// ─── Private validation ─────────────────────────────────────────────────────
 
-export function validateTeacherVocabData(
+function validateTeacherVocabData(
   rows: VocabRow[],
   rawIllustrations: VocabRow[],
 ): void {
