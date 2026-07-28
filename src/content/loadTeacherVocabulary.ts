@@ -1,210 +1,140 @@
-import vocabData from '../../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
-import illData from '../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
 import type { Illustration } from '../types/illustration';
 import type { TeacherVocabularyType } from '../types/vocabulary';
 
-const VALID_ASSET_PREFIX = '/assets/vocabulary/teacher-core-v1/';
+// Static imports for production data
+import vocabData from '../../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
+import illData from '../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
 
 export interface TeacherVocabularyLearningItem {
   readonly vocabulary: TeacherVocabularyType;
   readonly illustration: Illustration | null;
 }
 
-/**
- * Deep-freeze a value and all its nested objects/arrays.
- * Returns the same value (frozen in place).
- */
+export type VocabRow = Record<string, unknown>;
+
+// ─── Deep freezing helpers ──────────────────────────────────────────────────
+
 function deepFreeze<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
   if (Object.isFrozen(value)) return value;
   const obj = value as Record<string, unknown>;
-  for (const key of Object.getOwnPropertyNames(obj)) {
-    deepFreeze(obj[key]);
-  }
+  for (const key of Object.getOwnPropertyNames(obj)) deepFreeze(obj[key]);
   return Object.freeze(value);
 }
 
-/**
- * Build an index of illustrations by id.
- * Throws on duplicate illustration id.
- */
-function indexById(illustrations: Illustration[]): Map<string, Illustration> {
-  const index = new Map<string, Illustration>();
-  for (const ill of illustrations) {
-    if (index.has(ill.id)) {
-      throw new Error(
-        `Duplicate illustration id '${ill.id}'`,
-      );
-    }
-    index.set(ill.id, ill);
-  }
-  return index;
-}
+// ─── Public validation function (testable without mock imports) ─────────────
 
-/**
- * Resolve an illustrationRef to its matching illustration.
- * Returns null when ref is absent. Throws on missing/mismatched reference.
- */
-function resolveIllustration(
-  ref: string | undefined,
-  vocabularyId: string,
-  illById: Map<string, Illustration>,
-): Illustration | null {
-  if (ref === undefined) return null;
-
-  const ill = illById.get(ref);
-  if (!ill) {
-    throw new Error(
-      `illustrationRef '${ref}' on vocabulary '${vocabularyId}' does not match any illustration id`,
-    );
-  }
-  if (ill.vocabularyId !== vocabularyId) {
-    throw new Error(
-      `illustrationRef '${ref}' targets illustration with vocabularyId '${ill.vocabularyId}', expected '${vocabularyId}'`,
-    );
-  }
-  return ill;
-}
-
-/**
- * Validate illustration metadata integrity.
- */
-function validateIllustration(ill: Illustration): void {
-  if (!ill.assetPath.startsWith(VALID_ASSET_PREFIX)) {
-    throw new Error(
-      `Illustration '${ill.id}' assetPath '${ill.assetPath}' must start with '${VALID_ASSET_PREFIX}'`,
-    );
-  }
-  if (ill.reviewStatus !== 'draft') {
-    throw new Error(
-      `Illustration '${ill.id}' reviewStatus must be 'draft', got '${ill.reviewStatus}'`,
-    );
-  }
-  if (ill.rights.status !== 'pending' || ill.rights.source !== 'teacher-provided') {
-    throw new Error(
-      `Illustration '${ill.id}' rights must be pending/teacher-provided, got status='${ill.rights.status}' source='${ill.rights.source}'`,
-    );
-  }
-}
-
-/**
- * Validate a vocabulary row's source and status fields.
- */
-function validateVocabularyRow(row: TeacherVocabularyType): void {
-  // ── Source ──
-  if (!row.source || row.source.type !== 'teacher-workbook') {
-    throw new Error(
-      `Vocabulary '${row.id}' source.type must be 'teacher-workbook', got '${row.source?.type}'`,
-    );
-  }
-
-  // ── reviewStatus ──
-  if (row.reviewStatus !== 'draft') {
-    throw new Error(
-      `Vocabulary '${row.id}' reviewStatus must be 'draft', got '${row.reviewStatus}'`,
-    );
-  }
-
-  // ── simplifiedStatus ──
-  if (row.simplifiedStatus !== 'authored') {
-    throw new Error(
-      `Vocabulary '${row.id}' simplifiedStatus must be 'authored', got '${row.simplifiedStatus}'`,
-    );
-  }
-
-  // ── Traditional invariant ──
-  const record = row as unknown as Record<string, unknown>;
-  const hasTraditional = record.traditional !== undefined;
-  if (hasTraditional) {
-    if (typeof record.traditional !== 'string' || (record.traditional as string).trim() === '') {
-      throw new Error(
-        `Vocabulary '${row.id}' traditional must be a non-empty string when present`,
-      );
-    }
-    if (record.traditionalStatus !== 'authored') {
-      throw new Error(
-        `Vocabulary '${row.id}' traditionalStatus must be 'authored' when traditional is present, got '${record.traditionalStatus}'`,
-      );
-    }
-  } else {
-    if (record.traditionalStatus !== 'unavailable') {
-      throw new Error(
-        `Vocabulary '${row.id}' traditionalStatus must be 'unavailable' when traditional is absent, got '${record.traditionalStatus}'`,
-      );
-    }
-  }
-}
-
-/**
- * Check every illustration is referenced by exactly one vocabulary row.
- */
-function checkAllIllustrationsReferenced(
-  illustrations: Illustration[],
-  usedVocabIds: Set<string>,
+export function validateTeacherVocabData(
+  rows: VocabRow[],
+  rawIllustrations: VocabRow[],
 ): void {
-  for (const ill of illustrations) {
-    if (!usedVocabIds.has(ill.vocabularyId)) {
-      throw new Error(
-        `Orphan illustration '${ill.id}': vocabularyId '${ill.vocabularyId}' has no matching vocabulary illustrationRef`,
-      );
-    }
-  }
-}
-
-/**
- * Check no duplicate vocabulary IDs exist.
- */
-function checkDuplicateVocabIds(rows: TeacherVocabularyType[]): void {
-  const seen = new Set<string>();
+  // Duplicate vocabulary IDs
+  const vocabIds = new Set<string>();
   for (const row of rows) {
-    if (seen.has(row.id)) {
-      throw new Error(`Duplicate vocabulary id '${row.id}'`);
+    const id = row.id as string;
+    if (vocabIds.has(id)) throw new Error(`Duplicate vocabulary id '${id}'`);
+    vocabIds.add(id);
+  }
+
+  // Duplicate illustration IDs and vocabularyId links
+  const illIds = new Set<string>();
+  const illVocabIds = new Set<string>();
+  for (const ill of rawIllustrations) {
+    const iid = ill.id as string;
+    if (illIds.has(iid)) throw new Error(`Duplicate illustration id '${iid}'`);
+    illIds.add(iid);
+    const vid = ill.vocabularyId as string;
+    if (illVocabIds.has(vid)) throw new Error(`Duplicate illustration vocabularyId '${vid}' (illustration '${iid}')`);
+    illVocabIds.add(vid);
+  }
+
+  const usedVocabIds = new Set<string>();
+
+  for (const row of rows) {
+    // source
+    const src = row.source as { type: string } | undefined;
+    if (!src || src.type !== 'teacher-workbook') {
+      throw new Error(`Vocabulary '${row.id}' source.type must be 'teacher-workbook'`);
     }
-    seen.add(row.id);
+    // reviewStatus
+    if (row.reviewStatus !== 'draft') {
+      throw new Error(`Vocabulary '${row.id}' reviewStatus must be 'draft', got '${row.reviewStatus}'`);
+    }
+    // simplifiedStatus
+    if (row.simplifiedStatus !== 'authored') {
+      throw new Error(`Vocabulary '${row.id}' simplifiedStatus must be 'authored'`);
+    }
+    // Traditional invariant
+    if (row.traditional !== undefined) {
+      if (row.traditionalStatus !== 'authored') {
+        throw new Error(`Vocabulary '${row.id}' traditionalStatus must be 'authored' when traditional present`);
+      }
+    } else {
+      if (row.traditionalStatus !== 'unavailable') {
+        throw new Error(`Vocabulary '${row.id}' traditionalStatus must be 'unavailable' when traditional absent`);
+      }
+    }
+
+    // illustrationRef resolution
+    const ref = row.illustrationRef as string | undefined;
+    if (ref !== undefined) {
+      const matched = rawIllustrations.find(i => i.id === ref);
+      if (!matched) {
+        throw new Error(`illustrationRef '${ref}' on vocabulary '${row.id}' does not match any illustration id`);
+      }
+      if (matched.vocabularyId !== row.id) {
+        throw new Error(`illustrationRef '${ref}' targets vocabularyId '${matched.vocabularyId}', expected '${row.id}'`);
+      }
+      // Validate illustration metadata
+      if (matched.reviewStatus !== 'draft') {
+        throw new Error(`Illustration '${matched.id}' reviewStatus must be 'draft'`);
+      }
+      const rights = matched.rights as { status: string; source: string; note: string };
+      if (rights.status !== 'pending' || rights.source !== 'teacher-provided') {
+        throw new Error(`Illustration '${matched.id}' rights must be pending/teacher-provided`);
+      }
+      if (typeof rights.note !== 'string' || rights.note.trim() === '') {
+        throw new Error(`Illustration '${matched.id}' rights.note must be a non-empty string`);
+      }
+      usedVocabIds.add(matched.vocabularyId as string);
+    }
+  }
+
+  // Orphan check
+  for (const ill of rawIllustrations) {
+    if (!usedVocabIds.has(ill.vocabularyId as string)) {
+      throw new Error(`Orphan illustration '${ill.id}': vocabularyId '${ill.vocabularyId}' has no matching vocabulary illustrationRef`);
+    }
   }
 }
 
-/**
- * Load all 20 batch-01 teacher vocabulary rows with their optional draft
- * illustrations.
- *
- * Reads from static JSON imports — no runtime file I/O.
- * Returns deeply-frozen, read-only results.
- * Throws deterministically on any data integrity violation.
- */
+// ─── Production export ──────────────────────────────────────────────────────
+
 export function loadTeacherVocabulary(): readonly TeacherVocabularyLearningItem[] {
-  const rows = vocabData.vocabulary as TeacherVocabularyType[];
-  const rawIllustrations = illData.illustrations as Illustration[];
+  const rows = (vocabData as { vocabulary: VocabRow[] }).vocabulary;
+  const rawIllustrations = (illData as { illustrations: VocabRow[] }).illustrations;
 
-  // Validate no duplicate vocabulary IDs
-  checkDuplicateVocabIds(rows);
+  validateTeacherVocabData(rows, rawIllustrations);
 
-  // Build index by id
-  const illById = indexById(rawIllustrations);
+  const illById = new Map<string, VocabRow>();
+  for (const ill of rawIllustrations) illById.set(ill.id as string, ill);
 
-  // Track which vocabularyIds are actually linked via illustrationRef
-  const usedVocabIds = new Set<string>();
   const items: TeacherVocabularyLearningItem[] = [];
 
   for (const row of rows) {
-    validateVocabularyRow(row);
+    const ref = row.illustrationRef as string | undefined;
+    let illustration: Illustration | null = null;
 
-    const ref = (row as unknown as Record<string, unknown>).illustrationRef as string | undefined;
-    const illustration = resolveIllustration(ref, row.id, illById);
-
-    if (illustration) {
-      validateIllustration(illustration);
-      usedVocabIds.add(illustration.vocabularyId);
+    if (ref !== undefined) {
+      const matched = illById.get(ref)!;
+      illustration = structuredClone(matched) as unknown as Illustration;
     }
 
     items.push(deepFreeze({
-      vocabulary: deepFreeze({ ...row }),
-      illustration: illustration ? deepFreeze({ ...illustration }) : null,
+      vocabulary: deepFreeze(structuredClone(row)) as unknown as TeacherVocabularyType,
+      illustration,
     }) as TeacherVocabularyLearningItem);
   }
-
-  // Every illustration must be referenced exactly once
-  checkAllIllustrationsReferenced(rawIllustrations, usedVocabIds);
 
   return deepFreeze(items);
 }

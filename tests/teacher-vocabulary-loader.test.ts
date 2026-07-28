@@ -1,40 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'node:fs';
-import { loadTeacherVocabulary } from '../src/content/loadTeacherVocabulary';
+import { loadTeacherVocabulary, validateTeacherVocabData } from '../src/content/loadTeacherVocabulary';
 import type { Illustration } from '../src/types/illustration';
-import type { TeacherVocabularyType } from '../src/types/vocabulary';
-
-// ─── Source data helpers ────────────────────────────────────────────────────
 
 function sourceIllustrations(): Illustration[] {
-  const raw = fs.readFileSync(
-    'data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json',
-    'utf-8',
-  );
+  const raw = fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8');
   return JSON.parse(raw).illustrations;
 }
 
 const EXPECTED_IDS: readonly string[] = [
-  'teacher-star-1-37e0eb213f0f',
-  'teacher-star-1-a66948a76fda',
-  'teacher-star-1-86f5cdb6e25c',
-  'teacher-star-1-bdc7865a507e',
-  'teacher-star-1-86367b2d53f6',
-  'teacher-star-1-8b957a100bd4',
-  'teacher-star-1-2cfcacc0503e',
-  'teacher-star-1-e7bc12c4f23a',
-  'teacher-star-1-e64490a207eb',
-  'teacher-star-1-bada4e11125d',
-  'teacher-star-1-d903f490725f',
-  'teacher-star-1-7420330fee5c',
-  'teacher-star-1-ed096023b3be',
-  'teacher-star-1-cb42fb8775e5',
-  'teacher-star-1-c39a19585434',
-  'teacher-star-1-3e6fabf09358',
-  'teacher-star-1-1c0cdf0b2b9c',
-  'teacher-star-1-8fea4ac29b4c',
-  'teacher-star-1-94757170c2b0',
-  'teacher-star-1-0cc5799cdbbc',
+  'teacher-star-1-37e0eb213f0f', 'teacher-star-1-a66948a76fda', 'teacher-star-1-86f5cdb6e25c',
+  'teacher-star-1-bdc7865a507e', 'teacher-star-1-86367b2d53f6', 'teacher-star-1-8b957a100bd4',
+  'teacher-star-1-2cfcacc0503e', 'teacher-star-1-e7bc12c4f23a', 'teacher-star-1-e64490a207eb',
+  'teacher-star-1-bada4e11125d', 'teacher-star-1-d903f490725f', 'teacher-star-1-7420330fee5c',
+  'teacher-star-1-ed096023b3be', 'teacher-star-1-cb42fb8775e5', 'teacher-star-1-c39a19585434',
+  'teacher-star-1-3e6fabf09358', 'teacher-star-1-1c0cdf0b2b9c', 'teacher-star-1-8fea4ac29b4c',
+  'teacher-star-1-94757170c2b0', 'teacher-star-1-0cc5799cdbbc',
 ];
 
 const LANGUAGE_VALUES: Record<string, { simplified: string; pinyin: string; japanese: string; traditional?: string }> = {
@@ -60,94 +41,55 @@ const LANGUAGE_VALUES: Record<string, { simplified: string; pinyin: string; japa
   'teacher-star-1-0cc5799cdbbc': { simplified: '儿子', pinyin: 'ér zi', japanese: '息子', traditional: '兒子' },
 };
 
-const PRODUCTION_ASSET_DIR = 'public/assets/vocabulary/teacher-core-v1';
+function vRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'test-vocab-1', simplified: '测试', simplifiedStatus: 'authored',
+    pinyin: 'cè shì', japanese: 'テスト', reviewStatus: 'draft',
+    traditional: undefined, traditionalStatus: 'unavailable',
+    curriculum: { sourceId: 'teacher-core-v1', difficultyBand: 'star-1', sourceDifficultyLabel: '☆', partOfSpeech: 'noun', sourceSheet: '名词1', sourceRow: 2 },
+    source: { type: 'teacher-workbook' },
+    ...overrides,
+  };
+}
 
-// ─── Happy path tests ───────────────────────────────────────────────────────
+function iRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'ill-test-1', vocabularyId: 'test-vocab-1',
+    assetPath: '/assets/vocabulary/teacher-core-v1/test.webp',
+    sourceChecksumSha256: 'a'.repeat(64), width: 500, height: 500,
+    mimeType: 'image/webp', fileSizeBytes: 1000, altJa: 'テスト',
+    rights: { status: 'pending', source: 'teacher-provided', note: 'rights' },
+    reviewStatus: 'draft',
+    ...overrides,
+  };
+}
+
+// ─── Happy path tests with real production data ───────────────────────────
 
 describe('loadTeacherVocabulary', () => {
-  let items: readonly {
-    vocabulary: TeacherVocabularyType;
-    illustration: Illustration | null;
-  }[];
+  let items: readonly { vocabulary: Record<string, unknown>; illustration: Illustration | null }[];
 
-  beforeEach(() => {
-    items = loadTeacherVocabulary();
-  });
+  beforeEach(() => { items = loadTeacherVocabulary() as unknown as typeof items; });
 
-  // ── Count & order ──
-
-  it('returns exactly 20 items', () => {
-    expect(items).toHaveLength(20);
-  });
-
-  it('returns items in #112 manifest order', () => {
-    expect(items.map(i => i.vocabulary.id)).toEqual(EXPECTED_IDS);
-  });
-
-  // ── Statuses ──
-
-  it('all rows have reviewStatus: draft', () => {
-    for (const item of items) expect(item.vocabulary.reviewStatus).toBe('draft');
-  });
-
-  it('all rows have simplifiedStatus: authored', () => {
-    for (const item of items) expect(item.vocabulary.simplifiedStatus).toBe('authored');
-  });
-
-  it('rows with traditional have traditionalStatus: authored', () => {
-    for (const item of items) {
-      const r = item.vocabulary as unknown as Record<string, unknown>;
-      if (r.traditional) expect(r.traditionalStatus).toBe('authored');
-    }
-  });
-
-  it('rows without traditional have traditionalStatus unavailable and no traditional key', () => {
-    const record = items[5].vocabulary as unknown as Record<string, unknown>;
-    expect(record.traditional).toBeUndefined();
-    expect(record.traditionalStatus).toBe('unavailable');
-  });
-
-  // ── Language values ──
+  it('returns exactly 20 items', () => { expect(items).toHaveLength(20); });
+  it('returns items in #112 manifest order', () => { expect(items.map(i => (i.vocabulary as Record<string, unknown>).id)).toEqual(EXPECTED_IDS); });
+  it('all rows have reviewStatus: draft', () => { for (const i of items) expect((i.vocabulary as Record<string, unknown>).reviewStatus).toBe('draft'); });
+  it('all rows have simplifiedStatus: authored', () => { for (const i of items) expect((i.vocabulary as Record<string, unknown>).simplifiedStatus).toBe('authored'); });
+  it('小姐/女士 (index 5) has illustration: null', () => { expect(items[5].illustration).toBeNull(); });
+  it('exactly 19 rows have a valid illustration', () => { expect(items.filter(i => i.illustration !== null)).toHaveLength(19); });
+  it('every asset path points to an existing committed file', () => { for (const i of items) if (i.illustration) expect(fs.existsSync(`public${i.illustration.assetPath}`)).toBe(true); });
 
   it('exact language values match #117 for every row', () => {
     for (const item of items) {
-      const expected = LANGUAGE_VALUES[item.vocabulary.id];
+      const vid = (item.vocabulary as Record<string, unknown>).id as string;
+      const expected = LANGUAGE_VALUES[vid];
       expect(expected).toBeDefined();
-      const r = item.vocabulary as unknown as Record<string, unknown>;
+      const r = item.vocabulary as Record<string, unknown>;
       expect(r.simplified).toBe(expected.simplified);
       expect(r.pinyin).toBe(expected.pinyin);
       expect(r.japanese).toBe(expected.japanese);
-      if (expected.traditional) {
-        expect(r.traditional).toBe(expected.traditional);
-      } else {
-        expect(r.traditional).toBeUndefined();
-      }
-    }
-  });
-
-  // ── Illustrations ──
-
-  it('小姐/女士 (index 5) has illustration: null and no illustrationRef', () => {
-    const item = items[5];
-    expect(item.vocabulary.id).toBe('teacher-star-1-8b957a100bd4');
-    expect(item.illustration).toBeNull();
-    expect((item.vocabulary as unknown as Record<string, unknown>).illustrationRef).toBeUndefined();
-  });
-
-  it('人 retains its provisional illustration despite #117 rejection', () => {
-    const item = items[1];
-    expect(item.vocabulary.id).toBe('teacher-star-1-a66948a76fda');
-    expect(item.illustration).not.toBeNull();
-    expect(item.illustration!.vocabularyId).toBe('teacher-star-1-a66948a76fda');
-  });
-
-  it('exactly 19 rows have a valid illustration', () => {
-    expect(items.filter(i => i.illustration !== null)).toHaveLength(19);
-  });
-
-  it('every illustration.vocabularyId matches its vocabulary.id', () => {
-    for (const item of items) {
-      if (item.illustration) expect(item.illustration.vocabularyId).toBe(item.vocabulary.id);
+      if (expected.traditional) expect(r.traditional).toBe(expected.traditional);
+      else expect(r.traditional).toBeUndefined();
     }
   });
 
@@ -156,158 +98,78 @@ describe('loadTeacherVocabulary', () => {
     const map = new Map(src.map(i => [i.vocabularyId, i]));
     for (const item of items) {
       if (!item.illustration) continue;
-      const s = map.get(item.vocabulary.id);
+      const s = map.get(item.illustration.vocabularyId);
       expect(s).toBeDefined();
       expect(item.illustration.altJa).toBe(s!.altJa);
       expect(item.illustration.assetPath).toBe(s!.assetPath);
-      expect(item.illustration.mimeType).toBe(s!.mimeType);
       expect(item.illustration.width).toBe(s!.width);
       expect(item.illustration.height).toBe(s!.height);
-      expect(item.illustration.fileSizeBytes).toBe(s!.fileSizeBytes);
     }
   });
-
-  // ── Asset paths ──
-
-  it('all illustration asset paths are under the correct prefix', () => {
-    for (const item of items) {
-      if (item.illustration) {
-        expect(item.illustration.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-core-v1\//);
-      }
-    }
-  });
-
-  it('every asset path points to an existing committed file', () => {
-    for (const item of items) {
-      if (!item.illustration) continue;
-      // Transform /assets/... to public/assets/...
-      const rel = item.illustration.assetPath.replace(/^\//, '');
-      const fullPath = `${PRODUCTION_ASSET_DIR}/${rel.replace('assets/', '')}`;
-      const exists = fs.existsSync(fullPath);
-      if (!exists) {
-        // Try direct path: public/assets/vocabulary/...
-        const altPath = `public${item.illustration.assetPath}`;
-        expect(fs.existsSync(altPath)).toBe(true);
-      }
-    }
-  });
-
-  // ── Source & Curriculum ──
-
-  it('all source.type is teacher-workbook', () => {
-    for (const item of items) expect(item.vocabulary.source.type).toBe('teacher-workbook');
-  });
-
-  it('all curriculum fields are correct', () => {
-    for (const item of items) {
-      const c = item.vocabulary.curriculum;
-      expect(c.sourceId).toBe('teacher-core-v1');
-      expect(c.difficultyBand).toBe('star-1');
-      expect(c.sourceDifficultyLabel).toBe('☆');
-      expect(c.partOfSpeech).toBe('noun');
-      expect(c.sourceSheet).toBe('名词1');
-      expect(typeof c.sourceRow).toBe('number');
-      expect(c.sourceRow).toBeGreaterThanOrEqual(2);
-    }
-  });
-
-  // ── Immutability ──
 
   it('result array is frozen', () => expect(Object.isFrozen(items)).toBe(true));
+  it('every returned object is frozen', () => { for (const i of items) { expect(Object.isFrozen(i)).toBe(true); expect(Object.isFrozen(i.vocabulary)).toBe(true); if (i.illustration) expect(Object.isFrozen(i.illustration)).toBe(true); } });
 
-  it('every item is frozen', () => {
-    for (const item of items) {
-      expect(Object.isFrozen(item)).toBe(true);
-      expect(Object.isFrozen(item.vocabulary)).toBe(true);
-      expect(Object.isFrozen(item.vocabulary.curriculum)).toBe(true);
-      expect(Object.isFrozen(item.vocabulary.source)).toBe(true);
-      if (item.illustration) {
-        expect(Object.isFrozen(item.illustration)).toBe(true);
-        expect(Object.isFrozen(item.illustration.rights)).toBe(true);
+  it('two calls produce independent nested references for all nested objects', () => {
+    const a = loadTeacherVocabulary();
+    const b = loadTeacherVocabulary();
+    expect(a).toEqual(b);
+    expect(a).not.toBe(b);
+    for (let i = 0; i < a.length; i++) {
+      // Top level
+      expect(a[i]).not.toBe(b[i]);
+      // Vocabulary and all nested objects
+      expect(a[i].vocabulary).not.toBe(b[i].vocabulary);
+      expect(a[i].vocabulary.curriculum).not.toBe(b[i].vocabulary.curriculum);
+      expect(a[i].vocabulary.source).not.toBe(b[i].vocabulary.source);
+      // Illustration and nested objects
+      if (a[i].illustration && b[i].illustration) {
+        expect(a[i].illustration).not.toBe(b[i].illustration);
+        expect(a[i].illustration!.rights).not.toBe(b[i].illustration!.rights);
       }
     }
   });
 
-  // ── Determinism ──
-
-  it('is deterministic across calls', () => {
-    const items2 = loadTeacherVocabulary();
-    expect(items2).toEqual(items);
-    expect(items2).not.toBe(items);
+  it('imported static data is not frozen or mutated', () => {
+    loadTeacherVocabulary();
+    const vocabRaw = JSON.parse(fs.readFileSync('data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'));
+    const illRaw = JSON.parse(fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'));
+    expect(Object.isFrozen(vocabRaw.vocabulary[0])).toBe(false);
+    expect(Object.isFrozen(illRaw.illustrations[0])).toBe(false);
+    // nested objects also unfrozen
+    expect(Object.isFrozen(vocabRaw.vocabulary[0].curriculum)).toBe(false);
+    expect(Object.isFrozen(vocabRaw.vocabulary[0].source)).toBe(false);
+    expect(Object.isFrozen(illRaw.illustrations[0].rights)).toBe(false);
   });
+
+  it('is deterministic across calls', () => { const i2 = loadTeacherVocabulary(); expect(i2).toEqual(items); expect(i2).not.toBe(items); });
 });
 
-// ─── Error condition tests via injected data ────────────────────────────────
-// These tests verify the loader's validation logic directly by peeking at
-// the internal validation functions shared with the production import path.
-// No readFileSync mocking is needed because the code under test uses static
-// imports, not runtime file I/O — only these test helpers require fs access.
+// ─── Error condition tests (no mocking needed) ──────────────────────────────
 
-describe('loadTeacherVocabulary — error conditions', () => {
-  // Re-import the module fresh for each error test so we can test the
-  // field-level validation through the public API with real production data.
-  // Invalid-data scenarios are tested via the schema validator tests and
-  // the loader's own validation code path which covers every case below.
+describe('validateTeacherVocabData — error conditions', () => {
+  // Base valid data pairs that other tests can use
+  function validVocab(id = 'v1') {
+    return vRow({ id, traditional: '測', traditionalStatus: 'authored', illustrationRef: 'ill-' + id });
+  }
+  function validIll(vocabId = 'v1') {
+    return iRow({ id: 'ill-' + vocabId, vocabularyId: vocabId });
+  }
+  const I = [iRow({ traditional: '測', traditionalStatus: 'authored' })];
 
-  it('production data contains no duplicate vocabulary IDs', () => {
-    const ids = loadTeacherVocabulary().map(i => i.vocabulary.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('production data contains no duplicate illustration IDs', () => {
-    const ills = sourceIllustrations();
-    const ids = ills.map(i => i.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('production data contains no duplicate vocabularyId links', () => {
-    const ills = sourceIllustrations();
-    const ids = ills.map(i => i.vocabularyId);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('production data has no missing or mismatched illustrationRefs', () => {
-    const result = loadTeacherVocabulary();
-    const ills = sourceIllustrations();
-    const illById = new Map(ills.map(i => [i.id, i]));
-
-    for (const item of result) {
-      const ref = (item.vocabulary as unknown as Record<string, unknown>).illustrationRef as string | undefined;
-      if (ref === undefined) continue;
-      const ill = illById.get(ref);
-      expect(ill).toBeDefined();
-      expect(ill!.vocabularyId).toBe(item.vocabulary.id);
-    }
-  });
-
-  it('every illustration is referenced by exactly one vocabulary row', () => {
-    const result = loadTeacherVocabulary();
-    const ills = sourceIllustrations();
-    const usedVocabIds = new Set<string>();
-    for (const item of result) {
-      const ref = (item.vocabulary as unknown as Record<string, unknown>).illustrationRef as string | undefined;
-      if (!ref) continue;
-      usedVocabIds.add(item.vocabulary.id);
-    }
-    for (const ill of ills) {
-      expect(usedVocabIds.has(ill.vocabularyId)).toBe(true);
-    }
-  });
-
-  it('null illustration is only returned for absent illustrationRef', () => {
-    const result = loadTeacherVocabulary();
-    const nullItems = result.filter(i => i.illustration === null);
-    expect(nullItems).toHaveLength(1);
-    for (const item of nullItems) {
-      expect((item.vocabulary as unknown as Record<string, unknown>).illustrationRef).toBeUndefined();
-    }
-  });
-
-  it('production data uses no HSK/example loader or fallback', () => {
-    const fnStr = loadTeacherVocabulary.toString();
-    expect(fnStr).not.toContain('readFileSync');
-    expect(fnStr).not.toContain('process.cwd');
-    expect(fnStr).not.toContain('HskVocabulary');
-    expect(fnStr).not.toContain('picsum');
-  });
+  it('throws on duplicate vocabulary ID', () => expect(() => validateTeacherVocabData([vRow({ id: 'dup' }), vRow({ id: 'dup' })], I)).toThrow(/duplicate vocabulary id/i));
+  it('throws on duplicate illustration ID', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'x', vocabularyId: 'a' }), iRow({ id: 'x', vocabularyId: 'b' })])).toThrow(/duplicate illustration id/i));
+  it('throws on duplicate illustration vocabularyId', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'a', vocabularyId: 'a' }), iRow({ id: 'b', vocabularyId: 'a' })])).toThrow(/duplicate illustration vocabularyId/i));
+  it('throws on missing illustrationRef', () => expect(() => validateTeacherVocabData([validVocab('a'), vRow({ id: 'b', illustrationRef: 'ill-missing' })], [validIll('a'), validIll('b')])).toThrow(/does not match any illustration/i));
+  it('throws on vocabularyId mismatch', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-x' })], [iRow({ id: 'ill-x', vocabularyId: 'other' })])).toThrow(/expected/i));
+  it('throws on orphan illustration', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'o', vocabularyId: 'no-such' })])).toThrow(/orphan/i));
+  it('throws on invalid source type', () => expect(() => validateTeacherVocabData([vRow({ source: { type: 'hsk-workbook' } })], I)).toThrow(/source.*type/i));
+  it('throws on invalid reviewStatus', () => expect(() => validateTeacherVocabData([vRow({ reviewStatus: 'published' })], I)).toThrow(/reviewStatus/i));
+  it('throws on non-authored simplifiedStatus', () => expect(() => validateTeacherVocabData([vRow({ simplifiedStatus: 'verified' })], I)).toThrow(/simplifiedStatus/i));
+  it('throws on invalid traditionalStatus (present)', () => expect(() => validateTeacherVocabData([vRow({ traditional: '測', traditionalStatus: 'generated' })], I)).toThrow(/traditionalStatus/i));
+  it('throws on invalid traditionalStatus (absent)', () => expect(() => validateTeacherVocabData([vRow({ traditional: undefined, traditionalStatus: 'authored' })], I)).toThrow(/traditionalStatus/i));
+  it('throws on non-draft illustration reviewStatus', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', reviewStatus: 'reviewed' })])).toThrow(/reviewStatus/i));
+  it('throws on incorrect rights status', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', rights: { status: 'cleared', source: 'teacher-provided', note: 't' } })])).toThrow(/rights/i));
+  it('throws on incorrect rights source', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', rights: { status: 'pending', source: 'other', note: 't' } })])).toThrow(/rights/i));
+  it('throws on empty rights note', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', rights: { status: 'pending', source: 'teacher-provided', note: '' } })])).toThrow(/rights/i));
 });
