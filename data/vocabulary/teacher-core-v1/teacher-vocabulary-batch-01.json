@@ -1,0 +1,787 @@
+{
+  "vocabulary": [
+    {
+      "id": "teacher-star-1-37e0eb213f0f",
+      "simplified": "大家",
+      "simplifiedStatus": "authored",
+      "traditional": "大家",
+      "traditionalStatus": "authored",
+      "pinyin": "dà jiā",
+      "japanese": "みんな",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 2
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-37e0eb213f0f"
+    },
+    {
+      "id": "teacher-star-1-a66948a76fda",
+      "simplified": "人",
+      "simplifiedStatus": "authored",
+      "traditional": "人",
+      "traditionalStatus": "authored",
+      "pinyin": "rén",
+      "japanese": "人（ひと）",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 3
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-a66948a76fda"
+    },
+    {
+      "id": "teacher-star-1-86f5cdb6e25c",
+      "simplified": "客人",
+      "simplifiedStatus": "authored",
+      "traditional": "客人",
+      "traditionalStatus": "authored",
+      "pinyin": "kè ren",
+      "japanese": "お客さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 7
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-86f5cdb6e25c"
+    },
+    {
+      "id": "teacher-star-1-bdc7865a507e",
+      "simplified": "朋友",
+      "simplifiedStatus": "authored",
+      "traditional": "朋友",
+      "traditionalStatus": "authored",
+      "pinyin": "péng you",
+      "japanese": "友達",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 8
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-bdc7865a507e"
+    },
+    {
+      "id": "teacher-star-1-86367b2d53f6",
+      "simplified": "先生",
+      "simplifiedStatus": "authored",
+      "traditional": "先生",
+      "traditionalStatus": "authored",
+      "pinyin": "xiān sheng",
+      "japanese": "先生（男性）",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 9
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-86367b2d53f6"
+    },
+    {
+      "id": "teacher-star-1-8b957a100bd4",
+      "simplified": "小姐/女士",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiǎo jiě/nǚ shì",
+      "japanese": "～さん（女性）",
+      "traditionalStatus": "unavailable",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 10
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      }
+    },
+    {
+      "id": "teacher-star-1-2cfcacc0503e",
+      "simplified": "自己",
+      "simplifiedStatus": "authored",
+      "traditional": "自己",
+      "traditionalStatus": "authored",
+      "pinyin": "zì jǐ",
+      "japanese": "自分",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 11
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-2cfcacc0503e"
+    },
+    {
+      "id": "teacher-star-1-e7bc12c4f23a",
+      "simplified": "爸爸",
+      "simplifiedStatus": "authored",
+      "traditional": "爸爸",
+      "traditionalStatus": "authored",
+      "pinyin": "bà ba",
+      "japanese": "お父さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 14
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-e7bc12c4f23a"
+    },
+    {
+      "id": "teacher-star-1-e64490a207eb",
+      "simplified": "妈妈",
+      "simplifiedStatus": "authored",
+      "traditional": "媽媽",
+      "traditionalStatus": "authored",
+      "pinyin": "mā ma",
+      "japanese": "お母さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 15
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-e64490a207eb"
+    },
+    {
+      "id": "teacher-star-1-bada4e11125d",
+      "simplified": "父亲",
+      "simplifiedStatus": "authored",
+      "traditional": "父親",
+      "traditionalStatus": "authored",
+      "pinyin": "fù qin",
+      "japanese": "父親",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 16
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-bada4e11125d"
+    },
+    {
+      "id": "teacher-star-1-d903f490725f",
+      "simplified": "母亲",
+      "simplifiedStatus": "authored",
+      "traditional": "母親",
+      "traditionalStatus": "authored",
+      "pinyin": "mǔ qin",
+      "japanese": "母親",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 17
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-d903f490725f"
+    },
+    {
+      "id": "teacher-star-1-7420330fee5c",
+      "simplified": "哥哥",
+      "simplifiedStatus": "authored",
+      "traditional": "哥哥",
+      "traditionalStatus": "authored",
+      "pinyin": "gē ge",
+      "japanese": "お兄さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 18
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-7420330fee5c"
+    },
+    {
+      "id": "teacher-star-1-ed096023b3be",
+      "simplified": "姐姐",
+      "simplifiedStatus": "authored",
+      "traditional": "姐姐",
+      "traditionalStatus": "authored",
+      "pinyin": "jiě jie",
+      "japanese": "お姉さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 19
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-ed096023b3be"
+    },
+    {
+      "id": "teacher-star-1-cb42fb8775e5",
+      "simplified": "弟弟",
+      "simplifiedStatus": "authored",
+      "traditional": "弟弟",
+      "traditionalStatus": "authored",
+      "pinyin": "dì di",
+      "japanese": "弟",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 20
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-cb42fb8775e5"
+    },
+    {
+      "id": "teacher-star-1-c39a19585434",
+      "simplified": "妹妹",
+      "simplifiedStatus": "authored",
+      "traditional": "妹妹",
+      "traditionalStatus": "authored",
+      "pinyin": "mèi mei",
+      "japanese": "妹",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 23
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-c39a19585434"
+    },
+    {
+      "id": "teacher-star-1-3e6fabf09358",
+      "simplified": "爱人",
+      "simplifiedStatus": "authored",
+      "traditional": "愛人",
+      "traditionalStatus": "authored",
+      "pinyin": "ài rén",
+      "japanese": "配偶者",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 26
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-3e6fabf09358"
+    },
+    {
+      "id": "teacher-star-1-1c0cdf0b2b9c",
+      "simplified": "丈夫",
+      "simplifiedStatus": "authored",
+      "traditional": "丈夫",
+      "traditionalStatus": "authored",
+      "pinyin": "zhàng fu",
+      "japanese": "夫",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 27
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-1c0cdf0b2b9c"
+    },
+    {
+      "id": "teacher-star-1-8fea4ac29b4c",
+      "simplified": "妻子",
+      "simplifiedStatus": "authored",
+      "traditional": "妻子",
+      "traditionalStatus": "authored",
+      "pinyin": "qī zi",
+      "japanese": "妻",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 28
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-8fea4ac29b4c"
+    },
+    {
+      "id": "teacher-star-1-94757170c2b0",
+      "simplified": "孩子",
+      "simplifiedStatus": "authored",
+      "traditional": "孩子",
+      "traditionalStatus": "authored",
+      "pinyin": "hái zi",
+      "japanese": "子ども",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 29
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-94757170c2b0"
+    },
+    {
+      "id": "teacher-star-1-0cc5799cdbbc",
+      "simplified": "儿子",
+      "simplifiedStatus": "authored",
+      "traditional": "兒子",
+      "traditionalStatus": "authored",
+      "pinyin": "ér zi",
+      "japanese": "息子",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 30
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-0cc5799cdbbc"
+    }
+  ],
+  "illustrations": [
+    {
+      "id": "ill-teacher-star-1-37e0eb213f0f",
+      "vocabularyId": "teacher-star-1-37e0eb213f0f",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-37e0eb213f0f.webp",
+      "sourceChecksumSha256": "5c7f48f22066c2888948e3c6782ecd30ce06f3623855de8134d0870b393e00fa",
+      "width": 500,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 71056,
+      "altJa": "年齢や見た目の異なる6人が、笑顔で並んでいるイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-a66948a76fda",
+      "vocabularyId": "teacher-star-1-a66948a76fda",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-a66948a76fda.webp",
+      "sourceChecksumSha256": "aa29beb399089e706f7644e8bd3a656c52ad299d99e22e5aadba67f6f748fe1f",
+      "width": 501,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 27062,
+      "altJa": "笑顔で両手を上げてピースサインをする男性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-86f5cdb6e25c",
+      "vocabularyId": "teacher-star-1-86f5cdb6e25c",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-86f5cdb6e25c.webp",
+      "sourceChecksumSha256": "5963f602e4484e9d089c86ea6b0597dbc71fe65b2324c10d269defa9371adcd5",
+      "width": 501,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 47508,
+      "altJa": "女性が、椅子に座って笑っている男性客に果物と飲み物を出しているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-bdc7865a507e",
+      "vocabularyId": "teacher-star-1-bdc7865a507e",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-bdc7865a507e.webp",
+      "sourceChecksumSha256": "6e87f0bca09ed7fb14ea0fd259d068f6035b55538d25a6ed82f37ef767c80dda",
+      "width": 501,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 45744,
+      "altJa": "二人の女性が楽しそうに会話しているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-86367b2d53f6",
+      "vocabularyId": "teacher-star-1-86367b2d53f6",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-86367b2d53f6.webp",
+      "sourceChecksumSha256": "cd28d97e3df15d7bd162395c7c7c8872db8f7390254d62d8f312076d76b3c8fd",
+      "width": 501,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 22508,
+      "altJa": "黒板の前で授業をしている男性教師のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-2cfcacc0503e",
+      "vocabularyId": "teacher-star-1-2cfcacc0503e",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-2cfcacc0503e.webp",
+      "sourceChecksumSha256": "579d0a4d100895611c5d230e5f355dc020b3d89def41d562a8a0bbb72b6e3d4f",
+      "width": 501,
+      "height": 500,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 22940,
+      "altJa": "自分自身を指さしている人物のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-e7bc12c4f23a",
+      "vocabularyId": "teacher-star-1-e7bc12c4f23a",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-e7bc12c4f23a.webp",
+      "sourceChecksumSha256": "fdd6c3206c7dfdde6da42132840d19764d3663d7f5a128fc9fbf8d3620b4834a",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 29862,
+      "altJa": "眼鏡をかけて笑っている中年男性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-e64490a207eb",
+      "vocabularyId": "teacher-star-1-e64490a207eb",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-e64490a207eb.webp",
+      "sourceChecksumSha256": "52c6e1a4ef1f030184354c26c096593e410b91800209eccb1dbe689b51dc7b99",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 36042,
+      "altJa": "エプロンを着て優しく微笑んでいる中年女性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-bada4e11125d",
+      "vocabularyId": "teacher-star-1-bada4e11125d",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-bada4e11125d.webp",
+      "sourceChecksumSha256": "fdd6c3206c7dfdde6da42132840d19764d3663d7f5a128fc9fbf8d3620b4834a",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 29862,
+      "altJa": "眼鏡をかけて笑っている中年男性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-d903f490725f",
+      "vocabularyId": "teacher-star-1-d903f490725f",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-d903f490725f.webp",
+      "sourceChecksumSha256": "52c6e1a4ef1f030184354c26c096593e410b91800209eccb1dbe689b51dc7b99",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 36042,
+      "altJa": "エプロンを着て優しく微笑んでいる中年女性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-7420330fee5c",
+      "vocabularyId": "teacher-star-1-7420330fee5c",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-7420330fee5c.webp",
+      "sourceChecksumSha256": "f65aefab1e5c6757d97715aead6d40b28d7f3642c123e24190e838cec6cc19e3",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 31078,
+      "altJa": "若い男性が笑顔で手を振っているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-ed096023b3be",
+      "vocabularyId": "teacher-star-1-ed096023b3be",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-ed096023b3be.webp",
+      "sourceChecksumSha256": "164649c69ef812c4bfd87d4a41e2b239f0098e515f4453d81811bd586ebfda9d",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 26234,
+      "altJa": "若い女性が笑顔で手を振っているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-cb42fb8775e5",
+      "vocabularyId": "teacher-star-1-cb42fb8775e5",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-cb42fb8775e5.webp",
+      "sourceChecksumSha256": "cf0e5e7c71aa9720ed59b4d8f769fbcd488003c2e4fa3aa592233a08099d7467",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 29414,
+      "altJa": "元気そうな少年が笑顔で立っているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-c39a19585434",
+      "vocabularyId": "teacher-star-1-c39a19585434",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-c39a19585434.webp",
+      "sourceChecksumSha256": "a3252c5b20ad937441482d270139c23d304201c5254fc5e3a679e552632ec77e",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 34752,
+      "altJa": "かわいらしい少女が笑っているイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-3e6fabf09358",
+      "vocabularyId": "teacher-star-1-3e6fabf09358",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-3e6fabf09358.webp",
+      "sourceChecksumSha256": "29b23c72642519f6272102b9eff17023b5c304c10d28e2a223a71dc83d5514b6",
+      "width": 500,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 41042,
+      "altJa": "寄り添って笑顔の男女カップルのイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-1c0cdf0b2b9c",
+      "vocabularyId": "teacher-star-1-1c0cdf0b2b9c",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-1c0cdf0b2b9c.webp",
+      "sourceChecksumSha256": "f223a0d766945884475fe361413102b9e62da80617cd9490e043aa0f4e7eacfb",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 39134,
+      "altJa": "スーツを着て笑顔の男性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-8fea4ac29b4c",
+      "vocabularyId": "teacher-star-1-8fea4ac29b4c",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-8fea4ac29b4c.webp",
+      "sourceChecksumSha256": "27628bab84145d9acb41da356fe6b8fbf0d6aac453b5c943953f279a451e34cf",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 39102,
+      "altJa": "笑顔の女性のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-94757170c2b0",
+      "vocabularyId": "teacher-star-1-94757170c2b0",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-94757170c2b0.webp",
+      "sourceChecksumSha256": "9e1c8eacc0b8a1c39cf6c032fc733f1a292a1e07d72d323e0008e6ed57553f87",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 32534,
+      "altJa": "両手を挙げて笑っている子どものイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "ill-teacher-star-1-0cc5799cdbbc",
+      "vocabularyId": "teacher-star-1-0cc5799cdbbc",
+      "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-0cc5799cdbbc.webp",
+      "sourceChecksumSha256": "9075fde996581ecf9997bc391ae1d0a52c798f005f73aac423b0e4ccdc9d7af8",
+      "width": 501,
+      "height": 501,
+      "mimeType": "image/webp",
+      "fileSizeBytes": 21758,
+      "altJa": "ランドセルを背負った男の子のイラスト。",
+      "rights": {
+        "status": "pending",
+        "source": "teacher-provided",
+        "note": "Formal rights verification pending for teacher-provided source image."
+      },
+      "reviewStatus": "draft"
+    }
+  ]
+}
