@@ -1051,10 +1051,10 @@
       </details>
     </div>
 
-    <!-- Rating actions — native links with :target completion -->
+    <!-- Rating actions — only ✓ reveals completion -->
     <div class="flashcard-actions">
-      <a href="#vocab-completion" class="flashcard-btn" lang="ja">✕ 覚えていない</a>
-      <a href="#vocab-completion" class="flashcard-btn" lang="ja">△ 微妙</a>
+      <button class="flashcard-btn" type="button" lang="ja">✕ 覚えていない</button>
+      <button class="flashcard-btn" type="button" lang="ja">△ 微妙</button>
       <a href="#vocab-completion" class="flashcard-btn flashcard-btn--primary" lang="ja">✓ 覚えた</a>
     </div>
 
@@ -1062,7 +1062,6 @@
     <div class="completion completion--vocab" id="vocab-completion">
       <div class="completion__icon">✓</div>
       <div class="completion__text" lang="ja">練習完了！レッスンをクリアしました。</div>
-      <a href="#" class="flashcard-btn" lang="ja" style="margin-top: var(--space-md);">戻る</a>
     </div>
 
   </section>
