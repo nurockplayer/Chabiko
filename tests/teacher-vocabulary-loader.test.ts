@@ -155,19 +155,20 @@ describe('validateTeacherVocabData — error conditions', () => {
   function validIll(vocabId = 'v1') {
     return iRow({ id: 'ill-' + vocabId, vocabularyId: vocabId });
   }
-  const I = [iRow({ traditional: '測', traditionalStatus: 'authored' })];
+  // Single valid illustration fixture used by multiple tests
+  const ILL = [iRow()];
 
-  it('throws on duplicate vocabulary ID', () => expect(() => validateTeacherVocabData([vRow({ id: 'dup' }), vRow({ id: 'dup' })], I)).toThrow(/duplicate vocabulary id/i));
+  it('throws on duplicate vocabulary ID', () => expect(() => validateTeacherVocabData([vRow({ id: 'dup' }), vRow({ id: 'dup' })], ILL)).toThrow(/duplicate vocabulary id/i));
   it('throws on duplicate illustration ID', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'x', vocabularyId: 'a' }), iRow({ id: 'x', vocabularyId: 'b' })])).toThrow(/duplicate illustration id/i));
   it('throws on duplicate illustration vocabularyId', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'a', vocabularyId: 'a' }), iRow({ id: 'b', vocabularyId: 'a' })])).toThrow(/duplicate illustration vocabularyId/i));
   it('throws on missing illustrationRef', () => expect(() => validateTeacherVocabData([validVocab('a'), vRow({ id: 'b', illustrationRef: 'ill-missing' })], [validIll('a'), validIll('b')])).toThrow(/does not match any illustration/i));
   it('throws on vocabularyId mismatch', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-x' })], [iRow({ id: 'ill-x', vocabularyId: 'other' })])).toThrow(/expected/i));
   it('throws on orphan illustration', () => expect(() => validateTeacherVocabData([vRow({ id: 'a' })], [iRow({ id: 'o', vocabularyId: 'no-such' })])).toThrow(/orphan/i));
-  it('throws on invalid source type', () => expect(() => validateTeacherVocabData([vRow({ source: { type: 'hsk-workbook' } })], I)).toThrow(/source.*type/i));
-  it('throws on invalid reviewStatus', () => expect(() => validateTeacherVocabData([vRow({ reviewStatus: 'published' })], I)).toThrow(/reviewStatus/i));
-  it('throws on non-authored simplifiedStatus', () => expect(() => validateTeacherVocabData([vRow({ simplifiedStatus: 'verified' })], I)).toThrow(/simplifiedStatus/i));
-  it('throws on invalid traditionalStatus (present)', () => expect(() => validateTeacherVocabData([vRow({ traditional: '測', traditionalStatus: 'generated' })], I)).toThrow(/traditionalStatus/i));
-  it('throws on invalid traditionalStatus (absent)', () => expect(() => validateTeacherVocabData([vRow({ traditional: undefined, traditionalStatus: 'authored' })], I)).toThrow(/traditionalStatus/i));
+  it('throws on invalid source type', () => expect(() => validateTeacherVocabData([vRow({ source: { type: 'hsk-workbook' } })], ILL)).toThrow(/source.*type/i));
+  it('throws on invalid reviewStatus', () => expect(() => validateTeacherVocabData([vRow({ reviewStatus: 'published' })], ILL)).toThrow(/reviewStatus/i));
+  it('throws on non-authored simplifiedStatus', () => expect(() => validateTeacherVocabData([vRow({ simplifiedStatus: 'verified' })], ILL)).toThrow(/simplifiedStatus/i));
+  it('throws on invalid traditionalStatus (present)', () => expect(() => validateTeacherVocabData([vRow({ traditional: '測', traditionalStatus: 'generated' })], ILL)).toThrow(/traditionalStatus/i));
+  it('throws on invalid traditionalStatus (absent)', () => expect(() => validateTeacherVocabData([vRow({ traditional: undefined, traditionalStatus: 'authored' })], ILL)).toThrow(/traditionalStatus/i));
   it('throws on non-draft illustration reviewStatus', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', reviewStatus: 'reviewed' })])).toThrow(/reviewStatus/i));
   it('throws on incorrect rights status', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', rights: { status: 'cleared', source: 'teacher-provided', note: 't' } })])).toThrow(/rights/i));
   it('throws on incorrect rights source', () => expect(() => validateTeacherVocabData([vRow({ id: 'a', illustrationRef: 'ill-a' })], [iRow({ id: 'ill-a', vocabularyId: 'a', rights: { status: 'pending', source: 'other', note: 't' } })])).toThrow(/rights/i));
