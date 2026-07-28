@@ -2,21 +2,38 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import type { Illustration } from '../src/types/illustration';
 
-// ─── Hoisted mock state read by vi.mock factories ─────────────────────────
-const mockState = vi.hoisted(() => ({ vocab: '', ill: '' }));
+type VocabRow = Record<string, unknown>;
+type Loader = typeof import('../src/content/loadTeacherVocabulary')['loadTeacherVocabulary'];
 
-vi.mock('../../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
-  get default() { return mockState.vocab ? JSON.parse(mockState.vocab) : { vocabulary: [] }; },
-}));
-vi.mock('../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
-  get default() { return mockState.ill ? JSON.parse(mockState.ill) : { illustrations: [] }; },
-}));
+const productionVocabData = JSON.parse(
+  fs.readFileSync('data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'),
+) as { vocabulary: VocabRow[] };
+const productionIllustrationData = JSON.parse(
+  fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'),
+) as { illustrations: VocabRow[] };
 
-import { loadTeacherVocabulary } from '../src/content/loadTeacherVocabulary';
+async function importLoaderWith(
+  vocabData: { vocabulary: VocabRow[] } = productionVocabData,
+  illustrationData: { illustrations: VocabRow[] } = productionIllustrationData,
+): Promise<Loader> {
+  vi.resetModules();
+  vi.doMock('../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
+    default: structuredClone(vocabData),
+  }));
+  vi.doMock('../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', () => ({
+    default: structuredClone(illustrationData),
+  }));
+  const mod = await import('../src/content/loadTeacherVocabulary');
+  return mod.loadTeacherVocabulary;
+}
 
-// ─── Fixture builders ──────────────────────────────────────────────────────
+afterEach(() => {
+  vi.doUnmock('../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json');
+  vi.doUnmock('../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json');
+  vi.resetModules();
+});
 
-function v(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function v(overrides: VocabRow = {}): VocabRow {
   return {
     id: 'test-vocab-1', simplified: '测试', simplifiedStatus: 'authored',
     pinyin: 'cè shì', japanese: 'テスト', reviewStatus: 'draft',
@@ -27,7 +44,7 @@ function v(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   };
 }
 
-function i(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function i(overrides: VocabRow = {}): VocabRow {
   return {
     id: 'ill-test-1', vocabularyId: 'test-vocab-1',
     assetPath: '/assets/vocabulary/teacher-core-v1/test.webp',
@@ -38,8 +55,6 @@ function i(overrides: Record<string, unknown> = {}): Record<string, unknown> {
     ...overrides,
   };
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function sourceIlls(): Illustration[] {
   return JSON.parse(fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8')).illustrations;
@@ -78,106 +93,103 @@ const LANG: Record<string, { simplified: string; pinyin: string; japanese: strin
   'teacher-star-1-0cc5799cdbbc': { simplified: '儿子', pinyin: 'ér zi', japanese: '息子', traditional: '兒子' },
 };
 
-// ─── Happy-path tests ─────────────────────────────────────────────────────
-
 describe('loadTeacherVocabulary', () => {
-  let items: readonly { vocabulary: Record<string, unknown>; illustration: Illustration | null }[];
+  let loadTeacherVocabulary: Loader;
+  let items: readonly { vocabulary: VocabRow; illustration: Illustration | null }[];
 
   beforeEach(async () => {
-    const mod = await import('../src/content/loadTeacherVocabulary');
-    items = mod.loadTeacherVocabulary() as unknown as typeof items;
+    loadTeacherVocabulary = await importLoaderWith();
+    items = loadTeacherVocabulary() as unknown as typeof items;
   });
 
   it('returns 20 items', () => { expect(items).toHaveLength(20); });
-  it('order matches #112', () => { expect(items.map(i => (i.vocabulary as Record<string, unknown>).id)).toEqual(EXPECTED_IDS); });
-  it('all reviewStatus: draft', () => { for (const i of items) expect((i.vocabulary as Record<string, unknown>).reviewStatus).toBe('draft'); });
-  it('all simplifiedStatus: authored', () => { for (const i of items) expect((i.vocabulary as Record<string, unknown>).simplifiedStatus).toBe('authored'); });
+  it('order matches #112', () => { expect(items.map(item => item.vocabulary.id)).toEqual(EXPECTED_IDS); });
+  it('all reviewStatus: draft', () => { for (const item of items) expect(item.vocabulary.reviewStatus).toBe('draft'); });
+  it('all simplifiedStatus: authored', () => { for (const item of items) expect(item.vocabulary.simplifiedStatus).toBe('authored'); });
   it('小姐/女士 (5) illustration: null', () => { expect(items[5].illustration).toBeNull(); });
-  it('exactly 19 with illustration', () => { expect(items.filter(i => i.illustration !== null)).toHaveLength(19); });
-  it('asset paths exist', () => { for (const i of items) if (i.illustration) expect(fs.existsSync(`public${i.illustration.assetPath}`)).toBe(true); });
+  it('exactly 19 with illustration', () => { expect(items.filter(item => item.illustration !== null)).toHaveLength(19); });
+  it('人 retains its provisional illustration', () => { expect(items[1].illustration?.vocabularyId).toBe(EXPECTED_IDS[1]); });
+  it('asset paths exist', () => { for (const item of items) if (item.illustration) expect(fs.existsSync(`public${item.illustration.assetPath}`)).toBe(true); });
   it('language values match #117', () => {
     for (const item of items) {
-      const exp = LANG[(item.vocabulary as Record<string, unknown>).id as string];
-      expect(exp).toBeDefined();
-      const r = item.vocabulary as Record<string, unknown>;
-      expect(r.simplified).toBe(exp.simplified);
-      expect(r.pinyin).toBe(exp.pinyin);
-      expect(r.japanese).toBe(exp.japanese);
-      if (exp.traditional) expect(r.traditional).toBe(exp.traditional);
-      else expect(r.traditional).toBeUndefined();
+      const expected = LANG[item.vocabulary.id as string];
+      expect(expected).toBeDefined();
+      expect(item.vocabulary.simplified).toBe(expected.simplified);
+      expect(item.vocabulary.pinyin).toBe(expected.pinyin);
+      expect(item.vocabulary.japanese).toBe(expected.japanese);
+      if (expected.traditional) expect(item.vocabulary.traditional).toBe(expected.traditional);
+      else expect(item.vocabulary.traditional).toBeUndefined();
     }
   });
   it('illustration fields match #113', () => {
-    const src = sourceIlls();
-    const map = new Map(src.map(s => [s.vocabularyId, s]));
+    const sourceByVocabularyId = new Map(sourceIlls().map(source => [source.vocabularyId, source]));
     for (const item of items) {
       if (!item.illustration) continue;
-      const s = map.get(item.illustration.vocabularyId)!;
-      expect(s).toBeDefined();
-      expect(item.illustration.altJa).toBe(s.altJa);
-      expect(item.illustration.assetPath).toBe(s.assetPath);
-      expect(item.illustration.width).toBe(s.width);
-      expect(item.illustration.height).toBe(s.height);
+      const source = sourceByVocabularyId.get(item.illustration.vocabularyId);
+      expect(source).toBeDefined();
+      expect(item.illustration.altJa).toBe(source?.altJa);
+      expect(item.illustration.assetPath).toBe(source?.assetPath);
+      expect(item.illustration.width).toBe(source?.width);
+      expect(item.illustration.height).toBe(source?.height);
     }
   });
   it('result frozen', () => expect(Object.isFrozen(items)).toBe(true));
-  it('nested objects frozen', () => { for (const i of items) { expect(Object.isFrozen(i)).toBe(true); expect(Object.isFrozen(i.vocabulary)).toBe(true); if (i.illustration) expect(Object.isFrozen(i.illustration)).toBe(true); } });
+  it('nested objects frozen', () => {
+    for (const item of items) {
+      expect(Object.isFrozen(item)).toBe(true);
+      expect(Object.isFrozen(item.vocabulary)).toBe(true);
+      if (item.illustration) expect(Object.isFrozen(item.illustration)).toBe(true);
+    }
+  });
   it('imports unfrozen', () => {
-    const vr = JSON.parse(fs.readFileSync('data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'));
-    const ir = JSON.parse(fs.readFileSync('data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json', 'utf-8'));
-    expect(Object.isFrozen(vr.vocabulary[0])).toBe(false);
-    expect(Object.isFrozen(vr.vocabulary[0].curriculum)).toBe(false);
-    expect(Object.isFrozen(vr.vocabulary[0].source)).toBe(false);
-    expect(Object.isFrozen(ir.illustrations[0])).toBe(false);
-    expect(Object.isFrozen(ir.illustrations[0].rights)).toBe(false);
+    expect(Object.isFrozen(productionVocabData.vocabulary[0])).toBe(false);
+    expect(Object.isFrozen(productionVocabData.vocabulary[0].curriculum)).toBe(false);
+    expect(Object.isFrozen(productionVocabData.vocabulary[0].source)).toBe(false);
+    expect(Object.isFrozen(productionIllustrationData.illustrations[0])).toBe(false);
+    expect(Object.isFrozen(productionIllustrationData.illustrations[0].rights)).toBe(false);
   });
   it('calls produce independent refs', () => {
     const a = loadTeacherVocabulary();
     const b = loadTeacherVocabulary();
-    for (let i = 0; i < a.length; i++) {
-      expect(a[i]).not.toBe(b[i]);
-      expect(a[i].vocabulary).not.toBe(b[i].vocabulary);
-      expect(a[i].vocabulary.curriculum).not.toBe(b[i].vocabulary.curriculum);
-      expect(a[i].vocabulary.source).not.toBe(b[i].vocabulary.source);
-      if (a[i].illustration && b[i].illustration) {
-        expect(a[i].illustration).not.toBe(b[i].illustration);
-        expect(a[i].illustration!.rights).not.toBe(b[i].illustration!.rights);
+    for (let index = 0; index < a.length; index++) {
+      expect(a[index]).not.toBe(b[index]);
+      expect(a[index].vocabulary).not.toBe(b[index].vocabulary);
+      expect(a[index].vocabulary.curriculum).not.toBe(b[index].vocabulary.curriculum);
+      expect(a[index].vocabulary.source).not.toBe(b[index].vocabulary.source);
+      if (a[index].illustration && b[index].illustration) {
+        expect(a[index].illustration).not.toBe(b[index].illustration);
+        expect(a[index].illustration?.rights).not.toBe(b[index].illustration?.rights);
       }
     }
   });
-  it('deterministic', () => { const b = loadTeacherVocabulary(); expect(b).toEqual(items); expect(b).not.toBe(items); });
+  it('deterministic', () => { const second = loadTeacherVocabulary(); expect(second).toEqual(items); expect(second).not.toBe(items); });
 });
 
-// ─── Error-condition tests via hoisted mockState ──────────────────────────
-
 describe('loadTeacherVocabulary — malformed data', () => {
-  afterEach(() => {
-    mockState.vocab = '';
-    mockState.ill = '';
-  });
-
-  function assertThrows(vocabRows: Record<string, unknown>[], illRows: Record<string, unknown>[], pattern: RegExp) {
-    mockState.vocab = JSON.stringify({ vocabulary: vocabRows });
-    mockState.ill = JSON.stringify({ illustrations: illRows });
+  async function assertThrows(vocabRows: VocabRow[], illustrationRows: VocabRow[], pattern: RegExp) {
+    const loadTeacherVocabulary = await importLoaderWith(
+      { vocabulary: vocabRows },
+      { illustrations: illustrationRows },
+    );
     expect(() => loadTeacherVocabulary()).toThrow(pattern);
   }
 
   const okV = () => [v({ id: 'v1', illustrationRef: 'ill-v1' })];
   const okI = () => [i({ id: 'ill-v1', vocabularyId: 'v1' })];
 
-  it('rejects duplicate vocabulary ID', () => assertThrows([v({ id: 'dup' }), v({ id: 'dup' })], okI(), /duplicate vocabulary id/i));
-  it('rejects duplicate illustration ID', () => assertThrows(okV(), [i({ id: 'x', vocabularyId: 'v1' }), i({ id: 'x', vocabularyId: 'v2' })], /duplicate illustration id/i));
-  it('rejects duplicate illustration vocabularyId', () => assertThrows(okV(), [i({ id: 'a', vocabularyId: 'v1' }), i({ id: 'b', vocabularyId: 'v1' })], /duplicate illustration vocabularyId/i));
-  it('rejects missing illustrationRef target', () => assertThrows([v({ id: 'v1', illustrationRef: 'ill-missing' })], okI(), /does not match any illustration/i));
-  it('rejects vocabularyId mismatch', () => assertThrows([v({ id: 'v1', illustrationRef: 'ill-x' })], [i({ id: 'ill-x', vocabularyId: 'other' })], /expected/i));
-  it('rejects orphan illustration', () => assertThrows([v({ id: 'v1' })], [i({ id: 'o', vocabularyId: 'no-such' })], /orphan/i));
-  it('rejects invalid source type', () => assertThrows([v({ source: { type: 'hsk-workbook' } })], okI(), /source/i));
-  it('rejects invalid reviewStatus', () => assertThrows([v({ reviewStatus: 'published' })], okI(), /reviewStatus/i));
-  it('rejects non-authored simplifiedStatus', () => assertThrows([v({ simplifiedStatus: 'verified' })], okI(), /simplifiedStatus/i));
-  it('rejects invalid traditionalStatus (present)', () => assertThrows([v({ traditional: '測', traditionalStatus: 'generated' })], okI(), /traditionalStatus/i));
-  it('rejects invalid traditionalStatus (absent)', () => assertThrows([v({ traditional: undefined, traditionalStatus: 'authored' })], okI(), /traditionalStatus/i));
-  it('rejects non-draft illustration reviewStatus', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', reviewStatus: 'reviewed' })], /reviewStatus/i));
-  it('rejects incorrect rights status', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'cleared', source: 'teacher-provided', note: 't' } })], /rights/i));
-  it('rejects incorrect rights source', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'other', note: 't' } })], /rights/i));
-  it('rejects empty rights note', () => assertThrows([v({ illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'teacher-provided', note: '' } })], /rights/i));
+  it('rejects duplicate vocabulary ID', async () => { await assertThrows([v({ id: 'dup' }), v({ id: 'dup' })], okI(), /duplicate vocabulary id/i); });
+  it('rejects duplicate illustration ID', async () => { await assertThrows(okV(), [i({ id: 'x', vocabularyId: 'v1' }), i({ id: 'x', vocabularyId: 'v2' })], /duplicate illustration id/i); });
+  it('rejects duplicate illustration vocabularyId', async () => { await assertThrows(okV(), [i({ id: 'a', vocabularyId: 'v1' }), i({ id: 'b', vocabularyId: 'v1' })], /duplicate illustration vocabularyId/i); });
+  it('rejects missing illustrationRef target', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-missing' })], okI(), /does not match any illustration/i); });
+  it('rejects vocabularyId mismatch', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-x' })], [i({ id: 'ill-x', vocabularyId: 'other' })], /expected/i); });
+  it('rejects orphan illustration', async () => { await assertThrows([v({ id: 'v1' })], [i({ id: 'o', vocabularyId: 'no-such' })], /orphan/i); });
+  it('rejects invalid source type', async () => { await assertThrows([v({ source: { type: 'hsk-workbook' } })], okI(), /source/i); });
+  it('rejects invalid reviewStatus', async () => { await assertThrows([v({ reviewStatus: 'published' })], okI(), /reviewStatus/i); });
+  it('rejects non-authored simplifiedStatus', async () => { await assertThrows([v({ simplifiedStatus: 'verified' })], okI(), /simplifiedStatus/i); });
+  it('rejects invalid traditionalStatus when present', async () => { await assertThrows([v({ traditional: '測', traditionalStatus: 'generated' })], okI(), /traditionalStatus/i); });
+  it('rejects invalid traditionalStatus when absent', async () => { await assertThrows([v({ traditional: undefined, traditionalStatus: 'authored' })], okI(), /traditionalStatus/i); });
+  it('rejects non-draft illustration reviewStatus', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', reviewStatus: 'reviewed' })], /reviewStatus/i); });
+  it('rejects incorrect rights status', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'cleared', source: 'teacher-provided', note: 't' } })], /rights/i); });
+  it('rejects incorrect rights source', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'other', note: 't' } })], /rights/i); });
+  it('rejects empty rights note', async () => { await assertThrows([v({ id: 'v1', illustrationRef: 'ill-a' })], [i({ id: 'ill-a', vocabularyId: 'v1', rights: { status: 'pending', source: 'teacher-provided', note: '' } })], /rights/i); });
 });
