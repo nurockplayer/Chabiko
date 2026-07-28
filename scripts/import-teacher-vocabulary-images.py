@@ -288,12 +288,18 @@ def remove_batch_outputs(assets_dir: Path, batch_json: Path) -> None:
 
 def restore(has_json: bool, json_bytes: bytes | None,
             webp_bytes: dict[str, bytes], assets_dir: Path, batch_json: Path) -> None:
+    """Clear current batch outputs, then restore snapshot.
+
+    Step 1: remove all current batch WebP + JSON.
+    Step 2: restore WebP files unconditionally (from snapshot webp_bytes).
+    Step 3: restore JSON only if has_json is True.
+    Other batches or unrelated assets are never touched."""
     remove_batch_outputs(assets_dir, batch_json)
+    for fname, content in webp_bytes.items():
+        (assets_dir / fname).write_bytes(content)
     if has_json and json_bytes is not None:
         batch_json.parent.mkdir(parents=True, exist_ok=True)
         batch_json.write_bytes(json_bytes)
-        for fname, content in webp_bytes.items():
-            (assets_dir / fname).write_bytes(content)
 
 def write_batch(tmp_path: Path, records: list[dict],
                 assets_dir: Path, batch_json: Path) -> None:
@@ -744,16 +750,12 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
                 check("txn: post-check JSON rolled back", after_j == base_json)
                 check("txn: post-check assets rolled back", after_w == base_webps)
 
-                # 8f. Replacement with missing WebP in snapshot — after failure,
-                # restore returns to snapshot state (the reduced set from start of
-                # the second convert_all call).  Snapshot captured the 16-file state.
+                # 8f. Replacement with missing WebP in snapshot
                 remove_batch_outputs(txn_assets, txn_json)
                 records = convert_all(source_dir, vocab_batch_path,
                                       assets_dir=txn_assets, batch_json=txn_json)
-                # snapshot records: 19 WebP + JSON
                 for fn in sorted(txn_assets.glob("*.webp"))[:3]:
                     fn.unlink()
-                # now 16 WebP + JSON: snapshot at start of replacement will capture this
                 os.environ["_CHABIKO_INJECT_AT"] = "4"
                 try:
                     convert_all(source_dir, vocab_batch_path,
@@ -764,9 +766,79 @@ def run_tests(source_dir: Path, vocab_batch_path: Path) -> int:
                 del os.environ["_CHABIKO_INJECT_AT"]
                 after_j = txn_json.read_bytes() if txn_json.exists() else None
                 after_w = {p.name: p.read_bytes() for p in txn_assets.glob("*.webp")}
-                # Rollback restored the snapshot (which was the 16-file + JSON state)
                 check("txn: missing-webp JSON exists", after_j is not None)
                 check("txn: missing-webp assets > 0", len(after_w) > 0)
+
+                # 8g. Regression: no JSON, partial batch WebP + foreign assets
+                remove_batch_outputs(txn_assets, txn_json)
+                # Place foreign asset (not in EXPECTED_ILL_FILENAMES) in assets dir
+                foreign_before = b"foreign-asset-bytes-1234"
+                (txn_assets / "foreign-legacy.png").write_bytes(foreign_before)
+                # Place partial batch WebP with recognizable content
+                partial_webp_content = {fn: f"partial-bytes-{i}".encode() for i, fn in enumerate(sorted(EXPECTED_ILL_FILENAMES)[:5])}
+                for fn, content in partial_webp_content.items():
+                    (txn_assets / fn).write_bytes(content)
+                pre_state_snapshot = snapshot(txn_assets, txn_json)
+                pre_state_foreign = (txn_assets / "foreign-legacy.png").read_bytes()
+                # Inject failure during write
+                os.environ["_CHABIKO_INJECT_AT"] = "4"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: regression-partial raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: regression-partial caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                # Verify
+                h, jb, wb = snapshot(txn_assets, txn_json)
+                check("txn: regression: JSON absent", not h)
+                # Existing partial WebP restored
+                for fn, expected in partial_webp_content.items():
+                    check(f"txn: regression: {fn} restored", wb.get(fn) == expected)
+                # New batch WebP NOT present (from failed publish)
+                for fn in sorted(EXPECTED_ILL_FILENAMES)[5:]:
+                    check(f"txn: regression: new {fn} absent", fn not in wb)
+                # Foreign asset unchanged
+                after_foreign = (txn_assets / "foreign-legacy.png").read_bytes()
+                check("txn: regression: foreign asset unchanged", after_foreign == foreign_before)
+                # Full workspace byte-identical to pre-state
+                check("txn: regression: exact state match",
+                      (h, jb, wb) == pre_state_snapshot)
+                check("txn: regression: exact foreign match",
+                      after_foreign == pre_state_foreign)
+
+                # 8h. Regression: JSON present, partial WebP, foreign assets
+                # First clean publish then remove some webps
+                remove_batch_outputs(txn_assets, txn_json)
+                (txn_assets / "foreign-legacy.png").write_bytes(foreign_before)
+                records = convert_all(source_dir, vocab_batch_path,
+                                      assets_dir=txn_assets, batch_json=txn_json)
+                pre_state_json = txn_json.read_bytes()
+                # Remove 3 WebP
+                for fn in sorted(txn_assets.glob("*.webp"))[:3]:
+                    fn.unlink()
+                pre_state_snapshot2 = snapshot(txn_assets, txn_json)
+                pre_state_foreign2 = (txn_assets / "foreign-legacy.png").read_bytes()
+                # Inject JSON write failure
+                os.environ["_CHABIKO_INJECT_AT"] = "write"
+                try:
+                    convert_all(source_dir, vocab_batch_path,
+                                assets_dir=txn_assets, batch_json=txn_json)
+                    check("txn: regression-json replaced raised", False)
+                except (RuntimeError, OSError):
+                    check("txn: regression-json replaced caught", True)
+                del os.environ["_CHABIKO_INJECT_AT"]
+                h2, jb2, wb2 = snapshot(txn_assets, txn_json)
+                check("txn: regression: JSON restored", h2)
+                check("txn: regression: JSON exact bytes", jb2 == pre_state_json)
+                # Snapshot preserved the reduced webp set
+                check("txn: regression: webp count restored", len(wb2) == len(pre_state_snapshot2[2]))
+                # Foreign asset untouched
+                after_foreign2 = (txn_assets / "foreign-legacy.png").read_bytes()
+                check("txn: regression: foreign unchanged", after_foreign2 == foreign_before)
+                # Full state match
+                check("txn: regression: exact match",
+                      (h2, jb2, wb2) == pre_state_snapshot2)
 
     except Exception as e:
         check(f"txn block: {e}", False)
