@@ -4,16 +4,17 @@ export interface Props {
   title: string;
   description?: string;
   robots?: string;
+  themeEnabled?: boolean;
 }
 
-const { title, description, robots } = Astro.props;
+const { title, description, robots, themeEnabled = false } = Astro.props;
 const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
 ---
 
 <!doctype html>
-<html lang="ja">
+<html lang="ja" data-theme-enabled={themeEnabled ? 'true' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,23 +29,104 @@ const canonical = url.href;
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ja_JP" />
     <meta property="og:site_name" content="Chabiko" />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        if (root.dataset.themeEnabled !== 'true') return;
+        const themeKey = 'chabiko_theme';
+        let storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem(themeKey);
+        } catch {
+          // Storage can be unavailable; system preference remains the fallback.
+        }
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+        root.dataset.theme =
+          storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : systemTheme;
+      })();
+    </script>
     <style>
       :root {
-        --c-bg: #fafafa;
-        --c-surface: #ffffff;
-        --c-text: #1a1a1a;
-        --c-text-secondary: #666;
-        --c-accent: #2563eb;
-        --c-accent-hover: #1d4ed8;
-        --c-border: #e5e5e5;
-        --c-slot-bg: #f0f0f0;
-        --radius: 8px;
+        color-scheme: light;
+        --color-page: #f4f1ec;
+        --color-surface: #ffffff;
+        --color-text: #1a1a2e;
+        --color-text-secondary: #555570;
+        --color-text-muted: #6a6a7d;
+        --color-primary: #1a2744;
+        --color-primary-soft: #e8ecf3;
+        --color-accent: #d48c2b;
+        --color-accent-soft: #f5e8d0;
+        --color-route: #d0ccc4;
+        --color-border: #e0dcd4;
+        --color-success: #3d7b80;
+        --color-success-soft: #e8f0f0;
+        --color-error: #b04435;
+        --color-error-soft: #f5e8e4;
+        --color-header: #1a2744;
+        --color-header-text: #ffffff;
+        --color-header-muted: rgb(255 255 255 / 78%);
+        --color-on-primary: #ffffff;
+        --color-on-status: #ffffff;
+        --color-status-current: #765215;
+        --color-status-success: #2f666b;
+        --color-focus: #1a2744;
+        --c-bg: var(--color-page);
+        --c-surface: var(--color-surface);
+        --c-text: var(--color-text);
+        --c-text-secondary: var(--color-text-secondary);
+        --c-text-muted: var(--color-text-muted);
+        --c-primary: var(--color-primary);
+        --c-primary-light: var(--color-primary-soft);
+        --c-accent: var(--color-accent);
+        --c-accent-light: var(--color-accent-soft);
+        --c-route-line: var(--color-route);
+        --c-border: var(--color-border);
+        --c-success: var(--color-success);
+        --c-success-bg: var(--color-success-soft);
+        --c-error: var(--color-error);
+        --c-error-bg: var(--color-error-soft);
+        --c-slot-bg: var(--c-primary-light);
+        --font-zh: 'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif;
+        --font-ja: 'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+        --font-pinyin: 'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+        --radius: 0;
         --space-xs: 0.25rem;
         --space-sm: 0.5rem;
         --space-md: 1rem;
         --space-lg: 1.5rem;
         --space-xl: 2rem;
-        --max-w: 48rem;
+        --space-2xl: 3rem;
+        --space-3xl: 4rem;
+        --max-w: 80rem;
+      }
+      :root[data-theme-enabled='true'][data-theme='dark'] {
+        color-scheme: dark;
+        --color-page: #11141c;
+        --color-surface: #1b202b;
+        --color-text: #f2eee8;
+        --color-text-secondary: #c9c3ba;
+        --color-text-muted: #aaa49b;
+        --color-primary: #a9bee9;
+        --color-primary-soft: #252d3d;
+        --color-accent: #efb45b;
+        --color-accent-soft: #382c1c;
+        --color-route: #4b5362;
+        --color-border: #363d4a;
+        --color-success: #70b9b1;
+        --color-success-soft: #17322f;
+        --color-error: #ee8d7d;
+        --color-error-soft: #3a2222;
+        --color-header: #161f34;
+        --color-header-text: #f6f2ea;
+        --color-header-muted: #c9c5bd;
+        --color-on-primary: #11141c;
+        --color-on-status: #11141c;
+        --color-status-current: #f0bd6d;
+        --color-status-success: #8acbc4;
+        --color-focus: #f2bd67;
       }
       *,
       *::before,
@@ -54,21 +136,34 @@ const canonical = url.href;
         padding: 0;
       }
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-          'Noto Sans CJK JP', sans-serif;
+        font-family: var(--font-ja);
         background: var(--c-bg);
         color: var(--c-text);
         line-height: 1.7;
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        overflow-wrap: anywhere;
       }
       a {
-        color: var(--c-accent);
+        color: var(--c-primary);
         text-decoration: none;
       }
       a:hover {
         text-decoration: underline;
+      }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button {
+        font: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 3px;
       }
       .wrapper {
         flex: 1;
@@ -77,14 +172,34 @@ const canonical = url.href;
       }
       .main-content {
         flex: 1;
-        padding: var(--space-md);
+        padding: var(--space-lg) var(--space-md) var(--space-3xl);
         max-width: var(--max-w);
         width: 100%;
         margin: 0 auto;
       }
+      @media (width <= 374px) {
+        .main-content {
+          padding-inline: var(--space-md);
+        }
+      }
       @media (width >= 768px) {
         .main-content {
-          padding: var(--space-lg) var(--space-xl);
+          padding: var(--space-xl);
+        }
+      }
+      @media (width >= 1024px) {
+        .main-content {
+          padding-block: var(--space-2xl) var(--space-3xl);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
         }
       }
     </style>

@@ -5,87 +5,182 @@ const lessons = loadAllRenderableLessons();
 const firstLesson = lessons[0];
 ---
 
-<!--
-  Goal Path Slot (#17 placeholder)
-
-  Shows the active Taiwan travel path with a link to the lesson index on the home page.
-  Full goal-path behavior remains implemented by #17; the HSK entry stays unavailable.
--->
-<section class="goal-path-slot" aria-label="学習パス">
-  <h2 class="slot-heading">学習パス</h2>
-  <div class="path-cards">
+<aside class="goal-path-slot" aria-labelledby="route-panel-heading">
+  <h2 id="route-panel-heading" class="slot-heading">学習ルート</h2>
+  <div class="route-name">台湾旅行で使える中国語</div>
+  <div class="route-timeline">
     {firstLesson ? (
-      <a class="path-card path-card--active" href="/#taiwan-travel-path">
-        <span class="path-icon">&#x1F3C3;</span>
-        <span class="path-label">台湾旅行で使える中国語</span>
-        <span class="path-badge">{lessons.length}レッスン</span>
+      <a class="path-card path-card--active" href="/#taiwan-travel-path" aria-current="step">
+        <span class="station-dot" aria-hidden="true"></span>
+        <span class="path-body">
+          <span class="path-kicker">{lessons.length}レッスン</span>
+          <span class="path-label">{firstLesson.titleJa}</span>
+          <span class="path-example" lang="zh-Hant">{firstLesson.coreSentence}</span>
+          <span class="path-status">進行中</span>
+        </span>
       </a>
     ) : (
       <div class="path-card path-card--disabled">
-        <span class="path-icon">&#x1F3C3;</span>
-        <span class="path-label">台湾旅行で使える中国語</span>
-        <span class="path-badge">準備中</span>
+        <span class="station-dot" aria-hidden="true"></span>
+        <span class="path-body">
+          <span class="path-label">台湾旅行で使える中国語</span>
+          <span class="path-status path-status--pending">準備中</span>
+        </span>
       </div>
     )}
-    <div class="path-card path-card--disabled">
-      <span class="path-icon">&#x1F4DA;</span>
-      <span class="path-label">HSK対策</span>
-      <span class="path-badge">準備中</span>
+  </div>
+  <div class="pending-path">
+    <span class="pending-dot" aria-hidden="true"></span>
+    <div class="pending-body">
+      <span class="pending-label">HSK対策</span>
+      <span class="path-status path-status--pending">準備中</span>
     </div>
   </div>
-</section>
+</aside>
 
 <style>
   .goal-path-slot {
-    background: var(--c-surface);
-    border: 1px dashed var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--c-border);
   }
   .slot-heading {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--c-text-secondary);
-    text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
   }
-  .path-cards {
-    display: flex;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
+  .route-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--c-text);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--c-border);
+    margin-bottom: var(--space-lg);
+  }
+  .route-timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+  .route-timeline::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 0;
+    left: 15px;
+    width: 2px;
+    background: var(--c-route-line);
   }
   .path-card {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    font-size: 0.85rem;
+    min-height: 44px;
+    color: var(--c-text);
     text-decoration: none;
   }
   .path-card--active {
-    color: var(--c-text);
-    border-color: var(--c-accent);
+    padding-bottom: var(--space-md);
   }
   .path-card--active:hover {
-    background: var(--c-slot-bg);
     text-decoration: none;
   }
+  .path-card--active:hover .path-label {
+    color: var(--c-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .path-card--disabled {
-    opacity: 0.5;
-    pointer-events: none;
+    color: var(--c-text-muted);
   }
-  .path-icon {
-    font-size: 1.1rem;
+  .station-dot {
+    position: absolute;
+    left: -26px;
+    top: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c-primary);
+    border: 2px solid var(--c-primary);
+    box-shadow: 0 0 0 4px var(--c-accent-light);
   }
-  .path-badge {
-    background: var(--c-slot-bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
+  .station-dot::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--c-accent);
+  }
+  .path-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .path-kicker {
+    color: var(--c-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  .path-label {
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .path-example {
+    font-family: var(--font-zh);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .path-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    margin-top: var(--space-xs);
+    padding: 0 var(--space-sm);
+    background: var(--c-accent-light);
+    color: var(--color-status-current);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  .path-status--pending {
+    background: var(--c-primary-light);
     color: var(--c-text-secondary);
+  }
+  .pending-path {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--c-border);
+  }
+  .pending-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--c-route-line);
+    background: var(--c-surface);
+    flex: 0 0 auto;
+  }
+  .pending-body {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+  }
+  .pending-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+  }
+  @media (width >= 1024px) {
+    .goal-path-slot {
+      position: sticky;
+      top: 88px;
+      align-self: start;
+      padding: 0 var(--space-lg) var(--space-xl) 0;
+      border: 0;
+      border-right: 1px solid var(--c-border);
+      min-height: calc(100dvh - 136px);
+    }
   }
 </style>

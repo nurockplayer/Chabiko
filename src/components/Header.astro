@@ -1,82 +1,200 @@
 ---
+export interface Props {
+  themeEnabled?: boolean;
+}
+
+const { themeEnabled = false } = Astro.props;
 ---
 
 <header class="site-header">
   <div class="header-inner">
-    <span class="logo">Chabiko</span>
-    <span class="logo-sub">チャビコ</span>
+    <a class="brand" href="/" aria-label="Chabiko ホーム">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="logo">Chabiko</span>
+      <span class="logo-sub">チャビコ</span>
+    </a>
     <nav class="nav-primary" aria-label="メインナビゲーション">
-      <a href="/" class="nav-link nav-link--active">ホーム</a>
+      <a href="/" class="nav-link">ホーム</a>
     </nav>
-    <!-- #22 用の表示切替スロット -->
-    <div class="slot script-toggle-slot" aria-label="簡体字／繁体字切替（準備中）">
-      <span class="slot-label">繁｜簡</span>
+    {
+      themeEnabled && (
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          type="button"
+          aria-label="ダークテーマに切り替える"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle__mark" aria-hidden="true">◐</span>
+          <span class="theme-toggle__label" aria-hidden="true">暗</span>
+        </button>
+      )
+    }
+    <div class="script-toggle-slot" aria-label="簡体字・繁体字切り替え（準備中）">
+      <span aria-hidden="true">繁｜簡</span>
       <span class="slot-badge">準備中</span>
     </div>
   </div>
 </header>
 
+<script>
+  import { THEME_STORAGE_KEY, getNextTheme } from '../lib/theme';
+
+  const themeToggle = document.getElementById('theme-toggle');
+
+  function updateThemeControl(theme: 'light' | 'dark') {
+    if (!(themeToggle instanceof HTMLButtonElement)) return;
+    const isDark = theme === 'dark';
+    themeToggle.setAttribute('aria-pressed', String(isDark));
+    themeToggle.setAttribute(
+      'aria-label',
+      isDark ? 'ライトテーマに切り替える' : 'ダークテーマに切り替える',
+    );
+    const label = themeToggle.querySelector('.theme-toggle__label');
+    if (label) label.textContent = isDark ? '明' : '暗';
+  }
+
+  if (themeToggle instanceof HTMLButtonElement) {
+    const initialTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    updateThemeControl(initialTheme);
+    themeToggle.addEventListener('click', () => {
+      const nextTheme = getNextTheme(document.documentElement.dataset.theme);
+      document.documentElement.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      } catch {
+        // The active page still changes theme when storage is unavailable.
+      }
+      updateThemeControl(nextTheme);
+    });
+  }
+</script>
+
 <style>
   .site-header {
-    background: var(--c-surface);
-    border-bottom: 1px solid var(--c-border);
+    background: var(--color-header);
+    color: var(--color-header-text);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
   }
   .header-inner {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-lg);
     max-width: var(--max-w);
     margin: 0 auto;
-    padding: var(--space-sm) var(--space-md);
+    padding: 0 var(--space-lg);
+    min-height: 56px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    color: var(--color-header-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand:hover {
+    text-decoration: none;
+  }
+  .brand:focus-visible,
+  .nav-link:focus-visible,
+  .theme-toggle:focus-visible {
+    outline-color: var(--c-accent);
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--c-accent);
+    color: var(--color-on-status);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    flex: 0 0 auto;
   }
   .logo {
     font-weight: 700;
-    font-size: 1.125rem;
-    color: var(--c-accent);
+    font-size: 1rem;
+    color: var(--color-header-text);
   }
   .logo-sub {
     font-size: 0.75rem;
-    color: var(--c-text-secondary);
-    margin-left: -0.5rem;
+    color: var(--color-header-muted);
+    margin-left: -0.25rem;
   }
   .nav-primary {
     margin-left: auto;
   }
   .nav-link {
     font-size: 0.875rem;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius);
+    color: var(--color-header-text);
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .nav-link--active {
-    background: var(--c-accent);
-    color: #fff;
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-width: 52px;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
+    background: transparent;
+    color: var(--color-header-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
   }
-  /* Script toggle slot: visible placeholder for #22 */
+  .theme-toggle:hover {
+    background: color-mix(in srgb, var(--color-header-text) 10%, transparent);
+  }
+  .theme-toggle__mark {
+    color: var(--c-accent);
+    font-size: 1rem;
+    line-height: 1;
+  }
   .script-toggle-slot {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px dashed var(--c-border);
-    border-radius: var(--radius);
-    font-size: 0.75rem;
-    color: var(--c-text-secondary);
+    font-size: 0.6875rem;
+    color: var(--color-header-muted);
+    white-space: nowrap;
   }
   .slot-badge {
-    background: var(--c-slot-bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
+    padding-left: var(--space-xs);
+    border-left: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
+    font-size: 0.625rem;
   }
-  @media (width < 480px) {
-    .logo-sub {
+  @media (width <= 767px) {
+    .logo-sub,
+    .slot-badge {
       display: none;
     }
+  }
+  @media (width <= 374px) {
+    .header-inner {
+      padding-inline: var(--space-md);
+      gap: var(--space-sm);
+    }
     .script-toggle-slot {
-      font-size: 0.65rem;
+      font-size: 0.625rem;
+    }
+    .theme-toggle {
+      min-width: 44px;
+      padding-inline: var(--space-xs);
+    }
+    .theme-toggle__mark {
+      display: none;
     }
   }
 </style>
