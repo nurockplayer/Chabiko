@@ -1,0 +1,242 @@
+---
+import type { TeacherVocabularyLearningItem } from '../../content/loadTeacherVocabulary';
+
+export interface Props {
+  items: readonly TeacherVocabularyLearningItem[];
+}
+
+const { items } = Astro.props;
+const initialItem = items[0];
+const sessionData = {
+  items: items.map(({ vocabulary, illustration }) => ({
+    id: vocabulary.id,
+    simplified: vocabulary.simplified,
+    pinyin: vocabulary.pinyin,
+    japanese: vocabulary.japanese,
+    traditional: vocabulary.traditional,
+    illustration: illustration === null ? null : {
+      vocabularyId: illustration.vocabularyId,
+      assetPath: illustration.assetPath,
+      width: illustration.width,
+      height: illustration.height,
+      altJa: illustration.altJa,
+    },
+  })),
+};
+---
+
+<section
+  class="basic-vocabulary-session"
+  data-basic-vocabulary-session
+  data-basic-vocabulary-data={JSON.stringify(sessionData)}
+>
+  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {items.length} 語</p>
+  <div class="basic-vocabulary-card" data-card>
+    {
+      initialItem.illustration && (
+        <img
+          class="basic-vocabulary-illustration"
+          src={initialItem.illustration.assetPath}
+          width={initialItem.illustration.width}
+          height={initialItem.illustration.height}
+          alt={initialItem.illustration.altJa}
+        />
+      )
+    }
+    <p class="basic-vocabulary-simplified" lang="zh-Hans">{initialItem.vocabulary.simplified}</p>
+    <button class="basic-vocabulary-action basic-vocabulary-reveal" data-action="reveal" type="button">
+      答えを見る
+    </button>
+  </div>
+</section>
+
+<script>
+  import { initBasicVocabularySession } from '../../client/basicVocabularySession';
+
+  function initialiseSessions() {
+    document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-session]').forEach((root) => {
+      initBasicVocabularySession(root);
+    });
+  }
+
+  initialiseSessions();
+  document.addEventListener('astro:page-load', initialiseSessions);
+</script>
+
+<style is:global>
+  .basic-vocabulary-session {
+    width: 100%;
+  }
+
+  .basic-vocabulary-progress {
+    margin: 0 0 var(--space-sm);
+    color: var(--c-text-secondary);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .basic-vocabulary-card,
+  .basic-vocabulary-completion {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: clamp(22rem, 66vh, 39rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.75rem, 3vw, 1.25rem);
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    padding: clamp(1rem, 5vw, 2rem);
+    text-align: center;
+  }
+
+  .basic-vocabulary-illustration {
+    display: block;
+    box-sizing: border-box;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: min(42vh, 420px);
+    object-fit: contain;
+  }
+
+  .basic-vocabulary-simplified {
+    max-width: 100%;
+    margin: 0;
+    color: var(--c-text);
+    font-size: clamp(2.5rem, 16vw, 5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-answer {
+    display: grid;
+    gap: var(--space-xs);
+    max-width: 100%;
+  }
+
+  .basic-vocabulary-pinyin,
+  .basic-vocabulary-japanese,
+  .basic-vocabulary-traditional {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-pinyin {
+    color: var(--c-accent);
+    font-size: clamp(1.125rem, 5vw, 1.35rem);
+    font-weight: 700;
+  }
+
+  .basic-vocabulary-japanese {
+    color: var(--c-text);
+    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-traditional {
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .basic-vocabulary-action,
+  .basic-vocabulary-rating {
+    box-sizing: border-box;
+    min-height: 2.75rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .basic-vocabulary-action {
+    width: min(100%, 22rem);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .basic-vocabulary-reveal,
+  .basic-vocabulary-restart {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .basic-vocabulary-ratings {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: min(100%, 34rem);
+    gap: clamp(0.375rem, 2vw, 0.75rem);
+  }
+
+  .basic-vocabulary-rating {
+    min-width: 0;
+    padding: var(--space-sm) 0.375rem;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-rating[data-rating="again"] {
+    border-color: #991b1b;
+    color: #991b1b;
+  }
+
+  .basic-vocabulary-rating[data-rating="unsure"] {
+    border-color: #92400e;
+    color: #92400e;
+  }
+
+  .basic-vocabulary-rating[data-rating="known"] {
+    border-color: #166534;
+    color: #166534;
+  }
+
+  .basic-vocabulary-action:hover,
+  .basic-vocabulary-rating:hover {
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-reveal:hover,
+  .basic-vocabulary-restart:hover {
+    background: var(--c-accent-hover);
+  }
+
+  .basic-vocabulary-action:active,
+  .basic-vocabulary-rating:active {
+    transform: translateY(1px);
+  }
+
+  .basic-vocabulary-action:focus-visible,
+  .basic-vocabulary-rating:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .basic-vocabulary-completion {
+    gap: var(--space-lg);
+  }
+
+  .basic-vocabulary-completion-title {
+    margin: 0;
+    color: var(--c-text);
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+  }
+
+  @media (max-width: 359px) {
+    .basic-vocabulary-card,
+    .basic-vocabulary-completion {
+      min-height: 20rem;
+      padding: 0.875rem;
+    }
+
+    .basic-vocabulary-rating {
+      font-size: 0.8125rem;
+    }
+  }
+</style>
