@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 
+import { readFile } from 'node:fs/promises';
 import { afterEach, describe, expect, it } from 'vitest';
 import { initBasicVocabularySession } from '../src/client/basicVocabularySession';
 
@@ -164,55 +165,38 @@ describe('basic vocabulary session lifecycle', () => {
     );
   });
 
-  it.each([320, 375, 390])(
-    'verifies the containment CSS contract at %ipx — card, image, ratings, and buttons are bounded',
-    (width) => {
-      const root = rootWith();
-      root.style.width = `${width}px`;
-      document.body.append(root);
-      initBasicVocabularySession(root);
-      reveal(root);
+  it('includes the required containment declarations in the Astro stylesheet', async () => {
+    const source = await readFile('src/components/vocabulary/BasicVocabularySession.astro', 'utf8');
 
-      const card = root.querySelector<HTMLElement>('[data-card]')!;
-      const image = root.querySelector<HTMLImageElement>('.basic-vocabulary-illustration');
-      const ratings = root.querySelector<HTMLElement>('.basic-vocabulary-ratings')!;
-      const ratingButtons = ratings.querySelectorAll('button');
+    // Extract the content inside <style is:global>…</style>
+    const styleMatch = source.match(/<style is:global>([\s\S]*?)<\/style>/);
+    expect(styleMatch).not.toBeNull();
+    const css = styleMatch![1];
 
-      // Happy DOM does not resolve computed styles from Astro <style is:global>.
-      // We verify the containment contract by reading the component source's CSS:
+    // .basic-vocabulary-card, .basic-vocabulary-completion
+    expect(css).toMatch(
+      /\.basic-vocabulary-card,\s*\.basic-vocabulary-completion\s*\{[^}]*box-sizing:\s*border-box[^}]*width:\s*100%[^}]*overflow:\s*hidden/,
+    );
 
-      // (a) Card and image are bounded by explicit stylesheet rules:
-      //   .basic-vocabulary-card { box-sizing: border-box; width: 100%; overflow: hidden }
-      //   .basic-vocabulary-illustration { display: block; box-sizing: border-box;
-      //     width: auto; max-width: 100%; height: auto; max-height: min(42vh, 420px) }
-      expect(card.className).toBe('basic-vocabulary-card');
+    // .basic-vocabulary-illustration
+    expect(css).toMatch(
+      /\.basic-vocabulary-illustration\s*\{[^}]*max-width:\s*100%[^}]*max-height:\s*min\(42vh,\s*420px\)[^}]*object-fit:\s*contain/,
+    );
 
-      if (image) {
-        expect(image.className).toBe('basic-vocabulary-illustration');
-        expect(image.width).toBeGreaterThan(0);
-      }
+    // .basic-vocabulary-ratings
+    expect(css).toMatch(
+      /\.basic-vocabulary-ratings\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)[^}]*width:\s*min\(100%,\s*34rem\)/,
+    );
 
-      // (b) Ratings grid:
-      //   .basic-vocabulary-ratings { display: grid;
-      //     grid-template-columns: repeat(3, minmax(0, 1fr));
-      //     width: min(100%, 34rem); box-sizing: border-box }
-      expect(ratings.className).toBe('basic-vocabulary-ratings');
+    // .basic-vocabulary-rating (min-width: 0 — note this is in a separate rule
+    // from .basic-vocabulary-action, .basic-vocabulary-rating)
+    expect(css).toMatch(
+      /\.basic-vocabulary-rating\s*\{[^}]*min-width:\s*0/,
+    );
 
-      // (c) Rating buttons:
-      //   .basic-vocabulary-rating { box-sizing: border-box; min-width: 0; ... }
-      for (const btn of ratingButtons) {
-        expect(btn.className).toBe('basic-vocabulary-rating');
-        // Happy DOM sets inline element properties — buttons are inline by default
-        // The stylesheet rule `min-width: 0` would override UA defaults in a real
-        // browser; here we verify the class contract instead.
-      }
-
-      // Three buttons in the ratings grid
-      expect(ratingButtons).toHaveLength(3);
-
-      // Browser measurements at 320/375/390 are recorded in the PR body.
-    },
-  );
+    // Browser measurements at 320/375/390 are recorded in the PR body as
+    // the genuine layout evidence. Happy DOM does not perform layout.
+  });
 
   it('announces completion via the aria-live progress region, preserves progress text, and moves focus to restart', () => {
     const root = rootWith();
