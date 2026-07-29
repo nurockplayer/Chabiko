@@ -7,9 +7,9 @@ import { loadAllRenderableLessons, hasUsableLessonPractice } from '../content/lo
 const lessons = loadAllRenderableLessons();
 ---
 
-<BaseLayout title="ホーム">
+<BaseLayout title="ホーム" themeEnabled>
   <Fragment slot="header">
-    <Header />
+    <Header themeEnabled />
   </Fragment>
 
   {lessons.length > 0 ? (

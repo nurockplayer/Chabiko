@@ -4,16 +4,17 @@ export interface Props {
   title: string;
   description?: string;
   robots?: string;
+  themeEnabled?: boolean;
 }
 
-const { title, description, robots } = Astro.props;
+const { title, description, robots, themeEnabled = false } = Astro.props;
 const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
 ---
 
 <!doctype html>
-<html lang="ja">
+<html lang="ja" data-theme-enabled={themeEnabled ? 'true' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,6 +32,7 @@ const canonical = url.href;
     <script is:inline>
       (() => {
         const root = document.documentElement;
+        if (root.dataset.themeEnabled !== 'true') return;
         const themeKey = 'chabiko_theme';
         let storedTheme = null;
         try {
@@ -100,7 +102,7 @@ const canonical = url.href;
         --space-3xl: 4rem;
         --max-w: 80rem;
       }
-      :root[data-theme='dark'] {
+      :root[data-theme-enabled='true'][data-theme='dark'] {
         color-scheme: dark;
         --color-page: #11141c;
         --color-surface: #1b202b;

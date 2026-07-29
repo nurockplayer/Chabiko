@@ -52,9 +52,9 @@ const examples = (lesson?.examples ?? []).filter(
 const coreExample = examples.find((example) => example.traditional === lesson?.coreSentence) ?? examples[0];
 ---
 
-<BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'}>
+<BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'} themeEnabled>
   <Fragment slot="header">
-    <Header />
+    <Header themeEnabled />
   </Fragment>
 
   {

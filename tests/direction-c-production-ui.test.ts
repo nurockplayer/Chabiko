@@ -10,13 +10,17 @@ const homeSource = readSource('../src/pages/index.astro');
 const goalPathSource = readSource('../src/components/GoalPathSlot.astro');
 const lessonSource = readSource('../src/pages/lessons/[id].astro');
 const practiceSource = readSource('../src/components/LessonPractice.astro');
+const hskSource = readSource('../src/pages/vocabulary/hsk/1/index.astro');
+const notFoundSource = readSource('../src/pages/404.astro');
 
 describe('Direction C production journey presentation', () => {
   it('uses coherent light and dark semantic tokens with the city-wayfinding shell', () => {
     expect(baseLayoutSource).toContain('--color-page: #f4f1ec');
     expect(baseLayoutSource).toContain('--color-primary: #1a2744');
     expect(baseLayoutSource).toContain('--color-accent: #d48c2b');
-    expect(baseLayoutSource).toContain(":root[data-theme='dark']");
+    expect(baseLayoutSource).toContain(
+      ":root[data-theme-enabled='true'][data-theme='dark']",
+    );
     expect(baseLayoutSource).toContain('--color-page: #11141c');
     expect(baseLayoutSource).toContain('--color-success-soft: #17322f');
     expect(baseLayoutSource).toContain('--color-error-soft: #3a2222');
@@ -32,10 +36,23 @@ describe('Direction C production journey presentation', () => {
     expect(headerSource).toContain('aria-pressed="false"');
     expect(headerSource).toContain('ダークテーマに切り替える');
     expect(headerSource).toContain('ライトテーマに切り替える');
-    expect(headerSource).toContain("const themeKey = 'chabiko_theme'");
+    expect(headerSource).toContain('THEME_STORAGE_KEY');
     expect(baseLayoutSource).toContain("const themeKey = 'chabiko_theme'");
     expect(baseLayoutSource).not.toContain('chabiko_completed_lessons');
     expect(headerSource).not.toContain('chabiko_completed_lessons');
+  });
+
+  it('limits the theme integration to the production learning journey', () => {
+    expect(baseLayoutSource).toContain("data-theme-enabled={themeEnabled ? 'true' : undefined}");
+    expect(baseLayoutSource).toContain(
+      ":root[data-theme-enabled='true'][data-theme='dark']",
+    );
+    expect(homeSource).toContain('<BaseLayout title="ホーム" themeEnabled>');
+    expect(homeSource).toContain('<Header themeEnabled />');
+    expect(lessonSource).toContain('themeEnabled>');
+    expect(lessonSource).toContain('<Header themeEnabled />');
+    expect(hskSource).not.toContain('themeEnabled');
+    expect(notFoundSource).not.toContain('themeEnabled');
   });
 
   it('keeps the production home loader, lesson order mapping, and destinations', () => {

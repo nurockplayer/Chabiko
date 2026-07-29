@@ -1,4 +1,9 @@
 ---
+export interface Props {
+  themeEnabled?: boolean;
+}
+
+const { themeEnabled = false } = Astro.props;
 ---
 
 <header class="site-header">
@@ -11,16 +16,20 @@
     <nav class="nav-primary" aria-label="メインナビゲーション">
       <a href="/" class="nav-link">ホーム</a>
     </nav>
-    <button
-      id="theme-toggle"
-      class="theme-toggle"
-      type="button"
-      aria-label="ダークテーマに切り替える"
-      aria-pressed="false"
-    >
-      <span class="theme-toggle__mark" aria-hidden="true">◐</span>
-      <span class="theme-toggle__label" aria-hidden="true">暗</span>
-    </button>
+    {
+      themeEnabled && (
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          type="button"
+          aria-label="ダークテーマに切り替える"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle__mark" aria-hidden="true">◐</span>
+          <span class="theme-toggle__label" aria-hidden="true">暗</span>
+        </button>
+      )
+    }
     <div class="script-toggle-slot" aria-label="簡体字・繁体字切り替え（準備中）">
       <span aria-hidden="true">繁｜簡</span>
       <span class="slot-badge">準備中</span>
@@ -29,7 +38,8 @@
 </header>
 
 <script>
-  const themeKey = 'chabiko_theme';
+  import { THEME_STORAGE_KEY, getNextTheme } from '../lib/theme';
+
   const themeToggle = document.getElementById('theme-toggle');
 
   function updateThemeControl(theme: 'light' | 'dark') {
@@ -48,11 +58,10 @@
     const initialTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
     updateThemeControl(initialTheme);
     themeToggle.addEventListener('click', () => {
-      const nextTheme =
-        document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      const nextTheme = getNextTheme(document.documentElement.dataset.theme);
       document.documentElement.dataset.theme = nextTheme;
       try {
-        localStorage.setItem(themeKey, nextTheme);
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
       } catch {
         // The active page still changes theme when storage is unavailable.
       }
