@@ -65,6 +65,7 @@ describe('lesson practice answer visibility', () => {
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--correct')");
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--incorrect')");
     expect(practiceComponentSource).toContain("timer.schedule(() => renderCompleted(), 1200)");
+    expect(practiceComponentSource).toContain("timer.schedule(() => render(), 1200)");
     expect(practiceComponentSource).toContain("timer.schedule(() => render(), 2000)");
   });
 });

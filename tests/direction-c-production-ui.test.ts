@@ -12,13 +12,30 @@ const lessonSource = readSource('../src/pages/lessons/[id].astro');
 const practiceSource = readSource('../src/components/LessonPractice.astro');
 
 describe('Direction C production journey presentation', () => {
-  it('uses the approved light palette and city-wayfinding shell', () => {
-    expect(baseLayoutSource).toContain('--c-bg: #f4f1ec');
-    expect(baseLayoutSource).toContain('--c-primary: #1a2744');
-    expect(baseLayoutSource).toContain('--c-accent: #d48c2b');
+  it('uses coherent light and dark semantic tokens with the city-wayfinding shell', () => {
+    expect(baseLayoutSource).toContain('--color-page: #f4f1ec');
+    expect(baseLayoutSource).toContain('--color-primary: #1a2744');
+    expect(baseLayoutSource).toContain('--color-accent: #d48c2b');
+    expect(baseLayoutSource).toContain(":root[data-theme='dark']");
+    expect(baseLayoutSource).toContain('--color-page: #11141c');
+    expect(baseLayoutSource).toContain('--color-success-soft: #17322f');
+    expect(baseLayoutSource).toContain('--color-error-soft: #3a2222');
+    expect(baseLayoutSource).toContain('@media (prefers-reduced-motion: reduce)');
     expect(headerSource).toContain('class="brand-mark"');
     expect(goalPathSource).toContain('class="route-timeline"');
     expect(goalPathSource).toContain('aria-current="step"');
+  });
+
+  it('provides a keyboard-native theme toggle with isolated preference storage', () => {
+    expect(headerSource).toContain('id="theme-toggle"');
+    expect(headerSource).toContain('type="button"');
+    expect(headerSource).toContain('aria-pressed="false"');
+    expect(headerSource).toContain('ダークテーマに切り替える');
+    expect(headerSource).toContain('ライトテーマに切り替える');
+    expect(headerSource).toContain("const themeKey = 'chabiko_theme'");
+    expect(baseLayoutSource).toContain("const themeKey = 'chabiko_theme'");
+    expect(baseLayoutSource).not.toContain('chabiko_completed_lessons');
+    expect(headerSource).not.toContain('chabiko_completed_lessons');
   });
 
   it('keeps the production home loader, lesson order mapping, and destinations', () => {
@@ -52,6 +69,9 @@ describe('Direction C production journey presentation', () => {
     expect(practiceSource).toContain('aria-label="回答を選択"');
     expect(practiceSource).toContain('role="status" aria-live="polite"');
     expect(practiceSource).toContain('store.markComplete(session.lessonId)');
+    expect(practiceSource).toContain('timer.schedule(() => renderCompleted(), 1200)');
+    expect(practiceSource).toContain('timer.schedule(() => render(), 1200)');
+    expect(practiceSource).toContain('timer.schedule(() => render(), 2000)');
     expect(practiceSource).toContain("window.addEventListener('pageshow'");
     expect(practiceSource).toContain("window.addEventListener('storage'");
   });

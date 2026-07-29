@@ -11,6 +11,16 @@
     <nav class="nav-primary" aria-label="メインナビゲーション">
       <a href="/" class="nav-link">ホーム</a>
     </nav>
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      aria-label="ダークテーマに切り替える"
+      aria-pressed="false"
+    >
+      <span class="theme-toggle__mark" aria-hidden="true">◐</span>
+      <span class="theme-toggle__label" aria-hidden="true">暗</span>
+    </button>
     <div class="script-toggle-slot" aria-label="簡体字・繁体字切り替え（準備中）">
       <span aria-hidden="true">繁｜簡</span>
       <span class="slot-badge">準備中</span>
@@ -18,10 +28,43 @@
   </div>
 </header>
 
+<script>
+  const themeKey = 'chabiko_theme';
+  const themeToggle = document.getElementById('theme-toggle');
+
+  function updateThemeControl(theme: 'light' | 'dark') {
+    if (!(themeToggle instanceof HTMLButtonElement)) return;
+    const isDark = theme === 'dark';
+    themeToggle.setAttribute('aria-pressed', String(isDark));
+    themeToggle.setAttribute(
+      'aria-label',
+      isDark ? 'ライトテーマに切り替える' : 'ダークテーマに切り替える',
+    );
+    const label = themeToggle.querySelector('.theme-toggle__label');
+    if (label) label.textContent = isDark ? '明' : '暗';
+  }
+
+  if (themeToggle instanceof HTMLButtonElement) {
+    const initialTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    updateThemeControl(initialTheme);
+    themeToggle.addEventListener('click', () => {
+      const nextTheme =
+        document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem(themeKey, nextTheme);
+      } catch {
+        // The active page still changes theme when storage is unavailable.
+      }
+      updateThemeControl(nextTheme);
+    });
+  }
+</script>
+
 <style>
   .site-header {
-    background: var(--c-primary);
-    color: #fff;
+    background: var(--color-header);
+    color: var(--color-header-text);
     position: sticky;
     top: 0;
     z-index: 20;
@@ -40,7 +83,7 @@
     align-items: center;
     gap: var(--space-sm);
     min-height: 44px;
-    color: #fff;
+    color: var(--color-header-text);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -48,7 +91,8 @@
     text-decoration: none;
   }
   .brand:focus-visible,
-  .nav-link:focus-visible {
+  .nav-link:focus-visible,
+  .theme-toggle:focus-visible {
     outline-color: var(--c-accent);
   }
   .brand-mark {
@@ -59,7 +103,7 @@
     align-items: center;
     justify-content: center;
     background: var(--c-accent);
-    color: #fff;
+    color: var(--color-on-status);
     font-size: 0.8125rem;
     font-weight: 800;
     flex: 0 0 auto;
@@ -67,11 +111,11 @@
   .logo {
     font-weight: 700;
     font-size: 1rem;
-    color: #fff;
+    color: var(--color-header-text);
   }
   .logo-sub {
     font-size: 0.75rem;
-    color: rgb(255 255 255 / 78%);
+    color: var(--color-header-muted);
     margin-left: -0.25rem;
   }
   .nav-primary {
@@ -79,38 +123,68 @@
   }
   .nav-link {
     font-size: 0.875rem;
-    color: rgb(255 255 255 / 92%);
+    color: var(--color-header-text);
     min-width: 44px;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-width: 52px;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
+    background: transparent;
+    color: var(--color-header-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .theme-toggle:hover {
+    background: color-mix(in srgb, var(--color-header-text) 10%, transparent);
+  }
+  .theme-toggle__mark {
+    color: var(--c-accent);
+    font-size: 1rem;
+    line-height: 1;
+  }
   .script-toggle-slot {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
     font-size: 0.6875rem;
-    color: rgb(255 255 255 / 70%);
+    color: var(--color-header-muted);
     white-space: nowrap;
   }
   .slot-badge {
     padding-left: var(--space-xs);
-    border-left: 1px solid rgb(255 255 255 / 35%);
+    border-left: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
     font-size: 0.625rem;
+  }
+  @media (width <= 767px) {
+    .logo-sub,
+    .slot-badge {
+      display: none;
+    }
   }
   @media (width <= 374px) {
     .header-inner {
       padding-inline: var(--space-md);
       gap: var(--space-sm);
     }
-    .logo-sub {
-      display: none;
-    }
     .script-toggle-slot {
       font-size: 0.625rem;
     }
-    .slot-badge {
+    .theme-toggle {
+      min-width: 44px;
+      padding-inline: var(--space-xs);
+    }
+    .theme-toggle__mark {
       display: none;
     }
   }

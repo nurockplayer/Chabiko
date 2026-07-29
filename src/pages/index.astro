@@ -165,11 +165,11 @@ const lessons = loadAllRenderableLessons();
     font-weight: 700;
   }
   .lesson-completion-status--done {
-    color: #2f666b;
+    color: var(--color-status-success);
     background: var(--c-success-bg);
   }
   .lesson-completion-status--current {
-    color: #765215;
+    color: var(--color-status-current);
     background: var(--c-accent-light);
   }
   .progress-footer {
@@ -306,7 +306,7 @@ const lessons = loadAllRenderableLessons();
   .lesson-list-item--done .lesson-marker-core::before {
     content: '✓';
     display: block;
-    color: #fff;
+    color: var(--color-on-status);
     font-size: 0.625rem;
     line-height: 1;
     font-weight: 800;

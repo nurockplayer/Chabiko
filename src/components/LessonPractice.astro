@@ -321,7 +321,7 @@ const json = JSON.stringify(questions);
   }
   :global(.practice-choice--incorrect .practice-choice__indicator::after) {
     content: '✕';
-    color: #fff;
+    color: var(--color-on-status);
     font-size: 0.625rem;
     font-weight: 800;
   }
@@ -363,7 +363,7 @@ const json = JSON.stringify(questions);
     align-items: center;
     justify-content: center;
     background: var(--c-success);
-    color: #fff;
+    color: var(--color-on-status);
     font-size: 0.75rem;
     font-weight: 800;
     flex: 0 0 auto;
@@ -390,7 +390,7 @@ const json = JSON.stringify(questions);
     margin: 0 0 var(--space-md);
     border-radius: 50%;
     background: var(--c-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 1.25rem;
   }
   :global(.practice-complete-text) {
