@@ -7,7 +7,7 @@ export interface Props {
 }
 
 const { title, description, robots } = Astro.props;
-const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
+const metaDescription = description ?? 'Chabiko | チャビコ - 日本人のための中国語学習';
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
 ---
@@ -29,22 +29,81 @@ const canonical = url.href;
     <meta property="og:locale" content="ja_JP" />
     <meta property="og:site_name" content="Chabiko" />
     <style>
-      :root {
-        --c-bg: #fafafa;
-        --c-surface: #ffffff;
-        --c-text: #1a1a1a;
-        --c-text-secondary: #666;
-        --c-accent: #2563eb;
-        --c-accent-hover: #1d4ed8;
-        --c-border: #e5e5e5;
-        --c-slot-bg: #f0f0f0;
-        --radius: 8px;
+      :root,
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --color-bg: #f4f1ec;
+        --color-surface: #ffffff;
+        --color-surface-raised: #fbfaf8;
+        --color-surface-muted: #eeeae3;
+        --color-text: #1a1a2e;
+        --color-text-secondary: #555570;
+        --color-text-muted: #6a6a7d;
+        --color-primary: #1a2744;
+        --color-primary-hover: #24385f;
+        --color-primary-soft: #e8ecf3;
+        --color-on-primary: #f8f7f3;
+        --color-link: #24385f;
+        --color-accent: #d48c2b;
+        --color-accent-soft: #f5e8d0;
+        --color-route-line: #d0ccc4;
+        --color-border: #dcd7cf;
+        --color-success: #356f74;
+        --color-success-bg: #e8f0f0;
+        --color-error: #aa4335;
+        --color-error-bg: #f5e8e4;
+        --color-focus: #b66f11;
+        --shadow-surface: 0 14px 36px rgb(26 39 68 / 0.07);
+
+        /* Backwards-compatible aliases for existing production surfaces. */
+        --c-bg: var(--color-bg);
+        --c-surface: var(--color-surface);
+        --c-text: var(--color-text);
+        --c-text-secondary: var(--color-text-secondary);
+        --c-accent: var(--color-primary);
+        --c-accent-hover: var(--color-primary-hover);
+        --c-border: var(--color-border);
+        --c-slot-bg: var(--color-surface-muted);
+        --radius: 6px;
         --space-xs: 0.25rem;
         --space-sm: 0.5rem;
         --space-md: 1rem;
         --space-lg: 1.5rem;
         --space-xl: 2rem;
-        --max-w: 48rem;
+        --space-2xl: 3rem;
+        --space-3xl: 4rem;
+        --max-w: 80rem;
+        --reading-w: 45rem;
+        --header-h: 3.75rem;
+        --font-zh: 'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif;
+        --font-ja: 'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+        --font-pinyin: 'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+      }
+      :root[data-theme='dark'],
+      body:has(#theme-toggle:checked) {
+        color-scheme: dark;
+        --color-bg: #111521;
+        --color-surface: #1a2030;
+        --color-surface-raised: #20283a;
+        --color-surface-muted: #252c3b;
+        --color-text: #f2f0ea;
+        --color-text-secondary: #c2c5cf;
+        --color-text-muted: #aab0bd;
+        --color-primary: #48618f;
+        --color-primary-hover: #5672a7;
+        --color-primary-soft: #28334a;
+        --color-on-primary: #ffffff;
+        --color-link: #cbd7f0;
+        --color-accent: #e1a345;
+        --color-accent-soft: #42341e;
+        --color-route-line: #4a5365;
+        --color-border: #3a4354;
+        --color-success: #83babc;
+        --color-success-bg: #1d3639;
+        --color-error: #e38b7d;
+        --color-error-bg: #3b2526;
+        --color-focus: #f0b55d;
+        --shadow-surface: 0 18px 42px rgb(0 0 0 / 0.28);
       }
       *,
       *::before,
@@ -54,21 +113,46 @@ const canonical = url.href;
         padding: 0;
       }
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-          'Noto Sans CJK JP', sans-serif;
-        background: var(--c-bg);
-        color: var(--c-text);
+        font-family: var(--font-ja);
+        background: var(--color-bg);
+        color: var(--color-text);
         line-height: 1.7;
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
+        overflow-wrap: anywhere;
+        -webkit-font-smoothing: antialiased;
       }
       a {
-        color: var(--c-accent);
+        color: var(--color-link);
         text-decoration: none;
       }
       a:hover {
         text-decoration: underline;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+      :where(a, button, input, select, textarea):focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 3px;
+      }
+      .skip-link {
+        position: fixed;
+        top: var(--space-sm);
+        left: var(--space-sm);
+        z-index: 100;
+        padding: var(--space-sm) var(--space-md);
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        transform: translateY(-150%);
+      }
+      .skip-link:focus {
+        transform: translateY(0);
       }
       .wrapper {
         flex: 1;
@@ -77,22 +161,41 @@ const canonical = url.href;
       }
       .main-content {
         flex: 1;
-        padding: var(--space-md);
+        padding: var(--space-lg);
         max-width: var(--max-w);
         width: 100%;
         margin: 0 auto;
       }
+      @media (width <= 374px) {
+        .main-content {
+          padding-inline: var(--space-md);
+        }
+      }
       @media (width >= 768px) {
         .main-content {
-          padding: var(--space-lg) var(--space-xl);
+          padding: var(--space-xl);
+        }
+      }
+      @media (width >= 1024px) {
+        .main-content {
+          padding-block: var(--space-2xl) var(--space-3xl);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
         }
       }
     </style>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
     <div class="wrapper">
       <slot name="header" />
-      <main class="main-content">
+      <main id="main-content" class="main-content">
         <slot />
       </main>
     </div>

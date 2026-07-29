@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import GoalPathSlot from '../../components/GoalPathSlot.astro';
 import Header from '../../components/Header.astro';
 import LessonPractice from '../../components/LessonPractice.astro';
 import { loadAllRenderableLessons } from '../../content/loadLessons';
@@ -17,8 +18,14 @@ export const getStaticPaths = (() => {
     params: { id: lesson.id },
     props: {
       lesson,
-      prevLesson: index > 0 ? ({ id: lessons[index - 1].id, titleJa: lessons[index - 1].titleJa } satisfies NavLesson) : null,
-      nextLesson: index < lessons.length - 1 ? ({ id: lessons[index + 1].id, titleJa: lessons[index + 1].titleJa } satisfies NavLesson) : null,
+      prevLesson:
+        index > 0
+          ? ({ id: lessons[index - 1].id, titleJa: lessons[index - 1].titleJa } satisfies NavLesson)
+          : null,
+      nextLesson:
+        index < lessons.length - 1
+          ? ({ id: lessons[index + 1].id, titleJa: lessons[index + 1].titleJa } satisfies NavLesson)
+          : null,
     },
   }));
 }) satisfies GetStaticPaths;
@@ -45,6 +52,12 @@ const soundFocus = (lesson?.soundFocus ?? []).filter(
 const examples = (lesson?.examples ?? []).filter(
   (example) => example && hasText(example.traditional) && hasText(example.japanese),
 );
+const coreExample =
+  examples.find((example) => example.traditional === lesson?.coreSentence) ?? examples[0] ?? null;
+const navigationLessons = loadAllRenderableLessons();
+const lessonIndex = lesson
+  ? navigationLessons.findIndex((entry) => entry.id === lesson.id)
+  : -1;
 ---
 
 <BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'}>
@@ -54,104 +67,160 @@ const examples = (lesson?.examples ?? []).filter(
 
   {
     lesson ? (
-      <article class="lesson-page">
-        <a class="back-link" href="/">← 台湾旅行パスに戻る</a>
-        <header class="lesson-intro">
-          <p class="lesson-label">台湾旅行の中国語</p>
-          <h1>{lesson.titleJa}</h1>
-          <p class="hook">{lesson.hookJa}</p>
-          <p id="lesson-completion-badge" class="completion-badge" aria-live="polite" data-lesson-id={lesson.id}></p>
-        </header>
+      <div class="lesson-layout">
+        <GoalPathSlot currentLessonId={lesson.id} />
 
-        <section aria-labelledby="can-do-heading">
-          <h2 id="can-do-heading">できるようになること</h2>
-          <p>{lesson.canDoJa}</p>
-        </section>
+        <article class="lesson-page">
+          <a class="back-link" href="/">← 台湾旅行パスに戻る</a>
 
-        <section aria-labelledby="core-heading">
-          <h2 id="core-heading">今日のコア表現</h2>
-          <p class="core-sentence" lang="zh-Hant">{lesson.coreSentence}</p>
-        </section>
+          <header class="lesson-intro">
+            <p class="lesson-label">台湾旅行の中国語</p>
+            <h1>{lesson.titleJa}</h1>
+            <p class="hook">{lesson.hookJa}</p>
+            <p
+              id="lesson-completion-badge"
+              class="completion-badge"
+              aria-live="polite"
+              data-lesson-id={lesson.id}
+            ></p>
+          </header>
 
-        {sections.map((section) => (
-          <section aria-label={section.headingJa}>
-            <h2>{section.headingJa}</h2>
-            <p>{section.contentJa}</p>
-          </section>
-        ))}
-
-        {chunks.length > 0 && (
-          <section aria-labelledby="chunks-heading">
-            <h2 id="chunks-heading">フレーズを分けてみよう</h2>
-            <dl class="detail-list">
-              {chunks.map((chunk) => (
-                <div>
-                  <dt lang="zh-Hant">{chunk.chunk}</dt>
-                  <dd>{chunk.meaning}</dd>
-                  {hasText(chunk.notesJa) && <dd class="note">{chunk.notesJa}</dd>}
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
-
-        {kanjiBridgeNotes.length > 0 && (
-          <section aria-labelledby="kanji-heading">
-            <h2 id="kanji-heading">漢字からつなげよう</h2>
-            {kanjiBridgeNotes.map((note) => (
-              <p><strong lang="zh-Hant">{note.kanji}</strong>（{note.jpReading}）：{note.noteJa}</p>
-            ))}
-          </section>
-        )}
-
-        {soundFocus.length > 0 && (
-          <section aria-labelledby="sound-heading">
-            <h2 id="sound-heading">音のポイント</h2>
-            {soundFocus.map((focus) => (
-              <p><strong>{focus.item}</strong>：{focus.noteJa}</p>
-            ))}
-          </section>
-        )}
-
-        {examples.length > 0 && (
-          <section aria-labelledby="examples-heading">
-            <h2 id="examples-heading">例文</h2>
-            <div class="example-list">
-              {examples.map((example) => (
-                <div>
-                  <p class="example-sentence" lang="zh-Hant">{example.traditional}</p>
-                  {hasText(example.pinyin) && <p class="pinyin" lang="zh-Latn">{example.pinyin}</p>}
-                  <p>{example.japanese}</p>
-                </div>
-              ))}
+          <section class="phrase-section" aria-labelledby="core-heading">
+            <h2 id="core-heading" class="section-label">今日のコア表現</h2>
+            <div class="phrase-card">
+              <p class="core-sentence" lang="zh-Hant">{lesson.coreSentence}</p>
+              {coreExample && hasText(coreExample.pinyin) && (
+                <p class="core-pinyin" lang="zh-Latn">{coreExample.pinyin}</p>
+              )}
+              {coreExample && <p class="core-meaning">{coreExample.japanese}</p>}
             </div>
           </section>
-        )}
 
-        <LessonPractice lesson={lesson} />
+          <section class="can-do-section" aria-labelledby="can-do-heading">
+            <h2 id="can-do-heading">できるようになること</h2>
+            <p>{lesson.canDoJa}</p>
+          </section>
 
-        <section class="travel-task" aria-labelledby="task-heading">
-          <h2 id="task-heading">旅先でやってみよう</h2>
-          <p>{lesson.travelTask}</p>
-        </section>
+          {sections.map((section, index) => {
+            const headingId = `lesson-section-${index + 1}`;
+            return (
+              <section class="content-section" aria-labelledby={headingId}>
+                <h2 id={headingId}>{section.headingJa}</h2>
+                <p>{section.contentJa}</p>
+              </section>
+            );
+          })}
 
-        <nav class="lesson-nav" aria-label="レッスンナビゲーション">
-          {prevLesson && (
-            <a class="nav-link nav-prev" href={`/lessons/${prevLesson.id}/`}>
-              ← {prevLesson.titleJa}
-            </a>
+          {chunks.length > 0 && (
+            <section class="content-section" aria-labelledby="chunks-heading">
+              <h2 id="chunks-heading">フレーズを分けてみよう</h2>
+              <dl class="detail-list">
+                {chunks.map((chunk) => (
+                  <div class="detail-item">
+                    <dt lang="zh-Hant">{chunk.chunk}</dt>
+                    <div>
+                      <dd class="detail-meaning">{chunk.meaning}</dd>
+                      {hasText(chunk.notesJa) && <dd class="detail-note">{chunk.notesJa}</dd>}
+                    </div>
+                  </div>
+                ))}
+              </dl>
+            </section>
           )}
-          {nextLesson ? (
-            <a class="nav-link nav-next" href={`/lessons/${nextLesson.id}/`}>
-              {nextLesson.titleJa} →
-            </a>
-          ) : (
-            <a class="nav-link nav-complete" href="/">
-              台湾旅行パスを完了 → 一覧に戻る
-            </a>
+
+          {(kanjiBridgeNotes.length > 0 || soundFocus.length > 0) && (
+            <div class="learning-notes">
+              {kanjiBridgeNotes.length > 0 && (
+                <section class="note-section" aria-labelledby="kanji-heading">
+                  <h2 id="kanji-heading">漢字からつなげよう</h2>
+                  {kanjiBridgeNotes.map((note) => (
+                    <p>
+                      <strong lang="zh-Hant">{note.kanji}</strong>
+                      <span>（{note.jpReading}）</span>
+                      {note.noteJa}
+                    </p>
+                  ))}
+                </section>
+              )}
+
+              {soundFocus.length > 0 && (
+                <section class="note-section" aria-labelledby="sound-heading">
+                  <h2 id="sound-heading">音のポイント</h2>
+                  {soundFocus.map((focus) => (
+                    <p><strong>{focus.item}</strong>：{focus.noteJa}</p>
+                  ))}
+                </section>
+              )}
+            </div>
           )}
-        </nav>
-      </article>
+
+          {examples.length > 0 && (
+            <section class="content-section" aria-labelledby="examples-heading">
+              <h2 id="examples-heading">例文</h2>
+              <div class="example-list">
+                {examples.map((example) => (
+                  <div class="example-item">
+                    <p class="example-sentence" lang="zh-Hant">{example.traditional}</p>
+                    {hasText(example.pinyin) && (
+                      <p class="pinyin" lang="zh-Latn">{example.pinyin}</p>
+                    )}
+                    <p class="example-meaning">{example.japanese}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <LessonPractice lesson={lesson} />
+
+          <section class="travel-task" aria-labelledby="task-heading">
+            <h2 id="task-heading">旅先でやってみよう</h2>
+            <p>{lesson.travelTask}</p>
+          </section>
+
+          <nav class="lesson-nav" aria-label="レッスンナビゲーション">
+            <div class="lesson-nav-side">
+              {prevLesson && (
+                <a
+                  class="lesson-nav-link lesson-nav-link--prev"
+                  href={`/lessons/${prevLesson.id}/`}
+                  aria-label={`前のレッスン: ${prevLesson.titleJa}`}
+                >
+                  <span aria-hidden="true">←</span>
+                  <span class="lesson-nav-mobile">前へ</span>
+                  <span class="lesson-nav-desktop">{prevLesson.titleJa}</span>
+                </a>
+              )}
+            </div>
+            <span class="lesson-nav-index" aria-label={`${lessonIndex + 1} / ${navigationLessons.length}`}>
+              {lessonIndex + 1} / {navigationLessons.length}
+            </span>
+            <div
+              class:list={[
+                'lesson-nav-side',
+                'lesson-nav-side--next',
+                { 'lesson-nav-side--complete': !nextLesson },
+              ]}
+            >
+              {nextLesson ? (
+                <a
+                  class="lesson-nav-link lesson-nav-link--next"
+                  href={`/lessons/${nextLesson.id}/`}
+                  aria-label={`次のレッスン: ${nextLesson.titleJa}`}
+                >
+                  <span class="lesson-nav-mobile">次へ</span>
+                  <span class="lesson-nav-desktop">{nextLesson.titleJa}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              ) : (
+                <a class="lesson-nav-link lesson-nav-link--next" href="/">
+                  <span>台湾旅行パスを完了 → 一覧に戻る</span>
+                </a>
+              )}
+            </div>
+          </nav>
+        </article>
+      </div>
     ) : (
       <article class="fallback-message">
         <h1>レッスンを読み込めませんでした</h1>
@@ -165,58 +234,342 @@ const examples = (lesson?.examples ?? []).filter(
 <script>
   import { ProgressStore } from '../../lib/progress';
 
-  (function () {
-  const badge = document.getElementById('lesson-completion-badge');
-  if (!badge) return;
-  const bid = badge.getAttribute('data-lesson-id') ?? '';
+  const completionBadge = document.getElementById('lesson-completion-badge');
+
   function refreshBadge() {
+    if (!completionBadge) return;
+    const lessonId = completionBadge.dataset.lessonId ?? '';
     const store = new ProgressStore();
-    if (store.isComplete(bid)) {
-      badge!.textContent = '✔ 完了済み';
-      badge!.className = 'completion-badge completion-badge--done';
-    } else {
-      badge!.textContent = '';
-      badge!.className = 'completion-badge';
+    const isComplete = store.isComplete(lessonId);
+    completionBadge.textContent = isComplete ? '✓ 完了済み' : '';
+    completionBadge.className = isComplete
+      ? 'completion-badge completion-badge--done'
+      : 'completion-badge';
+    const routeStation = document.querySelector<HTMLElement>(
+      `[data-route-lesson-id="${CSS.escape(lessonId)}"]`,
+    );
+    const routeStatus = routeStation?.querySelector<HTMLElement>('[data-route-status]');
+    routeStation?.classList.toggle('route-station--complete', isComplete);
+    if (routeStatus) {
+      routeStatus.textContent = isComplete ? '完了' : '進行中';
     }
   }
+
   refreshBadge();
   window.addEventListener('pageshow', refreshBadge);
-  })();
 </script>
 
 <style>
+  .lesson-layout {
+    display: grid;
+    gap: var(--space-xl);
+  }
   .lesson-page,
   .fallback-message {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-lg);
+    min-width: 0;
     overflow-wrap: anywhere;
   }
-  .back-link { display: inline-block; margin-bottom: var(--space-lg); font-weight: 600; }
-  .lesson-intro { border-bottom: 1px solid var(--c-border); margin-bottom: var(--space-lg); padding-bottom: var(--space-lg); }
-  .lesson-label { color: var(--c-accent); font-size: 0.875rem; font-weight: 700; margin-bottom: var(--space-xs); }
-  .completion-badge { margin-top: var(--space-sm); font-size: 0.85rem; }
-  .completion-badge--done { color: #166534; font-weight: 700; }
-  h1 { font-size: clamp(1.65rem, 7vw, 2.25rem); line-height: 1.3; }
-  h2 { font-size: 1.05rem; margin-bottom: var(--space-sm); }
-  section { margin-top: var(--space-xl); }
-  .hook, .pinyin, .note { color: var(--c-text-secondary); }
-  .hook { margin-top: var(--space-md); }
-  .core-sentence, .example-sentence { color: var(--c-accent); font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 700; line-height: 1.35; }
-  .detail-list, .example-list { display: grid; gap: var(--space-md); }
-  .detail-list > div, .example-list > div { border-left: 3px solid var(--c-border); padding-left: var(--space-md); }
-  dt { font-weight: 700; }
-  dd { margin: var(--space-xs) 0 0; }
-  .travel-task { background: #eff6ff; border-radius: var(--radius); padding: var(--space-md); }
-  .lesson-nav { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: stretch; gap: var(--space-sm); margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--c-border); }
-  .nav-link { display: flex; align-items: center; flex: 1 1 100%; padding: var(--space-sm) var(--space-md); border: 1px solid var(--c-border); border-radius: var(--radius); font-weight: 600; font-size: 0.9rem; text-decoration: none; color: var(--c-text); transition: background 0.15s; }
-  .nav-link:hover { background: var(--c-slot-bg); text-decoration: none; }
-  .nav-prev { justify-content: flex-start; }
-  .nav-next { justify-content: flex-end; }
-  .nav-complete { color: var(--c-accent); border-color: var(--c-accent); }
-  .fallback-message { text-align: center; }
-  .fallback-message p { color: var(--c-text-secondary); margin: var(--space-md) 0; }
-  @media (width >= 768px) { .lesson-page, .fallback-message { padding: var(--space-xl); } }
-  @media (width >= 640px) { .nav-link { flex: 1 1 auto; } }
+  .back-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-link);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+  .lesson-intro {
+    padding-top: var(--space-sm);
+  }
+  .lesson-label {
+    margin: 0 0 var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .lesson-intro h1 {
+    max-width: 18em;
+    color: var(--color-text);
+    font-size: clamp(1.5rem, 7vw, 2.15rem);
+    line-height: 1.3;
+  }
+  .hook {
+    max-width: 38rem;
+    margin-top: var(--space-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+  }
+  .completion-badge {
+    min-height: 1.5rem;
+    margin-top: var(--space-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .completion-badge--done {
+    color: var(--color-success);
+  }
+  .phrase-section,
+  .can-do-section,
+  .content-section,
+  .learning-notes,
+  .travel-task {
+    margin-top: var(--space-xl);
+  }
+  .section-label,
+  .content-section > h2,
+  .can-do-section h2,
+  .note-section h2,
+  .travel-task h2 {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 750;
+    letter-spacing: 0.045em;
+  }
+  .phrase-card {
+    padding: var(--space-xl) var(--space-lg);
+    background: var(--color-surface);
+    border-top: 4px solid var(--color-primary);
+    box-shadow: var(--shadow-surface);
+  }
+  .core-sentence {
+    margin: 0;
+    color: var(--color-text);
+    font-family: var(--font-zh);
+    font-size: 2.75rem;
+    font-weight: 750;
+    line-height: 1.2;
+    letter-spacing: 0.035em;
+    word-break: keep-all;
+  }
+  .core-pinyin {
+    margin-top: var(--space-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-pinyin);
+    font-size: 1rem;
+    letter-spacing: 0.045em;
+  }
+  .core-meaning {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    color: var(--color-text);
+    border-top: 1px solid var(--color-border);
+    font-size: 0.9375rem;
+  }
+  .can-do-section {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-accent-soft);
+    border-left: 4px solid var(--color-accent);
+  }
+  .can-do-section p,
+  .content-section > p {
+    color: var(--color-text);
+    font-size: 0.9375rem;
+  }
+  .detail-list {
+    background: var(--color-surface);
+    border-top: 4px solid var(--color-primary);
+  }
+  .detail-item {
+    display: grid;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+  }
+  .detail-item + .detail-item {
+    border-top: 1px solid var(--color-border);
+  }
+  .detail-item dt {
+    color: var(--color-text);
+    font-family: var(--font-zh);
+    font-size: 1.25rem;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+  }
+  .detail-item dd {
+    margin: 0;
+  }
+  .detail-meaning {
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 650;
+  }
+  .detail-note {
+    margin-top: var(--space-xs) !important;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+  .learning-notes {
+    display: grid;
+    gap: var(--space-md);
+  }
+  .note-section {
+    padding: var(--space-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+  }
+  .note-section p {
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+  }
+  .note-section p + p {
+    margin-top: var(--space-md);
+  }
+  .note-section strong {
+    margin-right: var(--space-xs);
+    color: var(--color-text);
+  }
+  .note-section span {
+    margin-right: var(--space-xs);
+    color: var(--color-text-muted);
+  }
+  .example-list {
+    display: grid;
+    gap: var(--space-sm);
+  }
+  .example-item {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface);
+    border-left: 4px solid var(--color-primary);
+  }
+  .example-sentence {
+    color: var(--color-text);
+    font-family: var(--font-zh);
+    font-size: 1.25rem;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+  }
+  .pinyin {
+    margin-top: 0.15rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    letter-spacing: 0.035em;
+  }
+  .example-meaning {
+    margin-top: var(--space-xs);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+  }
+  .travel-task {
+    padding: var(--space-lg);
+    background: var(--color-accent-soft);
+    border-left: 4px solid var(--color-accent);
+  }
+  .travel-task p {
+    color: var(--color-text);
+    font-size: 0.9375rem;
+  }
+  .lesson-nav {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-xs);
+    border-top: 1px solid var(--color-border);
+  }
+  .lesson-nav-side {
+    min-width: 0;
+  }
+  .lesson-nav-side--next {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .lesson-nav-side--complete {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+    text-align: center;
+  }
+  .lesson-nav-link {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-text);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .lesson-nav-link:hover {
+    color: var(--color-link);
+    text-decoration: none;
+  }
+  .lesson-nav-index {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+  }
+  .lesson-nav-desktop {
+    display: none;
+  }
+  .fallback-message {
+    max-width: var(--reading-w);
+    margin: 0 auto;
+    padding: var(--space-xl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .fallback-message h1 {
+    font-size: 1.25rem;
+  }
+  .fallback-message p {
+    margin: var(--space-md) 0;
+    color: var(--color-text-secondary);
+  }
+  @media (width <= 374px) {
+    .core-sentence {
+      font-size: 2.25rem;
+    }
+    .phrase-card {
+      padding: var(--space-lg) var(--space-md);
+    }
+    .can-do-section,
+    .detail-item,
+    .note-section,
+    .example-item,
+    .travel-task {
+      padding-inline: var(--space-md);
+    }
+  }
+  @media (375px <= width <= 389px) {
+    .core-sentence {
+      font-size: 2.5rem;
+    }
+  }
+  @media (width >= 560px) {
+    .detail-item {
+      grid-template-columns: minmax(5rem, 0.3fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+    }
+    .learning-notes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (width >= 640px) {
+    .lesson-nav-mobile {
+      display: none;
+    }
+    .lesson-nav-desktop {
+      display: inline;
+    }
+  }
+  @media (width >= 1024px) {
+    .lesson-layout {
+      grid-template-columns: 18.75rem minmax(0, var(--reading-w));
+      gap: var(--space-2xl);
+      align-items: start;
+    }
+    .lesson-page {
+      padding-right: var(--space-lg);
+    }
+    .core-sentence {
+      font-size: 3rem;
+    }
+  }
 </style>

@@ -1,91 +1,270 @@
 ---
 import { loadAllRenderableLessons } from '../content/loadLessons';
 
+export interface Props {
+  currentLessonId?: string;
+}
+
+const { currentLessonId } = Astro.props;
 const lessons = loadAllRenderableLessons();
-const firstLesson = lessons[0];
+const currentLessonIndex = lessons.findIndex((lesson) => lesson.id === currentLessonId);
+const currentLesson = currentLessonIndex >= 0 ? lessons[currentLessonIndex] : null;
+const firstLesson = lessons[0] ?? null;
+const routeLesson = currentLesson ?? firstLesson;
+const routeLabelId = currentLesson ? `route-label-${currentLesson.id}` : 'route-label-home';
+const routeExample = routeLesson?.examples?.[0] ?? null;
 ---
 
-<!--
-  Goal Path Slot (#17 placeholder)
-
-  Shows the active Taiwan travel path with a link to the lesson index on the home page.
-  Full goal-path behavior remains implemented by #17; the HSK entry stays unavailable.
--->
-<section class="goal-path-slot" aria-label="学習パス">
-  <h2 class="slot-heading">学習パス</h2>
-  <div class="path-cards">
-    {firstLesson ? (
-      <a class="path-card path-card--active" href="/#taiwan-travel-path">
-        <span class="path-icon">&#x1F3C3;</span>
-        <span class="path-label">台湾旅行で使える中国語</span>
-        <span class="path-badge">{lessons.length}レッスン</span>
-      </a>
-    ) : (
-      <div class="path-card path-card--disabled">
-        <span class="path-icon">&#x1F3C3;</span>
-        <span class="path-label">台湾旅行で使える中国語</span>
-        <span class="path-badge">準備中</span>
-      </div>
-    )}
-    <div class="path-card path-card--disabled">
-      <span class="path-icon">&#x1F4DA;</span>
-      <span class="path-label">HSK対策</span>
-      <span class="path-badge">準備中</span>
-    </div>
+<aside
+  class:list={['route-panel', { 'route-panel--lesson': currentLesson }]}
+  aria-labelledby={routeLabelId}
+  data-learning-route
+>
+  <div class="route-panel-heading">
+    <p class="route-panel-kicker">学習パス</p>
+    <h2 id={routeLabelId} class="route-panel-title">台湾旅行で使える中国語</h2>
   </div>
-</section>
+
+  {
+    routeLesson ? (
+      <div class="route-timeline">
+        <div
+          class="route-station route-station--active"
+          aria-current={currentLesson ? 'step' : undefined}
+          data-route-lesson-id={routeLesson.id}
+        >
+          <span class="route-station-dot" aria-hidden="true"></span>
+          <div class="route-station-body">
+            <span class="route-station-number">
+              {currentLesson ? `レッスン ${currentLessonIndex + 1}` : `${lessons.length}レッスン`}
+            </span>
+            <a
+              class="route-station-title"
+              href={currentLesson ? `/lessons/${routeLesson.id}/` : '/#taiwan-travel-path'}
+            >
+              {currentLesson ? routeLesson.titleJa : '旅で使う3つの場面'}
+            </a>
+            <span class="route-station-can-do">
+              {currentLesson ? routeLesson.canDoJa : '注文・値段・場所を順に練習'}
+            </span>
+            {routeExample && (
+              <span class="route-station-example" lang="zh-Hant">
+                {routeExample.traditional}
+              </span>
+            )}
+            <span class="route-station-status" data-route-status>
+              {currentLesson ? '進行中' : '学習中'}
+            </span>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <p class="route-empty">レッスンを準備しています。</p>
+    )
+  }
+
+  <div class="pending-path" aria-label="HSK対策（準備中）">
+    <span class="pending-path-dot" aria-hidden="true"></span>
+    <span class="pending-path-label">HSK対策</span>
+    <span class="pending-path-status">準備中</span>
+  </div>
+</aside>
 
 <style>
-  .goal-path-slot {
-    background: var(--c-surface);
-    border: 1px dashed var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
+  .route-panel {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    padding: var(--space-lg);
+    overflow-wrap: anywhere;
   }
-  .slot-heading {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--c-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-sm);
+  .route-panel-heading {
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
   }
-  .path-cards {
+  .route-panel-kicker {
+    margin: 0 0 2px;
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .route-panel-title {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .route-timeline {
+    position: relative;
+    padding: var(--space-lg) 0 0 2rem;
+  }
+  .route-timeline::before {
+    content: '';
+    position: absolute;
+    top: 2rem;
+    bottom: 0;
+    left: 0.9rem;
+    width: 2px;
+    background: var(--color-route-line);
+  }
+  .route-station {
+    position: relative;
+  }
+  .route-station-dot {
+    position: absolute;
+    top: 0.2rem;
+    left: -1.65rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
+  }
+  .route-station-dot::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .route-station-body {
     display: flex;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .path-card {
+  .route-station-number {
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .route-station-title {
+    min-height: 44px;
+    margin-top: 0.15rem;
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .route-station-can-do {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.55;
+  }
+  .route-station-example {
+    margin-top: var(--space-xs);
+    color: var(--color-text);
+    font-family: var(--font-zh);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .route-station-status,
+  .pending-path-status {
+    margin-top: var(--space-sm);
+    padding: 0.15rem 0.5rem;
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+    border-radius: 3px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  .route-station--complete .route-station-dot {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    box-shadow: 0 0 0 4px var(--color-success-bg);
+  }
+  .route-station--complete .route-station-dot::after {
+    background: var(--color-surface);
+  }
+  .route-station--complete .route-station-status {
+    background: var(--color-success-bg);
+  }
+  .pending-path {
+    min-height: 52px;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    font-size: 0.85rem;
-    text-decoration: none;
+    border-top: 1px solid var(--color-border);
   }
-  .path-card--active {
-    color: var(--c-text);
-    border-color: var(--c-accent);
+  .pending-path-dot {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: 0 0 auto;
+    border: 2px solid var(--color-route-line);
+    border-radius: 50%;
+    background: var(--color-surface);
   }
-  .path-card--active:hover {
-    background: var(--c-slot-bg);
-    text-decoration: none;
+  .pending-path-label {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 700;
   }
-  .path-card--disabled {
-    opacity: 0.5;
-    pointer-events: none;
+  .pending-path-status {
+    margin: 0 0 0 auto;
+    background: var(--color-primary-soft);
+    color: var(--color-text-secondary);
   }
-  .path-icon {
-    font-size: 1.1rem;
+  .route-empty {
+    margin-top: var(--space-md);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
   }
-  .path-badge {
-    background: var(--c-slot-bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    color: var(--c-text-secondary);
+  @media (width <= 374px) {
+    .route-panel {
+      padding: var(--space-md);
+    }
+  }
+  @media (width < 1024px) {
+    .route-panel--lesson {
+      padding: var(--space-md);
+    }
+    .route-panel--lesson .route-panel-heading {
+      padding-bottom: var(--space-sm);
+    }
+    .route-panel--lesson .route-panel-kicker {
+      display: none;
+    }
+    .route-panel--lesson .route-panel-title {
+      font-size: 0.8125rem;
+    }
+    .route-panel--lesson .route-timeline {
+      padding-top: var(--space-md);
+    }
+    .route-panel--lesson .route-timeline::before {
+      top: 1.5rem;
+    }
+    .route-panel--lesson .route-station-title {
+      min-height: 44px;
+      font-size: 0.875rem;
+    }
+    .route-panel--lesson .route-station-can-do,
+    .route-panel--lesson .route-station-example {
+      display: none;
+    }
+    .route-panel--lesson .route-station-status {
+      margin-top: var(--space-xs);
+    }
+    .route-panel--lesson .pending-path {
+      min-height: 44px;
+      margin-top: var(--space-sm);
+      padding-top: var(--space-sm);
+    }
+  }
+  @media (width >= 1024px) {
+    .route-panel {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-lg));
+      align-self: start;
+      border: 0;
+      border-right: 1px solid var(--color-border);
+      background: transparent;
+      padding: var(--space-sm) var(--space-lg) var(--space-xl) 0;
+    }
   }
 </style>

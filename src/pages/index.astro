@@ -12,46 +12,75 @@ const lessons = loadAllRenderableLessons();
     <Header />
   </Fragment>
 
-  {lessons.length > 0 ? (
-    <>
-      <section class="path-section" id="taiwan-travel-path" aria-label="台湾旅行パス">
-        <h1 class="path-heading">台湾旅行で使える中国語</h1>
-        <p class="path-description">全{lessons.length}レッスン。指差し・値段・場所の順に覚えよう。</p>
-        <ol class="lesson-list">
-          {lessons.map((lesson, index) => {
-            const example = lesson.examples?.[0] ?? null;
-            return (
-              <li class="lesson-list-item">
-                <a class="lesson-list-link" href={`/lessons/${lesson.id}/`}>
-                  <span class="lesson-number">{index + 1}</span>
-                  <span class="lesson-info">
-                    <span class="lesson-title">{lesson.titleJa}</span>
-                    <span class="lesson-can-do">{lesson.canDoJa}</span>
-                    <span class="lesson-completion-status" data-lesson-id={lesson.id} data-completable={hasUsableLessonPractice(lesson) ? 'true' : 'false'}></span>
-                    {example && (
-                      <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
-                    )}
-                  </span>
-                  <span class="lesson-arrow">→</span>
-                </a>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-      <div class="progress-footer">
-        <span id="progress-summary" class="progress-summary" aria-live="polite"></span>
-        <button id="reset-progress-btn" class="reset-btn">進捗をリセット</button>
-      </div>
-    </>
-  ) : (
-    <article class="fallback-message">
-      <h1>レッスンを読み込めませんでした</h1>
-      <p>現在レッスンコンテンツが利用できません。しばらく経ってから再度アクセスしてください。</p>
-    </article>
-  )}
+  <div class="home-layout">
+    <section class="home-intro" aria-labelledby="home-heading">
+      <h1 id="home-heading">台湾旅行で使える中国語</h1>
+      <p class="home-description">
+        全{lessons.length}レッスン。指差し・値段・場所の順に覚えよう。
+      </p>
+      {
+        lessons.length > 0 && (
+          <div class="progress-panel" aria-label="学習進捗">
+            <div>
+              <span id="progress-summary" class="progress-summary" aria-live="polite">
+                0 / {lessons.length} レッスン完了
+              </span>
+            </div>
+            <button id="reset-progress-btn" class="reset-btn" type="button">進捗をリセット</button>
+          </div>
+        )
+      }
+    </section>
 
-  <GoalPathSlot />
+    <GoalPathSlot />
+
+    {
+      lessons.length > 0 ? (
+        <section class="path-section" id="taiwan-travel-path" aria-labelledby="path-heading">
+          <div class="path-section-heading">
+            <h2 id="path-heading">レッスン</h2>
+          </div>
+          <ol class="lesson-list">
+            {lessons.map((lesson, index) => {
+              const example = lesson.examples?.[0] ?? null;
+              return (
+                <li class="lesson-list-item">
+                  <a
+                    class:list={['lesson-list-link', { 'lesson-list-link--current': index === 0 }]}
+                    href={`/lessons/${lesson.id}/`}
+                    aria-current={index === 0 ? 'step' : undefined}
+                  >
+                    <span class="lesson-marker" aria-hidden="true"></span>
+                    <span class="lesson-number">レッスン {index + 1}</span>
+                    <span class="lesson-info">
+                      <span class="lesson-title">{lesson.titleJa}</span>
+                      <span class="lesson-can-do">{lesson.canDoJa}</span>
+                      {example && (
+                        <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
+                      )}
+                      <span
+                        class="lesson-completion-status"
+                        data-lesson-id={lesson.id}
+                        data-completable={hasUsableLessonPractice(lesson) ? 'true' : 'false'}
+                      >
+                        {index === 0 ? '次はこちら' : '未完了'}
+                      </span>
+                    </span>
+                    <span class="lesson-arrow" aria-hidden="true">→</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ) : (
+        <article class="fallback-message">
+          <h2>レッスンを読み込めませんでした</h2>
+          <p>現在レッスンコンテンツが利用できません。しばらく経ってから再度アクセスしてください。</p>
+        </article>
+      )
+    }
+  </div>
 </BaseLayout>
 
 <script>
@@ -61,18 +90,37 @@ const lessons = loadAllRenderableLessons();
   let store = new ProgressStore();
 
   function updateCompletionUI() {
-    const statusElements = document.querySelectorAll('.lesson-completion-status');
-    const entries: { id: string; completable: boolean }[] = [];
-    statusElements.forEach((el) => {
-      const id = el.getAttribute('data-lesson-id') ?? '';
-      if (!id) return;
-      const completable = el.getAttribute('data-completable') === 'true';
-      const done = store.isComplete(id);
-      el.textContent = done ? '✔ 完了' : '';
-      el.className = done
+    const statusElements = Array.from(
+      document.querySelectorAll<HTMLElement>('.lesson-completion-status'),
+    );
+    const entries = statusElements
+      .map((element) => ({
+        id: element.dataset.lessonId ?? '',
+        completable: element.dataset.completable === 'true',
+      }))
+      .filter((entry) => entry.id.length > 0);
+    const currentLessonId = entries.find(
+      (entry) => entry.completable && !store.isComplete(entry.id),
+    )?.id;
+
+    statusElements.forEach((element) => {
+      const lessonId = element.dataset.lessonId ?? '';
+      if (!lessonId) return;
+      const link = element.closest<HTMLAnchorElement>('.lesson-list-link');
+      const isComplete = store.isComplete(lessonId);
+      const isCurrent = !isComplete && lessonId === currentLessonId;
+
+      element.textContent = isComplete ? '完了' : isCurrent ? '次はこちら' : '未完了';
+      element.className = isComplete
         ? 'lesson-completion-status lesson-completion-status--done'
         : 'lesson-completion-status';
-      entries.push({ id, completable });
+      link?.classList.toggle('lesson-list-link--done', isComplete);
+      link?.classList.toggle('lesson-list-link--current', isCurrent);
+      if (isCurrent) {
+        link?.setAttribute('aria-current', 'step');
+      } else {
+        link?.removeAttribute('aria-current');
+      }
     });
 
     const snapshot = buildProgressSnapshot(store, entries);
@@ -88,11 +136,7 @@ const lessons = loadAllRenderableLessons();
   }
 
   updateCompletionUI();
-
-  // Refresh on pageshow (browser back/forward navigation) — re-read localStorage
   window.addEventListener('pageshow', refreshUI);
-
-  // Refresh when another tab writes to the Chabiko progress key
   window.addEventListener('storage', (event) => {
     handleProgressStorageEvent(event, refreshUI);
   });
@@ -109,132 +153,270 @@ const lessons = loadAllRenderableLessons();
 </script>
 
 <style>
-  .lesson-completion-status {
-    font-size: 0.75rem;
-    margin-top: 1px;
-  }
-  .lesson-completion-status--done {
-    color: #166534;
-    font-weight: 700;
-  }
-  .progress-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: var(--space-md);
-  }
-  .progress-summary {
-    font-size: 0.8rem;
-    color: var(--c-text-secondary);
-  }
-  .reset-btn {
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: transparent;
-    color: var(--c-text-secondary);
-    cursor: pointer;
-  }
-  .reset-btn:hover {
-    border-color: #991b1b;
-    color: #991b1b;
-  }
-  .fallback-message {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-xl);
-    text-align: center;
-  }
-  .fallback-message h1 {
-    font-size: 1.25rem;
-    margin-bottom: var(--space-sm);
-  }
-  .fallback-message p {
-    color: var(--c-text-secondary);
-  }
-  .path-section {
-    margin-bottom: var(--space-lg);
-  }
-  h1.path-heading {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: var(--space-xs);
-  }
-  .path-description {
-    font-size: 0.85rem;
-    color: var(--c-text-secondary);
-    margin-bottom: var(--space-md);
-  }
-  .lesson-list {
-    list-style: none;
+  .home-layout {
     display: grid;
-    gap: var(--space-sm);
+    gap: var(--space-xl);
   }
-  .lesson-list-item {
-    margin: 0;
+  .home-intro {
+    min-width: 0;
   }
-  .lesson-list-link {
+  .home-intro h1 {
+    max-width: 15em;
+    color: var(--color-text);
+    font-size: clamp(1.65rem, 7vw, 2.25rem);
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+  }
+  .home-description {
+    max-width: 40rem;
+    margin-top: var(--space-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+  }
+  .progress-panel {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-md);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-md);
-    text-decoration: none;
-    color: var(--c-text);
-    transition: background 0.15s, border-color 0.15s;
+    border-top: 1px solid var(--color-border);
   }
-  .lesson-list-link:hover {
-    background: var(--c-slot-bg);
-    border-color: var(--c-accent);
-    text-decoration: none;
-  }
-  .lesson-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    background: var(--c-accent);
-    color: #fff;
-    border-radius: 50%;
-    font-size: 0.85rem;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .lesson-info {
+  .progress-panel > div {
     display: flex;
     flex-direction: column;
-    gap: 2px;
     min-width: 0;
-    flex: 1;
+  }
+  .progress-summary {
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .reset-btn {
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+  .reset-btn:hover {
+    border-color: var(--color-error);
+    color: var(--color-error);
+  }
+  .reset-btn:active {
+    transform: translateY(1px);
+  }
+  .path-section {
+    min-width: 0;
+  }
+  .path-section-heading {
+    margin-bottom: var(--space-lg);
+  }
+  .path-section-heading h2 {
+    color: var(--color-text);
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+  .lesson-list {
+    position: relative;
+    display: grid;
+    gap: var(--space-sm);
+    list-style: none;
+  }
+  .lesson-list::before {
+    content: '';
+    position: absolute;
+    top: 1.55rem;
+    bottom: 1.55rem;
+    left: 0.5rem;
+    width: 2px;
+    background: var(--color-route-line);
+  }
+  .lesson-list-item {
+    min-width: 0;
+  }
+  .lesson-list-link {
+    position: relative;
+    min-height: 7.25rem;
+    padding: var(--space-md) var(--space-lg) var(--space-md) 2.25rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--space-md);
+    color: var(--color-text);
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+  .lesson-list-link:hover {
+    background: var(--color-surface-raised);
+    border-color: var(--color-border);
+    text-decoration: none;
+  }
+  .lesson-list-link:active {
+    transform: translateY(1px);
+  }
+  .lesson-list-link--current {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-surface);
+  }
+  .lesson-marker {
+    position: absolute;
+    top: 1.45rem;
+    left: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--color-route-line);
+    border-radius: 50%;
+    background: var(--color-surface);
+  }
+  .lesson-list-link--current .lesson-marker {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
+  }
+  .lesson-list-link--current .lesson-marker::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .lesson-list-link--done .lesson-marker {
+    border-color: var(--color-success);
+    background: var(--color-success);
+  }
+  .lesson-list-link--done .lesson-marker::after {
+    content: '✓';
+    position: absolute;
+    inset: -3px;
+    display: grid;
+    place-items: center;
+    color: var(--color-surface);
+    font-size: 0.625rem;
+    font-weight: 800;
+  }
+  .lesson-number {
+    grid-column: 1 / -1;
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .lesson-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .lesson-title {
-    font-weight: 700;
-    font-size: 0.95rem;
+    margin-top: 0.1rem;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 750;
   }
   .lesson-can-do {
-    font-size: 0.8rem;
-    color: var(--c-text-secondary);
+    margin-top: 0.15rem;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.55;
   }
   .lesson-example {
-    font-size: 0.9rem;
-    color: var(--c-accent);
-    font-weight: 600;
-    margin-top: 2px;
-    overflow-wrap: anywhere;
+    margin-top: var(--space-sm);
+    color: var(--color-text);
+    font-family: var(--font-zh);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+  }
+  .lesson-completion-status {
+    margin-top: var(--space-sm);
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    background: var(--color-primary-soft);
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  .lesson-list-link--current .lesson-completion-status {
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+  }
+  .lesson-completion-status--done {
+    background: var(--color-success-bg);
+    color: var(--color-text);
   }
   .lesson-arrow {
-    font-size: 1.1rem;
-    color: var(--c-text-secondary);
-    flex-shrink: 0;
+    align-self: center;
+    color: var(--color-text-muted);
+    font-size: 1.125rem;
   }
-  @media (width >= 768px) {
+  .fallback-message {
+    padding: var(--space-xl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .fallback-message h2 {
+    font-size: 1.25rem;
+  }
+  .fallback-message p {
+    margin-top: var(--space-sm);
+    color: var(--color-text-secondary);
+  }
+  @media (width <= 374px) {
+    .home-layout {
+      gap: var(--space-lg);
+    }
+    .progress-panel {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .reset-btn {
+      width: 100%;
+    }
     .lesson-list-link {
-      padding: var(--space-lg);
+      padding-right: var(--space-md);
+      padding-left: 2rem;
+    }
+  }
+  @media (width >= 1024px) {
+    .home-layout {
+      grid-template-columns: 18.75rem minmax(0, 1fr);
+      grid-template-areas:
+        'route intro'
+        'route path';
+      column-gap: var(--space-2xl);
+      row-gap: var(--space-xl);
+      align-items: start;
+    }
+    .home-intro {
+      grid-area: intro;
+      max-width: var(--reading-w);
+    }
+    :global(.home-layout > .route-panel) {
+      grid-area: route;
+    }
+    .path-section,
+    .fallback-message {
+      grid-area: path;
+      max-width: var(--reading-w);
+    }
+    .lesson-list-link {
+      padding: var(--space-lg) var(--space-xl) var(--space-lg) 2.5rem;
+    }
+    .lesson-marker {
+      top: 1.95rem;
+    }
+    .lesson-list::before {
+      top: 2.05rem;
+      bottom: 2.05rem;
     }
   }
 </style>

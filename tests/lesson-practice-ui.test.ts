@@ -56,4 +56,43 @@ describe('lesson practice answer visibility', () => {
     expect(answerHandler).toContain('正解：');
     expect(answerHandler).toContain('result.feedback.correctAnswer');
   });
+
+  it('presents selected, correct, and incorrect states without relying on colour alone', () => {
+    expect(practiceComponentSource).toContain('practice-choice-indicator');
+    expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--selected')");
+    expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--correct')");
+    expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--incorrect')");
+    expect(practiceComponentSource).toContain('role="status" aria-live="polite"');
+    expect(practiceComponentSource).toContain('feedback-icon');
+  });
+
+  it('preserves the production feedback and retry timings', () => {
+    expect(practiceComponentSource).toContain(
+      'timer.schedule(() => renderCompleted(true), 1200)',
+    );
+    expect(practiceComponentSource).toContain(
+      'timer.schedule(() => render(true), 1200)',
+    );
+    expect(practiceComponentSource).toContain(
+      'timer.schedule(() => render(true), 2000)',
+    );
+  });
+
+  it('keeps the route presentation in sync when local progress is reset', () => {
+    expect(practiceComponentSource).toContain(
+      "routeStation?.classList.remove('route-station--complete')",
+    );
+    expect(practiceComponentSource).toContain(
+      "if (routeStatus) routeStatus.textContent = '進行中'",
+    );
+  });
+
+  it('keeps lesson sections and navigation explicitly labelled', () => {
+    expect(lessonPageSource).toContain('aria-labelledby="core-heading"');
+    expect(lessonPageSource).toContain('aria-labelledby="chunks-heading"');
+    expect(lessonPageSource).toContain('aria-labelledby="examples-heading"');
+    expect(lessonPageSource).toContain(
+      '<nav class="lesson-nav" aria-label="レッスンナビゲーション">',
+    );
+  });
 });

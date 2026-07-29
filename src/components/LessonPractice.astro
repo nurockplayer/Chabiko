@@ -16,8 +16,8 @@ const json = JSON.stringify(questions);
     <section class="lesson-practice" aria-labelledby="practice-heading" data-questions={json}>
       <h2 id="practice-heading">練習</h2>
       <p class="practice-intro">各質問に答えて、レッスンを完了しましょう。</p>
-      <div id="practice-root" role="region" aria-live="polite">
-        <p class="loading-placeholder">読み込み中…</p>
+      <div id="practice-root" role="region" aria-label="レッスン練習">
+        <p class="loading-placeholder" role="status">読み込み中…</p>
       </div>
     </section>
   )
@@ -53,29 +53,57 @@ const json = JSON.stringify(questions);
     function syncBadge() {
       const badge = document.getElementById('lesson-completion-badge');
       if (badge) {
-        badge.textContent = '✔ 完了済み';
+        badge.textContent = '✓ 完了済み';
         badge.className = 'completion-badge completion-badge--done';
       }
+      const routeStation = document.querySelector<HTMLElement>(
+        `[data-route-lesson-id="${CSS.escape(session.lessonId)}"]`,
+      );
+      routeStation?.classList.add('route-station--complete');
+      const routeStatus = routeStation?.querySelector<HTMLElement>('[data-route-status]');
+      if (routeStatus) routeStatus.textContent = '完了';
     }
 
-    function renderCompleted() {
+    function clearCompletionPresentation() {
+      const badge = document.getElementById('lesson-completion-badge');
+      if (badge) {
+        badge.textContent = '';
+        badge.className = 'completion-badge';
+      }
+      const routeStation = document.querySelector<HTMLElement>(
+        `[data-route-lesson-id="${CSS.escape(session.lessonId)}"]`,
+      );
+      routeStation?.classList.remove('route-station--complete');
+      const routeStatus = routeStation?.querySelector<HTMLElement>('[data-route-status]');
+      if (routeStatus) routeStatus.textContent = '進行中';
+    }
+
+    function renderCompleted(moveFocus = false) {
       // markComplete already called in handleAnswer for the last correct answer
       syncBadge();
       root.innerHTML =
-        '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+        '<div class="practice-complete" role="status" aria-live="polite" tabindex="-1">' +
+        '<span class="practice-complete-icon" aria-hidden="true">&#x2713;</span>' +
+        '<div><p class="practice-complete-title">練習完了！</p>' +
+        '<p class="practice-complete-text">レッスンをクリアしました。</p></div></div>';
+      if (moveFocus) {
+        root.querySelector<HTMLElement>('.practice-complete')?.focus();
+      }
     }
 
-    function render() {
+    function render(moveFocus = false) {
       const currentQ = getCurrentQuestion(session);
       if (!currentQ) {
-        renderCompleted();
+        renderCompleted(moveFocus);
         return;
       }
 
       const isComplete = store.isComplete(session.lessonId);
       if (isComplete && getCurrentIndex(session) === 0) {
         root.innerHTML =
-          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
+          '<div class="practice-complete practice-complete--saved" role="status">' +
+          '<span class="practice-complete-icon" aria-hidden="true">&#x2713;</span>' +
+          '<p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
         return;
       }
 
@@ -87,10 +115,10 @@ const json = JSON.stringify(questions);
         ' / ' +
         questions.length +
         '</p>' +
-        '<p class="practice-prompt">' +
+        '<p class="practice-prompt" tabindex="-1">' +
         escapeHtml(currentQ.promptJa) +
         '</p>' +
-        '<div class="practice-choices" role="group">' +
+        '<div class="practice-choices" role="group" aria-label="回答を選択">' +
         currentQ.choices
           .map(
             (choice, i) =>
@@ -99,17 +127,22 @@ const json = JSON.stringify(questions);
               '" data-index="' +
               i +
               '">' +
+              '<span class="practice-choice-indicator" aria-hidden="true"></span>' +
+              '<span class="practice-choice-label">' +
               escapeHtml(choice) +
-              '</button>',
+              '</span></button>',
           )
           .join('') +
         '</div>' +
-        '<div class="practice-feedback" aria-live="assertive"></div>' +
+        '<div class="practice-feedback" role="status" aria-live="polite"></div>' +
         '</div>';
 
       root.querySelectorAll('.practice-choice').forEach((btn) => {
         btn.addEventListener('click', () => handleAnswer(btn as HTMLButtonElement));
       });
+      if (moveFocus) {
+        root.querySelector<HTMLElement>('.practice-prompt')?.focus();
+      }
     }
 
     function handleAnswer(btn: HTMLButtonElement) {
@@ -121,27 +154,38 @@ const json = JSON.stringify(questions);
 
       const result = answer(session, selected);
       session = result.session;
+      btn.classList.add('practice-choice--selected');
 
       if (result.feedback.kind === 'correct') {
+        btn.classList.add('practice-choice--correct');
         feedback.innerHTML =
-          '<p class="feedback-correct">正解！</p>';
+          '<span class="feedback-icon" aria-hidden="true">&#x2713;</span>' +
+          '<p class="feedback-title">正解！</p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
         if (result.session.status === 'completed') {
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
-          timer.schedule(() => renderCompleted(), 1200);
+          timer.schedule(() => renderCompleted(true), 1200);
         } else {
-          timer.schedule(() => render(), 1200);
+          timer.schedule(() => render(true), 1200);
         }
       } else {
+        btn.classList.add('practice-choice--incorrect');
+        choices.forEach((choice) => {
+          const choiceButton = choice as HTMLButtonElement;
+          if (choiceButton.getAttribute('data-value') === result.feedback.correctAnswer) {
+            choiceButton.classList.add('practice-choice--correct-answer');
+          }
+        });
         feedback.innerHTML =
-          '<p class="feedback-incorrect">不正解。</p><p class="feedback-answer">正解：' +
-          escapeHtml(result.feedback.correctAnswer ?? '') +
-          '</p>';
-        feedback.className = 'practice-feedback feedback-visible';
+          '<span class="feedback-icon feedback-icon--incorrect" aria-hidden="true">&#x2715;</span>' +
+          '<div><p class="feedback-title">不正解。</p><p class="feedback-detail">正解：' +
+          '<strong>' + escapeHtml(result.feedback.correctAnswer ?? '') + '</strong>' +
+          '</p></div>';
+        feedback.className = 'practice-feedback practice-feedback--incorrect feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        timer.schedule(() => render(), 2000);
+        timer.schedule(() => render(true), 2000);
       }
     }
 
@@ -166,21 +210,12 @@ const json = JSON.stringify(questions);
       session = outcome.session;
       if (outcome.kind === 'completed') {
         syncBadge();
-        root.innerHTML =
-          '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+        renderCompleted();
       } else if (outcome.kind === 'reset') {
-        const badge = document.getElementById('lesson-completion-badge');
-        if (badge) {
-          badge.textContent = '';
-          badge.className = 'completion-badge';
-        }
+        clearCompletionPresentation();
         render();
       } else {
-        const badge = document.getElementById('lesson-completion-badge');
-        if (badge) {
-          badge.textContent = '';
-          badge.className = 'completion-badge';
-        }
+        clearCompletionPresentation();
         render();
       }
     });
@@ -196,21 +231,12 @@ const json = JSON.stringify(questions);
         session = outcome.session;
         if (outcome.kind === 'completed') {
           syncBadge();
-          root.innerHTML =
-            '<div class="practice-complete" role="status"><p class="practice-complete-icon">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+          renderCompleted();
         } else if (outcome.kind === 'reset') {
-          const badge = document.getElementById('lesson-completion-badge');
-          if (badge) {
-            badge.textContent = '';
-            badge.className = 'completion-badge';
-          }
+          clearCompletionPresentation();
           render();
         } else {
-          const badge = document.getElementById('lesson-completion-badge');
-          if (badge) {
-            badge.textContent = '';
-            badge.className = 'completion-badge';
-          }
+          clearCompletionPresentation();
           render();
         }
       });
@@ -221,35 +247,37 @@ const json = JSON.stringify(questions);
 
 <style>
   .lesson-practice {
-    margin-top: var(--space-xl);
-    border-radius: var(--radius);
-    padding: var(--space-lg);
-    background: var(--c-slot-bg);
-    border: 1px solid var(--c-border);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--color-border);
   }
   .lesson-practice h2 {
-    font-size: 1.05rem;
-    margin-bottom: var(--space-xs);
+    margin: 0 0 var(--space-xs);
+    color: var(--color-text);
+    font-size: 1.125rem;
   }
   .practice-intro {
-    font-size: 0.85rem;
-    color: var(--c-text-secondary);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
   }
   :global(.practice-question) {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-lg);
   }
   :global(.practice-progress) {
-    font-size: 0.8rem;
-    color: var(--c-text-secondary);
     margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
   }
   :global(.practice-prompt) {
-    font-size: 1rem;
-    font-weight: 600;
     margin: 0;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 700;
+    outline: none;
   }
   :global(.practice-choices) {
     display: flex;
@@ -257,65 +285,177 @@ const json = JSON.stringify(questions);
     gap: var(--space-sm);
   }
   :global(.practice-choice) {
-    display: block;
+    min-height: 52px;
     width: 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
-    font-size: 0.95rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.9375rem;
     text-align: left;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
   }
   :global(.practice-choice:hover:not(:disabled)) {
-    background: var(--c-accent);
-    color: #fff;
-    border-color: var(--c-accent);
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+  }
+  :global(.practice-choice:active:not(:disabled)) {
+    transform: translateY(1px);
+  }
+  :global(.practice-choice-indicator) {
+    width: 1.375rem;
+    height: 1.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+  }
+  :global(.practice-choice--selected) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+  }
+  :global(.practice-choice--selected .practice-choice-indicator) {
+    border-color: var(--color-primary);
+    box-shadow: inset 0 0 0 4px var(--color-surface);
+    background: var(--color-primary);
+  }
+  :global(.practice-choice--correct),
+  :global(.practice-choice--correct-answer) {
+    border-color: var(--color-success);
+    background: var(--color-success-bg);
+  }
+  :global(.practice-choice--correct .practice-choice-indicator),
+  :global(.practice-choice--correct-answer .practice-choice-indicator) {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    box-shadow: inset 0 0 0 4px var(--color-surface);
+  }
+  :global(.practice-choice--incorrect) {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+  }
+  :global(.practice-choice--incorrect .practice-choice-indicator) {
+    border-color: var(--color-error);
+    background: var(--color-error);
+    box-shadow: none;
+  }
+  :global(.practice-choice--incorrect .practice-choice-indicator::after) {
+    content: '×';
+    color: var(--color-surface);
+    font-size: 0.75rem;
+    font-weight: 800;
   }
   :global(.practice-choice:disabled) {
-    opacity: 0.5;
     cursor: default;
   }
+  :global(.practice-choice:disabled:not(.practice-choice--selected):not(.practice-choice--correct-answer)) {
+    opacity: 0.62;
+  }
   :global(.practice-feedback) {
-    min-height: 0;
-    transition: min-height 0.2s;
+    display: none;
   }
   :global(.practice-feedback.feedback-visible) {
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    background: var(--color-success-bg);
+    border-left: 4px solid var(--color-success);
   }
-  :global(.feedback-correct) {
-    color: #166534;
-    font-weight: 700;
+  :global(.practice-feedback--incorrect.feedback-visible) {
+    background: var(--color-error-bg);
+    border-left-color: var(--color-error);
+  }
+  :global(.feedback-icon) {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: var(--color-surface);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+  :global(.feedback-icon--incorrect) {
+    background: var(--color-error);
+  }
+  :global(.feedback-title) {
     margin: 0;
+    color: var(--color-text);
+    font-size: 0.9375rem;
+    font-weight: 750;
   }
-  :global(.feedback-incorrect) {
-    color: #991b1b;
-    font-weight: 700;
-    margin: 0 0 var(--space-xs);
+  :global(.feedback-detail) {
+    margin: var(--space-xs) 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.55;
   }
-  :global(.feedback-answer) {
-    color: var(--c-text-secondary);
-    font-size: 0.9rem;
-    margin: 0;
+  :global(.feedback-detail strong) {
+    color: var(--color-text);
   }
   :global(.practice-complete) {
-    text-align: center;
-    padding: var(--space-md) 0;
+    min-height: 7rem;
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    background: var(--color-primary-soft);
+    outline: none;
   }
   :global(.practice-complete-icon) {
-    font-size: 2rem;
-    margin: 0 0 var(--space-sm);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: 1.125rem;
+    font-weight: 800;
+  }
+  :global(.practice-complete-title) {
+    margin: 0;
+    color: var(--color-text);
+    font-weight: 750;
   }
   :global(.practice-complete-text) {
-    font-weight: 700;
-    font-size: 1rem;
     margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+  :global(.practice-complete--saved .practice-complete-text) {
+    color: var(--color-text);
+    font-weight: 700;
   }
   .loading-placeholder {
-    color: var(--c-text-secondary);
-    font-size: 0.85rem;
+    min-height: 6rem;
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
+    background: var(--color-surface-muted);
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+  }
+  @media (width <= 374px) {
+    :global(.practice-choice),
+    :global(.practice-feedback.feedback-visible),
+    :global(.practice-complete) {
+      padding-inline: var(--space-md);
+    }
   }
 </style>
