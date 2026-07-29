@@ -14,8 +14,10 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
   class="basic-vocabulary-session"
   data-basic-vocabulary-session
   data-basic-vocabulary-ids={serializedIds}
+  data-basic-vocabulary-session-size={Math.min(items.length, 10)}
 >
-  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {items.length} 語</p>
+  <p class="basic-vocabulary-summary" data-summary>新規 {items.length}語・学習中 0語・習得済み 0語</p>
+  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {Math.min(items.length, 10)} 語</p>
   <div class="basic-vocabulary-card" data-card>
     {
       initialItem.illustration && (
@@ -33,6 +35,9 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
       答えを見る
     </button>
   </div>
+  <button class="basic-vocabulary-action basic-vocabulary-reset" data-action="reset" type="button">
+    学習記録をリセット
+  </button>
 </section>
 
 <script>
@@ -53,12 +58,34 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
     width: 100%;
   }
 
+  .basic-vocabulary-summary {
+    margin: 0 0 var(--space-xs);
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    text-align: right;
+  }
+
   .basic-vocabulary-progress {
     margin: 0 0 var(--space-sm);
     color: var(--c-text-secondary);
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
     text-align: right;
+  }
+
+  .basic-vocabulary-reset {
+    margin-top: var(--space-sm);
+    width: auto;
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--c-text-secondary);
+    border-color: var(--c-border);
+    background: transparent;
+  }
+
+  .basic-vocabulary-reset:hover {
+    background: var(--c-slot-bg);
   }
 
   .basic-vocabulary-card,

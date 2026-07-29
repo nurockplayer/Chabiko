@@ -6,6 +6,10 @@ import type {
   VocabularySessionRating,
   VocabularySessionState,
 } from '../domain/vocabularySession';
+import {
+  BasicVocabularyProgressStore,
+  BASIC_VOCABULARY_PROGRESS_KEY,
+} from '../domain/basicVocabularyProgress';
 import { loadTeacherVocabulary } from '../content/loadTeacherVocabulary';
 
 interface SessionIllustration {
@@ -29,7 +33,7 @@ const cleanups = new WeakMap<HTMLElement, () => void>();
 
 function initializeFromIds(
   root: HTMLElement,
-): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 20 } {
+): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 10 | 20 } {
   const raw = root.dataset.basicVocabularyIds;
   if (!raw) {
     throw new Error('basic vocabulary session data is missing');
@@ -39,6 +43,9 @@ function initializeFromIds(
   if (!Array.isArray(ids) || ids.length === 0) {
     throw new Error('basic vocabulary has no provisional items');
   }
+
+  const sizeAttr = root.dataset.basicVocabularySessionSize;
+  const availableCount: 10 | 20 = sizeAttr !== undefined ? 10 : 20;
 
   const loaded = loadTeacherVocabulary();
   const entries = new Map<string, SessionItem>();
@@ -71,7 +78,7 @@ function initializeFromIds(
     });
   }
 
-  return { ids, entries, availableCount: 20 };
+  return { ids, entries, availableCount };
 }
 
 function textElement(
@@ -104,24 +111,44 @@ function button(
 export function initBasicVocabularySession(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
-  const { ids, entries, availableCount } = initializeFromIds(root);
+  const { ids: allIds, entries, availableCount } = initializeFromIds(root);
+
+  const store = new BasicVocabularyProgressStore();
+
+  const ids = store.prioritize(allIds).slice(0, availableCount);
   let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
+  let hasRatedSinceInit = false;
 
   const card = root.querySelector<HTMLElement>('[data-card]');
   const progress = root.querySelector<HTMLElement>('[data-progress]');
+  const summary = root.querySelector<HTMLElement>('[data-summary]');
   if (!card || !progress) {
     throw new Error('basic vocabulary session markup is missing');
   }
   const cardElement = card;
   const progressElement = progress;
+  const summaryElement = summary;
 
   function updateProgress(): void {
     progressElement.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length} 語`;
   }
 
+  function updateSummary(): void {
+    let newCount = 0;
+    let learningCount = 0;
+    let learnedCount = 0;
+    for (const id of allIds) {
+      const status = store.getStatus(id);
+      if (status === 'new') newCount++;
+      else if (status === 'learning') learningCount++;
+      else if (status === 'learned') learnedCount++;
+    }
+    if (summaryElement) {
+      summaryElement.textContent = `新規 ${newCount}語・学習中 ${learningCount}語・習得済み ${learnedCount}語`;
+    }
+  }
+
   function announceCompletion(): void {
-    // Insert a visually-hidden completion announcement into the existing
-    // aria-live region so the polite announcement fires reliably.
     const sr = document.createElement('span');
     sr.className = 'basic-vocabulary-sr-only';
     sr.textContent = '今回の学習は完了です';
@@ -202,20 +229,44 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   function rate(rating: VocabularySessionRating): void {
     const result = applyVocabularySessionAction(state, { kind: 'rate', rating });
     if (result.kind !== 'accepted') return;
+
+    // Apply to progress store. The state machine only accepts rates
+    // on active sessions after reveal, so activeItemId is always defined.
+    store.applyRating(state.activeItemId!, rating);
+    hasRatedSinceInit = true;
+
     state = result.state;
     if (state.status === 'completed') {
       renderCompleted();
       root.querySelector<HTMLButtonElement>('[data-action="restart"]')?.focus();
-      return;
+    } else {
+      renderActive();
+      root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
     }
-    renderActive();
-    root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
+    updateSummary();
   }
 
-  function restart(): void {
-    state = createVocabularySession(ids, availableCount, 'zh-to-ja');
+  function restartSession(): void {
+    const reprioritized = store.prioritize(allIds);
+    const restartIds = reprioritized.slice(0, 10);
+    state = createVocabularySession(restartIds, 10, 'zh-to-ja');
+    hasRatedSinceInit = false;
     renderActive();
     root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
+    updateSummary();
+  }
+
+  function resetProgress(): void {
+    if (!window.confirm('この単語コースの学習記録だけを削除しますか？')) return;
+    store.resetAll();
+    hasRatedSinceInit = false;
+    restartSession();
+    root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
+
+    const ann = document.createElement('span');
+    ann.className = 'basic-vocabulary-sr-only';
+    ann.textContent = 'この単語コースの学習記録をリセットしました';
+    progressElement.append(ann);
   }
 
   function onClick(event: MouseEvent): void {
@@ -230,14 +281,38 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       const rating = control.dataset.rating as VocabularySessionRating;
       if (rating === 'again' || rating === 'unsure' || rating === 'known') rate(rating);
     } else if (control.dataset.action === 'restart') {
-      restart();
+      restartSession();
+    } else if (control.dataset.action === 'reset') {
+      resetProgress();
     }
   }
 
   root.addEventListener('click', onClick);
   renderActive();
+  updateSummary();
+
+  function onPageShow(): void {
+    store.refresh();
+    updateSummary();
+    if (!hasRatedSinceInit) {
+      restartSession();
+    }
+  }
+  window.addEventListener('pageshow', onPageShow);
+
+  function onStorage(e: StorageEvent): void {
+    if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
+    store.refresh();
+    updateSummary();
+    if (!hasRatedSinceInit) {
+      restartSession();
+    }
+  }
+  window.addEventListener('storage', onStorage);
 
   const cleanup = () => {
+    window.removeEventListener('pageshow', onPageShow);
+    window.removeEventListener('storage', onStorage);
     root.removeEventListener('click', onClick);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };
