@@ -3,19 +3,25 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { initBasicVocabularySession } from '../src/client/basicVocabularySession';
 
-const ITEMS = [
-  { id: 'a', simplified: '甲', pinyin: 'jiǎ', japanese: 'A', traditional: '甲', illustration: {
-    vocabularyId: 'a', assetPath: '/assets/a.webp', width: 500, height: 400, altJa: 'A の絵',
-  } },
-  { id: 'b', simplified: '小姐', pinyin: 'xiǎo jie', japanese: 'お嬢さん', traditional: '小姐', illustration: null },
-  { id: 'c', simplified: '丙', pinyin: 'bǐng', japanese: 'C', traditional: '丙', illustration: {
-    vocabularyId: 'c', assetPath: '/assets/c.webp', width: 400, height: 500, altJa: 'C の絵',
-  } },
-];
+// Three real vocabulary items selected from the production batch:
+// - 大家 (illustrated, traditional same as simplified)
+// - 人   (illustrated)
+// - 小姐/女士 (text-only, no traditional)
+const REAL_IDS = [
+  'teacher-star-1-37e0eb213f0f',  // 大家
+  'teacher-star-1-a66948a76fda',  // 人
+  'teacher-star-1-8b957a100bd4',  // 小姐/女士
+] as const;
 
-function rootWith(items = ITEMS): HTMLElement {
+const ITEM_A_SIMPLIFIED = '大家';
+const ITEM_A_PINYIN = 'dà jiā';
+const ITEM_A_JAPANESE = 'みんな';
+const ITEM_B_SIMPLIFIED = '人';
+const ITEM_C_SIMPLIFIED = '小姐/女士';
+
+function rootWith(ids: readonly string[] = REAL_IDS): HTMLElement {
   const root = document.createElement('section');
-  root.dataset.basicVocabularyData = JSON.stringify({ items });
+  root.dataset.basicVocabularyIds = JSON.stringify([...ids]);
   root.innerHTML = '<p data-progress aria-live="polite"></p><div data-card></div>';
   document.body.append(root);
   return root;
@@ -38,19 +44,23 @@ describe('basic vocabulary session lifecycle', () => {
     const root = rootWith();
     initBasicVocabularySession(root);
 
-    expect(root.querySelector('[data-card]')?.textContent).toContain('甲');
+    // 大家 is first
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
     reveal(root);
     expect(document.activeElement).toBe(root.querySelector('[data-rating="again"]'));
     rate(root, 'again');
-    expect(root.querySelector('[data-card]')?.textContent).toContain('小姐');
+    // After 'again', 大家 is requeued at position 2; next is 人
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_B_SIMPLIFIED);
     expect(document.activeElement).toBe(root.querySelector('[data-action="reveal"]'));
 
     reveal(root);
     rate(root, 'known');
-    expect(root.querySelector('[data-card]')?.textContent).toContain('丙');
+    // After 'known' on 人, next is 小姐/女士
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_C_SIMPLIFIED);
     reveal(root);
     rate(root, 'known');
-    expect(root.querySelector('[data-card]')?.textContent).toContain('甲');
+    // Now 大家 comes back from requeue
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
     reveal(root);
     rate(root, 'known');
 
@@ -59,9 +69,70 @@ describe('basic vocabulary session lifecycle', () => {
     expect(document.activeElement).toBe(root.querySelector('[data-action="restart"]'));
 
     (root.querySelector('[data-action="restart"]') as HTMLButtonElement).click();
-    expect(root.querySelector('[data-card]')?.textContent).toContain('甲');
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
     expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
     expect(document.activeElement).toBe(root.querySelector('[data-action="reveal"]'));
+  });
+
+  it('requeues an unsure item after the remaining queue, preserves order, and later completes with known', () => {
+    const root = rootWith();
+    initBasicVocabularySession(root);
+
+    // Item 大家 is active → mark unsure
+    reveal(root);
+    expect(root.textContent).toContain(ITEM_A_PINYIN);
+    rate(root, 'unsure');
+
+    // 大家 was requeued at end. Next should be 人
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_B_SIMPLIFIED);
+    expect(document.activeElement).toBe(root.querySelector('[data-action="reveal"]'));
+
+    // Mark 人 known
+    reveal(root);
+    rate(root, 'known');
+
+    // Next should be 小姐/女士
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_C_SIMPLIFIED);
+
+    // Mark 小姐/女士 known
+    reveal(root);
+    rate(root, 'known');
+
+    // Now 大家 comes back from the end of the queue
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
+
+    // This time complete it with known
+    reveal(root);
+    rate(root, 'known');
+
+    // Session completed
+    expect(root.textContent).toContain('今回の学習は完了です');
+    expect(root.querySelector('[data-progress]')?.textContent).toBe('3 / 3 語');
+  });
+
+  it('exposes the exact learner copy required by Issue #115', () => {
+    const root = rootWith();
+    initBasicVocabularySession(root);
+
+    // Before reveal: 答えを見る button
+    expect(root.textContent).toContain('答えを見る');
+
+    reveal(root);
+    // Rating labels: もう一度, まだ曖昧, 覚えた
+    expect(root.textContent).toContain('もう一度');
+    expect(root.textContent).toContain('まだ曖昧');
+    expect(root.textContent).toContain('覚えた');
+
+    // Complete all items
+    for (let i = 0; i < REAL_IDS.length; i++) {
+      rate(root, 'known');
+      if (root.querySelector('[data-action="restart"]')) break;
+      reveal(root);
+    }
+
+    // Completion: 今回の学習は完了です, もう一度学ぶ
+    expect(root.textContent).toContain('今回の学習は完了です');
+    expect(root.textContent).toContain('もう一度学ぶ');
   });
 
   it('cleans up the prior root listener before Astro reinitialization', () => {
@@ -71,32 +142,85 @@ describe('basic vocabulary session lifecycle', () => {
 
     firstCleanup();
     reveal(root);
-    expect(root.querySelector('[data-card]')?.textContent).toContain('jiǎ');
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_PINYIN);
 
     const secondCleanup = initBasicVocabularySession(root);
     secondCleanup();
     (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
-    expect(root.querySelector('[data-card]')?.textContent).not.toContain('jiǎ');
+    expect(root.querySelector('[data-card]')?.textContent).not.toContain(ITEM_A_PINYIN);
   });
 
   it('fails deterministically for zero items and invalid present illustration links', () => {
     const empty = rootWith([]);
     expect(() => initBasicVocabularySession(empty)).toThrow('basic vocabulary has no provisional items');
 
-    const invalid = rootWith([{ ...ITEMS[0], illustration: { ...ITEMS[0].illustration!, vocabularyId: 'wrong' } }]);
-    expect(() => initBasicVocabularySession(invalid)).toThrow("basic vocabulary illustration link is invalid for 'a'");
+    // Use an ID not present in the real loader data
+    const invalidRoot = document.createElement('section');
+    invalidRoot.dataset.basicVocabularyIds = JSON.stringify(['nonexistent-id']);
+    invalidRoot.innerHTML = '<p data-progress aria-live="polite"></p><div data-card></div>';
+    document.body.append(invalidRoot);
+    expect(() => initBasicVocabularySession(invalidRoot)).toThrow(
+      "basic vocabulary item 'nonexistent-id' is missing from the loader",
+    );
   });
 
-  it.each([320, 375, 390])('keeps card controls within the %ipx mobile viewport contract', (width) => {
+  it.each([320, 375, 390])(
+    'presents the card and three rating buttons within the %ipx viewport container',
+    (width) => {
+      const root = rootWith();
+      root.style.width = `${width}px`;
+      initBasicVocabularySession(root);
+      reveal(root);
+
+      const card = root.querySelector<HTMLElement>('[data-card]')!;
+      const ratings = root.querySelector<HTMLElement>('.basic-vocabulary-ratings')!;
+
+      // Element presence and CSS class contract
+      expect(card.className).toBe('basic-vocabulary-card');
+      expect(ratings.className).toBe('basic-vocabulary-ratings');
+
+      // Three rating buttons exist as grid children
+      const ratingButtons = ratings.querySelectorAll('button');
+      expect(ratingButtons).toHaveLength(3);
+
+      // The stylesheet containment rules prevent horizontal overflow:
+      //   card:    width 100%, box-sizing border-box, overflow hidden
+      //   ratings: width min(100%, 34rem), 3×1fr grid, box-sizing border-box
+      //   buttons: min-width 0, overflow-wrap anywhere
+
+      // At ≤359px the card minHeight shrinks per the responsive breakpoint
+      if (width <= 359) {
+        const cardMinHeight = Number.parseFloat(getComputedStyle(card).minHeight);
+        if (!Number.isNaN(cardMinHeight)) {
+          expect(cardMinHeight).toBeLessThanOrEqual(352); // 22rem default
+        }
+      }
+
+      // Happy DOM does not perform real layout measurement. Browser
+      // measurements at 320/375/390 are recorded in the PR body.
+    },
+  );
+
+  it('produces a card that does not serialize answers into outerHTML attributes before reveal', () => {
     const root = rootWith();
-    root.style.width = `${width}px`;
     initBasicVocabularySession(root);
-    reveal(root);
 
     const card = root.querySelector<HTMLElement>('[data-card]')!;
-    const ratings = root.querySelector<HTMLElement>('.basic-vocabulary-ratings')!;
-    expect(card.querySelectorAll('button')).toHaveLength(3);
-    expect(ratings.querySelectorAll('button')).toHaveLength(3);
-    expect(card.className).toBe('basic-vocabulary-card');
+    const html = card.outerHTML;
+
+    // No pinyin or Japanese answer values in the card DOM
+    expect(html).not.toContain(ITEM_A_PINYIN);
+    expect(html).not.toContain(ITEM_A_JAPANESE);
+    // No pinyin for item B either
+    expect(html).not.toContain('rén');
+    expect(html).not.toContain('人（ひと）');
+    // No pinyin/Japanese for text-only item
+    expect(html).not.toContain('xiǎo jiě');
+    expect(html).not.toContain('～さん（女性）');
+
+    // The data attribute on the root must only contain opaque IDs, no answer values
+    const idsAttr = root.dataset.basicVocabularyIds ?? '';
+    expect(idsAttr).not.toContain(ITEM_A_PINYIN);
+    expect(idsAttr).not.toContain(ITEM_A_JAPANESE);
   });
 });

@@ -6,6 +6,7 @@ import type {
   VocabularySessionRating,
   VocabularySessionState,
 } from '../domain/vocabularySession';
+import { loadTeacherVocabulary } from '../content/loadTeacherVocabulary';
 
 interface SessionIllustration {
   vocabularyId: string;
@@ -24,30 +25,53 @@ interface SessionItem {
   illustration: SessionIllustration | null;
 }
 
-interface SessionData {
-  items: SessionItem[];
-}
-
 const cleanups = new WeakMap<HTMLElement, () => void>();
 
-function readSessionData(root: HTMLElement): SessionData {
-  const source = root.dataset.basicVocabularyData;
-  if (!source) {
+function initializeFromIds(
+  root: HTMLElement,
+): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 20 } {
+  const raw = root.dataset.basicVocabularyIds;
+  if (!raw) {
     throw new Error('basic vocabulary session data is missing');
   }
 
-  const data = JSON.parse(source) as SessionData;
-  if (!Array.isArray(data.items) || data.items.length === 0) {
+  const ids = JSON.parse(raw) as string[];
+  if (!Array.isArray(ids) || ids.length === 0) {
     throw new Error('basic vocabulary has no provisional items');
   }
 
-  for (const item of data.items) {
-    if (item.illustration && item.illustration.vocabularyId !== item.id) {
-      throw new Error(`basic vocabulary illustration link is invalid for '${item.id}'`);
+  const loaded = loadTeacherVocabulary();
+  const entries = new Map<string, SessionItem>();
+
+  for (const id of ids) {
+    const match = loaded.find((item) => item.vocabulary.id === id);
+    if (!match) {
+      throw new Error(`basic vocabulary item '${id}' is missing from the loader`);
     }
+
+    const { vocabulary, illustration } = match;
+
+    if (illustration && illustration.vocabularyId !== vocabulary.id) {
+      throw new Error(`basic vocabulary illustration link is invalid for '${vocabulary.id}'`);
+    }
+
+    entries.set(id, {
+      id: vocabulary.id,
+      simplified: vocabulary.simplified,
+      pinyin: vocabulary.pinyin,
+      japanese: vocabulary.japanese,
+      traditional: vocabulary.traditional,
+      illustration: illustration === null ? null : {
+        vocabularyId: illustration.vocabularyId,
+        assetPath: illustration.assetPath,
+        width: illustration.width,
+        height: illustration.height,
+        altJa: illustration.altJa,
+      },
+    });
   }
 
-  return data;
+  return { ids, entries, availableCount: 20 };
 }
 
 function textElement(
@@ -80,10 +104,7 @@ function button(
 export function initBasicVocabularySession(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
-  const data = readSessionData(root);
-  const ids = data.items.map((item) => item.id);
-  const entries = new Map(data.items.map((item) => [item.id, item]));
-  const availableCount = data.items.length as 10 | 20;
+  const { ids, entries, availableCount } = initializeFromIds(root);
   let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
 
   const card = root.querySelector<HTMLElement>('[data-card]');
@@ -139,9 +160,9 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       ] as const) {
         const ratingButton = button(document, 'basic-vocabulary-rating', label, 'rate');
         ratingButton.dataset.rating = rating;
-        fragment.append(ratings);
         ratings.append(ratingButton);
       }
+      fragment.append(ratings);
     } else {
       fragment.append(button(document, 'basic-vocabulary-action basic-vocabulary-reveal', '答えを見る', 'reveal'));
     }

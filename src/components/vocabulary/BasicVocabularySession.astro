@@ -7,28 +7,13 @@ export interface Props {
 
 const { items } = Astro.props;
 const initialItem = items[0];
-const sessionData = {
-  items: items.map(({ vocabulary, illustration }) => ({
-    id: vocabulary.id,
-    simplified: vocabulary.simplified,
-    pinyin: vocabulary.pinyin,
-    japanese: vocabulary.japanese,
-    traditional: vocabulary.traditional,
-    illustration: illustration === null ? null : {
-      vocabularyId: illustration.vocabularyId,
-      assetPath: illustration.assetPath,
-      width: illustration.width,
-      height: illustration.height,
-      altJa: illustration.altJa,
-    },
-  })),
-};
+const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
 ---
 
 <section
   class="basic-vocabulary-session"
   data-basic-vocabulary-session
-  data-basic-vocabulary-data={JSON.stringify(sessionData)}
+  data-basic-vocabulary-ids={serializedIds}
 >
   <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {items.length} 語</p>
   <div class="basic-vocabulary-card" data-card>

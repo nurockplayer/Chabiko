@@ -8,24 +8,9 @@ import { initBasicVocabularySession } from '../src/client/basicVocabularySession
 type Item = ReturnType<typeof loadTeacherVocabulary>[number];
 
 function createRoot(items: readonly Item[]): HTMLElement {
-  const data = {
-    items: items.map(({ vocabulary, illustration }) => ({
-      id: vocabulary.id,
-      simplified: vocabulary.simplified,
-      pinyin: vocabulary.pinyin,
-      japanese: vocabulary.japanese,
-      traditional: vocabulary.traditional,
-      illustration: illustration === null ? null : {
-        vocabularyId: illustration.vocabularyId,
-        assetPath: illustration.assetPath,
-        width: illustration.width,
-        height: illustration.height,
-        altJa: illustration.altJa,
-      },
-    })),
-  };
+  const ids = items.map((item) => item.vocabulary.id);
   const root = document.createElement('section');
-  root.dataset.basicVocabularyData = JSON.stringify(data);
+  root.dataset.basicVocabularyIds = JSON.stringify(ids);
   root.innerHTML = '<p data-progress aria-live="polite"></p><div data-card></div>';
   document.body.append(root);
   return root;
