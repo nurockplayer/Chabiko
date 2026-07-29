@@ -4,7 +4,7 @@ All screenshots show the production home or lesson routes. The ten light-theme
 screenshots were captured from the committed Direction C implementation at
 `07c0b64c967187d2f37031e666e8d0f0df0293e1`; the five dark-theme screenshots
 were captured from the committed dark integration at
-`e17eb79220d3012ecc9683c5355e76e1ed5502a8`.
+`b5d1ce9a97929fcfa655f2ba81fcbeaf7f9e6f6a`.
 
 ## Capture environment
 
@@ -38,11 +38,11 @@ viewport. `documentElement.clientWidth` matched 390 or 1440 respectively.
 | `practice-incorrect-desktop-1440x900.png` | `/lessons/lesson-001/` | Selected `これはいくらですか`; incorrect feedback before retry | light | 1440×900 | 2158.5 | false | 1440×900 |
 | `practice-complete-mobile-390x844.png` | `/lessons/lesson-001/` | Retry reset, correct answer, then completion transition | light | 390×844 | 2662 | false | 390×844 |
 | `practice-complete-desktop-1440x900.png` | `/lessons/lesson-001/` | Retry reset, correct answer, then completion transition | light | 1440×900 | 2085 | false | 1440×900 |
-| `dark-home-mobile-390x844.png` | `/` | Fresh journey; lesson 1 current | dark | 390×844 | 0 | false | 390×844 |
+| `dark-home-mobile-390x844.png` | `/` | Persisted journey; lesson 1 complete and lesson 2 current | dark | 390×844 | 0 | false | 390×844 |
 | `dark-lesson-mobile-390x844.png` | `/lessons/lesson-001/` | Reading; route hierarchy and lesson intro | dark | 390×844 | 0 | false | 390×844 |
 | `dark-practice-feedback-mobile-390x844.png` | `/lessons/lesson-001/` | Selected `これはいくらですか`; incorrect icon, label, answer and retry state visible | dark | 390×844 | 2649 | false | 390×844 |
 | `dark-completion-mobile-390x844.png` | `/lessons/lesson-001/` | Retry reset, correct answer, 1200 ms completion transition finished | dark | 390×844 | 2615 | false | 390×844 |
-| `dark-home-desktop-1440x900.png` | `/` | Fresh journey; all three route cards visible | dark | 1440×900 | 0 | false | 1440×900 |
+| `dark-home-desktop-1440x900.png` | `/` | Persisted journey; lesson 1 complete, lesson 2 current, and all three route cards visible | dark | 1440×900 | 0 | false | 1440×900 |
 
 ## Browser checks
 
