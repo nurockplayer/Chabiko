@@ -56,4 +56,15 @@ describe('lesson practice answer visibility', () => {
     expect(answerHandler).toContain('正解：');
     expect(answerHandler).toContain('result.feedback.correctAnswer');
   });
+
+  it('exposes Direction C answer and feedback states without changing answer actions', () => {
+    expect(practiceComponentSource).toContain('role="group" aria-label="回答を選択"');
+    expect(practiceComponentSource).toContain(
+      'role="status" aria-live="polite" aria-atomic="true"',
+    );
+    expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--correct')");
+    expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--incorrect')");
+    expect(practiceComponentSource).toContain("timer.schedule(() => renderCompleted(), 1200)");
+    expect(practiceComponentSource).toContain("timer.schedule(() => render(), 2000)");
+  });
 });

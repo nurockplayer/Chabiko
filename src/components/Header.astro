@@ -3,14 +3,16 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <span class="logo">Chabiko</span>
-    <span class="logo-sub">チャビコ</span>
+    <a class="brand" href="/" aria-label="Chabiko ホーム">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="logo">Chabiko</span>
+      <span class="logo-sub">チャビコ</span>
+    </a>
     <nav class="nav-primary" aria-label="メインナビゲーション">
-      <a href="/" class="nav-link nav-link--active">ホーム</a>
+      <a href="/" class="nav-link">ホーム</a>
     </nav>
-    <!-- #22 用の表示切替スロット -->
-    <div class="slot script-toggle-slot" aria-label="簡体字／繁体字切替（準備中）">
-      <span class="slot-label">繁｜簡</span>
+    <div class="script-toggle-slot" aria-label="簡体字・繁体字切り替え（準備中）">
+      <span aria-hidden="true">繁｜簡</span>
       <span class="slot-badge">準備中</span>
     </div>
   </div>
@@ -18,65 +20,98 @@
 
 <style>
   .site-header {
-    background: var(--c-surface);
-    border-bottom: 1px solid var(--c-border);
+    background: var(--c-primary);
+    color: #fff;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
   }
   .header-inner {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-lg);
     max-width: var(--max-w);
     margin: 0 auto;
-    padding: var(--space-sm) var(--space-md);
+    padding: 0 var(--space-lg);
+    min-height: 56px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand:hover {
+    text-decoration: none;
+  }
+  .brand:focus-visible,
+  .nav-link:focus-visible {
+    outline-color: var(--c-accent);
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--c-accent);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    flex: 0 0 auto;
   }
   .logo {
     font-weight: 700;
-    font-size: 1.125rem;
-    color: var(--c-accent);
+    font-size: 1rem;
+    color: #fff;
   }
   .logo-sub {
     font-size: 0.75rem;
-    color: var(--c-text-secondary);
-    margin-left: -0.5rem;
+    color: rgb(255 255 255 / 78%);
+    margin-left: -0.25rem;
   }
   .nav-primary {
     margin-left: auto;
   }
   .nav-link {
     font-size: 0.875rem;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius);
+    color: rgb(255 255 255 / 92%);
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .nav-link--active {
-    background: var(--c-accent);
-    color: #fff;
-  }
-  /* Script toggle slot: visible placeholder for #22 */
   .script-toggle-slot {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px dashed var(--c-border);
-    border-radius: var(--radius);
-    font-size: 0.75rem;
-    color: var(--c-text-secondary);
+    font-size: 0.6875rem;
+    color: rgb(255 255 255 / 70%);
+    white-space: nowrap;
   }
   .slot-badge {
-    background: var(--c-slot-bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
+    padding-left: var(--space-xs);
+    border-left: 1px solid rgb(255 255 255 / 35%);
+    font-size: 0.625rem;
   }
-  @media (width < 480px) {
+  @media (width <= 374px) {
+    .header-inner {
+      padding-inline: var(--space-md);
+      gap: var(--space-sm);
+    }
     .logo-sub {
       display: none;
     }
     .script-toggle-slot {
-      font-size: 0.65rem;
+      font-size: 0.625rem;
+    }
+    .slot-badge {
+      display: none;
     }
   }
 </style>

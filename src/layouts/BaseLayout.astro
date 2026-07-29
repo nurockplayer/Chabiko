@@ -30,21 +30,34 @@ const canonical = url.href;
     <meta property="og:site_name" content="Chabiko" />
     <style>
       :root {
-        --c-bg: #fafafa;
+        --c-bg: #f4f1ec;
         --c-surface: #ffffff;
-        --c-text: #1a1a1a;
-        --c-text-secondary: #666;
-        --c-accent: #2563eb;
-        --c-accent-hover: #1d4ed8;
-        --c-border: #e5e5e5;
-        --c-slot-bg: #f0f0f0;
-        --radius: 8px;
+        --c-text: #1a1a2e;
+        --c-text-secondary: #555570;
+        --c-text-muted: #6a6a7d;
+        --c-primary: #1a2744;
+        --c-primary-light: #e8ecf3;
+        --c-accent: #d48c2b;
+        --c-accent-light: #f5e8d0;
+        --c-route-line: #d0ccc4;
+        --c-border: #e0dcd4;
+        --c-success: #3d7b80;
+        --c-success-bg: #e8f0f0;
+        --c-error: #b84a3a;
+        --c-error-bg: #f5e8e4;
+        --c-slot-bg: var(--c-primary-light);
+        --font-zh: 'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif;
+        --font-ja: 'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+        --font-pinyin: 'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+        --radius: 0;
         --space-xs: 0.25rem;
         --space-sm: 0.5rem;
         --space-md: 1rem;
         --space-lg: 1.5rem;
         --space-xl: 2rem;
-        --max-w: 48rem;
+        --space-2xl: 3rem;
+        --space-3xl: 4rem;
+        --max-w: 80rem;
       }
       *,
       *::before,
@@ -54,21 +67,34 @@ const canonical = url.href;
         padding: 0;
       }
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-          'Noto Sans CJK JP', sans-serif;
+        font-family: var(--font-ja);
         background: var(--c-bg);
         color: var(--c-text);
         line-height: 1.7;
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        overflow-wrap: anywhere;
       }
       a {
-        color: var(--c-accent);
+        color: var(--c-primary);
         text-decoration: none;
       }
       a:hover {
         text-decoration: underline;
+      }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button {
+        font: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--c-primary);
+        outline-offset: 3px;
       }
       .wrapper {
         flex: 1;
@@ -77,14 +103,24 @@ const canonical = url.href;
       }
       .main-content {
         flex: 1;
-        padding: var(--space-md);
+        padding: var(--space-lg) var(--space-md) var(--space-3xl);
         max-width: var(--max-w);
         width: 100%;
         margin: 0 auto;
       }
+      @media (width <= 374px) {
+        .main-content {
+          padding-inline: var(--space-md);
+        }
+      }
       @media (width >= 768px) {
         .main-content {
-          padding: var(--space-lg) var(--space-xl);
+          padding: var(--space-xl);
+        }
+      }
+      @media (width >= 1024px) {
+        .main-content {
+          padding-block: var(--space-2xl) var(--space-3xl);
         }
       }
     </style>
