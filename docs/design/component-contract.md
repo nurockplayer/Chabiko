@@ -119,7 +119,15 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 - `.practice-complete`（完成畫面，`role="status"`）
 
 **狀態邊界**：
-- 會話狀態（PracticeSession）：題目順序、當前 index、回答記錄
+- 會話狀態（PracticeSession，定型於 `src/lib/practiceSession.ts:4-15`）：
+  - `status: 'active' | 'completed'`
+  - `questions: PracticeQuestion[]`
+  - `currentIndex: number`（僅 active 時有效；completed 時透過 `getCurrentIndex()` 回傳 `questions.length`）
+  - `lessonId: string`
+- incorrect answer 不改變 session state（`practiceSession.ts:44-50`：僅回傳 feedback，不推進 currentIndex）
+- correct answer 只推進 `currentIndex`（`practiceSession.ts:51-64`）
+- 最後一題答對後 status 轉為 `'completed'`（`practiceSession.ts:55-59`）
+- feedback 的 `correctAnswer` 由 answer() 即時計算回傳，不寫入 session history
 - 計時器（TimeoutManager）：正確 1200ms、錯誤 2000ms
 - 進度儲存：只在最後一題正確時寫入 `ProgressStore.markComplete()`
 - Refresh（pageshow/storage）：重新讀取 ProgressStore，計算是否需要 reset/completed

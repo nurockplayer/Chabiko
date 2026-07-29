@@ -88,14 +88,18 @@
         "status": "planned",
         "files": [
           "src/components/Header.astro",
-          "src/content/ (structured entries with zh-Hant + zh-Hans fields)",
+          "src/components/GoalPathSlot.astro",
+          "src/types/lesson.ts",
+          "src/content/loadLessons.ts",
+          "data/examples/valid/lessons.json",
+          "scripts/validate-content-schema.py",
           "src/pages/index.astro",
           "src/pages/lessons/[id].astro"
         ],
         "tests": [
-          "tests/content-schema-validation.test.ts (extend for zh-Hans fields)",
-          "tests/direction-c-production-ui.test.ts (extend for script toggle)",
-          "tests/script-toggle.test.ts (new — toggle render, preference persistence, lang attribute sync)"
+          "tests/direction-c-production-ui.test.ts (extend)",
+          "tests/script-toggle.test.ts (planned new file)",
+          "scripts/validate-content-schema.py (self-tests and --check validation)"
         ],
         "dependencies": [],
         "commands": {
@@ -105,8 +109,8 @@
           "build": "pnpm build"
         },
         "startCondition": "Product owner activates script toggle feature",
-        "stopCondition": "Toggle switches all Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters; structured content entries have separate zh-Hant and zh-Hans fields; render layer reads the active script preference and selects the correct field; preference persisted in localStorage; tests cover all states",
-        "benefit": "Single-script learners can read content in their preferred script without separate routes; structured schema supports both script variants for future content"
+        "stopCondition": "Toggle switches displayed Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters; lang attribute, renderer output, and persisted preference stay in sync. Follow existing content model convention for entries that already carry paired traditional/simplified fields (e.g. example.traditional/example.simplified). Lesson-level fields without paired script forms (e.g. coreSentence, chunk.chunk, kanjiBridgeNotes.kanji) are out of scope and will be defined by a subsequent narrow issue.",
+        "benefit": "Single-script learners can read content in their preferred script without separate routes."
       },
       {
         "id": "hsks-path-integration",
