@@ -4,15 +4,23 @@ PR #165 的合併生產回應式行為規則，基於提交的瀏覽器證據與
 
 ## 證據來源
 
-所有規則以 `docs/design/evidence/issue-162/README.md` 中記錄的瀏覽器驗證為基礎。證據在以下 viewport 寬度擷取：
+所有規則以 `docs/design/evidence/issue-162/README.md` 中記錄的瀏覽器驗證為基礎。
+
+**Committed PNG captures（已提交截圖證據）**：
+
+- **390×844**（mobile — iPhone 12/13/14 級別，多數證據擷取尺寸）
+- **1440×900**（桌面，多數證據擷取尺寸）
+
+共 15 張 PNG：10 張 light、5 張 dark。詳見 `evidence/issue-162/README.md` 索引。
+
+**Browser-only checks（僅執行瀏覽器檢查，未擷取截圖）**：
 
 - **320px**（小手機）
 - **375px**（iPhone SE 級別）
-- **390px**（iPhone 12/13/14 級別，多數證據擷取尺寸）
 - **768px**（平板）
-- **1440px**（桌面，多數證據擷取尺寸）
+- 以及上述已擷取的 **390px** 與 **1440px** 也在 browser check 中覆核
 
-來源：`docs/design/evidence/issue-162/README.md:9-62`。
+PR #165 在 light 與 dark 的 home 與 lesson/practice 頁面以全部五種寬度執行瀏覽器檢查。來源：`docs/design/evidence/issue-162/README.md:49-62`。
 
 ## 斷點系統
 
@@ -107,7 +115,8 @@ PR #165 的合併生產回應式行為規則，基於提交的瀏覽器證據與
 
 PR #165 的瀏覽器驗證（`evidence/issue-162/README.md:49-62`）：
 
-- Light/dark home + lesson/practice 在 320、375、390、768、1440px 檢查通過
+- **Committed captures：** 15 張 PNG 在 390×844 與 1440×900 視口（light 10 張 + dark 5 張）
+- **Browser checks：** Light/dark home + lesson/practice 在 320、375、390、768、1440px 檢查通過
 - 無水平溢出
 - 控制項在 viewport 內
 - 文字正確換行，無裁剪

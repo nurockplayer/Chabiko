@@ -11,7 +11,7 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 **責任**：
 - 提供完整 HTML 文件 shell（`<html lang="ja">`）
 - 定義全部 `:root` light/dark CSS custom properties
-- 內嵌 inline theme detection script（無 FOUC）
+- 內嵌 inline theme detection script：在 pre-paint 階段讀取 localStorage 偏好（`chabiko_theme`）或 `prefers-color-scheme`，並套用 `data-theme` 到 root 元素（無 FOUC）
 - `.wrapper` + `.main-content` 佈局容器
 - Global reset（`box-sizing`、`margin`、`padding`）
 - Global 排版（`body` font、color、line-height）
@@ -26,8 +26,7 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 - `themeEnabled?: boolean`（預設 `false`）
 
 **狀態邊界**：
-- 不管理任何應用狀態
-- 不直接操作 localStorage（由 inline script 讀取/設定 `data-theme`）
+- pre-paint inline script 直接讀取 `localStorage.getItem('chabiko_theme')` 並設定 root `data-theme`（Header runtime script 才負責 toggle 與 write）
 - 不處理路由邏輯
 
 **禁止責任**：
@@ -37,9 +36,9 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 ### Header (`src/components/Header.astro`)
 
 **責任**：
-- 網站 header：brand、導航、主題切換、script toggle slot
+- 網站 header：brand、導航、主題切換按鈕、script toggle slot
 - Sticky positioning（`position: sticky; top: 0; z-index: 20`）
-- 主題切換按鈕的完整互動（click handler、aria 更新、localStorage 寫入）
+- 主題切換按鈕的 runtime 互動：click handler 呼叫 `getNextTheme()`、更新 `document.documentElement.dataset.theme`、將新偏好寫入 `localStorage`、更新 `aria-pressed` 與 `aria-label`（日文）
 - 回應式隱藏次要元素（mobile < 768px 隱藏 logo-sub 與 slot-badge）
 
 **Props**：
@@ -59,10 +58,11 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
   - `.script-toggle-slot`（`aria-label="簡体字・繁体字切り替え（準備中）"`）
 
 **狀態邊界**：
-- 主題狀態：讀取 `document.documentElement.dataset.theme`，寫入 `localStorage`
+- 主題狀態：讀取 `document.documentElement.dataset.theme`（由 BaseLayout pre-paint script 設定），寫入 `localStorage`
 - `aria-pressed` 反映 dark 狀態
 - `aria-label` 依狀態切換（`ダークテーマに切り替える` / `ライトテーマに切り替える`）
 - 觸控目標：最小 44px（theme-toggle）或 52px（含 padding）
+- 不負責 initial preference resolution（該責任在 BaseLayout inline script）
 
 **禁止責任**：
 - 不得管理學習進度或課程狀態
@@ -125,7 +125,7 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 - Refresh（pageshow/storage）：重新讀取 ProgressStore，計算是否需要 reset/completed
 
 **禁止責任**：
-- 不得在初始 markup 中包含正確答案（`tests/lesson-practice-ui.test.ts:21-38` 驗證）
+- 不得在初始 learner-facing question UI 中顯示正確答案（`tests/lesson-practice-ui.test.ts:21-38` 驗證：initial question markup 不包含 `q.correctAnswer` 或 `正解：`）。注意：含 `correctAnswer` 的完整 questions JSON 已序列化在 `<section data-questions={json}>` attribute 中，測試只保證渲染後的 visible question UI 不揭露答案，不保證原始 HTML 不含答案資料。
 - 不得修改其他元件的 DOM
 - 不得直接操作 header 或 route 狀態
 

@@ -257,8 +257,8 @@
         "$id": "#/tokens/spacing/radius",
         "css": "--radius",
         "value": "0",
-        "role": "border radius (zero = no rounding)",
-        "note": "Direction C uses no border-radius; all corners are 0"
+        "role": "card / container border radius (zero = no rounding)",
+        "note": "Direction C uses no border-radius on cards and general containers. Circular exceptions (border-radius: 50%) apply to: brand-mark, station/route-station/pending dots, lesson-marker, practice-choice__indicator, feedback-icon, practice-complete-icon."
       },
       "xs": { "$id": "#/tokens/spacing/xs", "css": "--space-xs", "value": "0.25rem" },
       "sm": { "$id": "#/tokens/spacing/sm", "css": "--space-sm", "value": "0.5rem" },

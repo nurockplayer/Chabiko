@@ -1,10 +1,10 @@
 # Chabiko — Production UI Design Contract
 
-PR #165 ([0475928](https://github.com/tachikochoko/Chabiko/commit/04759286dab434a186cc2730eb3b6c5b62cd386f)) 的合併生產實作的 Direction C 設計契約。
+PR #165 (commit `04759286`) 的合併生產實作的 Direction C 設計契約。
 
 ## 選擇的視覺方向
 
-**Direction C（城市探索 / City Exploration）**，於 [#161 Design 5/17 / decision-only](https://github.com/tachikochoko/Chabiko/pull/161) 中選擇。
+**Direction C（城市探索 / City Exploration）**，於 PR #161 中選擇。
 
 來源檔案：
 - `docs/design/approved-direction.md` — 方向選擇記錄
@@ -41,7 +41,7 @@ PR #165 ([0475928](https://github.com/tachikochoko/Chabiko/commit/04759286dab434
   - 首頁標題：`clamp(1.5rem, 7vw, 2rem)`
   - 課程標題：`clamp(1.75rem, 7vw, 2.5rem)`
   - 核心例句：`clamp(2.25rem, 11vw, 2.75rem)`（mobile）/ `3rem`（desktop >= 1024px）
-- 所有邊框半徑：`0`（Direction C 不使用圓角）
+- 一般卡片與容器使用直角（`--radius: 0`）。production markers 為明確的圓形例外：brand mark、wayfinding station/route station dots、lesson markers、practice-choice indicators、feedback icon、completion icon 均使用 `border-radius: 50%`。
 
 ### 間距系統
 

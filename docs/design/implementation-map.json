@@ -18,12 +18,12 @@
       "LessonPractice: question rendering, answer checking, timer, cross-tab sync",
       "Independent chabiko_theme preference key (isolated from progress storage)",
       "prefers-color-scheme and prefers-reduced-motion support",
-      "Committed browser evidence at 320/375/390/768/1440px (light + dark)"
+      "Committed browser evidence at 390×844 and 1440×900 (light + dark); browser-only checks at 320/375/390/768/1440px"
     ],
     "tests": [
-      "tests/direction-c-production-ui.test.ts (32 tests)",
-      "tests/lesson-practice-ui.test.ts (12 tests added)",
-      "tests/theme-preference.test.ts (50 tests added)"
+      "tests/direction-c-production-ui.test.ts (7 tests)",
+      "tests/lesson-practice-ui.test.ts (4 tests)",
+      "tests/theme-preference.test.ts (3 tests)"
     ]
   },
   "superseded": {
@@ -73,26 +73,40 @@
   },
   "offLimits": {
     "description": "Issues explicitly excluded from this contract. Do not start or modify.",
-    "issues": ["#54", "#70", "#71", "#72"]
+    "issues": [
+      "#54",
+      "#70",
+      "#71",
+      "#72"
+    ]
   },
   "remainingWork": {
     "retainedFollowUps": [
       {
         "id": "script-toggle-implementation",
-        "title": "Implement script toggle (繁體/簡體 switching)",
+        "title": "Implement script toggle (繁體/簡體 content switching)",
         "status": "planned",
-        "files": ["src/components/Header.astro"],
-        "tests": ["tests/direction-c-production-ui.test.ts (extend)"],
+        "files": [
+          "src/components/Header.astro",
+          "src/content/ (structured entries with zh-Hant + zh-Hans fields)",
+          "src/pages/index.astro",
+          "src/pages/lessons/[id].astro"
+        ],
+        "tests": [
+          "tests/content-schema-validation.test.ts (extend for zh-Hans fields)",
+          "tests/direction-c-production-ui.test.ts (extend for script toggle)",
+          "tests/script-toggle.test.ts (new — toggle render, preference persistence, lang attribute sync)"
+        ],
         "dependencies": [],
         "commands": {
           "dev": "pnpm dev",
-          "test": "pnpm test -- tests/direction-c-production-ui.test.ts",
+          "test": "pnpm test",
           "lint": "pnpm lint",
           "build": "pnpm build"
         },
-        "startCondition": "User activates script toggle feature",
-        "stopCondition": "Toggle switches lang attributes on Chinese content between zh-Hant and zh-Hans; preference persisted in localStorage",
-        "benefit": "Single-script learners can read content in their preferred script without separate routes"
+        "startCondition": "Product owner activates script toggle feature",
+        "stopCondition": "Toggle switches all Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters; structured content entries have separate zh-Hant and zh-Hans fields; render layer reads the active script preference and selects the correct field; preference persisted in localStorage; tests cover all states",
+        "benefit": "Single-script learners can read content in their preferred script without separate routes; structured schema supports both script variants for future content"
       },
       {
         "id": "hsks-path-integration",
@@ -103,7 +117,9 @@
           "src/components/GoalPathSlot.astro",
           "src/pages/index.astro"
         ],
-        "tests": ["tests/direction-c-production-ui.test.ts (extend)"],
+        "tests": [
+          "tests/direction-c-production-ui.test.ts (extend)"
+        ],
         "dependencies": [],
         "commands": {
           "dev": "pnpm dev",
@@ -114,27 +130,6 @@
         "startCondition": "HSK content is production-ready",
         "stopCondition": "HSK path appears alongside Taiwan Travel path in GoalPathSlot; HSK lesson pages use same BaseLayout + Header with themeEnabled",
         "benefit": "Second learning path visible to learners; validates the route sidebar pattern for multiple paths"
-      },
-      {
-        "id": "repeated-pattern-extraction",
-        "title": "Extract repeated route timeline and status badge patterns",
-        "status": "deferred",
-        "files": [
-          "src/pages/index.astro (route-line, lesson-marker, lesson-completion-status)",
-          "src/pages/lessons/[id].astro (route-station, route-station-dot, completion-badge)",
-          "src/components/GoalPathSlot.astro (route-timeline, station-dot, path-status)"
-        ],
-        "tests": ["Current test suite (regression)"],
-        "dependencies": [],
-        "commands": {
-          "dev": "pnpm dev",
-          "test": "pnpm test",
-          "lint": "pnpm lint",
-          "build": "pnpm build"
-        },
-        "startCondition": "A third route or page introduces the same vertical route timeline + station dot + status badge pattern",
-        "stopCondition": "Shared RouteTimeline.astro or StatusBadge.astro component extracted without visual or behavioral regression",
-        "benefit": "Reduces duplicated CSS (~60 lines across 3 files); ensures consistent route presentation when new paths are added"
       }
     ],
     "noDependencyCycles": true,
