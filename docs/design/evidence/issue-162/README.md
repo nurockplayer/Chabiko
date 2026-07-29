@@ -6,8 +6,10 @@ at implementation commit `e17eb79220d3012ecc9683c5355e76e1ed5502a8`.
 
 ## Capture environment
 
-- Google Chrome: `150.0.7871.186`
-- Chrome Browser plugin: `26.721.41059`
+- Capture browser: Codex In-app Browser (engine version is not exposed by
+  the browser control surface)
+- Cross-check browser: Google Chrome `150.0.7871.186`
+- Browser control plugin: `26.721.41059`
 - Node.js: `v24.15.0`
 - pnpm: `10.33.0`
 - Astro: `7.1.3`
