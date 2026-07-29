@@ -26,6 +26,9 @@ describe('basic vocabulary route', () => {
     expect(route.match(/loadTeacherVocabulary\(\)/g)).toHaveLength(1);
     expect(route).toContain('basic vocabulary has no provisional items');
     expect(route).toContain('イラストで学ぶ基礎中国語');
+    // BaseLayout provides the page's main landmark — the route uses a <div> wrapper
+    expect(route).not.toContain('<main');
+    expect(route).toContain('<div class="basic-vocabulary-page">');
     expect(loaded).toHaveLength(20);
     expect(loaded.map((item) => item.vocabulary.id)).toEqual([
       'teacher-star-1-37e0eb213f0f', 'teacher-star-1-a66948a76fda',

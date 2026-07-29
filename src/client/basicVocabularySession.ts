@@ -119,6 +119,15 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     progressElement.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length} 語`;
   }
 
+  function announceCompletion(): void {
+    // Insert a visually-hidden completion announcement into the existing
+    // aria-live region so the polite announcement fires reliably.
+    const sr = document.createElement('span');
+    sr.className = 'basic-vocabulary-sr-only';
+    sr.textContent = '今回の学習は完了です';
+    progressElement.append(sr);
+  }
+
   function renderActive(): void {
     if (state.status !== 'active') return;
     const entry = entries.get(state.activeItemId);
@@ -179,6 +188,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       button(document, 'basic-vocabulary-action basic-vocabulary-restart', 'もう一度学ぶ', 'restart'),
     );
     updateProgress();
+    announceCompletion();
   }
 
   function reveal(): void {
