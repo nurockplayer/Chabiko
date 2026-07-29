@@ -485,4 +485,118 @@ describe('BasicVocabularyProgressStore', () => {
     expect(store.getStatus('a')).toBe('learned');
     expect(store.getKnownStreak('a')).toBe(2);
   });
+
+  // ── Finding 1: pending local state vs. old valid storage ──────────────
+
+  it('write failure with old valid storage: two known still reaches learned', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: {} }),
+    );
+    const wrap: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem() { throw new Error('quota'); },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(wrap);
+
+    // First known → learning streak 1 (persist fails, storage still empty)
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // Second known → learned streak 2 (syncFromStorage sees empty doc,
+    // but pendingChanges prevents storage from overwriting 'a')
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getKnownStreak('a')).toBe(2);
+  });
+
+  it('write failure merges cross-tab IDs while keeping pending local state', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { b: { status: 'learned', knownStreak: 2 } } }),
+    );
+    const wrap: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem() { throw new Error('quota'); },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(wrap);
+
+    // Local change to 'a' — persist fails
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // add a cross-tab ID 'c' to storage
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: {
+        b: { status: 'learned', knownStreak: 2 },
+        c: { status: 'learning', knownStreak: 1 },
+      }}),
+    );
+
+    // Next applyRating syncs from storage and should:
+    // - keep 'a' at streak 1 (pending local)
+    // - pick up 'c' from storage (cross-tab merge)
+    // - keep 'b' from storage
+    expect(store.getKnownStreak('b')).toBe(2);
+    store.applyRating('a', 'known'); // also persists with new data on next attempt
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getKnownStreak('a')).toBe(2);
+    // cross-tab IDs are visible (merged into memory)
+    expect(store.getStatus('c')).toBe('learning');
+    expect(store.getKnownStreak('c')).toBe(1);
+  });
+
+  // ── Finding 2: failed removeItem resurrection ─────────────────────────
+
+  it('failed resetAll is never resurrected by refresh or rating', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: {
+        a: { status: 'learned', knownStreak: 2 },
+        b: { status: 'learning', knownStreak: 1 },
+      }}),
+    );
+    let failRemove = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => { storage.setItem(k, v); },
+      removeItem() { if (failRemove) throw new Error('denied'); },
+    };
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+
+    // Verify loaded
+    expect(store.getStatus('a')).toBe('learned');
+
+    // resetAll fails removeItem
+    store.resetAll();
+    expect(store.getStatus('a')).toBe('new');
+    expect(store.getStatus('b')).toBe('new');
+
+    // refresh() — must NOT resurrect old IDs
+    store.refresh();
+    expect(store.getStatus('a')).toBe('new');
+    expect(store.getStatus('b')).toBe('new');
+
+    // applyRating — must NOT resurrect old IDs
+    store.applyRating('c', 'known');
+    expect(store.getStatus('a')).toBe('new');
+    expect(store.getStatus('c')).toBe('learning');
+
+    // When storage becomes writable again, persist succeeds
+    // Next write should only contain reset+new state
+    failRemove = false;
+    store.applyRating('c', 'known');
+    expect(store.getStatus('c')).toBe('learned');
+
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(stored.items).not.toHaveProperty('a');
+    expect(stored.items).not.toHaveProperty('b');
+    expect(stored.items.c.knownStreak).toBe(2);
+  });
 });

@@ -103,7 +103,11 @@ function emptyDocument(): BasicVocabularyProgressDocument {
  * - Malformed JSON, wrong schema version, unavailable storage, quota errors all
  *   fall back to page-lifetime in-memory state.
  * - Re-reads storage before every write to prevent stale-instance resurrection
- *   and merge concurrent cross-tab writes.
+ *   and merge concurrent cross-tab writes.  When a previous write has failed,
+ *   local pending changes are authoritative for their IDs while storage entries
+ *   for other IDs are still merged in.
+ * - A failed resetAll (removeItem throws) prevents subsequent storage reads
+ *   from resurrecting the old document.
  * - All-or-nothing read validation: any invalid field/version/item invalidates
  *   the entire stored document (falls back to empty in-memory).
  * - Never calls localStorage.clear() or touches lesson/HSK/theme keys.
@@ -112,6 +116,8 @@ export class BasicVocabularyProgressStore {
   private document: BasicVocabularyProgressDocument;
   private storage: StorageLike | null;
   private persistFailed = false;
+  private pendingChanges = new Set<string>();
+  private resetPending = false;
 
   constructor(storage?: StorageLike | null) {
     this.document = emptyDocument();
@@ -138,6 +144,8 @@ export class BasicVocabularyProgressStore {
   /**
    * Apply a revealed rating and persist.
    * Re-reads current storage first to merge cross-tab changes.
+   * Local pending changes (from prior write failures) override storage for
+   * their IDs; storage entries for other IDs are still merged in.
    */
   applyRating(id: string, rating: 'again' | 'unsure' | 'known'): void {
     this.syncFromStorage();
@@ -152,6 +160,7 @@ export class BasicVocabularyProgressStore {
       nextItems[id] = next;
     }
     this.document = { version: 1, items: nextItems };
+    this.pendingChanges.add(id);
     this.persist();
   }
 
@@ -176,13 +185,17 @@ export class BasicVocabularyProgressStore {
   /**
    * Reset only the basic-vocabulary progress key.
    * Never calls localStorage.clear() or touches lesson/HSK/theme keys.
+   * When removeItem fails, the resetPending flag prevents subsequent
+   * storage reads from resurrecting the old document.
    */
   resetAll(): void {
     this.document = emptyDocument();
+    this.resetPending = true;
+    this.pendingChanges.clear();
     try {
       this.storage?.removeItem(BASIC_VOCABULARY_PROGRESS_KEY);
     } catch {
-      /* best-effort */
+      /* best-effort — resetPending prevents storage resurrection */
     }
   }
 
@@ -211,15 +224,37 @@ export class BasicVocabularyProgressStore {
       if (typeof raw === 'string') {
         const doc = parseDocument(raw);
         if (doc !== null) {
+          if (this.resetPending) {
+            // A prior resetAll failed to removeItem; keep empty in-memory state.
+            return;
+          }
+          if (this.persistFailed && this.pendingChanges.size > 0) {
+            // Merge: local pending entries override storage for their IDs;
+            // storage entries for other IDs are kept (cross-tab safety).
+            const merged: Record<string, VocabularyProgressEntry> = {};
+            for (const [k, v] of Object.entries(doc.items)) {
+              merged[k] = this.pendingChanges.has(k) && k in this.document.items
+                ? this.document.items[k]
+                : v;
+            }
+            // Include local entries not present in storage at all
+            for (const [k, v] of Object.entries(this.document.items)) {
+              if (!(k in doc.items)) {
+                merged[k] = v;
+              }
+            }
+            this.document = { version: 1, items: merged };
+            return;
+          }
           this.document = doc;
           this.persistFailed = false;
         }
         // malformed — keep existing in-memory state
       } else {
-        // absent: only treat as reset when no prior write failure
-        if (!this.persistFailed) {
-          this.document = emptyDocument();
-        }
+        // absent key
+        if (this.resetPending) return;
+        if (this.persistFailed) return;
+        this.document = emptyDocument();
       }
     } catch {
       /* storage malformed — keep existing in-memory state */
@@ -233,6 +268,8 @@ export class BasicVocabularyProgressStore {
         JSON.stringify(this.document),
       );
       this.persistFailed = false;
+      this.resetPending = false;
+      this.pendingChanges.clear();
     } catch {
       this.persistFailed = true;
       /* storage full or unavailable — keep in-memory state */
