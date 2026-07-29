@@ -14,6 +14,7 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
   class="basic-vocabulary-session"
   data-basic-vocabulary-session
   data-basic-vocabulary-ids={serializedIds}
+  data-basic-vocabulary-session-size={Math.min(items.length, 10)}
 >
   <p class="basic-vocabulary-summary" data-summary>新規 {items.length}語・学習中 0語・習得済み 0語</p>
   <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {Math.min(items.length, 10)} 語</p>

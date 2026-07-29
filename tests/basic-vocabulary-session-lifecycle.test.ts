@@ -411,4 +411,20 @@ describe('basic vocabulary session lifecycle', () => {
     cleanup1();
     cleanup2();
   });
+
+  it('production root uses min(10, count) session size with Issue #116 markup', () => {
+    const root = document.createElement('section');
+    root.dataset.basicVocabularyIds = JSON.stringify([...REAL_IDS]);
+    root.dataset.basicVocabularySessionSize = '10';
+    root.innerHTML =
+      '<p data-summary></p><p data-progress aria-live="polite">0 / 10 語</p><div data-card></div><button data-action="reset">reset</button>';
+    document.body.append(root);
+    initBasicVocabularySession(root);
+
+    // Progress shows 0 / 3 (only 3 items in REAL_IDS, capped by count)
+    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 3 語/);
+
+    // Size attribute signals the intended cap
+    expect(root.dataset.basicVocabularySessionSize).toBe('10');
+  });
 });

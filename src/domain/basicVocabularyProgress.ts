@@ -1,4 +1,8 @@
 import type { StorageLike } from '../lib/progress';
+import {
+  applyRatingToProgress,
+  prioritizeVocabularyIds,
+} from './vocabularyProgress';
 import type {
   VocabularyProgressEntry,
   VocabularyProgressStatus,
@@ -107,6 +111,7 @@ function emptyDocument(): BasicVocabularyProgressDocument {
 export class BasicVocabularyProgressStore {
   private document: BasicVocabularyProgressDocument;
   private storage: StorageLike | null;
+  private persistFailed = false;
 
   constructor(storage?: StorageLike | null) {
     this.document = emptyDocument();
@@ -209,11 +214,14 @@ export class BasicVocabularyProgressStore {
         const doc = parseDocument(raw);
         if (doc !== null) {
           this.document = doc;
+          this.persistFailed = false;
         }
         // malformed — keep existing in-memory state
       } else {
-        // absent — storage was cleared (e.g. resetAll)
-        this.document = emptyDocument();
+        // absent: only treat as reset when no prior write failure
+        if (!this.persistFailed) {
+          this.document = emptyDocument();
+        }
       }
     } catch {
       /* storage malformed — keep existing in-memory state */
@@ -226,47 +234,10 @@ export class BasicVocabularyProgressStore {
         BASIC_VOCABULARY_PROGRESS_KEY,
         JSON.stringify(this.document),
       );
+      this.persistFailed = false;
     } catch {
+      this.persistFailed = true;
       /* storage full or unavailable — keep in-memory state */
     }
   }
-}
-
-// ─── Pure helpers (reused from vocabularyProgress.ts contract) ──────────────────
-
-function applyRatingToProgress(
-  current: VocabularyProgressEntry | undefined,
-  rating: 'again' | 'unsure' | 'known',
-): VocabularyProgressEntry {
-  if (rating === 'again' || rating === 'unsure') {
-    return { status: 'learning', knownStreak: 0 };
-  }
-  const prevStreak = current?.knownStreak ?? 0;
-  const nextStreak = prevStreak + 1;
-  return {
-    status: nextStreak >= 2 ? 'learned' : 'learning',
-    knownStreak: nextStreak,
-  };
-}
-
-const STATUS_ORDER: Record<VocabularyProgressStatus, number> = {
-  learning: 0,
-  new: 1,
-  learned: 2,
-};
-
-function prioritizeVocabularyIds(
-  ids: readonly string[],
-  entries: Readonly<Record<string, VocabularyProgressEntry>>,
-): string[] {
-  const indexMap = new Map<string, number>();
-  for (let i = 0; i < ids.length; i++) {
-    indexMap.set(ids[i], i);
-  }
-  return [...ids].sort((a, b) => {
-    const rankA = STATUS_ORDER[entries[a]?.status ?? 'new'];
-    const rankB = STATUS_ORDER[entries[b]?.status ?? 'new'];
-    if (rankA !== rankB) return rankA - rankB;
-    return (indexMap.get(a) ?? 0) - (indexMap.get(b) ?? 0);
-  });
 }

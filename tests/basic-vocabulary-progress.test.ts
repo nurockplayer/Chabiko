@@ -407,4 +407,60 @@ describe('BasicVocabularyProgressStore', () => {
     const parsed = JSON.parse(stored);
     expect(Object.keys(parsed.items)).toEqual(['b', 'a']);
   });
+
+  // ── Write failure regression ──────────────────────────────────────────────
+
+  it('survives write failure: consecutive known reaches learned despite quota error', () => {
+    let failWrites = true;
+    const quotaStorage: StorageLike = {
+      getItem() { return null; },
+      setItem() { if (failWrites) throw new Error('quota'); },
+      removeItem() {},
+    };
+    const store = new BasicVocabularyProgressStore(quotaStorage);
+
+    // First known → learning streak 1
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learning');
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // Second known → should still reach learned even though persist failed
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getKnownStreak('a')).toBe(2);
+
+    // Now "recover" storage — later writes succeed
+    failWrites = false;
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(3);
+  });
+
+  it('write failure followed by successful write does not lose accumulated memory', () => {
+    const storage = fakeStorage();
+    // First write fails
+    let failOnce = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => {
+        if (failOnce) { failOnce = false; throw new Error('quota'); }
+        storage.setItem(k, v);
+      },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+
+    // Two consecutive known with write failure
+    store.applyRating('a', 'known');
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getKnownStreak('a')).toBe(2);
+
+    // Third write succeeds — must not lose memory
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(3);
+
+    // Storage eventually has the correct value
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(stored.items.a.knownStreak).toBe(3);
+  });
 });
