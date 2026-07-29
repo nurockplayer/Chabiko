@@ -33,7 +33,7 @@ const cleanups = new WeakMap<HTMLElement, () => void>();
 
 function initializeFromIds(
   root: HTMLElement,
-): { ids: string[]; entries: Map<string, SessionItem>; availableCount: number } {
+): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 10 | 20 } {
   const raw = root.dataset.basicVocabularyIds;
   if (!raw) {
     throw new Error('basic vocabulary session data is missing');
@@ -45,9 +45,7 @@ function initializeFromIds(
   }
 
   const sizeAttr = root.dataset.basicVocabularySessionSize;
-  const availableCount = sizeAttr !== undefined
-    ? Math.min(Number(sizeAttr), ids.length)
-    : ids.length;
+  const availableCount: 10 | 20 = sizeAttr !== undefined ? 10 : 20;
 
   const loaded = loadTeacherVocabulary();
   const entries = new Map<string, SessionItem>();
@@ -118,7 +116,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   const store = new BasicVocabularyProgressStore();
 
   const ids = store.prioritize(allIds).slice(0, availableCount);
-  let state: VocabularySessionState = createVocabularySession(ids, availableCount as 10 | 20, 'zh-to-ja');
+  let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
   let hasRatedSinceInit = false;
 
   const card = root.querySelector<HTMLElement>('[data-card]');

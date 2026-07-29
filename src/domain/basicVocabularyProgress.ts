@@ -169,10 +169,8 @@ export class BasicVocabularyProgressStore {
 
   /** Re-read progress from storage. Call on `pageshow`. */
   refresh(): void {
-    if (this.storage !== null) {
-      this.load();
-    }
-    /* storage === null: keep in-memory state */
+    this.syncFromStorage();
+    /* storage === null: keep in-memory state (syncFromStorage returns early) */
   }
 
   /**

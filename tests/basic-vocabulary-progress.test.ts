@@ -463,4 +463,26 @@ describe('BasicVocabularyProgressStore', () => {
     const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
     expect(stored.items.a.knownStreak).toBe(3);
   });
+
+  it('refresh preserves memory after failed write when storage key is absent', () => {
+    const quotaStorage: StorageLike = {
+      getItem() { return null; },
+      setItem() { throw new Error('quota'); },
+      removeItem() {},
+    };
+    const store = new BasicVocabularyProgressStore(quotaStorage);
+
+    // First known → learning streak 1 (write failed)
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // refresh() — should NOT clear memory since persistFailed
+    store.refresh();
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // Second known → learned streak 2
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getKnownStreak('a')).toBe(2);
+  });
 });
