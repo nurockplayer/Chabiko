@@ -1,0 +1,462 @@
+{
+  "vocabulary": [
+    {
+      "id": "teacher-star-1-37e0eb213f0f",
+      "simplified": "大家",
+      "simplifiedStatus": "authored",
+      "traditional": "大家",
+      "traditionalStatus": "authored",
+      "pinyin": "dà jiā",
+      "japanese": "みんな",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 2
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-37e0eb213f0f"
+    },
+    {
+      "id": "teacher-star-1-a66948a76fda",
+      "simplified": "人",
+      "simplifiedStatus": "authored",
+      "traditional": "人",
+      "traditionalStatus": "authored",
+      "pinyin": "rén",
+      "japanese": "人（ひと）",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 3
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-a66948a76fda"
+    },
+    {
+      "id": "teacher-star-1-86f5cdb6e25c",
+      "simplified": "客人",
+      "simplifiedStatus": "authored",
+      "traditional": "客人",
+      "traditionalStatus": "authored",
+      "pinyin": "kè ren",
+      "japanese": "お客さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 7
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-86f5cdb6e25c"
+    },
+    {
+      "id": "teacher-star-1-bdc7865a507e",
+      "simplified": "朋友",
+      "simplifiedStatus": "authored",
+      "traditional": "朋友",
+      "traditionalStatus": "authored",
+      "pinyin": "péng you",
+      "japanese": "友達",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 8
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-bdc7865a507e"
+    },
+    {
+      "id": "teacher-star-1-86367b2d53f6",
+      "simplified": "先生",
+      "simplifiedStatus": "authored",
+      "traditional": "先生",
+      "traditionalStatus": "authored",
+      "pinyin": "xiān sheng",
+      "japanese": "先生（男性）",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 9
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-86367b2d53f6"
+    },
+    {
+      "id": "teacher-star-1-8b957a100bd4",
+      "simplified": "小姐/女士",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiǎo jiě/nǚ shì",
+      "japanese": "～さん（女性）",
+      "traditionalStatus": "unavailable",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 10
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      }
+    },
+    {
+      "id": "teacher-star-1-2cfcacc0503e",
+      "simplified": "自己",
+      "simplifiedStatus": "authored",
+      "traditional": "自己",
+      "traditionalStatus": "authored",
+      "pinyin": "zì jǐ",
+      "japanese": "自分",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 11
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-2cfcacc0503e"
+    },
+    {
+      "id": "teacher-star-1-e7bc12c4f23a",
+      "simplified": "爸爸",
+      "simplifiedStatus": "authored",
+      "traditional": "爸爸",
+      "traditionalStatus": "authored",
+      "pinyin": "bà ba",
+      "japanese": "お父さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 14
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-e7bc12c4f23a"
+    },
+    {
+      "id": "teacher-star-1-e64490a207eb",
+      "simplified": "妈妈",
+      "simplifiedStatus": "authored",
+      "traditional": "媽媽",
+      "traditionalStatus": "authored",
+      "pinyin": "mā ma",
+      "japanese": "お母さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 15
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-e64490a207eb"
+    },
+    {
+      "id": "teacher-star-1-bada4e11125d",
+      "simplified": "父亲",
+      "simplifiedStatus": "authored",
+      "traditional": "父親",
+      "traditionalStatus": "authored",
+      "pinyin": "fù qin",
+      "japanese": "父親",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 16
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-bada4e11125d"
+    },
+    {
+      "id": "teacher-star-1-d903f490725f",
+      "simplified": "母亲",
+      "simplifiedStatus": "authored",
+      "traditional": "母親",
+      "traditionalStatus": "authored",
+      "pinyin": "mǔ qin",
+      "japanese": "母親",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 17
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-d903f490725f"
+    },
+    {
+      "id": "teacher-star-1-7420330fee5c",
+      "simplified": "哥哥",
+      "simplifiedStatus": "authored",
+      "traditional": "哥哥",
+      "traditionalStatus": "authored",
+      "pinyin": "gē ge",
+      "japanese": "お兄さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 18
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-7420330fee5c"
+    },
+    {
+      "id": "teacher-star-1-ed096023b3be",
+      "simplified": "姐姐",
+      "simplifiedStatus": "authored",
+      "traditional": "姐姐",
+      "traditionalStatus": "authored",
+      "pinyin": "jiě jie",
+      "japanese": "お姉さん",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 19
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-ed096023b3be"
+    },
+    {
+      "id": "teacher-star-1-cb42fb8775e5",
+      "simplified": "弟弟",
+      "simplifiedStatus": "authored",
+      "traditional": "弟弟",
+      "traditionalStatus": "authored",
+      "pinyin": "dì di",
+      "japanese": "弟",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 20
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-cb42fb8775e5"
+    },
+    {
+      "id": "teacher-star-1-c39a19585434",
+      "simplified": "妹妹",
+      "simplifiedStatus": "authored",
+      "traditional": "妹妹",
+      "traditionalStatus": "authored",
+      "pinyin": "mèi mei",
+      "japanese": "妹",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 23
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-c39a19585434"
+    },
+    {
+      "id": "teacher-star-1-3e6fabf09358",
+      "simplified": "爱人",
+      "simplifiedStatus": "authored",
+      "traditional": "愛人",
+      "traditionalStatus": "authored",
+      "pinyin": "ài rén",
+      "japanese": "配偶者",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 26
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-3e6fabf09358"
+    },
+    {
+      "id": "teacher-star-1-1c0cdf0b2b9c",
+      "simplified": "丈夫",
+      "simplifiedStatus": "authored",
+      "traditional": "丈夫",
+      "traditionalStatus": "authored",
+      "pinyin": "zhàng fu",
+      "japanese": "夫",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 27
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-1c0cdf0b2b9c"
+    },
+    {
+      "id": "teacher-star-1-8fea4ac29b4c",
+      "simplified": "妻子",
+      "simplifiedStatus": "authored",
+      "traditional": "妻子",
+      "traditionalStatus": "authored",
+      "pinyin": "qī zi",
+      "japanese": "妻",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 28
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-8fea4ac29b4c"
+    },
+    {
+      "id": "teacher-star-1-94757170c2b0",
+      "simplified": "孩子",
+      "simplifiedStatus": "authored",
+      "traditional": "孩子",
+      "traditionalStatus": "authored",
+      "pinyin": "hái zi",
+      "japanese": "子ども",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 29
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-94757170c2b0"
+    },
+    {
+      "id": "teacher-star-1-0cc5799cdbbc",
+      "simplified": "儿子",
+      "simplifiedStatus": "authored",
+      "traditional": "兒子",
+      "traditionalStatus": "authored",
+      "pinyin": "ér zi",
+      "japanese": "息子",
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 30
+      },
+      "source": {
+        "type": "teacher-workbook",
+        "note": "AI provisional first pass; corrections expected."
+      },
+      "illustrationRef": "ill-teacher-star-1-0cc5799cdbbc"
+    }
+  ]
+}
