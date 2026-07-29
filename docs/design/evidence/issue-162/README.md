@@ -1,8 +1,10 @@
 # Issue #162 production journey evidence
 
-All screenshots show the production home or lesson routes from the committed
-Direction C implementation. They were captured from the static production build
-at implementation commit `e17eb79220d3012ecc9683c5355e76e1ed5502a8`.
+All screenshots show the production home or lesson routes. The ten light-theme
+screenshots were captured from the committed Direction C implementation at
+`07c0b64c967187d2f37031e666e8d0f0df0293e1`; the five dark-theme screenshots
+were captured from the committed dark integration at
+`e17eb79220d3012ecc9683c5355e76e1ed5502a8`.
 
 ## Capture environment
 
@@ -14,6 +16,7 @@ at implementation commit `e17eb79220d3012ecc9683c5355e76e1ed5502a8`.
 - pnpm: `10.33.0`
 - Astro: `7.1.3`
 - Screenshot setting: `fullPage: false`
+- Evidence format: PNG (verified from file signatures after capture)
 
 The browser plugin reserves its own 15×32 px mobile chrome and 15×9 px desktop
 chrome. Mobile captures therefore used a 405×876 browser override to produce a
