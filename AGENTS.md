@@ -73,6 +73,20 @@ sed -n '1,120p' AGENTS.md
 - 若需要新增依賴、調整架構或擴大功能範圍，先說明理由、替代方案與風險。
 - 高衝擊自動化，例如 auto-close PR、dependency auto-merge，預設禁止，除非使用者明確確認。
 
+## Flash 任務大小 Gate
+
+本節適用於 DeepSeek v4 Flash 或其他低成本 implementation model，也約束產生實作或 review-fix prompt 的 coordinator。
+
+- Review findings 不是一個可直接整包委派的 executable task。委派前必須依 root cause 與 implementation mechanism 分組。
+- 每個 implementation cycle 只能有一個 primary mechanism，以及與該機制直接耦合的 targeted tests。
+- 同一 cycle 不得同時包含 production logic／architecture 修改、test harness／mocking／fixture 重設計，以及 GitHub／CI／review thread／PR cleanup。
+- 多個 findings 只有在 root cause、主要修改檔案、implementation mechanism 與 validation boundary 都相同時才可合併。
+- 其餘 findings 必須在同一 branch／PR 上依序拆成 bounded cycles：production correctness、failure-path tests／test harness、final integration／delivery cleanup。
+- 非 final cycle 到 targeted validation 與精簡回報即停止。完整 validation、reviewer rerun、thread resolution、PR body 更新與 CI 確認只放在 final integration cycle。
+- 若 prompt 含有超過一個獨立 primary mechanism，coordinator 必須在委派前拆分；implementer 若收到違反本 Gate 的任務，必須在修改前停止並回報建議拆法。
+- Prompt 長度必須依任務規模裁剪，不得重複 Issue、`AGENTS.md` 或 `CLAUDE.md` 已明定的要求。
+- 單一 cycle 完成不得被表述為整個 PR 已 merge-ready，除非 final integration、完整驗證與 reviewer gate 均已完成。
+
 ## Git 規範
 
 - Branch 名稱使用 `<agent-or-purpose>/<short-description>`，並優先遵循使用者或當前 workflow 指定的命名方式。
@@ -141,4 +155,3 @@ sed -n '1,120p' AGENTS.md
 - 有新增依賴、package manager、license 或外部資料風險時必須明確說明。
 - 遇到可在當前 issue scope 內安全修復的錯誤，先診斷並做最小修正，再重新驗證。
 - 只有在修正會擴大 scope、改變架構、增加依賴、破壞相容性或需要產品決策時，才停止並請使用者決定。
-
