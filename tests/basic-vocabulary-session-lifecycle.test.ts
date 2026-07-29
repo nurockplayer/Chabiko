@@ -348,6 +348,24 @@ describe('basic vocabulary session lifecycle', () => {
     expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
   });
 
+  it('handles storage key=null (clear) with the same refresh/restart rules as exact key', () => {
+    const root = rootWith();
+    initBasicVocabularySession(root);
+
+    // Before any rating: key=null refreshes and restarts (no ratings)
+    window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
+
+    // After rating: key=null refreshes summary but keeps active session
+    reveal(root);
+    rate(root, 'known');
+    const summary = root.querySelector<HTMLElement>('[data-summary]')!;
+    expect(summary.textContent).toContain('学習中');
+    window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    // Session preserved
+    expect(root.querySelector('[data-card]')).not.toBeNull();
+  });
+
   it('reset confirm clears progress, resets summary, and restarts session', () => {
     const root = rootWith();
     initBasicVocabularySession(root);

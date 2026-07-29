@@ -599,4 +599,108 @@ describe('BasicVocabularyProgressStore', () => {
     expect(stored.items).not.toHaveProperty('b');
     expect(stored.items.c.knownStreak).toBe(2);
   });
+
+  // ── Finding 1: old non-pending IDs not resurrected in merge ───────────
+
+  it('non-pending local IDs are not resurrected during persistFailed merge', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: {} }),
+    );
+    const wrap: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem() { throw new Error('quota'); },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(wrap);
+
+    // Apply to 'a' first — this is a pending change
+    store.applyRating('a', 'known');
+    expect(store.getKnownStreak('a')).toBe(1);
+
+    // Now 'b' exists in local memory only (via the applyRating flow inside store.document)
+    // directly set local memory to have both 'a' (pending) and 'b' (non-pending)
+    // Storage is REPLACED by another tab — only contains 'c'
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { c: { status: 'learned', knownStreak: 2 } } }),
+    );
+
+    // Next rating triggers syncFromStorage. Merge should keep:
+    // - 'a' from pendingChanges
+    // - 'c' from storage
+    // - NOT 'b' since it was never persisted and is not in pendingChanges
+    store.applyRating('a', 'known');
+    expect(store.getStatus('a')).toBe('learned');
+    expect(store.getStatus('c')).toBe('learned');
+    expect(store.getAllItems()).not.toHaveProperty('b');
+  });
+
+  // ── Finding 2: successful reset allows cross-tab reads ────────────────
+
+  it('successful resetAll allows cross-tab progress to be loaded via refresh', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { a: { status: 'learned', knownStreak: 2 } } }),
+    );
+    const store = new BasicVocabularyProgressStore(storage);
+    expect(store.getStatus('a')).toBe('learned');
+
+    // Successful reset
+    store.resetAll();
+    expect(store.getStatus('a')).toBe('new');
+
+    // Another tab writes new progress
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { b: { status: 'learned', knownStreak: 2 } } }),
+    );
+
+    // refresh must load the cross-tab progress
+    store.refresh();
+    expect(store.getStatus('b')).toBe('learned');
+    expect(store.getStatus('a')).toBe('new');
+  });
+
+  // ── Failed reset combined ────────────────────────────────────────────
+
+  it('failed reset prevents storage resurrection even when valid doc appears later', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { a: { status: 'learned', knownStreak: 2 } } }),
+    );
+    let failRemove = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => { storage.setItem(k, v); },
+      removeItem() { if (failRemove) throw new Error('denied'); },
+    };
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+    store.resetAll();
+
+    // Another tab replaces storage with a different valid document
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { b: { status: 'learning', knownStreak: 1 } } }),
+    );
+
+    // Must NOT resurrect 'b'
+    store.refresh();
+    expect(store.getStatus('a')).toBe('new');
+    expect(store.getStatus('b')).toBe('new');
+
+    // After storage recovers, write succeeds
+    failRemove = false;
+    store.applyRating('c', 'known');
+    expect(store.getStatus('c')).toBe('learning');
+
+    // Only reset+new state in storage
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(stored.items).not.toHaveProperty('a');
+    expect(stored.items).not.toHaveProperty('b');
+    expect(stored.items.c.knownStreak).toBe(1);
+  });
 });

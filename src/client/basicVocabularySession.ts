@@ -301,7 +301,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   window.addEventListener('pageshow', onPageShow);
 
   function onStorage(e: StorageEvent): void {
-    if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY) return;
+    if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
     store.refresh();
     updateSummary();
     if (!hasRatedSinceInit) {

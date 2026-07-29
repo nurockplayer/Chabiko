@@ -190,11 +190,12 @@ export class BasicVocabularyProgressStore {
    */
   resetAll(): void {
     this.document = emptyDocument();
-    this.resetPending = true;
     this.pendingChanges.clear();
     try {
       this.storage?.removeItem(BASIC_VOCABULARY_PROGRESS_KEY);
+      this.resetPending = false;
     } catch {
+      this.resetPending = true;
       /* best-effort — resetPending prevents storage resurrection */
     }
   }
@@ -237,10 +238,10 @@ export class BasicVocabularyProgressStore {
                 ? this.document.items[k]
                 : v;
             }
-            // Include local entries not present in storage at all
-            for (const [k, v] of Object.entries(this.document.items)) {
-              if (!(k in doc.items)) {
-                merged[k] = v;
+            // Include pending entries not present in storage at all
+            for (const k of this.pendingChanges) {
+              if (!(k in doc.items) && k in this.document.items) {
+                merged[k] = this.document.items[k];
               }
             }
             this.document = { version: 1, items: merged };
