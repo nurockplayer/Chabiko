@@ -1,0 +1,36 @@
+---
+import BasicVocabularySession from '../../../components/vocabulary/BasicVocabularySession.astro';
+import { loadTeacherVocabulary } from '../../../content/loadTeacherVocabulary';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const items = loadTeacherVocabulary();
+
+if (items.length === 0) {
+  throw new Error('basic vocabulary has no provisional items');
+}
+
+for (const item of items) {
+  if (item.illustration && item.illustration.vocabularyId !== item.vocabulary.id) {
+    throw new Error(`basic vocabulary illustration link is invalid for '${item.vocabulary.id}'`);
+  }
+}
+---
+
+<BaseLayout title="イラストで学ぶ基礎中国語">
+  <div class="basic-vocabulary-page">
+    <h1>イラストで学ぶ基礎中国語</h1>
+    <BasicVocabularySession items={items} />
+  </div>
+</BaseLayout>
+
+<style>
+  .basic-vocabulary-page {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin: 0 0 var(--space-xl);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+</style>

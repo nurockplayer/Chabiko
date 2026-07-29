@@ -1,0 +1,246 @@
+import {
+  applyVocabularySessionAction,
+  createVocabularySession,
+} from '../domain/vocabularySession';
+import type {
+  VocabularySessionRating,
+  VocabularySessionState,
+} from '../domain/vocabularySession';
+import { loadTeacherVocabulary } from '../content/loadTeacherVocabulary';
+
+interface SessionIllustration {
+  vocabularyId: string;
+  assetPath: string;
+  width: number;
+  height: number;
+  altJa: string;
+}
+
+interface SessionItem {
+  id: string;
+  simplified: string;
+  pinyin: string;
+  japanese: string;
+  traditional?: string;
+  illustration: SessionIllustration | null;
+}
+
+const cleanups = new WeakMap<HTMLElement, () => void>();
+
+function initializeFromIds(
+  root: HTMLElement,
+): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 20 } {
+  const raw = root.dataset.basicVocabularyIds;
+  if (!raw) {
+    throw new Error('basic vocabulary session data is missing');
+  }
+
+  const ids = JSON.parse(raw) as string[];
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error('basic vocabulary has no provisional items');
+  }
+
+  const loaded = loadTeacherVocabulary();
+  const entries = new Map<string, SessionItem>();
+
+  for (const id of ids) {
+    const match = loaded.find((item) => item.vocabulary.id === id);
+    if (!match) {
+      throw new Error(`basic vocabulary item '${id}' is missing from the loader`);
+    }
+
+    const { vocabulary, illustration } = match;
+
+    if (illustration && illustration.vocabularyId !== vocabulary.id) {
+      throw new Error(`basic vocabulary illustration link is invalid for '${vocabulary.id}'`);
+    }
+
+    entries.set(id, {
+      id: vocabulary.id,
+      simplified: vocabulary.simplified,
+      pinyin: vocabulary.pinyin,
+      japanese: vocabulary.japanese,
+      traditional: vocabulary.traditional,
+      illustration: illustration === null ? null : {
+        vocabularyId: illustration.vocabularyId,
+        assetPath: illustration.assetPath,
+        width: illustration.width,
+        height: illustration.height,
+        altJa: illustration.altJa,
+      },
+    });
+  }
+
+  return { ids, entries, availableCount: 20 };
+}
+
+function textElement(
+  document: Document,
+  className: string,
+  value: string,
+  language?: string,
+): HTMLParagraphElement {
+  const element = document.createElement('p');
+  element.className = className;
+  element.textContent = value;
+  if (language) element.lang = language;
+  return element;
+}
+
+function button(
+  document: Document,
+  className: string,
+  label: string,
+  action: string,
+): HTMLButtonElement {
+  const element = document.createElement('button');
+  element.type = 'button';
+  element.className = className;
+  element.dataset.action = action;
+  element.textContent = label;
+  return element;
+}
+
+export function initBasicVocabularySession(root: HTMLElement): () => void {
+  cleanups.get(root)?.();
+
+  const { ids, entries, availableCount } = initializeFromIds(root);
+  let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
+
+  const card = root.querySelector<HTMLElement>('[data-card]');
+  const progress = root.querySelector<HTMLElement>('[data-progress]');
+  if (!card || !progress) {
+    throw new Error('basic vocabulary session markup is missing');
+  }
+  const cardElement = card;
+  const progressElement = progress;
+
+  function updateProgress(): void {
+    progressElement.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length} 語`;
+  }
+
+  function announceCompletion(): void {
+    // Insert a visually-hidden completion announcement into the existing
+    // aria-live region so the polite announcement fires reliably.
+    const sr = document.createElement('span');
+    sr.className = 'basic-vocabulary-sr-only';
+    sr.textContent = '今回の学習は完了です';
+    progressElement.append(sr);
+  }
+
+  function renderActive(): void {
+    if (state.status !== 'active') return;
+    const entry = entries.get(state.activeItemId);
+    if (!entry) {
+      throw new Error(`basic vocabulary item '${state.activeItemId}' is missing`);
+    }
+
+    const fragment = document.createDocumentFragment();
+    if (entry.illustration) {
+      const image = document.createElement('img');
+      image.className = 'basic-vocabulary-illustration';
+      image.src = entry.illustration.assetPath;
+      image.width = entry.illustration.width;
+      image.height = entry.illustration.height;
+      image.alt = entry.illustration.altJa;
+      fragment.append(image);
+    }
+
+    fragment.append(textElement(document, 'basic-vocabulary-simplified', entry.simplified, 'zh-Hans'));
+
+    if (state.answerRevealed) {
+      const answer = document.createElement('div');
+      answer.className = 'basic-vocabulary-answer';
+      answer.append(
+        textElement(document, 'basic-vocabulary-pinyin', entry.pinyin, 'zh-Latn'),
+        textElement(document, 'basic-vocabulary-japanese', entry.japanese, 'ja'),
+      );
+      if (entry.traditional) {
+        answer.append(textElement(document, 'basic-vocabulary-traditional', entry.traditional, 'zh-Hant'));
+      }
+      fragment.append(answer);
+
+      const ratings = document.createElement('div');
+      ratings.className = 'basic-vocabulary-ratings';
+      for (const [rating, label] of [
+        ['again', 'もう一度'],
+        ['unsure', 'まだ曖昧'],
+        ['known', '覚えた'],
+      ] as const) {
+        const ratingButton = button(document, 'basic-vocabulary-rating', label, 'rate');
+        ratingButton.dataset.rating = rating;
+        ratings.append(ratingButton);
+      }
+      fragment.append(ratings);
+    } else {
+      fragment.append(button(document, 'basic-vocabulary-action basic-vocabulary-reveal', '答えを見る', 'reveal'));
+    }
+
+    cardElement.className = 'basic-vocabulary-card';
+    cardElement.replaceChildren(fragment);
+    updateProgress();
+  }
+
+  function renderCompleted(): void {
+    cardElement.className = 'basic-vocabulary-completion';
+    cardElement.replaceChildren(
+      textElement(document, 'basic-vocabulary-completion-title', '今回の学習は完了です', 'ja'),
+      button(document, 'basic-vocabulary-action basic-vocabulary-restart', 'もう一度学ぶ', 'restart'),
+    );
+    updateProgress();
+    announceCompletion();
+  }
+
+  function reveal(): void {
+    const result = applyVocabularySessionAction(state, { kind: 'reveal' });
+    if (result.kind !== 'accepted') return;
+    state = result.state;
+    renderActive();
+    root.querySelector<HTMLButtonElement>('[data-rating="again"]')?.focus();
+  }
+
+  function rate(rating: VocabularySessionRating): void {
+    const result = applyVocabularySessionAction(state, { kind: 'rate', rating });
+    if (result.kind !== 'accepted') return;
+    state = result.state;
+    if (state.status === 'completed') {
+      renderCompleted();
+      root.querySelector<HTMLButtonElement>('[data-action="restart"]')?.focus();
+      return;
+    }
+    renderActive();
+    root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
+  }
+
+  function restart(): void {
+    state = createVocabularySession(ids, availableCount, 'zh-to-ja');
+    renderActive();
+    root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
+  }
+
+  function onClick(event: MouseEvent): void {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const control = target.closest<HTMLButtonElement>('button[data-action]');
+    if (!control || !root.contains(control)) return;
+
+    if (control.dataset.action === 'reveal') {
+      reveal();
+    } else if (control.dataset.action === 'rate') {
+      const rating = control.dataset.rating as VocabularySessionRating;
+      if (rating === 'again' || rating === 'unsure' || rating === 'known') rate(rating);
+    } else if (control.dataset.action === 'restart') {
+      restart();
+    }
+  }
+
+  root.addEventListener('click', onClick);
+  renderActive();
+
+  const cleanup = () => {
+    root.removeEventListener('click', onClick);
+    if (cleanups.get(root) === cleanup) cleanups.delete(root);
+  };
+  cleanups.set(root, cleanup);
+  return cleanup;
+}
