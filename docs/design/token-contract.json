@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "https://chabiko.dev/docs/design/token-contract.json",
+  "title": "Chabiko Design Token Contract",
+  "description": "Production semantic tokens from BaseLayout.astro — PR #165, commit 04759286 on main",
+  "source": "src/layouts/BaseLayout.astro:50-130",
+  "verifiedAt": "2026-07-29",
+  "tokens": {
+    "color": {
+      "page": {
+        "$id": "#/tokens/color/page",
+        "css": "--color-page",
+        "alias": "--c-bg",
+        "light": "#f4f1ec",
+        "dark": "#11141c",
+        "role": "page background",
+        "usedIn": ["body", ".practice-choice:disabled background"]
+      },
+      "surface": {
+        "$id": "#/tokens/color/surface",
+        "css": "--color-surface",
+        "alias": "--c-surface",
+        "light": "#ffffff",
+        "dark": "#1b202b",
+        "role": "card / elevated surface background",
+        "usedIn": [".lesson-list-link", ".core-card", ".practice-choice", ".nav-link"]
+      },
+      "text": {
+        "$id": "#/tokens/color/text",
+        "css": "--color-text",
+        "alias": "--c-text",
+        "light": "#1a1a2e",
+        "dark": "#f2eee8",
+        "role": "primary body text",
+        "usedIn": ["body", "all headings", ".core-sentence", ".lesson-example"]
+      },
+      "textSecondary": {
+        "$id": "#/tokens/color/textSecondary",
+        "css": "--color-text-secondary",
+        "alias": "--c-text-secondary",
+        "light": "#555570",
+        "dark": "#c9c3ba",
+        "role": "secondary/meta text",
+        "usedIn": [".hook", ".pinyin", ".note", ".lesson-can-do", ".progress-summary"]
+      },
+      "textMuted": {
+        "$id": "#/tokens/color/textMuted",
+        "css": "--color-text-muted",
+        "alias": "--c-text-muted",
+        "light": "#6a6a7d",
+        "dark": "#aaa49b",
+        "role": "deemphasized / disabled text",
+        "usedIn": [".practice-progress", "disabled choice labels", ".pending-label"]
+      },
+      "primary": {
+        "$id": "#/tokens/color/primary",
+        "css": "--color-primary",
+        "alias": "--c-primary",
+        "light": "#1a2744",
+        "dark": "#a9bee9",
+        "role": "brand primary / link / active indicator",
+        "usedIn": ["a", ".lesson-list-link border-top", ".core-card border-top", ".station-dot", ".route-station-dot"]
+      },
+      "primarySoft": {
+        "$id": "#/tokens/color/primarySoft",
+        "css": "--color-primary-soft",
+        "alias": "--c-primary-light",
+        "light": "#e8ecf3",
+        "dark": "#252d3d",
+        "role": "primary background / hover state on dark",
+        "usedIn": [".practice-choice:hover", ".lesson-list-link:hover", ".pending-status"]
+      },
+      "accent": {
+        "$id": "#/tokens/color/accent",
+        "css": "--color-accent",
+        "alias": "--c-accent",
+        "light": "#d48c2b",
+        "dark": "#efb45b",
+        "role": "highlight / call-to-action / progress marker inner",
+        "usedIn": [".brand-mark", ".station-dot::after", ".route-station-dot::after", ".lesson-marker-core", ".can-do-section border-left"]
+      },
+      "accentSoft": {
+        "$id": "#/tokens/color/accentSoft",
+        "css": "--color-accent-soft",
+        "alias": "--c-accent-light",
+        "light": "#f5e8d0",
+        "dark": "#382c1c",
+        "role": "accent background / can-do callout / current status badge",
+        "usedIn": [".can-do-section", ".travel-task", ".station-dot box-shadow", ".route-station-dot box-shadow", ".path-status"]
+      },
+      "route": {
+        "$id": "#/tokens/color/route",
+        "css": "--color-route",
+        "alias": "--c-route-line",
+        "light": "#d0ccc4",
+        "dark": "#4b5362",
+        "role": "route timeline line / path connector",
+        "usedIn": [".route-timeline::before", ".route-line", ".pending-dot border"]
+      },
+      "border": {
+        "$id": "#/tokens/color/border",
+        "css": "--color-border",
+        "alias": "--c-border",
+        "light": "#e0dcd4",
+        "dark": "#363d4a",
+        "role": "separator / card border / divider",
+        "usedIn": [".practice-choice", ".nav-link", ".reset-btn", ".reading-section border-top", ".core-meaning border-top"]
+      },
+      "success": {
+        "$id": "#/tokens/color/success",
+        "css": "--color-success",
+        "alias": "--c-success",
+        "light": "#3d7b80",
+        "dark": "#70b9b1",
+        "role": "correct / completed state",
+        "usedIn": [".practice-choice--correct border/indicator", ".feedback-icon", ".lesson-marker--done", ".lesson-completion-status--done"]
+      },
+      "successSoft": {
+        "$id": "#/tokens/color/successSoft",
+        "css": "--color-success-soft",
+        "alias": "--c-success-bg",
+        "light": "#e8f0f0",
+        "dark": "#17322f",
+        "role": "correct / completed background",
+        "usedIn": [".practice-choice--correct background", ".practice-feedback", ".lesson-completion-status--done background"]
+      },
+      "error": {
+        "$id": "#/tokens/color/error",
+        "css": "--color-error",
+        "alias": "--c-error",
+        "light": "#b04435",
+        "dark": "#ee8d7d",
+        "role": "incorrect / destructive state",
+        "usedIn": [".practice-choice--incorrect border/indicator", ".feedback-incorrect .feedback-icon"]
+      },
+      "errorSoft": {
+        "$id": "#/tokens/color/errorSoft",
+        "css": "--color-error-soft",
+        "alias": "--c-error-bg",
+        "light": "#f5e8e4",
+        "dark": "#3a2222",
+        "role": "incorrect / destructive background",
+        "usedIn": [".practice-choice--incorrect background", ".practice-feedback.feedback-visible--incorrect"]
+      },
+      "header": {
+        "$id": "#/tokens/color/header",
+        "css": "--color-header",
+        "alias": null,
+        "light": "#1a2744",
+        "dark": "#161f34",
+        "role": "site header background",
+        "usedIn": [".site-header"],
+        "note": "No --c-* alias; header-specific semantic only"
+      },
+      "headerText": {
+        "$id": "#/tokens/color/headerText",
+        "css": "--color-header-text",
+        "alias": null,
+        "light": "#ffffff",
+        "dark": "#f6f2ea",
+        "role": "site header text / controls",
+        "usedIn": [".site-header", ".brand", ".nav-link", ".theme-toggle"],
+        "note": "No --c-* alias; header-specific semantic only"
+      },
+      "headerMuted": {
+        "$id": "#/tokens/color/headerMuted",
+        "css": "--color-header-muted",
+        "alias": null,
+        "light": "rgb(255 255 255 / 78%)",
+        "dark": "#c9c5bd",
+        "role": "header secondary text / slots",
+        "usedIn": [".logo-sub", ".script-toggle-slot"],
+        "note": "Light value uses rgb() opacity; dark uses solid hex"
+      },
+      "onPrimary": {
+        "$id": "#/tokens/color/onPrimary",
+        "css": "--color-on-primary",
+        "alias": null,
+        "light": "#ffffff",
+        "dark": "#11141c",
+        "role": "text/icon on primary background",
+        "usedIn": [".practice-complete-icon"],
+        "note": "No --c-* alias"
+      },
+      "onStatus": {
+        "$id": "#/tokens/color/onStatus",
+        "css": "--color-on-status",
+        "alias": null,
+        "light": "#ffffff",
+        "dark": "#11141c",
+        "role": "text/icon on status badges / markers",
+        "usedIn": [".brand-mark", ".feedback-icon", ".lesson-marker--done ::before"]
+      },
+      "statusCurrent": {
+        "$id": "#/tokens/color/statusCurrent",
+        "css": "--color-status-current",
+        "alias": null,
+        "light": "#765215",
+        "dark": "#f0bd6d",
+        "role": "current/active status label text",
+        "usedIn": [".path-status", ".lesson-completion-status--current", ".can-do-section h2", ".route-status"]
+      },
+      "statusSuccess": {
+        "$id": "#/tokens/color/statusSuccess",
+        "css": "--color-status-success",
+        "alias": null,
+        "light": "#2f666b",
+        "dark": "#8acbc4",
+        "role": "completed status label text",
+        "usedIn": [".lesson-completion-status--done", ".completion-badge--done"]
+      },
+      "focus": {
+        "$id": "#/tokens/color/focus",
+        "css": "--color-focus",
+        "alias": null,
+        "light": "#1a2744",
+        "dark": "#f2bd67",
+        "role": ":focus-visible outline color",
+        "usedIn": [":focus-visible"],
+        "note": "Matches --c-primary in light; warm gold in dark for contrast"
+      },
+      "slotBackground": {
+        "$id": "#/tokens/color/slotBackground",
+        "css": "--c-slot-bg",
+        "aliasRef": "#/tokens/color/primarySoft",
+        "light": "var(--c-primary-light)",
+        "dark": "var(--c-primary-light)",
+        "role": "alias, not an independent token",
+        "note": "Defined as var(--c-primary-light); resolves to --color-primary-soft per theme"
+      }
+    },
+    "typography": {
+      "fontZh": {
+        "$id": "#/tokens/typography/fontZh",
+        "css": "--font-zh",
+        "value": "'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif",
+        "role": "Traditional Chinese content",
+        "appliedWhere": ["[lang='zh-Hant']", ".core-sentence", ".lesson-example", ".example-sentence", ".route-example"]
+      },
+      "fontJa": {
+        "$id": "#/tokens/typography/fontJa",
+        "css": "--font-ja",
+        "value": "'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif",
+        "role": "Japanese UI / body text (default)",
+        "appliedWhere": ["body"]
+      },
+      "fontPinyin": {
+        "$id": "#/tokens/typography/fontPinyin",
+        "css": "--font-pinyin",
+        "value": "'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif",
+        "role": "Pinyin romanization",
+        "appliedWhere": ["[lang='zh-Latn']", ".core-pinyin", ".lesson-pinyin", ".pinyin"]
+      }
+    },
+    "spacing": {
+      "radius": {
+        "$id": "#/tokens/spacing/radius",
+        "css": "--radius",
+        "value": "0",
+        "role": "border radius (zero = no rounding)",
+        "note": "Direction C uses no border-radius; all corners are 0"
+      },
+      "xs": { "$id": "#/tokens/spacing/xs", "css": "--space-xs", "value": "0.25rem" },
+      "sm": { "$id": "#/tokens/spacing/sm", "css": "--space-sm", "value": "0.5rem" },
+      "md": { "$id": "#/tokens/spacing/md", "css": "--space-md", "value": "1rem" },
+      "lg": { "$id": "#/tokens/spacing/lg", "css": "--space-lg", "value": "1.5rem" },
+      "xl": { "$id": "#/tokens/spacing/xl", "css": "--space-xl", "value": "2rem" },
+      "2xl": { "$id": "#/tokens/spacing/2xl", "css": "--space-2xl", "value": "3rem" },
+      "3xl": { "$id": "#/tokens/spacing/3xl", "css": "--space-3xl", "value": "4rem" },
+      "maxWidth": {
+        "$id": "#/tokens/spacing/maxWidth",
+        "css": "--max-w",
+        "value": "80rem",
+        "role": "content area max width"
+      }
+    }
+  },
+  "themeMechanism": {
+    "storageKey": "chabiko_theme",
+    "type": "light | dark",
+    "scope": "production home and lesson routes only",
+    "detection": "inline <script> in BaseLayout.astro reads localStorage first, falls back to prefers-color-scheme",
+    "activation": "data-theme-enabled=\"true\" on <html>, data-theme=\"light|dark\"",
+    "cssSelector": ":root[data-theme-enabled='true'][data-theme='dark']",
+    "optIn": "themeEnabled prop on BaseLayout.astro; default false",
+    "source": [
+      "src/layouts/BaseLayout.astro:32-49 (inline detection)",
+      "src/lib/theme.ts:1-15 (resolveTheme, getNextTheme, THEME_STORAGE_KEY)",
+      "tests/theme-preference.test.ts:19-49 (unit tests)"
+    ]
+  },
+  "aliasValidation": {
+    "allAliasesResolve": true,
+    "noCycles": true,
+    "aliasMap": {
+      "--c-bg": "--color-page",
+      "--c-surface": "--color-surface",
+      "--c-text": "--color-text",
+      "--c-text-secondary": "--color-text-secondary",
+      "--c-text-muted": "--color-text-muted",
+      "--c-primary": "--color-primary",
+      "--c-primary-light": "--color-primary-soft",
+      "--c-accent": "--color-accent",
+      "--c-accent-light": "--color-accent-soft",
+      "--c-route-line": "--color-route",
+      "--c-border": "--color-border",
+      "--c-success": "--color-success",
+      "--c-success-bg": "--color-success-soft",
+      "--c-error": "--color-error",
+      "--c-error-bg": "--color-error-soft",
+      "--c-slot-bg": "var(--c-primary-light)"
+    }
+  }
+}
