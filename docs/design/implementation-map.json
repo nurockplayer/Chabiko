@@ -20,6 +20,14 @@
       "prefers-color-scheme and prefers-reduced-motion support",
       "Committed browser evidence at 390×844 and 1440×900 (light + dark); browser-only checks at 320/375/390/768/1440px"
     ],
+    "packageManager": "pnpm@10.33.0",
+    "manifest": "package.json — defines allowed dependency ranges and scripts",
+    "lockfile": "pnpm-lock.yaml — authoritative source of exact resolved dependency versions",
+    "fixture": {
+      "productionLessons": "data/examples/valid/lessons.json — production lesson data fixture",
+      "fixtureLoader": "src/content/loadLessons.ts — loads and filters renderable lessons"
+    },
+    "baselineAuthority": "All package ranges, resolved versions, and fixture content referenced above are frozen at the PR #165 squash merge commit 04759286.",
     "tests": [
       "tests/direction-c-production-ui.test.ts (7 tests)",
       "tests/lesson-practice-ui.test.ts (4 tests)",

@@ -68,9 +68,9 @@ PR #165 在 light 與 dark 的 home 與 lesson/practice 頁面以全部五種寬
 
 ### 一般規則
 
-1. **無水平溢出**：所有 viewport（320–1440px）中 `documentElement.scrollWidth <= clientWidth`。PR #165 證據確認（`evidence/issue-162/README.md:49-51`）。
+1. **無水平溢出**：所有已檢查的 viewport widths（320、375、390、768、1440px）中 `documentElement.scrollWidth <= clientWidth`。PR #165 證據確認（`evidence/issue-162/README.md:49-51`）。
 
-2. **控制項在 viewport 內**：header、導航、主題切換、script slot、課程導航與練習控制項在 320–1440px 範圍內不超出 drawable viewport（`evidence/issue-162/README.md:51-53`）。
+2. **控制項在 viewport 內**：header、導航、主題切換、script slot、課程導航與練習控制項在已檢查的 viewport widths（320、375、390、768、1440px）內不超出 drawable viewport（`evidence/issue-162/README.md:51-53`）。
 
 3. **文字換行**：長中文、拼音與日文字串在 `overflow-wrap: anywhere` 或 `overflow-wrap: break-word` 下正確換行，無裁剪（`evidence/issue-162/README.md:53-54`）。
 
@@ -116,8 +116,8 @@ PR #165 在 light 與 dark 的 home 與 lesson/practice 頁面以全部五種寬
 PR #165 的瀏覽器驗證（`evidence/issue-162/README.md:49-62`）：
 
 - **Committed captures：** 15 張 PNG 在 390×844 與 1440×900 視口（light 10 張 + dark 5 張）
-- **Browser checks：** Light/dark home + lesson/practice 在 320、375、390、768、1440px 檢查通過
-- 無水平溢出
-- 控制項在 viewport 內
+- **Browser checks：** Light/dark home + lesson/practice 在 320、375、390、768、1440px 等離散寬度檢查通過
+- 所有已檢查的 viewport widths 均無水平溢出
+- 所有已檢查的 viewport widths 中控制項均在 viewport 內
 - 文字正確換行，無裁剪
 - 無瀏覽器主控台警告或錯誤
