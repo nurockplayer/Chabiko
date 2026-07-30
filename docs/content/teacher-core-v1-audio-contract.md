@@ -63,7 +63,7 @@ The UTF-8 SSML body is serialized from this exact template, with XML escaping ap
 Generation rules:
 
 1. Require HTTP `200`.
-2. Save the response body byte-for-byte as the expected source filename.
+2. The generation step must save the response body byte-for-byte as the expected source filename.
 3. Do not concatenate items.
 4. Do not transcode, trim, normalize, denoise, resample, or otherwise modify the response.
 5. #178 must record each committed file checksum, duration, MIME type, sample rate, channel count, and size.
