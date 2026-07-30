@@ -122,13 +122,21 @@ describe('basic-vocabulary home entry', () => {
       );
     });
 
-    it('only adds the exact allowed selectors in the style block', () => {
+    it('only adds the exact 7 allowed selectors in the style block (no compound/descendant variants)', () => {
       const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
       const styles = styleMatch?.[1] ?? '';
-      const selectorLines = styles
-        .split('\n')
-        .filter((line) => line.includes('basic-vocabulary-entry'))
-        .map((l) => l.trim());
+
+      // Find every CSS selector string starting with .basic-vocabulary-entry
+      // that is followed by a `{` — compound selectors like
+      // `.basic-vocabulary-entry__content h2` won't match since the `{` is
+      // after `h2`, not immediately after the `.basic-vocabulary-entry` token.
+      const foundSelectors: string[] = [];
+      const entrySelectorRe = /\.basic-vocabulary-entry[\w-]*(?::\w+(?:-\w+)*)?\s*\{/g;
+      let match: RegExpExecArray | null;
+      while ((match = entrySelectorRe.exec(styles)) !== null) {
+        // Strip trailing whitespace and `{` to get the bare selector
+        foundSelectors.push(match[0].replace(/\s*\{$/, ''));
+      }
 
       const allowedSelectors = [
         '.basic-vocabulary-entry',
@@ -140,21 +148,11 @@ describe('basic-vocabulary home entry', () => {
         '.basic-vocabulary-entry__link:focus-visible',
       ];
 
-      for (const line of selectorLines) {
-        const selector = line.replace(/[{}]/g, '').trim();
-        if (selector.includes('.basic-vocabulary-entry')) {
-          const isAllowed = allowedSelectors.some(
-            (a) => selector === a || selector.startsWith(a + ','),
-          );
-          // Also allow compound selectors and @media-wrapped variants
-          expect(
-            isAllowed ||
-              selector.includes('.basic-vocabulary-entry__link') ||
-              selector === '.basic-vocabulary-entry' ||
-              selector.startsWith('.basic-vocabulary-entry__'),
-          ).toBe(true);
-        }
-      }
+      // Verify exact count and uniqueness
+      expect(foundSelectors).toHaveLength(7);
+
+      // Sort both for order-independent comparison
+      expect([...foundSelectors].sort()).toEqual([...allowedSelectors].sort());
     });
 
     it('has content inside #basic-vocabulary-entry with the right structure', () => {
