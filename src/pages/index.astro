@@ -26,7 +26,12 @@ const lessons = loadAllRenderableLessons();
             {lessons.map((lesson, index) => {
               const example = lesson.examples?.[0] ?? null;
               return (
-                <li class="lesson-list-item" data-route-lesson={lesson.id}>
+                <li
+                  class="lesson-list-item"
+                  data-route-lesson={lesson.id}
+                  data-route-title={lesson.titleJa}
+                  data-route-example={lesson.coreSentence}
+                >
                   <span class="route-line" aria-hidden="true"></span>
                   <a class="lesson-list-link" href={`/lessons/${lesson.id}/`}>
                     <span class="lesson-marker" aria-hidden="true">
@@ -88,47 +93,14 @@ const lessons = loadAllRenderableLessons();
 </BaseLayout>
 
 <script>
+  import { updateHomeProgressUI } from '../client/homeProgress';
   import { ProgressStore } from '../lib/progress';
-  import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot';
+  import { handleProgressStorageEvent } from '../lib/progressSnapshot';
 
   let store = new ProgressStore();
 
   function updateCompletionUI() {
-    const statusElements = document.querySelectorAll('.lesson-completion-status');
-    const entries: { id: string; completable: boolean }[] = [];
-    let currentAssigned = false;
-    statusElements.forEach((el) => {
-      const id = el.getAttribute('data-lesson-id') ?? '';
-      if (!id) return;
-      const completable = el.getAttribute('data-completable') === 'true';
-      const done = store.isComplete(id);
-      const routeItem = el.closest('[data-route-lesson]');
-      const link = routeItem?.querySelector('.lesson-list-link');
-      routeItem?.classList.toggle('lesson-list-item--done', done);
-      routeItem?.classList.remove('lesson-list-item--current');
-      link?.removeAttribute('aria-current');
-
-      if (done) {
-        el.textContent = '✓ 完了';
-        el.className = 'lesson-completion-status lesson-completion-status--done';
-      } else if (!currentAssigned) {
-        currentAssigned = true;
-        el.textContent = '進行中';
-        el.className = 'lesson-completion-status lesson-completion-status--current';
-        routeItem?.classList.add('lesson-list-item--current');
-        link?.setAttribute('aria-current', 'step');
-      } else {
-        el.textContent = 'このあと';
-        el.className = 'lesson-completion-status';
-      }
-      entries.push({ id, completable });
-    });
-
-    const snapshot = buildProgressSnapshot(store, entries);
-    const summary = document.getElementById('progress-summary');
-    if (summary) {
-      summary.textContent = snapshot.summaryText;
-    }
+    updateHomeProgressUI(document, store);
   }
 
   function refreshUI() {
