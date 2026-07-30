@@ -95,12 +95,12 @@ const lessons = loadAllRenderableLessons();
 <script>
   import { updateHomeProgressUI } from '../client/homeProgress';
   import { ProgressStore } from '../lib/progress';
-  import { handleProgressStorageEvent } from '../lib/progressSnapshot';
+  import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot';
 
   let store = new ProgressStore();
 
   function updateCompletionUI() {
-    updateHomeProgressUI(document, store);
+    updateHomeProgressUI(document, store, buildProgressSnapshot);
   }
 
   function refreshUI() {
