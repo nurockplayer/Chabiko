@@ -141,6 +141,14 @@ export class BasicVocabularyProgressStore {
     return this.document.items;
   }
 
+  /**
+   * Accept synthetic events with an unknown area and real events from the
+   * exact storage object owned by this store. Reject other storage areas.
+   */
+  isRelevantStorageArea(storageArea: StorageLike | null): boolean {
+    return storageArea === null || storageArea === this.storage;
+  }
+
   // ── Write ─────────────────────────────────────────────────────────────────
 
   /**
