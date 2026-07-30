@@ -106,8 +106,8 @@ function emptyDocument(): BasicVocabularyProgressDocument {
  *   and merge concurrent cross-tab writes.  When a previous write has failed,
  *   local pending changes are authoritative for their IDs while storage entries
  *   for other IDs are still merged in.
- * - Explicit cross-tab deletion is authoritative and clears stale in-memory
- *   progress plus pending write state.
+ * - Explicit cross-tab deletion is authoritative while the key remains absent,
+ *   and clears stale in-memory progress plus pending write state.
  * - A failed resetAll (removeItem throws) prevents subsequent storage reads
  *   from resurrecting the old document.
  * - All-or-nothing read validation: any invalid field/version/item invalidates
@@ -185,15 +185,29 @@ export class BasicVocabularyProgressStore {
   }
 
   /**
-   * Accept an explicit deletion from another browsing context as authoritative.
+   * Accept an explicit deletion from another browsing context as authoritative
+   * only while the storage key is still absent. Returns false when a newer write
+   * has already repopulated the key and the delayed deletion event is stale.
+   *
    * This is separate from refresh() so an ordinary pageshow can still preserve
    * page-lifetime progress after a local write failure.
    */
-  acceptExternalClear(): void {
+  acceptExternalClear(): boolean {
+    if (this.storage !== null) {
+      try {
+        if (this.storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY) !== null) {
+          return false;
+        }
+      } catch {
+        /* The explicit deletion event remains the best available signal. */
+      }
+    }
+
     this.document = emptyDocument();
     this.persistFailed = false;
     this.pendingChanges.clear();
     this.resetPending = false;
+    return true;
   }
 
   /**
