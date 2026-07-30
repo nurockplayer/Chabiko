@@ -176,6 +176,20 @@ describe('basic-vocabulary home entry', () => {
       expect(syntheticPreludes.sort()).not.toEqual([...expected].sort());
     });
 
+    it('does not suppress native focus-visible outline on the entry link', () => {
+      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
+      const styles = styleMatch?.[1] ?? '';
+      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
+      const rules = clean.split('}');
+      const focusRule = rules.find(
+        (r) =>
+          r.includes('basic-vocabulary-entry__link') &&
+          r.includes(':focus-visible'),
+      );
+      expect(focusRule).toBeDefined();
+      expect(focusRule).not.toContain('outline');
+    });
+
     it('has content inside #basic-vocabulary-entry with the right structure', () => {
       expect(entry).toContain('basic-vocabulary-entry__content');
       expect(entry).toContain('basic-vocabulary-entry__eyebrow');
