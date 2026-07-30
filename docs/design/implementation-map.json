@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "https://chabiko.dev/docs/design/implementation-map.json",
+  "title": "Chabiko Implementation Map",
+  "description": "Post-PR-#165 remaining work map — no dependency on #62–#69",
+  "lastUpdated": "2026-07-29",
+  "baseline": {
+    "commit": "04759286dab434a186cc2730eb3b6c5b62cd386f",
+    "pr": "#165 — [MVP UI recovery] Apply Direction C to the production learning journey",
+    "delivered": [
+      "Direction C visual language (light + dark)",
+      "Semantic CSS custom properties with aliases",
+      "BaseLayout with theme opt-in mechanism",
+      "Header with native theme toggle (keyboard-accessible, aria-pressed, 44px targets)",
+      "GoalPathSlot route sidebar",
+      "Production home: lesson list with progress state",
+      "Production lesson: reading/navigation/practice/feedback/retry/completion",
+      "LessonPractice: question rendering, answer checking, timer, cross-tab sync",
+      "Independent chabiko_theme preference key (isolated from progress storage)",
+      "prefers-color-scheme and prefers-reduced-motion support",
+      "Committed browser evidence at 390×844 and 1440×900 (light + dark); browser-only checks at 320/375/390/768/1440px"
+    ],
+    "packageManager": "pnpm@10.33.0",
+    "manifest": "package.json — defines allowed dependency ranges and scripts",
+    "lockfile": "pnpm-lock.yaml — authoritative source of exact resolved dependency versions",
+    "fixture": {
+      "productionLessons": "data/examples/valid/lessons.json — production lesson data fixture",
+      "fixtureLoader": "src/content/loadLessons.ts — loads and filters renderable lessons"
+    },
+    "baselineAuthority": "All package ranges, resolved versions, and fixture content referenced above are frozen at the PR #165 squash merge commit 04759286.",
+    "tests": [
+      "tests/direction-c-production-ui.test.ts (7 tests)",
+      "tests/lesson-practice-ui.test.ts (4 tests)",
+      "tests/theme-preference.test.ts (3 tests)"
+    ]
+  },
+  "superseded": {
+    "description": "Issues #62–#69 are superseded by PR #165. Do not reopen or list as dependencies.",
+    "issues": {
+      "#62": {
+        "title": "Directory C semantic tokens / typography / spacing / responsive defaults",
+        "resolution": "superseded by PR #165",
+        "reason": "Implementation is in src/layouts/BaseLayout.astro:50-204; theme in src/lib/theme.ts"
+      },
+      "#63": {
+        "title": "Chinese, pinyin, Japanese hierarchy primitives",
+        "resolution": "superseded by PR #165",
+        "reason": "Integrated directly in production lesson route src/pages/lessons/[id].astro"
+      },
+      "#64": {
+        "title": "Standalone control library (header, theme button, lesson navigation)",
+        "resolution": "superseded by PR #165",
+        "reason": "Header with theme toggle in src/components/Header.astro; lesson nav in [id].astro"
+      },
+      "#65": {
+        "title": "Travel path / progress presentation components",
+        "resolution": "superseded by PR #165",
+        "reason": "Route timeline in GoalPathSlot.astro and index.astro; completion states integrated"
+      },
+      "#66": {
+        "title": "Quiz options, feedback, retry, completion components",
+        "resolution": "superseded by PR #165",
+        "reason": "All in src/components/LessonPractice.astro with non-color cues"
+      },
+      "#67": {
+        "title": "Production home integration",
+        "resolution": "superseded by PR #165",
+        "reason": "Fully delivered in src/pages/index.astro"
+      },
+      "#68": {
+        "title": "Production lesson reading/navigation integration",
+        "resolution": "superseded by PR #165",
+        "reason": "Fully delivered in src/pages/lessons/[id].astro"
+      },
+      "#69": {
+        "title": "Production practice/feedback/retry/completion integration",
+        "resolution": "superseded by PR #165",
+        "reason": "Fully delivered in LessonPractice.astro integrated with lesson route"
+      }
+    }
+  },
+  "offLimits": {
+    "description": "Issues explicitly excluded from this contract. Do not start or modify.",
+    "issues": [
+      "#54",
+      "#70",
+      "#71",
+      "#72"
+    ]
+  },
+  "remainingWork": {
+    "retainedFollowUps": [
+      {
+        "id": "script-toggle-implementation",
+        "title": "Implement script toggle (繁體/簡體 content switching)",
+        "status": "planned",
+        "files": [
+          "src/components/Header.astro",
+          "src/components/GoalPathSlot.astro",
+          "src/components/LessonPractice.astro",
+          "src/lib/practice.ts",
+          "src/types/lesson.ts",
+          "src/content/loadLessons.ts",
+          "data/examples/valid/lessons.json",
+          "scripts/validate-content-schema.py",
+          "src/pages/index.astro",
+          "src/pages/lessons/[id].astro"
+        ],
+        "tests": [
+          "tests/direction-c-production-ui.test.ts (extend)",
+          "tests/practice.test.ts (extend)",
+          "tests/lesson-practice-ui.test.ts (extend)",
+          "tests/script-toggle.test.ts (planned new file)",
+          "scripts/validate-content-schema.py (self-tests and --check validation)"
+        ],
+        "dependencies": [],
+        "commands": {
+          "dev": "pnpm dev",
+          "test": "pnpm test",
+          "lint": "pnpm lint",
+          "build": "pnpm build"
+        },
+        "startCondition": "Product owner activates script toggle feature",
+        "stopCondition": "Toggle switches all learner-facing Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters, including: examples.traditional/examples.simplified, coreSentence, chunks[].chunk, kanjiBridgeNotes[].kanji, reviewPrompts.promptJa, answerJa, distractorsJa, and any Chinese text rendered on the home page, GoalPathSlot, lesson page, and practice questions/choices/feedback. Displayed text, lang attribute, question generation, correct answers, distractors, rendered practice choices, renderer output, and persisted preference stay in sync. The implementing issue must define the paired data representation for all fields that do not yet carry both Traditional and Simplified values; this contract does not prescribe the final schema API.",
+        "benefit": "Single-script learners can read content in their preferred script without separate routes."
+      },
+      {
+        "id": "hsks-path-integration",
+        "title": "Integrate HSK path into production journey",
+        "status": "planned",
+        "files": [
+          "src/pages/vocabulary/hsk/1/index.astro",
+          "src/components/GoalPathSlot.astro",
+          "src/pages/index.astro"
+        ],
+        "tests": [
+          "tests/direction-c-production-ui.test.ts (extend)"
+        ],
+        "dependencies": [],
+        "commands": {
+          "dev": "pnpm dev",
+          "test": "pnpm test",
+          "lint": "pnpm lint",
+          "build": "pnpm build"
+        },
+        "startCondition": "HSK content is production-ready",
+        "stopCondition": "HSK path appears alongside Taiwan Travel path in GoalPathSlot; HSK lesson pages use same BaseLayout + Header with themeEnabled",
+        "benefit": "Second learning path visible to learners; validates the route sidebar pattern for multiple paths"
+      }
+    ],
+    "noDependencyCycles": true,
+    "designContractReferences": {
+      "token-contract.json": "./token-contract.json",
+      "design-contract.md": "./design-contract.md",
+      "component-contract.md": "./component-contract.md",
+      "responsive-contract.md": "./responsive-contract.md",
+      "figma-handoff.md": "./figma-handoff.md"
+    }
+  }
+}
