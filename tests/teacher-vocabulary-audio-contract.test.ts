@@ -88,8 +88,10 @@ const GENERATION_SETTING_KEYS = [
   'api',
   'region',
   'requestMethod',
+  'authenticationMethod',
   'requestContentType',
   'outputFormat',
+  'userAgent',
   'ssmlVersion',
   'ssmlLanguage',
   'prosodyRate',
@@ -189,12 +191,17 @@ describe('teacher-core-v1 audio contract JSON', () => {
   });
 
   it('freezes the exact provider request and response handling contract', () => {
-    expect(contract.sourceContract.generationOrRecordingSettings).toEqual({
+    const settings = contract.sourceContract.generationOrRecordingSettings;
+
+    expect(settings).toEqual({
       api: 'Azure Speech REST text-to-speech /cognitiveservices/v1',
       region: 'japaneast',
       requestMethod: 'POST',
+      authenticationMethod:
+        'Ocp-Apim-Subscription-Key header supplied only at generation time',
       requestContentType: 'application/ssml+xml',
       outputFormat: 'audio-24khz-48kbitrate-mono-mp3',
+      userAgent: 'ChabikoTeacherAudio/1.0',
       ssmlVersion: '1.0',
       ssmlLanguage: 'zh-TW',
       prosodyRate: '0%',
@@ -202,6 +209,9 @@ describe('teacher-core-v1 audio contract JSON', () => {
       requestGranularity: 'one vocabulary item per request',
       responseHandling: 'require HTTP 200 and save response body byte-for-byte',
     });
+
+    expect(String(settings.userAgent).length).toBeGreaterThan(0);
+    expect(String(settings.userAgent).length).toBeLessThan(255);
   });
 
   it('uses the exact frozen production vocabulary IDs and order', () => {
@@ -323,6 +333,9 @@ describe('teacher-core-v1 audio contract Markdown', () => {
     expect(markdown).toContain(
       String(contract.sourceContract.generationOrRecordingSettings.outputFormat),
     );
+    expect(markdown).toContain(
+      String(contract.sourceContract.generationOrRecordingSettings.userAgent),
+    );
     expect(markdown).toContain(contract.sourceContract.permissionStatus);
     expect(markdown).toContain(String(contract.vocabularyCount));
     expect(markdown).toContain(contract.reviewPolicy.initialStatus);
@@ -335,7 +348,10 @@ describe('teacher-core-v1 audio contract Markdown', () => {
     expect(markdown).toContain('credentials and provider dependencies out of the learner runtime');
   });
 
-  it('records exact deterministic IDs, paths, request handling, and stop conditions', () => {
+  it('records exact request headers, deterministic IDs, paths, response handling, and stop conditions', () => {
+    expect(markdown).toContain('Ocp-Apim-Subscription-Key: <supplied securely at generation time>');
+    expect(markdown).toContain('User-Agent: ChabikoTeacherAudio/1.0');
+    expect(markdown).toContain('below the documented 255-character limit');
     expect(markdown).toContain('audioId = audio-{vocabularyId}');
     expect(markdown).toContain('public/assets/audio/teacher-core-v1/{audioId}.mp3');
     expect(markdown).toContain('save the response body byte-for-byte');
