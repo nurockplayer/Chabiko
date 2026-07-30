@@ -18,6 +18,7 @@
       "requestContentType": "application/ssml+xml",
       "outputFormat": "audio-24khz-48kbitrate-mono-mp3",
       "userAgent": "ChabikoTeacherAudio/1.0",
+      "ssmlTemplate": "<speak version=\"1.0\" xml:lang=\"zh-TW\"><voice name=\"zh-TW-HsiaoChenNeural\"><prosody rate=\"0%\" pitch=\"0%\">{spokenText}</prosody></voice></speak>",
       "ssmlVersion": "1.0",
       "ssmlLanguage": "zh-TW",
       "prosodyRate": "0%",
