@@ -124,6 +124,29 @@ const ITEM_KEYS = [
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
+const EXPECTED_VOCABULARY_IDS = [
+  'teacher-star-1-37e0eb213f0f',
+  'teacher-star-1-a66948a76fda',
+  'teacher-star-1-86f5cdb6e25c',
+  'teacher-star-1-bdc7865a507e',
+  'teacher-star-1-86367b2d53f6',
+  'teacher-star-1-8b957a100bd4',
+  'teacher-star-1-2cfcacc0503e',
+  'teacher-star-1-e7bc12c4f23a',
+  'teacher-star-1-e64490a207eb',
+  'teacher-star-1-bada4e11125d',
+  'teacher-star-1-d903f490725f',
+  'teacher-star-1-7420330fee5c',
+  'teacher-star-1-ed096023b3be',
+  'teacher-star-1-cb42fb8775e5',
+  'teacher-star-1-c39a19585434',
+  'teacher-star-1-3e6fabf09358',
+  'teacher-star-1-1c0cdf0b2b9c',
+  'teacher-star-1-8fea4ac29b4c',
+  'teacher-star-1-94757170c2b0',
+  'teacher-star-1-0cc5799cdbbc',
+] as const;
+
 function expectExactKeys(value: object, expected: readonly string[]): void {
   expect(Object.keys(value).sort()).toEqual([...expected].sort());
 }
@@ -181,9 +204,13 @@ describe('teacher-core-v1 audio contract JSON', () => {
     });
   });
 
-  it('uses the exact production vocabulary IDs and order', () => {
+  it('uses the exact frozen production vocabulary IDs and order', () => {
     const productionIds = vocabularyBatch.vocabulary.map(row => row.id);
-    expect(contract.items.map(item => item.vocabularyId)).toEqual(productionIds);
+    const contractIds = contract.items.map(item => item.vocabularyId);
+
+    expect(productionIds).toEqual(EXPECTED_VOCABULARY_IDS);
+    expect(contractIds).toEqual(EXPECTED_VOCABULARY_IDS);
+    expect(contractIds).toEqual(productionIds);
     expect(contract.items).toHaveLength(contract.vocabularyCount);
     expect(contract.items).toHaveLength(20);
   });
