@@ -97,6 +97,8 @@
         "files": [
           "src/components/Header.astro",
           "src/components/GoalPathSlot.astro",
+          "src/components/LessonPractice.astro",
+          "src/lib/practice.ts",
           "src/types/lesson.ts",
           "src/content/loadLessons.ts",
           "data/examples/valid/lessons.json",
@@ -106,6 +108,8 @@
         ],
         "tests": [
           "tests/direction-c-production-ui.test.ts (extend)",
+          "tests/practice.test.ts (extend)",
+          "tests/lesson-practice-ui.test.ts (extend)",
           "tests/script-toggle.test.ts (planned new file)",
           "scripts/validate-content-schema.py (self-tests and --check validation)"
         ],
@@ -117,7 +121,7 @@
           "build": "pnpm build"
         },
         "startCondition": "Product owner activates script toggle feature",
-        "stopCondition": "Toggle switches all learner-facing Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters, including: examples.traditional/examples.simplified, coreSentence (paired field in lesson data), chunks[].chunk, kanjiBridgeNotes[].kanji, and any Chinese text rendered on the home page, GoalPathSlot, and lesson page. Displayed text, lang attribute, renderer output, and persisted preference stay in sync. Lesson-level Chinese fields that do not yet have paired traditional/simplified forms require narrow-scope schema changes to be defined in the implementing issue.",
+        "stopCondition": "Toggle switches all learner-facing Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters, including: examples.traditional/examples.simplified, coreSentence, chunks[].chunk, kanjiBridgeNotes[].kanji, reviewPrompts.promptJa, answerJa, distractorsJa, and any Chinese text rendered on the home page, GoalPathSlot, lesson page, and practice questions/choices/feedback. Displayed text, lang attribute, question generation, correct answers, distractors, rendered practice choices, renderer output, and persisted preference stay in sync. The implementing issue must define the paired data representation for all fields that do not yet carry both Traditional and Simplified values; this contract does not prescribe the final schema API.",
         "benefit": "Single-script learners can read content in their preferred script without separate routes."
       },
       {

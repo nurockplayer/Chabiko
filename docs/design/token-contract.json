@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "id": "https://chabiko.dev/docs/design/token-contract.json",
   "title": "Chabiko Design Token Contract",
   "description": "Production semantic tokens from BaseLayout.astro — PR #165, commit 04759286 on main",
@@ -8,270 +7,407 @@
   "tokens": {
     "color": {
       "page": {
-        "$id": "#/tokens/color/page",
         "css": "--color-page",
         "alias": "--c-bg",
         "light": "#f4f1ec",
         "dark": "#11141c",
         "role": "page background",
-        "usedIn": ["body", ".practice-choice:disabled background"]
+        "usedIn": [
+          "body",
+          ".practice-choice:disabled background"
+        ],
+        "pointer": "#/tokens/color/page"
       },
       "surface": {
-        "$id": "#/tokens/color/surface",
         "css": "--color-surface",
         "alias": "--c-surface",
         "light": "#ffffff",
         "dark": "#1b202b",
         "role": "card / elevated surface background",
-        "usedIn": [".lesson-list-link", ".core-card", ".practice-choice", ".nav-link"]
+        "usedIn": [
+          ".lesson-list-link",
+          ".core-card",
+          ".practice-choice",
+          ".nav-link"
+        ],
+        "pointer": "#/tokens/color/surface"
       },
       "text": {
-        "$id": "#/tokens/color/text",
         "css": "--color-text",
         "alias": "--c-text",
         "light": "#1a1a2e",
         "dark": "#f2eee8",
         "role": "primary body text",
-        "usedIn": ["body", "all headings", ".core-sentence", ".lesson-example"]
+        "usedIn": [
+          "body",
+          "all headings",
+          ".core-sentence",
+          ".lesson-example"
+        ],
+        "pointer": "#/tokens/color/text"
       },
       "textSecondary": {
-        "$id": "#/tokens/color/textSecondary",
         "css": "--color-text-secondary",
         "alias": "--c-text-secondary",
         "light": "#555570",
         "dark": "#c9c3ba",
         "role": "secondary/meta text",
-        "usedIn": [".hook", ".pinyin", ".note", ".lesson-can-do", ".progress-summary"]
+        "usedIn": [
+          ".hook",
+          ".pinyin",
+          ".note",
+          ".lesson-can-do",
+          ".progress-summary"
+        ],
+        "pointer": "#/tokens/color/textSecondary"
       },
       "textMuted": {
-        "$id": "#/tokens/color/textMuted",
         "css": "--color-text-muted",
         "alias": "--c-text-muted",
         "light": "#6a6a7d",
         "dark": "#aaa49b",
         "role": "deemphasized / disabled text",
-        "usedIn": [".practice-progress", "disabled choice labels", ".pending-label"]
+        "usedIn": [
+          ".practice-progress",
+          "disabled choice labels",
+          ".pending-label"
+        ],
+        "pointer": "#/tokens/color/textMuted"
       },
       "primary": {
-        "$id": "#/tokens/color/primary",
         "css": "--color-primary",
         "alias": "--c-primary",
         "light": "#1a2744",
         "dark": "#a9bee9",
         "role": "brand primary / link / active indicator",
-        "usedIn": ["a", ".lesson-list-link border-top", ".core-card border-top", ".station-dot", ".route-station-dot"]
+        "usedIn": [
+          "a",
+          ".lesson-list-link border-top",
+          ".core-card border-top",
+          ".station-dot",
+          ".route-station-dot"
+        ],
+        "pointer": "#/tokens/color/primary"
       },
       "primarySoft": {
-        "$id": "#/tokens/color/primarySoft",
         "css": "--color-primary-soft",
         "alias": "--c-primary-light",
         "light": "#e8ecf3",
         "dark": "#252d3d",
         "role": "primary background / hover state on dark",
-        "usedIn": [".practice-choice:hover", ".lesson-list-link:hover", ".pending-status"]
+        "usedIn": [
+          ".practice-choice:hover",
+          ".lesson-list-link:hover",
+          ".pending-status"
+        ],
+        "pointer": "#/tokens/color/primarySoft"
       },
       "accent": {
-        "$id": "#/tokens/color/accent",
         "css": "--color-accent",
         "alias": "--c-accent",
         "light": "#d48c2b",
         "dark": "#efb45b",
         "role": "highlight / call-to-action / progress marker inner",
-        "usedIn": [".brand-mark", ".station-dot::after", ".route-station-dot::after", ".lesson-marker-core", ".can-do-section border-left"]
+        "usedIn": [
+          ".brand-mark",
+          ".station-dot::after",
+          ".route-station-dot::after",
+          ".lesson-marker-core",
+          ".can-do-section border-left"
+        ],
+        "pointer": "#/tokens/color/accent"
       },
       "accentSoft": {
-        "$id": "#/tokens/color/accentSoft",
         "css": "--color-accent-soft",
         "alias": "--c-accent-light",
         "light": "#f5e8d0",
         "dark": "#382c1c",
         "role": "accent background / can-do callout / current status badge",
-        "usedIn": [".can-do-section", ".travel-task", ".station-dot box-shadow", ".route-station-dot box-shadow", ".path-status"]
+        "usedIn": [
+          ".can-do-section",
+          ".travel-task",
+          ".station-dot box-shadow",
+          ".route-station-dot box-shadow",
+          ".path-status"
+        ],
+        "pointer": "#/tokens/color/accentSoft"
       },
       "route": {
-        "$id": "#/tokens/color/route",
         "css": "--color-route",
         "alias": "--c-route-line",
         "light": "#d0ccc4",
         "dark": "#4b5362",
         "role": "route timeline line / path connector",
-        "usedIn": [".route-timeline::before", ".route-line", ".pending-dot border"]
+        "usedIn": [
+          ".route-timeline::before",
+          ".route-line",
+          ".pending-dot border"
+        ],
+        "pointer": "#/tokens/color/route"
       },
       "border": {
-        "$id": "#/tokens/color/border",
         "css": "--color-border",
         "alias": "--c-border",
         "light": "#e0dcd4",
         "dark": "#363d4a",
         "role": "separator / card border / divider",
-        "usedIn": [".practice-choice", ".nav-link", ".reset-btn", ".reading-section border-top", ".core-meaning border-top"]
+        "usedIn": [
+          ".practice-choice",
+          ".nav-link",
+          ".reset-btn",
+          ".reading-section border-top",
+          ".core-meaning border-top"
+        ],
+        "pointer": "#/tokens/color/border"
       },
       "success": {
-        "$id": "#/tokens/color/success",
         "css": "--color-success",
         "alias": "--c-success",
         "light": "#3d7b80",
         "dark": "#70b9b1",
         "role": "correct / completed state",
-        "usedIn": [".practice-choice--correct border/indicator", ".feedback-icon", ".lesson-marker--done", ".lesson-completion-status--done"]
+        "usedIn": [
+          ".practice-choice--correct border/indicator",
+          ".feedback-icon",
+          ".lesson-marker--done",
+          ".lesson-completion-status--done"
+        ],
+        "pointer": "#/tokens/color/success"
       },
       "successSoft": {
-        "$id": "#/tokens/color/successSoft",
         "css": "--color-success-soft",
         "alias": "--c-success-bg",
         "light": "#e8f0f0",
         "dark": "#17322f",
         "role": "correct / completed background",
-        "usedIn": [".practice-choice--correct background", ".practice-feedback", ".lesson-completion-status--done background"]
+        "usedIn": [
+          ".practice-choice--correct background",
+          ".practice-feedback",
+          ".lesson-completion-status--done background"
+        ],
+        "pointer": "#/tokens/color/successSoft"
       },
       "error": {
-        "$id": "#/tokens/color/error",
         "css": "--color-error",
         "alias": "--c-error",
         "light": "#b04435",
         "dark": "#ee8d7d",
         "role": "incorrect / destructive state",
-        "usedIn": [".practice-choice--incorrect border/indicator", ".feedback-incorrect .feedback-icon"]
+        "usedIn": [
+          ".practice-choice--incorrect border/indicator",
+          ".feedback-incorrect .feedback-icon"
+        ],
+        "pointer": "#/tokens/color/error"
       },
       "errorSoft": {
-        "$id": "#/tokens/color/errorSoft",
         "css": "--color-error-soft",
         "alias": "--c-error-bg",
         "light": "#f5e8e4",
         "dark": "#3a2222",
         "role": "incorrect / destructive background",
-        "usedIn": [".practice-choice--incorrect background", ".practice-feedback.feedback-visible--incorrect"]
+        "usedIn": [
+          ".practice-choice--incorrect background",
+          ".practice-feedback.feedback-visible--incorrect"
+        ],
+        "pointer": "#/tokens/color/errorSoft"
       },
       "header": {
-        "$id": "#/tokens/color/header",
         "css": "--color-header",
         "alias": null,
         "light": "#1a2744",
         "dark": "#161f34",
         "role": "site header background",
-        "usedIn": [".site-header"],
-        "note": "No --c-* alias; header-specific semantic only"
+        "usedIn": [
+          ".site-header"
+        ],
+        "note": "No --c-* alias; header-specific semantic only",
+        "pointer": "#/tokens/color/header"
       },
       "headerText": {
-        "$id": "#/tokens/color/headerText",
         "css": "--color-header-text",
         "alias": null,
         "light": "#ffffff",
         "dark": "#f6f2ea",
         "role": "site header text / controls",
-        "usedIn": [".site-header", ".brand", ".nav-link", ".theme-toggle"],
-        "note": "No --c-* alias; header-specific semantic only"
+        "usedIn": [
+          ".site-header",
+          ".brand",
+          ".nav-link",
+          ".theme-toggle"
+        ],
+        "note": "No --c-* alias; header-specific semantic only",
+        "pointer": "#/tokens/color/headerText"
       },
       "headerMuted": {
-        "$id": "#/tokens/color/headerMuted",
         "css": "--color-header-muted",
         "alias": null,
         "light": "rgb(255 255 255 / 78%)",
         "dark": "#c9c5bd",
         "role": "header secondary text / slots",
-        "usedIn": [".logo-sub", ".script-toggle-slot"],
-        "note": "Light value uses rgb() opacity; dark uses solid hex"
+        "usedIn": [
+          ".logo-sub",
+          ".script-toggle-slot"
+        ],
+        "note": "Light value uses rgb() opacity; dark uses solid hex",
+        "pointer": "#/tokens/color/headerMuted"
       },
       "onPrimary": {
-        "$id": "#/tokens/color/onPrimary",
         "css": "--color-on-primary",
         "alias": null,
         "light": "#ffffff",
         "dark": "#11141c",
         "role": "text/icon on primary background",
-        "usedIn": [".practice-complete-icon"],
-        "note": "No --c-* alias"
+        "usedIn": [
+          ".practice-complete-icon"
+        ],
+        "note": "No --c-* alias",
+        "pointer": "#/tokens/color/onPrimary"
       },
       "onStatus": {
-        "$id": "#/tokens/color/onStatus",
         "css": "--color-on-status",
         "alias": null,
         "light": "#ffffff",
         "dark": "#11141c",
         "role": "text/icon on status badges / markers",
-        "usedIn": [".brand-mark", ".feedback-icon", ".lesson-marker--done ::before"]
+        "usedIn": [
+          ".brand-mark",
+          ".feedback-icon",
+          ".lesson-marker--done ::before"
+        ],
+        "pointer": "#/tokens/color/onStatus"
       },
       "statusCurrent": {
-        "$id": "#/tokens/color/statusCurrent",
         "css": "--color-status-current",
         "alias": null,
         "light": "#765215",
         "dark": "#f0bd6d",
         "role": "current/active status label text",
-        "usedIn": [".path-status", ".lesson-completion-status--current", ".can-do-section h2", ".route-status"]
+        "usedIn": [
+          ".path-status",
+          ".lesson-completion-status--current",
+          ".can-do-section h2",
+          ".route-status"
+        ],
+        "pointer": "#/tokens/color/statusCurrent"
       },
       "statusSuccess": {
-        "$id": "#/tokens/color/statusSuccess",
         "css": "--color-status-success",
         "alias": null,
         "light": "#2f666b",
         "dark": "#8acbc4",
         "role": "completed status label text",
-        "usedIn": [".lesson-completion-status--done", ".completion-badge--done"]
+        "usedIn": [
+          ".lesson-completion-status--done",
+          ".completion-badge--done"
+        ],
+        "pointer": "#/tokens/color/statusSuccess"
       },
       "focus": {
-        "$id": "#/tokens/color/focus",
         "css": "--color-focus",
         "alias": null,
         "light": "#1a2744",
         "dark": "#f2bd67",
         "role": ":focus-visible outline color",
-        "usedIn": [":focus-visible"],
-        "note": "Matches --c-primary in light; warm gold in dark for contrast"
+        "usedIn": [
+          ":focus-visible"
+        ],
+        "note": "Matches --c-primary in light; warm gold in dark for contrast",
+        "pointer": "#/tokens/color/focus"
       },
       "slotBackground": {
-        "$id": "#/tokens/color/slotBackground",
         "css": "--c-slot-bg",
         "aliasRef": "#/tokens/color/primarySoft",
         "light": "var(--c-primary-light)",
         "dark": "var(--c-primary-light)",
         "role": "alias, not an independent token",
-        "note": "Defined as var(--c-primary-light); resolves to --color-primary-soft per theme"
+        "note": "Defined as var(--c-primary-light); resolves to --color-primary-soft per theme",
+        "pointer": "#/tokens/color/slotBackground"
       }
     },
     "typography": {
       "fontZh": {
-        "$id": "#/tokens/typography/fontZh",
         "css": "--font-zh",
         "value": "'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif",
         "role": "Traditional Chinese content",
-        "appliedWhere": ["[lang='zh-Hant']", ".core-sentence", ".lesson-example", ".example-sentence", ".route-example"]
+        "appliedWhere": [
+          "[lang='zh-Hant']",
+          ".core-sentence",
+          ".lesson-example",
+          ".example-sentence",
+          ".route-example"
+        ],
+        "pointer": "#/tokens/typography/fontZh"
       },
       "fontJa": {
-        "$id": "#/tokens/typography/fontJa",
         "css": "--font-ja",
         "value": "'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif",
         "role": "Japanese UI / body text (default)",
-        "appliedWhere": ["body"]
+        "appliedWhere": [
+          "body"
+        ],
+        "pointer": "#/tokens/typography/fontJa"
       },
       "fontPinyin": {
-        "$id": "#/tokens/typography/fontPinyin",
         "css": "--font-pinyin",
         "value": "'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif",
         "role": "Pinyin romanization",
-        "appliedWhere": ["[lang='zh-Latn']", ".core-pinyin", ".lesson-pinyin", ".pinyin"]
+        "appliedWhere": [
+          "[lang='zh-Latn']",
+          ".core-pinyin",
+          ".lesson-pinyin",
+          ".pinyin"
+        ],
+        "pointer": "#/tokens/typography/fontPinyin"
       }
     },
     "spacing": {
       "radius": {
-        "$id": "#/tokens/spacing/radius",
         "css": "--radius",
         "value": "0",
         "role": "card / container border radius (zero = no rounding)",
-        "note": "Direction C uses no border-radius on cards and general containers. Circular exceptions (border-radius: 50%) apply to: brand-mark, station/route-station/pending dots, lesson-marker, practice-choice__indicator, feedback-icon, practice-complete-icon."
+        "note": "Direction C uses no border-radius on cards and general containers. Circular exceptions (border-radius: 50%) apply to: brand-mark, station/route-station/pending dots, lesson-marker, practice-choice__indicator, feedback-icon, practice-complete-icon.",
+        "pointer": "#/tokens/spacing/radius"
       },
-      "xs": { "$id": "#/tokens/spacing/xs", "css": "--space-xs", "value": "0.25rem" },
-      "sm": { "$id": "#/tokens/spacing/sm", "css": "--space-sm", "value": "0.5rem" },
-      "md": { "$id": "#/tokens/spacing/md", "css": "--space-md", "value": "1rem" },
-      "lg": { "$id": "#/tokens/spacing/lg", "css": "--space-lg", "value": "1.5rem" },
-      "xl": { "$id": "#/tokens/spacing/xl", "css": "--space-xl", "value": "2rem" },
-      "2xl": { "$id": "#/tokens/spacing/2xl", "css": "--space-2xl", "value": "3rem" },
-      "3xl": { "$id": "#/tokens/spacing/3xl", "css": "--space-3xl", "value": "4rem" },
+      "xs": {
+        "css": "--space-xs",
+        "value": "0.25rem",
+        "pointer": "#/tokens/spacing/xs"
+      },
+      "sm": {
+        "css": "--space-sm",
+        "value": "0.5rem",
+        "pointer": "#/tokens/spacing/sm"
+      },
+      "md": {
+        "css": "--space-md",
+        "value": "1rem",
+        "pointer": "#/tokens/spacing/md"
+      },
+      "lg": {
+        "css": "--space-lg",
+        "value": "1.5rem",
+        "pointer": "#/tokens/spacing/lg"
+      },
+      "xl": {
+        "css": "--space-xl",
+        "value": "2rem",
+        "pointer": "#/tokens/spacing/xl"
+      },
+      "2xl": {
+        "css": "--space-2xl",
+        "value": "3rem",
+        "pointer": "#/tokens/spacing/2xl"
+      },
+      "3xl": {
+        "css": "--space-3xl",
+        "value": "4rem",
+        "pointer": "#/tokens/spacing/3xl"
+      },
       "maxWidth": {
-        "$id": "#/tokens/spacing/maxWidth",
         "css": "--max-w",
         "value": "80rem",
-        "role": "content area max width"
+        "role": "content area max width",
+        "pointer": "#/tokens/spacing/maxWidth"
       }
     }
   },

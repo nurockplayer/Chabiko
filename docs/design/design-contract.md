@@ -82,8 +82,8 @@ PR #165 (commit `04759286`) 的合併生產實作的 Direction C 設計契約。
 
 來源：`src/components/LessonPractice.astro:116-150`
 
-- **正確**：選項 `--c-success` 邊框與 indicator + `--c-success-bg` 背景 + ✓ 指示器 + `正解！` 文字；1200ms 後移到下一題或完成畫面
-- **錯誤**：選項 `--c-error` 邊框與 indicator + `--c-error-bg` 背景 + ✕ 指示器 + `不正解。` + 正確答案顯示；2000ms 後重試
+- **正確**：選項 `--c-success` 邊框與 indicator（filled circle + inner dot）+ `--c-success-bg` 背景 + feedback icon ✓ + `正解！` 文字；1200ms 後移到下一題或完成畫面
+- **錯誤**：選項 `--c-error` 邊框與 indicator（✕）+ `--c-error-bg` 背景 + feedback icon ✕ + `不正解。` + 正確答案顯示；2000ms 後重試
 - **完成**：`✓ 練習完了！レッスンをクリアしました。` 訊息 + primary 圓形圖示
 
 非顏色提示：
@@ -94,7 +94,7 @@ PR #165 (commit `04759286`) 的合併生產實作的 Direction C 設計契約。
   - `store.markComplete()` 與 `timer.schedule()` 生命週期呼叫
   - `pageshow` 與 `storage` 事件監聽
 - **Committed browser evidence**（`docs/design/evidence/issue-162/` 的 light/dark 截圖）確認在實際狀態下：
-  - ✓／✕ 符號在正確與錯誤選擇時顯示
+  - ✓ feedback icon 在正確時顯示、✕ feedback icon 在錯誤時顯示
   - 邊框顏色在正確（green）、錯誤（red）狀態下可見
   - 回饋區塊顯示 `正解！` 或 `不正解。` + 正確答案
   - `aria-label` 在點擊後更新為 `正解:` / `不正解:`（PR #165 瀏覽器檢查確認，`evidence/issue-162/README.md:55-61`）
