@@ -302,6 +302,14 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
   function onStorage(e: StorageEvent): void {
     if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
+
+    const isExternalDeletion = e.key === null || e.newValue === null;
+    if (isExternalDeletion) {
+      store.acceptExternalClear();
+      restartSession();
+      return;
+    }
+
     store.refresh();
     updateSummary();
     if (!hasRatedSinceInit) {
