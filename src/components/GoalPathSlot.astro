@@ -10,13 +10,20 @@ const firstLesson = lessons[0];
   <div class="route-name">台湾旅行で使える中国語</div>
   <div class="route-timeline">
     {firstLesson ? (
-      <a class="path-card path-card--active" href="/#taiwan-travel-path" aria-current="step">
+      <a
+        class="path-card path-card--active"
+        href="/#taiwan-travel-path"
+        aria-current="step"
+        data-goal-path-card
+        data-route-name="台湾旅行で使える中国語"
+        data-current-lesson-id={firstLesson.id}
+      >
         <span class="station-dot" aria-hidden="true"></span>
         <span class="path-body">
           <span class="path-kicker">{lessons.length}レッスン</span>
-          <span class="path-label">{firstLesson.titleJa}</span>
-          <span class="path-example" lang="zh-Hant">{firstLesson.coreSentence}</span>
-          <span class="path-status">進行中</span>
+          <span class="path-label" data-goal-path-label>{firstLesson.titleJa}</span>
+          <span class="path-example" lang="zh-Hant" data-goal-path-example>{firstLesson.coreSentence}</span>
+          <span class="path-status" data-goal-path-status>進行中</span>
         </span>
       </a>
     ) : (
@@ -78,13 +85,16 @@ const firstLesson = lessons[0];
     color: var(--c-text);
     text-decoration: none;
   }
-  .path-card--active {
+  .path-card--active,
+  .path-card--complete {
     padding-bottom: var(--space-md);
   }
-  .path-card--active:hover {
+  .path-card--active:hover,
+  .path-card--complete:hover {
     text-decoration: none;
   }
-  .path-card--active:hover .path-label {
+  .path-card--active:hover .path-label,
+  .path-card--complete:hover .path-label {
     color: var(--c-primary);
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -109,6 +119,21 @@ const firstLesson = lessons[0];
     inset: 3px;
     border-radius: 50%;
     background: var(--c-accent);
+  }
+  .path-card--complete .station-dot {
+    background: var(--c-success);
+    border-color: var(--c-success);
+    box-shadow: none;
+  }
+  .path-card--complete .station-dot::after {
+    content: '✓';
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: var(--color-on-status);
+    font-size: 0.625rem;
+    font-weight: 800;
   }
   .path-body {
     display: flex;
@@ -140,6 +165,10 @@ const firstLesson = lessons[0];
     color: var(--color-status-current);
     font-size: 0.6875rem;
     font-weight: 700;
+  }
+  .path-status--done {
+    background: var(--c-success-bg);
+    color: var(--color-status-success);
   }
   .path-status--pending {
     background: var(--c-primary-light);
