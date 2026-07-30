@@ -203,7 +203,7 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 | `role="group"` on practice choices | `LessonPractice.astro:94` | `lesson-practice-ui.test.ts:61` |
 | `role="status" aria-live="polite"` on feedback | `LessonPractice.astro:108` | `lesson-practice-ui.test.ts:62-63` |
 | `prefers-reduced-motion` | `BaseLayout.astro:195-204` | `direction-c-production-ui.test.ts:27` |
-| Non-color cues in practice | `LessonPractice.astro:284-327` (✓/✕ indicators) | `direction-c-production-ui.test.ts:84-88` |
+| Non-color cues in practice | `LessonPractice.astro:284-327`（practice-choice__indicator circle ✓/✕ states） | Automated（`direction-c-production-ui.test.ts:84-88`）：驗證 `.practice-choice__indicator`、`role="group"`、`role="status"`、`aria-live="polite"`、計時器與儲存呼叫存在。符號（✓/✕）、邊框變色、動態 `aria-label` 無 automated assertion，僅由 committed browser evidence（`evidence/issue-162/`）與 production source 支撐。 |
 
 ## 狀態隔離
 

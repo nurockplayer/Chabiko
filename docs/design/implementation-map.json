@@ -117,7 +117,7 @@
           "build": "pnpm build"
         },
         "startCondition": "Product owner activates script toggle feature",
-        "stopCondition": "Toggle switches displayed Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters; lang attribute, renderer output, and persisted preference stay in sync. Follow existing content model convention for entries that already carry paired traditional/simplified fields (e.g. example.traditional/example.simplified). Lesson-level fields without paired script forms (e.g. coreSentence, chunk.chunk, kanjiBridgeNotes.kanji) are out of scope and will be defined by a subsequent narrow issue.",
+        "stopCondition": "Toggle switches all learner-facing Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters, including: examples.traditional/examples.simplified, coreSentence (paired field in lesson data), chunks[].chunk, kanjiBridgeNotes[].kanji, and any Chinese text rendered on the home page, GoalPathSlot, and lesson page. Displayed text, lang attribute, renderer output, and persisted preference stay in sync. Lesson-level Chinese fields that do not yet have paired traditional/simplified forms require narrow-scope schema changes to be defined in the implementing issue.",
         "benefit": "Single-script learners can read content in their preferred script without separate routes."
       },
       {
