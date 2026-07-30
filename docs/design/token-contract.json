@@ -230,7 +230,7 @@
         "usedIn": [
           ".site-header",
           ".brand",
-          ".nav-link",
+          "Header.astro .nav-link",
           ".theme-toggle"
         ],
         "note": "No --c-* alias; header-specific semantic only",
@@ -270,7 +270,7 @@
         "usedIn": [
           ".brand-mark",
           ".feedback-icon",
-          ".lesson-marker--done ::before"
+          ".lesson-list-item--done .lesson-marker-core::before"
         ],
         "pointer": "#/tokens/color/onStatus"
       },
@@ -328,7 +328,6 @@
         "value": "'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif",
         "role": "Traditional Chinese content",
         "appliedWhere": [
-          "[lang='zh-Hant']",
           ".core-sentence",
           ".lesson-example",
           ".example-sentence",
@@ -350,7 +349,6 @@
         "value": "'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif",
         "role": "Pinyin romanization",
         "appliedWhere": [
-          "[lang='zh-Latn']",
           ".core-pinyin",
           ".lesson-pinyin",
           ".pinyin"
