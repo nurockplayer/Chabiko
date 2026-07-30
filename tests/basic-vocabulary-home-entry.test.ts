@@ -122,23 +122,30 @@ describe('basic-vocabulary home entry', () => {
       );
     });
 
-    it('only adds the exact 7 allowed selectors in the style block (no compound/descendant variants)', () => {
+    it('only adds the exact 7 allowed selectors in the style block (rejects compound/descendant/unknown)', () => {
       const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
+      let styles = styleMatch?.[1] ?? '';
 
-      // Find every CSS selector string starting with .basic-vocabulary-entry
-      // that is followed by a `{` — compound selectors like
-      // `.basic-vocabulary-entry__content h2` won't match since the `{` is
-      // after `h2`, not immediately after the `.basic-vocabulary-entry` token.
-      const foundSelectors: string[] = [];
-      const entrySelectorRe = /\.basic-vocabulary-entry[\w-]*(?::\w+(?:-\w+)*)?\s*\{/g;
-      let match: RegExpExecArray | null;
-      while ((match = entrySelectorRe.exec(styles)) !== null) {
-        // Strip trailing whitespace and `{` to get the bare selector
-        foundSelectors.push(match[0].replace(/\s*\{$/, ''));
-      }
+      // 1. Strip CSS comments
+      styles = styles.replace(/\/\*[\s\S]*?\*\//g, '');
 
-      const allowedSelectors = [
+      // 2. Extract every complete selector prelude (text before each `{`)
+      const selectorPreludes = styles
+        .split('{')
+        .slice(0, -1) // last split has no `{` after it
+        .map((s) => {
+          // Take everything after the last `}` to get the selector prelude
+          const parts = s.split('}');
+          return parts[parts.length - 1].trim();
+        })
+        .filter(Boolean);
+
+      // 3. Filter for any containing `.basic-vocabulary-entry`
+      const foundSelectors = selectorPreludes.filter((s) =>
+        s.includes('.basic-vocabulary-entry'),
+      );
+
+      const expected = [
         '.basic-vocabulary-entry',
         '.basic-vocabulary-entry__content',
         '.basic-vocabulary-entry__eyebrow',
@@ -148,11 +155,25 @@ describe('basic-vocabulary home entry', () => {
         '.basic-vocabulary-entry__link:focus-visible',
       ];
 
-      // Verify exact count and uniqueness
       expect(foundSelectors).toHaveLength(7);
+      expect([...foundSelectors].sort()).toEqual([...expected].sort());
 
-      // Sort both for order-independent comparison
-      expect([...foundSelectors].sort()).toEqual([...allowedSelectors].sort());
+      // 4. Synthetic assertions: the parsing method must reject compound,
+      //    descendant, and unknown selectors
+      const syntheticBlock = [
+        '.basic-vocabulary-entry__content h2 {',
+        'main .basic-vocabulary-entry {',
+        '.basic-vocabulary-entry__unknown {',
+      ].join('\n');
+      const syntheticPreludes = syntheticBlock
+        .split('{')
+        .slice(0, -1)
+        .map((s) => {
+          const parts = s.split('}');
+          return parts[parts.length - 1].trim();
+        })
+        .filter((s) => s.includes('.basic-vocabulary-entry'));
+      expect(syntheticPreludes.sort()).not.toEqual([...expected].sort());
     });
 
     it('has content inside #basic-vocabulary-entry with the right structure', () => {
