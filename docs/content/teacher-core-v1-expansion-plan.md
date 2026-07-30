@@ -1937,8 +1937,10 @@ If additional rows become accepted after a future data revision, the same determ
 Create per-batch text/review/image/publication issues only from the merged JSON plan at `docs/content/teacher-core-v1-expansion-plan.json`. The JSON plan is the authoritative source for:
 
 - vocabulary IDs and expected illustration IDs
-- source sheet and source row for every accepted and rejected row
+- source sheet and source row for every remaining accepted row and every rejected row
 - deterministic ordering and batch boundaries
 - rejection reasons
+
+Batch-01's full source provenance (sourceSheet, sourceRow) is already stored in the production `teacher-vocabulary-batch-01.json` file — refer to it directly for accepted row details.
 
 Do not derive batch structure from the raw importer output or from this Markdown report.
