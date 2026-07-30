@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "sourceId": "teacher-core-v1",
+  "locale": "zh-TW",
+  "vocabularyBatch": "teacher-vocabulary-batch-01.json",
+  "vocabularyCount": 20,
+  "audioIdRule": "audio-{vocabularyId}",
+  "sourceType": "generated-tts",
+  "sourceContract": {
+    "providerOrSpeaker": "Microsoft Azure AI Speech",
+    "modelOrRecordingContext": "Prebuilt Standard Neural Text-to-Speech",
+    "voiceIdOrSpeakerId": "zh-TW-HsiaoChenNeural",
+    "generationOrRecordingSettings": {
+      "api": "Azure Speech REST text-to-speech /cognitiveservices/v1",
+      "region": "japaneast",
+      "requestMethod": "POST",
+      "authenticationMethod": "Ocp-Apim-Subscription-Key header supplied only at generation time",
+      "requestContentType": "application/ssml+xml",
+      "outputFormat": "audio-24khz-48kbitrate-mono-mp3",
+      "userAgent": "ChabikoTeacherAudio/1.0",
+      "ssmlTemplate": "<speak version=\"1.0\" xml:lang=\"zh-TW\"><voice name=\"zh-TW-HsiaoChenNeural\"><prosody rate=\"0%\" pitch=\"0%\">{spokenText}</prosody></voice></speak>",
+      "ssmlVersion": "1.0",
+      "ssmlLanguage": "zh-TW",
+      "prosodyRate": "0%",
+      "prosodyPitch": "0%",
+      "requestGranularity": "one vocabulary item per request",
+      "responseHandling": "require HTTP 200 and save response body byte-for-byte"
+    },
+    "permissionStatus": "approved-for-provisional-web-use",
+    "permissionEvidence": "Microsoft Product Terms for Microsoft Azure Services, Text-to-Speech (TTS) Services: paid-tier customers may use audio output from prebuilt neural voices, including for commercial purposes (accessed 2026-07-30)."
+  },
+  "derivativeContract": {
+    "extension": "mp3",
+    "mimeType": "audio/mpeg",
+    "codec": "MPEG Audio Layer III (MP3)",
+    "sampleRateHz": 24000,
+    "channels": 1,
+    "bitDepthOrBitrate": "48 kbit/s",
+    "maximumDurationMs": 6000,
+    "maximumBytes": 65536,
+    "normalization": "Commit the Azure HTTP 200 response bytes unchanged; no transcoding, trimming, or loudness normalization."
+  },
+  "reviewPolicy": {
+    "initialStatus": "draft",
+    "requiredChecks": [
+      "Spoken text matches the frozen contract item.",
+      "A Taiwanese Mandarin teacher or native reviewer confirms lexical reading and tones.",
+      "Neutral-tone handling and Taiwanese Mandarin pronunciation are acceptable for beginners.",
+      "No truncation, clicks, excessive silence, or synthesis artifacts are audible.",
+      "Intelligibility and perceived level are reasonably consistent across all 20 files.",
+      "Filename, checksum, duration, MIME type, sample rate, channel count, and file size pass deterministic validation."
+    ]
+  },
+  "items": [
+    {
+      "vocabularyId": "teacher-star-1-37e0eb213f0f",
+      "audioId": "audio-teacher-star-1-37e0eb213f0f",
+      "spokenText": "大家",
+      "spokenTextSha256": "641162c6f4f1d7f8c95048812323a9a438bca7185192c32583bb50729640d0d6",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-37e0eb213f0f.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-37e0eb213f0f.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-a66948a76fda",
+      "audioId": "audio-teacher-star-1-a66948a76fda",
+      "spokenText": "人",
+      "spokenTextSha256": "c19448e8f5a040279a7674a1006b7b20ea1d16b8e69a7f9e096787c5986d6025",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-a66948a76fda.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-a66948a76fda.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-86f5cdb6e25c",
+      "audioId": "audio-teacher-star-1-86f5cdb6e25c",
+      "spokenText": "客人",
+      "spokenTextSha256": "5a7f392296bd4f65cf49489a1ddde11169aa13e98b2d68f6147fafb490822735",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-86f5cdb6e25c.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-86f5cdb6e25c.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-bdc7865a507e",
+      "audioId": "audio-teacher-star-1-bdc7865a507e",
+      "spokenText": "朋友",
+      "spokenTextSha256": "f1d656428b613b2419bc2a8f4e36b65d178fd3e9969aa2e07ca7d1bb4ca21683",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-bdc7865a507e.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-bdc7865a507e.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-86367b2d53f6",
+      "audioId": "audio-teacher-star-1-86367b2d53f6",
+      "spokenText": "先生",
+      "spokenTextSha256": "f0a98ab3a2d8c7237098ea1fcaa8d13a4caf68c8fb469f3a55ac995f0907091c",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-86367b2d53f6.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-86367b2d53f6.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-8b957a100bd4",
+      "audioId": "audio-teacher-star-1-8b957a100bd4",
+      "spokenText": "小姐，女士",
+      "spokenTextSha256": "21101984f14a12329f940b45e42b936e9139113c4e5464e1f3a2540b3fb30133",
+      "readingOverrideReason": "Visible text uses \"/\" as a learner-facing alternative separator; synthesized speech replaces it with a full-width comma so both terms are pronounced naturally.",
+      "expectedSourceFilename": "audio-teacher-star-1-8b957a100bd4.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-8b957a100bd4.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-2cfcacc0503e",
+      "audioId": "audio-teacher-star-1-2cfcacc0503e",
+      "spokenText": "自己",
+      "spokenTextSha256": "a0b099ee9439b17d3c271967df3b3d53ccdbe2daf3b3423e9063d707f6545b3b",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-2cfcacc0503e.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-2cfcacc0503e.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-e7bc12c4f23a",
+      "audioId": "audio-teacher-star-1-e7bc12c4f23a",
+      "spokenText": "爸爸",
+      "spokenTextSha256": "5ba61db1f0f9bfd3d87d238de7c948f0fcee69d145b87a1ad0c3776df6b72fde",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-e7bc12c4f23a.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-e7bc12c4f23a.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-e64490a207eb",
+      "audioId": "audio-teacher-star-1-e64490a207eb",
+      "spokenText": "妈妈",
+      "spokenTextSha256": "ed4c5e78e727b144c8d6356424388cc1dc2d969c41e30ea4a492b7dbf10c5a0a",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-e64490a207eb.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-e64490a207eb.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-bada4e11125d",
+      "audioId": "audio-teacher-star-1-bada4e11125d",
+      "spokenText": "父亲",
+      "spokenTextSha256": "f7ec042a35515e40bbfdbcaeb9a457a15f7f5d1f7aa54c0f5d536e3b26c33108",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-bada4e11125d.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-bada4e11125d.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-d903f490725f",
+      "audioId": "audio-teacher-star-1-d903f490725f",
+      "spokenText": "母亲",
+      "spokenTextSha256": "c20811a4ba7995d5fb98eb83c4bdb794c1bc41bc3de8994cd692bae3c5d008b7",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-d903f490725f.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-d903f490725f.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-7420330fee5c",
+      "audioId": "audio-teacher-star-1-7420330fee5c",
+      "spokenText": "哥哥",
+      "spokenTextSha256": "7bcefc98cd847529c84d021ab34fe555f83fe15791f0d7e0b3d1944c2dfe98f9",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-7420330fee5c.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-7420330fee5c.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-ed096023b3be",
+      "audioId": "audio-teacher-star-1-ed096023b3be",
+      "spokenText": "姐姐",
+      "spokenTextSha256": "121edccafbda16fd308597c020d1200d4adff424ec3d7dd59c4673b81fa5a348",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-ed096023b3be.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-ed096023b3be.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-cb42fb8775e5",
+      "audioId": "audio-teacher-star-1-cb42fb8775e5",
+      "spokenText": "弟弟",
+      "spokenTextSha256": "8624ed7347d005fcae6e946adacaf2480f159b5161095482c92efc6f0fca532e",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-cb42fb8775e5.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-cb42fb8775e5.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-c39a19585434",
+      "audioId": "audio-teacher-star-1-c39a19585434",
+      "spokenText": "妹妹",
+      "spokenTextSha256": "e8e172b19e2993404695b5066cc2d44ccd35f2723268b2fc0f0f7960cd9d3a01",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-c39a19585434.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-c39a19585434.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-3e6fabf09358",
+      "audioId": "audio-teacher-star-1-3e6fabf09358",
+      "spokenText": "爱人",
+      "spokenTextSha256": "8205106ec6b560b2b38a8c83355201bc0569eb314e0cf293add18711dda3f3c1",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-3e6fabf09358.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-3e6fabf09358.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-1c0cdf0b2b9c",
+      "audioId": "audio-teacher-star-1-1c0cdf0b2b9c",
+      "spokenText": "丈夫",
+      "spokenTextSha256": "bfe78770c2d4e05de64e359545193b72e13591ac92f3f26d80c1ca449439bb10",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-1c0cdf0b2b9c.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-1c0cdf0b2b9c.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-8fea4ac29b4c",
+      "audioId": "audio-teacher-star-1-8fea4ac29b4c",
+      "spokenText": "妻子",
+      "spokenTextSha256": "cf1ea4702d72fc48b8fccd92f9971eed12d3b1f9bcfa91ad7961b92bbefb5bc7",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-8fea4ac29b4c.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-8fea4ac29b4c.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-94757170c2b0",
+      "audioId": "audio-teacher-star-1-94757170c2b0",
+      "spokenText": "孩子",
+      "spokenTextSha256": "cd6e0e23be640b63f711f2eb3446571a27658bf8e5a1f65bebdc1404ab823e2e",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-94757170c2b0.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-94757170c2b0.mp3"
+    },
+    {
+      "vocabularyId": "teacher-star-1-0cc5799cdbbc",
+      "audioId": "audio-teacher-star-1-0cc5799cdbbc",
+      "spokenText": "儿子",
+      "spokenTextSha256": "fdd65596153b16b69ce15af1079d6c696d86ed35d94d734c8a21671c65688b55",
+      "readingOverrideReason": null,
+      "expectedSourceFilename": "audio-teacher-star-1-0cc5799cdbbc.mp3",
+      "expectedAssetPath": "public/assets/audio/teacher-core-v1/audio-teacher-star-1-0cc5799cdbbc.mp3"
+    }
+  ]
+}
