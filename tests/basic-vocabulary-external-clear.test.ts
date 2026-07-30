@@ -14,6 +14,8 @@ const REAL_IDS = [
   'teacher-star-1-8b957a100bd4',
 ] as const;
 
+const sessionCleanups = new Set<() => void>();
+
 function rootWith(): HTMLElement {
   const root = document.createElement('section');
   root.dataset.basicVocabularyIds = JSON.stringify([...REAL_IDS]);
@@ -21,6 +23,10 @@ function rootWith(): HTMLElement {
     '<p data-summary></p><p data-progress aria-live="polite"></p><div data-card></div><button data-action="reset">reset</button>';
   document.body.append(root);
   return root;
+}
+
+function initialize(root: HTMLElement): void {
+  sessionCleanups.add(initBasicVocabularySession(root));
 }
 
 function reveal(root: HTMLElement): void {
@@ -38,8 +44,11 @@ function progressDocument(
 }
 
 afterEach(() => {
+  for (const cleanup of sessionCleanups) cleanup();
+  sessionCleanups.clear();
   document.body.replaceChildren();
   window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 describe('authoritative external basic-vocabulary progress deletion', () => {
@@ -107,7 +116,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     window.localStorage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, stored);
 
     const root = rootWith();
-    initBasicVocabularySession(root);
+    initialize(root);
     expect(root.querySelector('[data-card]')?.textContent).toContain('人');
 
     window.localStorage.removeItem(BASIC_VOCABULARY_PROGRESS_KEY);
@@ -115,6 +124,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
       key: BASIC_VOCABULARY_PROGRESS_KEY,
       oldValue: stored,
       newValue: null,
+      storageArea: window.localStorage,
     }));
 
     expect(root.querySelector('[data-card]')?.textContent).toContain('大家');
@@ -125,7 +135,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
 
   it('treats localStorage.clear as authoritative even after the current tab rated', () => {
     const root = rootWith();
-    initBasicVocabularySession(root);
+    initialize(root);
 
     reveal(root);
     rate(root, 'known');
@@ -133,11 +143,31 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     expect(root.querySelector('[data-summary]')?.textContent).toContain('学習中 1語');
 
     window.localStorage.clear();
-    window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: null,
+      storageArea: window.localStorage,
+    }));
 
     expect(root.querySelector('[data-card]')?.textContent).toContain('大家');
     expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
     expect(root.querySelector('[data-summary]')?.textContent)
       .toBe('新規 3語・学習中 0語・習得済み 0語');
+  });
+
+  it('ignores sessionStorage.clear even though its storage-event key is null', () => {
+    const root = rootWith();
+    initialize(root);
+
+    reveal(root);
+    rate(root, 'known');
+    expect(root.querySelector('[data-card]')?.textContent).toContain('人');
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: null,
+      storageArea: window.sessionStorage,
+    }));
+
+    expect(root.querySelector('[data-card]')?.textContent).toContain('人');
+    expect(root.querySelector('[data-summary]')?.textContent).toContain('学習中 1語');
   });
 });
