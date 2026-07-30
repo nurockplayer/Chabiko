@@ -253,13 +253,10 @@ describe('home progress lifecycle', () => {
   });
 
   it('keeps the production pageshow, storage, and reset paths on the same renderer', () => {
-    const source = readFileSync(
-      new URL('../src/pages/index.astro', import.meta.url),
-      'utf8',
-    );
+    const source = readFileSync('src/pages/index.astro', 'utf8');
 
     expect(source).toContain("import { updateHomeProgressUI } from '../client/homeProgress'");
-    expect(source).toMatch(/function updateCompletionUI\(\)\s*{\s*updateHomeProgressUI\(document, store\);\s*}/);
+    expect(source).toMatch(/function updateCompletionUI\(\)\s*{\s*updateHomeProgressUI\(document, store, buildProgressSnapshot\);\s*}/);
     expect(source).toMatch(/function refreshUI\(\)[\s\S]*?new ProgressStore\(\);[\s\S]*?updateCompletionUI\(\);/);
     expect(source).toContain("window.addEventListener('pageshow', refreshUI)");
     expect(source).toContain('handleProgressStorageEvent(event, refreshUI)');
