@@ -11,6 +11,11 @@ interface LessonUIEntry extends LessonProgressEntry {
   readonly link: HTMLAnchorElement | null;
 }
 
+type ProgressSnapshotBuilder = (
+  store: ProgressStore,
+  lessons: LessonProgressEntry[],
+) => ProgressSnapshot;
+
 function collectLessonEntries(root: ParentNode): LessonUIEntry[] {
   const entries: LessonUIEntry[] = [];
 
@@ -133,9 +138,10 @@ function updateGoalPath(
 export function updateHomeProgressUI(
   root: ParentNode,
   store: ProgressStore,
+  buildSnapshot: ProgressSnapshotBuilder = buildProgressSnapshot,
 ): ProgressSnapshot {
   const entries = collectLessonEntries(root);
-  const snapshot = buildProgressSnapshot(store, entries);
+  const snapshot = buildSnapshot(store, entries);
 
   updateLessonList(entries, store, snapshot);
   updateGoalPath(root, entries, snapshot);
