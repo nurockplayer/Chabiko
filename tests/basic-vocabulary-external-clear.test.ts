@@ -73,7 +73,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     expect(store.getKnownStreak('a')).toBe(1);
     expect(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)).toBeNull();
 
-    store.acceptExternalClear();
+    expect(store.acceptExternalClear()).toBe(true);
     expect(store.getStatus('a')).toBe('new');
 
     failWrites = false;
@@ -105,8 +105,25 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     store.refresh();
     expect(store.getKnownStreak('a')).toBe(1);
 
-    store.acceptExternalClear();
+    expect(store.acceptExternalClear()).toBe(true);
     expect(store.getStatus('a')).toBe('new');
+  });
+
+  it('rejects a delayed deletion event after the key has been repopulated', () => {
+    const stored = progressDocument({
+      a: { status: 'learning', knownStreak: 1 },
+    });
+    const storage: StorageLike = {
+      getItem(key) {
+        return key === BASIC_VOCABULARY_PROGRESS_KEY ? stored : null;
+      },
+      setItem() {},
+      removeItem() {},
+    };
+    const store = new BasicVocabularyProgressStore(storage);
+
+    expect(store.acceptExternalClear()).toBe(false);
+    expect(store.getKnownStreak('a')).toBe(1);
   });
 
   it('treats exact-key deletion as authoritative and rebuilds summary and order', () => {
@@ -152,6 +169,28 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
     expect(root.querySelector('[data-summary]')?.textContent)
       .toBe('新規 3語・学習中 0語・習得済み 0語');
+  });
+
+  it('preserves a newer current-tab write when a deletion event arrives late', () => {
+    const root = rootWith();
+    initialize(root);
+
+    reveal(root);
+    rate(root, 'known');
+    const newerValue = window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY);
+    expect(newerValue).not.toBeNull();
+    expect(root.querySelector('[data-card]')?.textContent).toContain('人');
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: BASIC_VOCABULARY_PROGRESS_KEY,
+      oldValue: newerValue,
+      newValue: null,
+      storageArea: window.localStorage,
+    }));
+
+    expect(window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)).toBe(newerValue);
+    expect(root.querySelector('[data-card]')?.textContent).toContain('人');
+    expect(root.querySelector('[data-summary]')?.textContent).toContain('学習中 1語');
   });
 
   it('ignores sessionStorage.clear even though its storage-event key is null', () => {
