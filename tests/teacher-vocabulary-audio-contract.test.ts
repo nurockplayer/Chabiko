@@ -92,6 +92,7 @@ const GENERATION_SETTING_KEYS = [
   'requestContentType',
   'outputFormat',
   'userAgent',
+  'ssmlTemplate',
   'ssmlVersion',
   'ssmlLanguage',
   'prosodyRate',
@@ -202,6 +203,8 @@ describe('teacher-core-v1 audio contract JSON', () => {
       requestContentType: 'application/ssml+xml',
       outputFormat: 'audio-24khz-48kbitrate-mono-mp3',
       userAgent: 'ChabikoTeacherAudio/1.0',
+      ssmlTemplate:
+        '<speak version="1.0" xml:lang="zh-TW"><voice name="zh-TW-HsiaoChenNeural"><prosody rate="0%" pitch="0%">{spokenText}</prosody></voice></speak>',
       ssmlVersion: '1.0',
       ssmlLanguage: 'zh-TW',
       prosodyRate: '0%',
@@ -327,15 +330,14 @@ describe('teacher-core-v1 audio contract JSON', () => {
 
 describe('teacher-core-v1 audio contract Markdown', () => {
   it('agrees with JSON on source, locale, voice, format, permission, count, and review policy', () => {
+    const settings = contract.sourceContract.generationOrRecordingSettings;
+
     expect(markdown).toContain(contract.sourceContract.providerOrSpeaker);
     expect(markdown).toContain(contract.locale);
     expect(markdown).toContain(contract.sourceContract.voiceIdOrSpeakerId);
-    expect(markdown).toContain(
-      String(contract.sourceContract.generationOrRecordingSettings.outputFormat),
-    );
-    expect(markdown).toContain(
-      String(contract.sourceContract.generationOrRecordingSettings.userAgent),
-    );
+    expect(markdown).toContain(String(settings.outputFormat));
+    expect(markdown).toContain(String(settings.userAgent));
+    expect(markdown).toContain(String(settings.ssmlTemplate));
     expect(markdown).toContain(contract.sourceContract.permissionStatus);
     expect(markdown).toContain(String(contract.vocabularyCount));
     expect(markdown).toContain(contract.reviewPolicy.initialStatus);
@@ -357,9 +359,11 @@ describe('teacher-core-v1 audio contract Markdown', () => {
     expect(markdown).toContain('save the response body byte-for-byte');
     expect(markdown).toContain('## Stop conditions');
 
-    for (const item of contract.items) {
-      expect(markdown).toContain(item.vocabularyId);
-      expect(markdown).toContain(item.expectedSourceFilename);
+    for (const [index, item] of contract.items.entries()) {
+      const overrideReason = item.readingOverrideReason ?? 'None';
+      const tableRow =
+        `| ${index + 1} | \`${item.vocabularyId}\` | ${item.spokenText} | ${overrideReason} | \`${item.expectedSourceFilename}\` |`;
+      expect(markdown).toContain(tableRow);
     }
   });
 
