@@ -12,6 +12,8 @@ The first pronunciation release uses static audio generated once through **Micro
 | Voice ID | `zh-TW-HsiaoChenNeural` |
 | Region | `japaneast` |
 | REST endpoint | `https://japaneast.tts.speech.microsoft.com/cognitiveservices/v1` |
+| Authentication | `Ocp-Apim-Subscription-Key` header, secret supplied only at generation time |
+| User-Agent | `ChabikoTeacherAudio/1.0` |
 | Output format | `audio-24khz-48kbitrate-mono-mp3` |
 | Review status | `draft` |
 
@@ -48,11 +50,13 @@ Generate one vocabulary item per request. The request must use:
 
 ```http
 POST https://japaneast.tts.speech.microsoft.com/cognitiveservices/v1
+Ocp-Apim-Subscription-Key: <supplied securely at generation time>
 Content-Type: application/ssml+xml
 X-Microsoft-OutputFormat: audio-24khz-48kbitrate-mono-mp3
+User-Agent: ChabikoTeacherAudio/1.0
 ```
 
-Authentication is supplied only at generation time and must never be committed.
+The exact authentication method is the `Ocp-Apim-Subscription-Key` request header. Its secret value is injected only at generation time and must never be committed, logged, or copied into provider evidence. Azure requires `User-Agent`; the frozen application name is `ChabikoTeacherAudio/1.0`, which is below the documented 255-character limit.
 
 The UTF-8 SSML body is serialized from this exact template, with XML escaping applied only to `spokenText`:
 
@@ -142,7 +146,7 @@ Stop generation or publication when any of these is true:
 
 - the Azure resource is not on a paid tier;
 - the selected voice ID or locale is unavailable;
-- the endpoint, voice, SSML, or output format differs from the frozen contract;
+- the endpoint, authentication method, `User-Agent`, voice, SSML, or output format differs from the frozen contract;
 - a response is not HTTP `200`;
 - a file exceeds the duration or size limit;
 - decoded metadata differs from 24 kHz mono MP3;
