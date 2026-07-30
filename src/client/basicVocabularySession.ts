@@ -300,22 +300,29 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   }
   window.addEventListener('pageshow', onPageShow);
 
+  function refreshFromStorage(): void {
+    store.refresh();
+    updateSummary();
+    if (!hasRatedSinceInit) {
+      restartSession();
+    }
+  }
+
   function onStorage(e: StorageEvent): void {
     if (e.storageArea !== null && e.storageArea !== window.localStorage) return;
     if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
 
     const isExternalDeletion = e.key === null || e.newValue === null;
     if (isExternalDeletion) {
-      store.acceptExternalClear();
-      restartSession();
+      if (store.acceptExternalClear()) {
+        restartSession();
+      } else {
+        refreshFromStorage();
+      }
       return;
     }
 
-    store.refresh();
-    updateSummary();
-    if (!hasRatedSinceInit) {
-      restartSession();
-    }
+    refreshFromStorage();
   }
   window.addEventListener('storage', onStorage);
 
