@@ -309,7 +309,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   }
 
   function onStorage(e: StorageEvent): void {
-    if (e.storageArea !== null && e.storageArea !== window.localStorage) return;
+    if (!store.isRelevantStorageArea(e.storageArea)) return;
     if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
 
     const isExternalDeletion = e.key === null || e.newValue === null;
