@@ -203,7 +203,7 @@ PR #165 的合併生產元件邊界、狀態責任與禁止事項。
 | `role="group"` on practice choices | `LessonPractice.astro:94` | `lesson-practice-ui.test.ts:61` |
 | `role="status" aria-live="polite"` on feedback | `LessonPractice.astro:108` | `lesson-practice-ui.test.ts:62-63` |
 | `prefers-reduced-motion` | `BaseLayout.astro:195-204` | `direction-c-production-ui.test.ts:27` |
-| Non-color cues in practice | `LessonPractice.astro:284-327`（correct choice indicator：success filled circle + inner dot；incorrect choice indicator：✕；feedback icon：✓／✕） | Automated（`direction-c-production-ui.test.ts:84-88`）：驗證 `.practice-choice__indicator`、`role="group"`、`role="status"`、`aria-live="polite"`、計時器與儲存呼叫存在。符號（inner dot、✕、✓）、邊框變色、動態 `aria-label` 無 automated assertion，僅由 committed browser evidence（`evidence/issue-162/`）與 production source 支撐。 |
+| Non-color cues in practice | `LessonPractice.astro:284-327`（correct choice indicator：success filled circle + inner dot；incorrect choice indicator：✕；feedback icon：✓／✕） | Automated（`direction-c-production-ui.test.ts:84-88`）：驗證 `.practice-choice__indicator`、`role="group"`、`role="status"`、`aria-live="polite"`、計時器與儲存呼叫存在。Committed browser evidence（`evidence/issue-162/`）：incorrect feedback（✕、紅邊框、`不正解。`）在 light/dark PNG 中可見；completion（`練習完了！`）在 light/dark PNG 中可見；correct transient feedback（✓、green 邊框、`正解！`）無專屬截圖，僅由 `evidence/issue-162/README.md:55-61` 的 browser check「correct, incorrect, and completion states retain icon, text, border, and accessible-name cues」覆蓋。符號（inner dot、✕、✕/✓）、邊框變色、動態 `aria-label` 無 automated assertion。 |
 
 ## 狀態隔離
 

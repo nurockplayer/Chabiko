@@ -93,10 +93,10 @@ PR #165 (commit `04759286`) 的合併生產實作的 Direction C 設計契約。
   - `role="status" aria-live="polite"`（即時回饋容器）
   - `store.markComplete()` 與 `timer.schedule()` 生命週期呼叫
   - `pageshow` 與 `storage` 事件監聽
-- **Committed browser evidence**（`docs/design/evidence/issue-162/` 的 light/dark 截圖）確認在實際狀態下：
-  - ✓ feedback icon 在正確時顯示、✕ feedback icon 在錯誤時顯示
-  - 邊框顏色在正確（green）、錯誤（red）狀態下可見
-  - 回饋區塊顯示 `正解！` 或 `不正解。` + 正確答案
+- **Committed browser evidence**（`docs/design/evidence/issue-162/`）確認在實際狀態下：
+  - **Incorrect feedback**（`.practice-incorrect-*.png`, `dark-practice-feedback-*.png`）：✕ indicator、紅邊框、`不正解。` + 正確答案、✕ feedback icon 在 light 與 dark 下可見
+  - **Completion**（`.practice-complete-*.png`, `dark-completion-*.png`）：`✓ 練習完了！` 訊息與 primary 圓形圖示可見
+  - **Correct transient feedback**（無 dedicated capture，僅 `evidence/issue-162/README.md:55-61` 的 browser check 覆蓋）：✓ feedback icon、green 邊框、`正解！` 文字在 1200ms 過渡期間可見（與 incorrect 及 completion 一起納入「correct, incorrect, and completion states retain icon, text, border, and accessible-name cues in addition to colour」瀏覽器檢查）
   - `aria-label` 在點擊後更新為 `正解:` / `不正解:`（PR #165 瀏覽器檢查確認，`evidence/issue-162/README.md:55-61`）
 
 ### Header 元件

@@ -28,7 +28,7 @@
           ".lesson-list-link",
           ".core-card",
           ".practice-choice",
-          ".nav-link"
+          "lesson [id].astro .nav-link"
         ],
         "pointer": "#/tokens/color/surface"
       },
@@ -39,8 +39,7 @@
         "dark": "#f2eee8",
         "role": "primary body text",
         "usedIn": [
-          "body",
-          "all headings",
+          "body (inherited by .path-heading, .lesson-intro h1, .reading-section h2, .core-section h2)",
           ".core-sentence",
           ".lesson-example"
         ],
@@ -69,7 +68,7 @@
         "role": "deemphasized / disabled text",
         "usedIn": [
           ".practice-progress",
-          "disabled choice labels",
+          ".practice-choice:disabled:not(.practice-choice--correct, .practice-choice--incorrect) color",
           ".pending-label"
         ],
         "pointer": "#/tokens/color/textMuted"
@@ -98,7 +97,7 @@
         "usedIn": [
           ".practice-choice:hover",
           ".lesson-list-link:hover",
-          ".pending-status"
+          ".path-status--pending"
         ],
         "pointer": "#/tokens/color/primarySoft"
       },
@@ -153,7 +152,7 @@
         "role": "separator / card border / divider",
         "usedIn": [
           ".practice-choice",
-          ".nav-link",
+          "lesson [id].astro .nav-link",
           ".reset-btn",
           ".reading-section border-top",
           ".core-meaning border-top"
@@ -169,8 +168,7 @@
         "usedIn": [
           ".practice-choice--correct border/indicator",
           ".feedback-icon",
-          ".lesson-marker--done",
-          ".lesson-completion-status--done"
+          ".lesson-marker--done"
         ],
         "pointer": "#/tokens/color/success"
       },
@@ -182,7 +180,7 @@
         "role": "correct / completed background",
         "usedIn": [
           ".practice-choice--correct background",
-          ".practice-feedback",
+          ".practice-feedback.feedback-visible background (correct answer feedback)",
           ".lesson-completion-status--done background"
         ],
         "pointer": "#/tokens/color/successSoft"
