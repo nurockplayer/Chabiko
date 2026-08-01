@@ -50,6 +50,48 @@ const canonical = url.href;
     <style>
       :root {
         color-scheme: light;
+        --color-page: #fafafa;
+        --color-header: var(--c-surface);
+        --color-header-text: var(--c-text);
+        --color-header-muted: var(--c-text-secondary);
+        --color-on-primary: #ffffff;
+        --color-on-status: #ffffff;
+        --color-status-current: #765215;
+        --color-status-success: #2f666b;
+        --color-focus: #2563eb;
+        --c-bg: #fafafa;
+        --c-surface: #ffffff;
+        --c-text: #1a1a1a;
+        --c-text-secondary: #666;
+        --c-text-muted: #6a6a7d;
+        --c-primary: #2563eb;
+        --c-primary-light: #dbeafe;
+        --c-accent: #2563eb;
+        --c-accent-hover: #1d4ed8;
+        --c-accent-light: #dbeafe;
+        --c-route-line: #d0ccc4;
+        --c-border: #e5e5e5;
+        --c-success: #3d7b80;
+        --c-success-bg: #e8f0f0;
+        --c-error: #b04435;
+        --c-error-bg: #f5e8e4;
+        --c-slot-bg: #f0f0f0;
+        --font-zh: 'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif;
+        --font-ja: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+          'Noto Sans CJK JP', sans-serif;
+        --font-pinyin: 'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+        --radius: 8px;
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 1rem;
+        --space-lg: 1.5rem;
+        --space-xl: 2rem;
+        --space-2xl: 3rem;
+        --space-3xl: 4rem;
+        --max-w: 48rem;
+      }
+      :root[data-theme-enabled='true'] {
+        color-scheme: light;
         --color-page: #f4f1ec;
         --color-surface: #ffffff;
         --color-text: #1a1a2e;
@@ -81,6 +123,7 @@ const canonical = url.href;
         --c-primary: var(--color-primary);
         --c-primary-light: var(--color-primary-soft);
         --c-accent: var(--color-accent);
+        --c-accent-hover: #b97724;
         --c-accent-light: var(--color-accent-soft);
         --c-route-line: var(--color-route);
         --c-border: var(--color-border);
@@ -127,6 +170,7 @@ const canonical = url.href;
         --color-status-current: #f0bd6d;
         --color-status-success: #8acbc4;
         --color-focus: #f2bd67;
+        --c-accent-hover: #d8993a;
       }
       *,
       *::before,

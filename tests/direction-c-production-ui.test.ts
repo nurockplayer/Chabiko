@@ -12,6 +12,10 @@ const lessonSource = readSource('../src/pages/lessons/[id].astro');
 const practiceSource = readSource('../src/components/LessonPractice.astro');
 const hskSource = readSource('../src/pages/vocabulary/hsk/1/index.astro');
 const notFoundSource = readSource('../src/pages/404.astro');
+const flashcardSource = readSource('../src/components/FlashcardSession.astro');
+const basicVocabularySource = readSource(
+  '../src/components/vocabulary/BasicVocabularySession.astro',
+);
 
 describe('Direction C production journey presentation', () => {
   it('uses coherent light and dark semantic tokens with the city-wayfinding shell', () => {
@@ -91,5 +95,50 @@ describe('Direction C production journey presentation', () => {
     expect(practiceSource).toContain('timer.schedule(() => render(), 2000)');
     expect(practiceSource).toContain("window.addEventListener('pageshow'");
     expect(practiceSource).toContain("window.addEventListener('storage'");
+  });
+});
+
+describe('Direction C token scoping', () => {
+  it('keeps a shared token baseline for routes that do not opt into theming', () => {
+    expect(baseLayoutSource).toContain('--c-bg: #fafafa');
+    expect(baseLayoutSource).toContain('--c-surface: #ffffff');
+    expect(baseLayoutSource).toContain('--c-text: #1a1a1a');
+    expect(baseLayoutSource).toContain('--c-accent: #2563eb');
+    expect(baseLayoutSource).toContain('--radius: 8px');
+    expect(baseLayoutSource).toContain('--max-w: 48rem');
+  });
+
+  it('scopes Direction C light tokens to theme-enabled routes', () => {
+    const baseRootBlock = baseLayoutSource.slice(
+      0,
+      baseLayoutSource.indexOf(':root[data-theme-enabled=\'true\']'),
+    );
+    expect(baseRootBlock).not.toContain('--color-page: #f4f1ec');
+    expect(baseRootBlock).not.toContain('--radius: 0');
+    expect(baseRootBlock).not.toContain('--max-w: 80rem');
+    expect(baseLayoutSource).toContain(
+      ":root[data-theme-enabled='true']",
+    );
+    expect(baseLayoutSource).toContain(
+      ":root[data-theme-enabled='true'][data-theme='dark']",
+    );
+  });
+
+  it('defines --c-accent-hover for every shipped reference', () => {
+    for (const source of [
+      flashcardSource,
+      basicVocabularySource,
+      notFoundSource,
+    ]) {
+      const occurrences = source.match(/var\(--c-accent-hover\)/g) ?? [];
+      expect(occurrences.length).toBeGreaterThan(0);
+    }
+    expect(baseLayoutSource).toContain('--c-accent-hover:');
+    const refs = [
+      flashcardSource,
+      basicVocabularySource,
+      notFoundSource,
+    ].flatMap((source) => source.match(/var\(--c-accent-hover\)/g) ?? []);
+    expect(refs.length).toBeGreaterThanOrEqual(4);
   });
 });
