@@ -7,7 +7,7 @@
     "generated": 432,
     "pending": 0,
     "rejected": 0,
-    "regenerated": 0
+    "regenerated": 2
   },
   "items": [
     {
@@ -1405,7 +1405,14 @@
       "prompt": "Use case: illustration-story\nAsset type: educational vocabulary preview illustration\nPrimary request: depict one clear, culturally neutral visual concept for the Chinese vocabulary item \"票价\".\nStyle/medium: friendly hand-drawn digital cartoon, rounded dark charcoal-brown outline with mild variation, simple shapes, bright but not neon warm orange, grass green, lake blue, soft pink, and natural skin tones. Use an extra-thick, clearly hand-drawn outline; reduce small details; avoid glossy highlights. Keep the full subject within the central 70% of the canvas; leave every border entirely #00ff00.\nComposition/framing: square 1:1, centered single concept, generous transparent-safe padding, at most one simple supporting context object.\nConstraints: simple educational composition, no written characters, no pinyin, no English, no letters, no logo, no watermark, no brand, no label, no quiz answer, no political symbol, no stereotype, no decorative clutter, no detailed background, no cast shadow.\nOutput intent: isolated opaque subject on a perfectly flat #00ff00 chroma-key background for later alpha removal; use no #00ff00 in the subject.",
       "promptDigest": "5359ed76083359914648e575295e91a6d1961b146679a92d697926fac9fe4f02",
       "generationRevision": 3,
-      "status": "generated"
+      "status": "generated",
+      "regenerationReason": {
+        "fromRevision": "2",
+        "toRevision": "3",
+        "reason": "style-consistency-rejection: revision 2 placed the subject outside the central 70% of the canvas and left a border not entirely #00ff00",
+        "outcome": "rejected-and-regenerated",
+        "evidence": "revision-3 wording adds central-70% framing and full #00ff00 border requirements"
+      }
     },
     {
       "previewId": "teacher-preview-ef61dcbe9f7418ba",
@@ -1614,7 +1621,14 @@
       "prompt": "Use case: illustration-story\nAsset type: educational vocabulary preview illustration\nPrimary request: depict one clear, culturally neutral visual concept for the Chinese vocabulary item \"现金\".\nStyle/medium: friendly hand-drawn digital cartoon, rounded dark charcoal-brown outline with mild variation, simple shapes, bright but not neon warm orange, grass green, lake blue, soft pink, and natural skin tones. Use an extra-thick, clearly hand-drawn outline; reduce small details; avoid glossy highlights. Keep the full subject within the central 70% of the canvas; leave every border entirely #00ff00.\nComposition/framing: square 1:1, centered single concept, generous transparent-safe padding, at most one simple supporting context object.\nConstraints: simple educational composition, no written characters, no pinyin, no English, no letters, no logo, no watermark, no brand, no label, no quiz answer, no political symbol, no stereotype, no decorative clutter, no detailed background, no cast shadow.\nOutput intent: isolated opaque subject on a perfectly flat #00ff00 chroma-key background for later alpha removal; use no #00ff00 in the subject.",
       "promptDigest": "f8d0fba8a1ff2169ef1e9d889d43cf36a0192bce5db2db7c996b143b9f4fecce",
       "generationRevision": 3,
-      "status": "generated"
+      "status": "generated",
+      "regenerationReason": {
+        "fromRevision": "2",
+        "toRevision": "3",
+        "reason": "style-consistency-rejection: revision 2 placed the subject outside the central 70% of the canvas and left a border not entirely #00ff00",
+        "outcome": "rejected-and-regenerated",
+        "evidence": "revision-3 wording adds central-70% framing and full #00ff00 border requirements"
+      }
     },
     {
       "previewId": "teacher-preview-545f144ddd9096cf",

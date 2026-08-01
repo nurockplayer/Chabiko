@@ -33,7 +33,11 @@ function assertPreviewIntegrity(): void {
     if (row.image.provenance === 'ai-generated' && row.image.state !== 'ai-generated') {
       throw new Error(`Preview row '${row.id}' has inconsistent AI image provenance`);
     }
-    if (row.image.provenance === 'teacher-provided' && row.image.state !== 'teacher-mapped') {
+    if (
+      row.image.provenance === 'teacher-provided'
+      && row.image.state !== 'teacher-mapped'
+      && row.image.state !== 'teacher-mapped-local'
+    ) {
       throw new Error(`Preview row '${row.id}' has inconsistent teacher image provenance`);
     }
   }

@@ -46,6 +46,13 @@ describe('TeacherPreview — build output (fresh build)', () => {
     expect(html).not.toContain('unreviewed-development-preview');
   });
 
+  it('deployed output contains none of the local-only teacher derivatives', () => {
+    const localTeacherDir = resolve(REPO_ROOT, 'dist/assets/dev/teacher-vocabulary-preview/teacher');
+    const trackedTeacherDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/teacher');
+    expect(existsSync(localTeacherDir)).toBe(false);
+    expect(existsSync(trackedTeacherDir)).toBe(false);
+  });
+
   it('no define:vars in built output', () => {
     expect(html).not.toContain('define:vars');
   });

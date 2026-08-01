@@ -14,6 +14,13 @@ Usage:
 Place accepted built-in image-generation outputs at <ai-source-dir>/<preview-id>
 with a .png, .webp, or .jpg suffix, then rerun --build. The source files are
 only read. Generated preview derivatives are written as deterministic WebP.
+
+Teacher-derived derivatives are written only into the gitignored local-only
+directory (--teacher-asset-dir, default public/assets/dev/...). No teacher
+derivative is ever written under the tracked public assets path; the committed
+corpus records those rows as teacher-mapped-local and the deployed static build
+prunes the local-only directory via astro.config.mjs. AI-generated preview
+derivatives remain under the tracked public AI assets path.
 """
 
 from __future__ import annotations
@@ -97,10 +104,27 @@ STYLE_REFERENCE_SET_IDS = (
     "動詞1-49/看.png",
     "形容詞1-40/好.png",
 )
-REGENERATED_PREVIEW_IDS = frozenset({
-    "teacher-preview-42233332a5fffab8",
-    "teacher-preview-c1b3a4997c033074",
-})
+# Items whose accepted revision is not their first generated revision. The
+# value is a machine-readable record of the prior rejection under the frozen
+# style-audit consistency procedure; the revision-three wording exists solely
+# to fix the framing/chroma-key defects named in the reason.
+REGENERATION_REASONS: dict[str, dict[str, str]] = {
+    "teacher-preview-42233332a5fffab8": {
+        "fromRevision": "2",
+        "toRevision": "3",
+        "reason": "style-consistency-rejection: revision 2 placed the subject outside the central 70% of the canvas and left a border not entirely #00ff00",
+        "outcome": "rejected-and-regenerated",
+        "evidence": "revision-3 wording adds central-70% framing and full #00ff00 border requirements",
+    },
+    "teacher-preview-c1b3a4997c033074": {
+        "fromRevision": "2",
+        "toRevision": "3",
+        "reason": "style-consistency-rejection: revision 2 placed the subject outside the central 70% of the canvas and left a border not entirely #00ff00",
+        "outcome": "rejected-and-regenerated",
+        "evidence": "revision-3 wording adds central-70% framing and full #00ff00 border requirements",
+    },
+}
+REGENERATED_PREVIEW_IDS = frozenset(REGENERATION_REASONS)
 
 
 def sha256_file(path: Path) -> str:
@@ -372,6 +396,29 @@ def image_input_for(preview_id: str, source_dir: Path | None) -> Path | None:
     return found[0] if found else None
 
 
+def verify_source_matches_mapping(
+    source: Path,
+    relative_path: str,
+    expected_sha256: str,
+    expected_width: int,
+    expected_height: int,
+) -> None:
+    """Fail closed when the actual source file drifts from its reconciliation record."""
+    actual_sha256 = sha256_file(source)
+    if actual_sha256 != expected_sha256:
+        raise ValueError(
+            f"Teacher source '{relative_path}' checksum drift: "
+            f"expected {expected_sha256}, got {actual_sha256}"
+        )
+    with Image.open(source) as opened:
+        width, height = opened.size
+    if (width, height) != (expected_width, expected_height):
+        raise ValueError(
+            f"Teacher source '{relative_path}' dimension drift: "
+            f"expected {expected_width}x{expected_height}, got {width}x{height}"
+        )
+
+
 def export_derivative(source: Path, destination: Path, *, require_transparent_corners: bool = False) -> dict[str, Any]:
     destination.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(source) as opened:
@@ -491,12 +538,22 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             destination = teacher_asset_dir / f"{row['previewId']}.webp"
             exported = None if args.rebuild_teacher_assets or not destination.is_file() else existing_derivative_metadata(destination)
             if exported is None:
+                # Verify the actual source file against its reconciliation record
+                # immediately before deriving, so a drifted or replaced source is
+                # never exported as if it were the inventoried image.
+                verify_source_matches_mapping(
+                    source_dir / mapping["relativePath"],
+                    mapping["relativePath"],
+                    mapping["sourceChecksumSha256"],
+                    mapping["sourceWidth"],
+                    mapping["sourceHeight"],
+                )
                 exported = export_derivative(source_dir / mapping["relativePath"], destination)
             preview_row["image"] = {
-                "state": "teacher-mapped",
+                "state": "teacher-mapped-local",
                 "provenance": "teacher-provided",
                 "reviewStatus": "draft",
-                "assetPath": f"/assets/vocabulary/teacher-preview/teacher/{row['previewId']}.webp",
+                "assetPath": f"/assets/dev/teacher-vocabulary-preview/teacher/{row['previewId']}.webp",
                 "sourceImageRelativePath": mapping["relativePath"],
                 "sourceChecksumSha256": mapping["sourceChecksumSha256"],
                 "reconciliationEvidence": mapping["evidence"],
@@ -538,6 +595,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                     "previewId": row["previewId"], "sourceSheet": row["sourceSheet"], "sourceRow": row["sourceRow"],
                     "simplified": row["simplified"], "partOfSpeech": row["partOfSpeech"], "prompt": prompt,
                     "promptDigest": digest, "generationRevision": generation_revision, "status": queue_status,
+                    **({"regenerationReason": REGENERATION_REASONS[row["previewId"]]}
+                       if row["previewId"] in REGENERATED_PREVIEW_IDS else {}),
                 })
             else:
                 preview_row["image"] = {
@@ -558,7 +617,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "bySourceSheet": dict(Counter(row["sourceSheet"] for row in corpus_rows)),
         "byPartOfSpeech": dict(Counter(row["partOfSpeech"] for row in corpus_rows)),
         "byImageState": {state: by_image_state.get(state, 0) for state in (
-            "teacher-mapped", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
+            "teacher-mapped", "teacher-mapped-local", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
         )},
     }
     corpus = {
@@ -578,8 +637,13 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "schemaVersion": 1,
         "styleAudit": "docs/teacher-vocabulary-preview/style-audit.md",
         "status": "complete" if not any(item["status"] == "pending" for item in queue) else "generation-required",
-        "totals": {"suitable": len(queue), "generated": sum(item["status"] == "generated" for item in queue),
-                   "pending": sum(item["status"] == "pending" for item in queue), "rejected": 0, "regenerated": 0},
+        "totals": {
+            "suitable": len(queue),
+            "generated": sum(item["status"] == "generated" for item in queue),
+            "pending": sum(item["status"] == "pending" for item in queue),
+            "rejected": sum(item["status"] == "rejected" for item in queue),
+            "regenerated": sum(1 for item in queue if item.get("regenerationReason")),
+        },
         "items": queue,
     }
     archives = [
@@ -619,13 +683,81 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     return {"corpus": corpus, "reconciliation": reconciliation_payload, "queue": queue_payload, "inputAudit": input_audit}
 
 
+def run_self_tests() -> int:
+    """Read-only drift tests for the source-verification gate (Issue #185 review #3)."""
+    import tempfile
+
+    failures = 0
+
+    def expect_raises(description: str, expected: str, fn: Any) -> None:
+        nonlocal failures
+        try:
+            fn()
+            print(f"  FAIL  {description}: expected ValueError containing {expected!r}, none raised")
+            failures += 1
+        except ValueError as exc:
+            if expected in str(exc):
+                print(f"  PASS  {description}")
+            else:
+                print(f"  FAIL  {description}: unexpected message {exc}")
+                failures += 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp) / "source.png"
+        with Image.new("RGB", (50, 60), (255, 0, 0)) as image:
+            image.save(base)
+        original_sha256 = sha256_file(base)
+
+        def pass_case() -> None:
+            verify_source_matches_mapping(base, "source.png", original_sha256, 50, 60)
+
+        try:
+            pass_case()
+            print("  PASS  verify_source_matches_mapping accepts matching checksum and dimensions")
+        except ValueError as exc:
+            print(f"  FAIL  matching source rejected: {exc}")
+            failures += 1
+
+        def checksum_drift_case() -> None:
+            with Image.new("RGB", (50, 60), (0, 255, 0)) as image:
+                image.save(base)
+            try:
+                verify_source_matches_mapping(base, "source.png", original_sha256, 50, 60)
+            finally:
+                with Image.new("RGB", (50, 60), (255, 0, 0)) as image:
+                    image.save(base)
+
+        expect_raises("checksum drift fails closed", "checksum drift", checksum_drift_case)
+
+        def dimension_drift_case() -> None:
+            # Pass the file's real checksum but a wrong dimension so only the
+            # dimension gate is triggered (a changed size always changes the
+            # checksum too, so this exercises the independent dimension check).
+            verify_source_matches_mapping(base, "source.png", sha256_file(base), 99, 99)
+
+        expect_raises("dimension drift fails closed", "dimension drift", dimension_drift_case)
+
+        try:
+            pass_case()
+            print("  PASS  source is restored and still matches after drift cases")
+        except ValueError as exc:
+            print(f"  FAIL  source restore verification failed: {exc}")
+            failures += 1
+
+    if failures:
+        print(f"\n{failures} drift test(s) FAILED")
+    else:
+        print("\nAll source-verification drift tests PASSED")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build the complete #185 teacher vocabulary preview")
-    parser.add_argument("--workbook", type=Path, required=True)
-    parser.add_argument("--source-dir", type=Path, required=True)
-    parser.add_argument("--inventory", type=Path, required=True)
+    parser.add_argument("--workbook", type=Path)
+    parser.add_argument("--source-dir", type=Path)
+    parser.add_argument("--inventory", type=Path)
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "data/teacher-vocabulary-preview")
-    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/teacher")
+    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/dev/teacher-vocabulary-preview/teacher")
     parser.add_argument("--ai-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/ai")
     parser.add_argument("--ai-source-dir", type=Path)
     parser.add_argument(
@@ -638,10 +770,15 @@ def main() -> int:
         action="store_true",
         help="Regenerate every accepted AI preview derivative instead of reusing valid WebP outputs.",
     )
+    parser.add_argument("--test", action="store_true", help="Run read-only source-verification drift tests")
     parser.add_argument("--build", action="store_true")
     args = parser.parse_args()
+    if args.test:
+        return run_self_tests()
     if not args.build:
         parser.error("--build is required; this explicit mode prevents accidental writes")
+    if not (args.workbook and args.source_dir and args.inventory):
+        parser.error("--workbook, --source-dir and --inventory are required in build mode")
     result = build(args)
     print(json.dumps({
         "usableRows": result["corpus"]["totals"]["usableRows"],

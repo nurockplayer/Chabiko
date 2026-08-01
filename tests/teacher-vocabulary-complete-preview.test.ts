@@ -45,7 +45,7 @@ describe('complete teacher vocabulary preview', () => {
         expect(row.image.reviewStatus).toBe('draft');
         expect(row.image.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-preview\/ai\//);
       }
-      if (row.image.state === 'teacher-mapped') {
+      if (row.image.state === 'teacher-mapped' || row.image.state === 'teacher-mapped-local') {
         expect(row.image.provenance).toBe('teacher-provided');
       }
     }
@@ -72,6 +72,39 @@ describe('complete teacher vocabulary preview', () => {
       expect(row.image.promptDigest).toMatch(/^[a-f0-9]{64}$/);
       expect(existsSync(`public${row.image.assetPath}`)).toBe(true);
     }
+  });
+
+  it('derives regenerated from actual queue metadata and keeps revision-3 reasons machine-readable', () => {
+    const queue = JSON.parse(readFileSync('data/teacher-vocabulary-preview/generation-queue.json', 'utf8'));
+    const regeneratedItems = queue.items.filter((item: { regenerationReason?: unknown }) => item.regenerationReason);
+    expect(queue.totals.regenerated).toBe(regeneratedItems.length);
+    expect(queue.totals.regenerated).toBe(2);
+    expect(regeneratedItems.every((item: { generationRevision: number }) => item.generationRevision === 3)).toBe(true);
+    for (const item of regeneratedItems) {
+      expect(item.regenerationReason.fromRevision).toBe('2');
+      expect(item.regenerationReason.toRevision).toBe('3');
+      expect(item.regenerationReason.outcome).toBe('rejected-and-regenerated');
+      expect(item.regenerationReason.reason.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps the immutable production 19-image contract unchanged and only writes new teacher derivatives locally', () => {
+    const productionRows = preview.rows.filter((row) => row.productionVocabularyId);
+    expect(productionRows).toHaveLength(20);
+    const productionImages = productionRows.filter((row) => row.image.assetPath);
+    expect(productionImages).toHaveLength(19);
+    for (const row of productionImages) {
+      expect(row.image.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-core-v1\//);
+      expect(existsSync(`public${row.image.assetPath}`)).toBe(true);
+    }
+    // The 1,131 newly derived teacher images must point only at the local-only
+    // dev asset directory, never at a tracked production path.
+    for (const row of preview.rows) {
+      if (row.image.state === 'teacher-mapped-local') {
+        expect(row.image.assetPath).toMatch(/^\/assets\/dev\/teacher-vocabulary-preview\/teacher\//);
+      }
+    }
+    expect(preview.totals.byImageState['teacher-mapped-local']).toBe(1131);
   });
 
   it('keeps filters complete and pagination-safe at the 50-row boundary', () => {

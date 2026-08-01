@@ -1,52 +1,17 @@
 ---
-import {
-  filterTeacherVocabularyPreview,
-  loadTeacherImageReconciliation,
-  loadTeacherVocabularyPreview,
-} from '../../../../content/loadTeacherVocabularyPreview';
+import { loadTeacherImageReconciliation, loadTeacherVocabularyPreview } from '../../../../content/loadTeacherVocabularyPreview';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import type {
-  PreviewImageState,
-  PreviewMissingField,
-  PreviewPartOfSpeech,
-} from '../../../../types/teacherVocabularyPreview';
+import type { PreviewImageState, PreviewMissingField, PreviewPartOfSpeech } from '../../../../types/teacherVocabularyPreview';
 
 const corpus = loadTeacherVocabularyPreview();
 const reconciliation = loadTeacherImageReconciliation();
-const query = Astro.url.searchParams;
-const allowedImageStates = new Set<PreviewImageState>([
-  'teacher-mapped', 'ai-generated', 'ai-pending', 'text-only', 'ambiguous', 'unsuitable', 'skipped',
-]);
-const allowedPartOfSpeech = new Set<PreviewPartOfSpeech>(['noun', 'verb', 'adjective', 'adverb']);
-const allowedMissingFields = new Set<PreviewMissingField>(['pinyin', 'japanese', 'traditional', 'difficulty']);
-const sourceSheet = query.get('sheet') ?? undefined;
-const partOfSpeech = query.get('pos');
-const difficulty = query.get('difficulty') ?? undefined;
-const imageState = query.get('image');
-const missingField = query.get('missing');
-const filters = {
-  sourceSheet: sourceSheet && Object.hasOwn(corpus.totals.bySourceSheet, sourceSheet) ? sourceSheet : undefined,
-  partOfSpeech: partOfSpeech && allowedPartOfSpeech.has(partOfSpeech as PreviewPartOfSpeech)
-    ? partOfSpeech as PreviewPartOfSpeech : undefined,
-  difficulty: difficulty && Object.hasOwn({ '☆': true, '☆☆': true }, difficulty) ? difficulty : undefined,
-  imageState: imageState && allowedImageStates.has(imageState as PreviewImageState)
-    ? imageState as PreviewImageState : undefined,
-  missingField: missingField && allowedMissingFields.has(missingField as PreviewMissingField)
-    ? missingField as PreviewMissingField : undefined,
-};
-const filteredRows = filterTeacherVocabularyPreview(corpus.rows, filters);
-const pageSize = 50;
-const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-const requestedPage = Number.parseInt(query.get('page') ?? '1', 10);
-const page = Number.isInteger(requestedPage) ? Math.min(Math.max(requestedPage, 1), pageCount) : 1;
-const rows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
-const flaggedSources = reconciliation.filter((item) => item.state === 'ambiguous' || item.state === 'unmatched');
 
 const posLabels: Record<PreviewPartOfSpeech, string> = {
   noun: '名詞', verb: '動詞', adjective: '形容詞', adverb: '副詞',
 };
 const imageLabels: Record<PreviewImageState, string> = {
   'teacher-mapped': '教師提供の対応画像',
+  'teacher-mapped-local': '教師提供（ローカル）',
   'ai-generated': 'AI生成・暫定',
   'ai-pending': 'AI生成待ち',
   'text-only': '文字のみ',
@@ -58,15 +23,13 @@ const missingLabels: Record<PreviewMissingField, string> = {
   pinyin: 'ピンイン', japanese: '日本語', traditional: '繁体字', difficulty: '難易度',
 };
 
-function pageUrl(nextPage: number): string {
-  const url = new URL(Astro.url);
-  url.searchParams.set('page', String(nextPage));
-  return `${url.pathname}${url.search}`;
-}
-
-function sourcedOrMissing(value: string | undefined): string {
-  return value || '未記入（原簿）';
-}
+const flaggedSources = reconciliation.filter(
+  (item) => item.state === 'ambiguous' || item.state === 'unmatched',
+);
+const browserData = JSON.stringify({
+  rows: corpus.rows,
+  flaggedSources,
+}).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout
@@ -74,7 +37,7 @@ function sourcedOrMissing(value: string | undefined): string {
   description="教師提供ワークブックの完全語彙コーパスを確認する読み取り専用プレビュー"
   robots="noindex,nofollow"
 >
-  <section class="preview" aria-labelledby="preview-title">
+  <section class="preview" id="preview-root" aria-labelledby="preview-title">
     <header class="preview__header">
       <p class="preview__eyebrow">内部レビュー専用</p>
       <h1 id="preview-title">語彙コーパス画像プレビュー</h1>
@@ -85,144 +48,127 @@ function sourcedOrMissing(value: string | undefined): string {
       <dl>
         <div><dt>表示対象</dt><dd>{corpus.totals.usableRows.toLocaleString('ja-JP')} 語</dd></div>
         <div><dt>教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped'].toLocaleString('ja-JP')} 語</dd></div>
+        <div><dt>ローカル教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped-local'].toLocaleString('ja-JP')} 語</dd></div>
         <div><dt>AI画像</dt><dd>{corpus.totals.byImageState['ai-generated'].toLocaleString('ja-JP')} 語</dd></div>
-        <div><dt>要確認画像</dt><dd>{flaggedSources.length.toLocaleString('ja-JP')} 件</dd></div>
+        <div><dt>要確認画像</dt><dd data-inventory-count>0 件</dd></div>
       </dl>
       <p class="summary__source">原簿: {corpus.workbook.basename} / SHA-256: <code>{corpus.workbook.sha256}</code></p>
     </section>
 
-    <form class="filters" method="get" aria-label="語彙プレビューフィルター">
+    <div class="filters" aria-label="語彙プレビューフィルター">
       <label>
         シート
-        <select name="sheet">
+        <select data-filter-sheet>
           <option value="">すべて</option>
-          {Object.entries(corpus.totals.bySourceSheet).map(([value, count]) => <option value={value} selected={filters.sourceSheet === value}>{value} ({count})</option>)}
+          {Object.entries(corpus.totals.bySourceSheet).map(([value, count]) => <option value={value}>{value} ({count})</option>)}
         </select>
       </label>
       <label>
         品詞
-        <select name="pos">
+        <select data-filter-pos>
           <option value="">すべて</option>
-          {Object.entries(posLabels).map(([value, label]) => <option value={value} selected={filters.partOfSpeech === value}>{label}</option>)}
+          {Object.entries(posLabels).map(([value, label]) => <option value={value}>{label}</option>)}
         </select>
       </label>
       <label>
         原簿の難易度
-        <select name="difficulty">
+        <select data-filter-difficulty>
           <option value="">すべて</option>
-          <option value="☆" selected={filters.difficulty === '☆'}>☆</option>
-          <option value="☆☆" selected={filters.difficulty === '☆☆'}>☆☆</option>
+          <option value="☆">☆</option>
+          <option value="☆☆">☆☆</option>
         </select>
       </label>
       <label>
         画像状態
-        <select name="image">
+        <select data-filter-image>
           <option value="">すべて</option>
-          {Object.entries(imageLabels).map(([value, label]) => <option value={value} selected={filters.imageState === value}>{label}</option>)}
+          {Object.entries(imageLabels).map(([value, label]) => <option value={value}>{label}</option>)}
         </select>
       </label>
       <label>
         欠損フィールド
-        <select name="missing">
+        <select data-filter-missing>
           <option value="">すべて</option>
-          {Object.entries(missingLabels).map(([value, label]) => <option value={value} selected={filters.missingField === value}>{label}</option>)}
+          {Object.entries(missingLabels).map(([value, label]) => <option value={value}>{label}</option>)}
         </select>
       </label>
       <div class="filters__actions">
-        <button type="submit">絞り込む</button>
-        <a href="/vocabulary/basic/preview/">リセット</a>
+        <button type="button" data-filter-reset>リセット</button>
       </div>
-    </form>
+    </div>
 
-    <p class="result-count" aria-live="polite">{filteredRows.length.toLocaleString('ja-JP')} 語中 {((page - 1) * pageSize + 1).toLocaleString('ja-JP')} - {Math.min(page * pageSize, filteredRows.length).toLocaleString('ja-JP')} 語を表示</p>
+    <p class="result-count" aria-live="polite"><span data-preview-total>0</span> 語中 <span data-preview-range>0</span> 語を表示</p>
 
-    <ol class="rows" start={(page - 1) * pageSize + 1}>
-      {rows.map((row) => (
-        <li class="row" id={row.id}>
-          {row.image.assetPath ? (
-            <img class="row__image" src={row.image.assetPath} alt="" width={row.image.width} height={row.image.height} loading="lazy" />
-          ) : (
-            <div class="row__image row__image--empty" aria-hidden="true">画像なし</div>
-          )}
-          <div class="row__primary">
-            <p class="row__word" lang="zh-CN">{row.simplified}</p>
-            <p class="row__origin">{row.sourceSheet} / {row.sourceRow} 行</p>
-          </div>
-          <dl class="row__metadata">
-            <div><dt>ピンイン</dt><dd lang="zh-Latn">{sourcedOrMissing(row.pinyin)}</dd></div>
-            <div><dt>日本語</dt><dd>{sourcedOrMissing(row.japanese)}</dd></div>
-            <div><dt>繁体字</dt><dd lang="zh-Hant">{sourcedOrMissing(row.traditional)}</dd></div>
-            <div><dt>品詞</dt><dd>{posLabels[row.partOfSpeech]}</dd></div>
-            <div><dt>難易度</dt><dd>{sourcedOrMissing(row.difficulty)}</dd></div>
-          </dl>
-          <div class="row__state">
-            <span class:list={['state', `state--${row.image.state}`]}>{imageLabels[row.image.state]}</span>
-            <span>{row.image.provenance === 'teacher-provided' ? '教師提供' : row.image.provenance === 'ai-generated' ? 'AI生成' : '画像なし'}</span>
-            {row.missingFields.length > 0 && <span>欠損: {row.missingFields.map((field) => missingLabels[field]).join('、')}</span>}
-            {row.image.note && <span>{row.image.note}</span>}
-          </div>
-        </li>
-      ))}
-    </ol>
+    <ol class="rows" data-preview-rows></ol>
 
-    {filteredRows.length === 0 && <p class="empty">条件に一致する語彙はありません。</p>}
+    <p class="empty" data-preview-empty hidden>条件に一致する語彙はありません。</p>
 
-    <nav class="pagination" aria-label="プレビューページ">
-      {page > 1 ? <a href={pageUrl(page - 1)} rel="prev">前の50語</a> : <span>前の50語</span>}
-      <span>{page} / {pageCount}</span>
-      {page < pageCount ? <a href={pageUrl(page + 1)} rel="next">次の50語</a> : <span>次の50語</span>}
-    </nav>
+    <nav class="pagination" aria-label="プレビューページ" data-pagination></nav>
 
     <details class="inventory" id="teacher-image-inventory">
-      <summary>曖昧・未対応の教師画像インベントリ ({flaggedSources.length})</summary>
-      <ul>
-        {flaggedSources.map((item) => <li><code>{item.relativePath}</code><span>{item.state === 'ambiguous' ? '対応が曖昧' : '未対応'}</span></li>)}
-      </ul>
+      <summary>曖昧・未対応の教師画像インベントリ (<span data-inventory-count>0</span>)</summary>
+      <ul data-inventory-list></ul>
     </details>
   </section>
+
+  <script type="application/json" id="preview-browser-data" set:html={browserData} is:inline></script>
+
+  <script>
+    import { mountPreviewBrowser } from '../../../../client/previewCorpusBrowser';
+    const dataEl = document.getElementById('preview-browser-data');
+    const root = document.getElementById('preview-root');
+    if (dataEl?.textContent && root) {
+      mountPreviewBrowser(root, JSON.parse(dataEl.textContent));
+    }
+  </script>
 </BaseLayout>
 
-<style>
-  .preview { display: grid; gap: var(--space-xl); }
-  .preview__header { max-width: 46rem; }
-  .preview__eyebrow { color: var(--c-text-muted); font-size: .8rem; font-weight: 700; letter-spacing: .08em; }
-  h1 { margin: var(--space-xs) 0 var(--space-sm); font-size: clamp(1.65rem, 5vw, 2.4rem); line-height: 1.25; }
-  .summary { border: 1px solid var(--c-border); background: var(--c-surface); padding: var(--space-md); }
-  .summary dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
-  .summary dt, .row__metadata dt { color: var(--c-text-muted); font-size: .78rem; }
-  .summary dd { font-family: var(--font-pinyin); font-size: 1.15rem; font-weight: 700; }
-  .summary__source { margin-top: var(--space-md); color: var(--c-text-secondary); font-size: .8rem; overflow-wrap: anywhere; }
-  .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); align-items: end; }
-  .filters label { display: grid; gap: .2rem; color: var(--c-text-secondary); font-size: .8rem; font-weight: 700; }
-  .filters select, .filters button { min-height: 2.5rem; border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-text); padding: .35rem .45rem; }
-  .filters button { background: var(--c-primary); border-color: var(--c-primary); color: var(--color-on-primary); cursor: pointer; font-weight: 700; }
-  .filters__actions { display: flex; gap: var(--space-sm); align-items: center; min-height: 2.5rem; }
-  .filters__actions a { font-size: .9rem; }
-  .result-count { color: var(--c-text-secondary); font-size: .9rem; }
-  .rows { display: grid; gap: var(--space-sm); list-style-position: inside; }
-  .row { display: grid; grid-template-columns: 4.25rem minmax(5rem, .65fr) minmax(0, 2.3fr); gap: var(--space-sm); border-bottom: 1px solid var(--c-border); padding: 0 0 var(--space-md); }
-  .row__image { width: 4.25rem; height: 4.25rem; object-fit: contain; background: var(--c-primary-light); }
-  .row__image--empty { display: grid; place-items: center; color: var(--c-text-muted); font-size: .7rem; }
-  .row__word { font-family: var(--font-zh); font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
-  .row__origin { color: var(--c-text-muted); font-size: .72rem; }
-  .row__metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-sm); row-gap: .25rem; }
-  .row__metadata dd { font-size: .85rem; line-height: 1.35; }
-  .row__state { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: .25rem var(--space-sm); color: var(--c-text-secondary); font-size: .73rem; }
-  .state { color: var(--c-primary); font-weight: 700; }
-  .state--ai-generated { color: var(--c-success); }
-  .state--ambiguous, .state--unsuitable { color: var(--c-error); }
-  .pagination { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
-  .pagination span { color: var(--c-text-muted); }
-  .inventory { border: 1px solid var(--c-border); padding: var(--space-md); }
-  .inventory summary { cursor: pointer; font-weight: 700; }
-  .inventory ul { display: grid; gap: var(--space-xs); margin: var(--space-md) 0 0; padding-left: 1rem; }
-  .inventory li { display: flex; flex-wrap: wrap; gap: var(--space-sm); color: var(--c-text-secondary); font-size: .8rem; }
-  .empty { border: 1px solid var(--c-border); padding: var(--space-md); }
+<style is:global>
+  #preview-root { display: grid; gap: var(--space-xl); }
+  #preview-root .preview__header { max-width: 46rem; }
+  #preview-root .preview__eyebrow { color: var(--c-text-muted); font-size: .8rem; font-weight: 700; letter-spacing: .08em; }
+  #preview-root h1 { margin: var(--space-xs) 0 var(--space-sm); font-size: clamp(1.65rem, 5vw, 2.4rem); line-height: 1.25; }
+  #preview-root .summary { border: 1px solid var(--c-border); background: var(--c-surface); padding: var(--space-md); }
+  #preview-root .summary dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+  #preview-root .summary dt, #preview-root .row__metadata dt { color: var(--c-text-muted); font-size: .78rem; }
+  #preview-root .summary dd { font-family: var(--font-pinyin); font-size: 1.15rem; font-weight: 700; }
+  #preview-root .summary__source { margin-top: var(--space-md); color: var(--c-text-secondary); font-size: .8rem; overflow-wrap: anywhere; }
+  #preview-root .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); align-items: end; }
+  #preview-root .filters label { display: grid; gap: .2rem; color: var(--c-text-secondary); font-size: .8rem; font-weight: 700; }
+  #preview-root .filters select, #preview-root .filters button { min-height: 2.5rem; border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-text); padding: .35rem .45rem; }
+  #preview-root .filters button { background: var(--c-primary); border-color: var(--c-primary); color: var(--color-on-primary); cursor: pointer; font-weight: 700; }
+  #preview-root .filters__actions { display: flex; gap: var(--space-sm); align-items: center; min-height: 2.5rem; }
+  #preview-root .filters__actions a { font-size: .9rem; }
+  #preview-root .result-count { color: var(--c-text-secondary); font-size: .9rem; }
+  #preview-root .rows { display: grid; gap: var(--space-sm); list-style-position: inside; }
+  #preview-root .row { display: grid; grid-template-columns: 4.25rem minmax(5rem, .65fr) minmax(0, 2.3fr); gap: var(--space-sm); border-bottom: 1px solid var(--c-border); padding: 0 0 var(--space-md); }
+  #preview-root .row__image { width: 4.25rem; height: 4.25rem; object-fit: contain; background: var(--c-primary-light); display: grid; place-items: center; overflow: hidden; }
+  #preview-root .row__image__img { width: 100%; height: 100%; object-fit: contain; }
+  #preview-root .row__image--empty { display: grid; place-items: center; color: var(--c-text-muted); font-size: .7rem; }
+  #preview-root .row__image--missing { display: grid; place-items: center; color: var(--c-text-muted); font-size: .7rem; background: var(--c-surface); border: 1px dashed var(--c-border); }
+  #preview-root .row__word { font-family: var(--font-zh); font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+  #preview-root .row__origin { color: var(--c-text-muted); font-size: .72rem; }
+  #preview-root .row__metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-sm); row-gap: .25rem; }
+  #preview-root .row__metadata dd { font-size: .85rem; line-height: 1.35; }
+  #preview-root .row__state { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: .25rem var(--space-sm); color: var(--c-text-secondary); font-size: .73rem; }
+  #preview-root .state { color: var(--c-primary); font-weight: 700; }
+  #preview-root .state--ai-generated { color: var(--c-success); }
+  #preview-root .state--ambiguous, #preview-root .state--unsuitable { color: var(--c-error); }
+  #preview-root .state--teacher-mapped-local { color: var(--c-primary); font-weight: 700; }
+  #preview-root .pagination { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
+  #preview-root .pagination button { border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-primary); padding: .35rem .6rem; cursor: pointer; font-weight: 700; }
+  #preview-root .pagination button:hover { background: var(--c-primary-light); }
+  #preview-root .pagination span { color: var(--c-text-muted); }
+  #preview-root .inventory { border: 1px solid var(--c-border); padding: var(--space-md); }
+  #preview-root .inventory summary { cursor: pointer; font-weight: 700; }
+  #preview-root .inventory ul { display: grid; gap: var(--space-xs); margin: var(--space-md) 0 0; padding-left: 1rem; }
+  #preview-root .inventory li { display: flex; flex-wrap: wrap; gap: var(--space-sm); color: var(--c-text-secondary); font-size: .8rem; }
+  #preview-root .empty { border: 1px solid var(--c-border); padding: var(--space-md); }
   @media (width >= 720px) {
-    .filters { grid-template-columns: repeat(5, minmax(0, 1fr)) auto; }
-    .summary dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .row { grid-template-columns: 5rem minmax(7rem, .65fr) minmax(20rem, 2.3fr) minmax(10rem, .9fr); }
-    .row__image { width: 5rem; height: 5rem; }
-    .row__state { grid-column: auto; align-content: start; flex-direction: column; }
+    #preview-root .filters { grid-template-columns: repeat(5, minmax(0, 1fr)) auto; }
+    #preview-root .summary dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #preview-root .row { grid-template-columns: 5rem minmax(7rem, .65fr) minmax(20rem, 2.3fr) minmax(10rem, .9fr); }
+    #preview-root .row__image { width: 5rem; height: 5rem; }
+    #preview-root .row__state { grid-column: auto; align-content: start; flex-direction: column; }
   }
 </style>
