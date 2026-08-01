@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "workbook": {
+    "basename": "单词表(带图).xlsx",
+    "sha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37",
+    "candidateRows": 1865
+  },
+  "teacherImagePackage": {
+    "readableImages": 1240,
+    "pathSensitiveFingerprintSha256": "592cee9f32419b4b3571146d72c8710cd9f1edc5e02150c48178011a5a8b1517",
+    "duplicateGroups": {
+      "5e81e486572ed30ad4f0dc121a1759d77331b0c7f189507aec5d0f46d183f487": [
+        "0504 名詞x50/0504/台式電腦.png",
+        "名词1 109-162/电脑.png"
+      ],
+      "d9ef5561eed84002dbb7c77cc12ad42e7e75acb2f94b1824c17fde87314fdf61": [
+        "0504 名詞x50/0504/自由市場.png",
+        "名词1 266-320/市场.png"
+      ],
+      "a1c4e63b271eda6496bcd4e4278e41b47846000235fb72fa075c9945aa45d7a3": [
+        "名詞2 名詞50-105/蘿蔔.png",
+        "名詞2 名詞x50/蘿蔔.png"
+      ],
+      "5fabcc7e5f0f52fef2c500d8b11f7ce4fdf681a7638a92e9dfdb596153646a42": [
+        "名詞2 名詞x50/鮮果.png",
+        "名词1 216-265/水果.png"
+      ]
+    },
+    "dimensionCounts": {
+      "500x500": 840,
+      "500x501": 7,
+      "501x500": 27,
+      "501x501": 365,
+      "734x1024": 1
+    },
+    "dimensionAnomaly": {
+      "relativePath": "拼音表.png",
+      "sha256": "66645ed9b8609c9ed877ec81289acc6ed0b0819ac4679024c7736b988ce496a4",
+      "width": 734,
+      "height": 1024,
+      "classification": "unsuitable source reference image"
+    },
+    "archives": [
+      {
+        "relativePath": "0420 名詞x50/0420/0420 名詞x50.rar",
+        "sizeBytes": 3195547,
+        "sha256": "839f9d4f66af98a3fc8e1ea74151ca2af684a19c336091202cadaf678a864bac"
+      },
+      {
+        "relativePath": "元ファイル/0504 名詞x50.rar",
+        "sizeBytes": 2571274,
+        "sha256": "5e67b73a2624c716fe21c97eab6e9c613508813f7f0dd109a88e4038945b8f77"
+      },
+      {
+        "relativePath": "元ファイル/0522 名詞x50.rar",
+        "sizeBytes": 2915903,
+        "sha256": "6bf4404f3e392c219f3c872d938abfa703110fb4fb7930b4d67b178ae13c811a"
+      },
+      {
+        "relativePath": "元ファイル/0620 名詞x50.rar",
+        "sizeBytes": 2282510,
+        "sha256": "140d7ba278b7339e60cbd07739c8a65b01bb2abf7d1a94a9404c637fe910d1b7"
+      },
+      {
+        "relativePath": "元ファイル/0706 名詞x25.rar",
+        "sizeBytes": 1821512,
+        "sha256": "dcebfb7cebce7c57a22a7c78ad435ef376af10080d97e18846c3ad824f47a1e6"
+      },
+      {
+        "relativePath": "元ファイル/0916 形容詞x50.rar",
+        "sizeBytes": 3511258,
+        "sha256": "d2208dd3d3896b2c494e75ba16fa9e004371335e4aaf880574b5b812e251492f"
+      },
+      {
+        "relativePath": "元ファイル/1021 形容詞x25.rar",
+        "sizeBytes": 1968988,
+        "sha256": "7c6deb0ed32dce068c85cf1856364c23a1d2b8875abd21f0a9c706e7aecfd4ab"
+      },
+      {
+        "relativePath": "元ファイル/1119 形容詞x33.rar",
+        "sizeBytes": 2283353,
+        "sha256": "73a890569588f953d103182fcbdf2d123b30167c0074bad8c909a581e64f847e"
+      },
+      {
+        "relativePath": "元ファイル/2022 0319 動詞2x50.rar",
+        "sizeBytes": 4299559,
+        "sha256": "af83a7099f291f1348328742d8a0e5ce02e5c176725cf995d9ad9589a81c11d6"
+      }
+    ],
+    "archiveHandling": "Inspected by inventory only. No archive was extracted into a tracked path."
+  }
+}

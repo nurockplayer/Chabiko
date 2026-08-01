@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Chabiko content validation tooling"
 requires-python = ">=3.14"
 dependencies = [
+    "opencc==1.4.1",
     "openpyxl>=3.1",
     "Pillow==12.3.0",
 ]
