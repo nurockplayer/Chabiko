@@ -121,6 +121,17 @@ sed -n '1,120p' AGENTS.md
 - Travel Quest / scenario readiness 要比泛用 streak 更優先。
 - 手機與桌面都要檢查文字不重疊、不截斷，尤其是日文長句、拼音、繁體中文字卡與按鈕。
 
+## JS-free 互動與瀏覽器證據
+
+JS-free 互動工作必須：
+
+- 使用原生控制項與原生瀏覽器語意（例如 `details`/`summary`、radio、`<a href="#id">`、`<button type="button">`）。
+- 不得用 focusable label、泛用元素或 inert anchor 模擬按鈕；不得用靜態 ARIA state 模仿可變的原生 state。
+- 在唯讀 arbiter review 前，先產生瀏覽器互動、accessible-name、focus、viewport 與截圖證據。
+- 確認截圖片段中每個必要證據元素與每個可見互動控制項都完整位於 viewport 內。
+
+詳細的互動決策表、per-control 契約、瀏覽器煙霧測試矩陣、截圖／viewport 證據規則、arbiter 能力邊界與 review/merge 規則，見 `docs/engineering/frontend-interaction-evidence-playbook.md`。
+
 ## 內容與資料規則
 
 - 內容與資料支援繁簡雙語顯示；台灣旅遊路徑以繁體為主，HSK／學校課業／一般中文路徑可預設簡體。
