@@ -21,6 +21,13 @@ derivative is ever written under the tracked public assets path; the committed
 corpus records those rows as teacher-mapped-local and the deployed static build
 prunes the local-only directory via astro.config.mjs. AI-generated preview
 derivatives remain under the tracked public AI assets path.
+
+Integrity invariant: an existing teacher derivative is reused only when its
+bytes match a deterministic re-export of the reconciliation-verified source
+PNG. A changed source, altered/stale derivative, or a derivative copied from
+another preview item therefore fails closed and is regenerated, keeping the
+fresh-export and reuse paths under the same source checksum/dimension and
+derivative byte-integrity gates.
 """
 
 from __future__ import annotations
@@ -30,6 +37,7 @@ import hashlib
 import json
 import re
 import shutil
+import tempfile
 import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -460,6 +468,65 @@ def existing_derivative_metadata(destination: Path) -> dict[str, Any] | None:
     return {"assetChecksumSha256": sha256_file(destination), "width": width, "height": height}
 
 
+def resolve_teacher_derivative(
+    source: Path,
+    relative_path: str,
+    expected_sha256: str,
+    expected_width: int,
+    expected_height: int,
+    destination: Path,
+    *,
+    rebuild: bool,
+    label: str,
+) -> dict[str, Any]:
+    """Verify the source then reuse or regenerate the derivative.
+
+    Shared by the fresh-export and reuse paths so both carry the same source
+    checksum/dimension gate and the same derivative byte-integrity gate.
+    """
+    verify_source_matches_mapping(
+        source, relative_path, expected_sha256, expected_width, expected_height
+    )
+    if rebuild:
+        return export_derivative(source, destination)
+    return resolve_derivative(
+        source, destination, require_transparent_corners=False, label=label
+    )
+
+
+def resolve_derivative(
+    source: Path,
+    destination: Path,
+    *,
+    require_transparent_corners: bool,
+    label: str,
+) -> dict[str, Any]:
+    """Reuse an existing derivative only when it matches a deterministic re-export.
+
+    The existing WebP is accepted only when re-exporting the current source
+    produces byte-identical output. A changed source, corrupt/unreadable file,
+    or a derivative copied from another preview item fails the byte comparison
+    and the derivative is regenerated deterministically from the verified
+    source. Fresh export and reuse therefore share the same integrity contract.
+    """
+    existing = existing_derivative_metadata(destination)
+    with tempfile.TemporaryDirectory() as tmp:
+        expected = Path(tmp) / destination.name
+        rendered = export_derivative(
+            source, expected, require_transparent_corners=require_transparent_corners
+        )
+        expected_checksum = rendered["assetChecksumSha256"]
+        if existing is None or existing["assetChecksumSha256"] != expected_checksum:
+            # The existing file is absent, unreadable, a non-WebP, or drifted;
+            # overwrite it deterministically from the verified source.
+            if existing is not None:
+                print(f"  REUSE-REJECT  {label}: existing derivative did not match a deterministic re-export")
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(expected, destination)
+            return rendered
+    return existing
+
+
 def missing_fields(row: dict[str, Any]) -> list[str]:
     fields = [field for field in ("pinyin", "japanese", "difficulty") if not row[field]]
     if not row.get("traditional"):
@@ -536,19 +603,19 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         elif row["key"] in row_mapping:
             mapping = row_mapping[row["key"]]
             destination = teacher_asset_dir / f"{row['previewId']}.webp"
-            exported = None if args.rebuild_teacher_assets or not destination.is_file() else existing_derivative_metadata(destination)
-            if exported is None:
-                # Verify the actual source file against its reconciliation record
-                # immediately before deriving, so a drifted or replaced source is
-                # never exported as if it were the inventoried image.
-                verify_source_matches_mapping(
-                    source_dir / mapping["relativePath"],
-                    mapping["relativePath"],
-                    mapping["sourceChecksumSha256"],
-                    mapping["sourceWidth"],
-                    mapping["sourceHeight"],
-                )
-                exported = export_derivative(source_dir / mapping["relativePath"], destination)
+            # Verify the actual source against its reconciliation record and
+            # reuse the existing derivative only when it matches a deterministic
+            # re-export, in both the fresh-export and the reuse path.
+            exported = resolve_teacher_derivative(
+                source_dir / mapping["relativePath"],
+                mapping["relativePath"],
+                mapping["sourceChecksumSha256"],
+                mapping["sourceWidth"],
+                mapping["sourceHeight"],
+                destination,
+                rebuild=args.rebuild_teacher_assets,
+                label=row["previewId"],
+            )
             preview_row["image"] = {
                 "state": "teacher-mapped-local",
                 "provenance": "teacher-provided",
@@ -684,7 +751,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_self_tests() -> int:
-    """Read-only drift tests for the source-verification gate (Issue #185 review #3)."""
+    """Read-only drift tests for source and derivative integrity (Issues #185/#192)."""
     import tempfile
 
     failures = 0
@@ -744,10 +811,123 @@ def run_self_tests() -> int:
             print(f"  FAIL  source restore verification failed: {exc}")
             failures += 1
 
+        # ── Reuse-path derivative integrity (Issue #192) ──
+        # resolve_teacher_derivative must reuse a matching derivative as-is and
+        # fail closed on a drifted source, corrupt or mismatched existing WebP,
+        # and a derivative copied from another preview item.
+        derivative = Path(tmp) / "teacher-preview-0123456789abcdef.webp"
+        fresh = resolve_teacher_derivative(
+            base, "source.png", original_sha256, 50, 60, derivative,
+            rebuild=False, label="reuse-test",
+        )
+        fresh_checksum = fresh["assetChecksumSha256"]
+
+        # 1. Matching source + matching existing derivative is reused as-is.
+        reused = resolve_teacher_derivative(
+            base, "source.png", original_sha256, 50, 60, derivative,
+            rebuild=False, label="reuse-test",
+        )
+        if reused == fresh and derivative.exists():
+            print("  PASS  matching derivative is reused successfully")
+        else:
+            print("  FAIL  matching derivative was not reused as-is")
+            failures += 1
+
+        # 2. Source checksum drift fails in the reuse path.
+        with Image.new("RGB", (50, 60), (0, 255, 0)) as image:
+            image.save(base)
+        try:
+            resolve_teacher_derivative(
+                base, "source.png", original_sha256, 50, 60, derivative,
+                rebuild=False, label="reuse-test",
+            )
+            print("  FAIL  source checksum drift did not raise")
+            failures += 1
+        except ValueError as exc:
+            if "checksum drift" in str(exc):
+                print("  PASS  source checksum drift fails in the reuse path")
+            else:
+                print(f"  FAIL  unexpected checksum-drift message: {exc}")
+                failures += 1
+        finally:
+            with Image.new("RGB", (50, 60), (255, 0, 0)) as image:
+                image.save(base)
+
+        # 3. Source dimension drift fails in the reuse path.
+        try:
+            resolve_teacher_derivative(
+                base, "source.png", original_sha256, 99, 99, derivative,
+                rebuild=False, label="reuse-test",
+            )
+            print("  FAIL  source dimension drift did not raise")
+            failures += 1
+        except ValueError as exc:
+            if "dimension drift" in str(exc):
+                print("  PASS  source dimension drift fails in the reuse path")
+            else:
+                print(f"  FAIL  unexpected dimension-drift message: {exc}")
+                failures += 1
+
+        # 4. Corrupt existing WebP is deterministically regenerated.
+        corrupt = Path(tmp) / "corrupt.webp"
+        corrupt.write_bytes(b"not a webp")
+        regenerated = resolve_teacher_derivative(
+            base, "source.png", original_sha256, 50, 60, corrupt,
+            rebuild=False, label="corrupt-test",
+        )
+        if regenerated["assetChecksumSha256"] == fresh_checksum and Image.open(corrupt).format == "WEBP":
+            print("  PASS  corrupt existing WebP is deterministically regenerated")
+        else:
+            print("  FAIL  corrupt WebP regeneration failed")
+            failures += 1
+
+        # 5. A valid WebP copied from another preview item is rejected and
+        #    overwritten with the expected deterministic output.
+        foreign = Path(tmp) / "foreign.webp"
+        with Image.new("RGB", (80, 80), (0, 0, 255)) as image:
+            image.save(foreign, format="WEBP", lossless=True)
+        foreign_checksum = sha256_file(foreign)
+        fixed = resolve_teacher_derivative(
+            base, "source.png", original_sha256, 50, 60, foreign,
+            rebuild=False, label="cross-copied-test",
+        )
+        if fixed["assetChecksumSha256"] == fresh_checksum and sha256_file(foreign) != foreign_checksum:
+            print("  PASS  WebP copied from another item is rejected and replaced")
+        else:
+            print("  FAIL  cross-copied WebP was not rejected")
+            failures += 1
+
+        # 6. Altered derivative bytes are detected and deterministically replaced.
+        altered_bytes = bytearray(derivative.read_bytes())
+        altered_bytes[:8] = b"\x00" * 8
+        derivative.write_bytes(bytes(altered_bytes))
+        restored = resolve_teacher_derivative(
+            base, "source.png", original_sha256, 50, 60, derivative,
+            rebuild=False, label="altered-test",
+        )
+        if restored["assetChecksumSha256"] == fresh_checksum:
+            print("  PASS  altered derivative bytes are detected and regenerated")
+        else:
+            print("  FAIL  altered derivative bytes were not detected")
+            failures += 1
+
+        # 7. Recorded metadata agrees with the actual output bytes.
+        with Image.open(derivative) as output:
+            actual_width, actual_height = output.size
+        if (
+            sha256_file(derivative) == restored["assetChecksumSha256"]
+            and actual_width == restored["width"]
+            and actual_height == restored["height"]
+        ):
+            print("  PASS  recorded metadata matches the actual output bytes")
+        else:
+            print("  FAIL  recorded metadata does not match the actual output bytes")
+            failures += 1
+
     if failures:
-        print(f"\n{failures} drift test(s) FAILED")
+        print(f"\n{failures} integrity test(s) FAILED")
     else:
-        print("\nAll source-verification drift tests PASSED")
+        print("\nAll source/derivative integrity tests PASSED")
     return failures
 
 
