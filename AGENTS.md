@@ -82,6 +82,42 @@ sed -n '1,120p' AGENTS.md
 - 文件化的 workflow 命令必須由 self-test 斷言其行為本身，不能只測被呼叫的函式。
 - Regression 測試的 cleanup 只刪除自己建立的檔案與目錄，預設工作區含有其他開發者的檔案；不得假設環境是乾淨的。
 
+## Cross-cutting 變更 Gate
+
+影響下列至少兩類領域的 issue 屬於 cross-cutting 變更，實作前必須產出精簡 Impact Map：
+
+- asset 路徑、generated 檔案或 migration；
+- schema、state 或 metadata contract；
+- generator、importer、rebuild script 或 legacy 相容路徑；
+- build、deployment、pruning、`.gitignore` 或 cleanup 行為；
+- rights、license、attribution 或 provenance；
+- 多個 runtime consumer（loader、UI、API、validator、測試）；
+- 大型 committed generated 輸出。
+
+Impact Map 必須凍結下列 surface；任一 surface 未知或仍需產品決策時，停止實作並回報，不得自行猜測：
+
+- 所有寫入受影響路徑／資料／state 的 writer；
+- 所有 consumer 與 validator；
+- legacy writer 與相容路徑；
+- canonical rebuild 或 migration 命令；
+- Git、build、deployment 與 cleanup 邊界；
+- rights／license／provenance 要求；
+- clean 與 dirty 環境的失敗案例。
+
+模板、Requirement → Diff → Test Evidence 矩陣與完整工作流程見 `docs/engineering/cross-cutting-change-playbook.md`。非 cross-cutting 的普通單檔或本地變更不需 Impact Map。
+
+## Cross-cutting 完成回報與最終 Review
+
+Cross-cutting 變更的完成回報必須把每個 frozen requirement 對應到：
+
+- 變更的檔案或產生的 artifact；
+- 對應的 focused test 或 validation；
+- 觀察到的結果。
+
+沒有對應 diff 或證據的 requirement 不得宣稱完成。
+
+最終唯讀 reviewer 必須檢查完整 contract surface，不能只看最後一次 follow-up diff。至少驗證：所有已知 writer 與 consumer、stale path／state／metadata／documentation、canonical rebuild／migration workflow、destructive cleanup 與 dirty 環境行為、rights／license／provenance 一致性、generated 輸出與 committed metadata 的一致性、negative drift test 與 fail-closed 行為。除立即的 P0／P1 安全或資料遺失風險外，reviewer 應完成完整掃描並將 findings 聚合到同一 follow-up cycle，而非逐條送出。
+
 ## Flash 任務大小 Gate
 
 本節適用於 DeepSeek v4 Flash 或其他低成本 implementation model，也約束產生實作或 review-fix prompt 的 coordinator。
