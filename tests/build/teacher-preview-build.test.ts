@@ -6,11 +6,14 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, readFileSync, readdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
+const DEV_SOURCE_DIR = resolve(REPO_ROOT, 'public/assets/dev/teacher-vocabulary-preview');
+const SENTINEL_PNG = resolve(DEV_SOURCE_DIR, 'sentinel-source.png');
+const SENTINEL_JSON = resolve(DEV_SOURCE_DIR, 'sentinel-preview.json');
 
 function webpCount(dir: string): number {
   return existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.webp')).length : 0;
@@ -20,6 +23,12 @@ describe('TeacherPreview — build output (fresh build)', () => {
   let html: string;
 
   beforeAll(() => {
+    // Place sentinel local-only teacher source material that must never reach
+    // the deployed build. The build-completion guard must remove it from dist/.
+    mkdirSync(DEV_SOURCE_DIR, { recursive: true });
+    writeFileSync(SENTINEL_PNG, Buffer.from('\x89PNG\r\n\x1a\n' + 'x'.repeat(32)));
+    writeFileSync(SENTINEL_JSON, JSON.stringify({ dev: 'sentinel', source: 'teacher' }));
+
     // Clean any stale dist/
     if (existsSync(resolve(REPO_ROOT, 'dist'))) {
       rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
@@ -36,7 +45,10 @@ describe('TeacherPreview — build output (fresh build)', () => {
   });
 
   afterAll(() => {
-    // Clean up build output so tests don't depend on stale dist/
+    // Failure-safe cleanup of the temporary source sentinels, then build output.
+    if (existsSync(DEV_SOURCE_DIR)) {
+      rmSync(DEV_SOURCE_DIR, { recursive: true, force: true });
+    }
     if (existsSync(resolve(REPO_ROOT, 'dist'))) {
       rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
     }
@@ -50,12 +62,17 @@ describe('TeacherPreview — build output (fresh build)', () => {
     expect(html).not.toContain('unreviewed-development-preview');
   });
 
-  it('deploys exactly 1,131 review-only teacher derivatives and prunes no preview assets', () => {
+  it('deploys exactly 1,131 review-only teacher derivatives, prunes no preview assets, and drops dev sentinels', () => {
     const localTeacherDir = resolve(REPO_ROOT, 'dist/assets/dev/teacher-vocabulary-preview/teacher');
+    const devDir = resolve(REPO_ROOT, 'dist/assets/dev');
     const trackedTeacherDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/teacher');
     const aiDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/ai');
-    // The legacy local-only dev path must not reach the deployed build.
+    // The legacy local-only dev path must not reach the deployed build, even
+    // when sentinel files exist under public/assets/dev/ before the build.
+    expect(existsSync(devDir)).toBe(false);
     expect(existsSync(localTeacherDir)).toBe(false);
+    expect(existsSync(resolve(devDir, 'sentinel-source.png'))).toBe(false);
+    expect(existsSync(resolve(devDir, 'sentinel-preview.json'))).toBe(false);
     // The tracked teacher derivatives must be present in dist/.
     expect(webpCount(trackedTeacherDir)).toBe(1131);
     expect(webpCount(aiDir)).toBe(432);
