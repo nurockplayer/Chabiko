@@ -1,0 +1,79 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { VISUAL_CASES, VISUAL_STATES, VISUAL_THEMES, VISUAL_VIEWPORTS } from './matrix';
+import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
+
+const snapshotsDirectory = fileURLToPath(
+  new URL('./__screenshots__/', import.meta.url),
+);
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+  scripts: Record<string, string>;
+};
+const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+
+describe('visual regression harness contract', () => {
+  it('defines the complete unique 60-capture matrix', () => {
+    expect(VISUAL_THEMES).toEqual(['light', 'dark']);
+    expect(VISUAL_VIEWPORTS).toEqual([
+      { width: 320, height: 800 },
+      { width: 375, height: 812 },
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1440, height: 900 },
+    ]);
+    expect(VISUAL_STATES).toEqual([
+      'home',
+      'lesson-reading',
+      'practice-unanswered',
+      'practice-correct',
+      'practice-incorrect',
+      'completion',
+    ]);
+    expect(VISUAL_CASES).toHaveLength(60);
+    expect(new Set(VISUAL_CASES.map((visualCase) => visualCase.snapshotName)).size).toBe(60);
+  });
+
+  it('keeps verification and intentional baseline updates separate', () => {
+    expect(packageJson.scripts['test:visual']).toBe(
+      'node tests/visual/run.ts verify',
+    );
+    expect(packageJson.scripts['test:visual:update']).toBe(
+      'node tests/visual/run.ts update',
+    );
+
+    const verifyArgs = buildDockerArgs('verify', '/repo');
+    const updateArgs = buildDockerArgs('update', '/repo');
+    expect(verifyArgs.at(-1)).toContain('--update-snapshots=none');
+    expect(updateArgs.at(-1)).toContain('--update-snapshots=all');
+    expect(verifyArgs).toContain(PLAYWRIGHT_IMAGE);
+    expect(PLAYWRIGHT_IMAGE).toContain('@sha256:');
+  });
+
+  it('commits exactly one baseline for every matrix case', () => {
+    const expected = VISUAL_CASES.map((visualCase) => visualCase.snapshotName).sort();
+    const actual = existsSync(snapshotsDirectory)
+      ? readdirSync(snapshotsDirectory)
+          .filter((fileName) => fileName.endsWith('.png'))
+          .sort()
+      : [];
+    expect(actual).toEqual(expected);
+
+    for (const visualCase of VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, visualCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBe(visualCase.viewport.width);
+      expect(png.readUInt32BE(20)).toBe(visualCase.viewport.height);
+    }
+  });
+
+  it('runs verification, never baseline updates, in CI', () => {
+    expect(workflow).toContain('run: pnpm test:visual');
+    expect(workflow).not.toContain('run: pnpm test:visual:update');
+  });
+});
