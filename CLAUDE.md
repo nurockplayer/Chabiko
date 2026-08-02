@@ -28,6 +28,7 @@
 3. 確認 issue scope、acceptance criteria、依賴及允許修改範圍。
 4. 只讀取完成本次任務所需的相關程式碼、schema、validator、fixture、測試與 source of truth。
 5. 檢查工作區狀態，避免覆蓋或混入其他變更。
+6. 遵循 `AGENTS.md` 的「實作前檢查」清單（安全機制 writer 盤點、跨檔契約同步、文件化命令測試、cleanup 假設）。
 
 不得依賴本文件中的 implementation snapshot。當前狀態以 `main` 上的實際程式碼、測試及 GitHub issue／PR 為準。
 

@@ -73,6 +73,15 @@ sed -n '1,120p' AGENTS.md
 - 若需要新增依賴、調整架構或擴大功能範圍，先說明理由、替代方案與風險。
 - 高衝擊自動化，例如 auto-close PR、dependency auto-merge，預設禁止，除非使用者明確確認。
 
+## 實作前檢查
+
+這些規則來自 Issue #193 反覆 review 循環的教訓，實作前必須確認，避免同類缺陷重演：
+
+- 移除或收窄任何安全機制（build guard、`.gitignore` 規則、驗證 gate）前，先找出所有**寫入該路徑**的來源與**依賴該機制**的 consumer，確認沒有其他 writer 後才能動手。
+- 變更跨檔契約（rights、state、schema、資料結構）時，列出完整 consumer 清單（資料檔、loader、validator、UI、測試），在同一個變更內全部同步，不得「加檔後續補」。
+- 文件化的 workflow 命令必須由 self-test 斷言其行為本身，不能只測被呼叫的函式。
+- Regression 測試的 cleanup 只刪除自己建立的檔案與目錄，預設工作區含有其他開發者的檔案；不得假設環境是乾淨的。
+
 ## Flash 任務大小 Gate
 
 本節適用於 DeepSeek v4 Flash 或其他低成本 implementation model，也約束產生實作或 review-fix prompt 的 coordinator。
