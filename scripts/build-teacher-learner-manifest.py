@@ -73,6 +73,37 @@ def load_tracked_files(repo_root: Path = REPO_ROOT) -> frozenset[str]:
     return frozenset(result.stdout.split("\x00"))
 
 
+def load_committed_blobs(repo_root: Path = REPO_ROOT) -> dict[str, str]:
+    """Return repo-relative path -> committed Git blob SHA-1 (content identity).
+
+    `git ls-tree -r HEAD` lists the blob hash for every tracked file; comparing
+    an on-disk asset's blob hash to this value verifies its bytes equal the
+    committed (deployable) content, independent of corpus checksum metadata.
+    Non-shell invocation, so no injection surface.
+    """
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-tree", "-r", "HEAD"],
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+    blobs: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        # Format: <mode> blob <sha>\t<path>
+        if "\t" not in line:
+            continue
+        meta, path = line.split("\t", 1)
+        parts = meta.split(" ")
+        if len(parts) == 3 and parts[1] == "blob":
+            blobs[path] = parts[2]
+    return blobs
+
+
+def git_blob_sha1(content: bytes) -> str:
+    """Git blob object SHA-1: sha1('blob <len>\\0' + content)."""
+    return hashlib.sha1(b"blob " + str(len(content)).encode("utf-8") + b"\x00" + content).hexdigest()
+
+
 def learner_id(row: dict[str, Any]) -> str:
     """Deterministic, build-stable learner ID from frozen source identity.
 
@@ -106,6 +137,7 @@ def build(
     production_ids: tuple[str, ...] = (),
     public_root: Path = PUBLIC_ROOT,
     tracked_files: frozenset[str] | None = None,
+    committed_blobs: dict[str, str] | None = None,
     output_path: Path | None = None,
 ) -> dict[str, Any]:
     rows = corpus["rows"]
@@ -115,6 +147,8 @@ def build(
     # checkout) cannot leak into the manifest.
     if tracked_files is None:
         tracked_files = load_tracked_files()
+    if committed_blobs is None:
+        committed_blobs = load_committed_blobs()
 
     # Cross-check image-state/asset consistency across the whole corpus so a
     # contradictory row fails closed instead of silently slipping through.
@@ -156,9 +190,20 @@ def build(
             raise ValueError(
                 f"Row '{row['id']}' references asset '{asset_path}' that is not a tracked Git file"
             )
-        # A tracked-but-corrupt asset (replaced bytes at the same path) must
-        # fail closed against the committed corpus checksum, so a damaged WebP
-        # cannot be labeled a deployable teaching asset.
+        # Every eligible asset's on-disk bytes must equal the committed Git blob
+        # (content identity against the deployment checkout), so a replaced or
+        # corrupted WebP — including production rows without corpus checksum
+        # metadata — can never be labeled a deployable teaching asset.
+        committed_blob = committed_blobs.get(repo_relative)
+        if committed_blob is None:
+            raise ValueError(f"Row '{row['id']}' asset '{asset_path}' has no committed Git blob")
+        on_disk_blob = git_blob_sha1((public_root / asset_path.lstrip("/")).read_bytes())
+        if on_disk_blob != committed_blob:
+            raise ValueError(
+                f"Row '{row['id']}' asset '{asset_path}' content drift: "
+                f"committed blob {committed_blob}, on-disk {on_disk_blob}"
+            )
+        # Where the corpus records an asset checksum, cross-check it as well.
         expected_checksum = image.get("assetChecksumSha256")
         if expected_checksum:
             actual = sha256_file(public_root / asset_path.lstrip("/"))
@@ -340,9 +385,14 @@ def run_self_tests() -> int:
         synthetic_tracked = frozenset(
             f"public/assets/vocabulary/teacher-preview/teacher/synthetic-{i:04d}.webp" for i in range(1, 100)
         )
+        synthetic_blobs = {
+            f"public/assets/vocabulary/teacher-preview/teacher/synthetic-{i:04d}.webp": git_blob_sha1(b"x")
+            for i in range(1, 100)
+        }
+        synthetic_ctx = {"tracked_files": synthetic_tracked, "committed_blobs": synthetic_blobs}
 
-        small = build(synthetic(5, 2), production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
-        large = build(synthetic(17, 3), production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
+        small = build(synthetic(5, 2), production_ids=(), public_root=public_root, **synthetic_ctx)
+        large = build(synthetic(17, 3), production_ids=(), public_root=public_root, **synthetic_ctx)
         check("synthetic corpus counts scale with input (5 eligible / 2 excluded)", small["totals"]["eligible"] == 5 and small["totals"]["excluded"] == 2)
         check("synthetic corpus counts scale with input (17 eligible / 3 excluded)", large["totals"]["eligible"] == 17 and large["totals"]["excluded"] == 3)
 
@@ -351,12 +401,12 @@ def run_self_tests() -> int:
         forward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
                           "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
                           "totals": {"usableRows": 10}, "rows": base_rows},
-                         production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
+                         production_ids=(), public_root=public_root, **synthetic_ctx)
         reversed_rows = list(reversed(base_rows))
         backward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
                            "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
                            "totals": {"usableRows": 10}, "rows": reversed_rows},
-                          production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
+                          production_ids=(), public_root=public_root, **synthetic_ctx)
         forward_raw = json.dumps(forward, ensure_ascii=False, indent=2)
         backward_raw = json.dumps(backward, ensure_ascii=False, indent=2)
         check("reversing input row order yields byte-identical output", forward_raw == backward_raw)
@@ -368,7 +418,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_asset_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root, **synthetic_ctx))
 
         # ── Negative: untracked asset (present on disk but not in Git) ──
         untracked_rows = synthetic(1, 0)["rows"]
@@ -379,18 +429,21 @@ def run_self_tests() -> int:
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": untracked_rows},
             production_ids=(), public_root=public_root,
-            tracked_files=synthetic_tracked - {"public/assets/vocabulary/teacher-preview/teacher/synthetic-0001.webp"}))
+            tracked_files=synthetic_tracked - {"public/assets/vocabulary/teacher-preview/teacher/synthetic-0001.webp"},
+            committed_blobs=synthetic_blobs))
 
-        # ── Negative: tracked-but-corrupt asset (checksum drift) ──
+        # ── Negative: tracked-but-corrupt asset (content drift vs committed blob) ──
         corrupt_rows = synthetic(1, 0)["rows"]
         corrupt_rows[0]["image"]["assetPath"] = "/assets/vocabulary/teacher-preview/teacher/synthetic-0002.webp"
-        # The file is tracked and exists, but its committed checksum differs.
-        corrupt_rows[0]["image"]["assetChecksumSha256"] = "0" * 64
-        expect_raises("tracked-but-corrupt asset fails closed", "checksum drift", lambda: build(
+        # The file is tracked and exists, but its on-disk bytes differ from the
+        # committed blob, so the content-identity check must fail closed.
+        expect_raises("tracked-but-corrupt asset fails closed", "content drift", lambda: build(
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": corrupt_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root,
+            tracked_files=synthetic_tracked,
+            committed_blobs={**synthetic_blobs, "public/assets/vocabulary/teacher-preview/teacher/synthetic-0002.webp": git_blob_sha1(b"different")}))
 
         # ── Negative: duplicate learner ID (same production ID on two rows) ──
         dup_id_rows = synthetic(2, 0)["rows"]
@@ -402,7 +455,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 2}, "rows": dup_id_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root, **synthetic_ctx))
 
         # ── Negative: duplicate source identity ──
         dup_source_rows = synthetic(2, 0)["rows"]
@@ -412,7 +465,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 2}, "rows": dup_source_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root, **synthetic_ctx))
 
         # ── Negative: invalid identity ──
         bad_id_rows = synthetic(1, 0)["rows"]
@@ -421,7 +474,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_id_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root, **synthetic_ctx))
 
         # ── Negative: invalid image state with asset ──
         bad_state_rows = synthetic(1, 0)["rows"]
@@ -430,7 +483,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_state_rows},
-            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+            production_ids=(), public_root=public_root, **synthetic_ctx))
 
     # ── Generated output drift: committed manifest must match a fresh run ──
     if not OUTPUT_PATH.is_file():
