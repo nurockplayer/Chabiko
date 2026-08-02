@@ -100,6 +100,9 @@ jobs:
           uv run --locked python scripts/validate-pain-points.py
           uv run --locked python scripts/validate-script-status.py
           uv run --locked python scripts/validate-content-schema.py
+          # Byte-identity drift gate: fails if the committed learner manifest
+          # does not match a fresh generation from the preview corpus.
+          uv run --locked python scripts/build-teacher-learner-manifest.py --test
 
       - name: Validate checked-in content
         run: |

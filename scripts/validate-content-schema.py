@@ -2366,6 +2366,8 @@ def run_tests():
         test_illustration_rights_approved_wrong_source_fails,
         test_illustration_rights_approved_unknown_field_fails,
         test_illustration_rights_approved_rejects_relicensing_claim,
+        test_teacher_image_rights_record_permits_production_learner_use,
+        test_teacher_image_rights_record_contradiction_fails,
 
         # Existing cleared-rights backward compatibility
         test_illustration_cleared_rights_draft_valid,
@@ -5557,6 +5559,52 @@ def test_illustration_rights_approved_rejects_relicensing_claim():
         "illustration",
     )
     _assert_has_error(errs, "unknown field", "ill_rights_approved_relicense")
+
+
+# ─── Committed package rights record (Issue #201 production learner use) ──
+
+_COMMITTED_RIGHTS_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "teacher-vocabulary-preview", "teacher-image-rights.json"
+)
+
+
+def test_teacher_image_rights_record_permits_production_learner_use():
+    """The committed rights record must permit production learner use within Chabiko and cite comment 5157871811."""
+    with open(_COMMITTED_RIGHTS_PATH, encoding="utf-8") as f:
+        record = json.load(f)
+    assert record["rightsStatus"] == "approved", "rightsStatus must be approved"
+    permitted = set(record["permittedUses"])
+    assert "production-learner-use-in-chabiko" in permitted, "production-learner-use-in-chabiko must be permitted"
+    assert "public-by-link-review-test-deployment" in permitted, "review/test deployment must remain permitted"
+    assert record["evidence"]["productionLearnerUseCommentId"] == 5157871811, (
+        "evidence must cite issue-191 comment-5157871811"
+    )
+    assert record["productionLearnerUse"]["permitted"] is True
+    assert record["productionLearnerUse"]["chabikoOnly"] is True
+    assert record["productionLearnerUse"]["broaderRelicensingOrRedistribution"] is False
+    assert record["broaderRelicensingGranted"] is False, "broader relicensing must remain not granted"
+
+
+def test_teacher_image_rights_record_contradiction_fails():
+    """A rights record that claims broader relicensing or denies production use must fail."""
+    with open(_COMMITTED_RIGHTS_PATH, encoding="utf-8") as f:
+        record = json.load(f)
+
+    # Broader relicensing must stay False; claiming it is a contradiction.
+    assert record["broaderRelicensingGranted"] is False, "broaderRelicensingGranted must stay False"
+    assert record["productionLearnerUse"]["broaderRelicensingOrRedistribution"] is False, (
+        "production-learner-use must not grant broader relicensing or redistribution"
+    )
+
+    # Every permitted use must belong to the known allowlist (no unrecorded expansion).
+    known_uses = {
+        "deterministic-derivative-generation",
+        "tracking-derivatives-in-chabiko",
+        "public-by-link-review-test-deployment",
+        "production-learner-use-in-chabiko",
+    }
+    unexpected = set(record["permittedUses"]) - known_uses
+    assert not unexpected, f"unexpected permitted uses: {sorted(unexpected)}"
 
 
 # ─── Gap 3: Illustration non-empty string tests ────────────────────────
