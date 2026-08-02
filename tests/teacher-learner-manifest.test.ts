@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { LearnerManifest } from '../src/types/learnerManifest';
+import type { LearnerManifest, LearnerManifestRow } from '../src/types/learnerManifest';
 import {
+  DERIVED_LEARNER_ID_PATTERN,
   PRODUCTION_ID_PATTERN,
   assertOptionalFieldsAreNotFabricated,
+  computeDerivedLearnerId,
   validateLearnerManifest,
 } from '../src/content/validateLearnerManifest';
 import { loadTeacherVocabulary } from '../src/content/loadTeacherVocabulary';
@@ -17,33 +19,39 @@ function cloneManifest(): LearnerManifest {
   return structuredClone(manifest) as LearnerManifest;
 }
 
+type LearnerManifestRowBase = Omit<LearnerManifestRow, 'learnerId'>;
+
 // A tiny synthetic manifest builder for the derived-count and fail-closed
 // cases. Includes both teacher and AI sources so the validator accepts it.
 function syntheticManifest(teacherCount: number, aiCount = 1): LearnerManifest {
-  const teacherRows = Array.from({ length: teacherCount }, (_, index) => ({
-    learnerId: `teacher-learner-${String(index + 1).padStart(16, '0')}`,
-    simplified: `詞${index + 1}`,
-    partOfSpeech: 'noun' as const,
-    sourceSheet: '名词1',
-    sourceRow: index + 1,
-    image: {
-      state: 'teacher-mapped' as const,
-      assetPath: `/assets/vocabulary/teacher-preview/teacher/teacher-preview-${String(index + 1).padStart(16, '0')}.webp`,
-      provenance: 'teacher-provided' as const,
-    },
-  }));
-  const aiRows = Array.from({ length: aiCount }, (_, index) => ({
-    learnerId: `teacher-learner-${String(teacherCount + index + 1).padStart(16, '0')}`,
-    simplified: `AI詞${index + 1}`,
-    partOfSpeech: 'noun' as const,
-    sourceSheet: '名词2',
-    sourceRow: teacherCount + index + 1,
-    image: {
-      state: 'ai-generated' as const,
-      assetPath: `/assets/vocabulary/teacher-preview/ai/teacher-preview-${String(teacherCount + index + 1).padStart(16, '0')}.webp`,
-      provenance: 'ai-generated' as const,
-    },
-  }));
+  const teacherRows = Array.from({ length: teacherCount }, (_, index) => {
+    const row: LearnerManifestRowBase = {
+      simplified: `詞${index + 1}`,
+      partOfSpeech: 'noun' as const,
+      sourceSheet: '名词1',
+      sourceRow: index + 1,
+      image: {
+        state: 'teacher-mapped' as const,
+        assetPath: `/assets/vocabulary/teacher-preview/teacher/teacher-preview-${String(index + 1).padStart(16, '0')}.webp`,
+        provenance: 'teacher-provided' as const,
+      },
+    };
+    return { ...row, learnerId: computeDerivedLearnerId(row) };
+  });
+  const aiRows = Array.from({ length: aiCount }, (_, index) => {
+    const row: LearnerManifestRowBase = {
+      simplified: `AI詞${index + 1}`,
+      partOfSpeech: 'noun' as const,
+      sourceSheet: '名词2',
+      sourceRow: teacherCount + index + 1,
+      image: {
+        state: 'ai-generated' as const,
+        assetPath: `/assets/vocabulary/teacher-preview/ai/teacher-preview-${String(teacherCount + index + 1).padStart(16, '0')}.webp`,
+        provenance: 'ai-generated' as const,
+      },
+    };
+    return { ...row, learnerId: computeDerivedLearnerId(row) };
+  });
   const rows = [...teacherRows, ...aiRows];
   return {
     schemaVersion: 1,
@@ -192,7 +200,10 @@ describe('production learner manifest', () => {
       if (row.learnerId.startsWith('teacher-star-')) {
         expect(row.learnerId).toMatch(PRODUCTION_ID_PATTERN);
       } else {
-        expect(row.learnerId).toMatch(/^teacher-learner-[0-9a-f]{16}$/);
+        expect(row.learnerId).toMatch(DERIVED_LEARNER_ID_PATTERN);
+        // Recompute the canonical hash from the frozen source identity and
+        // require an exact match — the manifest must not re-key learners.
+        expect(row.learnerId).toBe(computeDerivedLearnerId(row));
       }
     }
     // Derived IDs are stable: the same committed manifest regenerated from the
@@ -240,6 +251,21 @@ describe('learner manifest validation fails closed', () => {
     expect(() => validateLearnerManifest(m)).toThrow(/invalid derived learner identity/);
   });
 
+  it('rejects a malformed derived learner ID (bad suffix shape)', () => {
+    const m = cloneManifest();
+    // teacher-learner- prefix but not a 16-hex suffix.
+    m.rows[0].learnerId = 'teacher-learner-corrupt';
+    expect(() => validateLearnerManifest(m)).toThrow(/invalid derived learner identity/);
+  });
+
+  it('rejects a derived learner ID whose hash does not match its source identity', () => {
+    const m = cloneManifest();
+    // Structurally valid shape but the hash does not match sourceSheet/
+    // sourceRow/simplified, so it would silently re-key learner progress.
+    m.rows[0].learnerId = 'teacher-learner-0000000000000000';
+    expect(() => validateLearnerManifest(m)).toThrow(/does not match recomputed/);
+  });
+
   it('rejects generated output drift (totals do not reconcile with rows)', () => {
     const m = cloneManifest();
     m.totals.eligible = m.rows.length + 1;
@@ -251,6 +277,43 @@ describe('learner manifest validation fails closed', () => {
     m.productionContract.ids = m.productionContract.ids.slice(0, 19);
     m.productionContract.count = 19;
     expect(() => validateLearnerManifest(m)).toThrow(/exactly 20/);
+  });
+
+  it('rejects empty excludedIds (the text-only production ID is left unresolved)', () => {
+    const m = cloneManifest();
+    // excluded stays 1 (preserved 19 + excluded 1 = count 20), but the list is
+    // emptied — the length reconciliation must fail closed.
+    m.productionContract.excludedIds = [];
+    expect(() => validateLearnerManifest(m)).toThrow(/excludedIds length must equal excluded/);
+  });
+
+  it('rejects partial excludedIds (fewer entries than excluded)', () => {
+    const m = cloneManifest();
+    // Same as empty here because the excluded set has exactly one member;
+    // dropping it must fail on the length reconciliation.
+    m.productionContract.excludedIds = [];
+    expect(() => validateLearnerManifest(m)).toThrow(/excludedIds length must equal excluded/);
+  });
+
+  it('rejects duplicate excludedIds', () => {
+    const m = cloneManifest();
+    m.productionContract.excludedIds = ['teacher-star-1-8b957a100bd4', 'teacher-star-1-8b957a100bd4'];
+    expect(() => validateLearnerManifest(m)).toThrow(/excludedIds must be unique/);
+  });
+
+  it('rejects an extra excludedIds entry (wrong member, same length)', () => {
+    const m = cloneManifest();
+    // One entry (length === excluded) but it is a preserved production row, not
+    // the true excluded ID — the exact set equality must fail.
+    m.productionContract.excludedIds = ['teacher-star-1-37e0eb213f0f'];
+    expect(() => validateLearnerManifest(m)).toThrow(/exactly equal ids minus preserved rows/);
+  });
+
+  it('rejects extra excludedIds entries (superset beyond excluded count)', () => {
+    const m = cloneManifest();
+    // More entries than excluded claims; length reconciliation must fail.
+    m.productionContract.excludedIds = ['teacher-star-1-8b957a100bd4', 'teacher-star-1-37e0eb213f0f'];
+    expect(() => validateLearnerManifest(m)).toThrow(/excludedIds length must equal excluded/);
   });
 
   it('rejects a manifest without both image sources', () => {

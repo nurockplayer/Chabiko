@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import type { LearnerManifest, LearnerManifestRow } from '../types/learnerManifest';
 
@@ -10,6 +11,7 @@ export interface LearnerManifestValidationContext {
 
 export const PRODUCTION_ID_PATTERN = /^teacher-star-1-[0-9a-f]{12}$/;
 export const LEARNER_ID_PREFIX = 'teacher-learner-';
+export const DERIVED_LEARNER_ID_PATTERN = /^teacher-learner-[0-9a-f]{16}$/;
 
 let trackedAssetsCache: ReadonlySet<string> | undefined;
 
@@ -20,6 +22,17 @@ function loadTrackedAssets(): ReadonlySet<string> {
     trackedAssetsCache = new Set(out.split('\0'));
   }
   return trackedAssetsCache;
+}
+
+/** Normalized simplified value used by the canonical generator. */
+export function normalizeSimplified(value: string): string {
+  return value.normalize('NFKC').replace(/\s+/g, ' ').trim();
+}
+
+/** Deterministic derived learner ID from frozen source identity. */
+export function computeDerivedLearnerId(row: Omit<LearnerManifestRow, 'learnerId'>): string {
+  const seed = `teacher-learner-v1|${row.sourceSheet}|${row.sourceRow}|${normalizeSimplified(row.simplified)}`;
+  return `${LEARNER_ID_PREFIX}${createHash('sha256').update(seed, 'utf8').digest('hex').slice(0, 16)}`;
 }
 
 function assert(
@@ -55,7 +68,8 @@ export function validateLearnerManifest(
     sourceKeys.add(sourceKey);
 
     // Production rows must keep the frozen production ID shape; derived rows
-    // must use the stable derived prefix — never array position or sort order.
+    // must exactly match the deterministic SHA-256 contract recomputed from
+    // their frozen source identity — never array position or sort order.
     if (row.learnerId.startsWith('teacher-star-')) {
       assert(
         PRODUCTION_ID_PATTERN.test(row.learnerId),
@@ -63,8 +77,12 @@ export function validateLearnerManifest(
       );
     } else {
       assert(
-        row.learnerId.startsWith(LEARNER_ID_PREFIX),
+        DERIVED_LEARNER_ID_PATTERN.test(row.learnerId),
         `invalid derived learner identity '${row.learnerId}'`,
+      );
+      assert(
+        row.learnerId === computeDerivedLearnerId(row),
+        `derived learner identity '${row.learnerId}' does not match recomputed '${computeDerivedLearnerId(row)}' from its source identity`,
       );
     }
 
@@ -111,18 +129,20 @@ export function validateLearnerManifest(
     'production contract preserved+excluded does not reconcile with count',
   );
   assert(manifest.productionContract.preserved === productionRowIds.length, 'production contract preserved count mismatch');
+  // excludedIds must be the exact complement of the preserved rows within the
+  // frozen IDs: no duplicates, length equal to excluded, and exact set equality
+  // with `ids - preservedRows` (no gaps, no strays).
+  const excludedIds = manifest.productionContract.excludedIds;
+  assert(new Set(excludedIds).size === excludedIds.length, 'production contract excludedIds must be unique');
+  assert(excludedIds.length === manifest.productionContract.excluded, 'production contract excludedIds length must equal excluded');
+  const expectedExcluded = new Set(manifest.productionContract.ids);
+  for (const id of productionRowIds) expectedExcluded.delete(id);
+  const actualExcluded = new Set(excludedIds);
   assert(
-    manifest.productionContract.excludedIds.every((id) => !productionRowIds.includes(id)),
-    'production contract excludedIds overlap preserved rows',
+    actualExcluded.size === expectedExcluded.size
+      && [...actualExcluded].every((id) => expectedExcluded.has(id)),
+    'production contract excludedIds must exactly equal ids minus preserved rows',
   );
-  for (const id of productionRowIds) {
-    assert(manifest.productionContract.ids.includes(id), `production row '${id}' missing from frozen contract`);
-  }
-  // excludedIds is the subset of frozen IDs that carry no eligible image and
-  // therefore do not appear as rows; it must reference only frozen IDs.
-  for (const id of manifest.productionContract.excludedIds) {
-    assert(manifest.productionContract.ids.includes(id), `excluded production ID '${id}' missing from frozen contract`);
-  }
 }
 
 /** Static guard for optional fields: present values are truthful; absent
