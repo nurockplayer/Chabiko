@@ -15,12 +15,18 @@ Place accepted built-in image-generation outputs at <ai-source-dir>/<preview-id>
 with a .png, .webp, or .jpg suffix, then rerun --build. The source files are
 only read. Generated preview derivatives are written as deterministic WebP.
 
-Teacher-derived derivatives are written only into the gitignored local-only
-directory (--teacher-asset-dir, default public/assets/dev/...). No teacher
-derivative is ever written under the tracked public assets path; the committed
-corpus records those rows as teacher-mapped-local and the deployed static build
-prunes the local-only directory via astro.config.mjs. AI-generated preview
+Teacher-derived derivatives are written to the tracked public assets path
+(--teacher-asset-dir, default public/assets/vocabulary/teacher-preview/teacher)
+and recorded in the corpus as teacher-mapped, so they are included in the
+deployed static build for remote teacher review. AI-generated preview
 derivatives remain under the tracked public AI assets path.
+
+Accepted AI assets are normally reused without rewriting by passing
+--reuse-accepted-ai-assets, which verifies each committed ai-generated record
+against its on-disk WebP (preview ID, existence, WebP readability and
+dimensions, SHA-256, transparent corners, one-to-one mapping) and fails closed
+on any drift. Fresh AI inputs continue to use --ai-source-dir. The canonical
+teacher-image inventory is produced by scripts/build-teacher-image-inventory.py.
 
 Integrity invariant: an existing teacher derivative is reused only when its
 bytes match a deterministic re-export of the reconciliation-verified source
@@ -527,6 +533,96 @@ def resolve_derivative(
     return existing
 
 
+def load_accepted_ai_records(output_dir: Path) -> dict[str, dict[str, Any]]:
+    """Load accepted AI-generated records from the committed preview corpus.
+
+    Returns preview_id -> image record for every row whose state is
+    ai-generated. These are the authoritative expected assets for the
+    --reuse-accepted-ai-assets mode.
+    """
+    corpus = json.loads((output_dir / "preview-corpus.json").read_text(encoding="utf-8"))
+    accepted: dict[str, dict[str, Any]] = {}
+    for row in corpus["rows"]:
+        image = row.get("image", {})
+        if image.get("state") == "ai-generated":
+            if not image.get("assetPath") or not image.get("assetChecksumSha256"):
+                raise ValueError(f"Accepted AI row '{row['id']}' is missing assetPath or checksum")
+            accepted[row["id"]] = image
+    if not accepted:
+        raise ValueError("No accepted AI-generated records found in the committed preview corpus")
+    return accepted
+
+
+def verify_accepted_ai_asset(
+    preview_id: str,
+    record: dict[str, Any],
+    ai_asset_dir: Path,
+    seen_paths: dict[str, str],
+    *,
+    prompt_digest: str,
+    generation_revision: int,
+    reference_set_ids: tuple[str, ...],
+) -> dict[str, Any]:
+    """Verify one accepted AI asset fails closed, then return its metadata.
+
+    Checks expected preview ID, file existence, WebP readability and
+    dimensions, SHA-256 against the accepted record, transparent-corner
+    requirement, a one-to-one ID/path mapping, and that the committed
+    generation provenance (promptDigest, generationRevision, referenceSetIds)
+    still matches the values currently derived from the frozen prompt contract.
+    A drift means the on-disk asset was produced by a different prompt than the
+    current build would claim, so reuse fails closed. Accepted assets are never
+    rewritten.
+    """
+    asset_path = record["assetPath"]
+    expected_filename = f"{preview_id}.webp"
+    if Path(asset_path).name != expected_filename:
+        raise ValueError(f"Accepted AI preview '{preview_id}' assetPath '{asset_path}' does not match its preview ID")
+    if asset_path in seen_paths:
+        raise ValueError(f"Accepted AI assetPath '{asset_path}' is shared by previews '{seen_paths[asset_path]}' and '{preview_id}'")
+    # Provenance must agree with the currently frozen prompt contract.
+    if record.get("promptDigest") != prompt_digest:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' promptDigest drift: "
+            f"expected {prompt_digest}, got {record.get('promptDigest')}"
+        )
+    if record.get("generationRevision") != generation_revision:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' generationRevision drift: "
+            f"expected {generation_revision}, got {record.get('generationRevision')}"
+        )
+    if tuple(record.get("referenceSetIds") or ()) != reference_set_ids:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' referenceSetIds drift: "
+            f"expected {list(reference_set_ids)}, got {record.get('referenceSetIds')}"
+        )
+    destination = ai_asset_dir / expected_filename
+    if not destination.is_file():
+        raise ValueError(f"Accepted AI asset missing: {destination}")
+    try:
+        with Image.open(destination) as opened:
+            if opened.format != "WEBP":
+                raise ValueError(f"Accepted AI asset '{destination.name}' is not WebP")
+            width, height = opened.size
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"Accepted AI asset unreadable: {destination} ({exc})") from exc
+    expected_width, expected_height = record["width"], record["height"]
+    if (width, height) != (expected_width, expected_height):
+        raise ValueError(
+            f"Accepted AI asset '{destination.name}' dimension drift: "
+            f"expected {expected_width}x{expected_height}, got {width}x{height}"
+        )
+    actual_sha256 = sha256_file(destination)
+    if actual_sha256 != record["assetChecksumSha256"]:
+        raise ValueError(
+            f"Accepted AI asset '{destination.name}' checksum drift: "
+            f"expected {record['assetChecksumSha256']}, got {actual_sha256}"
+        )
+    validate_transparent_corners(Image.open(destination), destination)
+    seen_paths[asset_path] = preview_id
+    return {"assetChecksumSha256": actual_sha256, "width": width, "height": height}
+
+
 def missing_fields(row: dict[str, Any]) -> list[str]:
     fields = [field for field in ("pinyin", "japanese", "difficulty") if not row[field]]
     if not row.get("traditional"):
@@ -541,6 +637,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     teacher_asset_dir = args.teacher_asset_dir.resolve()
     ai_asset_dir = args.ai_asset_dir.resolve()
     ai_source_dir = args.ai_source_dir.resolve() if args.ai_source_dir else None
+    accepted_ai_records = None
+    seen_ai_paths: dict[str, str] = {}
+    if args.reuse_accepted_ai_assets:
+        if ai_source_dir is not None:
+            raise ValueError("--reuse-accepted-ai-assets and --ai-source-dir are mutually exclusive")
+        if args.rebuild_ai_assets:
+            raise ValueError("--reuse-accepted-ai-assets and --rebuild-ai-assets are mutually exclusive")
+        accepted_ai_records = load_accepted_ai_records(output_dir)
     if not source_dir.is_dir():
         raise ValueError(f"Teacher image source directory does not exist: {source_dir}")
     images, inventory = load_inventory(args.inventory.resolve())
@@ -617,10 +721,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 label=row["previewId"],
             )
             preview_row["image"] = {
-                "state": "teacher-mapped-local",
+                "state": "teacher-mapped",
                 "provenance": "teacher-provided",
                 "reviewStatus": "draft",
-                "assetPath": f"/assets/dev/teacher-vocabulary-preview/teacher/{row['previewId']}.webp",
+                "assetPath": f"/assets/vocabulary/teacher-preview/teacher/{row['previewId']}.webp",
                 "sourceImageRelativePath": mapping["relativePath"],
                 "sourceChecksumSha256": mapping["sourceChecksumSha256"],
                 "reconciliationEvidence": mapping["evidence"],
@@ -635,13 +739,21 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 )
                 prompt = prompt_for(row, generation_revision)
                 digest = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
-                generated_input = image_input_for(row["previewId"], ai_source_dir)
-                if generated_input:
-                    destination = ai_asset_dir / f"{row['previewId']}.webp"
-                    validate_ai_input(generated_input)
-                    exported = None if args.rebuild_ai_assets or not destination.is_file() else existing_derivative_metadata(destination)
-                    if exported is None:
-                        exported = export_derivative(generated_input, destination, require_transparent_corners=True)
+                if accepted_ai_records is not None:
+                    # Reuse mode: verify the existing accepted AI asset against
+                    # the committed record and preserve it without rewriting.
+                    record = accepted_ai_records.get(row["previewId"])
+                    if record is None:
+                        raise ValueError(
+                            f"Reuse mode: preview '{row['previewId']}' is expected to have an accepted AI asset "
+                            "but none is recorded in the committed preview corpus"
+                        )
+                    exported = verify_accepted_ai_asset(
+                        row["previewId"], record, ai_asset_dir, seen_ai_paths,
+                        prompt_digest=digest,
+                        generation_revision=generation_revision,
+                        reference_set_ids=STYLE_REFERENCE_SET_IDS,
+                    )
                     preview_row["image"] = {
                         "state": "ai-generated", "provenance": "ai-generated", "reviewStatus": "draft",
                         "assetPath": f"/assets/vocabulary/teacher-preview/ai/{row['previewId']}.webp",
@@ -653,11 +765,29 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                     }
                     queue_status = "generated"
                 else:
-                    preview_row["image"] = {
-                        "state": "ai-pending", "provenance": None, "reviewStatus": "not-applicable",
-                        "promptDigest": digest, "note": reason,
-                    }
-                    queue_status = "pending"
+                    generated_input = image_input_for(row["previewId"], ai_source_dir)
+                    if generated_input:
+                        destination = ai_asset_dir / f"{row['previewId']}.webp"
+                        validate_ai_input(generated_input)
+                        exported = None if args.rebuild_ai_assets or not destination.is_file() else existing_derivative_metadata(destination)
+                        if exported is None:
+                            exported = export_derivative(generated_input, destination, require_transparent_corners=True)
+                        preview_row["image"] = {
+                            "state": "ai-generated", "provenance": "ai-generated", "reviewStatus": "draft",
+                            "assetPath": f"/assets/vocabulary/teacher-preview/ai/{row['previewId']}.webp",
+                            "promptDigest": digest,
+                            "generationRevision": generation_revision,
+                            "referenceSetIds": STYLE_REFERENCE_SET_IDS,
+                            "reviewOutcome": "automated-alpha-check; draft human review pending",
+                            "reconciliationEvidence": "frozen-generation-queue", **exported,
+                        }
+                        queue_status = "generated"
+                    else:
+                        preview_row["image"] = {
+                            "state": "ai-pending", "provenance": None, "reviewStatus": "not-applicable",
+                            "promptDigest": digest, "note": reason,
+                        }
+                        queue_status = "pending"
                 queue.append({
                     "previewId": row["previewId"], "sourceSheet": row["sourceSheet"], "sourceRow": row["sourceRow"],
                     "simplified": row["simplified"], "partOfSpeech": row["partOfSpeech"], "prompt": prompt,
@@ -684,7 +814,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "bySourceSheet": dict(Counter(row["sourceSheet"] for row in corpus_rows)),
         "byPartOfSpeech": dict(Counter(row["partOfSpeech"] for row in corpus_rows)),
         "byImageState": {state: by_image_state.get(state, 0) for state in (
-            "teacher-mapped", "teacher-mapped-local", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
+            "teacher-mapped", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
         )},
     }
     corpus = {
@@ -748,6 +878,15 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     atomic_json(output_dir / "generation-queue.json", queue_payload)
     atomic_json(output_dir / "input-inventory-audit.json", input_audit)
     return {"corpus": corpus, "reconciliation": reconciliation_payload, "queue": queue_payload, "inputAudit": input_audit}
+
+
+def make_transparent_webp(path: Path) -> bytes:
+    """Write a deterministic RGBA 512x512 WebP with transparent corners."""
+    from PIL import ImageDraw
+    image = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+    ImageDraw.Draw(image).rectangle((32, 32, 479, 479), fill=(120, 160, 200, 255))
+    image.save(path, format="WEBP", lossless=True, method=6, exif=b"", icc_profile=None)
+    return path.read_bytes()
 
 
 def run_self_tests() -> int:
@@ -924,10 +1063,189 @@ def run_self_tests() -> int:
             print("  FAIL  recorded metadata does not match the actual output bytes")
             failures += 1
 
+        # ── Accepted-AI reuse verification (Issue #193 follow-up) ──
+        # verify_accepted_ai_asset must accept a matching accepted asset as-is
+        # and fail closed on missing/corrupt/drifted/cross-copied assets or
+        # drifted generation provenance.
+        ai_dir = Path(tmp) / "ai"
+        ai_dir.mkdir()
+        seen_ai: dict[str, str] = {}
+        ai_pid = "teacher-preview-accepted-ai"
+        ai_asset = ai_dir / f"{ai_pid}.webp"
+        ai_asset_bytes = make_transparent_webp(ai_asset)
+        ai_prov = {
+            "promptDigest": "a" * 64,
+            "generationRevision": 2,
+            "referenceSetIds": ["one.png", "two.png", "three.png"],
+        }
+        ai_record = {
+            "assetPath": f"/assets/vocabulary/teacher-preview/ai/{ai_pid}.webp",
+            "assetChecksumSha256": sha256_file(ai_asset),
+            "width": 512,
+            "height": 512,
+            **ai_prov,
+        }
+
+        def reuse_accepted() -> dict[str, Any]:
+            return verify_accepted_ai_asset(
+                ai_pid, ai_record, ai_dir, seen_ai,
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            )
+
+        # a. Matching accepted asset is reused as-is (bytes unchanged).
+        try:
+            reused_meta = reuse_accepted()
+            if reused_meta["assetChecksumSha256"] == ai_record["assetChecksumSha256"] and ai_asset.read_bytes() == ai_asset_bytes:
+                print("  PASS  accepted AI asset is reused as-is")
+            else:
+                print("  FAIL  accepted AI asset was not reused as-is")
+                failures += 1
+        except ValueError as exc:
+            print(f"  FAIL  accepted AI asset reuse raised: {exc}")
+            failures += 1
+
+        # b. Missing asset fails closed.
+        missing_pid = "teacher-preview-missing-ai"
+        missing_record = {
+            "assetPath": f"/assets/vocabulary/teacher-preview/ai/{missing_pid}.webp",
+            "assetChecksumSha256": "0" * 64, "width": 512, "height": 512, **ai_prov,
+        }
+        expect_raises(
+            "missing accepted AI asset fails closed",
+            "missing",
+            lambda: verify_accepted_ai_asset(
+                missing_pid, missing_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # c. Checksum drift fails closed (a valid but different WebP at the path).
+        drifted = ai_dir / f"{ai_pid}.webp"
+        from PIL import ImageDraw as _ImageDraw
+        drift_image = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+        _ImageDraw.Draw(drift_image).rectangle((32, 32, 479, 479), fill=(10, 20, 30, 255))
+        drift_image.save(drifted, format="WEBP", lossless=True, method=6, exif=b"", icc_profile=None)
+        expect_raises(
+            "accepted AI checksum drift fails closed",
+            "checksum drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, ai_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+        ai_asset.write_bytes(ai_asset_bytes)
+
+        # d. Dimension drift fails closed.
+        expect_raises(
+            "accepted AI dimension drift fails closed",
+            "dimension drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "width": 999}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # e. Non-WebP format at the expected path fails closed.
+        png_path = ai_dir / "teacher-preview-png.webp"
+        with Image.new("RGB", (512, 512), (0, 0, 255)) as image:
+            image.save(png_path, format="PNG")
+        png_record = {
+            "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-png.webp",
+            "assetChecksumSha256": sha256_file(png_path), "width": 512, "height": 512, **ai_prov,
+        }
+        expect_raises(
+            "non-WebP accepted AI asset fails closed",
+            "not WebP",
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-png", png_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # f. Transparent-corner regression fails closed (RGB has no alpha channel).
+        opaque = ai_dir / "teacher-preview-opaque.webp"
+        with Image.new("RGB", (512, 512), (0, 0, 255)) as image:
+            image.save(opaque, format="WEBP", lossless=True)
+        opaque_record = {
+            "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-opaque.webp",
+            "assetChecksumSha256": sha256_file(opaque), "width": 512, "height": 512, **ai_prov,
+        }
+        expect_raises(
+            "accepted AI transparent-corner regression fails closed",
+            "alpha",
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-opaque", opaque_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # g. Cross-copied asset fails closed: a record pointing at another
+        #    preview's asset path is rejected by the one-to-one ID/path mapping.
+        cross_asset = ai_dir / "teacher-preview-cross.webp"
+        cross_asset.write_bytes(ai_asset_bytes)
+        expect_raises(
+            "accepted AI cross-copied asset fails closed",
+            "does not match its preview ID",
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-cross", {**ai_record}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # h. Prompt digest drift fails closed.
+        expect_raises(
+            "accepted AI promptDigest drift fails closed",
+            "promptDigest drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "promptDigest": "b" * 64}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # i. Generation revision drift fails closed.
+        expect_raises(
+            "accepted AI generationRevision drift fails closed",
+            "generationRevision drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "generationRevision": 3}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # j. Reference-set drift fails closed.
+        expect_raises(
+            "accepted AI referenceSetIds drift fails closed",
+            "referenceSetIds drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "referenceSetIds": ["four.png"]}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
     if failures:
         print(f"\n{failures} integrity test(s) FAILED")
     else:
-        print("\nAll source/derivative integrity tests PASSED")
+        print("\nAll source/derivative/AI-reuse integrity tests PASSED")
     return failures
 
 
@@ -937,7 +1255,7 @@ def main() -> int:
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--inventory", type=Path)
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "data/teacher-vocabulary-preview")
-    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/dev/teacher-vocabulary-preview/teacher")
+    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/teacher")
     parser.add_argument("--ai-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/ai")
     parser.add_argument("--ai-source-dir", type=Path)
     parser.add_argument(
@@ -949,6 +1267,15 @@ def main() -> int:
         "--rebuild-ai-assets",
         action="store_true",
         help="Regenerate every accepted AI preview derivative instead of reusing valid WebP outputs.",
+    )
+    parser.add_argument(
+        "--reuse-accepted-ai-assets",
+        action="store_true",
+        help=(
+            "Verify the existing accepted AI assets against the committed preview corpus and "
+            "preserve them as ai-generated without rewriting. Mutually exclusive with "
+            "--ai-source-dir and --rebuild-ai-assets."
+        ),
     )
     parser.add_argument("--test", action="store_true", help="Run read-only source-verification drift tests")
     parser.add_argument("--build", action="store_true")

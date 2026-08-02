@@ -1016,6 +1016,20 @@ PENDING_RIGHTS_KNOWN_FIELDS = frozenset({
 VALID_PENDING_RIGHTS_STATUS = frozenset({"pending"})
 VALID_PENDING_RIGHTS_SOURCE = frozenset({"teacher-provided"})
 
+# Approved teacher-provided rights reference the committed canonical package
+# rights record (data/teacher-vocabulary-preview/teacher-image-rights.json) and
+# the product-owner attestation in Issue #191 comment 5156051087.
+APPROVED_RIGHTS_KNOWN_FIELDS = frozenset({
+    "status", "source", "note",
+})
+VALID_APPROVED_RIGHTS_STATUS = frozenset({"approved"})
+VALID_APPROVED_RIGHTS_SOURCE = frozenset({"teacher-provided"})
+APPROVED_RIGHTS_NOTE_MARKERS = (
+    "teacher-image-rights.json",
+    "issue-191",
+    "comment-5156051087",
+)
+
 def _check_illustration_fields(record: dict, path: str) -> list[str]:
     """Validate an illustration record."""
     errors = []
@@ -1088,8 +1102,9 @@ def _check_illustration_rights(rights: dict, path: str, review_status: str = "")
     """
     errors = []
 
-    # Determine which variant: pending vs cleared
+    # Determine which variant: pending vs approved vs cleared
     is_pending = isinstance(rights.get("status"), str) and rights.get("status") == "pending"
+    is_approved = isinstance(rights.get("status"), str) and rights.get("status") == "approved"
 
     if is_pending:
         # ── Pending-rights variant ──
@@ -1124,6 +1139,44 @@ def _check_illustration_rights(rights: dict, path: str, review_status: str = "")
         # Reject unknown fields for pending rights
         for field in rights:
             if field not in PENDING_RIGHTS_KNOWN_FIELDS:
+                errors.append(f"{path}: unknown field '{field}'")
+    elif is_approved:
+        # ── Approved teacher-provided rights variant ──
+        # Only valid for draft illustrations; references the committed package
+        # rights record and the product-owner attestation comment.
+        if review_status not in ("draft", ""):
+            errors.append(
+                f"{path}: approved-rights variant is only valid when reviewStatus is 'draft'"
+            )
+
+        # status must be 'approved'
+        if "status" in rights and rights["status"] != "approved":
+            errors.append(f"{path}.status must be 'approved'")
+
+        # source must be 'teacher-provided'
+        source = rights.get("source")
+        if source is not None:
+            if not isinstance(source, str):
+                errors.append(f"{path}.source must be a string, got {type(source).__name__}")
+            elif source not in VALID_APPROVED_RIGHTS_SOURCE:
+                errors.append(f"{path}.source must be 'teacher-provided'")
+        else:
+            errors.append(f"{path}: missing required field 'source'")
+
+        # note must reference the package rights record and the attestation.
+        note = rights.get("note")
+        if note is None:
+            errors.append(f"{path}: missing required field 'note'")
+        elif not isinstance(note, str) or note.strip() == "":
+            errors.append(f"{path}.note must be a non-empty string")
+        else:
+            for marker in APPROVED_RIGHTS_NOTE_MARKERS:
+                if marker not in note:
+                    errors.append(f"{path}.note must reference {marker}")
+
+        # Reject unknown fields for approved rights
+        for field in rights:
+            if field not in APPROVED_RIGHTS_KNOWN_FIELDS:
                 errors.append(f"{path}: unknown field '{field}'")
     else:
         # ── Cleared-rights variant (original contract) ──
@@ -2306,6 +2359,13 @@ def run_tests():
         test_illustration_pending_rights_missing_note_fails,
         test_illustration_pending_rights_bad_source_fails,
         test_illustration_pending_rights_cleared_fields_rejected,
+
+        # Approved teacher-provided rights (Issue #193)
+        test_illustration_rights_approved_valid,
+        test_illustration_rights_approved_missing_markers_fails,
+        test_illustration_rights_approved_wrong_source_fails,
+        test_illustration_rights_approved_unknown_field_fails,
+        test_illustration_rights_approved_rejects_relicensing_claim,
 
         # Existing cleared-rights backward compatibility
         test_illustration_cleared_rights_draft_valid,
@@ -5435,6 +5495,68 @@ def test_illustration_rights_reuse_invalid():
         "illustration",
     )
     _assert_has_error(errs, "not valid", "ill_reuse")
+
+
+# ─── Approved teacher-provided rights variant (Issue #193) ──────────────
+
+_APPROVED_RIGHTS = {
+    "status": "approved",
+    "source": "teacher-provided",
+    "note": "Approved via the canonical package rights record "
+            "(data/teacher-vocabulary-preview/teacher-image-rights.json), "
+            "product-owner attestation in issue-191 comment-5156051087.",
+}
+
+
+def test_illustration_rights_approved_valid():
+    """Approved teacher-provided rights referencing the package record are valid."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights=dict(_APPROVED_RIGHTS)),
+        "illustration",
+    )
+    _assert_no_errors(errs, "ill_rights_approved")
+
+
+def test_illustration_rights_approved_missing_markers_fails():
+    """Approved rights note must reference the package record and attestation."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights=dict(_APPROVED_RIGHTS, note="no reference")),
+        "illustration",
+    )
+    _assert_has_error(errs, "teacher-image-rights.json", "ill_rights_approved_missing_pkg")
+    _assert_has_error(errs, "issue-191", "ill_rights_approved_missing_issue")
+    _assert_has_error(errs, "comment-5156051087", "ill_rights_approved_missing_comment")
+
+
+def test_illustration_rights_approved_wrong_source_fails():
+    """Approved rights must keep source teacher-provided."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights=dict(_APPROVED_RIGHTS, source="ai-generated")),
+        "illustration",
+    )
+    _assert_has_error(errs, "must be 'teacher-provided'", "ill_rights_approved_src")
+
+
+def test_illustration_rights_approved_unknown_field_fails():
+    """Approved rights reject unknown fields."""
+    errs = validate_single(
+        _minimal_teacher_illustration(rights=dict(_APPROVED_RIGHTS, extra="x")),
+        "illustration",
+    )
+    _assert_has_error(errs, "unknown field", "ill_rights_approved_unknown")
+
+
+def test_illustration_rights_approved_rejects_relicensing_claim():
+    """Approved teacher rights must not claim broader relicensing."""
+    errs = validate_single(
+        _minimal_teacher_illustration(
+            rights=dict(_APPROVED_RIGHTS, basis="commissioned-for-chabiko", publicWebDisplay=True,
+                        staticAssetRedistribution=True, modificationScope="technical-only",
+                        attributionRequired=False, reuseOutsideChabiko="granted"),
+        ),
+        "illustration",
+    )
+    _assert_has_error(errs, "unknown field", "ill_rights_approved_relicense")
 
 
 # ─── Gap 3: Illustration non-empty string tests ────────────────────────
