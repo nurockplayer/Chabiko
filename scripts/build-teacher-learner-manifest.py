@@ -11,8 +11,8 @@ This ticket only freezes the production eligibility and learner-ID contract.
 It does not wire any learner route, loader, session, or progress.
 
 Usage:
-  uv run --locked python scripts/build-teacher-learner-manifest.py        # write manifest
-  uv run --locked python scripts/build-teacher-learner-manifest.py --test # run self-tests
+  uv run --locked python scripts/build-teacher-learner-manifest.py --write # write manifest
+  uv run --locked python scripts/build-teacher-learner-manifest.py --test   # run self-tests
 """
 
 from __future__ import annotations
@@ -43,6 +43,10 @@ LEARNER_ID_PREFIX = "teacher-learner-"
 def normalize(value: Any) -> str:
     value = "" if value is None else str(value)
     return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value).strip())
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def load_production_ids() -> tuple[str, ...]:
@@ -152,6 +156,17 @@ def build(
             raise ValueError(
                 f"Row '{row['id']}' references asset '{asset_path}' that is not a tracked Git file"
             )
+        # A tracked-but-corrupt asset (replaced bytes at the same path) must
+        # fail closed against the committed corpus checksum, so a damaged WebP
+        # cannot be labeled a deployable teaching asset.
+        expected_checksum = image.get("assetChecksumSha256")
+        if expected_checksum:
+            actual = sha256_file(public_root / asset_path.lstrip("/"))
+            if actual != expected_checksum:
+                raise ValueError(
+                    f"Row '{row['id']}' asset '{asset_path}' checksum drift: "
+                    f"expected {expected_checksum}, got {actual}"
+                )
 
         state = image["state"]
         provenance = image.get("provenance")
@@ -366,6 +381,17 @@ def run_self_tests() -> int:
             production_ids=(), public_root=public_root,
             tracked_files=synthetic_tracked - {"public/assets/vocabulary/teacher-preview/teacher/synthetic-0001.webp"}))
 
+        # ── Negative: tracked-but-corrupt asset (checksum drift) ──
+        corrupt_rows = synthetic(1, 0)["rows"]
+        corrupt_rows[0]["image"]["assetPath"] = "/assets/vocabulary/teacher-preview/teacher/synthetic-0002.webp"
+        # The file is tracked and exists, but its committed checksum differs.
+        corrupt_rows[0]["image"]["assetChecksumSha256"] = "0" * 64
+        expect_raises("tracked-but-corrupt asset fails closed", "checksum drift", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": corrupt_rows},
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+
         # ── Negative: duplicate learner ID (same production ID on two rows) ──
         dup_id_rows = synthetic(2, 0)["rows"]
         dup_id_rows[0]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
@@ -415,6 +441,21 @@ def run_self_tests() -> int:
         expected_raw = json.dumps(expected, ensure_ascii=False, indent=2) + "\n"
         actual_raw = OUTPUT_PATH.read_text(encoding="utf-8")
         check("regenerated output is byte-identical to committed manifest", expected_raw == actual_raw)
+
+    # ── CLI contract: the documented canonical `--write` command must run and
+    #    leave the committed manifest byte-identical. ──
+    import subprocess as _sp
+    import sys as _sys
+    cli = _sp.run(
+        [_sys.executable, str(Path(__file__).resolve()), "--write"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
+    if cli.returncode != 0:
+        print(f"  FAIL  canonical --write CLI exited {cli.returncode}: {cli.stderr.strip()}")
+        failures += 1
+    else:
+        after = OUTPUT_PATH.read_text(encoding="utf-8")
+        check("canonical --write CLI leaves the committed manifest byte-identical", after == actual_raw)
 
     if failures:
         print(f"{failures} self-test failure(s)")
