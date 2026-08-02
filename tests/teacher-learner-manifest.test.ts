@@ -158,6 +158,32 @@ describe('production learner manifest', () => {
     expect(raw).not.toContain('词汇表');
   });
 
+  it('has production learner use authorization for every teacher-mapped asset', () => {
+    // The teacher-created images are commissioned for Chabiko learning materials;
+    // the canonical rights record (Issue #191 comment 5157871811) permits
+    // production learner use within Chabiko. The manifest never reaches further
+    // than that scope.
+    const rights = JSON.parse(readFileSync('data/teacher-vocabulary-preview/teacher-image-rights.json', 'utf8')) as {
+      permittedUses: string[];
+      broaderRelicensingGranted: boolean;
+      evidence: { productionLearnerUseCommentId?: number };
+      productionLearnerUse?: { permitted: boolean; chabikoOnly: boolean; broaderRelicensingOrRedistribution: boolean };
+    };
+    expect(rights.permittedUses).toContain('production-learner-use-in-chabiko');
+    expect(rights.permittedUses).toContain('public-by-link-review-test-deployment');
+    expect(rights.evidence.productionLearnerUseCommentId).toBe(5157871811);
+    expect(rights.broaderRelicensingGranted).toBe(false);
+    expect(rights.productionLearnerUse?.permitted).toBe(true);
+    expect(rights.productionLearnerUse?.chabikoOnly).toBe(true);
+    expect(rights.productionLearnerUse?.broaderRelicensingOrRedistribution).toBe(false);
+    // Every teacher-mapped manifest row is covered by the permitted scope.
+    for (const row of manifest.rows) {
+      if (row.image.provenance === 'teacher-provided') {
+        expect(rights.permittedUses.some((use) => use.startsWith('production-learner-use'))).toBe(true);
+      }
+    }
+  });
+
   it('assigns learner IDs from stable source identity, never from position or order', () => {
     // Production rows keep their frozen production ID shape; every other row
     // uses the deterministic derived prefix with a 16-hex suffix. None of these

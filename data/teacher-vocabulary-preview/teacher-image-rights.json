@@ -6,14 +6,24 @@
   "evidence": {
     "type": "product-owner-attestation",
     "issue": 191,
-    "commentId": 5156051087
+    "commentId": 5156051087,
+    "productionLearnerUseCommentId": 5157871811
   },
   "sourcePackageFingerprintWithPaths": "592cee9f32419b4b3571146d72c8710cd9f1edc5e02150c48178011a5a8b1517",
   "permittedUses": [
     "deterministic-derivative-generation",
     "tracking-derivatives-in-chabiko",
-    "public-by-link-review-test-deployment"
+    "public-by-link-review-test-deployment",
+    "production-learner-use-in-chabiko"
   ],
+  "productionLearnerUse": {
+    "permitted": true,
+    "confirmedAt": "2026-08-02",
+    "commentId": 5157871811,
+    "scope": "learning-materials-on-production-learner-route-including-vocabulary-basic",
+    "chabikoOnly": true,
+    "broaderRelicensingOrRedistribution": false
+  },
   "originalSourcesTracked": false,
   "broaderRelicensingGranted": false,
   "attributionRequirement": "not-specified"
