@@ -12,6 +12,20 @@ const lessons = loadAllRenderableLessons();
     <Header themeEnabled />
   </Fragment>
 
+  <section
+    id="basic-vocabulary-entry"
+    class="basic-vocabulary-entry"
+    aria-labelledby="basic-vocabulary-entry-title"
+  >
+    <div class="basic-vocabulary-entry__content">
+      <p class="basic-vocabulary-entry__eyebrow">基礎単語</p>
+      <h2 id="basic-vocabulary-entry-title">イラストで学ぶ基礎中国語</h2>
+      <p>中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。</p>
+      <p class="basic-vocabulary-entry__availability">イラスト付きの単語を、少しずつ練習できます。</p>
+      <a class="basic-vocabulary-entry__link" href="/vocabulary/basic/">単語学習を始める</a>
+    </div>
+  </section>
+
   {lessons.length > 0 ? (
     <div class="home-journey">
       <GoalPathSlot />
@@ -66,19 +80,6 @@ const lessons = loadAllRenderableLessons();
           <span id="progress-summary" class="progress-summary" aria-live="polite"></span>
           <button id="reset-progress-btn" class="reset-btn">進捗をリセット</button>
         </div>
-        <section
-          id="basic-vocabulary-entry"
-          class="basic-vocabulary-entry"
-          aria-labelledby="basic-vocabulary-entry-title"
-        >
-          <div class="basic-vocabulary-entry__content">
-            <p class="basic-vocabulary-entry__eyebrow">基礎単語</p>
-            <h2 id="basic-vocabulary-entry-title">イラストで学ぶ基礎中国語</h2>
-            <p>中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。</p>
-            <p class="basic-vocabulary-entry__availability">☆レベルの最初の単語セットを学習できます。</p>
-            <a class="basic-vocabulary-entry__link" href="/vocabulary/basic/">単語学習を始める</a>
-          </div>
-        </section>
       </div>
     </div>
   ) : (
@@ -186,6 +187,7 @@ const lessons = loadAllRenderableLessons();
   }
   .basic-vocabulary-entry {
     margin-top: var(--space-2xl);
+    margin-bottom: var(--space-xl);
     padding: var(--space-lg);
     background: var(--c-surface);
     border: 1px solid var(--c-border);
