@@ -340,5 +340,19 @@ describe('basic-vocabulary home entry', () => {
       );
       expect(nowrapLines).toHaveLength(0);
     });
+
+    it('keeps block-end spacing on the entry so it never sits flush against the following section', () => {
+      // The entry now sits outside the lessons conditional and always renders
+      // above either .home-journey or .fallback-message. It must keep bottom
+      // spacing using an existing token so neither sibling collides with it.
+      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
+      const styles = styleMatch?.[1] ?? '';
+      const entryBlock = styles.match(
+        /\.basic-vocabulary-entry\s*\{([\s\S]*?)\}/,
+      );
+      expect(entryBlock).not.toBeNull();
+      const declarations = entryBlock![1];
+      expect(declarations).toMatch(/margin-bottom:\s*var\(--space-[a-z0-9]+\)/);
+    });
   });
 });
