@@ -11,6 +11,7 @@ import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
+const BUILD_PREVIEW_FILE = resolve(REPO_ROOT, 'dist/vocabulary/basic/preview/index.html');
 const DEV_ROOT = resolve(REPO_ROOT, 'public/assets/dev');
 const DEV_SOURCE_DIR = resolve(DEV_ROOT, 'teacher-vocabulary-preview');
 // Unique per-run marker so the test never collides with developer-owned files.
@@ -123,6 +124,23 @@ describe('TeacherPreview — build output (fresh build)', () => {
     const states = corpus.rows.map((row: { image: { state: string } }) => row.image.state);
     expect(states).not.toContain('teacher-mapped-local');
     expect(JSON.stringify(corpus)).not.toContain('/assets/dev/');
+  });
+
+  it('no obsolete local-only copy or state reaches the deployed preview output', () => {
+    const OBSOLETE_TOKENS = [
+      'teacher-mapped-local',
+      '教師提供（ローカル）',
+      'ローカル専用（未公開）',
+      'ローカル未生成',
+    ];
+    expect(existsSync(BUILD_PREVIEW_FILE)).toBe(true);
+    const previewHtml = readFileSync(BUILD_PREVIEW_FILE, 'utf-8');
+    for (const token of OBSOLETE_TOKENS) expect(previewHtml).not.toContain(token);
+    // The client bundle is referenced from the built preview route.
+    const bundleMatch = previewHtml.match(/src="(\/_astro\/[^"]+\.js)"/);
+    expect(bundleMatch).not.toBeNull();
+    const bundle = readFileSync(resolve(REPO_ROOT, `dist${bundleMatch![1]}`), 'utf-8');
+    for (const token of OBSOLETE_TOKENS) expect(bundle).not.toContain(token);
   });
 
   it('no define:vars in built output', () => {
