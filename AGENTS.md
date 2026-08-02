@@ -116,7 +116,12 @@ Cross-cutting 變更的完成回報必須把每個 frozen requirement 對應到�
 
 沒有對應 diff 或證據的 requirement 不得宣稱完成。
 
-最終唯讀 reviewer 必須檢查完整 contract surface，不能只看最後一次 follow-up diff。至少驗證：所有已知 writer 與 consumer、stale path／state／metadata／documentation、canonical rebuild／migration workflow、destructive cleanup 與 dirty 環境行為、rights／license／provenance 一致性、generated 輸出與 committed metadata 的一致性、negative drift test 與 fail-closed 行為。除立即的 P0／P1 安全或資料遺失風險外，reviewer 應完成完整掃描並將 findings 聚合到同一 follow-up cycle，而非逐條送出。
+最終唯讀 reviewer 必須檢查完整 contract surface，不能只看最後一次 follow-up diff。至少驗證：所有已知 writer 與 consumer、stale path／state／metadata／documentation、canonical rebuild／migration workflow、destructive cleanup 與 dirty 環境行為、rights／license／provenance 一致性、generated 輸出與 committed metadata 的一致性、negative drift test 與 fail-closed 行為。
+
+Reviewer 除立即的 P0／P1 安全或資料遺失中斷外，應完成完整 contract-surface 掃描，並把全部 findings 聚合到一份 review 結果或 follow-up plan。隨後由 coordinator 依 root cause、implementation mechanism、主要修改檔案與 validation boundary 分組：
+
+- 只有符合「Flash 任務大小 Gate」merge criteria（root cause、主要修改檔案、implementation mechanism 與 validation boundary 都相同）的 findings，才可以共享一個 bounded implementation cycle。
+- 無關的 findings 必須在同一 branch／PR 上拆成 separate bounded cycles 依序實作。
 
 ## Flash 任務大小 Gate
 

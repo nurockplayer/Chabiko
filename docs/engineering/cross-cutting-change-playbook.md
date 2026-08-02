@@ -105,7 +105,7 @@ cleanup 規則：
 - generated 輸出與 committed metadata 一致。
 - negative drift test 與 fail-closed 行為存在且有效。
 
-除立即的 P0／P1 安全或資料遺失風險外，reviewer 應完成完整掃描並將 findings 聚合到同一 follow-up cycle，而非逐條送出。
+除立即的 P0／P1 安全或資料遺失中斷外，reviewer 應完成完整 contract-surface 掃描，並把全部 findings 聚合到一份 review 結果或 follow-up plan。隨後由 coordinator 依 root cause、implementation mechanism、主要修改檔案與 validation boundary 分組：只有符合「Flash 任務大小 Gate」merge criteria 的 findings 可共享一個 bounded implementation cycle；無關的 findings 在同一 branch／PR 上拆成 separate bounded cycles 依序實作。
 
 ## 9. Worked example — Issue #193 / PR #196
 
