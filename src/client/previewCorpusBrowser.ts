@@ -336,8 +336,8 @@ function renderInventory(
   root: HTMLElement,
   flaggedSources: TeacherImageReconciliationRecord[],
 ): void {
-  const count = root.querySelector<HTMLElement>('[data-inventory-count]');
-  if (count) count.textContent = String(flaggedSources.length);
+  const countTargets = root.querySelectorAll<HTMLElement>('[data-inventory-count]');
+  for (const target of countTargets) target.textContent = String(flaggedSources.length);
   const list = root.querySelector<HTMLUListElement>('[data-inventory-list]');
   if (!list) return;
   list.replaceChildren();

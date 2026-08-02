@@ -9,6 +9,7 @@ import {
   previewPageRange,
 } from '../src/client/previewCorpusBrowser';
 import { loadTeacherImageReconciliation, loadTeacherVocabularyPreview } from '../src/content/loadTeacherVocabularyPreview';
+import type { TeacherVocabularyPreviewRow } from '../src/types/teacherVocabularyPreview';
 
 const preview = loadTeacherVocabularyPreview();
 const reconciliation = loadTeacherImageReconciliation();
@@ -17,6 +18,12 @@ function createPreviewRoot(): HTMLElement {
   const root = document.createElement('section');
   root.id = 'preview-root';
   root.innerHTML = `
+    <section class="summary">
+      <dl>
+        <div><dt>表示対象</dt><dd>0</dd></div>
+        <div><dt>要確認画像</dt><dd data-inventory-count>0 件</dd></div>
+      </dl>
+    </section>
     <p class="result-count"><span data-preview-total>0</span> 語中 <span data-preview-range>0</span> 語を表示</p>
     <div class="filters">
       <label>シート<select data-filter-sheet></select></label>
@@ -32,6 +39,16 @@ function createPreviewRoot(): HTMLElement {
     <details class="inventory"><summary>インベントリ (<span data-inventory-count>0</span>)</summary><ul data-inventory-list></ul></details>
   `;
   document.body.appendChild(root);
+  return root;
+}
+
+function inventoryCounts(root: HTMLElement): string[] {
+  return [...root.querySelectorAll<HTMLElement>('[data-inventory-count]')].map((el) => el.textContent ?? '');
+}
+
+function singleRowRoot(row: TeacherVocabularyPreviewRow): HTMLElement {
+  const root = createPreviewRoot();
+  mountPreviewBrowser(root, { rows: [row], flaggedSources: [] });
   return root;
 }
 
@@ -123,14 +140,106 @@ describe('static preview filter/pagination (browser side)', () => {
     }
   });
 
-  it('inventory lists every ambiguous and unmatched source image', () => {
+  it('updates every inventory count target from the serialized flagged-source length', () => {
     const root = createPreviewRoot();
     try {
       mountPreviewBrowser(root, { rows: preview.rows, flaggedSources });
-      expect(root.querySelector<HTMLElement>('[data-inventory-count]')?.textContent).toBe(String(flaggedSources.length));
-      expect(root.querySelectorAll('[data-inventory-list] li').length).toBe(flaggedSources.length);
+      expect(inventoryCounts(root)).toEqual([String(flaggedSources.length), String(flaggedSources.length)]);
+      expect(root.querySelectorAll<HTMLElement>('[data-inventory-list] li').length).toBe(flaggedSources.length);
     } finally {
       root.remove();
+    }
+  });
+
+  it('both inventory count targets display the current real ambiguous/unmatched total of 90', () => {
+    expect(flaggedSources.length).toBe(90);
+    const root = createPreviewRoot();
+    try {
+      mountPreviewBrowser(root, { rows: preview.rows, flaggedSources });
+      expect(inventoryCounts(root)).toEqual(['90', '90']);
+    } finally {
+      root.remove();
+    }
+  });
+
+  it('a synthetic inventory with another length updates both targets without code changes', () => {
+    const synthetic = flaggedSources.slice(0, 3);
+    expect(synthetic).toHaveLength(3);
+    const root = createPreviewRoot();
+    try {
+      mountPreviewBrowser(root, { rows: preview.rows, flaggedSources: synthetic });
+      expect(inventoryCounts(root)).toEqual(['3', '3']);
+      expect(root.querySelectorAll<HTMLElement>('[data-inventory-list] li').length).toBe(3);
+    } finally {
+      root.remove();
+    }
+  });
+
+  it('teacher-mapped rows render the deployable image and teacher labels', () => {
+    const row = preview.rows.find(
+      (r) => r.image.state === 'teacher-mapped' && r.image.assetPath,
+    );
+    expect(row).toBeDefined();
+    const root = singleRowRoot(row!);
+    try {
+      const img = root.querySelector<HTMLImageElement>('[data-preview-rows] .row__image__img');
+      expect(img).not.toBeNull();
+      expect(img?.src).toContain(row!.image.assetPath!);
+      expect(root.querySelector<HTMLElement>('[data-preview-rows] .row__state .state')?.textContent).toBe('教師提供の対応画像');
+      const provenance = root.querySelector<HTMLElement>('[data-preview-rows] .row__state span:not(.state)')?.textContent;
+      expect(provenance).toBe('教師提供');
+    } finally {
+      root.remove();
+    }
+  });
+
+  it('a teacher-mapped row keeps its image when the image fails to load', () => {
+    const row = preview.rows.find(
+      (r) => r.image.state === 'teacher-mapped' && r.image.assetPath,
+    );
+    expect(row).toBeDefined();
+    const root = singleRowRoot(row!);
+    try {
+      const img = root.querySelector<HTMLImageElement>('[data-preview-rows] .row__image__img');
+      expect(img).not.toBeNull();
+      img!.dispatchEvent(new Event('error'));
+      const imageCell = root.querySelector<HTMLElement>('[data-preview-rows] .row__image');
+      expect(imageCell?.textContent).toBe('画像を読み込めません');
+      expect(imageCell?.textContent).not.toBe('画像なし');
+      expect(imageCell?.textContent).not.toBe('ローカル未生成');
+    } finally {
+      root.remove();
+    }
+  });
+
+  it('text-only, ambiguous, unsuitable, and skipped rows retain their existing labels', () => {
+    const expectedLabels: Record<string, string> = {
+      'text-only': '文字のみ',
+      ambiguous: '対応が曖昧',
+      unsuitable: '画像化しない',
+      skipped: '除外',
+    };
+    for (const [state, label] of Object.entries(expectedLabels)) {
+      const row = preview.rows.find((r) => r.image.state === state);
+      const subject = row ?? {
+        id: `synthetic-${state}`,
+        simplified: '合成',
+        partOfSpeech: 'noun' as const,
+        sourceSheet: '合成シート',
+        sourceRow: 0,
+        missingFields: [] as const,
+        reviewStatus: 'draft' as const,
+        image: { state: state as never, provenance: null, reviewStatus: 'not-applicable' },
+      };
+      const root = singleRowRoot(subject as TeacherVocabularyPreviewRow);
+      try {
+        const stateLabel = root.querySelector<HTMLElement>('[data-preview-rows] .row__state .state')?.textContent;
+        expect(stateLabel).toBe(label);
+        const cell = root.querySelector<HTMLElement>('[data-preview-rows] .row__image');
+        expect(cell?.textContent).toBe('画像なし');
+      } finally {
+        root.remove();
+      }
     }
   });
 
