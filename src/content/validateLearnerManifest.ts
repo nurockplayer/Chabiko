@@ -1,13 +1,26 @@
-import { existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import type { LearnerManifest, LearnerManifestRow } from '../types/learnerManifest';
 
 export interface LearnerManifestValidationContext {
-  /** Asset-existence probe. Defaults to `public<path>` on disk. */
-  assetExists?: (assetPath: string) => boolean;
+  /** Git-tracked-asset probe. Defaults to `public<path>` membership in the
+   * `git ls-files -z` output, so a dirty-worktree WebP present on disk but
+   * absent from Git fails closed. */
+  assetTracked?: (assetPath: string) => boolean;
 }
 
 export const PRODUCTION_ID_PATTERN = /^teacher-star-1-[0-9a-f]{12}$/;
 export const LEARNER_ID_PREFIX = 'teacher-learner-';
+
+let trackedAssetsCache: ReadonlySet<string> | undefined;
+
+/** Repo-relative paths (e.g. `public/assets/...`) of every Git-tracked file. */
+function loadTrackedAssets(): ReadonlySet<string> {
+  if (trackedAssetsCache === undefined) {
+    const out = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' });
+    trackedAssetsCache = new Set(out.split('\0'));
+  }
+  return trackedAssetsCache;
+}
 
 function assert(
   condition: boolean,
@@ -25,7 +38,7 @@ export function validateLearnerManifest(
   manifest: LearnerManifest,
   context: LearnerManifestValidationContext = {},
 ): void {
-  const { assetExists = (path) => existsOnDisk(path) } = context;
+  const { assetTracked = (path) => loadTrackedAssets().has(`public${path}`) } = context;
 
   assert(manifest.schemaVersion === 1, 'manifest schemaVersion must be 1');
 
@@ -66,8 +79,8 @@ export function validateLearnerManifest(
     );
     assert(row.image.assetPath.startsWith('/assets/vocabulary/'), `row '${row.learnerId}' has non-deployable asset path '${row.image.assetPath}'`);
     assert(
-      assetExists(row.image.assetPath),
-      `row '${row.learnerId}' references missing asset '${row.image.assetPath}'`,
+      assetTracked(row.image.assetPath),
+      `row '${row.learnerId}' references asset '${row.image.assetPath}' that is not a tracked Git file`,
     );
 
     if (row.image.state === 'teacher-mapped') {
@@ -125,8 +138,4 @@ export function assertOptionalFieldsAreNotFabricated(
       }
     }
   }
-}
-
-function existsOnDisk(assetPath: string): boolean {
-  return existsSync(`public${assetPath}`);
 }

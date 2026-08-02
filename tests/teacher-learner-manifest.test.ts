@@ -205,10 +205,20 @@ describe('production learner manifest', () => {
 });
 
 describe('learner manifest validation fails closed', () => {
-  it('rejects a missing asset', () => {
+  it('rejects an asset that is not tracked by Git', () => {
     const m = cloneManifest();
     m.rows[0].image.assetPath = '/assets/vocabulary/teacher-preview/teacher/does-not-exist.webp';
-    expect(() => validateLearnerManifest(m)).toThrow(/missing asset/);
+    expect(() => validateLearnerManifest(m)).toThrow(/not a tracked Git file/);
+  });
+
+  it('rejects an asset that exists on disk but is untracked in a dirty worktree', () => {
+    // A WebP present locally but absent from `git ls-files` must fail closed,
+    // even though `existsSync()` would report it as present.
+    const m = cloneManifest();
+    m.rows[0].image.assetPath = '/assets/vocabulary/teacher-preview/teacher/untracked-locally.webp';
+    expect(() => validateLearnerManifest(m, {
+      assetTracked: () => false,
+    })).toThrow(/not a tracked Git file/);
   });
 
   it('rejects a duplicate learner ID', () => {
@@ -262,7 +272,7 @@ describe('learner manifest validation fails closed', () => {
     expect(small.totals.eligible).toBe(9);
     expect(small.rows).toHaveLength(9);
     expect(() => validateLearnerManifest(small, {
-      assetExists: (path) => path.startsWith('/assets/vocabulary/teacher-preview/'),
+      assetTracked: (path) => path.startsWith('/assets/vocabulary/teacher-preview/'),
     })).not.toThrow();
   });
 });

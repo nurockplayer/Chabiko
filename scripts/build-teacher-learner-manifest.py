@@ -21,6 +21,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 import tempfile
 import unicodedata
 from pathlib import Path
@@ -50,6 +51,22 @@ def load_production_ids() -> tuple[str, ...]:
     if len(records) != 20:
         raise ValueError("Production teacher baseline is not the immutable 20-row contract")
     return tuple(record["id"] for record in records)
+
+
+def load_tracked_files(repo_root: Path = REPO_ROOT) -> frozenset[str]:
+    """Return repo-relative paths of every Git-tracked file (NUL-delimited).
+
+    Uses `git ls-files -z` with a non-shell invocation (no shell injection
+    surface). A clean canonical checkout lists the full committed asset surface;
+    an untracked WebP in a dirty worktree is absent and fails closed.
+    """
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files", "-z"],
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+    return frozenset(result.stdout.split("\x00"))
 
 
 def learner_id(row: dict[str, Any]) -> str:
@@ -84,9 +101,16 @@ def build(
     *,
     production_ids: tuple[str, ...] = (),
     public_root: Path = PUBLIC_ROOT,
+    tracked_files: frozenset[str] | None = None,
     output_path: Path | None = None,
 ) -> dict[str, Any]:
     rows = corpus["rows"]
+
+    # The eligible asset must be both present on disk AND tracked by Git, so a
+    # dirty-worktree WebP (present locally but absent from the deployment
+    # checkout) cannot leak into the manifest.
+    if tracked_files is None:
+        tracked_files = load_tracked_files()
 
     # Cross-check image-state/asset consistency across the whole corpus so a
     # contradictory row fails closed instead of silently slipping through.
@@ -121,8 +145,13 @@ def build(
 
         image = row["image"]
         asset_path = image["assetPath"]
+        repo_relative = f"public{asset_path}"
         if not (public_root / asset_path.lstrip("/")).is_file():
             raise ValueError(f"Row '{row['id']}' references missing asset '{asset_path}'")
+        if repo_relative not in tracked_files:
+            raise ValueError(
+                f"Row '{row['id']}' references asset '{asset_path}' that is not a tracked Git file"
+            )
 
         state = image["state"]
         provenance = image.get("provenance")
@@ -293,9 +322,12 @@ def run_self_tests() -> int:
         (public_root / "assets/vocabulary/teacher-preview/teacher").mkdir(parents=True, exist_ok=True)
         for i in range(1, 100):
             (public_root / "assets/vocabulary/teacher-preview/teacher" / f"synthetic-{i:04d}.webp").write_bytes(b"x")
+        synthetic_tracked = frozenset(
+            f"public/assets/vocabulary/teacher-preview/teacher/synthetic-{i:04d}.webp" for i in range(1, 100)
+        )
 
-        small = build(synthetic(5, 2), production_ids=(), public_root=public_root)
-        large = build(synthetic(17, 3), production_ids=(), public_root=public_root)
+        small = build(synthetic(5, 2), production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
+        large = build(synthetic(17, 3), production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
         check("synthetic corpus counts scale with input (5 eligible / 2 excluded)", small["totals"]["eligible"] == 5 and small["totals"]["excluded"] == 2)
         check("synthetic corpus counts scale with input (17 eligible / 3 excluded)", large["totals"]["eligible"] == 17 and large["totals"]["excluded"] == 3)
 
@@ -304,12 +336,12 @@ def run_self_tests() -> int:
         forward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
                           "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
                           "totals": {"usableRows": 10}, "rows": base_rows},
-                         production_ids=(), public_root=public_root)
+                         production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
         reversed_rows = list(reversed(base_rows))
         backward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
                            "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
                            "totals": {"usableRows": 10}, "rows": reversed_rows},
-                          production_ids=(), public_root=public_root)
+                          production_ids=(), public_root=public_root, tracked_files=synthetic_tracked)
         forward_raw = json.dumps(forward, ensure_ascii=False, indent=2)
         backward_raw = json.dumps(backward, ensure_ascii=False, indent=2)
         check("reversing input row order yields byte-identical output", forward_raw == backward_raw)
@@ -321,7 +353,18 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_asset_rows},
-            production_ids=(), public_root=public_root))
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
+
+        # ── Negative: untracked asset (present on disk but not in Git) ──
+        untracked_rows = synthetic(1, 0)["rows"]
+        untracked_rows[0]["image"]["assetPath"] = "/assets/vocabulary/teacher-preview/teacher/synthetic-0001.webp"
+        # File exists on disk, but the tracked set deliberately omits it.
+        expect_raises("untracked asset fails closed", "not a tracked Git file", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": untracked_rows},
+            production_ids=(), public_root=public_root,
+            tracked_files=synthetic_tracked - {"public/assets/vocabulary/teacher-preview/teacher/synthetic-0001.webp"}))
 
         # ── Negative: duplicate learner ID (same production ID on two rows) ──
         dup_id_rows = synthetic(2, 0)["rows"]
@@ -333,7 +376,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 2}, "rows": dup_id_rows},
-            production_ids=(), public_root=public_root))
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
 
         # ── Negative: duplicate source identity ──
         dup_source_rows = synthetic(2, 0)["rows"]
@@ -343,7 +386,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 2}, "rows": dup_source_rows},
-            production_ids=(), public_root=public_root))
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
 
         # ── Negative: invalid identity ──
         bad_id_rows = synthetic(1, 0)["rows"]
@@ -352,7 +395,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_id_rows},
-            production_ids=(), public_root=public_root))
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
 
         # ── Negative: invalid image state with asset ──
         bad_state_rows = synthetic(1, 0)["rows"]
@@ -361,7 +404,7 @@ def run_self_tests() -> int:
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_state_rows},
-            production_ids=(), public_root=public_root))
+            production_ids=(), public_root=public_root, tracked_files=synthetic_tracked))
 
     # ── Generated output drift: committed manifest must match a fresh run ──
     if not OUTPUT_PATH.is_file():
