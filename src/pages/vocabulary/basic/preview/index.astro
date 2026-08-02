@@ -11,7 +11,6 @@ const posLabels: Record<PreviewPartOfSpeech, string> = {
 };
 const imageLabels: Record<PreviewImageState, string> = {
   'teacher-mapped': '教師提供の対応画像',
-  'teacher-mapped-local': '教師提供（ローカル）',
   'ai-generated': 'AI生成・暫定',
   'ai-pending': 'AI生成待ち',
   'text-only': '文字のみ',
@@ -48,7 +47,6 @@ const browserData = JSON.stringify({
       <dl>
         <div><dt>表示対象</dt><dd>{corpus.totals.usableRows.toLocaleString('ja-JP')} 語</dd></div>
         <div><dt>教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped'].toLocaleString('ja-JP')} 語</dd></div>
-        <div><dt>ローカル教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped-local'].toLocaleString('ja-JP')} 語</dd></div>
         <div><dt>AI画像</dt><dd>{corpus.totals.byImageState['ai-generated'].toLocaleString('ja-JP')} 語</dd></div>
         <div><dt>要確認画像</dt><dd data-inventory-count>0 件</dd></div>
       </dl>
@@ -154,7 +152,7 @@ const browserData = JSON.stringify({
   #preview-root .state { color: var(--c-primary); font-weight: 700; }
   #preview-root .state--ai-generated { color: var(--c-success); }
   #preview-root .state--ambiguous, #preview-root .state--unsuitable { color: var(--c-error); }
-  #preview-root .state--teacher-mapped-local { color: var(--c-primary); font-weight: 700; }
+  #preview-root .state--teacher-mapped { color: var(--c-primary); font-weight: 700; }
   #preview-root .pagination { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
   #preview-root .pagination button { border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-primary); padding: .35rem .6rem; cursor: pointer; font-weight: 700; }
   #preview-root .pagination button:hover { background: var(--c-primary-light); }

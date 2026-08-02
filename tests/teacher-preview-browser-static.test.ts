@@ -88,7 +88,7 @@ describe('static preview filter/pagination (browser side)', () => {
       const imageSelect = root.querySelector<HTMLSelectElement>('[data-filter-image]');
       imageSelect!.innerHTML = '';
       for (const [value, label] of Object.entries({
-        'teacher-mapped': '教師', 'teacher-mapped-local': '教師ローカル', 'ai-generated': 'AI',
+        'teacher-mapped': '教師', 'ai-generated': 'AI',
         'text-only': '文字', ambiguous: '曖昧', unsuitable: '不可', skipped: '除外', 'ai-pending': '待ち',
       })) {
         const option = document.createElement('option');

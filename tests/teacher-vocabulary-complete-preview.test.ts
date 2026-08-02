@@ -45,7 +45,7 @@ describe('complete teacher vocabulary preview', () => {
         expect(row.image.reviewStatus).toBe('draft');
         expect(row.image.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-preview\/ai\//);
       }
-      if (row.image.state === 'teacher-mapped' || row.image.state === 'teacher-mapped-local') {
+      if (row.image.state === 'teacher-mapped') {
         expect(row.image.provenance).toBe('teacher-provided');
       }
     }
@@ -88,7 +88,7 @@ describe('complete teacher vocabulary preview', () => {
     }
   });
 
-  it('keeps the immutable production 19-image contract unchanged and only writes new teacher derivatives locally', () => {
+  it('keeps the immutable production 19-image contract and deploys the 1,131 review-only derivatives', () => {
     const productionRows = preview.rows.filter((row) => row.productionVocabularyId);
     expect(productionRows).toHaveLength(20);
     const productionImages = productionRows.filter((row) => row.image.assetPath);
@@ -97,14 +97,36 @@ describe('complete teacher vocabulary preview', () => {
       expect(row.image.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-core-v1\//);
       expect(existsSync(`public${row.image.assetPath}`)).toBe(true);
     }
-    // The 1,131 newly derived teacher images must point only at the local-only
-    // dev asset directory, never at a tracked production path.
-    for (const row of preview.rows) {
-      if (row.image.state === 'teacher-mapped-local') {
-        expect(row.image.assetPath).toMatch(/^\/assets\/dev\/teacher-vocabulary-preview\/teacher\//);
-      }
+    // All 1,131 review-only teacher derivatives are deployed at the tracked
+    // teacher-preview path and exist on disk.
+    const reviewOnly = preview.rows.filter((row) => row.image.state === 'teacher-mapped' && !row.productionVocabularyId);
+    expect(reviewOnly).toHaveLength(1131);
+    for (const row of reviewOnly) {
+      expect(row.image.assetPath).toMatch(/^\/assets\/vocabulary\/teacher-preview\/teacher\//);
+      expect(existsSync(`public${row.image.assetPath}`)).toBe(true);
     }
-    expect(preview.totals.byImageState['teacher-mapped-local']).toBe(1131);
+    expect(preview.totals.byImageState['teacher-mapped']).toBe(1150);
+    // No obsolete local-only state remains anywhere in the corpus.
+    const states = preview.rows.map((row) => row.image.state);
+    expect(states).not.toContain('teacher-mapped-local');
+    expect('teacher-mapped-local' in preview.totals.byImageState).toBe(false);
+  });
+
+  it('deploys exactly the expected image-bearing and intentional non-image row counts', () => {
+    const imageBearing = preview.rows.filter((row) => row.image.assetPath);
+    expect(imageBearing).toHaveLength(1582);
+    const nonImage = preview.rows.filter((row) => !row.image.assetPath);
+    expect(nonImage).toHaveLength(283);
+    expect(preview.totals.byImageState['text-only']).toBe(155);
+    expect(preview.totals.byImageState['ambiguous']).toBe(104);
+    expect(preview.totals.byImageState['unsuitable']).toBe(24);
+    expect(preview.totals.byImageState['skipped']).toBe(0);
+    // Every image-bearing row references exactly one existing built asset.
+    for (const row of imageBearing) {
+      expect(existsSync(`public${row.image.assetPath}`)).toBe(true);
+    }
+    // Production and AI assets are unchanged and present.
+    expect(preview.rows.filter((row) => row.image.state === 'ai-generated')).toHaveLength(432);
   });
 
   it('keeps filters complete and pagination-safe at the 50-row boundary', () => {
@@ -128,5 +150,7 @@ describe('complete teacher vocabulary preview', () => {
     ].join('\n');
     expect(payloads).not.toContain('/Users/');
     expect(payloads).not.toContain('词汇表/单词表(带图).xlsx');
+    expect(payloads).not.toContain('/assets/dev/');
+    expect(payloads).not.toContain('teacher-mapped-local');
   });
 });

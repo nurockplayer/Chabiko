@@ -71,7 +71,6 @@ const POS_LABELS: Record<PreviewPartOfSpeech, string> = {
 
 const IMAGE_LABELS: Record<PreviewImageState, string> = {
   'teacher-mapped': '教師提供の対応画像',
-  'teacher-mapped-local': '教師提供（ローカル）',
   'ai-generated': 'AI生成・暫定',
   'ai-pending': 'AI生成待ち',
   'text-only': '文字のみ',
@@ -208,11 +207,8 @@ function renderImageCell(row: TeacherVocabularyPreviewRow): HTMLElement {
   if (row.image.width !== undefined) img.width = row.image.width;
   if (row.image.height !== undefined) img.height = row.image.height;
   img.addEventListener('error', () => {
-    // Local teacher assets are only present when the local build step has
-    // run. In production the asset is absent, so the placeholder is shown
-    // instead of a broken public URL.
     cell.classList.add('row__image--missing');
-    cell.replaceChildren(missingLabelSpan('ローカル未生成'));
+    cell.replaceChildren(missingLabelSpan('画像を読み込めません'));
   });
   cell.appendChild(img);
   return cell;
@@ -286,11 +282,6 @@ function renderStateCell(row: TeacherVocabularyPreviewRow): HTMLElement {
         ? 'AI生成'
         : '画像なし';
   cell.appendChild(provenance);
-  if (row.image.state === 'teacher-mapped-local') {
-    const localNote = document.createElement('span');
-    localNote.textContent = 'ローカル専用（未公開）';
-    cell.appendChild(localNote);
-  }
   if (row.missingFields.length > 0) {
     const missing = document.createElement('span');
     missing.textContent = `欠損: ${row.missingFields.map((field) => MISSING_LABELS[field]).join('、')}`;

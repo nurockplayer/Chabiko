@@ -33,12 +33,15 @@ function assertPreviewIntegrity(): void {
     if (row.image.provenance === 'ai-generated' && row.image.state !== 'ai-generated') {
       throw new Error(`Preview row '${row.id}' has inconsistent AI image provenance`);
     }
-    if (
-      row.image.provenance === 'teacher-provided'
-      && row.image.state !== 'teacher-mapped'
-      && row.image.state !== 'teacher-mapped-local'
-    ) {
+    if (row.image.provenance === 'teacher-provided' && row.image.state !== 'teacher-mapped') {
       throw new Error(`Preview row '${row.id}' has inconsistent teacher image provenance`);
+    }
+    if (row.image.state === 'teacher-mapped' && row.image.assetPath) {
+      const isProduction = row.image.assetPath.startsWith('/assets/vocabulary/teacher-core-v1/');
+      const isReviewOnly = row.image.assetPath.startsWith('/assets/vocabulary/teacher-preview/teacher/');
+      if (!isProduction && !isReviewOnly) {
+        throw new Error(`Preview row '${row.id}' references a non-deployable teacher asset path`);
+      }
     }
   }
   if (ids.size !== corpus.totals.usableRows) {

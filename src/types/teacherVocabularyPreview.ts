@@ -6,7 +6,6 @@
  */
 export type PreviewImageState =
   | 'teacher-mapped'
-  | 'teacher-mapped-local'
   | 'ai-generated'
   | 'ai-pending'
   | 'text-only'

@@ -15,11 +15,10 @@ Place accepted built-in image-generation outputs at <ai-source-dir>/<preview-id>
 with a .png, .webp, or .jpg suffix, then rerun --build. The source files are
 only read. Generated preview derivatives are written as deterministic WebP.
 
-Teacher-derived derivatives are written only into the gitignored local-only
-directory (--teacher-asset-dir, default public/assets/dev/...). No teacher
-derivative is ever written under the tracked public assets path; the committed
-corpus records those rows as teacher-mapped-local and the deployed static build
-prunes the local-only directory via astro.config.mjs. AI-generated preview
+Teacher-derived derivatives are written to the tracked public assets path
+(--teacher-asset-dir, default public/assets/vocabulary/teacher-preview/teacher)
+and recorded in the corpus as teacher-mapped, so they are included in the
+deployed static build for remote teacher review. AI-generated preview
 derivatives remain under the tracked public AI assets path.
 
 Integrity invariant: an existing teacher derivative is reused only when its
@@ -617,10 +616,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 label=row["previewId"],
             )
             preview_row["image"] = {
-                "state": "teacher-mapped-local",
+                "state": "teacher-mapped",
                 "provenance": "teacher-provided",
                 "reviewStatus": "draft",
-                "assetPath": f"/assets/dev/teacher-vocabulary-preview/teacher/{row['previewId']}.webp",
+                "assetPath": f"/assets/vocabulary/teacher-preview/teacher/{row['previewId']}.webp",
                 "sourceImageRelativePath": mapping["relativePath"],
                 "sourceChecksumSha256": mapping["sourceChecksumSha256"],
                 "reconciliationEvidence": mapping["evidence"],
@@ -684,7 +683,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "bySourceSheet": dict(Counter(row["sourceSheet"] for row in corpus_rows)),
         "byPartOfSpeech": dict(Counter(row["partOfSpeech"] for row in corpus_rows)),
         "byImageState": {state: by_image_state.get(state, 0) for state in (
-            "teacher-mapped", "teacher-mapped-local", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
+            "teacher-mapped", "ai-generated", "ai-pending", "text-only", "ambiguous", "unsuitable", "skipped"
         )},
     }
     corpus = {
@@ -937,7 +936,7 @@ def main() -> int:
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--inventory", type=Path)
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "data/teacher-vocabulary-preview")
-    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/dev/teacher-vocabulary-preview/teacher")
+    parser.add_argument("--teacher-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/teacher")
     parser.add_argument("--ai-asset-dir", type=Path, default=REPO_ROOT / "public/assets/vocabulary/teacher-preview/ai")
     parser.add_argument("--ai-source-dir", type=Path)
     parser.add_argument(

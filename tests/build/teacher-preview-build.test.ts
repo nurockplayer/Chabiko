@@ -12,6 +12,10 @@ import { resolve, join } from 'path';
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
 
+function webpCount(dir: string): number {
+  return existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.webp')).length : 0;
+}
+
 describe('TeacherPreview — build output (fresh build)', () => {
   let html: string;
 
@@ -46,11 +50,30 @@ describe('TeacherPreview — build output (fresh build)', () => {
     expect(html).not.toContain('unreviewed-development-preview');
   });
 
-  it('deployed output contains none of the local-only teacher derivatives', () => {
+  it('deploys exactly 1,131 review-only teacher derivatives and prunes no preview assets', () => {
     const localTeacherDir = resolve(REPO_ROOT, 'dist/assets/dev/teacher-vocabulary-preview/teacher');
     const trackedTeacherDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/teacher');
+    const aiDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/ai');
+    // The legacy local-only dev path must not reach the deployed build.
     expect(existsSync(localTeacherDir)).toBe(false);
-    expect(existsSync(trackedTeacherDir)).toBe(false);
+    // The tracked teacher derivatives must be present in dist/.
+    expect(webpCount(trackedTeacherDir)).toBe(1131);
+    expect(webpCount(aiDir)).toBe(432);
+  });
+
+  it('reconciles the serialized preview corpus against the built dist/ output', () => {
+    const corpus = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/teacher-vocabulary-preview/preview-corpus.json'), 'utf8'));
+    const imageBearing = corpus.rows.filter((row: { image: { assetPath?: string } }) => row.image.assetPath);
+    // 19 production + 1,131 review-only + 432 AI = 1,582 image-bearing rows.
+    expect(imageBearing).toHaveLength(1582);
+    const missing = imageBearing.filter(
+      (row: { image: { assetPath: string } }) => !existsSync(resolve(REPO_ROOT, 'dist', row.image.assetPath.replace(/^\//, ''))),
+    );
+    expect(missing).toHaveLength(0);
+    // No obsolete local-only state or path reaches the deployed corpus.
+    const states = corpus.rows.map((row: { image: { state: string } }) => row.image.state);
+    expect(states).not.toContain('teacher-mapped-local');
+    expect(JSON.stringify(corpus)).not.toContain('/assets/dev/');
   });
 
   it('no define:vars in built output', () => {
