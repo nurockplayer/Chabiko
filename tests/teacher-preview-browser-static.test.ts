@@ -20,7 +20,7 @@ function createPreviewRoot(): HTMLElement {
   root.innerHTML = `
     <section class="summary">
       <dl>
-        <div><dt>表示対象</dt><dd data-preview-total>0</dd></div>
+        <div><dt>表示対象</dt><dd>0</dd></div>
         <div><dt>要確認画像</dt><dd data-inventory-count>0 件</dd></div>
       </dl>
     </section>
