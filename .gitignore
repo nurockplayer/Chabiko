@@ -15,3 +15,6 @@ test-results/
 .pnpm-store/
 .venv/
 __pycache__/
+
+# Local-only teacher preview images (generated, never committed)
+public/assets/dev/teacher-vocabulary-preview/
