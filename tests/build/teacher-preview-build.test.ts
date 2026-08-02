@@ -6,14 +6,18 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
-const DEV_SOURCE_DIR = resolve(REPO_ROOT, 'public/assets/dev/teacher-vocabulary-preview');
-const SENTINEL_PNG = resolve(DEV_SOURCE_DIR, 'sentinel-source.png');
-const SENTINEL_JSON = resolve(DEV_SOURCE_DIR, 'sentinel-preview.json');
+const DEV_ROOT = resolve(REPO_ROOT, 'public/assets/dev');
+const DEV_SOURCE_DIR = resolve(DEV_ROOT, 'teacher-vocabulary-preview');
+// Unique per-run marker so the test never collides with developer-owned files.
+const TEST_MARKER = `chabiko-preview-test-${process.pid}-${Date.now()}`;
+const SENTINEL_PNG = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-sentinel.png`);
+const SENTINEL_JSON = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-sentinel.json`);
+const PREEXISTING_FIXTURE = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-preexisting.png`);
 
 function webpCount(dir: string): number {
   return existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.webp')).length : 0;
@@ -21,13 +25,23 @@ function webpCount(dir: string): number {
 
 describe('TeacherPreview — build output (fresh build)', () => {
   let html: string;
+  // Directories the test created, deepest first; only these may be removed and
+  // only when empty.
+  const createdDirs: string[] = [];
 
   beforeAll(() => {
-    // Place sentinel local-only teacher source material that must never reach
-    // the deployed build. The build-completion guard must remove it from dist/.
+    // Record which directories did not exist before the test created them.
+    for (const dir of [DEV_SOURCE_DIR, DEV_ROOT]) {
+      if (!existsSync(dir)) createdDirs.push(dir);
+    }
     mkdirSync(DEV_SOURCE_DIR, { recursive: true });
+
+    // Deployment sentinels that must never reach the built dist/.
     writeFileSync(SENTINEL_PNG, Buffer.from('\x89PNG\r\n\x1a\n' + 'x'.repeat(32)));
     writeFileSync(SENTINEL_JSON, JSON.stringify({ dev: 'sentinel', source: 'teacher' }));
+    // A fixture standing in for developer-owned local data that must survive
+    // the build untouched (the guard only prunes dist/, not public/).
+    writeFileSync(PREEXISTING_FIXTURE, Buffer.from('\x89PNG\r\n\x1a\n' + 'y'.repeat(32)));
 
     // Clean any stale dist/
     if (existsSync(resolve(REPO_ROOT, 'dist'))) {
@@ -45,10 +59,26 @@ describe('TeacherPreview — build output (fresh build)', () => {
   });
 
   afterAll(() => {
-    // Failure-safe cleanup of the temporary source sentinels, then build output.
-    if (existsSync(DEV_SOURCE_DIR)) {
-      rmSync(DEV_SOURCE_DIR, { recursive: true, force: true });
+    // Preserve-and-verify the developer-owned fixture, then remove it because
+    // this test created it. Never touch unrelated files.
+    if (existsSync(PREEXISTING_FIXTURE)) {
+      rmSync(PREEXISTING_FIXTURE, { force: true });
     }
+    // Remove only the two deployment sentinels created by this test.
+    for (const sentinel of [SENTINEL_PNG, SENTINEL_JSON]) {
+      if (existsSync(sentinel)) rmSync(sentinel, { force: true });
+    }
+    // Remove directories only when this test created them and they are empty.
+    for (const dir of createdDirs) {
+      if (existsSync(dir)) {
+        try {
+          rmdirSync(dir);
+        } catch {
+          // Directory is not empty — leave it alone.
+        }
+      }
+    }
+    // Clean build output so tests don't depend on stale dist/.
     if (existsSync(resolve(REPO_ROOT, 'dist'))) {
       rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
     }
@@ -63,16 +93,18 @@ describe('TeacherPreview — build output (fresh build)', () => {
   });
 
   it('deploys exactly 1,131 review-only teacher derivatives, prunes no preview assets, and drops dev sentinels', () => {
-    const localTeacherDir = resolve(REPO_ROOT, 'dist/assets/dev/teacher-vocabulary-preview/teacher');
     const devDir = resolve(REPO_ROOT, 'dist/assets/dev');
     const trackedTeacherDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/teacher');
     const aiDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/ai');
     // The legacy local-only dev path must not reach the deployed build, even
     // when sentinel files exist under public/assets/dev/ before the build.
     expect(existsSync(devDir)).toBe(false);
-    expect(existsSync(localTeacherDir)).toBe(false);
-    expect(existsSync(resolve(devDir, 'sentinel-source.png'))).toBe(false);
-    expect(existsSync(resolve(devDir, 'sentinel-preview.json'))).toBe(false);
+    // The two deployment sentinels must not appear in dist/.
+    expect(existsSync(resolve(devDir, SENTINEL_PNG.split('/').pop()!))).toBe(false);
+    expect(existsSync(resolve(devDir, SENTINEL_JSON.split('/').pop()!))).toBe(false);
+    // The developer-owned fixture must survive in public/assets/dev/ (the guard
+    // prunes dist/ only, never the source tree).
+    expect(existsSync(PREEXISTING_FIXTURE)).toBe(true);
     // The tracked teacher derivatives must be present in dist/.
     expect(webpCount(trackedTeacherDir)).toBe(1131);
     expect(webpCount(aiDir)).toBe(432);
