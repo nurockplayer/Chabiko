@@ -23,54 +23,63 @@ const fallbackBranch = homeSource.slice(
 const scriptMatch = homeSource.match(/<script>([\s\S]*?)<\/script>/);
 const homeScript = scriptMatch?.[1] ?? '';
 
-// The new entry section in the lessons branch: from `<section\n  id="basic-vocabulary-entry"`
-// to its closing `</section>`.
-const entryMatch = lessonsBranch.match(
+// The new entry section: from `<section id="basic-vocabulary-entry"` (it is
+// allowed to span lines) to its closing `</section>`.
+const entryMatch = homeSource.match(
   /<section\s+id="basic-vocabulary-entry"[\s\S]*?<\/section>/,
 );
 const entry = entryMatch?.[0] ?? '';
 
 describe('basic-vocabulary home entry', () => {
   describe('existence and placement', () => {
-    it('exists exactly once in the lessons-successful branch', () => {
-      const matches = lessonsBranch.match(/id="basic-vocabulary-entry"/g);
+    it('exists exactly once on the homepage', () => {
+      const matches = homeSource.match(/id="basic-vocabulary-entry"/g);
       expect(matches).toHaveLength(1);
     });
 
-    it('does not exist in the fallback branch', () => {
+    it('is outside and before the lessons.length > 0 conditional in source structure', () => {
+      const conditionalIndex = homeSource.indexOf('lessons.length > 0 ? (');
+      const entryIndex = homeSource.indexOf('id="basic-vocabulary-entry"');
+      expect(conditionalIndex).toBeGreaterThan(0);
+      expect(entryIndex).toBeGreaterThan(0);
+      expect(entryIndex).toBeLessThan(conditionalIndex);
+    });
+
+    it('does not exist inside the lessons-successful branch', () => {
+      expect(lessonsBranch).not.toContain('basic-vocabulary-entry');
+    });
+
+    it('is not inside the fallback branch either — it sits outside the conditional and always renders', () => {
       expect(fallbackBranch).not.toContain('basic-vocabulary-entry');
     });
 
-    it('appears after .progress-footer', () => {
-      const progressFooterIndex = lessonsBranch.indexOf('progress-footer');
-      const entryIndex = lessonsBranch.indexOf('basic-vocabulary-entry');
-      expect(progressFooterIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeGreaterThan(progressFooterIndex);
+    it('appears before .home-journey in the normal rendered path', () => {
+      const entryIndex = homeSource.indexOf('basic-vocabulary-entry');
+      const journeyIndex = homeSource.indexOf('class="home-journey"');
+      expect(journeyIndex).toBeGreaterThan(0);
+      expect(entryIndex).toBeGreaterThan(0);
+      expect(entryIndex).toBeLessThan(journeyIndex);
     });
 
-    it('does not insert anything between #taiwan-travel-path close and .progress-footer', () => {
-      // The closing </section> of #taiwan-travel-path is followed immediately
-      // by whitespace and then <div class="progress-footer">
-      const sectionEnd = lessonsBranch.indexOf('</section>');
-      const progressFooterStart = lessonsBranch.indexOf('<div class="progress-footer">');
-      expect(sectionEnd).toBeGreaterThan(0);
-      expect(progressFooterStart).toBeGreaterThan(sectionEnd);
-
-      const between = lessonsBranch.slice(
-        sectionEnd + '</section>'.length,
-        progressFooterStart,
+    it('appears before .fallback-message in the no-lessons rendered path', () => {
+      // The entry sits outside the lessons conditional (always rendered) and
+      // precedes the fallback branch, so it surfaces above the no-lessons
+      // fallback message whenever the lesson loader returns nothing.
+      const entryIndex = homeSource.indexOf('basic-vocabulary-entry');
+      const conditionalIndex = homeSource.indexOf('lessons.length > 0 ? (');
+      const fallbackMessageIndex = homeSource.indexOf(
+        'class="fallback-message"',
       );
-      // Only whitespace/newlines should exist between them
-      expect(between.trim()).toBe('');
+      expect(entryIndex).toBeGreaterThan(0);
+      expect(conditionalIndex).toBeGreaterThan(0);
+      expect(fallbackMessageIndex).toBeGreaterThan(0);
+      expect(entryIndex).toBeLessThan(conditionalIndex);
+      expect(conditionalIndex).toBeLessThan(fallbackMessageIndex);
     });
 
-    it('keeps #progress-summary and #reset-progress-btn before the new entry', () => {
-      const summaryIndex = lessonsBranch.indexOf('progress-summary');
-      const resetIndex = lessonsBranch.indexOf('reset-progress-btn');
-      const entryIndex = lessonsBranch.indexOf('basic-vocabulary-entry');
-      expect(summaryIndex).toBeGreaterThan(0);
-      expect(resetIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeGreaterThan(resetIndex);
+    it('exactly one anchor links to /vocabulary/basic/', () => {
+      const links = homeSource.match(/href="\/vocabulary\/basic\/"/g);
+      expect(links).toHaveLength(1);
     });
   });
 
@@ -89,8 +98,14 @@ describe('basic-vocabulary home entry', () => {
       );
     });
 
-    it('uses the exact availability text', () => {
+    it('uses the exact count-neutral availability text', () => {
       expect(homeSource).toContain(
+        'イラスト付きの単語を、少しずつ練習できます。',
+      );
+    });
+
+    it('does not contain the stale batch-specific availability sentence', () => {
+      expect(homeSource).not.toContain(
         '☆レベルの最初の単語セットを学習できます。',
       );
     });
@@ -104,7 +119,7 @@ describe('basic-vocabulary home entry', () => {
     });
 
     it('the link is a native anchor with matching text', () => {
-      const linkMatch = lessonsBranch.match(
+      const linkMatch = homeSource.match(
         /<a[^>]*class="basic-vocabulary-entry__link"[^>]*>(.*?)<\/a>/,
       );
       expect(linkMatch).not.toBeNull();
@@ -115,9 +130,9 @@ describe('basic-vocabulary home entry', () => {
 
   describe('section markup and allowed selectors', () => {
     it('is a <section> with id, class and aria-labelledby', () => {
-      expect(lessonsBranch).toContain('id="basic-vocabulary-entry"');
-      expect(lessonsBranch).toContain('class="basic-vocabulary-entry"');
-      expect(lessonsBranch).toContain(
+      expect(homeSource).toContain('id="basic-vocabulary-entry"');
+      expect(homeSource).toContain('class="basic-vocabulary-entry"');
+      expect(homeSource).toContain(
         'aria-labelledby="basic-vocabulary-entry-title"',
       );
     });
@@ -199,10 +214,10 @@ describe('basic-vocabulary home entry', () => {
     });
 
     it('has an aria-labelledby pointing to the h2', () => {
-      expect(lessonsBranch).toContain(
+      expect(homeSource).toContain(
         'aria-labelledby="basic-vocabulary-entry-title"',
       );
-      expect(lessonsBranch).toContain('id="basic-vocabulary-entry-title"');
+      expect(homeSource).toContain('id="basic-vocabulary-entry-title"');
     });
   });
 
@@ -253,8 +268,6 @@ describe('basic-vocabulary home entry', () => {
     });
 
     it('does not reference progress or completion counts', () => {
-      // Only allow "progress" if it appears in a non-count context
-      // The entry content must not mention progress/completion numbers
       expect(entry).not.toMatch(/\d+%|学習済み|完了数|残り\s*\d/);
     });
   });
