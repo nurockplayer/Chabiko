@@ -443,19 +443,25 @@ def run_self_tests() -> int:
         check("regenerated output is byte-identical to committed manifest", expected_raw == actual_raw)
 
     # ── CLI contract: the documented canonical `--write` command must run and
-    #    leave the committed manifest byte-identical. ──
+    #    produce output byte-identical to the committed manifest, without
+    #    touching the committed file during --test. ──
     import subprocess as _sp
     import sys as _sys
-    cli = _sp.run(
-        [_sys.executable, str(Path(__file__).resolve()), "--write"],
-        capture_output=True, text=True, cwd=REPO_ROOT,
-    )
-    if cli.returncode != 0:
-        print(f"  FAIL  canonical --write CLI exited {cli.returncode}: {cli.stderr.strip()}")
-        failures += 1
-    else:
-        after = OUTPUT_PATH.read_text(encoding="utf-8")
-        check("canonical --write CLI leaves the committed manifest byte-identical", after == actual_raw)
+    with tempfile.TemporaryDirectory() as _tmp:
+        _cli_out = Path(_tmp) / "learner-manifest.json"
+        cli = _sp.run(
+            [_sys.executable, str(Path(__file__).resolve()), "--write", "--output", str(_cli_out)],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        if cli.returncode != 0:
+            print(f"  FAIL  canonical --write CLI exited {cli.returncode}: {cli.stderr.strip()}")
+            failures += 1
+        elif not _cli_out.is_file():
+            print("  FAIL  canonical --write CLI produced no output file")
+            failures += 1
+        else:
+            after = _cli_out.read_text(encoding="utf-8")
+            check("canonical --write CLI output is byte-identical to committed manifest", after == actual_raw)
 
     if failures:
         print(f"{failures} self-test failure(s)")
@@ -468,6 +474,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build the #201 production learner manifest")
     parser.add_argument("--test", action="store_true", help="Run read-only self-tests")
     parser.add_argument("--write", action="store_true", help="Write the manifest (default off; explicit write mode)")
+    parser.add_argument("--output", type=Path, default=OUTPUT_PATH, help="Manifest output path (default committed learner-manifest.json)")
     args = parser.parse_args()
 
     if args.test:
@@ -475,8 +482,8 @@ def main() -> int:
     if not args.write:
         parser.error("--write is required; this explicit mode prevents accidental writes")
     corpus = load_corpus()
-    build(corpus, production_ids=load_production_ids(), public_root=PUBLIC_ROOT, output_path=OUTPUT_PATH)
-    payload = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    build(corpus, production_ids=load_production_ids(), public_root=PUBLIC_ROOT, output_path=args.output)
+    payload = json.loads(args.output.read_text(encoding="utf-8"))
     print(json.dumps(payload["totals"], ensure_ascii=False, indent=2))
     return 0
 
