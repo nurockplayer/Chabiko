@@ -1,0 +1,401 @@
+#!/usr/bin/env python3
+"""Build the deterministic production learner manifest for Issue #201.
+
+Reads the committed complete preview corpus
+(data/teacher-vocabulary-preview/preview-corpus.json) and the immutable
+production teacher-vocabulary contract, selects every row with a deployed,
+usable image, freezes a stable learner ID for each, and writes the
+machine-readable production learner manifest.
+
+This ticket only freezes the production eligibility and learner-ID contract.
+It does not wire any learner route, loader, session, or progress.
+
+Usage:
+  uv run --locked python scripts/build-teacher-learner-manifest.py        # write manifest
+  uv run --locked python scripts/build-teacher-learner-manifest.py --test # run self-tests
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import tempfile
+import unicodedata
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+CORPUS_PATH = REPO_ROOT / "data/teacher-vocabulary-preview/preview-corpus.json"
+PRODUCTION_VOCAB_PATH = REPO_ROOT / "data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json"
+OUTPUT_PATH = REPO_ROOT / "data/teacher-vocabulary-preview/learner-manifest.json"
+PUBLIC_ROOT = REPO_ROOT / "public"
+
+VALID_IMAGE_STATES = ("teacher-mapped", "ai-generated")
+KNOWN_NON_IMAGE_STATES = ("text-only", "ambiguous", "unsuitable", "ai-pending", "skipped")
+PRODUCTION_ID_PATTERN = re.compile(r"^teacher-star-1-[0-9a-f]{12}$")
+PREVIEW_ID_PATTERN = re.compile(r"^teacher-preview-[0-9a-f]{16}$")
+LEARNER_ID_PREFIX = "teacher-learner-"
+
+
+def normalize(value: Any) -> str:
+    value = "" if value is None else str(value)
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value).strip())
+
+
+def load_production_ids() -> tuple[str, ...]:
+    data = json.loads(PRODUCTION_VOCAB_PATH.read_text(encoding="utf-8"))
+    records = data["vocabulary"]
+    if len(records) != 20:
+        raise ValueError("Production teacher baseline is not the immutable 20-row contract")
+    return tuple(record["id"] for record in records)
+
+
+def learner_id(row: dict[str, Any]) -> str:
+    """Deterministic, build-stable learner ID from frozen source identity.
+
+    Production rows keep their frozen production ID. Every other row derives an
+    ID from sourceSheet/sourceRow/simplified — never from array position, sort
+    order, randomness, or filesystem traversal order.
+    """
+    production_id = row.get("productionVocabularyId")
+    if production_id:
+        return production_id
+    seed = f"teacher-learner-v1|{row['sourceSheet']}|{row['sourceRow']}|{normalize(row['simplified'])}"
+    return f"{LEARNER_ID_PREFIX}{hashlib.sha256(seed.encode('utf-8')).hexdigest()[:16]}"
+
+
+def is_eligible(row: dict[str, Any]) -> bool:
+    image = row.get("image") or {}
+    return image.get("state") in VALID_IMAGE_STATES and bool(image.get("assetPath"))
+
+
+def atomic_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    raw = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    temp = path.with_suffix(path.suffix + ".tmp")
+    temp.write_text(raw, encoding="utf-8")
+    temp.replace(path)
+
+
+def build(
+    corpus: dict[str, Any],
+    *,
+    production_ids: tuple[str, ...] = (),
+    public_root: Path = PUBLIC_ROOT,
+    output_path: Path | None = None,
+) -> dict[str, Any]:
+    rows = corpus["rows"]
+
+    # Cross-check image-state/asset consistency across the whole corpus so a
+    # contradictory row fails closed instead of silently slipping through.
+    for row in rows:
+        image = row.get("image") or {}
+        state = image.get("state")
+        has_asset = bool(image.get("assetPath"))
+        if state in VALID_IMAGE_STATES and not has_asset:
+            raise ValueError(f"Row '{row['id']}' is {state} but has no assetPath")
+        if has_asset and state not in VALID_IMAGE_STATES:
+            raise ValueError(f"Row '{row['id']}' has an assetPath but an invalid image state '{state}'")
+        if state not in VALID_IMAGE_STATES and state not in KNOWN_NON_IMAGE_STATES:
+            raise ValueError(f"Row '{row['id']}' has an unknown image state '{state}'")
+
+    eligible_rows = [row for row in rows if is_eligible(row)]
+
+    # Fail closed on duplicate learner IDs, duplicate source identities,
+    # missing assets, and invalid identities.
+    learner_ids: set[str] = set()
+    source_keys: set[tuple[str, int]] = set()
+    for row in eligible_rows:
+        identity = learner_id(row)
+        if identity in learner_ids:
+            raise ValueError(f"Duplicate learner ID '{identity}'")
+        learner_ids.add(identity)
+        source_key = (row["sourceSheet"], row["sourceRow"])
+        if source_key in source_keys:
+            raise ValueError(
+                f"Duplicate source identity '{source_key[0]}:{source_key[1]}' for learner '{identity}'"
+            )
+        source_keys.add(source_key)
+
+        image = row["image"]
+        asset_path = image["assetPath"]
+        if not (public_root / asset_path.lstrip("/")).is_file():
+            raise ValueError(f"Row '{row['id']}' references missing asset '{asset_path}'")
+
+        state = image["state"]
+        provenance = image.get("provenance")
+        if state == "teacher-mapped" and provenance != "teacher-provided":
+            raise ValueError(f"Row '{row['id']}' teacher-mapped provenance must be 'teacher-provided'")
+        if state == "ai-generated" and provenance != "ai-generated":
+            raise ValueError(f"Row '{row['id']}' ai-generated provenance must be 'ai-generated'")
+
+        if row.get("productionVocabularyId"):
+            if row["id"] != row["productionVocabularyId"]:
+                raise ValueError(
+                    f"Row '{row['id']}' id must equal its productionVocabularyId"
+                )
+            if not PRODUCTION_ID_PATTERN.match(row["productionVocabularyId"]):
+                raise ValueError(f"Invalid production identity '{row['productionVocabularyId']}'")
+        elif not PREVIEW_ID_PATTERN.match(row["id"]):
+            raise ValueError(f"Invalid preview identity '{row['id']}'")
+
+    # Preserve truthful optional values; keep missing fields absent rather than
+    # fabricating a fallback.
+    def row_payload(row: dict[str, Any]) -> dict[str, Any]:
+        image = row["image"]
+        payload: dict[str, Any] = {
+            "learnerId": learner_id(row),
+            "simplified": row["simplified"],
+            "partOfSpeech": row["partOfSpeech"],
+            "sourceSheet": row["sourceSheet"],
+            "sourceRow": row["sourceRow"],
+        }
+        for field in ("traditional", "pinyin", "japanese", "difficulty"):
+            value = row.get(field)
+            if value:
+                payload[field] = value
+        payload["image"] = {
+            "state": image["state"],
+            "assetPath": image["assetPath"],
+            "provenance": image["provenance"],
+        }
+        return payload
+
+    ordered = sorted(eligible_rows, key=lambda row: (row["sourceSheet"], row["sourceRow"]))
+
+    resolved_production_ids = production_ids or load_production_ids()
+    resolved_production_set = set(resolved_production_ids)
+    eligible_production = {row["id"] for row in eligible_rows if row.get("productionVocabularyId")}
+    excluded_production = sorted(resolved_production_set - eligible_production)
+    preserved = sum(1 for row in eligible_rows if row.get("productionVocabularyId"))
+
+    payload: dict[str, Any] = {
+        "schemaVersion": 1,
+        "source": {
+            "previewCorpusPath": "data/teacher-vocabulary-preview/preview-corpus.json",
+            "previewCorpusSchemaVersion": corpus["schemaVersion"],
+            "workbookSha256": corpus["workbook"]["sha256"],
+            "teacherImagePackageFingerprintSha256": corpus["teacherImagePackage"]["pathSensitiveFingerprintSha256"],
+        },
+        "productionContract": {
+            "count": len(resolved_production_ids),
+            "preserved": preserved,
+            "excluded": len(excluded_production),
+            "ids": list(resolved_production_ids),
+            "excludedIds": excluded_production,
+        },
+        "totals": {
+            "eligible": len(eligible_rows),
+            "excluded": len(rows) - len(eligible_rows),
+            "teacher": sum(1 for row in eligible_rows if row["image"]["state"] == "teacher-mapped"),
+            "ai": sum(1 for row in eligible_rows if row["image"]["state"] == "ai-generated"),
+            "originalProductionIds": len(resolved_production_ids),
+            "preservedProductionIds": preserved,
+        },
+        "rows": [row_payload(row) for row in ordered],
+    }
+
+    if output_path is not None:
+        atomic_json(output_path, payload)
+    return payload
+
+
+def load_corpus() -> dict[str, Any]:
+    return json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
+
+
+def run_self_tests() -> int:
+    failures = 0
+
+    def check(description: str, ok: bool) -> None:
+        nonlocal failures
+        if ok:
+            print(f"  PASS  {description}")
+        else:
+            print(f"  FAIL  {description}")
+            failures += 1
+
+    def expect_raises(description: str, expected: str, fn: Any) -> None:
+        nonlocal failures
+        try:
+            fn()
+            print(f"  FAIL  {description}: expected ValueError containing {expected!r}, none raised")
+            failures += 1
+        except ValueError as exc:
+            if expected in str(exc):
+                print(f"  PASS  {description}")
+            else:
+                print(f"  FAIL  {description}: unexpected message {exc}")
+                failures += 1
+
+    corpus = load_corpus()
+    production_ids = load_production_ids()
+
+    # ── Real corpus reconciliation (regression assertion, not selection logic) ──
+    real = build(corpus, production_ids=production_ids, public_root=PUBLIC_ROOT)
+    check("real corpus yields 1582 eligible rows", real["totals"]["eligible"] == 1582)
+    check("real corpus yields 283 excluded rows", real["totals"]["excluded"] == 283)
+    check("real corpus yields 1150 teacher rows", real["totals"]["teacher"] == 1150)
+    check("real corpus yields 432 AI rows", real["totals"]["ai"] == 432)
+    check("real corpus preserves 19 image-bearing production IDs", real["totals"]["preservedProductionIds"] == 19)
+    check("real corpus learner IDs are unique", len({r["learnerId"] for r in real["rows"]}) == len(real["rows"]))
+    check("real corpus preserves every image-bearing production ID",
+          set(production_ids) & {r["learnerId"] for r in real["rows"]} == set(production_ids) - set(real["productionContract"]["excludedIds"]))
+    check("real corpus excludes exactly the text-only production ID",
+          real["productionContract"]["excludedIds"] == ["teacher-star-1-8b957a100bd4"])
+    check("real corpus production contract freezes all 20 IDs",
+          set(real["productionContract"]["ids"]) == set(production_ids) and len(real["productionContract"]["ids"]) == 20)
+    # Output order is frozen by (sourceSheet, sourceRow), so a row-ordered pass
+    # over the same rows yields the same ordering regardless of input order.
+    reversed_real = build({"schemaVersion": corpus["schemaVersion"], "workbook": corpus["workbook"],
+                            "teacherImagePackage": corpus["teacherImagePackage"],
+                            "totals": corpus["totals"], "rows": list(reversed(corpus["rows"]))},
+                           production_ids=production_ids, public_root=PUBLIC_ROOT)
+    check("real corpus output is independent of input row order",
+          json.dumps(real, ensure_ascii=False) == json.dumps(reversed_real, ensure_ascii=False))
+
+    # ── Synthetic corpus proves selection/counting is derived, not hard-coded ──
+    def synthetic(eligible: int, excluded: int) -> dict[str, Any]:
+        rows: list[dict[str, Any]] = []
+        for i in range(1, eligible + excluded + 1):
+            is_eligible_row = i <= eligible
+            row = {
+                "id": f"teacher-preview-{i:016x}",
+                "simplified": f"詞{i}",
+                "pinyin": "x" if i % 2 else None,
+                "partOfSpeech": "noun",
+                "sourceSheet": "名词1",
+                "sourceRow": i,
+                "reviewStatus": "draft",
+            }
+            if is_eligible_row:
+                row["image"] = {
+                    "state": "teacher-mapped",
+                    "provenance": "teacher-provided",
+                    "assetPath": f"/assets/vocabulary/teacher-preview/teacher/synthetic-{i:04d}.webp",
+                }
+            else:
+                row["image"] = {"state": "text-only", "provenance": None}
+            rows.append(row)
+        return {
+            "schemaVersion": 1,
+            "workbook": {"basename": "synthetic.xlsx", "sha256": "0" * 64, "candidateRows": len(rows)},
+            "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+            "totals": {"usableRows": len(rows)},
+            "rows": rows,
+        }
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_root = Path(tmp)
+        public_root = tmp_root / "public"
+        (public_root / "assets/vocabulary/teacher-preview/teacher").mkdir(parents=True, exist_ok=True)
+        for i in range(1, 100):
+            (public_root / "assets/vocabulary/teacher-preview/teacher" / f"synthetic-{i:04d}.webp").write_bytes(b"x")
+
+        small = build(synthetic(5, 2), production_ids=(), public_root=public_root)
+        large = build(synthetic(17, 3), production_ids=(), public_root=public_root)
+        check("synthetic corpus counts scale with input (5 eligible / 2 excluded)", small["totals"]["eligible"] == 5 and small["totals"]["excluded"] == 2)
+        check("synthetic corpus counts scale with input (17 eligible / 3 excluded)", large["totals"]["eligible"] == 17 and large["totals"]["excluded"] == 3)
+
+        # ── Input-order independence ──
+        base_rows = synthetic(8, 2)["rows"]
+        forward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
+                          "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+                          "totals": {"usableRows": 10}, "rows": base_rows},
+                         production_ids=(), public_root=public_root)
+        reversed_rows = list(reversed(base_rows))
+        backward = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 10},
+                           "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+                           "totals": {"usableRows": 10}, "rows": reversed_rows},
+                          production_ids=(), public_root=public_root)
+        forward_raw = json.dumps(forward, ensure_ascii=False, indent=2)
+        backward_raw = json.dumps(backward, ensure_ascii=False, indent=2)
+        check("reversing input row order yields byte-identical output", forward_raw == backward_raw)
+
+        # ── Negative: missing asset ──
+        bad_asset_rows = synthetic(1, 0)["rows"]
+        bad_asset_rows[0]["image"]["assetPath"] = "/assets/vocabulary/teacher-preview/teacher/nope.webp"
+        expect_raises("missing asset fails closed", "missing asset", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": bad_asset_rows},
+            production_ids=(), public_root=public_root))
+
+        # ── Negative: duplicate learner ID (same production ID on two rows) ──
+        dup_id_rows = synthetic(2, 0)["rows"]
+        dup_id_rows[0]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
+        dup_id_rows[0]["id"] = "teacher-star-1-aaaaaaaaaaaa"
+        dup_id_rows[1]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
+        dup_id_rows[1]["id"] = "teacher-star-1-aaaaaaaaaaaa"
+        expect_raises("duplicate learner ID fails closed", "Duplicate learner ID", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 2}, "rows": dup_id_rows},
+            production_ids=(), public_root=public_root))
+
+        # ── Negative: duplicate source identity ──
+        dup_source_rows = synthetic(2, 0)["rows"]
+        dup_source_rows[1]["sourceSheet"] = dup_source_rows[0]["sourceSheet"]
+        dup_source_rows[1]["sourceRow"] = dup_source_rows[0]["sourceRow"]
+        expect_raises("duplicate source identity fails closed", "Duplicate source identity", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 2}, "rows": dup_source_rows},
+            production_ids=(), public_root=public_root))
+
+        # ── Negative: invalid identity ──
+        bad_id_rows = synthetic(1, 0)["rows"]
+        bad_id_rows[0]["id"] = "not-a-stable-id"
+        expect_raises("invalid identity fails closed", "Invalid preview identity", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": bad_id_rows},
+            production_ids=(), public_root=public_root))
+
+        # ── Negative: invalid image state with asset ──
+        bad_state_rows = synthetic(1, 0)["rows"]
+        bad_state_rows[0]["image"]["state"] = "text-only"
+        expect_raises("invalid image state with asset fails closed", "invalid image state", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": bad_state_rows},
+            production_ids=(), public_root=public_root))
+
+    # ── Generated output drift: committed manifest must match a fresh run ──
+    if not OUTPUT_PATH.is_file():
+        print("  FAIL  committed learner-manifest.json is missing")
+        failures += 1
+    else:
+        expected = build(corpus, production_ids=production_ids, public_root=PUBLIC_ROOT)
+        expected_raw = json.dumps(expected, ensure_ascii=False, indent=2) + "\n"
+        actual_raw = OUTPUT_PATH.read_text(encoding="utf-8")
+        check("regenerated output is byte-identical to committed manifest", expected_raw == actual_raw)
+
+    if failures:
+        print(f"{failures} self-test failure(s)")
+        return 1
+    print("All learner-manifest self-tests PASSED")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Build the #201 production learner manifest")
+    parser.add_argument("--test", action="store_true", help="Run read-only self-tests")
+    parser.add_argument("--write", action="store_true", help="Write the manifest (default off; explicit write mode)")
+    args = parser.parse_args()
+
+    if args.test:
+        return run_self_tests()
+    if not args.write:
+        parser.error("--write is required; this explicit mode prevents accidental writes")
+    corpus = load_corpus()
+    build(corpus, production_ids=load_production_ids(), public_root=PUBLIC_ROOT, output_path=OUTPUT_PATH)
+    payload = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    print(json.dumps(payload["totals"], ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
