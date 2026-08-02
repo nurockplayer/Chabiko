@@ -1,0 +1,174 @@
+---
+import { loadTeacherImageReconciliation, loadTeacherVocabularyPreview } from '../../../../content/loadTeacherVocabularyPreview';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import type { PreviewImageState, PreviewMissingField, PreviewPartOfSpeech } from '../../../../types/teacherVocabularyPreview';
+
+const corpus = loadTeacherVocabularyPreview();
+const reconciliation = loadTeacherImageReconciliation();
+
+const posLabels: Record<PreviewPartOfSpeech, string> = {
+  noun: '名詞', verb: '動詞', adjective: '形容詞', adverb: '副詞',
+};
+const imageLabels: Record<PreviewImageState, string> = {
+  'teacher-mapped': '教師提供の対応画像',
+  'teacher-mapped-local': '教師提供（ローカル）',
+  'ai-generated': 'AI生成・暫定',
+  'ai-pending': 'AI生成待ち',
+  'text-only': '文字のみ',
+  ambiguous: '対応が曖昧',
+  unsuitable: '画像化しない',
+  skipped: '除外',
+};
+const missingLabels: Record<PreviewMissingField, string> = {
+  pinyin: 'ピンイン', japanese: '日本語', traditional: '繁体字', difficulty: '難易度',
+};
+
+const flaggedSources = reconciliation.filter(
+  (item) => item.state === 'ambiguous' || item.state === 'unmatched',
+);
+const browserData = JSON.stringify({
+  rows: corpus.rows,
+  flaggedSources,
+}).replace(/</g, '\\u003c');
+---
+
+<BaseLayout
+  title="語彙コーパス画像プレビュー"
+  description="教師提供ワークブックの完全語彙コーパスを確認する読み取り専用プレビュー"
+  robots="noindex,nofollow"
+>
+  <section class="preview" id="preview-root" aria-labelledby="preview-title">
+    <header class="preview__header">
+      <p class="preview__eyebrow">内部レビュー専用</p>
+      <h1 id="preview-title">語彙コーパス画像プレビュー</h1>
+      <p>学習進捗は保存されません。原簿の空欄は補わず、そのまま表示します。</p>
+    </header>
+
+    <section class="summary" aria-label="コーパス集計">
+      <dl>
+        <div><dt>表示対象</dt><dd>{corpus.totals.usableRows.toLocaleString('ja-JP')} 語</dd></div>
+        <div><dt>教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped'].toLocaleString('ja-JP')} 語</dd></div>
+        <div><dt>ローカル教師画像</dt><dd>{corpus.totals.byImageState['teacher-mapped-local'].toLocaleString('ja-JP')} 語</dd></div>
+        <div><dt>AI画像</dt><dd>{corpus.totals.byImageState['ai-generated'].toLocaleString('ja-JP')} 語</dd></div>
+        <div><dt>要確認画像</dt><dd data-inventory-count>0 件</dd></div>
+      </dl>
+      <p class="summary__source">原簿: {corpus.workbook.basename} / SHA-256: <code>{corpus.workbook.sha256}</code></p>
+    </section>
+
+    <div class="filters" aria-label="語彙プレビューフィルター">
+      <label>
+        シート
+        <select data-filter-sheet>
+          <option value="">すべて</option>
+          {Object.entries(corpus.totals.bySourceSheet).map(([value, count]) => <option value={value}>{value} ({count})</option>)}
+        </select>
+      </label>
+      <label>
+        品詞
+        <select data-filter-pos>
+          <option value="">すべて</option>
+          {Object.entries(posLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+        </select>
+      </label>
+      <label>
+        原簿の難易度
+        <select data-filter-difficulty>
+          <option value="">すべて</option>
+          <option value="☆">☆</option>
+          <option value="☆☆">☆☆</option>
+        </select>
+      </label>
+      <label>
+        画像状態
+        <select data-filter-image>
+          <option value="">すべて</option>
+          {Object.entries(imageLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+        </select>
+      </label>
+      <label>
+        欠損フィールド
+        <select data-filter-missing>
+          <option value="">すべて</option>
+          {Object.entries(missingLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+        </select>
+      </label>
+      <div class="filters__actions">
+        <button type="button" data-filter-reset>リセット</button>
+      </div>
+    </div>
+
+    <p class="result-count" aria-live="polite"><span data-preview-total>0</span> 語中 <span data-preview-range>0</span> 語を表示</p>
+
+    <ol class="rows" data-preview-rows></ol>
+
+    <p class="empty" data-preview-empty hidden>条件に一致する語彙はありません。</p>
+
+    <nav class="pagination" aria-label="プレビューページ" data-pagination></nav>
+
+    <details class="inventory" id="teacher-image-inventory">
+      <summary>曖昧・未対応の教師画像インベントリ (<span data-inventory-count>0</span>)</summary>
+      <ul data-inventory-list></ul>
+    </details>
+  </section>
+
+  <script type="application/json" id="preview-browser-data" set:html={browserData} is:inline></script>
+
+  <script>
+    import { mountPreviewBrowser } from '../../../../client/previewCorpusBrowser';
+    const dataEl = document.getElementById('preview-browser-data');
+    const root = document.getElementById('preview-root');
+    if (dataEl?.textContent && root) {
+      mountPreviewBrowser(root, JSON.parse(dataEl.textContent));
+    }
+  </script>
+</BaseLayout>
+
+<style is:global>
+  #preview-root { display: grid; gap: var(--space-xl); }
+  #preview-root .preview__header { max-width: 46rem; }
+  #preview-root .preview__eyebrow { color: var(--c-text-muted); font-size: .8rem; font-weight: 700; letter-spacing: .08em; }
+  #preview-root h1 { margin: var(--space-xs) 0 var(--space-sm); font-size: clamp(1.65rem, 5vw, 2.4rem); line-height: 1.25; }
+  #preview-root .summary { border: 1px solid var(--c-border); background: var(--c-surface); padding: var(--space-md); }
+  #preview-root .summary dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+  #preview-root .summary dt, #preview-root .row__metadata dt { color: var(--c-text-muted); font-size: .78rem; }
+  #preview-root .summary dd { font-family: var(--font-pinyin); font-size: 1.15rem; font-weight: 700; }
+  #preview-root .summary__source { margin-top: var(--space-md); color: var(--c-text-secondary); font-size: .8rem; overflow-wrap: anywhere; }
+  #preview-root .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); align-items: end; }
+  #preview-root .filters label { display: grid; gap: .2rem; color: var(--c-text-secondary); font-size: .8rem; font-weight: 700; }
+  #preview-root .filters select, #preview-root .filters button { min-height: 2.5rem; border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-text); padding: .35rem .45rem; }
+  #preview-root .filters button { background: var(--c-primary); border-color: var(--c-primary); color: var(--color-on-primary); cursor: pointer; font-weight: 700; }
+  #preview-root .filters__actions { display: flex; gap: var(--space-sm); align-items: center; min-height: 2.5rem; }
+  #preview-root .filters__actions a { font-size: .9rem; }
+  #preview-root .result-count { color: var(--c-text-secondary); font-size: .9rem; }
+  #preview-root .rows { display: grid; gap: var(--space-sm); list-style-position: inside; }
+  #preview-root .row { display: grid; grid-template-columns: 4.25rem minmax(5rem, .65fr) minmax(0, 2.3fr); gap: var(--space-sm); border-bottom: 1px solid var(--c-border); padding: 0 0 var(--space-md); }
+  #preview-root .row__image { width: 4.25rem; height: 4.25rem; object-fit: contain; background: var(--c-primary-light); display: grid; place-items: center; overflow: hidden; }
+  #preview-root .row__image__img { width: 100%; height: 100%; object-fit: contain; }
+  #preview-root .row__image--empty { display: grid; place-items: center; color: var(--c-text-muted); font-size: .7rem; }
+  #preview-root .row__image--missing { display: grid; place-items: center; color: var(--c-text-muted); font-size: .7rem; background: var(--c-surface); border: 1px dashed var(--c-border); }
+  #preview-root .row__word { font-family: var(--font-zh); font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+  #preview-root .row__origin { color: var(--c-text-muted); font-size: .72rem; }
+  #preview-root .row__metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-sm); row-gap: .25rem; }
+  #preview-root .row__metadata dd { font-size: .85rem; line-height: 1.35; }
+  #preview-root .row__state { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: .25rem var(--space-sm); color: var(--c-text-secondary); font-size: .73rem; }
+  #preview-root .state { color: var(--c-primary); font-weight: 700; }
+  #preview-root .state--ai-generated { color: var(--c-success); }
+  #preview-root .state--ambiguous, #preview-root .state--unsuitable { color: var(--c-error); }
+  #preview-root .state--teacher-mapped-local { color: var(--c-primary); font-weight: 700; }
+  #preview-root .pagination { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); }
+  #preview-root .pagination button { border: 1px solid var(--c-border); border-radius: 0; background: var(--c-surface); color: var(--c-primary); padding: .35rem .6rem; cursor: pointer; font-weight: 700; }
+  #preview-root .pagination button:hover { background: var(--c-primary-light); }
+  #preview-root .pagination span { color: var(--c-text-muted); }
+  #preview-root .inventory { border: 1px solid var(--c-border); padding: var(--space-md); }
+  #preview-root .inventory summary { cursor: pointer; font-weight: 700; }
+  #preview-root .inventory ul { display: grid; gap: var(--space-xs); margin: var(--space-md) 0 0; padding-left: 1rem; }
+  #preview-root .inventory li { display: flex; flex-wrap: wrap; gap: var(--space-sm); color: var(--c-text-secondary); font-size: .8rem; }
+  #preview-root .empty { border: 1px solid var(--c-border); padding: var(--space-md); }
+  @media (width >= 720px) {
+    #preview-root .filters { grid-template-columns: repeat(5, minmax(0, 1fr)) auto; }
+    #preview-root .summary dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #preview-root .row { grid-template-columns: 5rem minmax(7rem, .65fr) minmax(20rem, 2.3fr) minmax(10rem, .9fr); }
+    #preview-root .row__image { width: 5rem; height: 5rem; }
+    #preview-root .row__state { grid-column: auto; align-content: start; flex-direction: column; }
+  }
+</style>
