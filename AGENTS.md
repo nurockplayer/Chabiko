@@ -73,6 +73,56 @@ sed -n '1,120p' AGENTS.md
 - 若需要新增依賴、調整架構或擴大功能範圍，先說明理由、替代方案與風險。
 - 高衝擊自動化，例如 auto-close PR、dependency auto-merge，預設禁止，除非使用者明確確認。
 
+## 實作前檢查
+
+這些規則來自 Issue #193 反覆 review 循環的教訓，實作前必須確認，避免同類缺陷重演：
+
+- 移除或收窄任何安全機制（build guard、`.gitignore` 規則、驗證 gate）前，先找出所有**寫入該路徑**的來源與**依賴該機制**的 consumer，確認沒有其他 writer 後才能動手。
+- 變更跨檔契約（rights、state、schema、資料結構）時，列出完整 consumer 清單（資料檔、loader、validator、UI、測試），在同一個變更內全部同步，不得「加檔後續補」。
+- 文件化的 workflow 命令必須由 self-test 斷言其行為本身，不能只測被呼叫的函式。
+- Regression 測試的 cleanup 只刪除自己建立的檔案與目錄，預設工作區含有其他開發者的檔案；不得假設環境是乾淨的。
+
+## Cross-cutting 變更 Gate
+
+影響下列至少兩類領域的 issue 屬於 cross-cutting 變更，實作前必須產出精簡 Impact Map：
+
+- asset 路徑、generated 檔案或 migration；
+- schema、state 或 metadata contract；
+- generator、importer、rebuild script 或 legacy 相容路徑；
+- build、deployment、pruning、`.gitignore` 或 cleanup 行為；
+- rights、license、attribution 或 provenance；
+- 多個 runtime consumer（loader、UI、API、validator、測試）；
+- 大型 committed generated 輸出。
+
+Impact Map 必須凍結下列 surface；任一 surface 未知或仍需產品決策時，停止實作並回報，不得自行猜測：
+
+- 所有寫入受影響路徑／資料／state 的 writer；
+- 所有 consumer 與 validator；
+- legacy writer 與相容路徑；
+- canonical rebuild 或 migration 命令；
+- Git、build、deployment 與 cleanup 邊界；
+- rights／license／provenance 要求；
+- clean 與 dirty 環境的失敗案例。
+
+模板、Requirement → Diff → Test Evidence 矩陣與完整工作流程見 `docs/engineering/cross-cutting-change-playbook.md`。非 cross-cutting 的普通單檔或本地變更不需 Impact Map。
+
+## Cross-cutting 完成回報與最終 Review
+
+Cross-cutting 變更的完成回報必須把每個 frozen requirement 對應到：
+
+- 變更的檔案或產生的 artifact；
+- 對應的 focused test 或 validation；
+- 觀察到的結果。
+
+沒有對應 diff 或證據的 requirement 不得宣稱完成。
+
+最終唯讀 reviewer 必須檢查完整 contract surface，不能只看最後一次 follow-up diff。至少驗證：所有已知 writer 與 consumer、stale path／state／metadata／documentation、canonical rebuild／migration workflow、destructive cleanup 與 dirty 環境行為、rights／license／provenance 一致性、generated 輸出與 committed metadata 的一致性、negative drift test 與 fail-closed 行為。
+
+Reviewer 除立即的 P0／P1 安全或資料遺失中斷外，應完成完整 contract-surface 掃描，並把全部 findings 聚合到一份 review 結果或 follow-up plan。隨後由 coordinator 依 root cause、implementation mechanism、主要修改檔案與 validation boundary 分組：
+
+- 只有符合「Flash 任務大小 Gate」merge criteria（root cause、主要修改檔案、implementation mechanism 與 validation boundary 都相同）的 findings，才可以共享一個 bounded implementation cycle。
+- 無關的 findings 必須在同一 branch／PR 上拆成 separate bounded cycles 依序實作。
+
 ## Flash 任務大小 Gate
 
 本節適用於 DeepSeek v4 Flash 或其他低成本 implementation model，也約束產生實作或 review-fix prompt 的 coordinator。
