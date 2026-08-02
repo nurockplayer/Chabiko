@@ -81,7 +81,11 @@
 - clean 環境：全新 checkout 或受控 fixture 下，canonical workflow 從頭成功。
 - dirty 環境：工作區含其他開發者檔案時，驗證 build、prune、cleanup 與 migration 不會刪除或覆蓋非本變更建立的內容。
 
-cleanup 規則：process 只移除自己建立的檔案；只有當 process 自己建立了該目錄且目錄為空時，才移除該目錄。
+cleanup 規則：
+
+- regression-test cleanup 只移除該 test 建立的檔案與目錄；只有當該 test 自己建立了該目錄且目錄為空時，才移除該目錄。
+- migrations、pruners 與 stale generated artifacts 只有在 ownership 已由明確的 managed path、manifest、metadata 或 allowlist 建立時，才可以刪除；例如 canonical rebuild 記錄其寫入的路徑清單，pruner 只從該清單刪除。
+- 不屬於上述 managed 範圍的開發者檔案必須永遠保留，即使其內容看似重複或陳舊。
 
 ## 7. Rights / provenance 一致性檢查
 

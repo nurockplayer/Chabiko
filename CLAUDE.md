@@ -56,11 +56,13 @@
 Implementation 與必要的本地驗證完成後，才可啟動獨立 `reviewer`。
 
 * 每個 implementation cycle 最多只能有一個 reviewer。
-* reviewer 只審查當前 issue、acceptance criteria 與本次 staged diff。
+* 一般 bounded cycle：reviewer 只審查當前 issue、acceptance criteria 與本次 staged diff。
 * reviewer 不得修改檔案、建立工作項目、派生 agent 或展開 broad repository audit。
 * non-blocking finding 只回報，不得阻止交付或自動觸發額外調查。
 * blocking finding 只做最小修正，執行受影響驗證後再審。
-* re-review 只檢查修正後差異與先前 blocker，不重新全面探索 repository。
+* 一般 bounded cycle 的 re-review 只檢查修正後差異與先前 blocker，不重新全面探索 repository。
+* cross-cutting 變更的 final integration review（依 `AGENTS.md` 的「Cross-cutting 變更 Gate」判斷）改為完整 surface 審查：review 當前 issue、Impact Map、完整 PR diff 與相關 contract surface，並依適用性檢查 writers、consumers、stale assumptions、canonical workflow、cleanup、rights／provenance、generated output 與 negative drift 行為。此例外只適用於 cross-cutting 的 final integration review，不把 routine review 變成 broad repository audit。
+* cross-cutting 變更在 blocker 修正後的 final merge-readiness pass 仍須在最新 head 上確認完整 surface，而非只看最新 patch。
 * reviewer 明確回覆 `No blocking findings.` 後，review loop 立即停止。
 
 只有在 reviewer 回覆 `No blocking findings.`，且必要驗證通過後，才可依使用者指示 commit、push 或建立 PR。
