@@ -17,10 +17,12 @@ Canonical workflow (Issue #185/#193):
   2. Generate the temporary inventory:
      uv run --locked python scripts/build-teacher-image-inventory.py \
        --source-dir /path/to/词汇表 --output /tmp/chabiko_teacher_image_inventory.json
-  3. Build the complete preview:
+  3. Build the complete preview, reusing the accepted AI assets so the 432
+     committed ai-generated rows are preserved rather than regressed:
      uv run --locked python scripts/build-teacher-vocabulary-complete-preview.py \
        --workbook ./单词表(带图).xlsx --source-dir /path/to/词汇表 \
-       --inventory /tmp/chabiko_teacher_image_inventory.json --build
+       --inventory /tmp/chabiko_teacher_image_inventory.json \
+       --reuse-accepted-ai-assets --build
 
 Deterministic fingerprint: for the readable images, sort lines of the form
 "{sha256}  {relative_path}" (two spaces) and take the SHA-256 of the joined
@@ -221,6 +223,23 @@ def run_self_tests() -> int:
         # No absolute paths anywhere in the serialized inventory.
         serialized = json.dumps(inv2, ensure_ascii=False)
         check("inventory contains no absolute paths", tmp not in serialized and "/" + str(root.name) not in serialized)
+
+    # The canonical workflow build command must pass --reuse-accepted-ai-assets
+    # so the 432 committed ai-generated rows are preserved instead of being
+    # regressed to ai-pending (Issue #193 review finding #2).
+    docstring = __doc__ or ""
+    build_lines = [
+        line.strip()
+        for line in docstring.splitlines()
+        if "build-teacher-vocabulary-complete-preview.py" in line
+        and "--inventory" in line
+    ]
+    check("canonical build command is documented", len(build_lines) > 0)
+    canonical_command = " ".join(build_lines)
+    check(
+        "canonical build command preserves accepted AI assets",
+        "--reuse-accepted-ai-assets" in canonical_command,
+    )
 
     if failures:
         print(f"\n{failures} inventory test(s) FAILED")

@@ -29,6 +29,17 @@ The teacher preview route is deployed as public-by-link:
 - Teacher-mapped rows must use the teacher-provided images rather than
   unnecessary AI replacements.
 
+## Rights
+
+The canonical teacher-image package rights are recorded in
+`data/teacher-vocabulary-preview/teacher-image-rights.json`. The product owner
+attested in [Issue #191 comment 5156051087](https://github.com/nurockplayer/Chabiko/issues/191#issuecomment-5156051087)
+that the teacher created the source images and consented to Chabiko publicly
+deploying deterministic derivatives on the public-by-link review/test site,
+with originals kept outside Git, no broader relicensing, and no attribution
+requirement. All 19 production teacher-provided illustration records reference
+this attestation.
+
 ## Consequences
 
 - Teacher review works from any device without local setup.

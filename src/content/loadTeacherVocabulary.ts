@@ -90,8 +90,10 @@ function validateTeacherVocabData(
         throw new Error(`Illustration '${matched.id}' reviewStatus must be 'draft'`);
       }
       const rights = matched.rights as { status: string; source: string; note: string };
-      if (rights.status !== 'pending' || rights.source !== 'teacher-provided') {
-        throw new Error(`Illustration '${matched.id}' rights must be pending/teacher-provided`);
+      // Teacher-provided rights may be pending or approved (approved references
+      // the canonical package rights record / product-owner attestation).
+      if (rights.source !== 'teacher-provided' || (rights.status !== 'pending' && rights.status !== 'approved')) {
+        throw new Error(`Illustration '${matched.id}' rights must be pending/approved with source teacher-provided`);
       }
       if (typeof rights.note !== 'string' || rights.note.trim() === '') {
         throw new Error(`Illustration '${matched.id}' rights.note must be a non-empty string`);

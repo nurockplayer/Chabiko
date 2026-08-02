@@ -558,12 +558,20 @@ def verify_accepted_ai_asset(
     record: dict[str, Any],
     ai_asset_dir: Path,
     seen_paths: dict[str, str],
+    *,
+    prompt_digest: str,
+    generation_revision: int,
+    reference_set_ids: tuple[str, ...],
 ) -> dict[str, Any]:
     """Verify one accepted AI asset fails closed, then return its metadata.
 
     Checks expected preview ID, file existence, WebP readability and
     dimensions, SHA-256 against the accepted record, transparent-corner
-    requirement, and a one-to-one ID/path mapping. Accepted assets are never
+    requirement, a one-to-one ID/path mapping, and that the committed
+    generation provenance (promptDigest, generationRevision, referenceSetIds)
+    still matches the values currently derived from the frozen prompt contract.
+    A drift means the on-disk asset was produced by a different prompt than the
+    current build would claim, so reuse fails closed. Accepted assets are never
     rewritten.
     """
     asset_path = record["assetPath"]
@@ -572,6 +580,22 @@ def verify_accepted_ai_asset(
         raise ValueError(f"Accepted AI preview '{preview_id}' assetPath '{asset_path}' does not match its preview ID")
     if asset_path in seen_paths:
         raise ValueError(f"Accepted AI assetPath '{asset_path}' is shared by previews '{seen_paths[asset_path]}' and '{preview_id}'")
+    # Provenance must agree with the currently frozen prompt contract.
+    if record.get("promptDigest") != prompt_digest:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' promptDigest drift: "
+            f"expected {prompt_digest}, got {record.get('promptDigest')}"
+        )
+    if record.get("generationRevision") != generation_revision:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' generationRevision drift: "
+            f"expected {generation_revision}, got {record.get('generationRevision')}"
+        )
+    if tuple(record.get("referenceSetIds") or ()) != reference_set_ids:
+        raise ValueError(
+            f"Accepted AI preview '{preview_id}' referenceSetIds drift: "
+            f"expected {list(reference_set_ids)}, got {record.get('referenceSetIds')}"
+        )
     destination = ai_asset_dir / expected_filename
     if not destination.is_file():
         raise ValueError(f"Accepted AI asset missing: {destination}")
@@ -725,7 +749,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                             "but none is recorded in the committed preview corpus"
                         )
                     exported = verify_accepted_ai_asset(
-                        row["previewId"], record, ai_asset_dir, seen_ai_paths
+                        row["previewId"], record, ai_asset_dir, seen_ai_paths,
+                        prompt_digest=digest,
+                        generation_revision=generation_revision,
+                        reference_set_ids=STYLE_REFERENCE_SET_IDS,
                     )
                     preview_row["image"] = {
                         "state": "ai-generated", "provenance": "ai-generated", "reviewStatus": "draft",
@@ -1038,22 +1065,34 @@ def run_self_tests() -> int:
 
         # ── Accepted-AI reuse verification (Issue #193 follow-up) ──
         # verify_accepted_ai_asset must accept a matching accepted asset as-is
-        # and fail closed on missing/corrupt/drifted/cross-copied assets.
+        # and fail closed on missing/corrupt/drifted/cross-copied assets or
+        # drifted generation provenance.
         ai_dir = Path(tmp) / "ai"
         ai_dir.mkdir()
         seen_ai: dict[str, str] = {}
         ai_pid = "teacher-preview-accepted-ai"
         ai_asset = ai_dir / f"{ai_pid}.webp"
         ai_asset_bytes = make_transparent_webp(ai_asset)
+        ai_prov = {
+            "promptDigest": "a" * 64,
+            "generationRevision": 2,
+            "referenceSetIds": ["one.png", "two.png", "three.png"],
+        }
         ai_record = {
             "assetPath": f"/assets/vocabulary/teacher-preview/ai/{ai_pid}.webp",
             "assetChecksumSha256": sha256_file(ai_asset),
             "width": 512,
             "height": 512,
+            **ai_prov,
         }
 
         def reuse_accepted() -> dict[str, Any]:
-            return verify_accepted_ai_asset(ai_pid, ai_record, ai_dir, seen_ai)
+            return verify_accepted_ai_asset(
+                ai_pid, ai_record, ai_dir, seen_ai,
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            )
 
         # a. Matching accepted asset is reused as-is (bytes unchanged).
         try:
@@ -1071,12 +1110,17 @@ def run_self_tests() -> int:
         missing_pid = "teacher-preview-missing-ai"
         missing_record = {
             "assetPath": f"/assets/vocabulary/teacher-preview/ai/{missing_pid}.webp",
-            "assetChecksumSha256": "0" * 64, "width": 512, "height": 512,
+            "assetChecksumSha256": "0" * 64, "width": 512, "height": 512, **ai_prov,
         }
         expect_raises(
             "missing accepted AI asset fails closed",
             "missing",
-            lambda: verify_accepted_ai_asset(missing_pid, missing_record, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                missing_pid, missing_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
 
         # c. Checksum drift fails closed (a valid but different WebP at the path).
@@ -1088,7 +1132,12 @@ def run_self_tests() -> int:
         expect_raises(
             "accepted AI checksum drift fails closed",
             "checksum drift",
-            lambda: verify_accepted_ai_asset(ai_pid, ai_record, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                ai_pid, ai_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
         ai_asset.write_bytes(ai_asset_bytes)
 
@@ -1096,7 +1145,12 @@ def run_self_tests() -> int:
         expect_raises(
             "accepted AI dimension drift fails closed",
             "dimension drift",
-            lambda: verify_accepted_ai_asset(ai_pid, {**ai_record, "width": 999}, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "width": 999}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
 
         # e. Non-WebP format at the expected path fails closed.
@@ -1105,12 +1159,17 @@ def run_self_tests() -> int:
             image.save(png_path, format="PNG")
         png_record = {
             "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-png.webp",
-            "assetChecksumSha256": sha256_file(png_path), "width": 512, "height": 512,
+            "assetChecksumSha256": sha256_file(png_path), "width": 512, "height": 512, **ai_prov,
         }
         expect_raises(
             "non-WebP accepted AI asset fails closed",
             "not WebP",
-            lambda: verify_accepted_ai_asset("teacher-preview-png", png_record, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-png", png_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
 
         # f. Transparent-corner regression fails closed (RGB has no alpha channel).
@@ -1119,12 +1178,17 @@ def run_self_tests() -> int:
             image.save(opaque, format="WEBP", lossless=True)
         opaque_record = {
             "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-opaque.webp",
-            "assetChecksumSha256": sha256_file(opaque), "width": 512, "height": 512,
+            "assetChecksumSha256": sha256_file(opaque), "width": 512, "height": 512, **ai_prov,
         }
         expect_raises(
             "accepted AI transparent-corner regression fails closed",
             "alpha",
-            lambda: verify_accepted_ai_asset("teacher-preview-opaque", opaque_record, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-opaque", opaque_record, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
 
         # g. Cross-copied asset fails closed: a record pointing at another
@@ -1134,7 +1198,48 @@ def run_self_tests() -> int:
         expect_raises(
             "accepted AI cross-copied asset fails closed",
             "does not match its preview ID",
-            lambda: verify_accepted_ai_asset("teacher-preview-cross", {**ai_record}, ai_dir, {}),
+            lambda: verify_accepted_ai_asset(
+                "teacher-preview-cross", {**ai_record}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # h. Prompt digest drift fails closed.
+        expect_raises(
+            "accepted AI promptDigest drift fails closed",
+            "promptDigest drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "promptDigest": "b" * 64}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # i. Generation revision drift fails closed.
+        expect_raises(
+            "accepted AI generationRevision drift fails closed",
+            "generationRevision drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "generationRevision": 3}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
+        )
+
+        # j. Reference-set drift fails closed.
+        expect_raises(
+            "accepted AI referenceSetIds drift fails closed",
+            "referenceSetIds drift",
+            lambda: verify_accepted_ai_asset(
+                ai_pid, {**ai_record, "referenceSetIds": ["four.png"]}, ai_dir, {},
+                prompt_digest=ai_prov["promptDigest"],
+                generation_revision=ai_prov["generationRevision"],
+                reference_set_ids=tuple(ai_prov["referenceSetIds"]),
+            ),
         )
 
     if failures:
