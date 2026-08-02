@@ -134,13 +134,22 @@ def atomic_json(path: Path, payload: Any) -> None:
 def build(
     corpus: dict[str, Any],
     *,
-    production_ids: tuple[str, ...] = (),
+    production_ids: tuple[str, ...] | None = None,
     public_root: Path = PUBLIC_ROOT,
     tracked_files: frozenset[str] | None = None,
     committed_blobs: dict[str, str] | None = None,
     output_path: Path | None = None,
 ) -> dict[str, Any]:
     rows = corpus["rows"]
+
+    # Resolve the frozen 20-ID production contract before any row validation so
+    # every production mapping can be checked against the authoritative set
+    # (never the TS validator alone). `None` loads the committed contract; an
+    # explicit `()` means "no production rows expected" and skips enforcement.
+    resolved_production_ids = load_production_ids() if production_ids is None else production_ids
+    frozen_set = set(resolved_production_ids)
+    if len(frozen_set) != len(resolved_production_ids):
+        raise ValueError("Frozen production IDs must be unique")
 
     # The eligible asset must be both present on disk AND tracked by Git, so a
     # dirty-worktree WebP (present locally but absent from the deployment
@@ -163,6 +172,31 @@ def build(
         if state not in VALID_IMAGE_STATES and state not in KNOWN_NON_IMAGE_STATES:
             raise ValueError(f"Row '{row['id']}' has an unknown image state '{state}'")
 
+    # Validate the production contract against the ENTIRE corpus (not only
+    # eligible rows): every row carrying a productionVocabularyId must map to a
+    # frozen ID, keep row.id === productionVocabularyId, and each frozen ID must
+    # appear exactly once — no unknown, missing, or duplicate mappings.
+    production_seen: dict[str, int] = {}
+    for row in rows:
+        production_id = row.get("productionVocabularyId")
+        if production_id is None:
+            continue
+        if production_id not in frozen_set:
+            raise ValueError(f"Production identity '{production_id}' is not in the frozen contract")
+        if not PRODUCTION_ID_PATTERN.match(production_id):
+            raise ValueError(f"Invalid production identity '{production_id}'")
+        if row["id"] != production_id:
+            raise ValueError(f"Row '{row['id']}' id must equal its productionVocabularyId '{production_id}'")
+        if production_id in production_seen:
+            raise ValueError(
+                f"Duplicate production identity '{production_id}' appears on rows "
+                f"'{production_seen[production_id]}' and '{row['id']}'"
+            )
+        production_seen[production_id] = row["id"]
+    missing_production = sorted(frozen_set - set(production_seen))
+    if missing_production:
+        raise ValueError(f"Frozen production IDs missing from corpus: {', '.join(missing_production)}")
+
     eligible_rows = [row for row in rows if is_eligible(row)]
 
     # Fail closed on duplicate learner IDs, duplicate source identities,
@@ -180,6 +214,13 @@ def build(
                 f"Duplicate source identity '{source_key[0]}:{source_key[1]}' for learner '{identity}'"
             )
         source_keys.add(source_key)
+
+        if row.get("productionVocabularyId"):
+            production_id = row["productionVocabularyId"]
+            if not PRODUCTION_ID_PATTERN.match(production_id):
+                raise ValueError(f"Invalid production identity '{production_id}'")
+        elif not PREVIEW_ID_PATTERN.match(row["id"]):
+            raise ValueError(f"Invalid preview identity '{row['id']}'")
 
         image = row["image"]
         asset_path = image["assetPath"]
@@ -220,15 +261,12 @@ def build(
         if state == "ai-generated" and provenance != "ai-generated":
             raise ValueError(f"Row '{row['id']}' ai-generated provenance must be 'ai-generated'")
 
-        if row.get("productionVocabularyId"):
-            if row["id"] != row["productionVocabularyId"]:
-                raise ValueError(
-                    f"Row '{row['id']}' id must equal its productionVocabularyId"
-                )
-            if not PRODUCTION_ID_PATTERN.match(row["productionVocabularyId"]):
-                raise ValueError(f"Invalid production identity '{row['productionVocabularyId']}'")
-        elif not PREVIEW_ID_PATTERN.match(row["id"]):
-            raise ValueError(f"Invalid preview identity '{row['id']}'")
+    # Every frozen production ID must appear exactly once in the corpus. A
+    # missing mapping (frozen ID absent) or an extra mapping (a production ID
+    # that is neither preserved nor excluded) fails closed before writing.
+    missing_production = sorted(frozen_set - set(production_seen))
+    if missing_production:
+        raise ValueError(f"Frozen production IDs missing from corpus: {', '.join(missing_production)}")
 
     # Preserve truthful optional values; keep missing fields absent rather than
     # fabricating a fallback.
@@ -254,7 +292,6 @@ def build(
 
     ordered = sorted(eligible_rows, key=lambda row: (row["sourceSheet"], row["sourceRow"]))
 
-    resolved_production_ids = production_ids or load_production_ids()
     resolved_production_set = set(resolved_production_ids)
     eligible_production = {row["id"] for row in eligible_rows if row.get("productionVocabularyId")}
     excluded_production = sorted(resolved_production_set - eligible_production)
@@ -445,17 +482,17 @@ def run_self_tests() -> int:
             tracked_files=synthetic_tracked,
             committed_blobs={**synthetic_blobs, "public/assets/vocabulary/teacher-preview/teacher/synthetic-0002.webp": git_blob_sha1(b"different")}))
 
-        # ── Negative: duplicate learner ID (same production ID on two rows) ──
+        # ── Negative: duplicate production identity (same frozen ID twice) ──
         dup_id_rows = synthetic(2, 0)["rows"]
         dup_id_rows[0]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
         dup_id_rows[0]["id"] = "teacher-star-1-aaaaaaaaaaaa"
         dup_id_rows[1]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
         dup_id_rows[1]["id"] = "teacher-star-1-aaaaaaaaaaaa"
-        expect_raises("duplicate learner ID fails closed", "Duplicate learner ID", lambda: build(
+        expect_raises("duplicate production identity fails closed", "Duplicate production identity", lambda: build(
             {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 2}, "rows": dup_id_rows},
-            production_ids=(), public_root=public_root, **synthetic_ctx))
+            production_ids=("teacher-star-1-aaaaaaaaaaaa",), public_root=public_root, **synthetic_ctx))
 
         # ── Negative: duplicate source identity ──
         dup_source_rows = synthetic(2, 0)["rows"]
@@ -484,6 +521,41 @@ def run_self_tests() -> int:
              "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
              "totals": {"usableRows": 1}, "rows": bad_state_rows},
             production_ids=(), public_root=public_root, **synthetic_ctx))
+
+        # ── Production-contract negative: well-formed ID outside the frozen set ──
+        unknown_prod = synthetic(1, 0)["rows"]
+        unknown_prod[0]["productionVocabularyId"] = "teacher-star-1-ffffffffffff"
+        unknown_prod[0]["id"] = "teacher-star-1-ffffffffffff"
+        expect_raises("production ID outside frozen set fails closed", "not in the frozen contract", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": unknown_prod},
+            production_ids=("teacher-star-1-aaaaaaaaaaaa",), public_root=public_root, **synthetic_ctx))
+
+        # ── Production-contract negative: a frozen ID missing from the corpus ──
+        missing_prod = synthetic(1, 0)["rows"]
+        missing_prod[0]["productionVocabularyId"] = "teacher-star-1-aaaaaaaaaaaa"
+        missing_prod[0]["id"] = "teacher-star-1-aaaaaaaaaaaa"
+        # Frozen set declares two IDs but the corpus only carries one.
+        expect_raises("missing frozen production ID fails closed", "Frozen production IDs missing from corpus", lambda: build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 1},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 1}, "rows": missing_prod},
+            production_ids=("teacher-star-1-aaaaaaaaaaaa", "teacher-star-1-bbbbbbbbbbbb"),
+            public_root=public_root, **synthetic_ctx))
+
+        # ── Production-contract positive: a full 20-ID corpus passes the scan ──
+        full_ids = tuple(f"teacher-star-1-{i:012x}" for i in range(1, 21))
+        full_rows = synthetic(20, 0)["rows"]
+        for index, row in enumerate(full_rows):
+            row["productionVocabularyId"] = full_ids[index]
+            row["id"] = full_ids[index]
+        full_ok = build({"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 20},
+                         "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+                         "totals": {"usableRows": 20}, "rows": full_rows},
+                        production_ids=full_ids, public_root=public_root, **synthetic_ctx)
+        check("full 20-ID production corpus passes the contract scan",
+              full_ok["productionContract"]["preserved"] == 20 and full_ok["productionContract"]["excluded"] == 0)
 
     # ── Generated output drift: committed manifest must match a fresh run ──
     if not OUTPUT_PATH.is_file():
