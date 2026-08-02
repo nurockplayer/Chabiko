@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "teacher-created",
+  "rightsStatus": "approved",
+  "confirmedAt": "2026-08-02",
+  "evidence": {
+    "type": "product-owner-attestation",
+    "issue": 191,
+    "commentId": 5156051087
+  },
+  "sourcePackageFingerprintWithPaths": "592cee9f32419b4b3571146d72c8710cd9f1edc5e02150c48178011a5a8b1517",
+  "permittedUses": [
+    "deterministic-derivative-generation",
+    "tracking-derivatives-in-chabiko",
+    "public-by-link-review-test-deployment"
+  ],
+  "originalSourcesTracked": false,
+  "broaderRelicensingGranted": false,
+  "attributionRequirement": "not-specified"
+}
