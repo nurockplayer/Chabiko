@@ -296,6 +296,56 @@ describe('canonical bounded session selection — capacity and rotation regressi
     // The window is filled by the ten oldest items in source order.
     expect(second).toEqual(['l1', 'l2', 'l3', 'l4', 'l6', 'l7', 'l8', 'l9', 'l10', 'l11']);
   });
+
+  it('persist-failed merge preserves pending LRU order instead of rewinding it', () => {
+    // 12 learning items, session size 10. Rating l1 moves it to the end, but
+    // the write fails; the next rating (l2) restores writes. The merge must
+    // keep the local pending order (l1 reviewed most recently) rather than
+    // rewinding l1 to the front from the stale storage order.
+    const base = storageWith(
+      Object.fromEntries(
+        Array.from({ length: 12 }, (_, i) => [`l${i + 1}`, entry('learning', 0)]),
+      ),
+    );
+    const data = new Map<string, string>();
+    const snapshot = base.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!;
+    data.set(BASIC_VOCABULARY_PROGRESS_KEY, snapshot);
+    let failWrites = true;
+    const storage: StorageLike = {
+      getItem: (k) => data.get(k) ?? null,
+      setItem: (k, v) => {
+        if (failWrites) throw new Error('quota');
+        data.set(k, v);
+      },
+      removeItem: (k) => {
+        data.delete(k);
+      },
+    };
+    const store = new BasicVocabularyProgressStore(storage);
+    const ids = Array.from({ length: 12 }, (_, i) => `l${i + 1}`);
+
+    // l1 rating fails to persist; l1 stays pending in memory at the end.
+    store.applyRating('l1', 'again');
+    expect(store.getAllItems()['l1']).toEqual(entry('learning', 0));
+
+    // l2 rating now succeeds: syncFromStorage merges storage with pending.
+    failWrites = false;
+    store.applyRating('l2', 'again');
+
+    // Reload the persisted document and verify LRU order: l1, l2 were both
+    // reviewed most recently and must sit at the end.
+    const reloaded = JSON.parse(data.get(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(Object.keys(reloaded.items)).toEqual([
+      'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9', 'l10', 'l11', 'l12', 'l1', 'l2',
+    ]);
+
+    // The next session must not re-review l1 or l2 (both recently reviewed).
+    const fresh = new BasicVocabularyProgressStore(storage);
+    const next = fresh.selectSession(ids, 10);
+    expect(next).not.toContain('l1');
+    expect(next).not.toContain('l2');
+    expect(new Set(next).size).toBe(10);
+  });
 });
 
 describe('canonical bounded session selection — v1 compatibility', () => {
