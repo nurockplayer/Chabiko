@@ -3,10 +3,11 @@
  * Supports the three WebP container formats:
  * - VP8X (extended): canvas width/height at byte offsets 24 and 27
  * - VP8L (lossless): 14-bit width-1/height-1 after the signature byte at 20
- * - VP8 (lossy): 14-bit width/height in the frame tag at byte offset 26
+ * - VP8 (lossy): width/height as separate little-endian 16-bit fields at
+ *   byte offsets 26 and 28, after the keyframe start code at bytes 23–25
  *
- * A non-WebP payload or a truncated header throws so the loader fails closed
- * instead of emitting an asset with unknown dimensions.
+ * A non-WebP payload, a truncated header, or zero dimensions throws so the
+ * loader fails closed instead of emitting an asset with unknown dimensions.
  */
 export function parseWebpDimensions(bytes: Uint8Array): { width: number; height: number } {
   if (bytes.length < 12) throw new Error('WebP payload is truncated');
@@ -32,8 +33,12 @@ export function parseWebpDimensions(bytes: Uint8Array): { width: number; height:
   }
   if (chunk === 'VP8 ') {
     if (bytes.length < 30) throw new Error('VP8 header is truncated');
-    const frame = bytes[26] | (bytes[27] << 8) | (bytes[28] << 16) | (bytes[29] << 24);
-    return { width: frame & 0x3fff, height: (frame >> 14) & 0x3fff };
+    const hasKeyframeStartCode = bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a;
+    if (!hasKeyframeStartCode) throw new Error('VP8 header has an invalid keyframe start code');
+    const width = (bytes[26] | (bytes[27] << 8)) & 0x3fff;
+    const height = (bytes[28] | (bytes[29] << 8)) & 0x3fff;
+    if (width === 0 || height === 0) throw new Error('VP8 image has zero dimensions');
+    return { width, height };
   }
   throw new Error(`unsupported WebP chunk '${chunk}'`);
 }

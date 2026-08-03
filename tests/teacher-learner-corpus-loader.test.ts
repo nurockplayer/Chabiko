@@ -37,12 +37,16 @@ function vp8l(width: number, height: number): Uint8Array {
 }
 
 function vp8(width: number, height: number): Uint8Array {
-  const frame = (width & 0x3fff) | ((height & 0x3fff) << 14);
+  // Real VP8 lossy keyframe chunk data: 3-byte frame tag, keyframe start code
+  // 0x9d 0x01 0x2a, then width/height as separate little-endian 16-bit fields.
   const data = new Uint8Array(10);
-  data[6] = frame & 0xff;
-  data[7] = (frame >> 8) & 0xff;
-  data[8] = (frame >> 16) & 0xff;
-  data[9] = (frame >> 24) & 0xff;
+  data[3] = 0x9d;
+  data[4] = 0x01;
+  data[5] = 0x2a;
+  data[6] = width & 0xff;
+  data[7] = (width >> 8) & 0xff;
+  data[8] = height & 0xff;
+  data[9] = (height >> 8) & 0xff;
   return concat(
     ascii('RIFF'), u32(4 + 8 + 4 + data.length), ascii('WEBP'),
     ascii('VP8 '), u32(data.length), data,
@@ -288,9 +292,23 @@ describe('parseWebpDimensions', () => {
     expect(parseWebpDimensions(vp8l(501, 501))).toEqual({ width: 501, height: 501 });
   });
 
-  it('parses VP8 lossy frame dimensions', async () => {
+  it('parses a standards-valid VP8 lossy keyframe', async () => {
     const { parseWebpDimensions } = await import('../src/content/webpDimensions');
     expect(parseWebpDimensions(vp8(500, 500))).toEqual({ width: 500, height: 500 });
+    expect(parseWebpDimensions(vp8(501, 500))).toEqual({ width: 501, height: 500 });
+  });
+
+  it('fails closed on a VP8 keyframe with an invalid start code', async () => {
+    const { parseWebpDimensions } = await import('../src/content/webpDimensions');
+    const bytes = vp8(500, 500);
+    bytes[23] = 0x00;
+    expect(() => parseWebpDimensions(bytes)).toThrow(/start code/i);
+  });
+
+  it('fails closed on VP8 zero dimensions', async () => {
+    const { parseWebpDimensions } = await import('../src/content/webpDimensions');
+    expect(() => parseWebpDimensions(vp8(0, 500))).toThrow(/zero dimensions/i);
+    expect(() => parseWebpDimensions(vp8(500, 0))).toThrow(/zero dimensions/i);
   });
 
   it('fails closed on non-WebP payloads', async () => {
