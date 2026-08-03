@@ -161,7 +161,11 @@ def _check_script_fields(record: dict, path: str) -> list[str]:
         elif val not in CONTROLLED_STATUSES:
             errors.append(f"{path}.traditionalStatus '{val}' is not a valid status")
 
-    # simplified is optional; rules from #24 content model
+    # simplified is optional; rules from #24 content model.
+    # Explicit null is not the same as absent — omit the key instead.
+    if "simplified" in record and record["simplified"] is None:
+        errors.append(f"{path}: 'simplified' must be omitted, not null; omit the key if simplified is unavailable")
+
     simplified_present = "simplified" in record and record["simplified"] is not None
     simplified_status_present = "simplifiedStatus" in record
 
@@ -2132,11 +2136,15 @@ def run_tests():
         test_vocab_missing_caution_for_taiwan_usage,
         test_vocab_source_required_for_published,
         test_vocab_source_not_required_for_draft,
+        test_vocab_simplified_null_rejected,
+        test_vocab_simplified_null_without_status_rejected,
+        test_vocab_simplified_whitespace_not_null,
         test_vocab_travel_scenario_controlled,
 
         # ─── Sentence ───
         test_sentence_valid,
         test_sentence_missing_required,
+        test_sentence_simplified_null_rejected,
         test_sentence_false_friend_with_caution,
         test_sentence_scenario_controlled,
         test_sentence_source_valid,
@@ -2898,6 +2906,36 @@ def test_vocab_source_not_required_for_draft():
     _assert_no_errors(errs, "vocab_source_draft")
 
 
+def test_vocab_simplified_null_rejected():
+    """Explicit simplified: null in a standard (non-HSK) vocabulary must be rejected."""
+    errs = validate_single(
+        _minimal_vocab(simplified=None, simplifiedStatus="unavailable"),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must be omitted, not null", "vocab_simplified_null")
+
+
+def test_vocab_simplified_null_without_status_rejected():
+    """Explicit simplified: null without simplifiedStatus must also be rejected."""
+    errs = validate_single(
+        _minimal_vocab(simplified=None),
+        "vocabulary",
+    )
+    _assert_has_error(errs, "must be omitted, not null", "vocab_simplified_null_no_status")
+
+
+def test_vocab_simplified_whitespace_not_null():
+    """Whitespace-only simplified string is not null — present-text rules apply."""
+    errs = validate_single(
+        _minimal_vocab(simplified=" ", simplifiedStatus="verified"),
+        "vocabulary",
+    )
+    assert not any("must be omitted, not null" in e for e in errs), (
+        f"Whitespace simplified must not be treated as null, got {errs}"
+    )
+    _assert_no_errors(errs, "vocab_simplified_whitespace")
+
+
 # ─── Sentence tests ────────────────────────────────────────────────────────
 
 def _minimal_sentence(**overrides):
@@ -2922,6 +2960,15 @@ def test_sentence_valid():
 def test_sentence_missing_required():
     errs = validate_single({"id": "sentence-001"}, "sentence")
     _assert_has_error(errs, "required field", "sentence_missing")
+
+
+def test_sentence_simplified_null_rejected():
+    """Explicit simplified: null in a standard sentence must be rejected."""
+    errs = validate_single(
+        _minimal_sentence(simplified=None, simplifiedStatus="unavailable"),
+        "sentence",
+    )
+    _assert_has_error(errs, "must be omitted, not null", "sentence_simplified_null")
 
 
 def test_sentence_false_friend_with_caution():
