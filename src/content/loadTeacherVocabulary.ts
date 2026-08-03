@@ -1,6 +1,10 @@
 import type { Illustration } from '../types/illustration';
 import type { TeacherVocabularyType } from '../types/vocabulary';
 
+// Legacy batch-01 compatibility adapter: preserves the original 20-item
+// teacher-vocabulary contract for callers not yet migrated by #205. The
+// canonical full learner corpus is loadProductionLearnerCorpus (Issue #202);
+// this module is no longer a complete production corpus source of truth.
 // Static imports for production data
 import vocabData from '../../data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
 import illData from '../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
