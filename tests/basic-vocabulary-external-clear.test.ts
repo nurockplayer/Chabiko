@@ -7,22 +7,14 @@ import {
   BASIC_VOCABULARY_PROGRESS_KEY,
 } from '../src/domain/basicVocabularyProgress';
 import type { StorageLike } from '../src/lib/progress';
+import { createSessionRoot, SESSION_IDS } from './helpers/basicVocabularyTestData';
 
-const REAL_IDS = [
-  'teacher-star-1-37e0eb213f0f',
-  'teacher-star-1-a66948a76fda',
-  'teacher-star-1-8b957a100bd4',
-] as const;
+const REAL_IDS = SESSION_IDS;
 
 const sessionCleanups = new Set<() => void>();
 
 function rootWith(): HTMLElement {
-  const root = document.createElement('section');
-  root.dataset.basicVocabularyIds = JSON.stringify([...REAL_IDS]);
-  root.innerHTML =
-    '<p data-summary></p><p data-progress aria-live="polite"></p><div data-card></div><button data-action="reset">reset</button>';
-  document.body.append(root);
-  return root;
+  return createSessionRoot([...REAL_IDS]);
 }
 
 function initialize(root: HTMLElement): void {

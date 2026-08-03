@@ -6,30 +6,24 @@ import { initBasicVocabularySession } from '../src/client/basicVocabularySession
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
 } from '../src/domain/basicVocabularyProgress';
+import { createSessionRoot, SESSION_IDS } from './helpers/basicVocabularyTestData';
 
-// Three real vocabulary items selected from the production batch:
-// - 大家 (illustrated, traditional same as simplified)
-// - 人   (illustrated)
-// - 小姐/女士 (text-only, no traditional)
-const REAL_IDS = [
-  'teacher-star-1-37e0eb213f0f',  // 大家
-  'teacher-star-1-a66948a76fda',  // 人
-  'teacher-star-1-8b957a100bd4',  // 小姐/女士
-] as const;
+// Three real image-bearing vocabulary items selected from the production
+// manifest (the original batch-01 fixture's text-only 小姐/女士 row is excluded
+// from the image-learning corpus by Issue #205):
+// - 大家
+// - 人
+// - 朋友
+const REAL_IDS = SESSION_IDS;
 
 const ITEM_A_SIMPLIFIED = '大家';
 const ITEM_A_PINYIN = 'dà jiā';
 const ITEM_A_JAPANESE = 'みんな';
 const ITEM_B_SIMPLIFIED = '人';
-const ITEM_C_SIMPLIFIED = '小姐/女士';
+const ITEM_C_SIMPLIFIED = '朋友';
 
 function rootWith(ids: readonly string[] = REAL_IDS): HTMLElement {
-  const root = document.createElement('section');
-  root.dataset.basicVocabularyIds = JSON.stringify([...ids]);
-  root.innerHTML =
-    '<p data-summary></p><p data-progress aria-live="polite"></p><div data-card></div><button data-action="reset">reset</button>';
-  document.body.append(root);
-  return root;
+  return createSessionRoot([...ids]);
 }
 
 function reveal(root: HTMLElement): void {
@@ -161,11 +155,7 @@ describe('basic vocabulary session lifecycle', () => {
     expect(() => initBasicVocabularySession(empty)).toThrow('basic vocabulary has no provisional items');
 
     // Use an ID not present in the real loader data
-    const invalidRoot = document.createElement('section');
-    invalidRoot.dataset.basicVocabularyIds = JSON.stringify(['nonexistent-id']);
-    invalidRoot.innerHTML =
-      '<p data-summary></p><p data-progress aria-live="polite"></p><div data-card></div>';
-    document.body.append(invalidRoot);
+    const invalidRoot = createSessionRoot(['nonexistent-id']);
     expect(() => initBasicVocabularySession(invalidRoot)).toThrow(
       "basic vocabulary item 'nonexistent-id' is missing from the loader",
     );
@@ -250,9 +240,9 @@ describe('basic vocabulary session lifecycle', () => {
     // No pinyin for item B either
     expect(html).not.toContain('rén');
     expect(html).not.toContain('人（ひと）');
-    // No pinyin/Japanese for text-only item
-    expect(html).not.toContain('xiǎo jiě');
-    expect(html).not.toContain('～さん（女性）');
+    // No pinyin/Japanese for item C (朋友) either
+    expect(html).not.toContain('péng you');
+    expect(html).not.toContain('友達');
 
     // The data attribute on the root must only contain opaque IDs, no answer values
     const idsAttr = root.dataset.basicVocabularyIds ?? '';
@@ -431,12 +421,8 @@ describe('basic vocabulary session lifecycle', () => {
   });
 
   it('production root uses min(10, count) session size with Issue #116 markup', () => {
-    const root = document.createElement('section');
-    root.dataset.basicVocabularyIds = JSON.stringify([...REAL_IDS]);
-    root.dataset.basicVocabularySessionSize = '10';
-    root.innerHTML =
-      '<p data-summary></p><p data-progress aria-live="polite">0 / 10 語</p><div data-card></div><button data-action="reset">reset</button>';
-    document.body.append(root);
+    const root = createSessionRoot([...REAL_IDS], '10');
+
     initBasicVocabularySession(root);
 
     // Progress shows 0 / 3 (only 3 items in REAL_IDS, capped by count)

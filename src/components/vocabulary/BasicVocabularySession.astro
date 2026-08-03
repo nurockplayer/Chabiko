@@ -1,36 +1,38 @@
 ---
-import type { TeacherVocabularyLearningItem } from '../../content/loadTeacherVocabulary';
+import type { LearnerSessionPayload } from '../../content/learnerSessionPayload';
 
 export interface Props {
-  items: readonly TeacherVocabularyLearningItem[];
+  payload: LearnerSessionPayload;
+  payloadJson: string;
 }
 
-const { items } = Astro.props;
-const initialItem = items[0];
-const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
+const { payload, payloadJson } = Astro.props;
+const { ids, totalCount, first } = payload;
+const sessionSize = Math.min(10, ids.length);
 ---
 
 <section
   class="basic-vocabulary-session"
   data-basic-vocabulary-session
-  data-basic-vocabulary-ids={serializedIds}
-  data-basic-vocabulary-session-size={Math.min(items.length, 10)}
+  data-basic-vocabulary-ids={JSON.stringify(ids)}
+  data-basic-vocabulary-session-size={sessionSize}
 >
-  <p class="basic-vocabulary-summary" data-summary>新規 {items.length}語・学習中 0語・習得済み 0語</p>
-  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {Math.min(items.length, 10)} 語</p>
+  <p class="basic-vocabulary-total" data-total>対象 {totalCount}語</p>
+  <p class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</p>
+  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {sessionSize} 語</p>
   <div class="basic-vocabulary-card" data-card>
     {
-      initialItem.illustration && (
+      first?.illustration && (
         <img
           class="basic-vocabulary-illustration"
-          src={initialItem.illustration.assetPath}
-          width={initialItem.illustration.width}
-          height={initialItem.illustration.height}
-          alt={initialItem.illustration.altJa}
+          src={first.illustration.assetPath}
+          width={first.illustration.width}
+          height={first.illustration.height}
+          alt={first.illustration.altJa}
         />
       )
     }
-    <p class="basic-vocabulary-simplified" lang="zh-Hans">{initialItem.vocabulary.simplified}</p>
+    {first && <p class="basic-vocabulary-simplified" lang="zh-Hans">{first.simplified}</p>}
     <button class="basic-vocabulary-action basic-vocabulary-reveal" data-action="reveal" type="button">
       答えを見る
     </button>
@@ -38,6 +40,7 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
   <button class="basic-vocabulary-action basic-vocabulary-reset" data-action="reset" type="button">
     学習記録をリセット
   </button>
+  <script type="application/json" id="basic-vocabulary-data" set:html={payloadJson} is:inline></script>
 </section>
 
 <script>
@@ -58,6 +61,7 @@ const serializedIds = JSON.stringify(items.map((item) => item.vocabulary.id));
     width: 100%;
   }
 
+  .basic-vocabulary-total,
   .basic-vocabulary-summary {
     margin: 0 0 var(--space-xs);
     color: var(--c-text-secondary);

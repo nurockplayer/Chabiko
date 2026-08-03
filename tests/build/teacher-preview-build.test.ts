@@ -12,6 +12,7 @@ import { resolve, join } from 'path';
 const REPO_ROOT = resolve(__dirname, '../..');
 const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
 const BUILD_PREVIEW_FILE = resolve(REPO_ROOT, 'dist/vocabulary/basic/preview/index.html');
+const BUILD_LEARNER_FILE = resolve(REPO_ROOT, 'dist/vocabulary/basic/index.html');
 const DEV_ROOT = resolve(REPO_ROOT, 'public/assets/dev');
 const DEV_SOURCE_DIR = resolve(DEV_ROOT, 'teacher-vocabulary-preview');
 // Unique per-run marker so the test never collides with developer-owned files.
@@ -141,6 +142,35 @@ describe('TeacherPreview — build output (fresh build)', () => {
     expect(bundleMatch).not.toBeNull();
     const bundle = readFileSync(resolve(REPO_ROOT, `dist${bundleMatch![1]}`), 'utf-8');
     for (const token of OBSOLETE_TOKENS) expect(bundle).not.toContain(token);
+  });
+
+  it('wire the full production corpus into the built learner route', () => {
+    const manifest = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/teacher-vocabulary-preview/learner-manifest.json'), 'utf8'));
+    const eligible = manifest.totals.eligible;
+    expect(eligible).toBeGreaterThan(20);
+
+    expect(existsSync(BUILD_LEARNER_FILE)).toBe(true);
+    const learnerHtml = readFileSync(BUILD_LEARNER_FILE, 'utf-8');
+
+    // The full opaque learner-ID list is present in the route's data attribute.
+    const idsAttr = learnerHtml.match(/data-basic-vocabulary-ids="([^"]*)"/);
+    expect(idsAttr).not.toBeNull();
+    const ids = JSON.parse(idsAttr![1].replace(/&quot;/g, '"'));
+    expect(ids).toHaveLength(eligible);
+    expect(new Set(ids).size).toBe(eligible);
+
+    // Every referenced learner asset exists in the built dist/.
+    const renderPayload = learnerHtml.match(/<script type="application\/json" id="basic-vocabulary-data">([\s\S]*?)<\/script>/);
+    expect(renderPayload).not.toBeNull();
+    const payload = JSON.parse(renderPayload![1]);
+    expect(payload.totalCount).toBe(eligible);
+    for (const assetPath of Object.values(payload.render as Record<string, { assetPath: string }>)) {
+      expect(existsSync(resolve(REPO_ROOT, 'dist', assetPath.assetPath.replace(/^\//, ''))), `missing ${assetPath.assetPath}`).toBe(true);
+    }
+
+    // The route shows the total corpus size separately from the session size.
+    expect(learnerHtml).toContain(`対象 ${eligible}語`);
+    expect(learnerHtml).toContain('data-basic-vocabulary-session-size="10"');
   });
 
   it('no define:vars in built output', () => {
