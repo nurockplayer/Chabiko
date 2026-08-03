@@ -322,7 +322,7 @@ describe('basic-vocabulary home entry', () => {
       const routeSource = readSource(
         '../src/pages/vocabulary/basic/index.astro',
       );
-      expect(routeSource).toContain('loadTeacherVocabulary');
+      expect(routeSource).toContain('buildLearnerSessionPayload');
       expect(routeSource).toContain('イラストで学ぶ基礎中国語');
     });
   });
