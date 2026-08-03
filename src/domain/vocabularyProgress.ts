@@ -82,6 +82,56 @@ export function prioritizeVocabularyIds(
   });
 }
 
+/**
+ * Select a bounded, deterministic session window over the full corpus.
+ *
+ * Fairness rule (Issue #204): the window reserves `ceil(sessionSize / 2)`
+ * slots for unseen (`new`) items, picked in source order, so completed
+ * sessions always move the unseen front of the corpus forward and items
+ * beyond the first session eventually become reachable. `learning`
+ * (`again`/`unsure`) items consume at most
+ * `min(ceil(sessionSize / 2), learningCount)` slots, picked in source order
+ * so difficult items keep near-term review while releasing their slot as soon
+ * as they are known. `learned` items only fill remaining slots. A single
+ * difficult item can therefore never starve the unseen corpus, and repeated
+ * completed sessions eventually reach every eligible item.
+ *
+ * Deterministic: a pure function of the source-ordered corpus and the
+ * progress entries; identical inputs always produce identical output.
+ */
+export function selectSessionItems(
+  ids: readonly string[],
+  entries: Readonly<Record<string, VocabularyProgressEntry>>,
+  sessionSize: number,
+): string[] {
+  if (sessionSize <= 0 || ids.length === 0) return [];
+
+  const learning: string[] = [];
+  const unseen: string[] = [];
+  const learned: string[] = [];
+  for (const id of ids) {
+    const status = entries[id]?.status ?? 'new';
+    if (status === 'learning') learning.push(id);
+    else if (status === 'new') unseen.push(id);
+    else learned.push(id);
+  }
+
+  const selected: string[] = [];
+  const reviewBudget = Math.min(Math.ceil(sessionSize / 2), learning.length);
+  for (let i = 0; i < reviewBudget && selected.length < sessionSize; i++) {
+    selected.push(learning[i]);
+  }
+  for (const id of unseen) {
+    if (selected.length >= sessionSize) break;
+    selected.push(id);
+  }
+  for (const id of learned) {
+    if (selected.length >= sessionSize) break;
+    selected.push(id);
+  }
+  return selected;
+}
+
 // ─── Parsing ──────────────────────────────────────────────────────────────────
 
 function parseDocument(raw: string): VocabularyProgressDocument | null {

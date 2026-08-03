@@ -115,7 +115,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
   const store = new BasicVocabularyProgressStore();
 
-  const ids = store.prioritize(allIds).slice(0, availableCount);
+  const ids = store.selectSession(allIds, availableCount);
   let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
   let hasRatedSinceInit = false;
 
@@ -247,9 +247,8 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   }
 
   function restartSession(): void {
-    const reprioritized = store.prioritize(allIds);
-    const restartIds = reprioritized.slice(0, 10);
-    state = createVocabularySession(restartIds, 10, 'zh-to-ja');
+    const restartIds = store.selectSession(allIds, availableCount);
+    state = createVocabularySession(restartIds, availableCount, 'zh-to-ja');
     hasRatedSinceInit = false;
     renderActive();
     root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();

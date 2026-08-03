@@ -2,6 +2,7 @@ import type { StorageLike } from '../lib/progress';
 import {
   applyRatingToProgress,
   prioritizeVocabularyIds,
+  selectSessionItems,
 } from './vocabularyProgress';
 import type {
   VocabularyProgressEntry,
@@ -182,6 +183,17 @@ export class BasicVocabularyProgressStore {
    */
   prioritize(ids: readonly string[]): string[] {
     return prioritizeVocabularyIds(ids, this.document.items);
+  }
+
+  /**
+   * Select a canonical bounded session window over the full corpus.
+   * Delegate for the shared full-corpus fairness rule (Issue #204):
+   * bounded near-term review of learning items plus an unseen-progress
+   * window, so every eligible item is eventually reachable. Deterministic
+   * for identical corpus and progress state.
+   */
+  selectSession(ids: readonly string[], sessionSize: number): string[] {
+    return selectSessionItems(ids, this.document.items, sessionSize);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
