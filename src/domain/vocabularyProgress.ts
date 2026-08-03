@@ -7,12 +7,6 @@ export type VocabularyProgressStatus = 'new' | 'learning' | 'learned';
 export interface VocabularyProgressEntry {
   readonly status: VocabularyProgressStatus;
   readonly knownStreak: number;
-  /**
-   * Schema extension (Issue #204 learning rotation): the session sequence in
-   * which this item was last reviewed. Absent in legacy v1 documents; a
-   * missing value is treated as never reviewed (most urgent to review).
-   */
-  readonly lastReviewedSeq?: number;
 }
 
 export interface VocabularyProgressDocument {
@@ -96,17 +90,17 @@ export function prioritizeVocabularyIds(
  * when the corpus has fewer — so completed sessions always move the unseen
  * front forward and items beyond the first session eventually become
  * reachable. `learning` (`again`/`unsure`) items fill the remaining slots,
- * selected least-recently-reviewed first (`lastReviewedSeq` ascending, then
- * source order) so a difficult item that keeps being answered `again`/`unsure`
- * is deprioritized for the next window instead of permanently blocking the
- * items behind it. `learned` items only fill slots that neither unseen nor
- * learning can fill, which guarantees a full window whenever eligible IDs
- * suffice. A single difficult item therefore never starves the unseen corpus,
- * and repeated completed sessions eventually reach every eligible item.
+ * selected least-recently-reviewed first (by the persisted items key order,
+ * tie-broken by source order) so a difficult item that keeps being answered
+ * `again`/`unsure` is deprioritized for the next window instead of
+ * permanently blocking the items behind it. `learned` items only fill slots
+ * that neither unseen nor learning can fill, which guarantees a full window
+ * whenever eligible IDs suffice. A single difficult item therefore never
+ * starves the unseen corpus, and repeated completed sessions eventually reach
+ * every eligible item.
  *
- * Deterministic: a pure function of the source-ordered corpus, the progress
- * entries, and the persisted `lastReviewedSeq` state; identical inputs always
- * produce identical output.
+ * Deterministic: a pure function of the source-ordered corpus and the
+ * progress entries; identical inputs always produce identical output.
  */
 export function selectSessionItems(
   ids: readonly string[],
@@ -125,12 +119,20 @@ export function selectSessionItems(
     else learned.push(id);
   }
 
-  // Learning items sorted least-recently-reviewed first; never-reviewed
-  // items (missing lastReviewedSeq) come before any that were reviewed.
+  // Learning items ordered least-recently-reviewed first. The store keeps the
+  // persisted items object in review order (a reviewed item is re-inserted at
+  // the end), so the front of `entries` is the least recently reviewed and the
+  // back is the most recent. Source order breaks ties when key order cannot.
+  const keyIndex = new Map<string, number>();
+  let keyPos = 0;
+  for (const key of Object.keys(entries)) {
+    keyIndex.set(key, keyPos);
+    keyPos++;
+  }
   const orderedLearning = [...learning].sort((a, b) => {
-    const seqA = entries[a]?.lastReviewedSeq ?? -1;
-    const seqB = entries[b]?.lastReviewedSeq ?? -1;
-    if (seqA !== seqB) return seqA - seqB;
+    const idxA = keyIndex.has(a) ? keyIndex.get(a)! : Number.MAX_SAFE_INTEGER;
+    const idxB = keyIndex.has(b) ? keyIndex.get(b)! : Number.MAX_SAFE_INTEGER;
+    if (idxA !== idxB) return idxA - idxB;
     return ids.indexOf(a) - ids.indexOf(b);
   });
 

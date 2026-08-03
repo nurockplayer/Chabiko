@@ -38,9 +38,7 @@ function parseDocument(raw: string): BasicVocabularyProgressDocument | null {
       const status = String(e.status) as VocabularyProgressStatus;
       const knownStreak = Number(e.knownStreak);
       if (!isConsistent(status, knownStreak)) return null;
-      items[id] = 'lastReviewedSeq' in e
-        ? { status, knownStreak, lastReviewedSeq: Number(e.lastReviewedSeq) }
-        : { status, knownStreak };
+      items[id] = { status, knownStreak };
     }
     return { version: 1, items };
   } catch {
@@ -62,14 +60,9 @@ function isValidItemEntry(value: unknown): boolean {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const obj = value as Record<string, unknown>;
   const keys = Object.keys(obj);
-  if (keys.length !== 2 && keys.length !== 3) return false;
+  if (keys.length !== 2) return false;
   if (obj.status !== 'new' && obj.status !== 'learning' && obj.status !== 'learned') return false;
   if (typeof obj.knownStreak !== 'number' || Number.isNaN(obj.knownStreak) || !Number.isInteger(obj.knownStreak) || obj.knownStreak < 0) return false;
-  if (keys.length === 3) {
-    if (!('lastReviewedSeq' in obj)) return false;
-    const seq = obj.lastReviewedSeq;
-    if (typeof seq !== 'number' || Number.isNaN(seq) || !Number.isInteger(seq) || seq < 0) return false;
-  }
   return true;
 }
 
@@ -165,26 +158,24 @@ export class BasicVocabularyProgressStore {
    * Local pending changes (from prior write failures) override storage for
    * their IDs; storage entries for other IDs are still merged in.
    *
-   * Every rating stamps the item with a monotonically increasing
-   * `lastReviewedSeq` (schema extension, Issue #204) so the canonical
-   * selector can rotate least-recently-reviewed learning items first.
+   * The rated item is re-inserted at the end of the items object. The object
+   * key insertion order is the persisted LRU rotation state (Issue #204):
+   * the least-recently-reviewed items sit at the front and are picked first
+   * by the canonical selector. The item shape itself stays `{status,
+   * knownStreak}`, so legacy v1 readers parse documents written here
+   * losslessly.
    */
   applyRating(id: string, rating: 'again' | 'unsure' | 'known'): void {
     this.syncFromStorage();
     const current = this.document.items[id];
-    const base = applyRatingToProgress(current, rating);
-    const next: VocabularyProgressEntry = {
-      ...base,
-      lastReviewedSeq: this.nextReviewSeq(),
-    };
-    // Immutably rebuild the items object preserving insertion order
+    const next = applyRatingToProgress(current, rating);
+    // Immutably rebuild the items object: move the rated item to the end so
+    // the front of the object is the least-recently-reviewed set.
     const nextItems: Record<string, VocabularyProgressEntry> = {};
     for (const [k, v] of Object.entries(this.document.items)) {
-      nextItems[k] = k === id ? next : v;
+      if (k !== id) nextItems[k] = v;
     }
-    if (!(id in this.document.items)) {
-      nextItems[id] = next;
-    }
+    nextItems[id] = next;
     this.document = { version: 1, items: nextItems };
     this.pendingChanges.add(id);
     this.persist();
@@ -264,22 +255,6 @@ export class BasicVocabularyProgressStore {
   }
 
   // ── Internal ──────────────────────────────────────────────────────────────
-
-  /**
-   * Monotonic review sequence for the learning rotation (Issue #204).
-   * The next stamp is one greater than the largest `lastReviewedSeq` already
-   * persisted (across stored items, including cross-tab merges) so ratings in
-   * different tabs never collide and the selector always sees a total order.
-   */
-  private nextReviewSeq(): number {
-    let maxSeq = -1;
-    for (const entry of Object.values(this.document.items)) {
-      if (entry.lastReviewedSeq !== undefined && entry.lastReviewedSeq > maxSeq) {
-        maxSeq = entry.lastReviewedSeq;
-      }
-    }
-    return maxSeq + 1;
-  }
 
   private load(): void {
     try {

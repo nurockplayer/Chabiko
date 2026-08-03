@@ -242,9 +242,9 @@ describe('canonical bounded session selection — capacity and rotation regressi
 
   it('rotates learning review across sessions instead of fixing a source-order prefix', () => {
     // 12 learning items, session size 10. Session 1 rates the first 10 'again'
-    // (they stay learning); the next selection must surface the two
-    // never-reviewed tail items (l11, l12) rather than re-selecting the same
-    // source prefix, because the rated items now carry a higher review seq.
+    // (they stay learning); rating moves them to the end of the items object,
+    // so the next selection surfaces the two never-reviewed tail items (l11,
+    // l12) rather than re-selecting the same source prefix.
     const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
     for (let i = 1; i <= 12; i++) items[`l${i}`] = entry('learning', 0);
     const store = new BasicVocabularyProgressStore(storageWith(items));
@@ -253,7 +253,7 @@ describe('canonical bounded session selection — capacity and rotation regressi
     const first = store.selectSession(ids, 10);
     expect(first).toEqual(Array.from({ length: 10 }, (_, i) => `l${i + 1}`));
 
-    for (const id of first) store.applyRating(id, 'again'); // stay learning, stamp review seq
+    for (const id of first) store.applyRating(id, 'again'); // stay learning, move to end
 
     const second = store.selectSession(ids, 10);
     expect(second).toContain('l11');
@@ -352,8 +352,8 @@ describe('canonical bounded session selection — v1 compatibility', () => {
     expect(store.getAllItems()).toHaveProperty('orphan-x');
   });
 
-  it('loads a legacy v1 document without lastReviewedSeq and treats those items as most urgent to review', () => {
-    // A legacy 20-item v1 document has no lastReviewedSeq on any entry.
+  it('loads a legacy v1 document losslessly (entries keep exactly two fields)', () => {
+    // A legacy 20-item v1 document has exactly {status, knownStreak} per entry.
     const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
     for (let i = 1; i <= 20; i++) {
       items[`id-${i}`] = i % 2 === 0 ? entry('learning', 0) : entry('new', 0);
@@ -362,22 +362,69 @@ describe('canonical bounded session selection — v1 compatibility', () => {
     storage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, progressDoc(items));
     const store = new BasicVocabularyProgressStore(storage);
 
-    // Loaded entries carry no extension field.
     expect(store.getAllItems()).toEqual(items);
 
-    // The never-reviewed learning items (no lastReviewedSeq) are selected
-    // before any that would have been reviewed, preserving deterministic
-    // source order within the legacy document.
     const selected = store.selectSession(idsOf(20), 10);
     expect(new Set(selected).size).toBe(10);
     expect(selected.filter((id) => items[id]?.status === 'learning')).toHaveLength(5);
+  });
 
-    // A rating on the loaded document stamps a review seq without rewriting
-    // the other legacy entries' shape.
-    store.applyRating('id-2', 'again');
-    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
-    expect(stored.items['id-2']).toMatchObject({ status: 'learning', knownStreak: 0, lastReviewedSeq: 0 });
-    expect(stored.items['id-4']).toEqual({ status: 'learning', knownStreak: 0 });
+  it('cross-version: a new writer emits a document a legacy reader parses losslessly', () => {
+    // A legacy reader rejects any item with a third field (old strict parser).
+    // The new writer must therefore never add a field to the item shape; the
+    // LRU rotation state lives in the items key order, which legacy parsers
+    // preserve verbatim.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {
+      'id-1': entry('learning', 0),
+      'id-2': entry('learning', 0),
+      'id-3': entry('new', 0),
+    };
+    const storage = fakeStorage();
+    storage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, progressDoc(items));
+    const store = new BasicVocabularyProgressStore(storage);
+
+    store.applyRating('id-1', 'again');
+    const serialized = storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!;
+
+    // Every item retains exactly the two v1 fields — a legacy reader cannot
+    // reject the document or overwrite it as malformed.
+    const doc = JSON.parse(serialized);
+    for (const entry of Object.values(doc.items)) {
+      expect(Object.keys(entry as object).sort()).toEqual(['knownStreak', 'status']);
+    }
+    // The document root is unchanged too (version + items only).
+    expect(Object.keys(doc).sort()).toEqual(['items', 'version']);
+  });
+
+  it('cross-version: rotation state persists in item key order across reloads', () => {
+    // The LRU rotation lives in the items insertion order: reviewing an item
+    // moves it to the end, so the front-of-object learning items are the
+    // least recently reviewed. Re-loading the same serialized document must
+    // reproduce the same ordering.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 12; i++) items[`l${i}`] = entry('learning', 0);
+    const storage = fakeStorage();
+    storage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, progressDoc(items));
+    const store = new BasicVocabularyProgressStore(storage);
+    const ids = Array.from({ length: 12 }, (_, i) => `l${i + 1}`);
+
+    // Review l1..l10 → they move to the end of the items object.
+    for (const id of Array.from({ length: 10 }, (_, i) => `l${i + 1}`)) {
+      store.applyRating(id, 'again');
+    }
+
+    // Serialize and reload into a fresh store (simulates a reload / new tab).
+    const serialized = storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!;
+    const freshStorage = fakeStorage();
+    freshStorage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, serialized);
+    const freshStore = new BasicVocabularyProgressStore(freshStorage);
+
+    // The two never-reviewed tail items (l11, l12) are now at the front of the
+    // learning order and are picked first.
+    const next = freshStore.selectSession(ids, 10);
+    expect(next).toContain('l11');
+    expect(next).toContain('l12');
+    expect(new Set(next).size).toBe(10);
   });
 
   it('clean storage regression: empty store selects a full unseen window', () => {
