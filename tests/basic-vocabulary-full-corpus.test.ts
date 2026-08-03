@@ -135,6 +135,124 @@ describe('full production corpus integration', () => {
     expect(root.querySelector('img')).not.toBeNull();
   });
 
+  it('a corpus item beyond the original 20 enters a bounded session after progress', () => {
+    // Advance the first 20 items to learned so the next session window starts
+    // at manifest index 20 — the first corpus item beyond the original 20.
+    const payload = buildLearnerSessionPayload();
+    const storage = fakeStorage();
+    const store = new BasicVocabularyProgressStore(storage);
+    const firstTwenty = payload.ids.slice(0, 20);
+    for (const id of firstTwenty) {
+      store.applyRating(id, 'known');
+      store.applyRating(id, 'known');
+    }
+    const window = store.selectSession(payload.ids, 10);
+    // The window advances past the original 20 and every entry is a 21+ item.
+    expect(window.every((id) => payload.ids.indexOf(id) >= 20)).toBe(true);
+    expect(window).toHaveLength(10);
+  });
+
+  it('the client renders a corpus item beyond the original 20 with its image', () => {
+    // Persist learned progress for the first 20 items so the client session
+    // window fills with unseen items at manifest index >= 20; the client must
+    // render the leading 21+ item with its deployed image.
+    const payload = buildLearnerSessionPayload();
+    const storage = fakeStorage();
+    const store = new BasicVocabularyProgressStore(storage);
+    const firstTwenty = payload.ids.slice(0, 20);
+    for (const id of firstTwenty) {
+      store.applyRating(id, 'known');
+      store.applyRating(id, 'known');
+    }
+    const raw = storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!;
+    const root = sessionRoot(payload.ids, { ...payload.render });
+    window.localStorage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, raw);
+
+    initBasicVocabularySession(root);
+    const simplified = root.querySelector('.basic-vocabulary-simplified');
+    expect(simplified).not.toBeNull();
+    const leadingId = payload.ids[20];
+    expect(simplified?.textContent).toBe(
+      manifest.rows.find((r) => r.learnerId === leadingId)!.simplified,
+    );
+    // The reached item carries its deployed image.
+    expect(root.querySelector('img')).not.toBeNull();
+  });
+
+  it('a complete-field item reveals pinyin, japanese, and traditional answers', () => {
+    // teacher-star-1-37e0eb213f0f (大家) carries pinyin, japanese, and
+    // traditional; after reveal the answer container must hold all three.
+    const payload = buildLearnerSessionPayload();
+    const item = payload.ids.find((id) => id === 'teacher-star-1-37e0eb213f0f')!;
+    const root = sessionRoot([item], { ...payload.render });
+    initBasicVocabularySession(root);
+
+    (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
+    const answer = root.querySelector('.basic-vocabulary-answer');
+    expect(answer).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-pinyin')).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-japanese')).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-traditional')).not.toBeNull();
+    // Ratings remain operable after reveal.
+    expect(root.querySelectorAll('[data-action="rate"]')).toHaveLength(3);
+  });
+
+  it('a partial-field item reveals only its truthful optional answers', () => {
+    // teacher-learner-5762bc98cd920b67 (看) has pinyin + japanese but no
+    // traditional; after reveal only those two appear — no fabricated field.
+    const payload = buildLearnerSessionPayload();
+    const item = payload.ids[0]; // 看, index 0
+    const root = sessionRoot([item], { ...payload.render });
+    initBasicVocabularySession(root);
+
+    (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
+    const answer = root.querySelector('.basic-vocabulary-answer');
+    expect(answer).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-pinyin')).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-japanese')).not.toBeNull();
+    expect(answer?.querySelector('.basic-vocabulary-traditional')).toBeNull();
+    // Ratings remain operable after reveal.
+    expect(root.querySelectorAll('[data-action="rate"]')).toHaveLength(3);
+  });
+
+  it('a missing-all-optional item reveals ratings but no blank answer container', () => {
+    // 强调 (index 275) has only simplified + image metadata. After reveal the
+    // answer container must not be created (no empty flex item / blank gap),
+    // while the ratings row still appears and stays operable.
+    const payload = buildLearnerSessionPayload();
+    const item = payload.ids[275];
+    const row = manifest.rows[275];
+    expect(row.pinyin).toBeUndefined();
+    expect(row.japanese).toBeUndefined();
+    expect(row.traditional).toBeUndefined();
+    const root = sessionRoot([item], { ...payload.render });
+    initBasicVocabularySession(root);
+
+    (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
+    const answer = root.querySelector('.basic-vocabulary-answer');
+    expect(answer).toBeNull();
+    const ratings = root.querySelectorAll('[data-action="rate"]');
+    expect(ratings).toHaveLength(3);
+    // Rating an answer-less item still advances the session.
+    (root.querySelector('[data-rating="known"]') as HTMLButtonElement).click();
+    expect(root.textContent).toContain('今回の学習は完了です');
+  });
+
+  it('a synthetic corpus change drives the route total instead of a hard-coded constant', () => {
+    // Route counts must be derived from the loader corpus length, never a
+    // hard-coded 1,582: shrinking the corpus shrinks totalCount/ids/render.
+    const payload = buildLearnerSessionPayload();
+    const syntheticIds = payload.ids.slice(0, 3);
+    const syntheticRender: Record<string, unknown> = {};
+    for (const id of syntheticIds) syntheticRender[id] = payload.render[id];
+
+    const root = sessionRoot(syntheticIds, syntheticRender);
+    initBasicVocabularySession(root);
+    const total = root.querySelector<HTMLElement>('[data-total]');
+    expect(total?.textContent).toContain('3');
+    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 3 語/);
+  });
+
   it('keeps the batch-01 loader contract intact as a legacy adapter', async () => {
     // loadTeacherVocabulary must still return the original 20 production rows
     // for any caller not yet migrated, untouched by this change.

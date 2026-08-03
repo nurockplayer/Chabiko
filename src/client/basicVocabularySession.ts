@@ -211,18 +211,27 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     fragment.append(textElement(document, 'basic-vocabulary-simplified', entry.simplified, 'zh-Hans'));
 
     if (state.answerRevealed) {
-      const answer = document.createElement('div');
-      answer.className = 'basic-vocabulary-answer';
+      // Only build the answer container when at least one truthful optional
+      // answer exists; a row with no pinyin/japanese/traditional must not
+      // render an empty flex item / blank gap after reveal.
+      const answerParts: Array<{ className: string; text: string; lang: string }> = [];
       if (entry.pinyin) {
-        answer.append(textElement(document, 'basic-vocabulary-pinyin', entry.pinyin, 'zh-Latn'));
+        answerParts.push({ className: 'basic-vocabulary-pinyin', text: entry.pinyin, lang: 'zh-Latn' });
       }
       if (entry.japanese) {
-        answer.append(textElement(document, 'basic-vocabulary-japanese', entry.japanese, 'ja'));
+        answerParts.push({ className: 'basic-vocabulary-japanese', text: entry.japanese, lang: 'ja' });
       }
       if (entry.traditional) {
-        answer.append(textElement(document, 'basic-vocabulary-traditional', entry.traditional, 'zh-Hant'));
+        answerParts.push({ className: 'basic-vocabulary-traditional', text: entry.traditional, lang: 'zh-Hant' });
       }
-      fragment.append(answer);
+      if (answerParts.length > 0) {
+        const answer = document.createElement('div');
+        answer.className = 'basic-vocabulary-answer';
+        for (const part of answerParts) {
+          answer.append(textElement(document, part.className, part.text, part.lang));
+        }
+        fragment.append(answer);
+      }
 
       const ratings = document.createElement('div');
       ratings.className = 'basic-vocabulary-ratings';

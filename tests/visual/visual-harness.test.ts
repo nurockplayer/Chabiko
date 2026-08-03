@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { VISUAL_CASES, VISUAL_STATES, VISUAL_THEMES, VISUAL_VIEWPORTS } from './matrix';
+import { LEARNER_ROUTE_CASES } from './learnerRouteCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
 
 const snapshotsDirectory = fileURLToPath(
@@ -63,8 +64,10 @@ describe('visual regression harness contract', () => {
     }
   });
 
-  it('commits exactly one baseline for every matrix case', () => {
-    const expected = VISUAL_CASES.map((visualCase) => visualCase.snapshotName).sort();
+  it('commits exactly one baseline for every matrix and learner-route case', () => {
+    const expectedMatrix = VISUAL_CASES.map((visualCase) => visualCase.snapshotName);
+    const expectedLearner = LEARNER_ROUTE_CASES.map((learnerCase) => learnerCase.snapshotName);
+    const expected = [...expectedMatrix, ...expectedLearner].sort();
     const actual = existsSync(snapshotsDirectory)
       ? readdirSync(snapshotsDirectory)
           .filter((fileName) => fileName.endsWith('.png'))
@@ -81,6 +84,15 @@ describe('visual regression harness contract', () => {
       );
       expect(png.readUInt32BE(16)).toBe(visualCase.viewport.width);
       expect(png.readUInt32BE(20)).toBe(visualCase.viewport.height);
+    }
+
+    for (const learnerCase of LEARNER_ROUTE_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, learnerCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
     }
   });
 
