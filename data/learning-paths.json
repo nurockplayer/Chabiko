@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "learningPaths": [
+    {
+      "id": "taiwan-travel",
+      "labelJa": "台湾旅行で使える中国語",
+      "descriptionJa": "実際に台湾旅行で使うフレーズを、レッスン・単語・会話集で順番に学ぶメインの学習ルート。繁体字を基本表示にします。",
+      "script": "traditional",
+      "destination": "/lessons/",
+      "availabilityReason": "available",
+      "members": [
+        { "type": "lesson", "id": "lesson-001" },
+        { "type": "lesson", "id": "lesson-002" },
+        { "type": "lesson", "id": "lesson-003" },
+        { "type": "vocabulary", "id": "voc-001" },
+        { "type": "vocabulary", "id": "voc-002" },
+        { "type": "vocabulary", "id": "voc-003" },
+        { "type": "vocabulary", "id": "voc-004" },
+        { "type": "phrase", "id": "phrase-001" },
+        { "type": "phrase", "id": "phrase-002" },
+        { "type": "phrase", "id": "phrase-airport-001" },
+        { "type": "phrase", "id": "phrase-airport-002" },
+        { "type": "phrase", "id": "phrase-airport-003" },
+        { "type": "phrase", "id": "phrase-airport-004" },
+        { "type": "phrase", "id": "phrase-airport-005" }
+      ]
+    },
+    {
+      "id": "hsk-vocabulary",
+      "labelJa": "HSK対策",
+      "descriptionJa": "HSK 1級の単語をフラッシュカードで学ぶルート。簡体字を基本表示にします。",
+      "script": "simplified",
+      "destination": "/vocabulary/hsk/",
+      "availabilityReason": "hsk",
+      "hsk": {
+        "levels": [1],
+        "status": "available"
+      },
+      "members": [
+        { "type": "vocabulary", "id": "hsk-001" },
+        { "type": "vocabulary", "id": "hsk-002" },
+        { "type": "vocabulary", "id": "hsk-003" },
+        { "type": "vocabulary", "id": "hsk-004" },
+        { "type": "vocabulary", "id": "hsk-005" }
+      ]
+    },
+    {
+      "id": "kanji-bridge",
+      "labelJa": "漢字ブリッジ",
+      "descriptionJa": "日本語の漢字と中国語の漢字の対応を学ぶルート。繁体字を基本表示にします。このルートはコンテンツとルートが準備できるまで利用できません。",
+      "script": "traditional",
+      "destination": "/vocabulary/kanji-bridge/",
+      "availabilityReason": "unavailable",
+      "members": []
+    }
+  ]
+}

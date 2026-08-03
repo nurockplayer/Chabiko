@@ -106,6 +106,12 @@ VALID_RIGHTS_BASIS = frozenset({"commissioned-for-chabiko"})
 VALID_MODIFICATION_SCOPES = frozenset({"technical-only"})
 VALID_REUSE_OPTIONS = frozenset({"not-granted", "granted"})
 
+# Learning-path contract (#229) controlled vocabularies.
+VALID_SCRIPT_DEFAULTS = frozenset({"traditional", "simplified"})
+VALID_AVAILABILITY_REASONS = frozenset({"available", "unavailable", "hsk"})
+VALID_MEMBER_TYPES = frozenset({"lesson", "vocabulary", "phrase"})
+VALID_HSK_STATUSES = frozenset({"available", "unavailable"})
+
 # ─── Content type schemas ──────────────────────────────────────────────────
 # Each schema defines:
 #   required: fields that must be present (non-None)
@@ -767,10 +773,130 @@ def _check_resource_permission_policy(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_learning_path_script_destination(record: dict, path: str) -> list[str]:
+    """Learning path script default and destination contract (#229)."""
+    errors = []
+    script = record.get("script")
+    if isinstance(script, str) and script not in VALID_SCRIPT_DEFAULTS:
+        errors.append(
+            f"{path}.script '{script}' is invalid; must be one of {sorted(VALID_SCRIPT_DEFAULTS)}"
+        )
+
+    destination = record.get("destination")
+    if destination is not None and not isinstance(destination, str):
+        errors.append(f"{path}.destination must be a string")
+    elif isinstance(destination, str):
+        if not destination.startswith("/"):
+            errors.append(f"{path}.destination '{destination}' must be an absolute route")
+        if not destination.endswith("/"):
+            errors.append(f"{path}.destination '{destination}' must end with '/'")
+
+    return errors
+
+
+def _check_learning_path_members(record: dict, path: str) -> list[str]:
+    """Member references must be typed, ordered, and unique (#229)."""
+    errors = []
+    members = record.get("members")
+    if members is None or isinstance(members, list):
+        if not isinstance(members, list):
+            return errors
+        seen: set = set()
+        for i, member in enumerate(members):
+            member_path = f"{path}.members[{i}]"
+            if not isinstance(member, dict):
+                errors.append(f"{member_path}: expected a JSON object")
+                continue
+            member_type = member.get("type")
+            member_id = member.get("id")
+            if member_type not in VALID_MEMBER_TYPES:
+                errors.append(
+                    f"{member_path}.type '{member_type}' is invalid; must be one of {sorted(VALID_MEMBER_TYPES)}"
+                )
+            if not isinstance(member_id, str) or not member_id:
+                errors.append(f"{member_path}.id must be a non-empty string")
+            for field in member:
+                if field not in ("type", "id"):
+                    errors.append(f"{member_path}: unknown field '{field}'")
+            if member_type in VALID_MEMBER_TYPES and isinstance(member_id, str):
+                key = f"{member_type}:{member_id}"
+                if key in seen:
+                    errors.append(f"{member_path} duplicates member '{key}'")
+                seen.add(key)
+    else:
+        errors.append(f"{path}.members must be a list")
+    return errors
+
+
+def _check_learning_path_hsk(record: dict, path: str) -> list[str]:
+    """HSK availability descriptor contract (#229)."""
+    errors = []
+    reason = record.get("availabilityReason")
+    hsk = record.get("hsk")
+
+    if reason == "hsk":
+        if not isinstance(hsk, dict):
+            errors.append(
+                f"{path}: availabilityReason 'hsk' requires an hsk descriptor"
+            )
+            return errors
+        levels = hsk.get("levels")
+        if not isinstance(levels, list) or not levels:
+            errors.append(f"{path}.hsk.levels must be a non-empty array of levels")
+        elif not all(isinstance(level, int) and level >= 1 for level in levels):
+            errors.append(f"{path}.hsk.levels must contain only positive integers")
+        elif len(set(levels)) != len(levels):
+            errors.append(f"{path}.hsk.levels must not contain duplicates")
+        status = hsk.get("status")
+        if status not in VALID_HSK_STATUSES:
+            errors.append(
+                f"{path}.hsk.status '{status}' is invalid; must be one of {sorted(VALID_HSK_STATUSES)}"
+            )
+        for field in hsk:
+            if field not in ("levels", "status"):
+                errors.append(f"{path}.hsk: unknown field '{field}'")
+    elif hsk is not None:
+        errors.append(
+            f"{path}: hsk descriptor is only valid for availabilityReason 'hsk', got '{reason}'"
+        )
+
+    return errors
+
+
 # ─── Schema definitions ────────────────────────────────────────────────────
 
 def _build_schemas():
     """Define all content type schemas."""
+
+    # Learning Path (#229): repository-controlled path contract.
+    # Paths only reference content IDs; they never duplicate content or
+    # perform runtime script conversion. Deterministic handling of duplicate,
+    # missing, and stale references is enforced by the TypeScript loader
+    # (src/content/loadLearningPaths.ts); this schema validates the shape and
+    # controlled vocabularies of the checked-in data file.
+    SCHEMAS["learning-path"] = {
+        "required": [
+            "id", "labelJa", "descriptionJa", "script", "destination",
+            "availabilityReason", "members",
+        ],
+        "optional": [
+            "hsk",
+        ],
+        "field_types": {
+            "id": str, "labelJa": str, "descriptionJa": str,
+            "script": str, "destination": str, "availabilityReason": str,
+            "members": list, "hsk": dict,
+        },
+        "controlled_fields": {
+            "script": VALID_SCRIPT_DEFAULTS,
+            "availabilityReason": VALID_AVAILABILITY_REASONS,
+        },
+        "extra_validators": [
+            _check_learning_path_script_destination,
+            _check_learning_path_members,
+            _check_learning_path_hsk,
+        ],
+    }
 
     # Lesson
     SCHEMAS["lesson"] = {
@@ -1260,6 +1386,8 @@ COLLECTION_MAP = {
     "practice": "practice",
     "resources": "resource",
     "illustrations": "illustration",
+    "learningPaths": "learning-path",
+    "learning_paths": "learning-path",
 }
 
 
@@ -1345,7 +1473,7 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
         return errors
 
     # Track top-level keys that aren't content collections
-    ALLOWED_TOP_KEYS = {"metadata", "meta", "version"}
+    ALLOWED_TOP_KEYS = {"metadata", "meta", "version", "schemaVersion"}
 
     for key, value in data.items():
         schema_type = COLLECTION_MAP.get(key)
@@ -2089,8 +2217,137 @@ def main():
 # Tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _valid_learning_path(overrides: dict = None) -> dict:
+    record = {
+        "id": "taiwan-travel",
+        "labelJa": "台湾旅行で使える中国語",
+        "descriptionJa": "台湾旅行で使う中国語を学ぶメインルート。",
+        "script": "traditional",
+        "destination": "/lessons/",
+        "availabilityReason": "available",
+        "members": [
+            {"type": "lesson", "id": "lesson-001"},
+            {"type": "vocabulary", "id": "voc-001"},
+            {"type": "phrase", "id": "phrase-001"},
+        ],
+    }
+    if overrides:
+        record.update(overrides)
+    return record
+
+
+def _cli_learning_path_result(record: dict):
+    """Run --check on a learning_paths bundle and return (exit_code, stdout)."""
+    return _cli_check_result({"learning_paths": [record]})
+
+
+def test_learning_path_valid():
+    exit_code, stdout = _cli_learning_path_result(_valid_learning_path())
+    assert exit_code == 0, f"Expected valid learning path to pass: {stdout}"
+
+
+def test_learning_path_missing_required():
+    record = _valid_learning_path()
+    del record["destination"]
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected missing destination to fail"
+    assert "missing required field 'destination'" in stdout
+
+
+def test_learning_path_invalid_script():
+    record = _valid_learning_path({"script": "zh-hant"})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected invalid script to fail"
+    assert "script 'zh-hant' is invalid" in stdout
+
+
+def test_learning_path_destination_must_end_with_slash():
+    record = _valid_learning_path({"destination": "/lessons"})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected non-slash destination to fail"
+    assert "must end with '/'" in stdout
+
+
+def test_learning_path_duplicate_member():
+    record = _valid_learning_path()
+    record["members"].append({"type": "lesson", "id": "lesson-001"})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected duplicate member to fail"
+    assert "duplicates member 'lesson:lesson-001'" in stdout
+
+
+def test_learning_path_invalid_member_type():
+    record = _valid_learning_path({"members": [{"type": "sentence", "id": "x"}]})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected invalid member type to fail"
+    assert "type 'sentence' is invalid" in stdout
+
+
+def test_learning_path_unknown_member_field():
+    record = _valid_learning_path({"members": [{"type": "lesson", "id": "a", "extra": 1}]})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected unknown member field to fail"
+    assert "unknown field 'extra'" in stdout
+
+
+def test_learning_path_hsk_reason_requires_descriptor():
+    record = _valid_learning_path({"availabilityReason": "hsk", "members": []})
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected hsk reason without descriptor to fail"
+    assert "requires an hsk descriptor" in stdout
+
+
+def test_learning_path_hsk_valid():
+    record = _valid_learning_path({
+        "id": "hsk-vocabulary",
+        "script": "simplified",
+        "destination": "/vocabulary/hsk/",
+        "availabilityReason": "hsk",
+        "hsk": {"levels": [1], "status": "available"},
+        "members": [],
+    })
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code == 0, f"Expected valid hsk descriptor to pass: {stdout}"
+
+
+def test_learning_path_hsk_duplicate_levels():
+    record = _valid_learning_path({
+        "id": "hsk-vocabulary",
+        "script": "simplified",
+        "destination": "/vocabulary/hsk/",
+        "availabilityReason": "hsk",
+        "hsk": {"levels": [1, 1], "status": "available"},
+        "members": [],
+    })
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected duplicate hsk levels to fail"
+    assert "must not contain duplicates" in stdout
+
+
+def test_learning_path_hsk_on_non_hsk_reason():
+    record = _valid_learning_path({
+        "hsk": {"levels": [1], "status": "available"},
+    })
+    exit_code, stdout = _cli_learning_path_result(record)
+    assert exit_code != 0, "Expected hsk descriptor on available path to fail"
+    assert "only valid for availabilityReason 'hsk'" in stdout
+
+
 def run_tests():
     tests = [
+        # ─── Learning Path (#229) ───
+        test_learning_path_valid,
+        test_learning_path_missing_required,
+        test_learning_path_invalid_script,
+        test_learning_path_destination_must_end_with_slash,
+        test_learning_path_duplicate_member,
+        test_learning_path_invalid_member_type,
+        test_learning_path_unknown_member_field,
+        test_learning_path_hsk_reason_requires_descriptor,
+        test_learning_path_hsk_valid,
+        test_learning_path_hsk_duplicate_levels,
+        test_learning_path_hsk_on_non_hsk_reason,
+
         # ─── Lesson ───
         test_lesson_valid,
         test_lesson_missing_required,
