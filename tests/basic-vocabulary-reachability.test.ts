@@ -202,6 +202,102 @@ describe('canonical bounded session selection — reachability and fairness', ()
   });
 });
 
+describe('canonical bounded session selection — capacity and rotation regressions', () => {
+  function storageWith(items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }>): StorageLike {
+    const s = fakeStorage();
+    s.setItem(BASIC_VOCABULARY_PROGRESS_KEY, progressDoc(items));
+    return s;
+  }
+
+  it('returns exactly sessionSize unique IDs when learning items would otherwise underfill the window', () => {
+    // 10 learning + 2 unseen, session size 10 → a full window of 10 unique IDs.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 10; i++) items[`l${i}`] = entry('learning', 0);
+    items['u1'] = entry('new', 0);
+    items['u2'] = entry('new', 0);
+    const store = new BasicVocabularyProgressStore(storageWith(items));
+    const ids = [...Array.from({ length: 10 }, (_, i) => `l${i + 1}`), 'u1', 'u2'];
+
+    const selected = store.selectSession(ids, 10);
+    expect(selected).toHaveLength(10);
+    expect(new Set(selected).size).toBe(10);
+  });
+
+  it('guarantees the unseen quota is never eroded by learning items', () => {
+    // 15 learning + 2 unseen, session size 10 → both unseen items must be kept
+    // even though learning far exceeds the review budget.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 15; i++) items[`l${i}`] = entry('learning', 0);
+    items['u1'] = entry('new', 0);
+    items['u2'] = entry('new', 0);
+    const store = new BasicVocabularyProgressStore(storageWith(items));
+    const ids = [...Array.from({ length: 15 }, (_, i) => `l${i + 1}`), 'u1', 'u2'];
+
+    const selected = store.selectSession(ids, 10);
+    expect(selected).toHaveLength(10);
+    expect(selected).toContain('u1');
+    expect(selected).toContain('u2');
+    expect(new Set(selected).size).toBe(10);
+  });
+
+  it('rotates learning review across sessions instead of fixing a source-order prefix', () => {
+    // 12 learning items, session size 10. Session 1 rates the first 10 'again'
+    // (they stay learning); the next selection must surface the two
+    // never-reviewed tail items (l11, l12) rather than re-selecting the same
+    // source prefix, because the rated items now carry a higher review seq.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 12; i++) items[`l${i}`] = entry('learning', 0);
+    const store = new BasicVocabularyProgressStore(storageWith(items));
+    const ids = Array.from({ length: 12 }, (_, i) => `l${i + 1}`);
+
+    const first = store.selectSession(ids, 10);
+    expect(first).toEqual(Array.from({ length: 10 }, (_, i) => `l${i + 1}`));
+
+    for (const id of first) store.applyRating(id, 'again'); // stay learning, stamp review seq
+
+    const second = store.selectSession(ids, 10);
+    expect(second).toContain('l11');
+    expect(second).toContain('l12');
+    expect(new Set(second).size).toBe(10);
+  });
+
+  it('is deterministic for the same persisted progress across reloads', () => {
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 8; i++) items[`l${i}`] = entry('learning', 0);
+    for (let i = 1; i <= 4; i++) items[`u${i}`] = entry('new', 0);
+    const doc = progressDoc(items);
+
+    const s1 = fakeStorage();
+    s1.setItem(BASIC_VOCABULARY_PROGRESS_KEY, doc);
+    const store1 = new BasicVocabularyProgressStore(s1);
+
+    const s2 = fakeStorage();
+    s2.setItem(BASIC_VOCABULARY_PROGRESS_KEY, doc);
+    const store2 = new BasicVocabularyProgressStore(s2);
+
+    const ids = [...Array.from({ length: 8 }, (_, i) => `l${i + 1}`), 'u1', 'u2', 'u3', 'u4'];
+    expect(store1.selectSession(ids, 10)).toEqual(store2.selectSession(ids, 10));
+  });
+
+  it('keeps a persisted rotation sequence across rating and selection', () => {
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 12; i++) items[`l${i}`] = entry('learning', 0);
+    const store = new BasicVocabularyProgressStore(storageWith(items));
+    const ids = Array.from({ length: 12 }, (_, i) => `l${i + 1}`);
+
+    store.applyRating('l5', 'again');
+    // l5 was just reviewed → the never-reviewed items are more urgent and must
+    // be picked before l5. With 12 learning items and a 10-slot window, l5 is
+    // pushed out of the window entirely (rotation, not permanent blocking:
+    // it will be picked again once the older items are themselves reviewed).
+    const second = store.selectSession(ids, 10);
+    expect(second).not.toContain('l5');
+    expect(new Set(second).size).toBe(10);
+    // The window is filled by the ten oldest items in source order.
+    expect(second).toEqual(['l1', 'l2', 'l3', 'l4', 'l6', 'l7', 'l8', 'l9', 'l10', 'l11']);
+  });
+});
+
 describe('canonical bounded session selection — v1 compatibility', () => {
   it('loads an original-20 v1 progress document with all ratings preserved', () => {
     const originalIds = idsOf(20);
@@ -254,6 +350,34 @@ describe('canonical bounded session selection — v1 compatibility', () => {
     expect(store.getAllItems()).toHaveProperty('orphan-x');
     store.applyRating('id-1', 'known');
     expect(store.getAllItems()).toHaveProperty('orphan-x');
+  });
+
+  it('loads a legacy v1 document without lastReviewedSeq and treats those items as most urgent to review', () => {
+    // A legacy 20-item v1 document has no lastReviewedSeq on any entry.
+    const items: Record<string, { status: 'new' | 'learning' | 'learned'; knownStreak: number }> = {};
+    for (let i = 1; i <= 20; i++) {
+      items[`id-${i}`] = i % 2 === 0 ? entry('learning', 0) : entry('new', 0);
+    }
+    const storage = fakeStorage();
+    storage.setItem(BASIC_VOCABULARY_PROGRESS_KEY, progressDoc(items));
+    const store = new BasicVocabularyProgressStore(storage);
+
+    // Loaded entries carry no extension field.
+    expect(store.getAllItems()).toEqual(items);
+
+    // The never-reviewed learning items (no lastReviewedSeq) are selected
+    // before any that would have been reviewed, preserving deterministic
+    // source order within the legacy document.
+    const selected = store.selectSession(idsOf(20), 10);
+    expect(new Set(selected).size).toBe(10);
+    expect(selected.filter((id) => items[id]?.status === 'learning')).toHaveLength(5);
+
+    // A rating on the loaded document stamps a review seq without rewriting
+    // the other legacy entries' shape.
+    store.applyRating('id-2', 'again');
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(stored.items['id-2']).toMatchObject({ status: 'learning', knownStreak: 0, lastReviewedSeq: 0 });
+    expect(stored.items['id-4']).toEqual({ status: 'learning', knownStreak: 0 });
   });
 
   it('clean storage regression: empty store selects a full unseen window', () => {

@@ -7,6 +7,12 @@ export type VocabularyProgressStatus = 'new' | 'learning' | 'learned';
 export interface VocabularyProgressEntry {
   readonly status: VocabularyProgressStatus;
   readonly knownStreak: number;
+  /**
+   * Schema extension (Issue #204 learning rotation): the session sequence in
+   * which this item was last reviewed. Absent in legacy v1 documents; a
+   * missing value is treated as never reviewed (most urgent to review).
+   */
+  readonly lastReviewedSeq?: number;
 }
 
 export interface VocabularyProgressDocument {
@@ -85,19 +91,22 @@ export function prioritizeVocabularyIds(
 /**
  * Select a bounded, deterministic session window over the full corpus.
  *
- * Fairness rule (Issue #204): the window reserves `ceil(sessionSize / 2)`
- * slots for unseen (`new`) items, picked in source order, so completed
- * sessions always move the unseen front of the corpus forward and items
- * beyond the first session eventually become reachable. `learning`
- * (`again`/`unsure`) items consume at most
- * `min(ceil(sessionSize / 2), learningCount)` slots, picked in source order
- * so difficult items keep near-term review while releasing their slot as soon
- * as they are known. `learned` items only fill remaining slots. A single
- * difficult item can therefore never starve the unseen corpus, and repeated
- * completed sessions eventually reach every eligible item.
+ * Fairness rule (Issue #204): the window reserves a fixed quota for unseen
+ * (`new`) items — at least `floor(sessionSize / 2)` slots, or all of them
+ * when the corpus has fewer — so completed sessions always move the unseen
+ * front forward and items beyond the first session eventually become
+ * reachable. `learning` (`again`/`unsure`) items fill the remaining slots,
+ * selected least-recently-reviewed first (`lastReviewedSeq` ascending, then
+ * source order) so a difficult item that keeps being answered `again`/`unsure`
+ * is deprioritized for the next window instead of permanently blocking the
+ * items behind it. `learned` items only fill slots that neither unseen nor
+ * learning can fill, which guarantees a full window whenever eligible IDs
+ * suffice. A single difficult item therefore never starves the unseen corpus,
+ * and repeated completed sessions eventually reach every eligible item.
  *
- * Deterministic: a pure function of the source-ordered corpus and the
- * progress entries; identical inputs always produce identical output.
+ * Deterministic: a pure function of the source-ordered corpus, the progress
+ * entries, and the persisted `lastReviewedSeq` state; identical inputs always
+ * produce identical output.
  */
 export function selectSessionItems(
   ids: readonly string[],
@@ -116,10 +125,31 @@ export function selectSessionItems(
     else learned.push(id);
   }
 
+  // Learning items sorted least-recently-reviewed first; never-reviewed
+  // items (missing lastReviewedSeq) come before any that were reviewed.
+  const orderedLearning = [...learning].sort((a, b) => {
+    const seqA = entries[a]?.lastReviewedSeq ?? -1;
+    const seqB = entries[b]?.lastReviewedSeq ?? -1;
+    if (seqA !== seqB) return seqA - seqB;
+    return ids.indexOf(a) - ids.indexOf(b);
+  });
+
+  // The unseen quota is fixed: learning can never consume it.
+  const unseenQuota = Math.min(Math.floor(sessionSize / 2), unseen.length);
+  const learningBudget = Math.min(sessionSize - unseenQuota, learning.length);
+
   const selected: string[] = [];
-  const reviewBudget = Math.min(Math.ceil(sessionSize / 2), learning.length);
-  for (let i = 0; i < reviewBudget && selected.length < sessionSize; i++) {
-    selected.push(learning[i]);
+  if (learning.length <= learningBudget) {
+    // Every learning item fits in the window — keep stable source order so a
+    // restart immediately after completing a small session shows the first
+    // item first (preserves the pre-#204 session contract).
+    for (const id of learning) selected.push(id);
+  } else {
+    // Learning overflows the window: rotate least-recently-reviewed first so a
+    // difficult prefix item cannot permanently block the items behind it.
+    for (let i = 0; i < learningBudget && selected.length < sessionSize; i++) {
+      selected.push(orderedLearning[i]);
+    }
   }
   for (const id of unseen) {
     if (selected.length >= sessionSize) break;

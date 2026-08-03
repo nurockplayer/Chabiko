@@ -38,7 +38,9 @@ function parseDocument(raw: string): BasicVocabularyProgressDocument | null {
       const status = String(e.status) as VocabularyProgressStatus;
       const knownStreak = Number(e.knownStreak);
       if (!isConsistent(status, knownStreak)) return null;
-      items[id] = { status, knownStreak };
+      items[id] = 'lastReviewedSeq' in e
+        ? { status, knownStreak, lastReviewedSeq: Number(e.lastReviewedSeq) }
+        : { status, knownStreak };
     }
     return { version: 1, items };
   } catch {
@@ -60,9 +62,14 @@ function isValidItemEntry(value: unknown): boolean {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const obj = value as Record<string, unknown>;
   const keys = Object.keys(obj);
-  if (keys.length !== 2) return false;
+  if (keys.length !== 2 && keys.length !== 3) return false;
   if (obj.status !== 'new' && obj.status !== 'learning' && obj.status !== 'learned') return false;
   if (typeof obj.knownStreak !== 'number' || Number.isNaN(obj.knownStreak) || !Number.isInteger(obj.knownStreak) || obj.knownStreak < 0) return false;
+  if (keys.length === 3) {
+    if (!('lastReviewedSeq' in obj)) return false;
+    const seq = obj.lastReviewedSeq;
+    if (typeof seq !== 'number' || Number.isNaN(seq) || !Number.isInteger(seq) || seq < 0) return false;
+  }
   return true;
 }
 
@@ -157,11 +164,19 @@ export class BasicVocabularyProgressStore {
    * Re-reads current storage first to merge cross-tab changes.
    * Local pending changes (from prior write failures) override storage for
    * their IDs; storage entries for other IDs are still merged in.
+   *
+   * Every rating stamps the item with a monotonically increasing
+   * `lastReviewedSeq` (schema extension, Issue #204) so the canonical
+   * selector can rotate least-recently-reviewed learning items first.
    */
   applyRating(id: string, rating: 'again' | 'unsure' | 'known'): void {
     this.syncFromStorage();
     const current = this.document.items[id];
-    const next = applyRatingToProgress(current, rating);
+    const base = applyRatingToProgress(current, rating);
+    const next: VocabularyProgressEntry = {
+      ...base,
+      lastReviewedSeq: this.nextReviewSeq(),
+    };
     // Immutably rebuild the items object preserving insertion order
     const nextItems: Record<string, VocabularyProgressEntry> = {};
     for (const [k, v] of Object.entries(this.document.items)) {
@@ -249,6 +264,22 @@ export class BasicVocabularyProgressStore {
   }
 
   // ── Internal ──────────────────────────────────────────────────────────────
+
+  /**
+   * Monotonic review sequence for the learning rotation (Issue #204).
+   * The next stamp is one greater than the largest `lastReviewedSeq` already
+   * persisted (across stored items, including cross-tab merges) so ratings in
+   * different tabs never collide and the selector always sees a total order.
+   */
+  private nextReviewSeq(): number {
+    let maxSeq = -1;
+    for (const entry of Object.values(this.document.items)) {
+      if (entry.lastReviewedSeq !== undefined && entry.lastReviewedSeq > maxSeq) {
+        maxSeq = entry.lastReviewedSeq;
+      }
+    }
+    return maxSeq + 1;
+  }
 
   private load(): void {
     try {

@@ -84,7 +84,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     expect(JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!)).toEqual({
       version: 1,
       items: {
-        b: { status: 'learning', knownStreak: 1 },
+        b: { status: 'learning', knownStreak: 1, lastReviewedSeq: 0 },
       },
     });
   });
