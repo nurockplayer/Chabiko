@@ -49,6 +49,18 @@ describe('visual regression harness contract', () => {
     expect(updateArgs.at(-1)).toContain('--update-snapshots=all');
     expect(verifyArgs).toContain(PLAYWRIGHT_IMAGE);
     expect(PLAYWRIGHT_IMAGE).toContain('@sha256:');
+
+    // The bind-mounted checkout is owned by the host, so the container must
+    // declare it safe before git ls-files runs during the Astro build.
+    for (const args of [verifyArgs, updateArgs]) {
+      const command = args.at(-1) as string;
+      expect(command).toContain(
+        'git config --global --add safe.directory /work',
+      );
+      expect(
+        command.indexOf('safe.directory /work'),
+      ).toBeLessThan(command.indexOf('playwright test'));
+    }
   });
 
   it('commits exactly one baseline for every matrix case', () => {
