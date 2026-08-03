@@ -20,8 +20,6 @@ export const SCRIPT_PREFERENCE_STORAGE_KEY = 'chabiko.script-preference.v1';
 
 const CURRENT_SCHEMA_VERSION = 1;
 
-const PROBE_KEY = '__chabiko_script_pref_probe__';
-
 // ─── Pure parsing ──────────────────────────────────────────────────────────────
 
 /**
@@ -64,12 +62,6 @@ function preferenceToDocument(
 function getDefaultStorage(): StorageLike | null {
   try {
     if (typeof localStorage !== 'undefined') {
-      const prev = localStorage.getItem(PROBE_KEY);
-      localStorage.setItem(PROBE_KEY, '1');
-      localStorage.removeItem(PROBE_KEY);
-      if (prev !== null) {
-        localStorage.setItem(PROBE_KEY, prev);
-      }
       return localStorage;
     }
   } catch {

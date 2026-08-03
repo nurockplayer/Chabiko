@@ -235,4 +235,27 @@ describe('ScriptPreferenceStore', () => {
     expect(() => store.set('simplified')).not.toThrow();
     expect(store.get()).toBe('simplified');
   });
+
+  it('the default storage path writes no probe or foreign key', () => {
+    const globalStorage = new Map<string, string>();
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => globalStorage.get(key) ?? null,
+        setItem: (key: string, value: string) => globalStorage.set(key, value),
+        removeItem: (key: string) => globalStorage.delete(key),
+      },
+    });
+    try {
+      const store = new ScriptPreferenceStore();
+      expect(store.get()).toBe('path-default');
+      store.set('traditional');
+      expect([...globalStorage.keys()]).toEqual([SCRIPT_PREFERENCE_STORAGE_KEY]);
+      expect(JSON.parse(globalStorage.get(SCRIPT_PREFERENCE_STORAGE_KEY) as string)).toEqual(
+        { version: 1, preference: 'traditional' },
+      );
+    } finally {
+      delete (globalThis as Record<string, unknown>).localStorage;
+    }
+  });
 });
