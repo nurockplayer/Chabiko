@@ -78,7 +78,11 @@ def _validate_standard_script_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}.traditionalStatus '{val}' — not a valid status")
 
     # simplified is optional; when absent, simplifiedStatus must be absent
-    # or explicitly "unavailable" (meaning "confirmed unavailable")
+    # or explicitly "unavailable" (meaning "confirmed unavailable").
+    # Explicit null is not the same as absent — omit the key instead.
+    if "simplified" in record and record["simplified"] is None:
+        errors.append(f"{path}: 'simplified' must be omitted, not null; omit the key if simplified is unavailable")
+
     simplified_present = "simplified" in record and record["simplified"] is not None
     simplified_status_present = "simplifiedStatus" in record
 
@@ -399,8 +403,35 @@ def test_non_string_status_fails():
     assert any("string" in e for e in errs), f"Expected string-type error, got {errs}"
 
 
-def test_simplified_none_is_absent():
-    """simplified=None counts as absent — simplifiedStatus must be 'unavailable'."""
+def test_simplified_null_rejected():
+    """Explicit simplified=null must be rejected, even with a status."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplified": None,
+        "simplifiedStatus": "unavailable",
+    })
+    assert any("must be omitted, not null" in e for e in errs), (
+        f"Expected must-be-omitted error when simplified is null, got {errs}"
+    )
+
+
+def test_simplified_null_without_status_rejected():
+    """Explicit simplified=null without simplifiedStatus must also be rejected."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplified": None,
+    })
+    assert any("must be omitted, not null" in e for e in errs), (
+        f"Expected must-be-omitted error when simplified is null (no status), got {errs}"
+    )
+
+
+def test_simplified_null_with_non_null_status_rejected():
+    """Explicit simplified=null with a non-unavailable status must be rejected too."""
     errs = validate_script_fields({
         "id": "x",
         "traditional": "你好",
@@ -408,9 +439,25 @@ def test_simplified_none_is_absent():
         "simplified": None,
         "simplifiedStatus": "verified",
     })
-    assert any("must be 'unavailable'" in e for e in errs), (
-        f"Expected must-be-unavailable error when simplified is None, got {errs}"
+    assert any("must be omitted, not null" in e for e in errs), (
+        f"Expected must-be-omitted error when simplified is null (status verified), got {errs}"
     )
+
+
+def test_simplified_whitespace_not_null():
+    """Whitespace-only string is not null — it must follow the present-text rules."""
+    errs = validate_script_fields({
+        "id": "x",
+        "traditional": "你好",
+        "traditionalStatus": "authored",
+        "simplified": " ",
+        "simplifiedStatus": "verified",
+    })
+    # Not a null error; string present so simplifiedStatus required (satisfied) and valid.
+    assert not any("must be omitted, not null" in e for e in errs), (
+        f"Whitespace string must not be treated as null, got {errs}"
+    )
+    assert errs == [], f"Whitespace simplified with verified status should pass, got {errs}"
 
 
 def test_all_four_statuses_valid():
@@ -1165,7 +1212,10 @@ def run_tests():
         test_unavailable_on_traditional_fails,
         test_unavailable_on_simplified_no_text_passes,
         test_non_string_status_fails,
-        test_simplified_none_is_absent,
+        test_simplified_null_rejected,
+        test_simplified_null_without_status_rejected,
+        test_simplified_null_with_non_null_status_rejected,
+        test_simplified_whitespace_not_null,
         test_all_four_statuses_valid,
         test_walk_bundle,
         test_walk_bundle_invalid,
