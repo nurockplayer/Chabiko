@@ -1,0 +1,285 @@
+---
+import type { WordOrderItem } from '../domain/wordOrderPractice';
+
+export interface Props {
+  items: readonly WordOrderItem[];
+}
+
+const { items } = Astro.props;
+
+const serialized = JSON.stringify({
+  items: items.map((item) => ({
+    recordId: item.recordId,
+    promptJa: item.promptJa,
+    separator: item.separator,
+    chunks: item.chunks.map((chunk) => ({ id: chunk.id, text: chunk.text })),
+    canonicalOrder: item.canonicalOrder,
+    shownOrder: item.shownOrder,
+  })),
+});
+---
+
+<div
+  class="word-order-practice"
+  data-word-order-practice
+  data-word-order-session={serialized}
+>
+  <div class="word-order-header">
+    <p class="word-order-progress" data-word-order-progress></p>
+    <p class="word-order-prompt" data-word-order-prompt></p>
+  </div>
+
+  <div class="word-order-answer-well" aria-label="組み立て中の答え" role="region">
+    <p class="word-order-answer-empty" aria-hidden="true">ここにチャンクを置いて文を作ります</p>
+    <div class="word-order-answer" data-word-order-answer></div>
+  </div>
+
+  <div class="word-order-feedback" data-word-order-feedback role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="word-order-pool" data-word-order-pool role="group" aria-label="チャンクを選ぶ"></div>
+
+  <div class="word-order-actions" data-word-order-actions></div>
+</div>
+
+<script>
+  import { mountWordOrderPractice } from '../client/wordOrderPractice';
+
+  function initialisePractices() {
+    document.querySelectorAll<HTMLElement>('[data-word-order-practice]').forEach((root) => {
+      try {
+        mountWordOrderPractice(root);
+      } catch (error) {
+        // A rejected or missing word-order record must not take the whole
+        // page down; the container stays empty and the error is surfaced
+        // to the console for diagnosis.
+        console.error('word-order practice failed to mount', error);
+      }
+    });
+  }
+
+  initialisePractices();
+  document.addEventListener('astro:page-load', initialisePractices);
+</script>
+
+<style>
+  .word-order-practice {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .word-order-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .word-order-progress {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .word-order-prompt {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  .word-order-answer-well {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 7rem;
+    border: 1px dashed var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-slot-bg);
+    padding: var(--space-md);
+  }
+
+  .word-order-answer-empty {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+
+  .word-order-answer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    min-height: 2.75rem;
+  }
+
+  .word-order-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .word-order-chunk {
+    box-sizing: border-box;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  }
+
+  .word-order-chunk:hover:not(:disabled) {
+    border-color: var(--c-accent);
+    background: var(--c-accent-light);
+  }
+
+  .word-order-chunk:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .word-order-chunk:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  .word-order-chunk--answer {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .word-order-chunk--answer:disabled {
+    opacity: 1;
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: #fff;
+  }
+
+  .word-order-feedback {
+    min-height: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .word-order-feedback__line {
+    margin: 0;
+  }
+
+  .word-order-feedback--correct {
+    color: var(--c-success);
+    font-weight: 700;
+  }
+
+  .word-order-feedback--incorrect {
+    border-left: 4px solid var(--c-error);
+    background: var(--c-error-bg);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .word-order-feedback--incorrect .word-order-feedback__line:first-child {
+    font-weight: 700;
+  }
+
+  .word-order-feedback--incorrect span {
+    font-weight: 700;
+  }
+
+  .word-order-feedback--complete {
+    text-align: center;
+    padding: var(--space-lg) var(--space-md);
+    background: var(--c-primary-light);
+  }
+
+  .word-order-complete-text {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .word-order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .word-order-action {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .word-order-action:hover:not(:disabled) {
+    background: var(--c-slot-bg);
+  }
+
+  .word-order-action:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .word-order-action:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .word-order-action--submit,
+  .word-order-action--next,
+  .word-order-action--restart {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .word-order-action--submit:hover:not(:disabled),
+  .word-order-action--next:hover:not(:disabled),
+  .word-order-action--restart:hover:not(:disabled) {
+    background: var(--c-accent-hover);
+  }
+
+  .word-order-action--retry {
+    border-color: #991b1b;
+    color: #991b1b;
+  }
+
+  .word-order-action--retry:hover:not(:disabled) {
+    background: var(--c-error-bg);
+  }
+
+  .word-order-empty {
+    text-align: center;
+    padding: var(--space-xl);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    color: var(--c-text-secondary);
+  }
+
+  @media (width <= 374px) {
+    .word-order-chunk {
+      padding-inline: var(--space-sm);
+      font-size: 1rem;
+    }
+
+    .word-order-action {
+      padding-inline: var(--space-sm);
+      font-size: 0.875rem;
+    }
+  }
+</style>
