@@ -2,6 +2,7 @@ import type { StorageLike } from '../lib/progress';
 import {
   applyRatingToProgress,
   prioritizeVocabularyIds,
+  selectSessionItems,
 } from './vocabularyProgress';
 import type {
   VocabularyProgressEntry,
@@ -156,19 +157,25 @@ export class BasicVocabularyProgressStore {
    * Re-reads current storage first to merge cross-tab changes.
    * Local pending changes (from prior write failures) override storage for
    * their IDs; storage entries for other IDs are still merged in.
+   *
+   * The rated item is re-inserted at the end of the items object. The object
+   * key insertion order is the persisted LRU rotation state (Issue #204):
+   * the least-recently-reviewed items sit at the front and are picked first
+   * by the canonical selector. The item shape itself stays `{status,
+   * knownStreak}`, so legacy v1 readers parse documents written here
+   * losslessly.
    */
   applyRating(id: string, rating: 'again' | 'unsure' | 'known'): void {
     this.syncFromStorage();
     const current = this.document.items[id];
     const next = applyRatingToProgress(current, rating);
-    // Immutably rebuild the items object preserving insertion order
+    // Immutably rebuild the items object: move the rated item to the end so
+    // the front of the object is the least-recently-reviewed set.
     const nextItems: Record<string, VocabularyProgressEntry> = {};
     for (const [k, v] of Object.entries(this.document.items)) {
-      nextItems[k] = k === id ? next : v;
+      if (k !== id) nextItems[k] = v;
     }
-    if (!(id in this.document.items)) {
-      nextItems[id] = next;
-    }
+    nextItems[id] = next;
     this.document = { version: 1, items: nextItems };
     this.pendingChanges.add(id);
     this.persist();
@@ -182,6 +189,17 @@ export class BasicVocabularyProgressStore {
    */
   prioritize(ids: readonly string[]): string[] {
     return prioritizeVocabularyIds(ids, this.document.items);
+  }
+
+  /**
+   * Select a canonical bounded session window over the full corpus.
+   * Delegate for the shared full-corpus fairness rule (Issue #204):
+   * bounded near-term review of learning items plus an unseen-progress
+   * window, so every eligible item is eventually reachable. Deterministic
+   * for identical corpus and progress state.
+   */
+  selectSession(ids: readonly string[], sessionSize: number): string[] {
+    return selectSessionItems(ids, this.document.items, sessionSize);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -266,18 +284,19 @@ export class BasicVocabularyProgressStore {
             return;
           }
           if (this.persistFailed && this.pendingChanges.size > 0) {
-            // Merge: local pending entries override storage for their IDs;
-            // storage entries for other IDs are kept (cross-tab safety).
+            // Merge: local pending entries are authoritative for their IDs and
+            // keep their local LRU order (they were reviewed most recently and
+            // must stay at the end of the rotation), while storage entries for
+            // other IDs keep their stored order and cross-tab IDs are merged.
             const merged: Record<string, VocabularyProgressEntry> = {};
             for (const [k, v] of Object.entries(doc.items)) {
-              merged[k] = this.pendingChanges.has(k) && k in this.document.items
-                ? this.document.items[k]
-                : v;
+              if (!(this.pendingChanges.has(k) && k in this.document.items)) {
+                merged[k] = v;
+              }
             }
-            // Include pending entries not present in storage at all
-            for (const k of this.pendingChanges) {
-              if (!(k in doc.items) && k in this.document.items) {
-                merged[k] = this.document.items[k];
+            for (const [k, v] of Object.entries(this.document.items)) {
+              if (this.pendingChanges.has(k)) {
+                merged[k] = v;
               }
             }
             this.document = { version: 1, items: merged };

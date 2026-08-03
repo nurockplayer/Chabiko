@@ -82,6 +82,88 @@ export function prioritizeVocabularyIds(
   });
 }
 
+/**
+ * Select a bounded, deterministic session window over the full corpus.
+ *
+ * Fairness rule (Issue #204): the window reserves a fixed quota for unseen
+ * (`new`) items — at least `floor(sessionSize / 2)` slots, or all of them
+ * when the corpus has fewer — so completed sessions always move the unseen
+ * front forward and items beyond the first session eventually become
+ * reachable. `learning` (`again`/`unsure`) items fill the remaining slots,
+ * selected least-recently-reviewed first (by the persisted items key order,
+ * tie-broken by source order) so a difficult item that keeps being answered
+ * `again`/`unsure` is deprioritized for the next window instead of
+ * permanently blocking the items behind it. `learned` items only fill slots
+ * that neither unseen nor learning can fill, which guarantees a full window
+ * whenever eligible IDs suffice. A single difficult item therefore never
+ * starves the unseen corpus, and repeated completed sessions eventually reach
+ * every eligible item.
+ *
+ * Deterministic: a pure function of the source-ordered corpus and the
+ * progress entries; identical inputs always produce identical output.
+ */
+export function selectSessionItems(
+  ids: readonly string[],
+  entries: Readonly<Record<string, VocabularyProgressEntry>>,
+  sessionSize: number,
+): string[] {
+  if (sessionSize <= 0 || ids.length === 0) return [];
+
+  const learning: string[] = [];
+  const unseen: string[] = [];
+  const learned: string[] = [];
+  for (const id of ids) {
+    const status = entries[id]?.status ?? 'new';
+    if (status === 'learning') learning.push(id);
+    else if (status === 'new') unseen.push(id);
+    else learned.push(id);
+  }
+
+  // Learning items ordered least-recently-reviewed first. The store keeps the
+  // persisted items object in review order (a reviewed item is re-inserted at
+  // the end), so the front of `entries` is the least recently reviewed and the
+  // back is the most recent. Source order breaks ties when key order cannot.
+  const keyIndex = new Map<string, number>();
+  let keyPos = 0;
+  for (const key of Object.keys(entries)) {
+    keyIndex.set(key, keyPos);
+    keyPos++;
+  }
+  const orderedLearning = [...learning].sort((a, b) => {
+    const idxA = keyIndex.has(a) ? keyIndex.get(a)! : Number.MAX_SAFE_INTEGER;
+    const idxB = keyIndex.has(b) ? keyIndex.get(b)! : Number.MAX_SAFE_INTEGER;
+    if (idxA !== idxB) return idxA - idxB;
+    return ids.indexOf(a) - ids.indexOf(b);
+  });
+
+  // The unseen quota is fixed: learning can never consume it.
+  const unseenQuota = Math.min(Math.floor(sessionSize / 2), unseen.length);
+  const learningBudget = Math.min(sessionSize - unseenQuota, learning.length);
+
+  const selected: string[] = [];
+  if (learning.length <= learningBudget) {
+    // Every learning item fits in the window — keep stable source order so a
+    // restart immediately after completing a small session shows the first
+    // item first (preserves the pre-#204 session contract).
+    for (const id of learning) selected.push(id);
+  } else {
+    // Learning overflows the window: rotate least-recently-reviewed first so a
+    // difficult prefix item cannot permanently block the items behind it.
+    for (let i = 0; i < learningBudget && selected.length < sessionSize; i++) {
+      selected.push(orderedLearning[i]);
+    }
+  }
+  for (const id of unseen) {
+    if (selected.length >= sessionSize) break;
+    selected.push(id);
+  }
+  for (const id of learned) {
+    if (selected.length >= sessionSize) break;
+    selected.push(id);
+  }
+  return selected;
+}
+
 // ─── Parsing ──────────────────────────────────────────────────────────────────
 
 function parseDocument(raw: string): VocabularyProgressDocument | null {
