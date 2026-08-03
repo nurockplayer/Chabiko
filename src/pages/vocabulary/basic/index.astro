@@ -1,25 +1,20 @@
 ---
 import BasicVocabularySession from '../../../components/vocabulary/BasicVocabularySession.astro';
-import { loadTeacherVocabulary } from '../../../content/loadTeacherVocabulary';
+import { buildLearnerSessionPayload, serializeLearnerSessionPayload } from '../../../content/learnerSessionPayload';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 
-const items = loadTeacherVocabulary();
+const payload = buildLearnerSessionPayload();
+const payloadJson = serializeLearnerSessionPayload(payload);
 
-if (items.length === 0) {
+if (payload.totalCount === 0) {
   throw new Error('basic vocabulary has no provisional items');
-}
-
-for (const item of items) {
-  if (item.illustration && item.illustration.vocabularyId !== item.vocabulary.id) {
-    throw new Error(`basic vocabulary illustration link is invalid for '${item.vocabulary.id}'`);
-  }
 }
 ---
 
 <BaseLayout title="イラストで学ぶ基礎中国語">
   <div class="basic-vocabulary-page">
     <h1>イラストで学ぶ基礎中国語</h1>
-    <BasicVocabularySession items={items} />
+    <BasicVocabularySession payload={payload} payloadJson={payloadJson} />
   </div>
 </BaseLayout>
 

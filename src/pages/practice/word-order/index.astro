@@ -1,0 +1,59 @@
+---
+import Header from '../../../components/Header.astro';
+import WordOrderPractice from '../../../components/WordOrderPractice.astro';
+import { loadWordOrderPractice } from '../../../content/loadWordOrderPractice';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const items = loadWordOrderPractice();
+---
+
+<BaseLayout title="語順練習">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  <div class="word-order-page">
+    <a class="back-link" href="/">← ホームに戻る</a>
+    <h1 class="page-title">語順練習</h1>
+    <p class="page-subtitle">チャンクを選んで、正しい中国語の語順に並べ替えましょう。</p>
+
+    {
+      items.length > 0 ? (
+        <WordOrderPractice items={items} />
+      ) : (
+        <div class="empty-fallback" role="alert">
+          <p>現在利用できる語順練習がありません。データが準備できるまでお待ちください。</p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .word-order-page {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-lg);
+    font-weight: 600;
+  }
+  .page-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-xs);
+  }
+  .page-subtitle {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-xl);
+  }
+  .empty-fallback {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--c-text-secondary);
+  }
+</style>

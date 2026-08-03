@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "targets": [
+    {
+      "id": "navigate-arrival",
+      "labelJa": "到着して動ける",
+      "goalJa": "空港や駅に到着して、移動のための中国語を使える",
+      "evidence": [
+        { "type": "completed-lesson-practice", "id": "lesson-003", "labelJa": "場所を尋ねるレッスン練習" },
+        { "type": "completed-phrase-practice", "id": "phrase-transport-arrival", "labelJa": "到着・交通のフレーズ練習" },
+        { "type": "completed-roleplay-rehearsal", "id": "roleplay-transport-guide", "labelJa": "交通の道案内ロールプレイ" }
+      ]
+    },
+    {
+      "id": "order-and-pay",
+      "labelJa": "注文して支払う",
+      "goalJa": "食べ物を注文し、値段や会計の中国語を使える",
+      "evidence": [
+        { "type": "completed-lesson-practice", "id": "lesson-001", "labelJa": "夜市で注文するレッスン練習" },
+        { "type": "completed-lesson-practice", "id": "lesson-002", "labelJa": "値段を聞くレッスン練習" },
+        { "type": "completed-phrase-practice", "id": "phrase-order-pay", "labelJa": "注文・会計のフレーズ練習" },
+        { "type": "completed-roleplay-rehearsal", "id": "roleplay-order-food", "labelJa": "注文のロールプレイ" },
+        { "type": "completed-vocabulary-session", "id": "teacher-star-1-bdc7865a507e", "labelJa": "単語学習：朋友" }
+      ]
+    },
+    {
+      "id": "stay-and-ask",
+      "labelJa": "宿泊して尋ねる",
+      "goalJa": "ホテルでチェックインし、実用的な質問ができる",
+      "evidence": [
+        { "type": "completed-lesson-practice", "id": "lesson-003", "labelJa": "場所を尋ねるレッスン練習" },
+        { "type": "completed-phrase-practice", "id": "phrase-hotel-checkin", "labelJa": "ホテルのチェックインフレーズ練習" },
+        { "type": "completed-roleplay-rehearsal", "id": "roleplay-hotel-checkin", "labelJa": "ホテルのチェックインロールプレイ" }
+      ]
+    },
+    {
+      "id": "recover-and-get-help",
+      "labelJa": "聞き直して助けを求める",
+      "goalJa": "聞き取れなかったときや困ったときに中国語で助けを求められる",
+      "evidence": [
+        { "type": "completed-phrase-practice", "id": "phrase-recover-help", "labelJa": "聞き直し・助けのフレーズ練習" },
+        { "type": "completed-roleplay-rehearsal", "id": "roleplay-recover-help", "labelJa": "聞き直しのロールプレイ" }
+      ]
+    }
+  ]
+}

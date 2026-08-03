@@ -16,8 +16,13 @@ export function buildDockerArgs(
   mode: VisualRunMode,
   workingDirectory: string,
 ): string[] {
+  // The bind-mounted /work is a Git checkout owned by the host runner, while
+  // git inside the container runs as a different UID. Without this, `git
+  // ls-files` in the production corpus loader's tracked-asset validation aborts
+  // with "dubious ownership"; the fail-closed check itself stays untouched.
   const playwrightCommand = [
     'set -euo pipefail',
+    'git config --global --add safe.directory /work',
     'corepack pnpm config set store-dir /pnpm/store',
     'corepack pnpm install --frozen-lockfile',
     'corepack pnpm exec playwright test --config=playwright.visual.config.ts ' +

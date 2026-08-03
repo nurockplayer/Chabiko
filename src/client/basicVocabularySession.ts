@@ -10,10 +10,11 @@ import {
   BasicVocabularyProgressStore,
   BASIC_VOCABULARY_PROGRESS_KEY,
 } from '../domain/basicVocabularyProgress';
-import { loadTeacherVocabulary } from '../content/loadTeacherVocabulary';
+import type { LearnerRenderIllustration } from '../content/learnerSessionPayload';
+import manifest from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
+import type { LearnerManifest } from '../types/learnerManifest';
 
 interface SessionIllustration {
-  vocabularyId: string;
   assetPath: string;
   width: number;
   height: number;
@@ -23,17 +24,58 @@ interface SessionIllustration {
 interface SessionItem {
   id: string;
   simplified: string;
-  pinyin: string;
-  japanese: string;
+  pinyin?: string;
+  japanese?: string;
   traditional?: string;
   illustration: SessionIllustration | null;
 }
 
+interface RenderPayload {
+  totalCount: number;
+  render: Readonly<Record<string, LearnerRenderIllustration>>;
+}
+
+/** Opaque learnerId → non-secret card-front data (image + simplified). Answers
+ * (pinyin/japanese/traditional) live in the client bundle via the manifest
+ * import, never in the serialized HTML payload. */
+const answerById = new Map<
+  string,
+  { simplified: string; pinyin?: string; japanese?: string; traditional?: string }
+>();
+for (const row of (manifest as LearnerManifest).rows) {
+  answerById.set(row.learnerId, {
+    simplified: row.simplified,
+    pinyin: row.pinyin,
+    japanese: row.japanese,
+    traditional: row.traditional,
+  });
+}
+
 const cleanups = new WeakMap<HTMLElement, () => void>();
+
+function readRenderPayload(root: HTMLElement): RenderPayload | null {
+  const el = root.querySelector<HTMLElement>('#basic-vocabulary-data');
+  if (!el || !el.textContent) return null;
+  try {
+    const parsed = JSON.parse(el.textContent) as unknown;
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      typeof (parsed as { totalCount?: unknown }).totalCount === 'number' &&
+      (parsed as { render?: unknown }).render !== null &&
+      typeof (parsed as { render?: unknown }).render === 'object'
+    ) {
+      return parsed as RenderPayload;
+    }
+  } catch {
+    /* malformed payload — fall back to no render metadata */
+  }
+  return null;
+}
 
 function initializeFromIds(
   root: HTMLElement,
-): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 10 | 20 } {
+): { ids: string[]; entries: Map<string, SessionItem>; availableCount: 10 | 20; totalCount: number } {
   const raw = root.dataset.basicVocabularyIds;
   if (!raw) {
     throw new Error('basic vocabulary session data is missing');
@@ -47,38 +89,26 @@ function initializeFromIds(
   const sizeAttr = root.dataset.basicVocabularySessionSize;
   const availableCount: 10 | 20 = sizeAttr !== undefined ? 10 : 20;
 
-  const loaded = loadTeacherVocabulary();
+  const payload = readRenderPayload(root);
   const entries = new Map<string, SessionItem>();
 
   for (const id of ids) {
-    const match = loaded.find((item) => item.vocabulary.id === id);
+    const match = answerById.get(id);
     if (!match) {
       throw new Error(`basic vocabulary item '${id}' is missing from the loader`);
     }
 
-    const { vocabulary, illustration } = match;
-
-    if (illustration && illustration.vocabularyId !== vocabulary.id) {
-      throw new Error(`basic vocabulary illustration link is invalid for '${vocabulary.id}'`);
-    }
-
     entries.set(id, {
-      id: vocabulary.id,
-      simplified: vocabulary.simplified,
-      pinyin: vocabulary.pinyin,
-      japanese: vocabulary.japanese,
-      traditional: vocabulary.traditional,
-      illustration: illustration === null ? null : {
-        vocabularyId: illustration.vocabularyId,
-        assetPath: illustration.assetPath,
-        width: illustration.width,
-        height: illustration.height,
-        altJa: illustration.altJa,
-      },
+      id,
+      simplified: match.simplified,
+      pinyin: match.pinyin,
+      japanese: match.japanese,
+      traditional: match.traditional,
+      illustration: payload?.render[id] ?? null,
     });
   }
 
-  return { ids, entries, availableCount };
+  return { ids, entries, availableCount, totalCount: payload?.totalCount ?? ids.length };
 }
 
 function textElement(
@@ -111,7 +141,7 @@ function button(
 export function initBasicVocabularySession(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
-  const { ids: allIds, entries, availableCount } = initializeFromIds(root);
+  const { ids: allIds, entries, availableCount, totalCount } = initializeFromIds(root);
 
   const store = new BasicVocabularyProgressStore();
 
@@ -122,12 +152,14 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   const card = root.querySelector<HTMLElement>('[data-card]');
   const progress = root.querySelector<HTMLElement>('[data-progress]');
   const summary = root.querySelector<HTMLElement>('[data-summary]');
+  const total = root.querySelector<HTMLElement>('[data-total]');
   if (!card || !progress) {
     throw new Error('basic vocabulary session markup is missing');
   }
   const cardElement = card;
   const progressElement = progress;
   const summaryElement = summary;
+  const totalElement = total;
 
   function updateProgress(): void {
     progressElement.textContent = `${state.completedUniqueCount} / ${state.selectedItemIds.length} 語`;
@@ -145,6 +177,9 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     }
     if (summaryElement) {
       summaryElement.textContent = `新規 ${newCount}語・学習中 ${learningCount}語・習得済み ${learnedCount}語`;
+    }
+    if (totalElement) {
+      totalElement.textContent = `対象 ${totalCount}語`;
     }
   }
 
@@ -176,16 +211,27 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     fragment.append(textElement(document, 'basic-vocabulary-simplified', entry.simplified, 'zh-Hans'));
 
     if (state.answerRevealed) {
-      const answer = document.createElement('div');
-      answer.className = 'basic-vocabulary-answer';
-      answer.append(
-        textElement(document, 'basic-vocabulary-pinyin', entry.pinyin, 'zh-Latn'),
-        textElement(document, 'basic-vocabulary-japanese', entry.japanese, 'ja'),
-      );
-      if (entry.traditional) {
-        answer.append(textElement(document, 'basic-vocabulary-traditional', entry.traditional, 'zh-Hant'));
+      // Only build the answer container when at least one truthful optional
+      // answer exists; a row with no pinyin/japanese/traditional must not
+      // render an empty flex item / blank gap after reveal.
+      const answerParts: Array<{ className: string; text: string; lang: string }> = [];
+      if (entry.pinyin) {
+        answerParts.push({ className: 'basic-vocabulary-pinyin', text: entry.pinyin, lang: 'zh-Latn' });
       }
-      fragment.append(answer);
+      if (entry.japanese) {
+        answerParts.push({ className: 'basic-vocabulary-japanese', text: entry.japanese, lang: 'ja' });
+      }
+      if (entry.traditional) {
+        answerParts.push({ className: 'basic-vocabulary-traditional', text: entry.traditional, lang: 'zh-Hant' });
+      }
+      if (answerParts.length > 0) {
+        const answer = document.createElement('div');
+        answer.className = 'basic-vocabulary-answer';
+        for (const part of answerParts) {
+          answer.append(textElement(document, part.className, part.text, part.lang));
+        }
+        fragment.append(answer);
+      }
 
       const ratings = document.createElement('div');
       ratings.className = 'basic-vocabulary-ratings';
