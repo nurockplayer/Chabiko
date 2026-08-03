@@ -3,7 +3,7 @@
     {
       "id": "practice-001",
       "type": "tone-discrimination",
-      "promptJa": "次の音声を聴いて「媽」の声調を選んでください",
+      "promptJa": "声調の形を見て、「媽 mā」に合うものを選んでください。",
       "correctAnswer": "第一声",
       "distractors": ["第二声", "第三声", "第四声"],
       "contrastId": "tone-t1-vs-t2-t3-t4",
