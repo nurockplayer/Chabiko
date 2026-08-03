@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadProductionLearnerCorpus } from '../src/content/loadProductionLearnerCorpus';
-import { buildLearnerSessionPayload } from '../src/content/learnerSessionPayload';
+import { buildLearnerSessionPayload, buildLearnerSessionPayloadFromItems } from '../src/content/learnerSessionPayload';
 import { initBasicVocabularySession } from '../src/client/basicVocabularySession';
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
@@ -238,18 +238,37 @@ describe('full production corpus integration', () => {
     expect(root.textContent).toContain('今回の学習は完了です');
   });
 
-  it('a synthetic corpus change drives the route total instead of a hard-coded constant', () => {
+  it('a synthetic corpus change drives the production route payload instead of a hard-coded constant', () => {
     // Route counts must be derived from the loader corpus length, never a
-    // hard-coded 1,582: shrinking the corpus shrinks totalCount/ids/render.
-    const payload = buildLearnerSessionPayload();
-    const syntheticIds = payload.ids.slice(0, 3);
-    const syntheticRender: Record<string, unknown> = {};
-    for (const id of syntheticIds) syntheticRender[id] = payload.render[id];
+    // hard-coded 1,582. Feed a real 3-item corpus through the same pure
+    // production payload builder the route uses: totalCount/ids/render/first
+    // must all track the input corpus.
+    const corpus = loadProductionLearnerCorpus({ assetTracked: alwaysTracked });
+    const synthetic = corpus.slice(0, 3);
+    const payload = buildLearnerSessionPayloadFromItems(synthetic);
+    expect(payload.totalCount).toBe(3);
+    expect(payload.ids).toEqual(synthetic.map((item) => item.learnerId));
+    expect(payload.ids).toHaveLength(3);
+    for (const item of synthetic) {
+      const r = payload.render[item.learnerId];
+      expect(r).toBeDefined();
+      expect(r.assetPath).toBe(item.illustration.assetPath);
+    }
+    expect(payload.first).toEqual({
+      learnerId: synthetic[0].learnerId,
+      simplified: synthetic[0].simplified,
+      illustration: {
+        assetPath: synthetic[0].illustration.assetPath,
+        width: synthetic[0].illustration.width,
+        height: synthetic[0].illustration.height,
+        altJa: synthetic[0].illustration.altJa,
+      },
+    });
 
-    const root = sessionRoot(syntheticIds, syntheticRender);
+    // The client renders that derived total, not 1,582.
+    const root = sessionRoot(payload.ids, { ...payload.render });
     initBasicVocabularySession(root);
-    const total = root.querySelector<HTMLElement>('[data-total]');
-    expect(total?.textContent).toContain('3');
+    expect(root.querySelector<HTMLElement>('[data-total]')?.textContent).toContain('3');
     expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 3 語/);
   });
 

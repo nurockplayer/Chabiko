@@ -1,7 +1,8 @@
 /** Deterministic /vocabulary/basic/ learner-route visual cases, separate from
  * the lesson-journey matrix. Each case captures the card front after reveal for
- * a representative item: a complete-field item and a missing-all-optional item,
- * across the Issue #205 viewport set. */
+ * a representative item: a true complete-field item (pinyin + Japanese +
+ * Traditional Chinese) and a missing-all-optional item, across the Issue #205
+ * viewport set. */
 export interface LearnerRouteCase {
   /** Opaque learnerId whose card front is captured. */
   learnerId: string;
@@ -21,9 +22,9 @@ export const LEARNER_ROUTE_VIEWPORTS = [
   { width: 1440, height: 900 },
 ] as const;
 
-/** 看 (complete-field: pinyin + japanese, no traditional), manifest index 0. */
-export const COMPLETE_FIELD_ID = 'teacher-learner-5762bc98cd920b67';
-export const COMPLETE_FIELD_LEARNED_COUNT = 0;
+/** 大家 (true complete-field: pinyin + japanese + traditional), index 514. */
+export const COMPLETE_FIELD_ID = 'teacher-star-1-37e0eb213f0f';
+export const COMPLETE_FIELD_LEARNED_COUNT = 514;
 
 /** 强调 (missing-all-optional: simplified + image only), manifest index 275. */
 export const NO_OPTIONAL_ID = 'teacher-learner-ce0a85de48246f4b';

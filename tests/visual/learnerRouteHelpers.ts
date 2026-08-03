@@ -151,3 +151,44 @@ export async function assertLearnerRouteCaptureContract(
   expect(dimensions.bodyFont).toContain(FONT_FAMILY);
   expect([...externalRequests]).toEqual([]);
 }
+
+/** Assert that every required selector is fully contained within the viewport
+ * after scrolling it into view, using bounding boxes. This proves each control
+ * is fully visible (never clipped by overflow) and horizontally contained in
+ * the captured state, rather than only checking document overflow. A 1px
+ * epsilon absorbs float/sub-pixel rounding from scroll snapping; genuinely
+ * clipped or overflowing controls exceed the viewport by far more. */
+const VIEWPORT_EPSILON = 1;
+
+export async function assertElementsWithinViewport(
+  page: Page,
+  selectors: readonly string[],
+): Promise<void> {
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    await expect(locator).toBeVisible();
+    // Center each required control in the viewport so its full box (not just
+    // its top edge) is inside the fold before the bounding-box assertion.
+    await locator.scrollIntoViewIfNeeded();
+    await locator.evaluate((element) =>
+      element.scrollIntoView({ block: 'center', inline: 'nearest' }),
+    );
+    const box = await locator.boundingBox();
+    expect(box, `missing element for '${selector}'`).not.toBeNull();
+    const dimensions = await page.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(box!.x, `${selector} left`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.x + box!.width, `${selector} right`).toBeLessThanOrEqual(
+      dimensions.innerWidth + VIEWPORT_EPSILON,
+    );
+    expect(box!.y, `${selector} top`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.y + box!.height, `${selector} bottom`).toBeLessThanOrEqual(
+      dimensions.innerHeight + VIEWPORT_EPSILON,
+    );
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  }
+}

@@ -1,3 +1,4 @@
+import type { ProductionLearnerItem } from '../types/learnerCorpus';
 import { loadProductionLearnerCorpus } from './loadProductionLearnerCorpus';
 
 /** Learner-facing illustration render data. The image is the card front and is
@@ -43,7 +44,16 @@ export function serializeLearnerSessionPayload(payload: LearnerSessionPayload): 
 /** Full-corpus payload over the generated manifest. Fails closed on any
  * invalid manifest contract, missing/untracked asset, or bad dimensions. */
 export function buildLearnerSessionPayload(): LearnerSessionPayload {
-  const items = loadProductionLearnerCorpus();
+  return buildLearnerSessionPayloadFromItems(loadProductionLearnerCorpus());
+}
+
+/** Pure payload construction over an arbitrary learner corpus, so route counts
+ * and render metadata are provably derived from the input corpus rather than a
+ * hard-coded total. Production wires the canonical #202 loader; a synthetic
+ * corpus exercises the same derivation the route uses at build time. */
+export function buildLearnerSessionPayloadFromItems(
+  items: readonly ProductionLearnerItem[],
+): LearnerSessionPayload {
   const ids: string[] = [];
   const render: Record<string, LearnerRenderIllustration> = {};
   for (const item of items) {
