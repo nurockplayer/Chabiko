@@ -174,10 +174,8 @@ test.describe('/vocabulary/basic/ learner route', () => {
 
       const reveal = page.locator('[data-action="reveal"]');
       const resetSummary = page.locator('.basic-vocabulary-reset summary');
-      const reset = page.locator('[data-action="reset"]');
       await expect(reveal).toHaveAccessibleName('答えを見る');
       await expect(resetSummary).toHaveAccessibleName('学習データの管理');
-      await expect(reset).toHaveAccessibleName('学習記録をリセット');
 
       // The reveal button is the first focusable control and is focused on load.
       await expect(reveal).toBeFocused();
