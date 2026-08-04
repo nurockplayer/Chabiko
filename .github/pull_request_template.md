@@ -1,6 +1,9 @@
 ## Source of Truth
 
-- Issue:
+Closes #<issue-number>
+
+> 此行為獨立行、非 checkbox。必須填寫完整引用（含 `Closes` 與 issue number），不得只寫裸 issue number。沒有對應 issue 時先建立 issue。
+
 - Planning doc:
 
 ## Frozen implementation decisions
@@ -16,6 +19,10 @@
 -
 
 ### Exact non-goals
+
+-
+
+## Changed files
 
 -
 

@@ -146,6 +146,19 @@ Reviewer 除立即的 P0／P1 安全或資料遺失中斷外，應完成完整 c
 - GitHub / git 指令必須 non-interactive。
 - PR 必須列出 source of truth、變更內容、明確不做的事與驗證結果。
 
+## Issue 實作與 Coordinator Worktree 規範
+
+本節適用於所有由 agent 或 workflow 實作的 GitHub issue，目的是避免 worktree 被誤刪、Agent resume 落入錯誤工作區，以及 PR merge 後 Issue 未關閉。
+
+- Issue 實作一律由 Coordinator 預先建立獨立 worktree；執行 Agent 不含 isolation wrapper，改用 Coordinator 明確指定的 absolute worktree path。
+- Agent 不得自行建立、切換、改名或刪除 worktree。
+- worktree 清理只在 PR 建立且遠端 commit 安全之後，由 Coordinator 執行。
+- issue-reviewer 無 verdict 中止（BLOCKED_REVIEW、turn limit、逾時或中斷）後：先修復明確的環境問題，再在同一 exact head 上啟動全新的 issue-reviewer instance（不得 resume 同一個 reviewer）。
+- 全新的 issue-reviewer 仍無 verdict 時，才允許使用未參與實作的、全新的 read-only general-purpose reviewer；fallback reviewer 只授與唯讀工具。
+- Fallback reviewer 仍必須輸出 exact reviewed head 與 blocking findings，或 `No blocking findings.`。
+- Controller 的驗證結果不得取代 reviewer verdict；只有 reviewer 明確回覆 verdict，review 才算完成。
+- PR 必須包含 `Closes #<issue>`，並列出 scope、changed files、validation 與 non-goals；禁止只以裸 issue number 引用。
+
 ## JavaScript Package Manager
 
 - 使用 pnpm。
