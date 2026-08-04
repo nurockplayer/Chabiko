@@ -14,6 +14,9 @@ if (payload.totalCount === 0) {
 <BaseLayout title="イラストで学ぶ基礎中国語">
   <div class="basic-vocabulary-page">
     <h1>イラストで学ぶ基礎中国語</h1>
+    <p class="basic-vocabulary-page__catalog-link-row">
+      <a class="basic-vocabulary-page__catalog-link" href="/vocabulary/basic/words/">単語一覧を見る</a>
+    </p>
     <BasicVocabularySession payload={payload} payloadJson={payloadJson} />
   </div>
 </BaseLayout>
@@ -27,5 +30,33 @@ if (payload.totalCount === 0) {
   h1 {
     margin: 0 0 var(--space-xl);
     font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .basic-vocabulary-page__catalog-link-row {
+    margin: 0 0 var(--space-lg);
+  }
+
+  .basic-vocabulary-page__catalog-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-lg);
+    background: transparent;
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    border: 2px solid transparent;
+  }
+  .basic-vocabulary-page__catalog-link:hover {
+    background: var(--c-primary-light);
+    color: var(--c-primary);
+    text-decoration: underline;
+  }
+  .basic-vocabulary-page__catalog-link:focus-visible {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px var(--c-accent-light);
   }
 </style>
