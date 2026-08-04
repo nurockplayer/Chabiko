@@ -64,7 +64,7 @@ describe('basic vocabulary route', () => {
       height: item.illustration.height,
       alt: item.illustration.altJa,
     })));
-    expect(root.textContent).toContain('今回の学習は完了です');
+    expect(root.textContent).toContain('今回の10語を完了しました');
   });
 
   it('keeps unrevealed answers out of rendered text, then reveals the exact answer fields', () => {
@@ -96,6 +96,6 @@ describe('basic vocabulary route', () => {
     const total = root.querySelector<HTMLElement>('[data-total]');
     expect(total).not.toBeNull();
     expect(total?.textContent).toContain(String(items.length));
-    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 10 語/);
+    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^今回 0 \/ 10語/);
   });
 });

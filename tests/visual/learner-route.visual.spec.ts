@@ -81,13 +81,14 @@ test.describe('/vocabulary/basic/ learner route', () => {
         );
         await assertLearnerRouteCaptureContract(page, viewport, externalRequests);
 
-        // Before reveal: card, image, simplified, reveal, reset all contained.
+        // Before reveal: card, image, simplified, reveal, and the reset
+        // management block all contained.
         await assertElementsWithinViewport(page, [
           '[data-card]',
           '[data-card] img',
           '.basic-vocabulary-simplified',
           '[data-action="reveal"]',
-          '[data-action="reset"]',
+          '.basic-vocabulary-reset',
         ]);
 
         // After reveal: ratings contained, no horizontal overflow.
@@ -100,7 +101,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
           '[data-rating="again"]',
           '[data-rating="unsure"]',
           '[data-rating="known"]',
-          '[data-action="reset"]',
+          '.basic-vocabulary-reset',
         ]);
       });
 
@@ -114,7 +115,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
         await page.locator('[data-action="reveal"]').click();
         await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
         await assertLearnerRouteCaptureContract(page, viewport, externalRequests);
-        // No blank answer container; ratings and reset fully contained.
+        // No blank answer container; ratings and reset management contained.
         await expect(page.locator('.basic-vocabulary-answer')).toHaveCount(0);
         await assertElementsWithinViewport(page, [
           '[data-card]',
@@ -124,7 +125,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
           '[data-rating="again"]',
           '[data-rating="unsure"]',
           '[data-rating="known"]',
-          '[data-action="reset"]',
+          '.basic-vocabulary-reset',
         ]);
       });
     }
@@ -172,8 +173,10 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await openLearnerRoute(page, learnedIds(COMPLETE_FIELD_LEARNED_COUNT));
 
       const reveal = page.locator('[data-action="reveal"]');
+      const resetSummary = page.locator('.basic-vocabulary-reset summary');
       const reset = page.locator('[data-action="reset"]');
       await expect(reveal).toHaveAccessibleName('答えを見る');
+      await expect(resetSummary).toHaveAccessibleName('学習データの管理');
       await expect(reset).toHaveAccessibleName('学習記録をリセット');
 
       // The reveal button is the first focusable control and is focused on load.
@@ -190,13 +193,14 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('[data-rating="unsure"]')).toHaveAccessibleName('まだ曖昧');
       await expect(page.locator('[data-rating="known"]')).toHaveAccessibleName('覚えた');
 
-      // Natural Tab order continues through the ratings then to reset.
+      // Natural Tab order continues through the ratings, then to the reset
+      // management summary (which opens the native details block on Enter).
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="unsure"]')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="known"]')).toBeFocused();
       await page.keyboard.press('Tab');
-      await expect(reset).toBeFocused();
+      await expect(resetSummary).toBeFocused();
     });
 
     test('keyboard: reset is reachable and activates via keyboard', async ({ page }) => {
@@ -209,14 +213,21 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('.basic-vocabulary-simplified')).toHaveText('强调');
 
       // Reveal is auto-focused; Enter reveals, then Tab through the three
-      // ratings to reach reset, and Enter activates the reset dialog.
+      // ratings to the reset management summary, Enter opens the native
+      // details block, Tab reaches the reset button, and Enter activates the
+      // reset dialog.
       await expect(page.locator('[data-action="reveal"]')).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
       await page.keyboard.press('Tab'); // again -> unsure
       await page.keyboard.press('Tab'); // unsure -> known
-      await page.keyboard.press('Tab'); // known -> reset
+      await page.keyboard.press('Tab'); // known -> reset summary
+      const resetSummary = page.locator('.basic-vocabulary-reset summary');
+      await expect(resetSummary).toBeFocused();
+      await page.keyboard.press('Enter'); // open details
       const reset = page.locator('[data-action="reset"]');
+      await expect(reset).toBeVisible();
+      await page.keyboard.press('Tab');
       await expect(reset).toBeFocused();
       await page.keyboard.press('Enter');
 
@@ -229,7 +240,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('.basic-vocabulary-simplified')).toHaveText('看');
     });
 
-    test('keyboard: completion then restart is reachable and activates via keyboard', async ({ page }) => {
+    test('keyboard: completion then continue is reachable and activates via keyboard', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       await openLearnerRoute(page, learnedIds(COMPLETE_FIELD_LEARNED_COUNT));
@@ -247,14 +258,17 @@ test.describe('/vocabulary/basic/ learner route', () => {
       }
       await expect(page.locator('.basic-vocabulary-completion')).toBeVisible();
 
-      // In the completion state the restart button is the focusable control.
-      const restart = page.locator('[data-action="restart"]');
-      await expect(restart).toHaveAccessibleName('もう一度学ぶ');
-      await expect(restart).toBeVisible();
-      await expect(restart).toBeFocused();
+      // In the completion state the primary continue button is the focusable
+      // control and the secondary replay button is present.
+      const continueButton = page.locator('[data-action="continue"]');
+      const replay = page.locator('[data-action="replay"]');
+      await expect(continueButton).toHaveAccessibleName('次の10語を学ぶ');
+      await expect(replay).toHaveAccessibleName('今回の10語を復習する');
+      await expect(continueButton).toBeVisible();
+      await expect(continueButton).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(page.locator('.basic-vocabulary-reveal')).toBeVisible();
-      // Learning items are prioritized on restart, so the window leads with 大家.
+      // Learning items are prioritized on continue, so the window leads with 大家.
       await expect(page.locator('.basic-vocabulary-simplified')).toHaveText('大家');
     });
 
@@ -269,7 +283,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await openLearnerRoute(page, learnedIds(COMPLETE_FIELD_LEARNED_COUNT));
       await page.locator('[data-action="reveal"]').click();
       await page.locator('[data-rating="known"]').click();
-      await expect(page.locator('[data-progress]')).toHaveText(/1 \/ 10 語/);
+      await expect(page.locator('[data-progress]')).toHaveText(/今回 1 \/ 10語/);
       expect(errors).toEqual([]);
     });
 
@@ -288,7 +302,7 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
       await expect(page.locator('.basic-vocabulary-answer')).toHaveCount(0);
       await page.locator('[data-rating="known"]').click();
-      await expect(page.locator('[data-progress]')).toHaveText(/1 \/ 10 語/);
+      await expect(page.locator('[data-progress]')).toHaveText(/今回 1 \/ 10語/);
       expect(errors).toEqual([]);
     });
   });
