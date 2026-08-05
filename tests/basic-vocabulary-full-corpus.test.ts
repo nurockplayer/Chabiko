@@ -235,7 +235,7 @@ describe('full production corpus integration', () => {
     expect(ratings).toHaveLength(3);
     // Rating an answer-less item still advances the session.
     (root.querySelector('[data-rating="known"]') as HTMLButtonElement).click();
-    expect(root.textContent).toContain('今回の学習は完了です');
+    expect(root.textContent).toContain('今回の1語を完了しました');
   });
 
   it('a synthetic corpus change drives the production route payload instead of a hard-coded constant', () => {
@@ -269,7 +269,7 @@ describe('full production corpus integration', () => {
     const root = sessionRoot(payload.ids, { ...payload.render });
     initBasicVocabularySession(root);
     expect(root.querySelector<HTMLElement>('[data-total]')?.textContent).toContain('3');
-    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 3 語/);
+    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^今回 0 \/ 3語/);
   });
 
   it('keeps the batch-01 loader contract intact as a legacy adapter', async () => {

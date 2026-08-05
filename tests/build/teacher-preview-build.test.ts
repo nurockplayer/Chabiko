@@ -169,7 +169,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
     }
 
     // The route shows the total corpus size separately from the session size.
-    expect(learnerHtml).toContain(`対象 ${eligible}語`);
+    expect(learnerHtml).toContain(`全${eligible}語`);
     expect(learnerHtml).toContain('data-basic-vocabulary-session-size="10"');
   });
 

@@ -1,0 +1,343 @@
+---
+import type { BasicVocabularyCatalogItem } from '../../content/basicVocabularyCatalog';
+import { selectBasicVocabularyCatalogPage } from '../../domain/basicVocabularyCatalog';
+
+export interface Props {
+  items: readonly BasicVocabularyCatalogItem[];
+  itemsJson: string;
+}
+
+const { items, itemsJson } = Astro.props;
+
+/** First-paint page: exactly the first 24 production-order items with no
+ * progress-status badges (local status is unknown at build time). The client
+ * re-renders the same 24 items with truthful statuses on initialization. */
+const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
+  searchText: '',
+  status: 'all',
+  page: 1,
+});
+---
+
+<section class="basic-vocabulary-catalog" data-basic-vocabulary-catalog>
+  <nav class="basic-vocabulary-catalog-back">
+    <a href="/vocabulary/basic/">単語学習に戻る</a>
+  </nav>
+
+  <div class="basic-vocabulary-catalog-controls">
+    <div class="basic-vocabulary-catalog-field">
+      <label for="basic-vocabulary-catalog-search">単語を検索</label>
+      <input
+        id="basic-vocabulary-catalog-search"
+        data-catalog-search
+        type="search"
+        autocomplete="off"
+        placeholder="中国語・ピンイン・日本語"
+      />
+    </div>
+    <div class="basic-vocabulary-catalog-field">
+      <label for="basic-vocabulary-catalog-status">学習状態</label>
+      <select id="basic-vocabulary-catalog-status" data-catalog-status>
+        <option value="all">すべて</option>
+        <option value="new">新規</option>
+        <option value="learning">学習中</option>
+        <option value="learned">習得済み</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="basic-vocabulary-catalog-summary" data-catalog-summary aria-live="polite">
+    全{items.length}語中 {firstPage.filteredCount}語を表示
+  </p>
+
+  <ol class="basic-vocabulary-catalog-results" data-catalog-results>
+    {
+      firstPage.items.map((pageItem) => (
+        <li class="basic-vocabulary-catalog-card">
+          <div class="basic-vocabulary-catalog-illustration">
+            <img
+              src={pageItem.item.illustration.assetPath}
+              width={pageItem.item.illustration.width}
+              height={pageItem.item.illustration.height}
+              alt={pageItem.item.illustration.altJa}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="basic-vocabulary-catalog-body">
+            <h3 class="basic-vocabulary-catalog-simplified" lang="zh-Hans">
+              {pageItem.item.simplified}
+            </h3>
+            {pageItem.item.traditional !== undefined && (
+              <p class="basic-vocabulary-catalog-traditional" lang="zh-Hant">
+                {pageItem.item.traditional}
+              </p>
+            )}
+            {pageItem.item.pinyin !== undefined && (
+              <p class="basic-vocabulary-catalog-pinyin" lang="zh-Latn">
+                {pageItem.item.pinyin}
+              </p>
+            )}
+            {pageItem.item.japanese !== undefined && (
+              <p class="basic-vocabulary-catalog-japanese" lang="ja">
+                {pageItem.item.japanese}
+              </p>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="basic-vocabulary-catalog-pagination">
+    <button data-catalog-page="previous" type="button" disabled>前へ</button>
+    <span class="basic-vocabulary-catalog-page-indicator" data-catalog-page-indicator>
+      {firstPage.page} / {firstPage.pageCount}
+    </span>
+    <button data-catalog-page="next" type="button" disabled>次へ</button>
+  </div>
+
+  <script type="application/json" id="basic-vocabulary-catalog-data" set:html={itemsJson} is:inline></script>
+</section>
+
+<script>
+  import { initBasicVocabularyCatalog } from '../../client/basicVocabularyCatalog';
+
+  function initialiseCatalog(): void {
+    document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-catalog]').forEach((root) => {
+      initBasicVocabularyCatalog(root);
+    });
+  }
+
+  initialiseCatalog();
+  document.addEventListener('astro:page-load', initialiseCatalog);
+</script>
+
+<style is:global>
+  .basic-vocabulary-catalog {
+    width: 100%;
+  }
+
+  .basic-vocabulary-catalog-back {
+    margin: 0 0 var(--space-lg);
+  }
+
+  .basic-vocabulary-catalog-back a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding: var(--space-sm) 0;
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-catalog-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    width: 100%;
+    margin-bottom: var(--space-lg);
+  }
+
+  @media (min-width: 640px) {
+    .basic-vocabulary-catalog-controls {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .basic-vocabulary-catalog-field {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .basic-vocabulary-catalog-field label {
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-catalog-field input,
+  .basic-vocabulary-catalog-field select {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    font: inherit;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+  }
+
+  .basic-vocabulary-catalog-field select {
+    cursor: pointer;
+  }
+
+  .basic-vocabulary-catalog-field input:focus-visible,
+  .basic-vocabulary-catalog-field select:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .basic-vocabulary-catalog-summary {
+    margin: 0 0 var(--space-md);
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .basic-vocabulary-catalog-results {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    width: 100%;
+    padding: 0;
+    margin: 0 0 var(--space-lg);
+    list-style: none;
+  }
+
+  @media (min-width: 640px) {
+    .basic-vocabulary-catalog-results {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 960px) {
+    .basic-vocabulary-catalog-results {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .basic-vocabulary-catalog-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    min-width: 0;
+    padding: var(--space-md);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+  }
+
+  .basic-vocabulary-catalog-illustration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .basic-vocabulary-catalog-illustration img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 14rem;
+    object-fit: contain;
+  }
+
+  .basic-vocabulary-catalog-body {
+    display: grid;
+    gap: var(--space-2xs);
+    min-width: 0;
+  }
+
+  .basic-vocabulary-catalog-simplified {
+    margin: 0;
+    color: var(--c-text);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-catalog-traditional,
+  .basic-vocabulary-catalog-pinyin,
+  .basic-vocabulary-catalog-japanese {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-catalog-traditional {
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .basic-vocabulary-catalog-pinyin {
+    color: var(--c-accent);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-catalog-japanese {
+    color: var(--c-text);
+    font-size: 0.875rem;
+  }
+
+  .basic-vocabulary-catalog-badge {
+    justify-self: start;
+    padding: 0 var(--space-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    border-radius: 999px;
+    color: var(--c-text-secondary);
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-catalog-badge[data-status="learning"] {
+    color: #92400e;
+    background: #fef3c7;
+  }
+
+  .basic-vocabulary-catalog-badge[data-status="learned"] {
+    color: #166534;
+    background: #dcfce7;
+  }
+
+  .basic-vocabulary-catalog-badge[data-status="new"] {
+    color: var(--c-text-secondary);
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-catalog-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .basic-vocabulary-catalog-pagination button {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    font: inherit;
+    font-weight: 600;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .basic-vocabulary-catalog-pagination button:hover:not(:disabled) {
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-catalog-pagination button:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .basic-vocabulary-catalog-pagination button:disabled {
+    cursor: default;
+    color: var(--c-text-muted);
+    opacity: 0.55;
+  }
+
+  .basic-vocabulary-catalog-page-indicator {
+    min-width: 5rem;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+</style>

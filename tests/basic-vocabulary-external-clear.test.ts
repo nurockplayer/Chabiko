@@ -137,7 +137,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     }));
 
     expect(root.querySelector('[data-card]')?.textContent).toContain('大家');
-    expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
+    expect(root.querySelector('[data-progress]')?.textContent).toBe('今回 0 / 3語');
     expect(root.querySelector('[data-summary]')?.textContent)
       .toBe('新規 3語・学習中 0語・習得済み 0語');
   });
@@ -158,7 +158,7 @@ describe('authoritative external basic-vocabulary progress deletion', () => {
     }));
 
     expect(root.querySelector('[data-card]')?.textContent).toContain('大家');
-    expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
+    expect(root.querySelector('[data-progress]')?.textContent).toBe('今回 0 / 3語');
     expect(root.querySelector('[data-summary]')?.textContent)
       .toBe('新規 3語・学習中 0語・習得済み 0語');
   });

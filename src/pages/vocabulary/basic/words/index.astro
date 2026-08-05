@@ -1,0 +1,29 @@
+---
+import BasicVocabularyCatalog from '../../../../components/vocabulary/BasicVocabularyCatalog.astro';
+import { loadBasicVocabularyCatalog } from '../../../../content/basicVocabularyCatalog';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+const catalog = loadBasicVocabularyCatalog();
+
+if (catalog.length === 0) {
+  throw new Error('basic vocabulary catalog is empty');
+}
+
+/** Safe serialization for the inline script: replace every `<` with its
+ * escaped form so an attacker-influenced value can never break out of the
+ * script element. Contains only the #278 catalog fields — no preview-only
+ * surface, no progress or session data. */
+const catalogJson = JSON.stringify(catalog).replace(/</g, '\\u003c');
+---
+
+<BaseLayout title="単語一覧">
+  <h1>単語一覧</h1>
+  <BasicVocabularyCatalog items={catalog} itemsJson={catalogJson} />
+</BaseLayout>
+
+<style>
+  h1 {
+    margin: 0 0 var(--space-xl);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+</style>
