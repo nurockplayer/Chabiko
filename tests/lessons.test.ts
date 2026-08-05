@@ -187,9 +187,9 @@ describe('learner shell uses fixture data', () => {
 });
 
 describe('loadAllRenderableLessons', () => {
-  it('returns all 3 lessons from the default fixture', () => {
+  it('returns all 4 lessons from the default fixture', () => {
     const lessons = loadAllRenderableLessons();
-    expect(lessons).toHaveLength(3);
+    expect(lessons).toHaveLength(4);
   });
 
   it('returns lessons in file order', () => {
@@ -197,6 +197,7 @@ describe('loadAllRenderableLessons', () => {
     expect(lessons[0].id).toBe('lesson-001');
     expect(lessons[1].id).toBe('lesson-002');
     expect(lessons[2].id).toBe('lesson-003');
+    expect(lessons[3].id).toBe('lesson-004');
   });
 
   it('each lesson has all required renderable fields', () => {
@@ -317,10 +318,10 @@ describe('lesson order and navigation', () => {
     expect(lessons[2].id).toBe('lesson-003');
   });
 
-  it('lesson-003 is the last lesson', () => {
+  it('lesson-004 is the last lesson', () => {
     const lessons = loadAllRenderableLessons();
     const lastIndex = lessons.length - 1;
-    expect(lessons[lastIndex].id).toBe('lesson-003');
+    expect(lessons[lastIndex].id).toBe('lesson-004');
   });
 
   it('each lesson id is a valid URL path segment', () => {
@@ -342,13 +343,15 @@ describe('static paths generation', () => {
         nextLesson: i < lessons.length - 1 ? { id: lessons[i + 1].id, titleJa: lessons[i + 1].titleJa } : null,
       },
     }));
-    expect(paths).toHaveLength(3);
+    expect(paths).toHaveLength(4);
     expect(paths[0].params.id).toBe('lesson-001');
     expect(paths[0].props.prevLesson).toBeNull();
     expect(paths[0].props.nextLesson?.id).toBe('lesson-002');
     expect(paths[1].props.prevLesson?.id).toBe('lesson-001');
     expect(paths[1].props.nextLesson?.id).toBe('lesson-003');
     expect(paths[2].props.prevLesson?.id).toBe('lesson-002');
-    expect(paths[2].props.nextLesson).toBeNull();
+    expect(paths[2].props.nextLesson?.id).toBe('lesson-004');
+    expect(paths[3].props.prevLesson?.id).toBe('lesson-003');
+    expect(paths[3].props.nextLesson).toBeNull();
   });
 });
