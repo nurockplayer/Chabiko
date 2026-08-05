@@ -47,6 +47,38 @@ const canonical = url.href;
           storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : systemTheme;
       })();
     </script>
+    <script is:inline>
+      // Frozen script-preference bootstrap (Issue #252): runs before rendered
+      // content. Reads only `chabiko.script-preference.v1`, accepts only
+      // version 1 and the three controlled values, and exposes the validated
+      // preference on the root dataset. Missing/malformed/inaccessible storage
+      // falls back to `path-default`. Never writes storage, modifies content,
+      // converts script, or throws.
+      (() => {
+        const key = 'chabiko.script-preference.v1';
+        let stored = 'path-default';
+        try {
+          const raw = window.localStorage.getItem(key);
+          if (raw !== null) {
+            const parsed = JSON.parse(raw);
+            if (
+              parsed &&
+              typeof parsed === 'object' &&
+              !Array.isArray(parsed) &&
+              parsed.version === 1 &&
+              (parsed.preference === 'path-default' ||
+                parsed.preference === 'traditional' ||
+                parsed.preference === 'simplified')
+            ) {
+              stored = parsed.preference;
+            }
+          }
+        } catch {
+          // Missing, malformed, or inaccessible storage → path-default.
+        }
+        document.documentElement.dataset.scriptPreference = stored;
+      })();
+    </script>
     <style>
       :root {
         --color-page: #fafafa;

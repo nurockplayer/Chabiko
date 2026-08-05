@@ -30,15 +30,20 @@ const { themeEnabled = false } = Astro.props;
         </button>
       )
     }
-    <div class="script-toggle-slot" aria-label="簡体字・繁体字切り替え（準備中）">
-      <span aria-hidden="true">繁｜簡</span>
-      <span class="slot-badge">準備中</span>
+    <div class="script-toggle-slot">
+      <label for="script-preference-select">漢字表記</label>
+      <select id="script-preference-select" class="script-preference-select">
+        <option value="path-default">コース標準</option>
+        <option value="traditional">繁体字</option>
+        <option value="simplified">簡体字</option>
+      </select>
     </div>
   </div>
 </header>
 
 <script>
   import { THEME_STORAGE_KEY, getNextTheme } from '../lib/theme';
+  import { initScriptPreferenceControl } from '../client/scriptPreferenceControl';
 
   const themeToggle = document.getElementById('theme-toggle');
 
@@ -68,6 +73,12 @@ const { themeEnabled = false } = Astro.props;
       updateThemeControl(nextTheme);
     });
   }
+
+  // The script-preference control always renders in the header, regardless of
+  // the theme-enabled flag. It initializes from the validated root dataset set
+  // by the BaseLayout pre-paint bootstrap and persists only through the
+  // Issue #251 store.
+  initScriptPreferenceControl();
 </script>
 
 <style>
@@ -170,24 +181,65 @@ const { themeEnabled = false } = Astro.props;
     color: var(--color-header-muted);
     white-space: nowrap;
   }
-  .slot-badge {
-    padding-left: var(--space-xs);
-    border-left: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
-    font-size: 0.625rem;
+  .script-toggle-slot label {
+    font-size: 0.6875rem;
+    color: var(--color-header-muted);
+    white-space: nowrap;
+  }
+  .script-preference-select {
+    min-height: 44px;
+    max-width: 8.5rem;
+    padding: 0 var(--space-sm);
+    border: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--color-header-text) 8%, transparent);
+    color: var(--color-header-text);
+    font: inherit;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .script-preference-select:hover {
+    background: color-mix(in srgb, var(--color-header-text) 10%, transparent);
+  }
+  .script-preference-select:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: 2px;
   }
   @media (width <= 767px) {
-    .logo-sub,
-    .slot-badge {
+    .logo-sub {
       display: none;
+    }
+    .header-inner {
+      gap: var(--space-sm);
+    }
+    /* The control label stacks above the select so the header never
+     * overflows at 320/375/390px. */
+    .script-toggle-slot {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      line-height: 1.2;
+    }
+    .script-toggle-slot label {
+      font-size: 0.625rem;
+    }
+    .script-preference-select {
+      max-width: 6.5rem;
+      padding-inline: var(--space-xs);
+      font-size: 0.625rem;
     }
   }
   @media (width <= 374px) {
     .header-inner {
       padding-inline: var(--space-md);
-      gap: var(--space-sm);
     }
-    .script-toggle-slot {
-      font-size: 0.625rem;
+    .script-toggle-slot label {
+      font-size: 0.5625rem;
+    }
+    .script-preference-select {
+      max-width: 6rem;
+      font-size: 0.5625rem;
     }
     .theme-toggle {
       min-width: 44px;
