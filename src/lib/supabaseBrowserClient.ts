@@ -56,18 +56,18 @@ export function readSupabasePublicConfig(
     return null;
   }
 
-  // Normalize exactly one trailing slash for every absolute HTTP(S) URL,
-  // including the root path. `URL.toString()` would re-append the root slash,
-  // so operate on the serialized href instead and never rewrite path, query or
-  // fragment content.
-  const href = parsed.href;
-  let baseEnd = href.length;
-  const searchStart = href.indexOf('?');
-  const hashStart = href.indexOf('#');
+  // Normalize exactly one trailing slash against the original trimmed input.
+  // `URL` is only used above to validate absoluteness and the HTTP(S) protocol;
+  // its serialized href/pathname would canonicalize path content (e.g. collapse
+  // dot segments), which Issue #286 forbids. Operate on the raw string before
+  // the first `?` or `#` so every other path/query/fragment byte is preserved.
+  let baseEnd = url.length;
+  const searchStart = url.indexOf('?');
+  const hashStart = url.indexOf('#');
   if (searchStart !== -1) baseEnd = Math.min(baseEnd, searchStart);
   if (hashStart !== -1) baseEnd = Math.min(baseEnd, hashStart);
-  const base = href.slice(0, baseEnd);
-  const suffix = href.slice(baseEnd);
+  const base = url.slice(0, baseEnd);
+  const suffix = url.slice(baseEnd);
   const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
 
   return { url: normalizedBase + suffix, publishableKey };

@@ -141,6 +141,26 @@ describe('readSupabasePublicConfig', () => {
     });
   });
 
+  it('removes only one of two trailing slashes', () => {
+    expect(
+      readSupabasePublicConfig(
+        publicEnv({ PUBLIC_SUPABASE_URL: 'https://example.com/auth//' }),
+      ),
+    ).toEqual({ url: 'https://example.com/auth/', publishableKey: VALID_KEY });
+  });
+
+  it('preserves dot-segment path bytes apart from one trailing slash', () => {
+    // Constructing a URL would canonicalize `a/../b/` into `b/`; the returned
+    // URL must instead keep every non-slash byte and remove exactly one
+    // trailing slash before the query/fragment.
+    const input = 'https://example.com/a/../b/?flow=pkce#top';
+    const normalized = readSupabasePublicConfig(
+      publicEnv({ PUBLIC_SUPABASE_URL: input }),
+    );
+    expect(normalized).not.toBeNull();
+    expect(normalized?.url).toBe('https://example.com/a/../b?flow=pkce#top');
+  });
+
   it('does not call out to the network just to read config', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     expect(readSupabasePublicConfig(publicEnv())).not.toBeNull();
