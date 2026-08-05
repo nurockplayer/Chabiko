@@ -118,13 +118,29 @@ function emptyDocument(): BasicVocabularyProgressDocument {
 export class BasicVocabularyProgressStore {
   private document: BasicVocabularyProgressDocument;
   private storage: StorageLike | null;
+  private readonly storageKey: string;
   private persistFailed = false;
   private pendingChanges = new Set<string>();
   private resetPending = false;
 
-  constructor(storage?: StorageLike | null) {
+  /**
+   * @param storage   Optional storage-like backend. Defaults to
+   *                  localStorage when available, otherwise null.
+   * @param storageKey Optional physical key. Defaults to the legacy guest key
+   *                  `BASIC_VOCABULARY_PROGRESS_KEY`. Pass the result of
+   *                  `getBasicVocabularyProgressStorageKey(scope)` to operate
+   *                  against a user-scoped key. An empty key throws.
+   */
+  constructor(storage?: StorageLike | null, storageKey?: string) {
+    if (storageKey !== undefined && storageKey === '') {
+      throw new Error(
+        'BasicVocabularyProgressStore storageKey must not be empty',
+      );
+    }
     this.document = emptyDocument();
     this.storage = storage !== undefined ? storage : getDefaultStorage();
+    this.storageKey =
+      storageKey !== undefined ? storageKey : BASIC_VOCABULARY_PROGRESS_KEY;
     this.load();
   }
 
@@ -148,6 +164,20 @@ export class BasicVocabularyProgressStore {
    */
   isRelevantStorageArea(storageArea: StorageLike | null): boolean {
     return storageArea === null || storageArea === this.storage;
+  }
+
+  /** The exact physical storage key this store reads, writes, and removes. */
+  getStorageKey(): string {
+    return this.storageKey;
+  }
+
+  /**
+   * Whether a storage event key affects this store. `null` represents a
+   * storage-wide clear and is relevant; otherwise only exact equality with the
+   * instance key is relevant.
+   */
+  isRelevantStorageKey(key: string | null): boolean {
+    return key === null || key === this.storageKey;
   }
 
   // ── Write ─────────────────────────────────────────────────────────────────
@@ -221,7 +251,7 @@ export class BasicVocabularyProgressStore {
   acceptExternalClear(): boolean {
     if (this.storage !== null) {
       try {
-        if (this.storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY) !== null) {
+        if (this.storage.getItem(this.storageKey) !== null) {
           return false;
         }
       } catch {
@@ -246,7 +276,7 @@ export class BasicVocabularyProgressStore {
     this.document = emptyDocument();
     this.pendingChanges.clear();
     try {
-      this.storage?.removeItem(BASIC_VOCABULARY_PROGRESS_KEY);
+      this.storage?.removeItem(this.storageKey);
       this.resetPending = false;
     } catch {
       this.resetPending = true;
@@ -258,7 +288,7 @@ export class BasicVocabularyProgressStore {
 
   private load(): void {
     try {
-      const raw = this.storage?.getItem(BASIC_VOCABULARY_PROGRESS_KEY);
+      const raw = this.storage?.getItem(this.storageKey);
       if (typeof raw === 'string') {
         const doc = parseDocument(raw);
         if (doc !== null) {
@@ -275,7 +305,7 @@ export class BasicVocabularyProgressStore {
   private syncFromStorage(): void {
     if (this.storage === null) return;
     try {
-      const raw = this.storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY);
+      const raw = this.storage.getItem(this.storageKey);
       if (typeof raw === 'string') {
         const doc = parseDocument(raw);
         if (doc !== null) {
@@ -320,7 +350,7 @@ export class BasicVocabularyProgressStore {
   private persist(): void {
     try {
       this.storage?.setItem(
-        BASIC_VOCABULARY_PROGRESS_KEY,
+        this.storageKey,
         JSON.stringify(this.document),
       );
       this.persistFailed = false;
