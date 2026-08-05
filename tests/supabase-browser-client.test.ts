@@ -84,12 +84,12 @@ describe('readSupabasePublicConfig', () => {
       readSupabasePublicConfig(
         publicEnv({ PUBLIC_SUPABASE_URL: 'http://localhost:54321' }),
       ),
-    ).toEqual({ url: 'http://localhost:54321/', publishableKey: VALID_KEY });
+    ).toEqual({ url: 'http://localhost:54321', publishableKey: VALID_KEY });
     expect(
       readSupabasePublicConfig(
         publicEnv({ PUBLIC_SUPABASE_URL: 'https://project.supabase.co' }),
       ),
-    ).toEqual({ url: 'https://project.supabase.co/', publishableKey: VALID_KEY });
+    ).toEqual({ url: 'https://project.supabase.co', publishableKey: VALID_KEY });
   });
 
   it('trims whitespace from both fields', () => {
@@ -100,7 +100,7 @@ describe('readSupabasePublicConfig', () => {
           PUBLIC_SUPABASE_PUBLISHABLE_KEY: `  ${VALID_KEY}  `,
         }),
       ),
-    ).toEqual({ url: `${VALID_URL}/`, publishableKey: VALID_KEY });
+    ).toEqual({ url: `${VALID_URL}`, publishableKey: VALID_KEY });
   });
 
   it('removes one trailing slash without rewriting path or query content', () => {
@@ -112,12 +112,33 @@ describe('readSupabasePublicConfig', () => {
     expect(normalized?.url).toBe('https://example.com/auth/v1?flow=pkce');
   });
 
-  it('keeps the root trailing slash when the path is just the root', () => {
+  it('removes one trailing slash from the root URL', () => {
     expect(
       readSupabasePublicConfig(
         publicEnv({ PUBLIC_SUPABASE_URL: 'https://example.com/' }),
       ),
-    ).toEqual({ url: 'https://example.com/', publishableKey: VALID_KEY });
+    ).toEqual({ url: 'https://example.com', publishableKey: VALID_KEY });
+  });
+
+  it('keeps the root URL unchanged when it already has no trailing slash', () => {
+    expect(
+      readSupabasePublicConfig(
+        publicEnv({ PUBLIC_SUPABASE_URL: 'https://example.com' }),
+      ),
+    ).toEqual({ url: 'https://example.com', publishableKey: VALID_KEY });
+  });
+
+  it('removes one trailing slash before query and fragment', () => {
+    expect(
+      readSupabasePublicConfig(
+        publicEnv({
+          PUBLIC_SUPABASE_URL: 'https://example.com/auth/v1/?flow=pkce#top',
+        }),
+      ),
+    ).toEqual({
+      url: 'https://example.com/auth/v1?flow=pkce#top',
+      publishableKey: VALID_KEY,
+    });
   });
 
   it('does not call out to the network just to read config', () => {
@@ -145,7 +166,7 @@ describe('getSupabaseBrowserClient', () => {
     expect(second).toBe(first);
     // The client is built from the normalized public config.
     expect(mod.readSupabasePublicConfig()).toEqual({
-      url: `${VALID_URL}/`,
+      url: `${VALID_URL}`,
       publishableKey: VALID_KEY,
     });
   });
@@ -261,7 +282,7 @@ describe('no secret credentials surface', () => {
     vi.stubEnv('PUBLIC_SUPABASE_PUBLISHABLE_KEY', VALID_KEY);
     const mod = await importModule();
     const config = mod.readSupabasePublicConfig() as SupabasePublicConfig;
-    expect(config.url).toBe(`${VALID_URL}/`);
+    expect(config.url).toBe(`${VALID_URL}`);
     expect(config.publishableKey).toBe(VALID_KEY);
   });
 });

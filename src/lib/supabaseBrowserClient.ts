@@ -56,12 +56,21 @@ export function readSupabasePublicConfig(
     return null;
   }
 
-  // Normalize exactly one trailing slash without rewriting path/query content.
-  if (parsed.pathname.length > 1 && parsed.pathname.endsWith('/')) {
-    parsed.pathname = parsed.pathname.slice(0, -1);
-  }
+  // Normalize exactly one trailing slash for every absolute HTTP(S) URL,
+  // including the root path. `URL.toString()` would re-append the root slash,
+  // so operate on the serialized href instead and never rewrite path, query or
+  // fragment content.
+  const href = parsed.href;
+  let baseEnd = href.length;
+  const searchStart = href.indexOf('?');
+  const hashStart = href.indexOf('#');
+  if (searchStart !== -1) baseEnd = Math.min(baseEnd, searchStart);
+  if (hashStart !== -1) baseEnd = Math.min(baseEnd, hashStart);
+  const base = href.slice(0, baseEnd);
+  const suffix = href.slice(baseEnd);
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
 
-  return { url: parsed.toString(), publishableKey };
+  return { url: normalizedBase + suffix, publishableKey };
 }
 
 /**
