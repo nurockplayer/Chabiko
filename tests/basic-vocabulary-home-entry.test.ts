@@ -81,6 +81,11 @@ describe('basic-vocabulary home entry', () => {
       const links = homeSource.match(/href="\/vocabulary\/basic\/"/g);
       expect(links).toHaveLength(1);
     });
+
+    it('exactly one anchor links to /vocabulary/basic/words/', () => {
+      const links = homeSource.match(/href="\/vocabulary\/basic\/words\/"/g);
+      expect(links).toHaveLength(1);
+    });
   });
 
   describe('exact copy and markup', () => {
@@ -114,8 +119,16 @@ describe('basic-vocabulary home entry', () => {
       expect(homeSource).toContain('単語学習を始める');
     });
 
+    it('uses the exact catalog action label', () => {
+      expect(homeSource).toContain('単語一覧を見る');
+    });
+
     it('links to /vocabulary/basic/', () => {
       expect(homeSource).toContain('href="/vocabulary/basic/"');
+    });
+
+    it('links to /vocabulary/basic/words/', () => {
+      expect(homeSource).toContain('href="/vocabulary/basic/words/"');
     });
 
     it('the link is a native anchor with matching text', () => {
@@ -125,6 +138,28 @@ describe('basic-vocabulary home entry', () => {
       expect(linkMatch).not.toBeNull();
       expect(linkMatch![1]).toBe('単語学習を始める');
       expect(linkMatch![0]).toContain('href="/vocabulary/basic/"');
+    });
+
+    it('the catalog link is a native anchor with matching text', () => {
+      const linkMatch = homeSource.match(
+        /<a[^>]*class="basic-vocabulary-entry__catalog-link"[^>]*>(.*?)<\/a>/,
+      );
+      expect(linkMatch).not.toBeNull();
+      expect(linkMatch![1]).toBe('単語一覧を見る');
+      expect(linkMatch![0]).toContain('href="/vocabulary/basic/words/"');
+    });
+
+    it('the study link appears before the catalog link inside the entry', () => {
+      expect(entry).toContain('basic-vocabulary-entry__actions');
+      const studyIndex = entry.indexOf(
+        'class="basic-vocabulary-entry__link"',
+      );
+      const catalogIndex = entry.indexOf(
+        'class="basic-vocabulary-entry__catalog-link"',
+      );
+      expect(studyIndex).toBeGreaterThan(0);
+      expect(catalogIndex).toBeGreaterThan(0);
+      expect(studyIndex).toBeLessThan(catalogIndex);
     });
   });
 
@@ -165,12 +200,16 @@ describe('basic-vocabulary home entry', () => {
         '.basic-vocabulary-entry__content',
         '.basic-vocabulary-entry__eyebrow',
         '.basic-vocabulary-entry__availability',
+        '.basic-vocabulary-entry__actions',
         '.basic-vocabulary-entry__link',
         '.basic-vocabulary-entry__link:hover',
         '.basic-vocabulary-entry__link:focus-visible',
+        '.basic-vocabulary-entry__catalog-link',
+        '.basic-vocabulary-entry__catalog-link:hover',
+        '.basic-vocabulary-entry__catalog-link:focus-visible',
       ];
 
-      expect(foundSelectors).toHaveLength(7);
+      expect(foundSelectors).toHaveLength(11);
       expect([...foundSelectors].sort()).toEqual([...expected].sort());
 
       // 4. Synthetic assertions: the parsing method must reject compound,
@@ -199,6 +238,20 @@ describe('basic-vocabulary home entry', () => {
       const focusRule = rules.find(
         (r) =>
           r.includes('basic-vocabulary-entry__link') &&
+          r.includes(':focus-visible'),
+      );
+      expect(focusRule).toBeDefined();
+      expect(focusRule).not.toContain('outline');
+    });
+
+    it('does not suppress native focus-visible outline on the catalog link', () => {
+      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
+      const styles = styleMatch?.[1] ?? '';
+      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
+      const rules = clean.split('}');
+      const focusRule = rules.find(
+        (r) =>
+          r.includes('basic-vocabulary-entry__catalog-link') &&
           r.includes(':focus-visible'),
       );
       expect(focusRule).toBeDefined();
@@ -246,9 +299,9 @@ describe('basic-vocabulary home entry', () => {
       expect(entry).not.toContain('<button');
     });
 
-    it('has exactly one link', () => {
+    it('has exactly two links (study then catalog)', () => {
       const links = entry.match(/<a /g);
-      expect(links).toHaveLength(1);
+      expect(links).toHaveLength(2);
     });
 
     it('has no icon element', () => {
@@ -269,6 +322,17 @@ describe('basic-vocabulary home entry', () => {
 
     it('does not reference progress or completion counts', () => {
       expect(entry).not.toMatch(/\d+%|学習済み|完了数|残り\s*\d/);
+    });
+
+    it('does not hard-code the corpus count 1582', () => {
+      expect(entry).not.toContain('1582');
+      expect(homeSource).not.toContain('1582');
+    });
+
+    it('does not add a second basic-vocabulary entry or duplicate id', () => {
+      const entryIds = homeSource.match(/id="basic-vocabulary-entry"/g);
+      expect(entryIds).toHaveLength(1);
+      expect(homeSource).not.toContain('basic-vocabulary-entry2');
     });
   });
 
@@ -339,6 +403,53 @@ describe('basic-vocabulary home entry', () => {
         (l) => l.includes('white-space') && !l.includes('normal'),
       );
       expect(nowrapLines).toHaveLength(0);
+    });
+
+    it('gives the secondary catalog link a 44px min target and visible focus', () => {
+      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
+      const styles = styleMatch?.[1] ?? '';
+      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
+      const rules = clean.split('}');
+
+      const catalogRule = rules.find(
+        (r) =>
+          r.includes('basic-vocabulary-entry__catalog-link') &&
+          !r.includes(':focus-visible') &&
+          !r.includes(':hover'),
+      );
+      expect(catalogRule).toBeDefined();
+      expect(catalogRule).toMatch(/min-height:\s*44px/);
+
+      const focusRule = rules.find(
+        (r) =>
+          r.includes('basic-vocabulary-entry__catalog-link') &&
+          r.includes(':focus-visible'),
+      );
+      expect(focusRule).toBeDefined();
+      expect(focusRule).not.toContain('outline');
+      expect(focusRule).not.toContain('display: none');
+    });
+
+    it('wraps the two entry links in a dedicated wrapping action container without nowrap', () => {
+      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
+      const styles = styleMatch?.[1] ?? '';
+      const actionsRule = styles.match(
+        /\.basic-vocabulary-entry__actions\s*\{([\s\S]*?)\}/,
+      );
+      expect(actionsRule).not.toBeNull();
+      const declarations = actionsRule![1];
+      expect(declarations).toMatch(/flex-wrap:\s*wrap/);
+      expect(declarations).not.toContain('nowrap');
+      // The actions container owns the link margin; links must not fight it.
+      expect(declarations).toMatch(/gap:/);
+    });
+
+    it('keeps the two native links in keyboard reachable DOM order (primary first)', () => {
+      const studyIndex = homeSource.indexOf('単語学習を始める');
+      const catalogIndex = homeSource.indexOf('単語一覧を見る');
+      expect(studyIndex).toBeGreaterThan(0);
+      expect(catalogIndex).toBeGreaterThan(0);
+      expect(studyIndex).toBeLessThan(catalogIndex);
     });
 
     it('keeps block-end spacing on the entry so it never sits flush against the following section', () => {

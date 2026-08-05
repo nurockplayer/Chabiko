@@ -22,7 +22,10 @@ const lessons = loadAllRenderableLessons();
       <h2 id="basic-vocabulary-entry-title">イラストで学ぶ基礎中国語</h2>
       <p>中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。</p>
       <p class="basic-vocabulary-entry__availability">イラスト付きの単語を、少しずつ練習できます。</p>
-      <a class="basic-vocabulary-entry__link" href="/vocabulary/basic/">単語学習を始める</a>
+      <div class="basic-vocabulary-entry__actions">
+        <a class="basic-vocabulary-entry__link" href="/vocabulary/basic/">単語学習を始める</a>
+        <a class="basic-vocabulary-entry__catalog-link" href="/vocabulary/basic/words/">単語一覧を見る</a>
+      </div>
     </div>
   </section>
 
@@ -208,13 +211,18 @@ const lessons = loadAllRenderableLessons();
     font-size: 0.8125rem;
     margin-top: var(--space-xs);
   }
+  .basic-vocabulary-entry__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
   .basic-vocabulary-entry__link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    align-self: flex-start;
-    margin-top: var(--space-sm);
     padding: var(--space-sm) var(--space-lg);
     background: var(--c-primary);
     color: var(--color-on-primary);
@@ -229,6 +237,29 @@ const lessons = loadAllRenderableLessons();
     text-decoration: underline;
   }
   .basic-vocabulary-entry__link:focus-visible {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px var(--c-accent-light);
+  }
+  .basic-vocabulary-entry__catalog-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-lg);
+    background: transparent;
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    border: 2px solid transparent;
+  }
+  .basic-vocabulary-entry__catalog-link:hover {
+    background: var(--c-primary-light);
+    color: var(--c-primary);
+    text-decoration: underline;
+  }
+  .basic-vocabulary-entry__catalog-link:focus-visible {
     border-color: var(--color-focus);
     box-shadow: 0 0 0 3px var(--c-accent-light);
   }
