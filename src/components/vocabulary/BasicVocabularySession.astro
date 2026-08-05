@@ -17,9 +17,9 @@ const sessionSize = Math.min(10, ids.length);
   data-basic-vocabulary-ids={JSON.stringify(ids)}
   data-basic-vocabulary-session-size={sessionSize}
 >
-  <p class="basic-vocabulary-total" data-total>対象 {totalCount}語</p>
+  <p class="basic-vocabulary-total" data-total>全{totalCount}語</p>
   <p class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</p>
-  <p class="basic-vocabulary-progress" data-progress aria-live="polite">0 / {sessionSize} 語</p>
+  <p class="basic-vocabulary-progress" data-progress aria-live="polite">今回 0 / {sessionSize}語</p>
   <div class="basic-vocabulary-card" data-card>
     {
       first?.illustration && (
@@ -37,9 +37,12 @@ const sessionSize = Math.min(10, ids.length);
       答えを見る
     </button>
   </div>
-  <button class="basic-vocabulary-action basic-vocabulary-reset" data-action="reset" type="button">
-    学習記録をリセット
-  </button>
+  <details class="basic-vocabulary-reset">
+    <summary>学習データの管理</summary>
+    <button class="basic-vocabulary-reset-button" data-action="reset" type="button">
+      学習記録をリセット
+    </button>
+  </details>
   <script type="application/json" id="basic-vocabulary-data" set:html={payloadJson} is:inline></script>
 </section>
 
@@ -79,21 +82,59 @@ const sessionSize = Math.min(10, ids.length);
 
   .basic-vocabulary-reset {
     margin-top: var(--space-sm);
-    width: auto;
-    padding: var(--space-xs) var(--space-md);
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: var(--c-text-secondary);
-    border-color: var(--c-border);
-    background: transparent;
   }
 
-  .basic-vocabulary-reset:hover {
+  .basic-vocabulary-reset summary {
+    width: fit-content;
+    margin: 0 0 0 auto;
+    padding: var(--space-xs) var(--space-md);
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: var(--radius);
+    list-style: none;
+    user-select: none;
+  }
+
+  .basic-vocabulary-reset summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .basic-vocabulary-reset summary:hover {
     background: var(--c-slot-bg);
   }
 
-  .basic-vocabulary-card,
-  .basic-vocabulary-completion {
+  .basic-vocabulary-reset[open] .basic-vocabulary-reset-button {
+    display: inline-block;
+  }
+
+  .basic-vocabulary-reset-button {
+    display: none;
+    width: auto;
+    min-height: 2.75rem;
+    margin-top: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--c-text-secondary);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .basic-vocabulary-reset-button:hover {
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-reset-button:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .basic-vocabulary-card {
     box-sizing: border-box;
     width: 100%;
     min-height: clamp(22rem, 66vh, 39rem);
@@ -103,6 +144,21 @@ const sessionSize = Math.min(10, ids.length);
     justify-content: center;
     gap: clamp(0.75rem, 3vw, 1.25rem);
     overflow: hidden;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    padding: clamp(1rem, 5vw, 2rem);
+    text-align: center;
+  }
+
+  .basic-vocabulary-completion {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.75rem, 3vw, 1.25rem);
     border: 1px solid var(--c-border);
     border-radius: var(--radius);
     background: var(--c-surface);
@@ -179,7 +235,7 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-reveal,
-  .basic-vocabulary-restart {
+  .basic-vocabulary-continue {
     border-color: var(--c-accent);
     background: var(--c-accent);
     color: #fff;
@@ -219,7 +275,7 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-reveal:hover,
-  .basic-vocabulary-restart:hover {
+  .basic-vocabulary-continue:hover {
     background: var(--c-accent-hover);
   }
 
@@ -235,13 +291,60 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-completion {
-    gap: var(--space-lg);
+    gap: clamp(0.75rem, 3vw, 1.25rem);
   }
 
   .basic-vocabulary-completion-title {
     margin: 0;
     color: var(--c-text);
     font-size: clamp(1.25rem, 6vw, 1.75rem);
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-completion-stats {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: clamp(0.75rem, 3vw, 1.5rem);
+    row-gap: var(--space-2xs);
+    width: 100%;
+    max-width: 24rem;
+    margin: 0;
+    text-align: left;
+  }
+
+  .basic-vocabulary-completion-stat {
+    display: contents;
+  }
+
+  .basic-vocabulary-completion-stat dt {
+    color: var(--c-text-secondary);
+    font-size: clamp(0.8125rem, 3.5vw, 0.9375rem);
+  }
+
+  .basic-vocabulary-completion-stat dd {
+    margin: 0;
+    color: var(--c-text);
+    font-size: clamp(0.8125rem, 3.5vw, 0.9375rem);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .basic-vocabulary-completion-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    width: min(100%, 22rem);
+  }
+
+  .basic-vocabulary-completion-actions .basic-vocabulary-action {
+    width: 100%;
+  }
+
+  .basic-vocabulary-replay {
+    background: var(--c-surface);
+    color: var(--c-accent);
+    border-color: var(--c-accent);
   }
 
   .basic-vocabulary-sr-only {
@@ -257,9 +360,12 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   @media (max-width: 359px) {
-    .basic-vocabulary-card,
-    .basic-vocabulary-completion {
+    .basic-vocabulary-card {
       min-height: 20rem;
+      padding: 0.875rem;
+    }
+
+    .basic-vocabulary-completion {
       padding: 0.875rem;
     }
 

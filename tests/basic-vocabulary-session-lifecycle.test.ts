@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('basic vocabulary session lifecycle', () => {
-  it('uses the state machine for reveal, exact requeue, completion, and restart', () => {
+  it('uses the state machine for reveal, exact requeue, completion, and continue', () => {
     const root = rootWith();
     initBasicVocabularySession(root);
 
@@ -64,13 +64,13 @@ describe('basic vocabulary session lifecycle', () => {
     reveal(root);
     rate(root, 'known');
 
-    expect(root.textContent).toContain('今回の学習は完了です');
-    expect(root.querySelector('[data-progress]')?.textContent).toContain('3 / 3 語');
-    expect(document.activeElement).toBe(root.querySelector('[data-action="restart"]'));
+    expect(root.textContent).toContain('今回の3語を完了しました');
+    expect(root.querySelector('[data-progress]')?.textContent).toContain('今回 3 / 3語');
+    expect(document.activeElement).toBe(root.querySelector('[data-action="continue"]'));
 
-    (root.querySelector('[data-action="restart"]') as HTMLButtonElement).click();
+    (root.querySelector('[data-action="continue"]') as HTMLButtonElement).click();
     expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
-    expect(root.querySelector('[data-progress]')?.textContent).toBe('0 / 3 語');
+    expect(root.querySelector('[data-progress]')?.textContent).toBe('今回 0 / 3語');
     expect(document.activeElement).toBe(root.querySelector('[data-action="reveal"]'));
   });
 
@@ -106,8 +106,8 @@ describe('basic vocabulary session lifecycle', () => {
     rate(root, 'known');
 
     // Session completed
-    expect(root.textContent).toContain('今回の学習は完了です');
-    expect(root.querySelector('[data-progress]')?.textContent).toContain('3 / 3 語');
+    expect(root.textContent).toContain('今回の3語を完了しました');
+    expect(root.querySelector('[data-progress]')?.textContent).toContain('今回 3 / 3語');
   });
 
   it('exposes the exact learner copy required by Issue #115', () => {
@@ -126,13 +126,16 @@ describe('basic vocabulary session lifecycle', () => {
     // Complete all items
     for (let i = 0; i < REAL_IDS.length; i++) {
       rate(root, 'known');
-      if (root.querySelector('[data-action="restart"]')) break;
+      if (root.querySelector('[data-action="continue"]')) break;
       reveal(root);
     }
 
-    // Completion: 今回の学習は完了です, もう一度学ぶ
-    expect(root.textContent).toContain('今回の学習は完了です');
-    expect(root.textContent).toContain('もう一度学ぶ');
+    // Completion: 今回の3語を完了しました, continue, replay — no もう一度学ぶ
+    expect(root.textContent).toContain('今回の3語を完了しました');
+    expect(root.querySelector('[data-action="continue"]')).not.toBeNull();
+    expect(root.querySelector('[data-action="replay"]')).not.toBeNull();
+    expect(root.textContent).not.toContain('もう一度学ぶ');
+    expect(root.querySelector('[data-action="restart"]')).toBeNull();
   });
 
   it('cleans up the prior root listener before Astro reinitialization', () => {
@@ -169,9 +172,18 @@ describe('basic vocabulary session lifecycle', () => {
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
-    // .basic-vocabulary-card, .basic-vocabulary-completion
+    // .basic-vocabulary-card keeps its bounded min-height, box-sizing, width,
+    // and overflow containment.
     expect(css).toMatch(
-      /\.basic-vocabulary-card,\s*\.basic-vocabulary-completion\s*\{[^}]*box-sizing:\s*border-box[^}]*width:\s*100%[^}]*overflow:\s*hidden/,
+      /\.basic-vocabulary-card\s*\{[^}]*box-sizing:\s*border-box[^}]*width:\s*100%[^}]*min-height:\s*clamp\(22rem,\s*66vh,\s*39rem\)[^}]*overflow:\s*hidden/,
+    );
+
+    // .basic-vocabulary-completion uses intrinsic height (no min-height).
+    expect(css).toMatch(
+      /\.basic-vocabulary-completion\s*\{[^}]*box-sizing:\s*border-box[^}]*width:\s*100%/,
+    );
+    expect(css).not.toMatch(
+      /\.basic-vocabulary-completion\s*\{[^}]*min-height/,
     );
 
     // .basic-vocabulary-illustration
@@ -190,11 +202,23 @@ describe('basic vocabulary session lifecycle', () => {
       /\.basic-vocabulary-rating\s*\{[^}]*min-width:\s*0/,
     );
 
+    // Primary and secondary completion actions are visually distinguishable,
+    // both at least 44 px high (2.75rem).
+    expect(css).toMatch(
+      /\.basic-vocabulary-reveal,\s*\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--c-accent\)/,
+    );
+    expect(css).toMatch(
+      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--c-surface\)/,
+    );
+    expect(css).toMatch(
+      /\.basic-vocabulary-action,\s*\.basic-vocabulary-rating\s*\{[^}]*min-height:\s*2\.75rem/,
+    );
+
     // Browser measurements at 320/375/390 are recorded in the PR body as
     // the genuine layout evidence. Happy DOM does not perform layout.
   });
 
-  it('announces completion via the aria-live progress region, preserves progress text, and moves focus to restart', () => {
+  it('announces completion via the aria-live progress region, preserves progress text, and moves focus to continue', () => {
     const root = rootWith();
     initBasicVocabularySession(root);
 
@@ -212,19 +236,19 @@ describe('basic vocabulary session lifecycle', () => {
     // Completion announcement — a visually-hidden span inside the live region
     const sr = progressEl.querySelector('.basic-vocabulary-sr-only');
     expect(sr).not.toBeNull();
-    expect(sr?.textContent).toBe('今回の学習は完了です');
+    expect(sr?.textContent).toBe('今回の3語を完了しました');
 
     // Progress text includes the count (visually-hidden span is appended after)
-    expect(progressEl.textContent).toBe('3 / 3 語今回の学習は完了です');
+    expect(progressEl.textContent).toBe('今回 3 / 3語今回の3語を完了しました');
 
     // Only one polite live region still
     expect(root.querySelectorAll('[aria-live="polite"]')).toHaveLength(1);
 
-    // Focus moved to restart button
-    expect(document.activeElement).toBe(root.querySelector('[data-action="restart"]'));
+    // Focus moved to continue button
+    expect(document.activeElement).toBe(root.querySelector('[data-action="continue"]'));
 
     // Completion title visible in the card
-    expect(root.querySelector('[data-card]')?.textContent).toContain('今回の学習は完了です');
+    expect(root.querySelector('[data-card]')?.textContent).toContain('今回の3語を完了しました');
   });
 
   it('produces a card that does not serialize answers into outerHTML attributes before reveal', () => {
@@ -287,7 +311,7 @@ describe('basic vocabulary session lifecycle', () => {
     expect(summary.textContent).toContain('学習中');
   });
 
-  it('restart uses latest store priority order', () => {
+  it('continue uses latest store priority order', () => {
     const root = rootWith();
     initBasicVocabularySession(root);
 
@@ -301,8 +325,8 @@ describe('basic vocabulary session lifecycle', () => {
     reveal(root);
     rate(root, 'known');
 
-    // Session completed, restart
-    (root.querySelector('[data-action="restart"]') as HTMLButtonElement).click();
+    // Session completed, continue
+    (root.querySelector('[data-action="continue"]') as HTMLButtonElement).click();
     expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
   });
 
@@ -383,7 +407,7 @@ describe('basic vocabulary session lifecycle', () => {
 
     // Session restarted
     const progress = root.querySelector('[data-progress]');
-    expect(progress?.textContent).toMatch(/^0 \/ 3 語/);
+    expect(progress?.textContent).toMatch(/^今回 0 \/ 3語/);
   });
 
   it('reset cancel does nothing', () => {
@@ -425,8 +449,8 @@ describe('basic vocabulary session lifecycle', () => {
 
     initBasicVocabularySession(root);
 
-    // Progress shows 0 / 3 (only 3 items in REAL_IDS, capped by count)
-    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^0 \/ 3 語/);
+    // Progress shows 今回 0 / 3 (only 3 items in REAL_IDS, capped by count)
+    expect(root.querySelector('[data-progress]')?.textContent).toMatch(/^今回 0 \/ 3語/);
 
     // Size attribute signals the intended cap
     expect(root.dataset.basicVocabularySessionSize).toBe('10');
