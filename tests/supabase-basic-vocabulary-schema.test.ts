@@ -187,6 +187,28 @@ describe('supabase basic-vocabulary schema (static)', () => {
     expect(migration).not.toMatch(/raw_user_meta_data|raw_app_meta_data|email\s*=/i);
   });
 
+  it('qualifies outer progress columns in the progress insert/update WITH CHECK', () => {
+    // The INSERT and UPDATE policies must correlate the state subquery to the
+    // outer progress row with explicit table qualification; unqualified names
+    // could resolve inside the subquery and become self-comparisons.
+    const insertUpdate = stripComments(migration).match(
+      /create\s+policy\s+"basic_vocabulary_progress_(insert|update)"[\s\S]*?\);\s*(?=create\s+policy|create\s+function|--|$)/gi,
+    ) ?? [];
+    expect(insertUpdate.length).toBe(2);
+    for (const policySql of insertUpdate) {
+      expect(policySql).toMatch(/exists\s*\([\s\S]*?from\s+public\.basic_vocabulary_course_state\s+s/i);
+      expect(policySql).toMatch(/s\.user_id\s*=\s*basic_vocabulary_progress\.user_id/i);
+      expect(policySql).toMatch(/s\.course_id\s*=\s*basic_vocabulary_progress\.course_id/i);
+      expect(policySql).toMatch(/s\.reset_generation\s*=\s*basic_vocabulary_progress\.reset_generation/i);
+      // The exists-subquery comparisons must not fall back to unqualified names
+      // (which would be self-comparisons against the inner state relation).
+      const existsBlock = policySql.match(/exists\s*\([\s\S]*?\)\s*\)/i)?.[0] ?? '';
+      expect(existsBlock).not.toMatch(/=\s*user_id\b/i);
+      expect(existsBlock).not.toMatch(/=\s*course_id\b/i);
+      expect(existsBlock).not.toMatch(/=\s*reset_generation\b/i);
+    }
+  });
+
   it('declares the exact reset RPC signature and security settings', () => {
     // Use only executable SQL so the `security definer` negative check does not
     // trip on the comment "no security definer and no service-role dependency".
@@ -324,6 +346,28 @@ select has_table_privilege('authenticated', 'public.basic_vocabulary_course_stat
        has_function_privilege('authenticated', 'public.reset_basic_vocabulary_progress(uuid)', 'execute');
 `);
     expect(auth.trim()).toBe('t|t|t|t|t|t|t|t|t');
+  });
+
+  it('stored progress insert/update WITH CHECK correlates to the outer progress row', () => {
+    const stored = psql(`
+select policyname || '|' || replace(with_check, chr(10), ' ') from pg_policies
+where schemaname = 'public' and tablename = 'basic_vocabulary_progress'
+  and cmd in ('INSERT', 'UPDATE') order by policyname;
+`);
+    const rows = stored.trim().split('\n');
+    expect(rows.length).toBe(2);
+    const insertRow = rows.find((r) => r.startsWith('basic_vocabulary_progress_insert|')) ?? '';
+    const updateRow = rows.find((r) => r.startsWith('basic_vocabulary_progress_update|')) ?? '';
+    for (const row of [insertRow, updateRow]) {
+      // The stored policy must reference the outer progress row explicitly;
+      // unqualified names inside the subquery would be self-comparisons.
+      expect(row).toMatch(/s\.user_id\s*=\s*basic_vocabulary_progress\.user_id/i);
+      expect(row).toMatch(/s\.course_id\s*=\s*basic_vocabulary_progress\.course_id/i);
+      expect(row).toMatch(/s\.reset_generation\s*=\s*basic_vocabulary_progress\.reset_generation/i);
+      // Postgres serializes `(select auth.uid()) = user_id` as
+      // `(( SELECT auth.uid() AS uid) = user_id)`; match the ownership claim.
+      expect(row).toMatch(/auth\.uid\(\)[\s\S]*?=\s*user_id/i);
+    }
   });
 
   it('anon cannot CRUD or execute reset', () => {

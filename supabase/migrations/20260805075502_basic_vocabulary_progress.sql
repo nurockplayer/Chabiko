@@ -96,9 +96,9 @@ create policy "basic_vocabulary_progress_insert" on public.basic_vocabulary_prog
     (select auth.uid()) = user_id
     and exists (
       select 1 from public.basic_vocabulary_course_state s
-      where s.user_id = user_id
-        and s.course_id = course_id
-        and s.reset_generation = reset_generation
+      where s.user_id = basic_vocabulary_progress.user_id
+        and s.course_id = basic_vocabulary_progress.course_id
+        and s.reset_generation = basic_vocabulary_progress.reset_generation
     )
   );
 
@@ -109,9 +109,9 @@ create policy "basic_vocabulary_progress_update" on public.basic_vocabulary_prog
     (select auth.uid()) = user_id
     and exists (
       select 1 from public.basic_vocabulary_course_state s
-      where s.user_id = user_id
-        and s.course_id = course_id
-        and s.reset_generation = reset_generation
+      where s.user_id = basic_vocabulary_progress.user_id
+        and s.course_id = basic_vocabulary_progress.course_id
+        and s.reset_generation = basic_vocabulary_progress.reset_generation
     )
   );
 
