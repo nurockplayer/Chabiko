@@ -275,6 +275,34 @@ Within a single `vocabulary` collection, two or more entries with the same `id` 
 - `source`
 - `reviewStatus`
 
+## Phrasebook Dialog (#220)
+
+Scenario dialogs pair the learner with a conversation partner. Collection key: `phrasebookDialogs`. Each dialog record contains exactly:
+
+- `id` — stable non-empty string
+- `scenario` (food / transport / hotel / shopping / emergency / airport)
+- `turns` — 2–6 ordered turn objects (see below)
+- `relatedPhraseIds` — non-empty list of unique phrasebook entry `id`s from the same scenario
+- `reviewStatus` (draft / reviewed / published)
+- `source` (optional; truthful source required for `reviewed` / `published`)
+
+Each turn contains:
+
+- `speaker` (learner / partner)
+- `traditional` (non-empty) and `traditionalStatus` (authored / verified / generated)
+- `simplified` (optional) with matching `simplifiedStatus` (same rules as Phrasebook Entry)
+- `pinyin` (non-empty, tone-marked)
+- `japanese` (non-empty, natural Japanese)
+
+### Phrasebook Dialog Validation Rules
+
+- Turn count, speaker values, field types, controlled statuses, and required fields are validated per record with path-specific errors.
+- Duplicate dialog `id`s fail.
+- Generated script forms may not be paired with `reviewed` or `published`.
+- `relatedPhraseIds` must be non-empty and unique; missing (stale) and cross-scenario references fail.
+- `reviewed` / `published` require a truthful `source`.
+- IDs, speaker order, references, and output order are deterministic; `data/examples/valid/phrasebook-dialogs.json` is the executable schema fixture.
+
 ## Resource
 
 - `id`
@@ -485,6 +513,7 @@ The validator recognizes the following top-level collection keys:
 - `teacher_vocabulary`
 - `sentences`
 - `phrasebook`
+- `phrasebookDialogs`
 - `practice`
 - `resources`
 - `illustrations`
