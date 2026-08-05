@@ -41,6 +41,28 @@ function hasLocalSupabase(): boolean {
   return existsSync(join(ROOT, 'supabase', 'config.toml'));
 }
 
+// The live integration suite needs the Supabase CLI plus a running local stack
+// (supabase start), not just any Docker daemon. GitHub Actions runners have
+// Docker but no Supabase CLI / local stack, so those environments must skip.
+function supabaseCliAvailable(): boolean {
+  try {
+    const r = spawnSync('supabase', ['--version'], { encoding: 'utf8', timeout: 10_000 });
+    return r.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+function supabaseStackRunning(): boolean {
+  try {
+    // `supabase status` exits non-zero when the local stack is not started.
+    const r = spawnSync('supabase', ['status'], { encoding: 'utf8', timeout: 15_000 });
+    return r.status === 0;
+  } catch {
+    return false;
+  }
+}
+
 function dockerAvailable(): boolean {
   try {
     const r = spawnSync('docker', ['info'], { encoding: 'utf8', timeout: 10_000 });
@@ -67,8 +89,21 @@ function psql(queries: string): string {
 }
 
 function runLive(): boolean {
-  return hasLocalSupabase() && dockerAvailable();
+  return hasLocalSupabase() && supabaseCliAvailable() && supabaseStackRunning() && dockerAvailable();
 }
+
+function liveSkipReason(): string {
+  if (!hasLocalSupabase()) return 'supabase/config.toml not present';
+  if (!supabaseCliAvailable()) return 'supabase CLI not installed';
+  if (!supabaseStackRunning()) return 'local Supabase stack not running (run `supabase start`)';
+  if (!dockerAvailable()) return 'docker daemon not available';
+  return '';
+}
+
+const liveSuiteActive = runLive();
+const liveSuiteSuffix = liveSuiteActive
+  ? ''
+  : ` (SKIPPED: ${liveSkipReason()})`;
 
 const uuidA = '11111111-1111-1111-1111-111111111111';
 const uuidB = '22222222-2222-2222-2222-222222222222';
@@ -165,7 +200,7 @@ describe('supabase basic-vocabulary schema (static)', () => {
   });
 });
 
-describe.skipIf(!runLive())('supabase basic-vocabulary schema (live database)', () => {
+describe.skipIf(!liveSuiteActive)(`supabase basic-vocabulary schema (live database)${liveSuiteSuffix}`, () => {
   beforeAll(() => {
     // Ensure the migrations were applied by a fresh reset. `db reset` also proves
     // the migration applies reproducibly from empty state.
@@ -173,7 +208,9 @@ describe.skipIf(!runLive())('supabase basic-vocabulary schema (live database)', 
       cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
     });
     if (reset.status !== 0) {
-      throw new Error(`supabase db reset failed: ${reset.stderr ?? reset.stdout}`);
+      throw new Error(
+        `supabase db reset failed: ${reset.stderr ?? reset.stdout ?? reset.error?.message ?? 'unknown'}`,
+      );
     }
     // Seed two auth users for cross-user isolation tests.
     psql(`
