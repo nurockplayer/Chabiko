@@ -413,5 +413,8 @@ describe('basic vocabulary completion UX (Issue #277)', () => {
     expect(css).toMatch(
       /\.basic-vocabulary-completion-stats\s*\{[^}]*grid-template-columns:\s*max-content minmax\(0,\s*1fr\)/,
     );
+    expect(css).not.toMatch(
+      /\.basic-vocabulary-completion-stat dd\s*\{[^}]*white-space:\s*nowrap/,
+    );
   });
 });
