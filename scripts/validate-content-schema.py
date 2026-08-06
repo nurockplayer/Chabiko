@@ -499,6 +499,11 @@ def _check_phrasebook_dialog_turn(turn: dict, path: str) -> list[str]:
     # no reviewStatus of their own).
     errors.extend(_check_script_fields(turn, path))
 
+    # Non-empty Traditional line (script provenance only type-checks it).
+    traditional = turn.get("traditional")
+    if isinstance(traditional, str) and traditional.strip() == "":
+        errors.append(f"{path}.traditional must be a non-empty string")
+
     # Non-empty pinyin and Japanese lines.
     pinyin = turn.get("pinyin")
     if not isinstance(pinyin, str):
@@ -2655,6 +2660,7 @@ def run_tests():
         test_dialog_invalid_script_status,
         test_dialog_script_status_presence_pairing,
         test_dialog_traditional_unavailable_rejected,
+        test_dialog_traditional_empty_rejected,
         test_dialog_generated_not_production,
         test_dialog_generated_published_missing_source_fails,
         test_dialog_empty_related_phrase_ids,
@@ -3831,6 +3837,17 @@ def test_dialog_traditional_unavailable_rejected():
     record["turns"][0]["traditionalStatus"] = "unavailable"
     errs = validate_single(record, "phrasebook-dialog")
     _assert_has_error(errs, "'traditionalStatus' cannot be 'unavailable'", "dialog_trad_unavailable")
+
+
+def test_dialog_traditional_empty_rejected():
+    """Turn traditional must be non-empty, with a path-specific error."""
+    for value in ("", "   "):
+        record = _minimal_dialog()
+        record["turns"][0]["traditional"] = value
+        errs = validate_single(record, "phrasebook-dialog")
+        _assert_has_error(
+            errs, "turns[0].traditional must be a non-empty string", f"dialog_trad_empty_{value!r}"
+        )
 
 
 def test_dialog_generated_not_production():
