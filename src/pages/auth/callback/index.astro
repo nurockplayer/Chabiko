@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="ログイン" robots="noindex,nofollow">
+  <section class="supabase-auth-callback" data-supabase-auth-callback>
+    <h1>ログインを確認しています</h1>
+    <p class="supabase-auth-callback__status" data-supabase-auth-callback-status aria-live="polite">
+      ログインを確認しています
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  import { initSupabaseAuthCallback } from '../../../client/supabaseAuthCallback';
+
+  document.querySelectorAll<HTMLElement>('[data-supabase-auth-callback]').forEach((root) => {
+    initSupabaseAuthCallback(root);
+  });
+</script>
+
+<style>
+  .supabase-auth-callback {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .supabase-auth-callback__status {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+  }
+</style>
