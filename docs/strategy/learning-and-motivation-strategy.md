@@ -42,6 +42,8 @@ A 1-3 minute daily item:
 
 Example topic: ordering bubble tea, asking for a bag, finding the MRT platform, checking hotel breakfast time.
 
+See `docs/strategy/daily-taiwan-chinese-readiness-map.md` for how daily-content types map to Travel Quest readiness targets.
+
 #### Travel Quest
 
 A scenario-based unit ending in a task:
