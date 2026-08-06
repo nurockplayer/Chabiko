@@ -12,6 +12,10 @@ const lessons = loadAllRenderableLessons();
     <Header themeEnabled />
   </Fragment>
 
+  <p class="goal-paths-link">
+    <a href="/paths/">学習ルート一覧</a>
+  </p>
+
   <section
     id="basic-vocabulary-entry"
     class="basic-vocabulary-entry"
@@ -134,6 +138,27 @@ const lessons = loadAllRenderableLessons();
 </script>
 
 <style>
+  .goal-paths-link {
+    margin-bottom: var(--space-sm);
+  }
+  .goal-paths-link a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--space-xs);
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-underline-offset: 0.2em;
+    border: 2px solid transparent;
+  }
+  .goal-paths-link a:hover {
+    text-decoration: underline;
+  }
+  .goal-paths-link a:focus-visible {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px var(--c-accent-light);
+  }
   .home-journey {
     display: grid;
     gap: var(--space-xl);
