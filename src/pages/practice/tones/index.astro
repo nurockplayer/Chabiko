@@ -1,0 +1,59 @@
+---
+import Header from '../../../components/Header.astro';
+import TonePractice from '../../../components/TonePractice.astro';
+import { loadTonePractice } from '../../../content/loadTonePractice';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const items = loadTonePractice();
+---
+
+<BaseLayout title="声調練習">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  <div class="tone-page">
+    <a class="back-link" href="/">← ホームに戻る</a>
+    <h1 class="page-title">声調練習</h1>
+    <p class="page-subtitle">声調の形を見て、正しい声調を選びましょう。</p>
+
+    {
+      items.length > 0 ? (
+        <TonePractice items={items} />
+      ) : (
+        <div class="empty-fallback" role="alert">
+          <p>現在利用できる声調練習がありません。データが準備できるまでお待ちください。</p>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tone-page {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-lg);
+    font-weight: 600;
+  }
+  .page-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-xs);
+  }
+  .page-subtitle {
+    font-size: 0.85rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-xl);
+  }
+  .empty-fallback {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--c-text-secondary);
+  }
+</style>
