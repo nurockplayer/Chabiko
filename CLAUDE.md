@@ -69,6 +69,8 @@ Implementation 與必要的本地驗證完成後，才可啟動獨立 `reviewer`
 
 除非使用者明確要求，否則不得 commit、push、建立 PR、merge，或修改 GitHub issue 與 review thread。
 
+本段只定義 Claude Code 專屬的 review 執行規則。PR 的 merge eligibility、risk tiers、throughput limits、CodeRabbit advisory 語意、exact-head review、unresolved blocking-thread 檢查與 merge gate，以根目錄 `AGENTS.md` 的「Review 與 Merge 政策（並行 sub-agent 吞吐量感知）」為唯一 canonical policy，本檔不得重複維護分歧規則。implementing agent 不得作為自身 work 的唯一 reviewer。
+
 ## Graphify
 
 `graphify` 只用於程式碼導航與理解。
