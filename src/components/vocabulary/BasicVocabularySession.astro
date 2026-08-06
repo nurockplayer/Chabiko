@@ -194,9 +194,15 @@ const sessionSize = Math.min(10, ids.length);
 
   .basic-vocabulary-pinyin,
   .basic-vocabulary-japanese,
-  .basic-vocabulary-traditional {
+  .basic-vocabulary-traditional,
+  .basic-vocabulary-script-fallback {
     margin: 0;
     overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-script-fallback {
+    color: var(--c-text-secondary);
+    font-size: 0.875rem;
   }
 
   .basic-vocabulary-pinyin {
