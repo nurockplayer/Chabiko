@@ -187,9 +187,9 @@ describe('learner shell uses fixture data', () => {
 });
 
 describe('loadAllRenderableLessons', () => {
-  it('returns all 4 lessons from the default fixture', () => {
+  it('returns all 5 lessons from the default fixture', () => {
     const lessons = loadAllRenderableLessons();
-    expect(lessons).toHaveLength(4);
+    expect(lessons).toHaveLength(5);
   });
 
   it('returns lessons in file order', () => {
@@ -198,6 +198,7 @@ describe('loadAllRenderableLessons', () => {
     expect(lessons[1].id).toBe('lesson-002');
     expect(lessons[2].id).toBe('lesson-003');
     expect(lessons[3].id).toBe('lesson-004');
+    expect(lessons[4].id).toBe('lesson-005');
   });
 
   it('each lesson has all required renderable fields', () => {
@@ -295,6 +296,49 @@ describe('lesson content requirements', () => {
     expect(lesson!.examples![0].traditional).toContain('捷運站');
     expect(lesson!.travelTask).toContain('捷運站');
   });
+
+  it('lesson-005 orders a quantity with 兩個', () => {
+    const lesson = loadLessonById('lesson-005');
+    expect(lesson).toBeDefined();
+    expect(lesson!.id).toBe('lesson-005');
+    expect(lesson!.coreSentence).toBe('我要兩個。');
+    expect(lesson!.travelScenario).toBe('food');
+    expect(lesson!.painPointTags).toContain('measure-word');
+    expect(lesson!.learnerOutcomeJa).toContain('数量');
+  });
+
+  it('lesson-005 has at least two valid quantity examples', () => {
+    const lesson = loadLessonById('lesson-005');
+    expect(lesson).toBeDefined();
+    const examples = lesson!.examples ?? [];
+    expect(examples.length).toBeGreaterThanOrEqual(2);
+    for (const ex of examples) {
+      expect(ex.traditional.length).toBeGreaterThan(0);
+      expect(ex.pinyin.length).toBeGreaterThan(0);
+      expect(ex.japanese.length).toBeGreaterThan(0);
+      // Lesson examples carry per-form script provenance on the loaded data.
+      expect((ex as { traditionalStatus?: string }).traditionalStatus).toBe('authored');
+    }
+    // Quantity examples must combine 我要 with a number and the measure word 個
+    for (const ex of examples) {
+      expect(ex.traditional).toMatch(/^我要[一二兩三四五六七八九十兩個]+個[。]?$/);
+    }
+  });
+
+  it('lesson-005 explains the measure-word pain point without overclaiming 個 is universal', () => {
+    const lesson = loadLessonById('lesson-005');
+    expect(lesson).toBeDefined();
+    // The explanation must exist and caution that 個 does not work for every noun
+    const chunks = lesson!.chunks ?? [];
+    const geChunk = chunks.find((c) => c.chunk === '個');
+    expect(geChunk).toBeDefined();
+    expect(geChunk!.notesJa).toContain('全ての名詞に使えるわけではない');
+    expect(geChunk!.notesJa).not.toMatch(/全ての名詞に使える。|どの名詞にも使える/);
+    // The sound/pinyin focus must cover 兩/個 tone contrast
+    const soundItems = lesson!.soundFocus.map((s) => s.item);
+    expect(soundItems.some((s) => s.includes('liǎng'))).toBe(true);
+    expect(soundItems.some((s) => s.includes('gè'))).toBe(true);
+  });
 });
 
 describe('lesson order and navigation', () => {
@@ -318,10 +362,10 @@ describe('lesson order and navigation', () => {
     expect(lessons[2].id).toBe('lesson-003');
   });
 
-  it('lesson-004 is the last lesson', () => {
+  it('lesson-005 is the last lesson', () => {
     const lessons = loadAllRenderableLessons();
     const lastIndex = lessons.length - 1;
-    expect(lessons[lastIndex].id).toBe('lesson-004');
+    expect(lessons[lastIndex].id).toBe('lesson-005');
   });
 
   it('each lesson id is a valid URL path segment', () => {
@@ -343,7 +387,7 @@ describe('static paths generation', () => {
         nextLesson: i < lessons.length - 1 ? { id: lessons[i + 1].id, titleJa: lessons[i + 1].titleJa } : null,
       },
     }));
-    expect(paths).toHaveLength(4);
+    expect(paths).toHaveLength(5);
     expect(paths[0].params.id).toBe('lesson-001');
     expect(paths[0].props.prevLesson).toBeNull();
     expect(paths[0].props.nextLesson?.id).toBe('lesson-002');
@@ -352,6 +396,8 @@ describe('static paths generation', () => {
     expect(paths[2].props.prevLesson?.id).toBe('lesson-002');
     expect(paths[2].props.nextLesson?.id).toBe('lesson-004');
     expect(paths[3].props.prevLesson?.id).toBe('lesson-003');
-    expect(paths[3].props.nextLesson).toBeNull();
+    expect(paths[3].props.nextLesson?.id).toBe('lesson-005');
+    expect(paths[4].props.prevLesson?.id).toBe('lesson-004');
+    expect(paths[4].props.nextLesson).toBeNull();
   });
 });
