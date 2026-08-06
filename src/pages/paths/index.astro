@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import LearningPathCard from '../../components/LearningPathCard.astro';
+import { loadLearningPaths } from '../../content/loadLearningPaths';
+
+const document = loadLearningPaths();
+const learningPaths = document.learningPaths;
+---
+
+<BaseLayout title="学習ルート" description="Chabiko の学習ルート一覧です。">
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  <section class="paths-page" aria-labelledby="paths-heading">
+    <p class="paths-kicker">学習ルート</p>
+    <h1 id="paths-heading" class="paths-heading">ルートを選んで中国語を学ぼう</h1>
+    <p class="paths-lead">目的に合ったルートを選んでください。</p>
+
+    <ol class="paths-list">
+      {learningPaths.map((path, index) => (
+        <li class="paths-list-item" data-path-id={path.id}>
+          <LearningPathCard path={path} emphasized={index === 0} />
+        </li>
+      ))}
+    </ol>
+  </section>
+</BaseLayout>
+
+<style>
+  .paths-page {
+    min-width: 0;
+  }
+  .paths-kicker {
+    color: var(--c-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+  }
+  h1.paths-heading {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+  }
+  .paths-lead {
+    max-width: 44rem;
+    font-size: 0.875rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-xl);
+  }
+  .paths-list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-md);
+  }
+  .paths-list-item {
+    min-width: 0;
+  }
+  @media (width >= 768px) {
+    .paths-list {
+      gap: var(--space-lg);
+    }
+  }
+</style>
