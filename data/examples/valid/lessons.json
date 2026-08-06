@@ -109,6 +109,44 @@
       "travelTask": "MRTの駅を探すときに「捷運站在哪裡？」と聞いてみよう。トイレを探すときは「廁所在哪裡？」が使える。",
       "painPointTags": ["tone"],
       "reviewStatus": "reviewed"
+    },
+    {
+      "id": "lesson-004",
+      "titleJa": "行き先を伝えてみよう",
+      "level": "beginner",
+      "canDoJa": "駅員さんや運転手さんに、行き先を伝えて移動できる",
+      "learnerOutcomeJa": "「我要去〜」を使って、駅員さんや運転手に行き先を伝えられる",
+      "hookJa": "タクシーで台北駅まで行きたいとき、何て言う？",
+      "travelScenario": "transport",
+      "coreSentence": "我要去台北車站。",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「我要去＋場所」＝〜へ行きたい。行き先を駅員さんや運転手に伝える基本パターン。「去」は「行く」という動詞で、場所の前におく。"}
+      ],
+      "chunks": [
+        {"chunk": "我要", "meaning": "私は〜したい", "notesJa": "lesson-001 で学んだ「我要」と同じ。「〜が欲しい／〜したい」の意志を表す。"},
+        {"chunk": "去", "meaning": "行く", "notesJa": "「去＋場所」で「場所へ行く」。日本語の「去る（立ち去る）」とは方向が逆なので注意。"},
+        {"chunk": "台北車站", "meaning": "台北駅", "notesJa": "「台北」＋「車站（駅）」。タクシーで行き先に言う定番の駅名。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "去", "jpReading": "きょ", "noteJa": "日本語の「去る」は「立ち去る」の意味だが、中国語の「去」は「行く」。我要去台北車站は「台北駅に行く」で、方向が逆なので注意。"},
+        {"kanji": "車", "jpReading": "しゃ", "noteJa": "日本語と同じ「くるま」の意味だが、「車站」は「駅」のこと。台北車站＝台北駅。"}
+      ],
+      "soundFocus": [
+        {"item": "去 qù", "noteJa": "第四声。日本語の「ク」と違い、短く急降下。q は舌を盛り上げて強い息を出す（有気音）。"},
+        {"item": "車 chē", "noteJa": "第一声。高く平らに伸ばす。ch はそり舌音で、日本語の「チャ」より舌を後ろに引く。"},
+        {"item": "站 zhàn", "noteJa": "第四声。lesson-003 で学んだ音。舌先を歯茎の後ろにつけてから短く急降下。"}
+      ],
+      "examples": [
+        {"traditional": "我要去台北車站。", "traditionalStatus": "authored", "pinyin": "wǒ yào qù táiběi chēzhàn", "japanese": "台北駅に行きたいです"},
+        {"traditional": "我要去廁所。", "traditionalStatus": "authored", "pinyin": "wǒ yào qù cèsuǒ", "japanese": "トイレに行きたいです"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "行き先を伝える基本フレーズは？", "answerJa": "「我要去〜」（〜へ行きたい）", "distractorsJa": ["「〜在哪裡？」（〜はどこですか）", "「〜多少錢？」（〜はいくらですか）"]},
+        {"promptJa": "「去」の意味は？", "answerJa": "行く（〜へ行く）", "distractorsJa": ["立ち去る", "来る"]}
+      ],
+      "travelTask": "タクシーや駅の窓口で「我要去台北車站」と行き先を伝えてみよう。トイレに行きたいときは「我要去廁所」が使える。",
+      "painPointTags": ["tone", "pinyin-pronunciation", "same-kanji-different-meaning"],
+      "reviewStatus": "draft"
     }
   ]
 }
