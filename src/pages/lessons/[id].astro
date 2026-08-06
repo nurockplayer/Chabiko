@@ -50,6 +50,35 @@ const examples = (lesson?.examples ?? []).filter(
   (example) => example && hasText(example.traditional) && hasText(example.japanese),
 );
 const coreExample = examples.find((example) => example.traditional === lesson?.coreSentence) ?? examples[0];
+
+// Script-preference provenance (#253): the lesson schema does not yet expose
+// per-form status, so it is read permissively from the loaded data. Every
+// reading field below carries `data-script-*` attributes describing its
+// authored path-default Traditional form and any simplified form. Fields
+// without provenance (core sentence, chunks, kanji bridge notes) are the
+// path-default Traditional form and stay eligible.
+const scriptStatusAttr = (value: unknown): string | undefined =>
+  value === 'authored' ||
+  value === 'verified' ||
+  value === 'generated' ||
+  value === 'unavailable'
+    ? value
+    : undefined;
+const exampleScriptAttrs = (example: {
+  traditional: string;
+  simplified?: string;
+  traditionalStatus?: unknown;
+  simplifiedStatus?: unknown;
+}) => ({
+  'data-script-path-default': example.traditional,
+  'data-script-path-default-status': scriptStatusAttr(example.traditionalStatus),
+  ...(typeof example.simplified === 'string'
+    ? { 'data-script-simplified': example.simplified }
+    : {}),
+  ...(scriptStatusAttr(example.simplifiedStatus)
+    ? { 'data-script-simplified-status': scriptStatusAttr(example.simplifiedStatus) }
+    : {}),
+});
 ---
 
 <BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'} themeEnabled>
@@ -68,7 +97,7 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
             <p class="route-position">レッスン {lessonNumber} / {lessonCount}</p>
             <p class="route-title">{lesson.titleJa}</p>
             <p class="route-can-do">{lesson.canDoJa}</p>
-            <p class="route-example" lang="zh-Hant">{lesson.coreSentence}</p>
+            <p class="route-example" lang="zh-Hant" data-script-path-default={lesson.coreSentence}>{lesson.coreSentence}</p>
             <span class="route-status">進行中</span>
           </div>
           <div class="pending-path">
@@ -94,7 +123,7 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
           <section class="core-section" aria-labelledby="core-heading">
             <h2 id="core-heading" class="section-label">今日のコア表現</h2>
             <div class="core-card">
-              <p class="core-sentence" lang="zh-Hant">{lesson.coreSentence}</p>
+              <p class="core-sentence" lang="zh-Hant" data-script-path-default={lesson.coreSentence}>{lesson.coreSentence}</p>
               {coreExample && hasText(coreExample.pinyin) && (
                 <p class="core-pinyin" lang="zh-Latn">{coreExample.pinyin}</p>
               )}
@@ -115,7 +144,7 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
               <dl class="detail-list">
                 {chunks.map((chunk) => (
                   <div>
-                    <dt lang="zh-Hant">{chunk.chunk}</dt>
+                    <dt lang="zh-Hant" data-script-path-default={chunk.chunk}>{chunk.chunk}</dt>
                     <dd>{chunk.meaning}</dd>
                     {hasText(chunk.notesJa) && <dd class="note">{chunk.notesJa}</dd>}
                   </div>
@@ -129,7 +158,7 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
               <h2 id="kanji-heading">漢字からつなげよう</h2>
               <div class="bridge-list">
                 {kanjiBridgeNotes.map((note) => (
-                  <p><strong lang="zh-Hant">{note.kanji}</strong>（{note.jpReading}）：{note.noteJa}</p>
+                  <p><strong lang="zh-Hant" data-script-path-default={note.kanji}>{note.kanji}</strong>（{note.jpReading}）：{note.noteJa}</p>
                 ))}
               </div>
             </section>
@@ -152,7 +181,7 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
               <div class="example-list">
                 {examples.map((example) => (
                   <div>
-                    <p class="example-sentence" lang="zh-Hant">{example.traditional}</p>
+                    <p class="example-sentence" lang="zh-Hant" {...exampleScriptAttrs(example)}>{example.traditional}</p>
                     {hasText(example.pinyin) && <p class="pinyin" lang="zh-Latn">{example.pinyin}</p>}
                     <p>{example.japanese}</p>
                   </div>
@@ -198,6 +227,11 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
 
 <script>
   import { ProgressStore } from '../../lib/progress';
+  import { initLessonScriptPreference } from '../../client/lessonScriptPreference';
+
+  (function () {
+    initLessonScriptPreference();
+  })();
 
   (function () {
   const badge = document.getElementById('lesson-completion-badge');
@@ -493,6 +527,17 @@ const coreExample = examples.find((example) => example.traditional === lesson?.c
     font-size: 1.375rem;
     font-weight: 700;
     line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .script-fallback {
+    display: block;
+    margin-top: var(--space-xs);
+    color: var(--c-text-secondary);
+    font-family: var(--font-ja);
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
   .pinyin {
     font-family: var(--font-pinyin);
