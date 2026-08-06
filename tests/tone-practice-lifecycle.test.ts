@@ -42,6 +42,7 @@ function createPracticeHTML(data: { items: FixtureItem[] }): HTMLElement {
     '<div class="tone-contour" data-tone-contour aria-hidden="true">' +
     '<span class="tone-contour__label" data-tone-contour-label></span></div>' +
     '<p class="tone-hint" data-tone-hint></p>' +
+    '<p class="tone-interference" data-tone-interference></p>' +
     '<div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>' +
     '<div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>' +
     '<div class="tone-actions" data-tone-actions></div>';
@@ -110,6 +111,14 @@ describe('tone practice lifecycle', () => {
     expect(root.textContent).toContain('違います');
     expect(root.textContent).toContain('正解：');
     expect(root.textContent).toContain('第一声');
+    // Incorrect feedback reveals the correct tone and the existing hint and
+    // interference guidance together.
+    expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(
+      fixtureItem('rec-a').toneContourHintJa,
+    );
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
+      fixtureItem('rec-a').interferenceJa,
+    );
     expect(root.querySelector('.tone-action--retry')).not.toBeNull();
     expect(root.querySelector('.tone-action--next')).toBeNull();
 
@@ -123,6 +132,9 @@ describe('tone practice lifecycle', () => {
     expect(root.querySelector('[data-tone-prompt]')?.textContent).toBe(fixtureItem('rec-a').promptJa);
     expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(
       fixtureItem('rec-a').toneContourHintJa,
+    );
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
+      fixtureItem('rec-a').interferenceJa,
     );
     resetDom();
   });
@@ -176,6 +188,7 @@ describe('tone practice lifecycle', () => {
     // The second item carries its own contour id and guidance.
     expect(root.querySelector('[data-tone-contour]')?.getAttribute('data-contour')).toBe('t2-rising');
     expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(itemB.toneContourHintJa);
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(itemB.interferenceJa);
 
     // Answer rec-b correctly → completed.
     choiceButton(root, '第二声').click();
@@ -191,12 +204,22 @@ describe('tone practice lifecycle', () => {
     submitButton(root).click();
     (root.querySelector('.tone-action--next') as HTMLButtonElement).click();
     expect(root.textContent).toContain('練習完了！');
+    // Guidance is cleared on the completion screen.
+    expect(root.querySelector('[data-tone-hint]')?.textContent).toBe('');
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe('');
 
     (root.querySelector('.tone-action--restart') as HTMLButtonElement).click();
     expect(root.querySelector('[data-tone-progress]')?.textContent).toBe('1 / 1');
     expect(choiceButtons(root)).toHaveLength(4);
     expect(choiceButtons(root).every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
     expect(submitButton(root).disabled).toBe(true);
+    // Guidance is restored for the first item after restart.
+    expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(
+      fixtureItem('rec-a').toneContourHintJa,
+    );
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
+      fixtureItem('rec-a').interferenceJa,
+    );
     resetDom();
   });
 });

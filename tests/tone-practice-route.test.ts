@@ -185,6 +185,7 @@ function createPracticeHTML(data: { items: unknown[] }): HTMLElement {
     '<div class="tone-contour" data-tone-contour aria-hidden="true">' +
     '<span class="tone-contour__label" data-tone-contour-label></span></div>' +
     '<p class="tone-hint" data-tone-hint></p>' +
+    '<p class="tone-interference" data-tone-interference></p>' +
     '<div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>' +
     '<div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>' +
     '<div class="tone-actions" data-tone-actions></div>';
@@ -212,11 +213,15 @@ describe('tone route wiring', () => {
     expect(choiceTexts).toHaveLength(4);
     expect(choiceTexts).toEqual(expect.arrayContaining(['第一声', '第二声', '第三声', '第四声']));
     expect(new Set(choiceTexts).size).toBe(4);
-    // The contour carries the controlled id and the existing hint guidance.
+    // The contour carries the controlled id and the existing hint and
+    // interference guidance.
     const contour = root.querySelector<HTMLElement>('[data-tone-contour]');
     expect(contour?.dataset.contour).toBe('t1-high-flat');
     expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(
       VALID_TONE.toneContourHintJa,
+    );
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
+      VALID_TONE.interferenceJa,
     );
     // No pre-solved answer in the markup; submit starts disabled.
     expect(root.querySelector('.tone-action--submit')?.hasAttribute('disabled')).toBe(true);

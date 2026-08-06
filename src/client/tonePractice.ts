@@ -88,13 +88,14 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const contourEl = root.querySelector<HTMLElement>('[data-tone-contour]');
   const contourLabelEl = root.querySelector<HTMLElement>('[data-tone-contour-label]');
   const hintEl = root.querySelector<HTMLElement>('[data-tone-hint]');
+  const interferenceEl = root.querySelector<HTMLElement>('[data-tone-interference]');
   const choicesEl = root.querySelector<HTMLElement>('[data-tone-choices]');
   const feedbackEl = root.querySelector<HTMLElement>('[data-tone-feedback]');
   const actionsEl = root.querySelector<HTMLElement>('[data-tone-actions]');
 
   if (
     !promptEl || !progressEl || !contourEl || !contourLabelEl ||
-    !hintEl || !choicesEl || !feedbackEl || !actionsEl
+    !hintEl || !interferenceEl || !choicesEl || !feedbackEl || !actionsEl
   ) {
     throw new Error('tone practice markup is missing');
   }
@@ -104,6 +105,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const contourView: HTMLElement = contourEl;
   const contourLabelView: HTMLElement = contourLabelEl;
   const hintView: HTMLElement = hintEl;
+  const interferenceView: HTMLElement = interferenceEl;
   const choicesView: HTMLElement = choicesEl;
   const feedbackView: HTMLElement = feedbackEl;
   const actionsView: HTMLElement = actionsEl;
@@ -126,10 +128,12 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     // ── Tone contour: repository-defined text/CSS geometry only ───────────
     contourView.dataset.contour = item.toneContourId;
     contourLabelView.textContent = item.toneContourHintJa;
-    // The hint guidance stays visible from the first render of the item,
-    // so retry returns to the same item with the same guidance.
+    // The hint and interference guidance stay visible from the first render
+    // of the item, so retry returns to the same item with the same guidance.
     hintView.textContent = item.toneContourHintJa;
     hintView.hidden = false;
+    interferenceView.textContent = item.interferenceJa;
+    interferenceView.hidden = false;
 
     // ── Four named choices ────────────────────────────────────────────────
     const choices = [item.correctAnswer, ...item.distractors];
@@ -239,6 +243,8 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     contourLabelView.textContent = '';
     hintView.textContent = '';
     hintView.hidden = true;
+    interferenceView.textContent = '';
+    interferenceView.hidden = true;
     choicesView.replaceChildren();
 
     const complete = document.createElement('p');
