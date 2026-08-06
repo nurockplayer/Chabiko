@@ -14,6 +14,11 @@ import {
 import type { LearnerRenderIllustration } from '../content/learnerSessionPayload';
 import manifest from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
 import type { LearnerManifest } from '../types/learnerManifest';
+import {
+  SCRIPT_PREFERENCE_EVENT,
+} from './scriptPreferenceControl';
+import { FALLBACK_ANNOTATION } from '../domain/scriptSelection';
+import type { ScriptPreference } from '../lib/scriptPreference';
 
 interface SessionIllustration {
   assetPath: string;
@@ -61,6 +66,47 @@ interface CompletionMetrics {
 }
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
+
+/** The exact three controlled preference values (#251/#252). Anything else —
+ * including the root dataset being absent or garbage — is path-default. */
+function readRootScriptPreference(): ScriptPreference {
+  const value = document.documentElement.dataset.scriptPreference;
+  if (value === 'traditional' || value === 'simplified') return value;
+  return 'path-default';
+}
+
+/** Which Chinese script the current preference asks for. `path-default` means
+ * the path's authored default form, which for this route is simplified. */
+function requestedScript(preference: ScriptPreference): 'traditional' | 'simplified' {
+  return preference === 'traditional' ? 'traditional' : 'simplified';
+}
+
+/** The truthful visible front-script text for an entry under the current
+ * preference. A `traditional` request whose item has no authored traditional
+ * form is never fabricated: the simplified text is shown with the exact #251
+ * fallback annotation. `path-default`/`simplified` requests are unchanged. */
+function visibleFrontScript(
+  entry: SessionItem,
+  preference: ScriptPreference,
+): { script: string; lang: 'zh-Hant' | 'zh-Hans'; isFallback: boolean } {
+  if (requestedScript(preference) === 'traditional' && entry.traditional) {
+    return { script: entry.traditional, lang: 'zh-Hant', isFallback: false };
+  }
+  return { script: entry.simplified, lang: 'zh-Hans', isFallback: requestedScript(preference) === 'traditional' };
+}
+
+/** The truthful revealed traditional comparison text for an entry under the
+ * current preference. Path-default and traditional keep the existing
+ * production comparison field (authored traditional when present); a
+ * simplified preference omits it. Never fabricated: no authored form means
+ * no comparison text, preserving answer secrecy. */
+function revealedTraditional(
+  entry: SessionItem,
+  preference: ScriptPreference,
+): string | null {
+  if (preference === 'simplified') return null;
+  return entry.traditional ?? null;
+}
 
 function readRenderPayload(root: HTMLElement): RenderPayload | null {
   const el = root.querySelector<HTMLElement>('#basic-vocabulary-data');
@@ -217,6 +263,10 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   let startStatuses = new Map<string, VocabularyProgressStatus>(
     ids.map(id => [id, store.getStatus(id)]),
   );
+  /** Effective script preference, re-read on the #252 document event so a
+   * learner selection, storage refresh, or external clear re-renders the
+   * visible script without touching the session/progress domain. */
+  let scriptPreference: ScriptPreference = readRootScriptPreference();
 
   const card = root.querySelector<HTMLElement>('[data-card]');
   const progress = root.querySelector<HTMLElement>('[data-progress]');
@@ -286,7 +336,23 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       fragment.append(image);
     }
 
-    fragment.append(textElement(document, 'basic-vocabulary-simplified', entry.simplified, 'zh-Hans'));
+    const front = visibleFrontScript(entry, scriptPreference);
+    const frontElement = textElement(
+      document,
+      'basic-vocabulary-simplified',
+      front.script,
+      front.lang,
+    );
+    fragment.append(frontElement);
+    if (front.isFallback) {
+      const fallback = textElement(
+        document,
+        'basic-vocabulary-script-fallback',
+        FALLBACK_ANNOTATION,
+        'ja',
+      );
+      fragment.append(fallback);
+    }
 
     if (state.answerRevealed) {
       // Only build the answer container when at least one truthful optional
@@ -299,8 +365,13 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       if (entry.japanese) {
         answerParts.push({ className: 'basic-vocabulary-japanese', text: entry.japanese, lang: 'ja' });
       }
-      if (entry.traditional) {
-        answerParts.push({ className: 'basic-vocabulary-traditional', text: entry.traditional, lang: 'zh-Hant' });
+      // The revealed traditional comparison field follows the global script
+      // preference: omitted under a simplified preference, and only shown
+      // when the item has an authored traditional form (path-default and
+      // traditional keep the existing production comparison).
+      const traditional = revealedTraditional(entry, scriptPreference);
+      if (traditional) {
+        answerParts.push({ className: 'basic-vocabulary-traditional', text: traditional, lang: 'zh-Hant' });
       }
       if (answerParts.length > 0) {
         const answer = document.createElement('div');
@@ -330,6 +401,51 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     cardElement.className = 'basic-vocabulary-card';
     cardElement.replaceChildren(fragment);
     updateProgress();
+  }
+
+  /** In-place script refresh for a preference change (#252 document event) or
+   * a pageshow re-read. Updates only the visible Chinese form, the optional
+   * fallback annotation, and the revealed traditional comparison — never
+   * rebuilds the card, so an in-focus control keeps focus, no rating or
+   * progress write happens, and image/pinyin/japanese/buttons stay untouched. */
+  function updateVisibleScript(): void {
+    if (state.status !== 'active') return;
+    const entry = entries.get(state.activeItemId);
+    if (!entry) return;
+
+    const front = visibleFrontScript(entry, scriptPreference);
+    const frontElement = cardElement.querySelector<HTMLElement>('.basic-vocabulary-simplified');
+    if (!frontElement) return;
+    frontElement.textContent = front.script;
+    frontElement.lang = front.lang;
+
+    const existingFallback = cardElement.querySelector('.basic-vocabulary-script-fallback');
+    if (front.isFallback) {
+      if (!existingFallback) {
+        frontElement.after(
+          textElement(document, 'basic-vocabulary-script-fallback', FALLBACK_ANNOTATION, 'ja'),
+        );
+      }
+    } else {
+      existingFallback?.remove();
+    }
+
+    if (!state.answerRevealed) return;
+    const answer = cardElement.querySelector('.basic-vocabulary-answer');
+    if (!answer) return;
+    const traditional = revealedTraditional(entry, scriptPreference);
+    const existingTraditional = answer.querySelector('.basic-vocabulary-traditional');
+    if (traditional) {
+      if (!existingTraditional) {
+        answer.append(
+          textElement(document, 'basic-vocabulary-traditional', traditional, 'zh-Hant'),
+        );
+      } else if (existingTraditional.textContent !== traditional) {
+        existingTraditional.textContent = traditional;
+      }
+    } else {
+      existingTraditional?.remove();
+    }
   }
 
   function renderCompleted(): void {
@@ -482,11 +598,24 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   renderActive();
   updateSummary();
 
+  // Update the visible script on an effective preference change (#252 document
+  // event). Never restarts, rerates, advances, reveals, writes progress, or
+  // moves focus: state and the store stay untouched, and the in-place refresh
+  // preserves the active item, revealed answers, and any focused control.
+  function onScriptPreferenceChange(): void {
+    scriptPreference = readRootScriptPreference();
+    updateVisibleScript();
+  }
+  document.addEventListener(SCRIPT_PREFERENCE_EVENT, onScriptPreferenceChange);
+
   function onPageShow(): void {
+    scriptPreference = readRootScriptPreference();
     store.refresh();
     updateSummary();
     if (!hasRatedSinceInit) {
       restartSession();
+    } else {
+      updateVisibleScript();
     }
   }
   window.addEventListener('pageshow', onPageShow);
@@ -518,6 +647,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   window.addEventListener('storage', onStorage);
 
   const cleanup = () => {
+    document.removeEventListener(SCRIPT_PREFERENCE_EVENT, onScriptPreferenceChange);
     window.removeEventListener('pageshow', onPageShow);
     window.removeEventListener('storage', onStorage);
     root.removeEventListener('click', onClick);
