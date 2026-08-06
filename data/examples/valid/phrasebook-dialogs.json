@@ -27,6 +27,72 @@
         "type": "authored",
         "note": "Chabiko original transport dialog schema fixture; learner line mirrors committed phrase phrase-002; no third-party text copied"
       }
+    },
+    {
+      "id": "dialog-airport-001",
+      "scenario": "airport",
+      "turns": [
+        {
+          "speaker": "partner",
+          "traditional": "你來台灣做什麼？",
+          "traditionalStatus": "authored",
+          "simplified": "你来台湾做什么？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Nǐ lái Táiwān zuò shénme?",
+          "japanese": "台湾へは何のために来ましたか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我是來台灣旅遊的。",
+          "traditionalStatus": "authored",
+          "simplified": "我是来台湾旅游的。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ shì lái Táiwān lǚyóu de.",
+          "japanese": "台湾へ旅行に来ました。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "歡迎！從這裡坐機場捷運很方便。",
+          "traditionalStatus": "authored",
+          "simplified": "欢迎！从这里坐机场捷运很方便。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Huānyíng! Cóng zhèlǐ zuò jīchǎng jiéyùn hěn fāngbiàn.",
+          "japanese": "ようこそ！ここから空港MRTに乗るととても便利ですよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "不好意思，我聽不懂。可以說慢一點嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "不好意思，我听不懂。可以说慢一点吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Bù hǎoyìsi, wǒ tīng bù dǒng. Kěyǐ shuō màn yìdiǎn ma?",
+          "japanese": "すみません、聞き取れません。もう少しゆっくり話してもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，我慢慢說。這裡有機場捷運，很方便。",
+          "traditionalStatus": "authored",
+          "simplified": "好，我慢慢说。这里有机场捷运，很方便。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, wǒ mànmàn shuō. Zhèlǐ yǒu jīchǎng jiéyùn, hěn fāngbiàn.",
+          "japanese": "はい、ゆっくり話しますね。ここに空港MRTがありますよ。とても便利ですよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "請問機場捷運在哪裡？",
+          "traditionalStatus": "authored",
+          "simplified": "请问机场捷运在哪里？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Qǐngwèn jīchǎng jiéyùn zài nǎlǐ?",
+          "japanese": "空港MRTはどこですか？"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-airport-001", "phrase-airport-004", "phrase-airport-005"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original airport dialog; learner lines mirror committed phrases phrase-airport-001/004/005; no third-party text copied"
+      }
     }
   ]
 }
