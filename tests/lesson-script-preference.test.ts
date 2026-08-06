@@ -325,6 +325,40 @@ describe('lang follows the displayed form', () => {
     expect(example(root).lang).toBe('zh-Hant');
     expect(fallbackAnnotations(root)[0]?.textContent).toBe(FALLBACK_ANNOTATION);
   });
+
+  it('labels a fallback-to-simplified display as zh-Hans', () => {
+    // The Traditional/path-default form is ineligible but the simplified form
+    // is verified: selectScript falls back to the simplified text, which must
+    // be labeled zh-Hans (not zh-Hant) because that is the displayed form.
+    setPreference('traditional');
+    const root = exampleFixture({
+      simplified: EXAMPLE_SIMPLIFIED,
+      simplifiedStatus: 'verified',
+      traditionalStatus: 'generated',
+    });
+    document.body.append(root);
+    init(root);
+
+    expect(frontText(example(root))).toBe(EXAMPLE_SIMPLIFIED);
+    expect(example(root).lang).toBe('zh-Hans');
+    expect(fallbackAnnotations(root)[0]?.textContent).toBe(FALLBACK_ANNOTATION);
+  });
+
+  it('labels a fallback-to-traditional display as zh-Hant under a simplified preference', () => {
+    // A simplified preference whose simplified form is unavailable falls back
+    // to the Traditional path default, which must be labeled zh-Hant.
+    setPreference('simplified');
+    const root = exampleFixture({
+      simplifiedStatus: 'unavailable',
+      traditionalStatus: 'authored',
+    });
+    document.body.append(root);
+    init(root);
+
+    expect(frontText(example(root))).toBe(EXAMPLE_TRADITIONAL);
+    expect(example(root).lang).toBe('zh-Hant');
+    expect(fallbackAnnotations(root)[0]?.textContent).toBe(FALLBACK_ANNOTATION);
+  });
 });
 
 // ─── Event / pageshow initialization ───────────────────────────────────────────

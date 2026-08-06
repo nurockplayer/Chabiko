@@ -114,14 +114,14 @@ function applyField(element: HTMLElement, preference: ScriptPreference): void {
     return;
   }
 
-  // The lesson path default is Traditional and is always eligible, so the
-  // simplified form is displayed only when the learner explicitly prefers
-  // simplified AND selectScript returned it directly (not a fallback).
-  // Everything else is the Traditional form (zh-Hant). The script tag follows
-  // the displayed form, never text identity, so a form with identical glyphs
-  // still gets the correct `lang`.
-  const lang =
-    preference === 'simplified' && !result.isFallback ? 'zh-Hans' : 'zh-Hant';
+  // The script tag follows the actually-displayed form: the simplified form is
+  // rendered as zh-Hans, and any other displayed text (the authored
+  // path-default Traditional form, or a fallback to it) as zh-Hant. This holds
+  // for direct selections and for fallbacks — e.g. when the Traditional form
+  // is generated/unavailable/absent but the simplified form is authored/
+  // verified, the simplified text is displayed and must be labeled zh-Hans,
+  // not zh-Hant.
+  const lang = result.script === forms.simplified ? 'zh-Hans' : 'zh-Hant';
 
   // Update only the leading text node so any child annotation is preserved.
   const leading = element.firstChild;
