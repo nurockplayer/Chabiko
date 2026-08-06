@@ -286,6 +286,36 @@ describe('parseBasicVocabularySyncMeta', () => {
     ).toBeNull();
   });
 
+  it('rejects a stored dirtyItems __proto__ key instead of writing through the prototype setter', () => {
+    const raw = JSON.stringify({
+      version: 1,
+      userId: USER_ID,
+      resetGeneration: 0,
+      nextReviewOrder: 1,
+      pendingResetId: null,
+      guestImportCompleted: false,
+      dirtyItems: {
+        ['__proto__']: { entry: { status: 'learning', knownStreak: 1 }, reviewOrder: 0 },
+      },
+    });
+    expect(parseBasicVocabularySyncMeta(raw, USER_ID)).toBeNull();
+  });
+
+  it('rejects a stored dirty entry in the implicit new state', () => {
+    const raw = JSON.stringify({
+      version: 1,
+      userId: USER_ID,
+      resetGeneration: 0,
+      nextReviewOrder: 1,
+      pendingResetId: null,
+      guestImportCompleted: false,
+      dirtyItems: {
+        a: { entry: { status: 'new', knownStreak: 0 }, reviewOrder: 0 },
+      },
+    });
+    expect(parseBasicVocabularySyncMeta(raw, USER_ID)).toBeNull();
+  });
+
   it('is all-or-nothing on malformed JSON and array roots', () => {
     expect(parseBasicVocabularySyncMeta('not-json', USER_ID)).toBeNull();
     expect(parseBasicVocabularySyncMeta('[]', USER_ID)).toBeNull();
@@ -334,6 +364,13 @@ describe('recordBasicVocabularyDirtyItem', () => {
     // Inconsistent entry rejected as well.
     expect(() =>
       recordBasicVocabularyDirtyItem(meta, 'a', entry('new', 1)),
+    ).toThrow();
+  });
+
+  it('rejects the __proto__ item ID instead of writing through the prototype setter', () => {
+    const meta = createBasicVocabularySyncMeta(USER_ID);
+    expect(() =>
+      recordBasicVocabularyDirtyItem(meta, '__proto__', entry('learning', 1)),
     ).toThrow();
   });
 
@@ -645,6 +682,7 @@ describe('mergeBasicVocabularyCloudSnapshot', () => {
       snapshot(0, [cloudItem('a', 'learning', 1, -1, 0)]),
       snapshot(0, [cloudItem('', 'learning', 1, 0, 0)]),
       snapshot(0, [cloudItem('a', 'learned', 0, 0, 0)]), // inconsistent streak
+      snapshot(0, [cloudItem('__proto__', 'learning', 1, 0, 0)]),
     ];
     for (const bad of invalid) {
       expect(() => mergeBasicVocabularyCloudSnapshot(local, meta, bad)).toThrow(
@@ -815,6 +853,17 @@ describe('importBasicVocabularyGuestProgress', () => {
         meta,
       ),
     ).toThrow(TypeError);
+  });
+
+  it('rejects a __proto__ guest item key instead of dropping the row', () => {
+    const guest = {
+      version: 1 as const,
+      items: { ['__proto__']: entry('learning', 1) },
+    } as BasicVocabularyProgressDocument;
+    const meta = createBasicVocabularySyncMeta(USER_ID);
+    expect(() =>
+      importBasicVocabularyGuestProgress(guest, snapshot(0, []), meta),
+    ).toThrow();
   });
 });
 

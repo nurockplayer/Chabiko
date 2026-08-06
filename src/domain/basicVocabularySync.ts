@@ -73,9 +73,14 @@ export interface BasicVocabularySyncMergeResult {
 
 // ─── Invariant helpers ─────────────────────────────────────────────────────────
 
-/** Item IDs are non-empty strings; implicit `new` is absence and is never a row. */
+/**
+ * Item IDs are non-empty strings; implicit `new` is absence and is never a
+ * row. `__proto__` is rejected too: assigning a plain-object key of that
+ * name writes through the prototype setter instead of creating an own
+ * property, so it must fail validation rather than silently drop the row.
+ */
 function isValidItemId(id: string): boolean {
-  return id !== '';
+  return id !== '' && id !== '__proto__';
 }
 
 function isNonNegativeInteger(value: number): boolean {
@@ -139,8 +144,11 @@ function isValidDirtyItem(value: unknown): value is BasicVocabularyDirtyItem {
   }
   const entryObj = entry as Record<string, unknown>;
   if (Object.keys(entryObj).length !== 2) return false;
+  // A dirty row is never in the implicit `new` state: the domain records
+  // only ratings, so a stored `new` entry is corrupted and must be rejected
+  // at the boundary instead of crashing a later merge.
   const status = entryObj.status;
-  if (status !== 'new' && status !== 'learning' && status !== 'learned') {
+  if (status !== 'learning' && status !== 'learned') {
     return false;
   }
   if (typeof entryObj.knownStreak !== 'number') return false;
@@ -669,6 +677,11 @@ export function importBasicVocabularyGuestProgress(
   let nextOrder = Math.max(meta.nextReviewOrder, highestCloudOrder + 1);
   const guestIds = Object.keys(guest.items);
   for (const id of guestIds) {
+    if (!isValidItemId(id)) {
+      throw new Error(
+        `Invalid item ID "${id}" in basic-vocabulary guest progress`,
+      );
+    }
     if (cloudIds.has(id)) continue;
     const guestEntry = guest.items[id];
     if (guestEntry.status === 'new') continue;
