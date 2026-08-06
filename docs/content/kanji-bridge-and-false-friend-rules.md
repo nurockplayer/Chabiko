@@ -62,7 +62,7 @@ An on-yomi note says "the Chinese reading sounds a bit like the Japanese on-yomi
 
 - Allowable: an **observation about similarity** — "xī is not far from シ" — framed as a mnemonic hint, never as a rule that the readings match.
 - **Never claim**: identical pronunciation, a shared etymology, or "in Japanese this kanji reads like this, so in Chinese it must sound like this."
-- Because on-yomi and pinyin diverged independently, even a true sound resemblance is only a memory hook; the pinyin must be taught as the primary reading.
+- Because modern Mandarin readings and Japanese on-yomi developed differently after older Chinese pronunciations were borrowed into Japanese, present-day similarity is only a mnemonic hint, not a pronunciation rule or proof of shared etymology; the pinyin must be taught as the primary reading.
 
 **Mandatory caution copy:** any on-yomi similarity note must state, in Japanese, that the Chinese sound is a different reading and must be learned as itself.
 
