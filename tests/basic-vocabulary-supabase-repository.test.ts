@@ -947,15 +947,14 @@ insert into auth.users (id, email, encrypted_password) values
     const repoA = repoFor(USER_A);
     await repoA.reset(USER_A, RESET_1);
     await repoA.reset(USER_A, RESET_2);
-    // A push at the stale generation 1 cannot reach the database: the insert
-    // with-check RLS policy requires an existing state row at the pushed
-    // generation, so the API surfaces this as 403 + SQLSTATE 42501 (forbidden)
-    // before the FK would ever be consulted. Either rejection satisfies the
-    // stale-write contract; the FK → `stale-generation` mapping is exercised at
-    // the classifier level (see the FK_ERROR mock cases).
+    // A push at the stale generation 1 passes the ownership-only RLS with-check
+    // and is then rejected by the progress FK `(user_id, course_id,
+    // reset_generation) -> course_state` (23503): the state row at generation 1
+    // no longer exists. The repository maps that FK violation to
+    // `stale-generation`.
     await expect(
       repoA.pushMutations(USER_A, 1, [item('raced', 'learning', 0, 0, 1)]),
-    ).rejects.toMatchObject({ kind: 'forbidden' });
+    ).rejects.toMatchObject({ kind: 'stale-generation' });
     // Nothing from the stale generation survived.
     const snapshot = await repoA.loadSnapshot(USER_A);
     expect(snapshot.resetGeneration).toBe(2);

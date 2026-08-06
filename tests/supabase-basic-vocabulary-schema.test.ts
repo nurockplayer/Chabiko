@@ -7,13 +7,19 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 // Supabase progress schema / RLS / reset generation (issue #287).
 //
 // Two layers:
-// 1. Static SQL assertions over the single migration file. These never need a
-//    running database and pin the exact contract (columns, types, defaults,
-//    keys, FK, checks, RLS, grants, function signature, forbidden columns).
+// 1. Static SQL assertions over the historical schema migration and the
+//    forward-only corrective migration (issue #291). These never need a running
+//    database and pin the exact contract (columns, types, defaults, keys, FK,
+//    checks, RLS, grants, function signature, forbidden columns). The historical
+//    migration keeps its original `exists(...)` RLS clause — that is historical
+//    fact; the corrective migration drops and recreates the progress
+//    insert/update policies ownership-only so a stale-generation write surfaces
+//    as the FK 23503 the repository maps to `stale-generation`.
 // 2. Live integration assertions against a locally running Supabase stack
 //    (supabase db reset + docker exec psql), skipped when the stack is not up.
-//    These prove owner isolation, invalid-input rejection, and the frozen
-//    idempotent reset RPC behavior without weakening policies.
+//    These prove the final policy state after the full migration chain, owner
+//    isolation, invalid-input rejection, and the frozen idempotent reset RPC
+//    behavior without weakening policies.
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MIGRATIONS_DIR = join(ROOT, 'supabase', 'migrations');
@@ -29,7 +35,11 @@ function readMigration(needle: string): string {
   if (!existsSync(MIGRATIONS_DIR)) {
     throw new Error(`no supabase/migrations directory at ${MIGRATIONS_DIR}`);
   }
-  const candidates = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'));
+  // Sorted so the base schema migration (earlier timestamp) wins the
+  // `basic_vocabulary_progress` needle over the #291 corrective migration.
+  const candidates = readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
   const match = candidates.find((f) => f.includes(needle));
   if (!match) {
     throw new Error(`no migration matching "${needle}" under ${MIGRATIONS_DIR}`);
@@ -137,16 +147,20 @@ function stripComments(sql: string): string {
 
 describe('supabase basic-vocabulary schema (static)', () => {
   let migration: string;
+  let correctiveMigration: string;
   let files: string[];
 
   beforeAll(() => {
     files = migrationFiles();
     migration = readMigration('basic_vocabulary_progress');
+    correctiveMigration = readMigration('basic_vocabulary_progress_stale_generation_policy');
   });
 
-  it('defines exactly one migration for this feature', () => {
-    expect(files).toHaveLength(1);
-    expect(files[0]).toContain('basic_vocabulary_progress');
+  it('defines the base schema migration and the #291 corrective migration for this feature', () => {
+    expect(files).toContain('20260805075502_basic_vocabulary_progress.sql');
+    expect(files).toContain(
+      '20260807075502_basic_vocabulary_progress_stale_generation_policy.sql',
+    );
   });
 
   it('creates both tables with exact column/type/default contract', () => {
@@ -206,6 +220,30 @@ describe('supabase basic-vocabulary schema (static)', () => {
       expect(existsBlock).not.toMatch(/=\s*user_id\b/i);
       expect(existsBlock).not.toMatch(/=\s*course_id\b/i);
       expect(existsBlock).not.toMatch(/=\s*reset_generation\b/i);
+    }
+  });
+
+  it('corrective migration drops and recreates the progress policies ownership-only', () => {
+    // The #291 corrective migration must drop both progress with-check policies
+    // (whose historical form carries the `exists(...)` stale-generation clause)
+    // and recreate them as ownership-only, so a stale-generation write passes
+    // RLS and is rejected by the FK as 23503.
+    expect(correctiveMigration).toMatch(
+      /drop\s+policy\s+if\s+exists\s+"basic_vocabulary_progress_insert"\s+on\s+public\.basic_vocabulary_progress/i,
+    );
+    expect(correctiveMigration).toMatch(
+      /drop\s+policy\s+if\s+exists\s+"basic_vocabulary_progress_update"\s+on\s+public\.basic_vocabulary_progress/i,
+    );
+    const recreated = stripComments(correctiveMigration).match(
+      /create\s+policy\s+"basic_vocabulary_progress_(insert|update)"[\s\S]*?\);\s*(?=create\s+policy|create\s+function|--|$)/gi,
+    ) ?? [];
+    expect(recreated.length).toBe(2);
+    for (const policySql of recreated) {
+      // Ownership-only: the owner claim is present and no `exists(...)` clause
+      // or course-state correlation remains.
+      expect(policySql).toMatch(/\(?\s*\(\s*select\s+auth\.uid\(\)\s*\)\s*=\s*user_id\s*\)?/i);
+      expect(policySql).not.toMatch(/exists\s*\(/i);
+      expect(policySql).not.toMatch(/basic_vocabulary_course_state/i);
     }
   });
 
@@ -348,7 +386,10 @@ select has_table_privilege('authenticated', 'public.basic_vocabulary_course_stat
     expect(auth.trim()).toBe('t|t|t|t|t|t|t|t|t');
   });
 
-  it('stored progress insert/update WITH CHECK correlates to the outer progress row', () => {
+  it('final stored progress insert/update WITH CHECK is ownership only after the corrective migration', () => {
+    // `supabase db reset` applies the full chain (historical + #291 corrective),
+    // so the final stored policies must be ownership-only: the historical
+    // `exists(...)` clause is dropped and the FK guards the stale generation.
     const stored = psql(`
 select policyname || '|' || replace(with_check, chr(10), ' ') from pg_policies
 where schemaname = 'public' and tablename = 'basic_vocabulary_progress'
@@ -359,14 +400,15 @@ where schemaname = 'public' and tablename = 'basic_vocabulary_progress'
     const insertRow = rows.find((r) => r.startsWith('basic_vocabulary_progress_insert|')) ?? '';
     const updateRow = rows.find((r) => r.startsWith('basic_vocabulary_progress_update|')) ?? '';
     for (const row of [insertRow, updateRow]) {
-      // The stored policy must reference the outer progress row explicitly;
-      // unqualified names inside the subquery would be self-comparisons.
-      expect(row).toMatch(/s\.user_id\s*=\s*basic_vocabulary_progress\.user_id/i);
-      expect(row).toMatch(/s\.course_id\s*=\s*basic_vocabulary_progress\.course_id/i);
-      expect(row).toMatch(/s\.reset_generation\s*=\s*basic_vocabulary_progress\.reset_generation/i);
       // Postgres serializes `(select auth.uid()) = user_id` as
       // `(( SELECT auth.uid() AS uid) = user_id)`; match the ownership claim.
       expect(row).toMatch(/auth\.uid\(\)[\s\S]*?=\s*user_id/i);
+      // The stored with-check must not correlate to the course-state table: the
+      // stale-generation contract is the FK `(user_id, course_id,
+      // reset_generation)`, surfaced as 23503 (repository maps to
+      // `stale-generation`).
+      expect(row).not.toMatch(/basic_vocabulary_course_state/i);
+      expect(row).not.toMatch(/exists\s*\(/i);
     }
   });
 
@@ -550,7 +592,10 @@ select reset_generation from public.basic_vocabulary_course_state;
 
   it('concurrent/reset-order fixture: old-generation rows cannot survive/reappear', () => {
     // A writes at generation 1, then resets to generation 2. A stale write that
-    // raced at generation 1 must fail via the FK (state row no longer exists).
+    // raced at generation 1 passes the ownership-only RLS with-check and is then
+    // rejected by the FK `(user_id, course_id, reset_generation)` because the
+    // state row at generation 1 no longer exists. This is the single reliable
+    // stale-generation guard the repository maps to `stale-generation` (23503).
     asUser(uuidA, `
 select public.reset_basic_vocabulary_progress('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 `);
@@ -561,7 +606,7 @@ select public.reset_basic_vocabulary_progress('22222222-2222-2222-2222-222222222
 insert into public.basic_vocabulary_progress (user_id, course_id, item_id, status, known_streak, review_order, reset_generation)
 values ('${uuidA}', 'basic-vocabulary', 'raced', 'learning', 0, 0, 1);
 `);
-    expect(stale).toMatch(/foreign key|row-level security/);
+    expect(stale).toMatch(/foreign key/);
 
     // After the reset, old-generation 1 cannot reappear.
     const count = asUser(uuidA, `
