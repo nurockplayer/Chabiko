@@ -47,10 +47,46 @@ Closes #<issue-number>
 
 - [ ] Reference materials, schemas, or external data sources confirmed current at implementation time.
 
-## Independent Review
+## Review and Merge Policy Compliance
 
-- [ ] DeepSeek Pro reviewer: No blocking findings.
+Per AGENTS.md「Review 與 Merge 政策（並行 sub-agent 吞吐量感知）」— the canonical review and merge policy.
+
+### Risk tier
+
+- [ ] Low risk — documentation, tests, copy, isolated maintenance, no production behavior change
+- [ ] Medium risk — ordinary product behavior, state management, API integration, build configuration, persistent data access
+- [ ] High risk — authentication, authorization, secrets, destructive operations, migrations, payments/economy, deployment, concurrency, queue correctness, core architecture
+- Risk tier rationale: {{low | medium | high}} — {{reason}}
+
+### Exact-head review
+
+- Reviewed head SHA: {{reviewed head SHA}}
+- Current head SHA: {{current head SHA}}
+- [ ] Reviewed head SHA unchanged at merge (reviewed head must match current head).
+
+### Independent reviewer verdicts
+
+Required independent reviewer count: low/medium = 1, high = 2 independent review signals.
+
+- [ ] DeepSeek Pro reviewer (independent reviewer 1, required for all tiers): No blocking findings.
+- [ ] Independent reviewer 2 (required for high risk; CodeRabbit may count as one signal): No blocking findings.
 - [ ] Codex final review passed (where applicable).
+- [ ] Implementing agent did NOT serve as the sole reviewer: {{confirmed}}
+
+### Required checks
+
+- [ ] Required CI and repository validation gates green on the exact head.
+- [ ] No unresolved non-outdated blocking review thread remains (see "Unresolved Non-Outdated Threads at Merge").
+- [ ] Scope matches the owning issue; no unrelated work bundled.
+- [ ] Integration order and dependency constraints remain valid against latest `main`.
+
+### CodeRabbit status
+
+- [ ] CodeRabbit actually ran on the current exact head.
+- CodeRabbit status: {{ran-with-findings | ran-clean | pending | skipped | disabled | quota-limited | cancelled | no-op | not-configured}}
+- [ ] A skipped/disabled/delayed/quota-limited/cancelled/no-op CodeRabbit run does NOT by itself block merge (advisory by default).
+- [ ] CodeRabbit findings classified: {{blocking | valid non-blocking | incorrect/irrelevant}}
+- [ ] Only unresolved blocking CodeRabbit findings block merge: {{none | list}}
 
 ## Unresolved Non-Outdated Threads at Merge
 

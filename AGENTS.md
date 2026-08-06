@@ -159,6 +159,54 @@ Reviewer 除立即的 P0／P1 安全或資料遺失中斷外，應完成完整 c
 - Controller 的驗證結果不得取代 reviewer verdict；只有 reviewer 明確回覆 verdict，review 才算完成。
 - PR 必須包含 `Closes #<issue>`，並列出 scope、changed files、validation 與 non-goals；禁止只以裸 issue number 引用。
 
+## Review 與 Merge 政策（並行 sub-agent 吞吐量感知）
+
+本節是 PR review 與 merge eligibility 的唯一 canonical policy。repo 根目錄 `CLAUDE.md` 的「Reviewer Gate」段落與 `.github/pull_request_template.md` 都引用本節，不得另立分歧規則。目標是讓實作寬、整合窄：
+
+```text
+parallel isolated implementation
+→ bounded review queue
+→ independent exact-head review
+→ sequential integration against latest main
+```
+
+### Reviewer roles（reviewer 角色）
+
+- implementing agent 不得作為自身 work 的唯一 reviewer；每個 PR 至少需要一位未參與實作的 independent reviewer。
+- 每個 PR 至少需要一個 independent reviewer verdict，且該 verdict 必須針對 exact current head。
+- CodeRabbit 預設 advisory：pending、delayed、skipped、disabled、quota-limited、cancelled、no-op 的 CodeRabbit run 不得單獨 block merge。
+- CodeRabbit check 標記 successful 不計為 reviewer approval，除非它包含對 current exact head 的真實 review verdict 或 concrete findings。
+- CodeRabbit findings 必須分類為 blocking、valid non-blocking、incorrect/irrelevant；只有 unresolved blocking findings 阻止 merge。
+
+### Risk tiers（風險分級）
+
+Risk tier 判定必須 deterministic 且 checkable，PR template 必須標記風險分級與理由。
+
+- **低風險（Low risk）**：documentation、tests、copy、isolated maintenance、不改變 production behavior 的變更。Independent review + required CI 即可。
+- **中風險（Medium risk）**：ordinary product behavior、state management、API integration、build configuration、persistent data access。Independent exact-head review + required CI；CodeRabbit feedback 可用時納入，但不只為了 completion 而等待。
+- **高風險（High risk）**：authentication、authorization、secrets、destructive operations、migrations、payments/economy、deployment、concurrency、queue correctness、core architecture。需要兩個 independent review signals；CodeRabbit 可算一個 signal，但可用同等獨立 reviewer 取代。
+
+### Throughput limits（吞吐量上限）
+
+- 最多 4 個 implementation PR 可同時在 active review queue 等待。
+- 最多 2 個 PR 可同時在 final review。
+- 一次只 merge 一個 PR，且必須對最新 `main` 進行。
+- 額外完成的 agent work 留在 implementation-ready queue，不開出無上限的 PR。
+- 另一個 PR merge 後，overlapping、dependent 或 stale-head 的 PR 必須先從最新 `main` update 並重跑 required gates，才能取得 final approval。
+
+### Merge gate（merge 條件）
+
+以下條件全部為 true 才可 merge：
+
+- required CI 與 repository validation gates 在 exact head 上 green；
+- 該 risk tier 所需的 independent reviewer count 回報 `No blocking findings.`；
+- 沒有 unresolved non-outdated blocking review thread；
+- reviewed head SHA 未改變；
+- scope 符合 owning issue 且沒有無關 work 混入；
+- integration order 與 dependency constraints 對最新 `main` 仍然有效。
+
+CodeRabbit 未完成不構成 independent merge blocker，除非該 PR 被明確歸類為 high risk 且 CodeRabbit 被選為 required review signal 之一。
+
 ## JavaScript Package Manager
 
 - 使用 pnpm。

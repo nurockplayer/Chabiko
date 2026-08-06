@@ -69,3 +69,87 @@ describe('AGENTS.md reviewer fallback policy prevents a paused isolation review 
     expect(agentsMd).toMatch(/Controller.*驗證.*不得取代.*reviewer verdict/s);
   });
 });
+
+describe('AGENTS.md throughput-aware review and merge policy supports parallel sub-agent delivery', () => {
+  it('defines a canonical review and merge policy section with parallel implementation then bounded sequential integration', () => {
+    expect(agentsMd).toContain('## Review 與 Merge 政策（並行 sub-agent 吞吐量感知）');
+    expect(agentsMd).toMatch(/parallel isolated implementation\s*→ bounded review queue\s*→ independent exact-head review\s*→ sequential integration against latest main/s);
+  });
+
+  it('forbids the implementing agent from being the sole reviewer and requires an exact-head verdict', () => {
+    expect(agentsMd).toContain('implementing agent 不得作為自身 work 的唯一 reviewer');
+    expect(agentsMd).toContain('exact current head');
+  });
+
+  it('documents CodeRabbit as advisory by default, not a universal synchronous gate', () => {
+    expect(agentsMd).toContain('CodeRabbit 預設 advisory：pending、delayed、skipped、disabled、quota-limited、cancelled、no-op 的 CodeRabbit run 不得單獨 block merge');
+    expect(agentsMd).toContain('CodeRabbit check 標記 successful 不計為 reviewer approval');
+    expect(agentsMd).toContain('CodeRabbit findings 必須分類為 blocking、valid non-blocking、incorrect/irrelevant；只有 unresolved blocking findings 阻止 merge');
+  });
+
+  it('defines deterministic low, medium, and high risk tiers', () => {
+    expect(agentsMd).toContain('低風險（Low risk）');
+    expect(agentsMd).toContain('中風險（Medium risk）');
+    expect(agentsMd).toContain('高風險（High risk）');
+    expect(agentsMd).toContain('CodeRabbit 可算一個 signal，但可用同等獨立 reviewer 取代');
+  });
+
+  it('documents bounded review queue and sequential integration throughput limits', () => {
+    expect(agentsMd).toContain('最多 4 個 implementation PR 可同時在 active review queue 等待');
+    expect(agentsMd).toContain('最多 2 個 PR 可同時在 final review');
+    expect(agentsMd).toContain('一次只 merge 一個 PR，且必須對最新 `main` 進行');
+    expect(agentsMd).toContain('額外完成的 agent work 留在 implementation-ready queue');
+  });
+
+  it('requires stale-head PRs to update from latest main and rerun gates', () => {
+    expect(agentsMd).toContain('stale-head 的 PR 必須先從最新 `main` update 並重跑 required gates');
+  });
+
+  it('defines the merge gate with exact-head, blocking-thread, CI, scope, and dependency checks', () => {
+    expect(agentsMd).toContain('required CI 與 repository validation gates 在 exact head 上 green');
+    expect(agentsMd).toContain('沒有 unresolved non-outdated blocking review thread');
+    expect(agentsMd).toContain('reviewed head SHA 未改變');
+    expect(agentsMd).toContain('scope 符合 owning issue 且沒有無關 work 混入');
+    expect(agentsMd).toContain('integration order 與 dependency constraints 對最新 `main` 仍然有效');
+  });
+
+  it('states that unfinished CodeRabbit is not an independent merge blocker by default', () => {
+    expect(agentsMd).toContain('CodeRabbit 未完成不構成 independent merge blocker');
+    expect(agentsMd).toContain('CodeRabbit 被選為 required review signal 之一');
+  });
+});
+
+describe('PR template records the throughput-aware review and merge policy fields', () => {
+  it('records a risk tier with rationale', () => {
+    expect(prTemplate).toContain('## Review and Merge Policy Compliance');
+    expect(prTemplate).toContain('### Risk tier');
+    expect(prTemplate).toContain('Low risk');
+    expect(prTemplate).toContain('Medium risk');
+    expect(prTemplate).toContain('High risk');
+    expect(prTemplate).toContain('{{low | medium | high}}');
+  });
+
+  it('records the reviewed and current exact head SHAs', () => {
+    expect(prTemplate).toContain('Reviewed head SHA: {{reviewed head SHA}}');
+    expect(prTemplate).toContain('Current head SHA: {{current head SHA}}');
+    expect(prTemplate).toContain('Reviewed head SHA unchanged at merge');
+  });
+
+  it('records independent reviewer verdicts with per-tier counts and forbids sole implementer approval', () => {
+    expect(prTemplate).toContain('Required independent reviewer count: low/medium = 1, high = 2 independent review signals.');
+    expect(prTemplate).toContain('Independent reviewer 2 (required for high risk; CodeRabbit may count as one signal): No blocking findings.');
+    expect(prTemplate).toContain('Implementing agent did NOT serve as the sole reviewer');
+  });
+
+  it('records required checks and unresolved non-outdated blocking threads', () => {
+    expect(prTemplate).toContain('### Required checks');
+    expect(prTemplate).toContain('No unresolved non-outdated blocking review thread remains');
+    expect(prTemplate).toContain('## Unresolved Non-Outdated Threads at Merge');
+  });
+
+  it('records whether CodeRabbit actually ran and its status', () => {
+    expect(prTemplate).toContain('### CodeRabbit status');
+    expect(prTemplate).toContain('CodeRabbit status: {{ran-with-findings | ran-clean | pending | skipped | disabled | quota-limited | cancelled | no-op | not-configured}}');
+    expect(prTemplate).toContain('A skipped/disabled/delayed/quota-limited/cancelled/no-op CodeRabbit run does NOT by itself block merge (advisory by default).');
+  });
+});
