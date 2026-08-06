@@ -73,6 +73,30 @@ function isConsistent(status: VocabularyProgressStatus, knownStreak: number): bo
   return false;
 }
 
+/**
+ * All-or-nothing validation of a trusted in-memory v1 document for the sync
+ * layer's full replacement. Reuses the exact parser invariants (root shape,
+ * `version: 1`, item shape, status/streak consistency) and additionally
+ * rejects the `__proto__` item key so a replacement can never write through
+ * the prototype setter. Object insertion order is preserved as-is.
+ */
+function validateSyncDocument(document: unknown): BasicVocabularyProgressDocument | null {
+  if (!isValidRoot(document)) return null;
+  const root = document as Record<string, unknown>;
+  const rawItems = root.items as Record<string, unknown>;
+  const items: Record<string, VocabularyProgressEntry> = {};
+  for (const [id, entry] of Object.entries(rawItems)) {
+    if (typeof id !== 'string' || id === '' || id === '__proto__') return null;
+    if (!isValidItemEntry(entry)) return null;
+    const e = entry as Record<string, unknown>;
+    const status = String(e.status) as VocabularyProgressStatus;
+    const knownStreak = Number(e.knownStreak);
+    if (!isConsistent(status, knownStreak)) return null;
+    items[id] = { status, knownStreak };
+  }
+  return { version: 1, items };
+}
+
 // ─── Default storage ────────────────────────────────────────────────────────────
 
 function getDefaultStorage(): StorageLike | null {
@@ -122,6 +146,7 @@ export class BasicVocabularyProgressStore {
   private persistFailed = false;
   private pendingChanges = new Set<string>();
   private resetPending = false;
+  private syncReplacementPending = false;
 
   /**
    * @param storage   Optional storage-like backend. Defaults to
@@ -212,6 +237,41 @@ export class BasicVocabularyProgressStore {
   }
 
   /**
+   * Trusted full replacement of the stored progress document by the sync
+   * layer (Issue #292).
+   *
+   * - Validates/copies the exact v1 document all-or-nothing using the same
+   *   parser invariants; an invalid document throws and leaves state,
+   *   storage, and pending flags untouched.
+   * - Preserves object insertion order byte-for-byte.
+   * - Replaces the in-memory state and persists through this instance's
+   *   physical key only.
+   * - Before persisting, every replacement ID is marked locally pending so
+   *   the crash-safe storage merge treats the replacement as authoritative
+   *   for those IDs; on a successful write the existing persist path clears
+   *   the pending state.
+   * - On a write failure the replacement stays usable in memory, and
+   *   subsequent refresh/write cannot resurrect older storage rows over it.
+   * - Never accepts sync metadata, a user ID, or a general arbitrary-version
+   *   migration; the v1 document shape and key semantics are unchanged.
+   */
+  replaceAllForSync(document: BasicVocabularyProgressDocument): void {
+    const validated = validateSyncDocument(document);
+    if (validated === null) {
+      throw new Error(
+        'Invalid basic-vocabulary progress document for replaceAllForSync',
+      );
+    }
+    this.document = validated;
+    this.syncReplacementPending = true;
+    this.pendingChanges.clear();
+    for (const id of Object.keys(validated.items)) {
+      this.pendingChanges.add(id);
+    }
+    this.persist();
+  }
+
+  /**
    * Build a priority-ordered ID list for a new session.
    * Priority: learning → new → learned, stable source order within groups.
    * Stored unknown IDs are ignored for selection/count display but remain
@@ -263,6 +323,7 @@ export class BasicVocabularyProgressStore {
     this.persistFailed = false;
     this.pendingChanges.clear();
     this.resetPending = false;
+    this.syncReplacementPending = false;
     return true;
   }
 
@@ -275,6 +336,7 @@ export class BasicVocabularyProgressStore {
   resetAll(): void {
     this.document = emptyDocument();
     this.pendingChanges.clear();
+    this.syncReplacementPending = false;
     try {
       this.storage?.removeItem(this.storageKey);
       this.resetPending = false;
@@ -313,6 +375,12 @@ export class BasicVocabularyProgressStore {
             // A prior resetAll failed to removeItem; keep empty in-memory state.
             return;
           }
+          if (this.syncReplacementPending) {
+            // A full sync replacement failed to persist; the in-memory
+            // replacement is authoritative and older storage rows must not be
+            // resurrected over it by a later refresh/write.
+            return;
+          }
           if (this.persistFailed && this.pendingChanges.size > 0) {
             // Merge: local pending entries are authoritative for their IDs and
             // keep their local LRU order (they were reviewed most recently and
@@ -339,6 +407,7 @@ export class BasicVocabularyProgressStore {
       } else {
         // absent key
         if (this.resetPending) return;
+        if (this.syncReplacementPending) return;
         if (this.persistFailed) return;
         this.document = emptyDocument();
       }
@@ -355,6 +424,7 @@ export class BasicVocabularyProgressStore {
       );
       this.persistFailed = false;
       this.resetPending = false;
+      this.syncReplacementPending = false;
       this.pendingChanges.clear();
     } catch {
       this.persistFailed = true;
