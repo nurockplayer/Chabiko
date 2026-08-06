@@ -147,6 +147,46 @@
       "travelTask": "タクシーや駅の窓口で「我要去台北車站」と行き先を伝えてみよう。トイレに行きたいときは「我要去廁所」が使える。",
       "painPointTags": ["tone", "pinyin-pronunciation", "same-kanji-different-meaning"],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-005",
+      "titleJa": "数えて注文してみよう",
+      "level": "beginner",
+      "canDoJa": "屋台やお店で、欲しい数量を伝えて注文できる",
+      "learnerOutcomeJa": "「我要＋数字＋個」で、欲しい数量を伝えられる",
+      "hookJa": "屋台で「2つください」と言いたいとき、どう言う？",
+      "travelScenario": "food",
+      "coreSentence": "我要兩個。",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「我要＋数量」＝〜を数量でください。品物を指差しながら、数と量詞「個」を組み合わせて注文する基本パターン。「兩個」＝二つ。"}
+      ],
+      "chunks": [
+        {"chunk": "我要", "meaning": "私は〜が欲しい", "notesJa": "lesson-001 で学んだ「我要」と同じ。「〜が欲しい／〜したい」の意志を表す。"},
+        {"chunk": "兩個", "meaning": "二つ", "notesJa": "「兩」は量詞を伴うときの「2」。数字だけを言うときは「二 èr」だが、量詞の前では「兩 liǎng」を使う。「兩個」＝二つ。"},
+        {"chunk": "個", "meaning": "〜つ（量詞）", "notesJa": "ものを数えるときに名詞の前に置く「量詞」。「個」は最もよく使う汎用の量詞だが、全ての名詞に使えるわけではない。本には「本」、飲み物の杯には「杯」など専用の量詞がある。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "兩", "jpReading": "りょう", "noteJa": "日本語の「両」と字形がよく似ている。覚えの手がかりにしよう。「両手」「両方」の「両」から、中国語の「兩」＝「2つ」をイメージ。"},
+        {"kanji": "個", "jpReading": "こ", "noteJa": "日本語の「一個（いっこ）」「リンゴ三個」の「個」と同様、中国語でもものを数える量詞。ただし中国語の「個」はより広く使われるので、日本語の「個」のイメージで全てに使うと不自然になることがある。"}
+      ],
+      "soundFocus": [
+        {"item": "兩 liǎng", "noteJa": "第三声。先に下げてから上げる。後ろに第四声の「個 gè」が続くときは、上げきらない「半三声」になる。"},
+        {"item": "個 gè", "noteJa": "第四声。短く急降下。日本語の「コ」より強くはっきり下げる。"},
+        {"item": "一 yí（一個）", "noteJa": "「一 yī」は元は第一声だが、第四声の前に来ると第二声に変わる。一個は「yí gè」。"}
+      ],
+      "examples": [
+        {"traditional": "我要兩個。", "traditionalStatus": "authored", "pinyin": "wǒ yào liǎng gè", "japanese": "二つください"},
+        {"traditional": "我要一個。", "traditionalStatus": "authored", "pinyin": "wǒ yào yí gè", "japanese": "一つください"},
+        {"traditional": "我要三個。", "traditionalStatus": "authored", "pinyin": "wǒ yào sān gè", "japanese": "三つください"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「我要兩個。」はどういう意味？", "answerJa": "二つください", "distractorsJa": ["二か所ください", "どこにありますか"]},
+        {"promptJa": "「個」はどんな言葉？", "answerJa": "ものを数えるときに使う量詞", "distractorsJa": ["場所を表す言葉", "否定の言葉（〜ない）"]},
+        {"promptJa": "二つのものを注文するとき、正しい言い方は？", "answerJa": "我要兩個", "distractorsJa": ["我要二個", "我要兩"]}
+      ],
+      "travelTask": "屋台で気になる料理を指差して「我要兩個」と数量で注文してみよう。一つだけ欲しいときは「我要一個」が使える。",
+      "painPointTags": ["measure-word", "tone"],
+      "reviewStatus": "draft"
     }
   ]
 }
