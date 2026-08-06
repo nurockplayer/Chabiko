@@ -68,7 +68,7 @@ An on-yomi note says "the Chinese reading sounds a bit like the Japanese on-yomi
 
 Example:
 
-> **日本語の「情報（ジョウホウ）」と中国語の「情報（xìnxī）」は、漢字は同じでも発音はまったく別。中国語では「xinxi」と覚えよう。日本語の「ジョウ」から推測しないこと。
+> **日本語の「電話（デンワ）」と中国語の「電話（diànhuà）」は、音が少し似ているだけで発音は別物。中国語では「ディエンフア（diànhuà）」と覚えよう。日本語の「デンワ」のままでは通じない。音の似た感じは覚え方のヒントにだけ使い、正しい発音の代わりにしてはいけない。
 
 ### 3.4 Same-Kanji Different Meaning or Usage
 
@@ -160,10 +160,10 @@ At least ten examples. Each example records a similarity type from the controlle
 4. **安全 / 安全** — `same-meaning`. Same meaning in both languages (ānquán). Not a false friend. Caution optional.
 5. **台灣 / 台湾** — `same-meaning` for 台; the full form differs: Japanese 台湾 and Simplified 台湾 use the same 湾, while the Traditional form is 台灣. **Caution mandatory** (category 4): 日本語の「台湾」は簡体字「台湾」と同形。台湾の繁体字表記は「台灣」。(Táiwān.)
 6. **歡迎 / 欢迎** — `partial-overlap` visual bridge. Japanese 歓迎 → Traditional 歡迎 vs Simplified 欢迎. **Caution mandatory** (category 4): 日本の「歓迎」の「歓」は中国語では使われない。正しい形は「歡迎」（繁体）「欢迎」（简体）。(huānyíng, "welcome".)
-7. **樂 / 楽** — `partial-overlap` visual bridge. Japanese shinjitai 楽 vs Traditional 樂 vs Simplified 乐. **Caution mandatory** (category 4): the Japanese form is not used in Chinese; learn the correct script form and the reading by context — 樂/乐 reads lè ("joy") in words like 快樂/快乐 and yuè ("music") in 音樂/音乐.
-8. **發 / 发** — `partial-overlap` visual bridge. Japanese 発 vs Traditional 發 vs Simplified 发. **Caution mandatory** (category 4): Japanese shinjitai 発 is not used in Chinese; the correct forms are 發 (Traditional) and 发 (Simplified) (fā).
-9. **体 = 体** — `same-meaning` visual bridge with a script caveat. Japanese shinjitai 体 coincides with Simplified 体. **Caution mandatory** (category 4): the Traditional form is 體 (tǐ). The shape coincidence does not change the pinyin (tǐ) or the script policy.
-10. **捷運 / 捷运** — `same-meaning` region-specific. Taiwan word for MRT (jiéyùn), distinct from Mainland 地铁 (dìtiě). **Caution mandatory** (category 6): Japan uses 地下鉄; Taiwan uses 捷運, Mainland uses 地鐵/地铁. The reading jié differs from Japanese 捷 (ショウ).
+7. **樂 / 楽** — `partial-overlap` visual bridge. Japanese shinjitai 楽 vs Traditional 樂 vs Simplified 乐. **Caution mandatory** (category 4): 日本語の「楽」の形は中国語では使われない。正しい形は「樂」（繁体）「乐」（简体）。読みは文脈で変わる——「快樂/快乐」では lè（楽しさ）、「音樂/音乐」では yuè（音楽）。(lè / yuè.)
+8. **發 / 发** — `partial-overlap` visual bridge. Japanese 発 vs Traditional 發 vs Simplified 发. **Caution mandatory** (category 4): 日本語の「発」の形は中国語では使われない。正しい形は「發」（繁体）「发」（简体）。読みは fā。(fā.)
+9. **体 = 体** — `same-meaning` visual bridge with a script caveat. Japanese shinjitai 体 coincides with Simplified 体. **Caution mandatory** (category 4): 日本の新字体「体」は簡体字「体」と同形だが、繁体字では「體」。読みは tǐ。(tǐ.)
+10. **捷運 / 捷运** — `same-meaning` region-specific. Taiwan word for MRT (jiéyùn), distinct from Mainland 地铁 (dìtiě). **Caution mandatory** (category 6): 台湾では地下鉄を「捷運」と呼ぶ。中国本土では「地铁（dìtiě）」なので混同しないこと。読み jié は日本語の「捷（ショウ）」と異なる。(jiéyùn.)
 11. **熱 / 热** — `partial-overlap` visual bridge. Japanese 熱 and Traditional 熱 use the same form; Simplified is 热. **Caution mandatory** (category 4): 日本の「熱」は繁体字「熱」と同形。簡体字は「热」なので混同しないこと。(rè, "hot/heat".)
 12. **便利 / 便利** — `same-meaning` + cautious on-yomi similarity note (section 3.3). Japanese 便利 (べんり) and Chinese 便利 (biànlì) share the meaning "convenient". **Caution mandatory** (category 3): 意味は同じ「べんり」だが、発音は似ているだけで別物。ベンリではなく「ビエンリー（biànlì）」と覚える。音の似た感じは覚え方のヒントにだけ使い、正しい発音の代わりにしてはいけない。
 
