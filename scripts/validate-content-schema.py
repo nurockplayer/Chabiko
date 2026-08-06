@@ -112,6 +112,12 @@ VALID_AVAILABILITY_REASONS = frozenset({"available", "unavailable", "hsk"})
 VALID_MEMBER_TYPES = frozenset({"lesson", "vocabulary", "phrase"})
 VALID_HSK_STATUSES = frozenset({"available", "unavailable"})
 
+# Phrasebook dialog contract (#220) controlled vocabularies.
+VALID_DIALOG_SPEAKERS = frozenset({"learner", "partner"})
+# reviewStatus values beyond draft require a truthful source; draft does not.
+VALID_REVIEW_STATUSES_REQUIRING_SOURCE = frozenset({"reviewed", "published"})
+# Dialogs and turns only use CONTROLLED_STATUSES / VALID_SCENARIOS defined above.
+
 # ─── Content type schemas ──────────────────────────────────────────────────
 # Each schema defines:
 #   required: fields that must be present (non-None)
@@ -400,6 +406,116 @@ def _check_source_content(record: dict, path: str) -> list[str]:
     # When note key is present in source, it must be a non-null string
     if "note" in source and not isinstance(source["note"], str):
         errors.append(f"{path}.source.note must be a string when present, got {type(source['note']).__name__}")
+    return errors
+
+
+def _check_phrasebook_dialog_record(record: dict, path: str) -> list[str]:
+    """Validate the phrasebook dialog record contract (#220).
+
+    Enforces a stable non-empty id, per-turn fields and script provenance,
+    turn count and order, required/unique relatedPhraseIds, the
+    generated vs reviewed/published pairing, and the reviewStatus/source
+    pairing.
+    """
+    errors = []
+
+    # id must be a stable non-empty string.
+    dialog_id = record.get("id")
+    if not isinstance(dialog_id, str) or dialog_id.strip() == "":
+        errors.append(f"{path}.id must be a non-empty string")
+
+    # Turns must be a list of 2-6 ordered turn objects.
+    turns = record.get("turns")
+    if not isinstance(turns, list):
+        return errors  # type error already reported by the schema field_types
+    if len(turns) < 2 or len(turns) > 6:
+        errors.append(f"{path}.turns must contain between 2 and 6 turns, got {len(turns)}")
+    review_status = record.get("reviewStatus")
+    for i, turn in enumerate(turns):
+        turn_path = f"{path}.turns[{i}]"
+        if not isinstance(turn, dict):
+            errors.append(f"{turn_path}: expected a JSON object")
+            continue
+        errors.extend(_check_phrasebook_dialog_turn(turn, turn_path))
+        # Generated script forms may not be paired with a reviewed or
+        # published dialog (deterministic contract).
+        if review_status in VALID_REVIEW_STATUSES_REQUIRING_SOURCE:
+            for field in ("traditionalStatus", "simplifiedStatus"):
+                if turn.get(field) == "generated":
+                    errors.append(
+                        f"{turn_path}: dialog 'reviewStatus' is '{review_status}' "
+                        f"but '{field}' is 'generated' — generated-only form must "
+                        f"not be used as production-ready"
+                    )
+
+    # relatedPhraseIds must be a non-empty list of unique IDs.
+    related = record.get("relatedPhraseIds")
+    if isinstance(related, list):
+        if len(related) == 0:
+            errors.append(f"{path}.relatedPhraseIds must not be empty")
+        seen = set()
+        for j, ref in enumerate(related):
+            if not isinstance(ref, str):
+                errors.append(
+                    f"{path}.relatedPhraseIds[{j}] must be a string, "
+                    f"got {type(ref).__name__}"
+                )
+                continue
+            if ref.strip() == "":
+                errors.append(
+                    f"{path}.relatedPhraseIds[{j}] must be a non-empty string"
+                )
+            if ref in seen:
+                errors.append(
+                    f"{path}.relatedPhraseIds[{j}]: duplicate phrase id '{ref}'"
+                )
+            seen.add(ref)
+
+    # reviewed/published dialogs require a truthful source; draft does not.
+    if review_status in VALID_REVIEW_STATUSES_REQUIRING_SOURCE:
+        if not record.get("source"):
+            errors.append(
+                f"{path}: 'source' is required when 'reviewStatus' is '{review_status}'"
+            )
+
+    return errors
+
+
+def _check_phrasebook_dialog_turn(turn: dict, path: str) -> list[str]:
+    """Validate one turn object of a phrasebook dialog."""
+    errors = []
+
+    # Speaker is required and controlled.
+    speaker = turn.get("speaker")
+    if speaker is None:
+        errors.append(f"{path}: missing 'speaker'")
+    else:
+        errors.extend(_validate_controlled(speaker, VALID_DIALOG_SPEAKERS, f"{path}.speaker"))
+        if not isinstance(speaker, str):
+            errors.append(f"{path}.speaker must be a string, got {type(speaker).__name__}")
+
+    # Script provenance reuses the #24 per-form rules. The generated-only
+    # vs reviewed/published pairing is enforced at dialog level (turns carry
+    # no reviewStatus of their own).
+    errors.extend(_check_script_fields(turn, path))
+
+    # Non-empty Traditional line (script provenance only type-checks it).
+    traditional = turn.get("traditional")
+    if isinstance(traditional, str) and traditional.strip() == "":
+        errors.append(f"{path}.traditional must be a non-empty string")
+
+    # Non-empty pinyin and Japanese lines.
+    pinyin = turn.get("pinyin")
+    if not isinstance(pinyin, str):
+        errors.append(f"{path}.pinyin must be a string, got {type(pinyin).__name__}")
+    elif pinyin.strip() == "":
+        errors.append(f"{path}.pinyin must be a non-empty string")
+    japanese = turn.get("japanese")
+    if not isinstance(japanese, str):
+        errors.append(f"{path}.japanese must be a string, got {type(japanese).__name__}")
+    elif japanese.strip() == "":
+        errors.append(f"{path}.japanese must be a non-empty string")
+
     return errors
 
 
@@ -1030,6 +1146,31 @@ def _build_schemas():
         ],
     }
 
+    # Phrasebook Dialog (#220): deterministic scenario-dialog records.
+    # Turn objects are validated by _check_phrasebook_dialog_turns.
+    SCHEMAS["phrasebook-dialog"] = {
+        "required": [
+            "id", "scenario", "turns", "relatedPhraseIds", "reviewStatus",
+        ],
+        "optional": [
+            "source",
+        ],
+        "field_types": {
+            "id": str, "scenario": str,
+            "turns": list, "relatedPhraseIds": list,
+            "reviewStatus": str, "source": dict,
+        },
+        "controlled_fields": {
+            "scenario": VALID_SCENARIOS,
+            "reviewStatus": VALID_REVIEW_STATUSES,
+        },
+        "extra_validators": [
+            _check_review_status,
+            _check_source_content,
+            _check_phrasebook_dialog_record,
+        ],
+    }
+
     # Practice Item
     SCHEMAS["practice"] = {
         "required": [
@@ -1383,6 +1524,7 @@ COLLECTION_MAP = {
     "teacher_vocabulary": "vocabulary",
     "sentences": "sentence",
     "phrasebook": "phrasebook",
+    "phrasebookDialogs": "phrasebook-dialog",
     "practice": "practice",
     "resources": "resource",
     "illustrations": "illustration",
@@ -1513,6 +1655,24 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             errors.extend(_check_illustration_duplicate_ids(value, collection_path))
             errors.extend(_check_illustration_duplicate_vocabulary_id(value, collection_path))
 
+        # Phrasebook dialog duplicate checks
+        if schema_type == "phrasebook-dialog":
+            errors.extend(_check_phrasebook_dialog_duplicate_ids(value, collection_path))
+
+    # Cross-reference: phrasebook dialogs ↔ phrasebook phrases.
+    # A dialog's relatedPhraseIds must reference existing same-scenario phrases
+    # in the same bundle, or in the committed data/examples/valid/phrasebook.json
+    # when the bundle carries no phrasebook collection.
+    dialog_records = data.get("phrasebookDialogs", [])
+    if isinstance(dialog_records, list) and len(dialog_records) > 0:
+        phrasebook_records = data.get("phrasebook")
+        if not isinstance(phrasebook_records, list):
+            with open(_PHRASEBOOK_REFERENCE_PATH, encoding="utf-8") as f:
+                phrasebook_records = json.load(f).get("phrasebook", [])
+        errors.extend(_check_phrasebook_dialog_references(
+            dialog_records, f"{path}.phrasebookDialogs", phrasebook_records
+        ))
+
     # Cross-reference: teacher vocabulary ↔ illustrations
     teacher_vocab = data.get("teacher_vocabulary", data.get("vocabulary", []))
     illustrations = data.get("illustrations", [])
@@ -1583,6 +1743,68 @@ def _check_resource_duplicate_ids(resources: list, path: str) -> list[str]:
 
 
 # ─── Helper: Unicode normalization ────────────────────────────────────────
+
+def _check_phrasebook_dialog_references(dialogs: list, path: str, phrasebook: list) -> list[str]:
+    """
+    Resolve dialog relatedPhraseIds against the same-bundle phrasebook.
+
+    Each relatedPhraseId must be a non-empty, existing phrasebook id from the
+    same scenario. Missing (stale) and cross-scenario references fail with
+    path-specific errors. Single-dialog bundles reference the committed
+    data/examples/valid/phrasebook.json, so determinism holds in every bundle.
+    """
+    errors: list[str] = []
+    phrases = [p for p in phrasebook if isinstance(p, dict) and isinstance(p.get("id"), str)]
+    phrase_by_id = {p["id"]: p for p in phrases}
+    for i, dialog in enumerate(dialogs):
+        if not isinstance(dialog, dict):
+            continue
+        dialog_path = f"{path}[{i}]"
+        related = dialog.get("relatedPhraseIds")
+        if not isinstance(related, list):
+            continue
+        scenario = dialog.get("scenario")
+        if not isinstance(scenario, str):
+            continue
+        for j, ref in enumerate(related):
+            if not isinstance(ref, str) or ref.strip() == "":
+                continue
+            phrase = phrase_by_id.get(ref)
+            if phrase is None:
+                errors.append(
+                    f"{dialog_path}.relatedPhraseIds[{j}]: stale phrase id '{ref}' "
+                    f"(no phrasebook phrase with that id exists)"
+                )
+            elif phrase.get("scenario") != scenario:
+                errors.append(
+                    f"{dialog_path}.relatedPhraseIds[{j}]: cross-scenario phrase id "
+                    f"'{ref}' (dialog scenario '{scenario}', phrase scenario "
+                    f"'{phrase.get('scenario')}')"
+                )
+    return errors
+
+
+def _check_phrasebook_dialog_duplicate_ids(dialogs: list, path: str) -> list[str]:
+    """
+    Detect dialogs with duplicate 'id' values within the same bundle.
+    """
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for i, dialog in enumerate(dialogs):
+        if not isinstance(dialog, dict):
+            continue
+        dialog_id = dialog.get("id")
+        if not isinstance(dialog_id, str):
+            continue
+        if dialog_id in seen:
+            errors.append(
+                f"{path}[{i}]: duplicate dialog id '{dialog_id}' "
+                f"(first occurrence at {path}[{seen[dialog_id]}])"
+            )
+        else:
+            seen[dialog_id] = i
+    return errors
+
 
 def _normalize_simplified(text: str) -> str:
     """Normalize Simplified Chinese per HSK identity contract."""
@@ -2417,6 +2639,50 @@ def run_tests():
         test_phrasebook_source_non_dict_rejected,
         test_phrasebook_source_empty_type_rejected,
         test_phrasebook_source_note_non_string_rejected,
+
+        # ─── Phrasebook dialog (#220) ───
+        test_dialog_valid,
+        test_dialog_six_turns_valid,
+        test_dialog_scenarios_all_controlled,
+        test_dialog_both_speakers_valid,
+        test_dialog_missing_required,
+        test_dialog_missing_turn_speaker,
+        test_dialog_empty_id,
+        test_dialog_duplicate_id_detection,
+        test_dialog_duplicate_id_deterministic_order,
+        test_dialog_invalid_scenario,
+        test_dialog_turn_count_too_few,
+        test_dialog_turn_count_too_many,
+        test_dialog_turns_not_list,
+        test_dialog_turn_not_object,
+        test_dialog_field_type_errors,
+        test_dialog_invalid_review_status,
+        test_dialog_invalid_script_status,
+        test_dialog_script_status_presence_pairing,
+        test_dialog_traditional_unavailable_rejected,
+        test_dialog_traditional_empty_rejected,
+        test_dialog_generated_not_production,
+        test_dialog_generated_published_missing_source_fails,
+        test_dialog_empty_related_phrase_ids,
+        test_dialog_duplicate_related_phrase_id,
+        test_dialog_related_phrase_id_non_string,
+        test_dialog_related_phrase_id_empty_string,
+        test_dialog_missing_related_phrase_id,
+        test_dialog_cross_scenario_related_phrase_id,
+        test_dialog_related_phrase_id_valid_scenario,
+        test_dialog_reviewed_requires_source,
+        test_dialog_published_requires_source,
+        test_dialog_draft_without_source_ok,
+        test_dialog_source_valid,
+        test_dialog_source_non_dict_rejected,
+        test_dialog_source_empty_type_rejected,
+        test_dialog_source_note_non_string_rejected,
+        test_dialog_unknown_field,
+        test_dialog_bundle_valid,
+        test_dialog_bundle_invalid_item,
+        test_dialog_unknown_collection_key_fails,
+        test_dialog_deterministic_error_order,
+        test_dialog_reference_checks_committed_phrasebook,
 
         # ─── Practice ───
         test_practice_valid,
@@ -3355,6 +3621,404 @@ def test_phrasebook_source_note_non_string_rejected():
         "phrasebook",
     )
     _assert_has_error(errs, "source.note must be a string", "phrasebook_source_note_non_string")
+
+
+# ─── Phrasebook dialog tests (#220) ────────────────────────────────────────
+
+def _minimal_dialog(**overrides):
+    """Minimal valid 2-turn transport dialog; references phrase-002 (transport)."""
+    data = {
+        "id": "dialog-001",
+        "scenario": "transport",
+        "turns": [
+            {
+                "speaker": "learner",
+                "traditional": "請問這附近有捷運站嗎？",
+                "traditionalStatus": "authored",
+                "simplified": "请问这附近有捷运站吗？",
+                "simplifiedStatus": "verified",
+                "pinyin": "Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?",
+                "japanese": "すみません、この近くにMRTの駅はありますか？",
+            },
+            {
+                "speaker": "partner",
+                "traditional": "有，往前走兩分鐘就到了。",
+                "traditionalStatus": "authored",
+                "pinyin": "yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le",
+                "japanese": "ありますよ。まっすぐ2分歩けば着きますよ。",
+            },
+        ],
+        "relatedPhraseIds": ["phrase-002"],
+        "reviewStatus": "draft",
+    }
+    data.update(overrides)
+    return data
+
+
+def _six_turn_dialog():
+    """Valid 6-turn dialog covering all six scenarios, both speakers,
+    each scenario in a distinct turn; paired with a truthful source."""
+    scenarios = ["airport", "transport", "food", "shopping", "hotel", "emergency"]
+    turns = []
+    for i, scenario in enumerate(scenarios):
+        speaker = "learner" if i % 2 == 0 else "partner"
+        turns.append({
+            "speaker": speaker,
+            "traditional": f"六回転ダイアログの台詞 {i + 1}",
+            "traditionalStatus": "authored",
+            "pinyin": f"liù huí zhuǎn dài yà luò gé de tái cí {i + 1}",
+            "japanese": f"6ターンの台詞 {i + 1}",
+        })
+    return {
+        "id": "dialog-six-001",
+        "scenario": "airport",
+        "turns": turns,
+        "relatedPhraseIds": ["phrase-airport-001"],
+        "reviewStatus": "published",
+        "source": {"type": "authored", "note": "six-turn dialog test fixture"},
+    }
+
+
+def _dialog_bundle(*dialogs):
+    """A CLI bundle for deterministic collection-order tests."""
+    return {"phrasebookDialogs": list(dialogs)}
+
+
+def test_dialog_valid():
+    errs = validate_single(_minimal_dialog(), "phrasebook-dialog")
+    _assert_no_errors(errs, "dialog_valid")
+
+
+def test_dialog_six_turns_valid():
+    errs = validate_single(_six_turn_dialog(), "phrasebook-dialog")
+    _assert_no_errors(errs, "dialog_six_turns_valid")
+
+
+def test_dialog_scenarios_all_controlled():
+    """Every controlled scenario passes; unknown scenarios fail."""
+    for scenario in sorted(VALID_SCENARIOS):
+        errs = validate_single(_minimal_dialog(scenario=scenario), "phrasebook-dialog")
+        _assert_no_errors(errs, f"dialog_scenario_{scenario}")
+    errs = validate_single(_minimal_dialog(scenario="weather"), "phrasebook-dialog")
+    _assert_has_error(errs, "'weather' is not valid", "dialog_invalid_scenario")
+
+
+def test_dialog_both_speakers_valid():
+    for speaker in ("learner", "partner"):
+        turn = dict(_minimal_dialog()["turns"][0], speaker=speaker)
+        errs = validate_single(
+            _minimal_dialog(turns=[turn, _minimal_dialog()["turns"][1]]),
+            "phrasebook-dialog",
+        )
+        _assert_no_errors(errs, f"dialog_speaker_{speaker}")
+    errs = validate_single(
+        _minimal_dialog(turns=[dict(_minimal_dialog()["turns"][0], speaker="both")] + _minimal_dialog()["turns"][1:]),
+        "phrasebook-dialog",
+    )
+    _assert_has_error(errs, "'both' is not valid", "dialog_invalid_speaker")
+
+
+def test_dialog_missing_required():
+    errs = validate_single({"id": "dialog-001"}, "phrasebook-dialog")
+    _assert_has_error(errs, "missing required field 'scenario'", "dialog_missing_scenario")
+    _assert_has_error(errs, "missing required field 'turns'", "dialog_missing_turns")
+    _assert_has_error(errs, "missing required field 'relatedPhraseIds'", "dialog_missing_related")
+    _assert_has_error(errs, "missing required field 'reviewStatus'", "dialog_missing_review")
+
+
+def test_dialog_missing_turn_speaker():
+    record = _minimal_dialog()
+    del record["turns"][0]["speaker"]
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "turns[0]: missing 'speaker'", "dialog_turn_missing_speaker")
+
+
+def test_dialog_empty_id():
+    errs = validate_single(_minimal_dialog(id=""), "phrasebook-dialog")
+    _assert_has_error(errs, "id must be a non-empty string", "dialog_empty_id")
+    errs = validate_single(_minimal_dialog(id="   "), "phrasebook-dialog")
+    _assert_has_error(errs, "id must be a non-empty string", "dialog_whitespace_id")
+
+
+def test_dialog_duplicate_id_detection():
+    """Duplicate dialog ids fail with a path-specific error."""
+    record = _minimal_dialog(id="dup-001")
+    bundle = _dialog_bundle(record, dict(record, turns=[dict(_minimal_dialog()["turns"][0], traditional="別の台詞")]))
+    exit_code, stdout = _cli_check_result(bundle)
+    assert exit_code != 0, f"Expected duplicate dialog id to fail: {stdout}"
+    assert "duplicate dialog id 'dup-001'" in stdout, f"Unexpected stdout: {stdout}"
+
+
+def test_dialog_duplicate_id_deterministic_order():
+    """Duplicate-id errors follow collection order."""
+    base = _minimal_dialog()
+    bundle = _dialog_bundle(
+        dict(base, id="dup-002"),
+        dict(base, id="dup-003", turns=[dict(_minimal_dialog()["turns"][0], traditional="別の台詞")]),
+        dict(base, id="dup-002", turns=[dict(_minimal_dialog()["turns"][0], traditional="また別の台詞")]),
+    )
+    exit_code, stdout = _cli_check_result(bundle)
+    assert exit_code != 0, f"Expected duplicate dialog id to fail: {stdout}"
+    lines = [l for l in stdout.splitlines() if "duplicate dialog id 'dup-002'" in l]
+    assert len(lines) == 1, f"Expected exactly one duplicate error for dup-002, got: {stdout}"
+    assert "phrasebookDialogs[2]" in lines[0], f"Expected index 2 error, got: {lines[0]}"
+
+
+def test_dialog_invalid_scenario():
+    errs = validate_single(_minimal_dialog(scenario="weather"), "phrasebook-dialog")
+    _assert_has_error(errs, "'weather' is not valid", "dialog_scenario")
+
+
+def test_dialog_turn_count_too_few():
+    errs = validate_single(_minimal_dialog(turns=[_minimal_dialog()["turns"][0]]), "phrasebook-dialog")
+    _assert_has_error(errs, "must contain between 2 and 6 turns, got 1", "dialog_turns_too_few")
+
+
+def test_dialog_turn_count_too_many():
+    turns = _six_turn_dialog()["turns"] + [_six_turn_dialog()["turns"][0]]
+    errs = validate_single(_minimal_dialog(turns=turns), "phrasebook-dialog")
+    _assert_has_error(errs, "must contain between 2 and 6 turns, got 7", "dialog_turns_too_many")
+
+
+def test_dialog_turns_not_list():
+    errs = validate_single(_minimal_dialog(turns="not-a-list"), "phrasebook-dialog")
+    _assert_has_error(errs, "turns must be list", "dialog_turns_not_list")
+
+
+def test_dialog_turn_not_object():
+    errs = validate_single(_minimal_dialog(turns=["not-an-object"]), "phrasebook-dialog")
+    _assert_has_error(errs, "expected a JSON object", "dialog_turn_not_object")
+
+
+def test_dialog_field_type_errors():
+    """Wrong types on required fields fail with path-specific errors."""
+    errs = validate_single(_minimal_dialog(scenario=7), "phrasebook-dialog")
+    _assert_has_error(errs, "scenario must be str, got int", "dialog_scenario_type")
+    errs = validate_single(_minimal_dialog(relatedPhraseIds="phrase-002"), "phrasebook-dialog")
+    _assert_has_error(errs, "relatedPhraseIds must be list", "dialog_related_type")
+    errs = validate_single(_minimal_dialog(reviewStatus=None), "phrasebook-dialog")
+    _assert_has_error(errs, "missing required field 'reviewStatus'", "dialog_review_none")
+    record = _minimal_dialog()
+    record["turns"][0]["pinyin"] = 42
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "turns[0].pinyin must be a string", "dialog_pinyin_type")
+    record = _minimal_dialog()
+    record["turns"][0]["japanese"] = ["これは"]
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "turns[0].japanese must be a string", "dialog_japanese_type")
+
+
+def test_dialog_invalid_review_status():
+    errs = validate_single(_minimal_dialog(reviewStatus="live"), "phrasebook-dialog")
+    _assert_has_error(errs, "'live' is not valid", "dialog_review_status")
+
+
+def test_dialog_invalid_script_status():
+    record = _minimal_dialog()
+    record["turns"][0]["traditionalStatus"] = "machine"
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "turns[0].traditionalStatus 'machine' is not a valid status", "dialog_script_status")
+
+
+def test_dialog_script_status_presence_pairing():
+    """simplifiedStatus rules follow the #24 provenance contract."""
+    record = _minimal_dialog()
+    del record["turns"][0]["simplifiedStatus"]
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'simplifiedStatus' is required when 'simplified' is present", "dialog_status_missing")
+    record = _minimal_dialog()
+    record["turns"][1]["simplifiedStatus"] = "verified"
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'simplifiedStatus' must be 'unavailable' when 'simplified' is absent", "dialog_status_extra")
+
+
+def test_dialog_traditional_unavailable_rejected():
+    record = _minimal_dialog()
+    record["turns"][0]["traditionalStatus"] = "unavailable"
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'traditionalStatus' cannot be 'unavailable'", "dialog_trad_unavailable")
+
+
+def test_dialog_traditional_empty_rejected():
+    """Turn traditional must be non-empty, with a path-specific error."""
+    for value in ("", "   "):
+        record = _minimal_dialog()
+        record["turns"][0]["traditional"] = value
+        errs = validate_single(record, "phrasebook-dialog")
+        _assert_has_error(
+            errs, "turns[0].traditional must be a non-empty string", f"dialog_trad_empty_{value!r}"
+        )
+
+
+def test_dialog_generated_not_production():
+    """Generated forms are rejected for reviewed/published dialogs."""
+    record = _minimal_dialog(reviewStatus="published")
+    record["turns"][0]["traditionalStatus"] = "generated"
+    record["source"] = {"type": "authored", "note": "generated test"}
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'reviewStatus' is 'published' but 'traditionalStatus' is 'generated'", "dialog_generated_published")
+    record = _minimal_dialog(reviewStatus="reviewed")
+    record["turns"][0]["simplifiedStatus"] = "generated"
+    record["source"] = {"type": "authored", "note": "generated test"}
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'reviewStatus' is 'reviewed' but 'simplifiedStatus' is 'generated'", "dialog_generated_reviewed")
+    record = _minimal_dialog(reviewStatus="draft")
+    record["turns"][0]["traditionalStatus"] = "generated"
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_no_errors(errs, "dialog_generated_draft_ok")
+
+
+def test_dialog_generated_published_missing_source_fails():
+    """A generated published dialog also fails the required-source rule."""
+    record = _minimal_dialog(reviewStatus="published")
+    record["turns"][0]["traditionalStatus"] = "generated"
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'source' is required when 'reviewStatus' is 'published'", "dialog_generated_no_source")
+
+
+def test_dialog_empty_related_phrase_ids():
+    errs = validate_single(_minimal_dialog(relatedPhraseIds=[]), "phrasebook-dialog")
+    _assert_has_error(errs, "relatedPhraseIds must not be empty", "dialog_related_empty")
+
+
+def test_dialog_duplicate_related_phrase_id():
+    record = _minimal_dialog(relatedPhraseIds=["phrase-002", "phrase-002"])
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "relatedPhraseIds[1]: duplicate phrase id 'phrase-002'", "dialog_related_duplicate")
+
+
+def test_dialog_related_phrase_id_non_string():
+    record = _minimal_dialog(relatedPhraseIds=["phrase-002", 42])
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "relatedPhraseIds[1] must be a string, got int", "dialog_related_type")
+
+
+def test_dialog_related_phrase_id_empty_string():
+    record = _minimal_dialog(relatedPhraseIds=["phrase-002", ""])
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "relatedPhraseIds[1] must be a non-empty string", "dialog_related_empty_string")
+
+
+def test_dialog_missing_related_phrase_id():
+    """A stale reference fails with a path-specific error via the CLI bundle."""
+    exit_code, stdout = _cli_check_result(
+        _dialog_bundle(_minimal_dialog(relatedPhraseIds=["phrase-999"]))
+    )
+    assert exit_code != 0, f"Expected stale phrase id to fail: {stdout}"
+    assert "phrasebookDialogs[0].relatedPhraseIds[0]: stale phrase id 'phrase-999'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_dialog_cross_scenario_related_phrase_id():
+    """A same-scenario reference from a different scenario fails."""
+    exit_code, stdout = _cli_check_result(
+        _dialog_bundle(_minimal_dialog(relatedPhraseIds=["phrase-001"]))
+    )
+    assert exit_code != 0, f"Expected cross-scenario phrase id to fail: {stdout}"
+    assert "phrasebookDialogs[0].relatedPhraseIds[0]: cross-scenario phrase id 'phrase-001'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_dialog_related_phrase_id_valid_scenario():
+    """Related phrase ids from the dialog scenario pass the CLI bundle."""
+    for scenario in ("transport", "airport"):
+        ref = {"transport": "phrase-002", "airport": "phrase-airport-001"}[scenario]
+        exit_code, stdout = _cli_check_result(
+            _dialog_bundle(_minimal_dialog(scenario=scenario, relatedPhraseIds=[ref]))
+        )
+        assert exit_code == 0, f"Expected valid related phrase id for {scenario} to pass: {stdout}"
+
+
+def test_dialog_reviewed_requires_source():
+    record = _minimal_dialog(reviewStatus="reviewed")
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'source' is required when 'reviewStatus' is 'reviewed'", "dialog_reviewed_no_source")
+
+
+def test_dialog_published_requires_source():
+    record = _minimal_dialog(reviewStatus="published")
+    errs = validate_single(record, "phrasebook-dialog")
+    _assert_has_error(errs, "'source' is required when 'reviewStatus' is 'published'", "dialog_published_no_source")
+
+
+def test_dialog_draft_without_source_ok():
+    errs = validate_single(_minimal_dialog(reviewStatus="draft"), "phrasebook-dialog")
+    _assert_no_errors(errs, "dialog_draft_no_source_ok")
+
+
+def test_dialog_source_valid():
+    errs = validate_single(
+        _minimal_dialog(reviewStatus="reviewed", source={"type": "authored", "note": "test"}),
+        "phrasebook-dialog",
+    )
+    _assert_no_errors(errs, "dialog_source_valid")
+
+
+def test_dialog_source_non_dict_rejected():
+    errs = validate_single(_minimal_dialog(source="not-an-object"), "phrasebook-dialog")
+    _assert_has_error(errs, "must be a JSON object", "dialog_source_string")
+
+
+def test_dialog_source_empty_type_rejected():
+    errs = validate_single(_minimal_dialog(source={"type": ""}), "phrasebook-dialog")
+    _assert_has_error(errs, "source.type must be a non-empty string", "dialog_source_empty_type")
+
+
+def test_dialog_source_note_non_string_rejected():
+    errs = validate_single(
+        _minimal_dialog(source={"type": "authored", "note": 123}),
+        "phrasebook-dialog",
+    )
+    _assert_has_error(errs, "source.note must be a string", "dialog_source_note_non_string")
+
+
+def test_dialog_unknown_field():
+    errs = validate_single(_minimal_dialog(extra="surprise"), "phrasebook-dialog")
+    _assert_has_error(errs, "unknown field 'extra'", "dialog_unknown_field")
+
+
+def test_dialog_bundle_valid():
+    """A bundle with a valid dialog fixture passes --check."""
+    exit_code, stdout = _cli_check_result(_dialog_bundle(_minimal_dialog()))
+    assert exit_code == 0, f"Expected valid dialog bundle to pass: {stdout}"
+
+
+def test_dialog_bundle_invalid_item():
+    """An invalid dialog fails --check with its path in the output."""
+    record = _minimal_dialog(scenario="weather")
+    exit_code, stdout = _cli_check_result(_dialog_bundle(record))
+    assert exit_code != 0, f"Expected invalid dialog bundle to fail: {stdout}"
+    assert "phrasebookDialogs[0].scenario" in stdout, f"Expected path-specific error: {stdout}"
+
+
+def test_dialog_unknown_collection_key_fails():
+    """The dialog collection key is recognized; an unknown key still fails."""
+    exit_code, stdout = _cli_check_result({"phrasebookDialogs": [_minimal_dialog()], "dialogs": []})
+    assert exit_code != 0, f"Expected unknown collection key to fail: {stdout}"
+    assert "unrecognized top-level key 'dialogs'" in stdout, f"Unexpected stdout: {stdout}"
+
+
+def test_dialog_deterministic_error_order():
+    """Errors are reported in deterministic collection/field order."""
+    record = _minimal_dialog(scenario="weather", relatedPhraseIds=[])
+    errs = validate_single(record, "phrasebook-dialog")
+    assert len(errs) == 2, f"Expected 2 errors, got {errs}"
+    assert "scenario" in errs[0], f"Scenario error should be first, got {errs}"
+    assert "relatedPhraseIds must not be empty" in errs[1], f"Reference error should be second, got {errs}"
+
+
+def test_dialog_reference_checks_committed_phrasebook():
+    """The committed phrasebook fixture stays reference-valid for dialogs."""
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "examples", "valid", "phrasebook-dialogs.json"
+    )
+    with open(fixture_path, encoding="utf-8") as f:
+        data = json.load(f)
+    errors = validate_bundle(data)
+    _assert_no_errors(errors, "dialog_committed_fixture")
+
 
 # ─── Practice tests ────────────────────────────────────────────────────────
 
@@ -5869,6 +6533,12 @@ def test_illustration_rights_approved_rejects_relicensing_claim():
 
 _COMMITTED_RIGHTS_PATH = os.path.join(
     os.path.dirname(__file__), "..", "data", "teacher-vocabulary-preview", "teacher-image-rights.json"
+)
+
+# Committed phrasebook reference set for phrasebook dialog relatedPhraseIds
+# (Issue #220): a dialog fixture may reference the existing phrase records.
+_PHRASEBOOK_REFERENCE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "examples", "valid", "phrasebook.json"
 )
 
 
