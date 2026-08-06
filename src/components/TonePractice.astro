@@ -1,0 +1,286 @@
+---
+import type { TonePracticeItem } from '../domain/tonePractice';
+
+export interface Props {
+  items: readonly TonePracticeItem[];
+}
+
+const { items } = Astro.props;
+
+const serialized = JSON.stringify({
+  items: items.map((item) => ({
+    recordId: item.recordId,
+    promptJa: item.promptJa,
+    correctAnswer: item.correctAnswer,
+    distractors: item.distractors.map((choice) => choice),
+    contrastId: item.contrastId,
+    toneContourId: item.toneContourId,
+    toneContourHintJa: item.toneContourHintJa,
+    interferenceJa: item.interferenceJa,
+  })),
+});
+---
+
+<div
+  class="tone-practice"
+  data-tone-practice
+  data-tone-session={serialized}
+>
+  <div class="tone-practice-header">
+    <p class="tone-practice-progress" data-tone-progress></p>
+    <p class="tone-practice-prompt" data-tone-prompt></p>
+  </div>
+
+  <div class="tone-contour" data-tone-contour aria-hidden="true">
+    <span class="tone-contour__label" data-tone-contour-label></span>
+  </div>
+  <p class="tone-hint" data-tone-hint></p>
+  <p class="tone-interference" data-tone-interference></p>
+
+  <div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>
+
+  <div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="tone-actions" data-tone-actions></div>
+</div>
+
+<script>
+  import { mountTonePractice } from '../client/tonePractice';
+
+  function initialisePractices() {
+    document.querySelectorAll<HTMLElement>('[data-tone-practice]').forEach((root) => {
+      try {
+        mountTonePractice(root);
+      } catch (error) {
+        // A rejected or missing tone-discrimination record must not take the
+        // whole page down; the container stays empty and the error is
+        // surfaced to the console for diagnosis.
+        console.error('tone practice failed to mount', error);
+      }
+    });
+  }
+
+  initialisePractices();
+  document.addEventListener('astro:page-load', initialisePractices);
+</script>
+
+<style>
+  .tone-practice {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .tone-practice-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .tone-practice-progress {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tone-practice-prompt {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  .tone-contour {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 5rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-slot-bg);
+    padding: var(--space-md);
+    overflow: hidden;
+  }
+
+  .tone-contour__label {
+    display: inline-block;
+    color: var(--c-text);
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .tone-hint {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+  }
+
+  .tone-interference {
+    margin: 0;
+    border-left: 3px solid var(--c-error);
+    background: var(--c-error-bg);
+    padding: var(--space-sm) var(--space-md);
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+  }
+
+  .tone-choices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .tone-choice {
+    box-sizing: border-box;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  }
+
+  .tone-choice:hover:not(:disabled) {
+    border-color: var(--c-accent);
+    background: var(--c-accent-light);
+  }
+
+  .tone-choice:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .tone-choice[aria-pressed='true'] {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .tone-choice:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .tone-feedback {
+    min-height: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .tone-feedback__line {
+    margin: 0;
+  }
+
+  .tone-feedback--correct {
+    color: var(--c-success);
+    font-weight: 700;
+  }
+
+  .tone-feedback--incorrect {
+    border-left: 4px solid var(--c-error);
+    background: var(--c-error-bg);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .tone-feedback--incorrect .tone-feedback__line:first-child {
+    font-weight: 700;
+  }
+
+  .tone-feedback--incorrect strong {
+    font-weight: 700;
+  }
+
+  .tone-feedback--complete {
+    text-align: center;
+    padding: var(--space-lg) var(--space-md);
+    background: var(--c-primary-light);
+  }
+
+  .tone-complete-text {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .tone-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .tone-action {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .tone-action:hover:not(:disabled) {
+    background: var(--c-slot-bg);
+  }
+
+  .tone-action:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  .tone-action:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .tone-action--submit,
+  .tone-action--next,
+  .tone-action--restart {
+    border-color: var(--c-accent);
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .tone-action--submit:hover:not(:disabled),
+  .tone-action--next:hover:not(:disabled),
+  .tone-action--restart:hover:not(:disabled) {
+    background: var(--c-accent-hover);
+  }
+
+  .tone-action--retry {
+    border-color: #991b1b;
+    color: #991b1b;
+  }
+
+  .tone-action--retry:hover:not(:disabled) {
+    background: var(--c-error-bg);
+  }
+
+  @media (width <= 374px) {
+    .tone-choice {
+      padding-inline: var(--space-sm);
+      font-size: 1rem;
+    }
+
+    .tone-action {
+      padding-inline: var(--space-sm);
+      font-size: 0.875rem;
+    }
+  }
+</style>

@@ -1,0 +1,32 @@
+{
+  "phrasebookDialogs": [
+    {
+      "id": "dialog-transport-001",
+      "scenario": "transport",
+      "turns": [
+        {
+          "speaker": "learner",
+          "traditional": "請問這附近有捷運站嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "请问这附近有捷运站吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?",
+          "japanese": "すみません、この近くにMRTの駅はありますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "有，往前走兩分鐘就到了。",
+          "traditionalStatus": "authored",
+          "pinyin": "yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le",
+          "japanese": "ありますよ。まっすぐ2分歩けば着きますよ。"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-002"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original transport dialog schema fixture; learner line mirrors committed phrase phrase-002; no third-party text copied"
+      }
+    }
+  ]
+}
