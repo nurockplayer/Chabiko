@@ -172,17 +172,35 @@ non-portable.
 
 ### 3.4 Product font stacks (referenced, not rendered here)
 
-`src/layouts/BaseLayout.astro` and the vocabulary preview pages define the
-learner-facing stacks:
+`src/layouts/BaseLayout.astro` defines **two** sets of learner-facing font
+variables. The active set depends on `themeEnabled`, a page prop that defaults
+to `false` (`const { themeEnabled = false } = Astro.props`); the
+`data-theme-enabled` attribute is set on `<html>` only when a page opts in.
+No `@fontsource` stylesheet is imported in `src/`, so the app ships no webfont
+and renders via the learner's system fonts in both blocks.
+
+Default `:root` block (theme disabled, `data-theme-enabled` absent):
+
+- `--font-zh`: `'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif`
+- `--font-ja`: `-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans CJK JP', sans-serif`
+- `--font-pinyin`: `'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif`
+
+Theme-enabled `:root[data-theme-enabled='true']` block (opted-in pages):
 
 - `--font-zh`: `'PingFang TC', 'Noto Sans TC', 'Hiragino Sans', sans-serif`
 - `--font-ja`: `'Hiragino Sans', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif`
 - `--font-pinyin`: `'Hiragino Sans', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif`
 
-No `@fontsource` stylesheet is imported in `src/`; the app ships no webfont and
-renders via the learner's system fonts. These stacks are the **runtime** surface
-that later issues may need to make deterministic; the inventory's pinned
-comparison fonts (Sections 3.1–3.2) are the deterministic stand-ins.
+Runtime impact for CJK fallback: when the default block is active, `--font-ja`
+resolves through the Apple system stack and can fall back to **`Noto Sans CJK
+JP`** or another macOS system CJK font; when the theme-enabled block is active,
+the CJK fallback target is instead **`Noto Sans JP`**. Both stacks rely on
+system-installed fonts (neither `Noto Sans CJK JP` nor `Noto Sans JP` is
+bundled), so which face actually renders a CJK glyph is host- and
+installation-dependent and **not** reproducible in CI unless a comparison font
+is explicitly forced. These stacks are the **runtime** surface that later
+issues may need to make deterministic; the inventory's pinned comparison fonts
+(Sections 3.1–3.2) are the deterministic stand-ins.
 
 ### 3.5 Python validation tooling
 
