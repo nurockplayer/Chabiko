@@ -325,6 +325,24 @@ describe('lesson content requirements', () => {
     }
   });
 
+  it('lesson-005 teaches 兩個 as the preferred form before a measure word without claiming 二個 is absolutely wrong', () => {
+    const lesson = loadLessonById('lesson-005');
+    expect(lesson).toBeDefined();
+    const chunks = lesson!.chunks ?? [];
+    const liangChunk = chunks.find((c) => c.chunk === '兩個');
+    expect(liangChunk).toBeDefined();
+    // 兩個 is presented as the normal, preferred form before a measure word
+    expect(liangChunk!.notesJa).toContain('量詞の前では「兩」が普通で自然');
+    // 二個 is not described as always ungrammatical
+    expect(liangChunk!.notesJa).toContain('絶対に間違いというわけではない');
+    expect(liangChunk!.notesJa).not.toMatch(/「二個」は間違い|「二個」は使えない|「二個」は不正/);
+    // The review prompt no longer offers 我要二個 as an incorrect distractor
+    const prompts = lesson!.reviewPrompts ?? [];
+    const allDistractors = prompts.flatMap((p) => p.distractorsJa ?? []);
+    expect(allDistractors).not.toContain('我要二個');
+    expect(allDistractors).toContain('我要個兩');
+  });
+
   it('lesson-005 explains the measure-word pain point without overclaiming 個 is universal', () => {
     const lesson = loadLessonById('lesson-005');
     expect(lesson).toBeDefined();
