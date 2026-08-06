@@ -1,0 +1,92 @@
+---
+/**
+ * Optional Google account control for the basic-vocabulary routes (Issue #290).
+ *
+ * Renders exactly one root `[data-basic-vocabulary-account]` with a polite
+ * live-region status and one native action button. All state copy, events and
+ * auth behavior live in the client controller; the SSR skeleton is pristine
+ * (`ログイン状態を確認しています`) and contains no identity data.
+ */
+---
+
+<section class="basic-vocabulary-account" data-basic-vocabulary-account>
+  <p class="basic-vocabulary-account__status" data-basic-vocabulary-account-status aria-live="polite">
+    ログイン状態を確認しています
+  </p>
+  <button
+    class="basic-vocabulary-account__action"
+    data-basic-vocabulary-account-action
+    type="button"
+    hidden
+  >
+    Googleでログイン
+  </button>
+</section>
+
+<script>
+  import { initBasicVocabularyAccount } from '../../client/basicVocabularyAccount';
+
+  function initialiseAccounts(): void {
+    document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-account]').forEach((root) => {
+      initBasicVocabularyAccount(root);
+    });
+  }
+
+  initialiseAccounts();
+  document.addEventListener('astro:page-load', initialiseAccounts);
+</script>
+
+<style is:global>
+  .basic-vocabulary-account {
+    display: grid;
+    gap: var(--space-xs);
+    width: 100%;
+    max-width: 34rem;
+    margin: 0 0 var(--space-lg);
+  }
+
+  .basic-vocabulary-account__status {
+    min-height: 1.5rem;
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-account__action {
+    box-sizing: border-box;
+    width: min(100%, 16rem);
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-lg);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-text);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-account__action:hover:not(:disabled) {
+    background: var(--c-slot-bg);
+  }
+
+  .basic-vocabulary-account__action:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .basic-vocabulary-account__action:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 359px) {
+    .basic-vocabulary-account__action {
+      font-size: 0.8125rem;
+      padding-inline: var(--space-md);
+    }
+  }
+</style>
