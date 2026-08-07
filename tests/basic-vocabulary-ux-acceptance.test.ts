@@ -540,8 +540,13 @@ describe('repeated Astro-style init/cleanup leaves one live controller per root 
     const payload = buildLearnerSessionPayload();
     const root = createSessionRoot([...payload.ids], '10');
 
+    // The second init disposes the first controller internally; only the final
+    // controller stays live.
     initBasicVocabularySession(root);
-    initBasicVocabularySession(root);
+    const live = initBasicVocabularySession(root);
+    // Register the final live controller so afterEach() always tears it down,
+    // including when an assertion below fails.
+    cleanups.add(live);
 
     reveal(root);
     rate(root, 'known');
@@ -550,6 +555,26 @@ describe('repeated Astro-style init/cleanup leaves one live controller per root 
     };
     // Exactly one write — one item, one store, one controller.
     expect(Object.keys(stored.items)).toHaveLength(1);
+
+    // Explicit cleanup leaves zero live controllers: neither a storage nor a
+    // pageshow refresh can update the cleaned-up session root anymore. The
+    // rated-item summary is the no-op baseline.
+    const baseline = root.querySelector('[data-summary]')?.textContent;
+    live();
+
+    // A different progress document would re-render the summary if any
+    // listener survived cleanup.
+    seedProgress({
+      [payload.ids[1]]: { status: 'learned', knownStreak: 2 },
+    });
+    dispatchStorage(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY),
+      window.localStorage,
+    );
+    window.dispatchEvent(new Event('pageshow'));
+    // No listener survived: the summary is byte-identical to the baseline.
+    expect(root.querySelector('[data-summary]')?.textContent).toBe(baseline);
   });
 
   it('cleanup removes the session listeners; a later storage event is a no-op', () => {
