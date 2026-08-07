@@ -63,6 +63,7 @@ Per AGENTS.md「Review 與 Merge 政策（並行 sub-agent 吞吐量感知）」
 - Reviewed head SHA: {{reviewed head SHA}}
 - Current head SHA: {{current head SHA}}
 - [ ] Reviewed head SHA unchanged at merge (reviewed head must match current head).
+- Stale base SHA alone does not invalidate the reviewed head: integration is validated against latest `main` via a temporary merge tree without rewriting the branch; only a head rewrite (merge conflict, changed-file overlap, dependency/API/schema/contract change, failed integration validation, or branch-protection requirement) voids the prior exact-head verdict and requires re-review. Temporary merge-tree validation is not itself a review.
 
 ### Independent reviewer verdicts
 
