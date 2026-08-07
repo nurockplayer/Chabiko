@@ -101,8 +101,25 @@ describe('AGENTS.md throughput-aware review and merge policy supports parallel s
     expect(agentsMd).toContain('額外完成的 agent work 留在 implementation-ready queue');
   });
 
-  it('requires stale-head PRs to update from latest main and rerun gates', () => {
-    expect(agentsMd).toContain('stale-head 的 PR 必須先從最新 `main` update 並重跑 required gates');
+  it('treats a stale base SHA alone as non-blocking and only updates branch on concrete triggers', () => {
+    // A stale base SHA is never by itself a blocker; the PR keeps its reviewed head.
+    expect(agentsMd).toContain('stale base SHA alone 不是 blocker');
+    expect(agentsMd).not.toContain('stale-head 的 PR 必須先從最新 `main` update 並重跑 required gates');
+    // Update-branch is required only for the enumerated concrete triggers.
+    expect(agentsMd).toContain('merge conflict');
+    expect(agentsMd).toContain('changed-file overlap 造成需要重新整合');
+    expect(agentsMd).toContain('dependency / API / schema / contract 已改變');
+    expect(agentsMd).toContain('temporary integration result 的 required validation 失敗');
+    expect(agentsMd).toContain('branch protection 明確要求 up-to-date branch');
+    // Otherwise keep the reviewed head and validate via a temporary merge/integration tree.
+    expect(agentsMd).toContain('temporary merge／integration tree');
+    expect(agentsMd).toContain('不重跑整套 exact-head review');
+  });
+
+  it('binds the reviewer verdict to the actual reviewed candidate', () => {
+    expect(agentsMd).toContain('reviewer verdict 綁定實際 reviewed candidate');
+    expect(agentsMd).toContain('merge 本身不構成 review');
+    expect(agentsMd).toContain('原 exact-head verdict 才失效');
   });
 
   it('defines the merge gate with exact-head, blocking-thread, CI, scope, and dependency checks', () => {

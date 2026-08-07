@@ -192,7 +192,9 @@ Risk tier 判定必須 deterministic 且 checkable，PR template 必須標記風
 - 最多 2 個 PR 可同時在 final review。
 - 一次只 merge 一個 PR，且必須對最新 `main` 進行。
 - 額外完成的 agent work 留在 implementation-ready queue，不開出無上限的 PR。
-- 另一個 PR merge 後，overlapping、dependent 或 stale-head 的 PR 必須先從最新 `main` update 並重跑 required gates，才能取得 final approval。
+- 另一個 PR merge 後，對剩餘 PR 以最新 `main` 重新評估 integration order 與 dependency constraints；**stale base SHA alone 不是 blocker**，不得僅因 base 落後就要求 rebase、force-push 或改寫 branch。
+- 只有在下列任一條件成立時，才要求 update branch 並重跑 required gates：merge conflict；changed-file overlap 造成需要重新整合；dependency / API / schema / contract 已改變；temporary integration result 的 required validation 失敗；branch protection 明確要求 up-to-date branch。
+- 其餘情況保持 reviewed PR head 不變：以最新 `origin/main` 與 PR exact head 建立 temporary merge／integration tree，驗證 merge-tree、dependency、scope 與 required gates；integration result 通過即依最新 main 順序 squash merge，不重跑整套 exact-head review。
 
 ### Merge gate（merge 條件）
 
@@ -204,6 +206,8 @@ Risk tier 判定必須 deterministic 且 checkable，PR template 必須標記風
 - reviewed head SHA 未改變；
 - scope 符合 owning issue 且沒有無關 work 混入；
 - integration order 與 dependency constraints 對最新 `main` 仍然有效。
+
+reviewer verdict 綁定實際 reviewed candidate（reviewed head SHA）：merge 本身不構成 review、也不能補齊缺失的 verdict；只有當 PR head 真的被改寫、產生新的 candidate 時，原 exact-head verdict 才失效並需要重新 review。以 temporary merge／integration tree 驗證、或另一張 PR merge，都不得視為對該 PR 的 review 已完成。
 
 CodeRabbit 未完成不構成 independent merge blocker，除非該 PR 被明確歸類為 high risk 且 CodeRabbit 被選為 required review signal 之一。
 
