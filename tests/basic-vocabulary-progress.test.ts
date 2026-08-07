@@ -704,3 +704,164 @@ describe('BasicVocabularyProgressStore', () => {
     expect(stored.items.c.knownStreak).toBe(1);
   });
 });
+
+// ─── replaceAllForSync: trusted sync replacement (Issue #292) ────────────────
+
+describe('BasicVocabularyProgressStore.replaceAllForSync', () => {
+  it('validates/copies the exact v1 document and preserves insertion order', () => {
+    const storage = fakeStorage();
+    const store = new BasicVocabularyProgressStore(storage);
+
+    const input = {
+      version: 1 as const,
+      items: {
+        c: { status: 'learned' as const, knownStreak: 2 },
+        a: { status: 'learning' as const, knownStreak: 1 },
+        b: { status: 'new' as const, knownStreak: 0 },
+      },
+    };
+    store.replaceAllForSync(input);
+    expect(Object.keys(store.getAllItems())).toEqual(['c', 'a', 'b']);
+    expect(store.getStatus('c')).toBe('learned');
+    expect(store.getStatus('a')).toBe('learning');
+    expect(store.getStatus('b')).toBe('new');
+
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(Object.keys(stored.items)).toEqual(['c', 'a', 'b']);
+    expect(stored.items.a).toEqual({ status: 'learning', knownStreak: 1 });
+    // Input is not mutated and result is an independent copy.
+    expect(input.items.c).toEqual({ status: 'learned', knownStreak: 2 });
+  });
+
+  it('throws all-or-nothing on invalid documents and leaves state and storage untouched', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { keep: { status: 'learned', knownStreak: 3 } } }),
+    );
+    const store = new BasicVocabularyProgressStore(storage);
+    store.applyRating('x', 'known');
+    const before = storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY);
+
+    const invalid = [
+      { version: 2, items: {} },
+      { version: 1, items: [] },
+      { version: 1, items: { a: { status: 'unknown', knownStreak: 0 } } },
+      { version: 1, items: { '': { status: 'new', knownStreak: 0 } } },
+      { version: 1, items: { a: { status: 'new', knownStreak: 1 } } },
+      { version: 1, items: { ['__proto__']: { status: 'learning', knownStreak: 1 } } },
+      { version: 1, items: { a: { status: 'learned', knownStreak: 1 } } },
+    ] as unknown[];
+    for (const bad of invalid) {
+      expect(() => store.replaceAllForSync(bad as never)).toThrow();
+    }
+    // In-memory state and storage are unchanged after every failed attempt.
+    expect(store.getStatus('x')).toBe('learning');
+    expect(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)).toBe(before);
+  });
+
+  it('keeps the replacement usable in memory after a write failure and never resurrects older rows', () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { old: { status: 'learned', knownStreak: 2 } } }),
+    );
+    let failWrites = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => {
+        if (failWrites) throw new Error('quota');
+        storage.setItem(k, v);
+      },
+      removeItem: (k) => storage.removeItem(k),
+    };
+
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+    store.replaceAllForSync({
+      version: 1,
+      items: { fresh: { status: 'learning', knownStreak: 1 } },
+    });
+
+    // The replacement is usable in memory even though persistence failed.
+    expect(store.getStatus('fresh')).toBe('learning');
+    expect(store.getStatus('old')).toBe('new');
+
+    // refresh() must not resurrect the older storage rows over the replacement.
+    store.refresh();
+    expect(store.getStatus('fresh')).toBe('learning');
+    expect(store.getStatus('old')).toBe('new');
+
+    // A subsequent rating must also not resurrect older storage rows.
+    store.applyRating('fresh', 'known');
+    expect(store.getStatus('fresh')).toBe('learned');
+    expect(store.getStatus('old')).toBe('new');
+
+    // When storage recovers, a write persists the replacement (never the old rows).
+    failWrites = false;
+    store.applyRating('fresh', 'known');
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(stored.items).not.toHaveProperty('old');
+    expect(stored.items.fresh).toBeDefined();
+  });
+
+  it('acceptExternalClear clears a pending failed replacement so a later write starts clean', () => {
+    const storage = fakeStorage();
+    let failWrites = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => {
+        if (failWrites) throw new Error('quota');
+        storage.setItem(k, v);
+      },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+    store.replaceAllForSync({
+      version: 1,
+      items: { fresh: { status: 'learning', knownStreak: 1 } },
+    });
+    expect(store.getStatus('fresh')).toBe('learning');
+
+    expect(store.acceptExternalClear()).toBe(true);
+    expect(store.getStatus('fresh')).toBe('new');
+
+    failWrites = false;
+    store.applyRating('b', 'known');
+    expect(store.getStatus('fresh')).toBe('new');
+    expect(store.getKnownStreak('b')).toBe(1);
+    const stored = JSON.parse(storage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)!);
+    expect(Object.keys(stored.items)).toEqual(['b']);
+  });
+
+  it('resetAll after a failed replacement clears the replacement flag and state', () => {
+    const storage = fakeStorage();
+    let failWrites = true;
+    const flakyStorage: StorageLike = {
+      getItem: (k) => storage.getItem(k),
+      setItem: (k, v) => {
+        if (failWrites) throw new Error('quota');
+        storage.setItem(k, v);
+      },
+      removeItem: (k) => storage.removeItem(k),
+    };
+    const store = new BasicVocabularyProgressStore(flakyStorage);
+    store.replaceAllForSync({
+      version: 1,
+      items: { fresh: { status: 'learning', knownStreak: 1 } },
+    });
+    expect(store.getStatus('fresh')).toBe('learning');
+
+    store.resetAll();
+    expect(store.getStatus('fresh')).toBe('new');
+
+    // The reset must clear the failed-replacement guard so a later valid
+    // storage document can be loaded again.
+    failWrites = false;
+    storage.setItem(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      JSON.stringify({ version: 1, items: { d: { status: 'learned', knownStreak: 2 } } }),
+    );
+    store.refresh();
+    expect(store.getStatus('d')).toBe('learned');
+  });
+});
