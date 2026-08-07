@@ -9,8 +9,9 @@ import type {
 import type { VocabularyProgressStatus } from '../domain/vocabularyProgress';
 import {
   BasicVocabularyProgressStore,
-  BASIC_VOCABULARY_PROGRESS_KEY,
 } from '../domain/basicVocabularyProgress';
+import { getBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
+import type { BasicVocabularySyncRuntimeSnapshot } from './basicVocabularySyncRuntime';
 import type { LearnerRenderIllustration } from '../content/learnerSessionPayload';
 import manifest from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
 import type { LearnerManifest } from '../types/learnerManifest';
@@ -253,7 +254,21 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
   const { ids: allIds, entries, availableCount, totalCount } = initializeFromIds(root);
 
-  const store = new BasicVocabularyProgressStore();
+  /** The coordinator runtime store when present (Issue #293). When the account
+   * coordinator is not installed, fall back to a direct guest store so the
+   * study route keeps its pre-#293 behavior. */
+  const coordinator = getBasicVocabularyProgressCoordinator();
+  const directStore =
+    coordinator === null ? new BasicVocabularyProgressStore() : null;
+  let store: BasicVocabularyProgressStore =
+    coordinator !== null ? coordinator.getStore() : directStore!;
+  /** The full identity the session is currently bound to, so a coordinator
+   * scope switch (guest↔user or user A↔B) is detected without any reset or
+   * write. */
+  let boundScope: 'guest' | 'user' | null =
+    coordinator !== null ? coordinator.getSnapshot().scope : null;
+  let boundUserId: string | null =
+    coordinator !== null ? coordinator.getSnapshot().userId : null;
 
   const ids = store.selectSession(allIds, availableCount);
   let state: VocabularySessionState = createVocabularySession(ids, availableCount, 'zh-to-ja');
@@ -521,8 +536,17 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
     // Apply to progress store. The state machine only accepts rates
     // on active sessions after reveal, so activeItemId is always defined.
-    store.applyRating(state.activeItemId!, rating);
+    // Through the coordinator this invokes the runtime exactly once and
+    // requests a non-blocking sync; the direct store path writes locally only.
+    // The flag is set before applying so a synchronous same-identity sync
+    // notification (the coordinator fires the runtime's `syncing` snapshot
+    // before awaiting the network) never restarts the just-rated session.
     hasRatedSinceInit = true;
+    if (coordinator !== null) {
+      coordinator.applyRating(state.activeItemId!, rating);
+    } else {
+      store.applyRating(state.activeItemId!, rating);
+    }
 
     state = result.state;
     if (state.status === 'completed') {
@@ -563,7 +587,11 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
   function resetProgress(): void {
     if (!window.confirm('この単語コースの学習記録だけを削除しますか？')) return;
-    store.resetAll();
+    if (coordinator !== null) {
+      coordinator.resetAll();
+    } else {
+      store.resetAll();
+    }
     hasRatedSinceInit = false;
     restartSession();
     root.querySelector<HTMLButtonElement>('[data-action="reveal"]')?.focus();
@@ -630,7 +658,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
   function onStorage(e: StorageEvent): void {
     if (!store.isRelevantStorageArea(e.storageArea)) return;
-    if (e.key !== BASIC_VOCABULARY_PROGRESS_KEY && e.key !== null) return;
+    if (!store.isRelevantStorageKey(e.key)) return;
 
     const isExternalDeletion = e.key === null || e.newValue === null;
     if (isExternalDeletion) {
@@ -646,7 +674,50 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   }
   window.addEventListener('storage', onStorage);
 
+  // Coordinator bridge (Issue #293): re-resolve the store on an identity
+  // switch and react to same-identity syncs.
+  let unsubscribeCoordinator: () => void = () => undefined;
+  // The subscription delivers the current snapshot immediately; the session is
+  // already initialized against it, so the first callback is skipped.
+  let firstCoordinatorSnapshot = true;
+  function onCoordinatorSnapshot(snapshot: BasicVocabularySyncRuntimeSnapshot): void {
+    if (coordinator === null) return;
+    if (firstCoordinatorSnapshot) {
+      firstCoordinatorSnapshot = false;
+      return;
+    }
+    const identityChanged =
+      snapshot.scope !== boundScope || snapshot.userId !== boundUserId;
+    boundScope = snapshot.scope;
+    boundUserId = snapshot.userId;
+    store = coordinator.getStore();
+    if (identityChanged) {
+      // Identity switch (guest↔user or user A↔B): switch scope without any
+      // write or reset, start a fresh concealed session, reset only the
+      // session-local metrics, update the summary, focus the first reveal, and
+      // announce exactly once.
+      restartSession();
+      const ann = document.createElement('span');
+      ann.className = 'basic-vocabulary-sr-only';
+      ann.textContent = '学習記録を切り替えました';
+      progressElement.append(ann);
+      return;
+    }
+    // Same-identity sync: may restart the selection only before any rating in
+    // the active session; after a rating it updates the summary without
+    // teleporting the card/queue/reveal/focus.
+    if (!hasRatedSinceInit) {
+      restartSession();
+    } else {
+      updateSummary();
+    }
+  }
+  if (coordinator !== null) {
+    unsubscribeCoordinator = coordinator.subscribe(onCoordinatorSnapshot);
+  }
+
   const cleanup = () => {
+    unsubscribeCoordinator();
     document.removeEventListener(SCRIPT_PREFERENCE_EVENT, onScriptPreferenceChange);
     window.removeEventListener('pageshow', onPageShow);
     window.removeEventListener('storage', onStorage);
