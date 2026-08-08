@@ -25,10 +25,25 @@
 
 <script>
   import { initBasicVocabularyAccount } from '../../client/basicVocabularyAccount';
+  import {
+    ensureBasicVocabularyProgressCoordinator,
+    getBasicVocabularyProgressCoordinator,
+  } from '../../client/basicVocabularyProgressCoordinator';
+  import { bindBasicVocabularySyncStatus } from '../../client/basicVocabularySyncStatusAdapter';
 
   function initialiseAccounts(): void {
     document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-account]').forEach((root) => {
+      // The account component owns the single document-level coordinator
+      // (Issue #293). It is created exactly once per document and never torn
+      // down by Astro re-initialization, so the study/catalog clients always
+      // resolve the same runtime store.
+      ensureBasicVocabularyProgressCoordinator();
+      const coordinator = getBasicVocabularyProgressCoordinator();
       initBasicVocabularyAccount(root);
+      if (coordinator !== null) {
+        const status = root.querySelector<HTMLElement>('[data-basic-vocabulary-account-status]');
+        if (status) bindBasicVocabularySyncStatus(coordinator, status);
+      }
     });
   }
 
