@@ -51,6 +51,10 @@
 
 `arbiter` 只用於已明確定義的困難技術決策，不得用於一般實作、routine review 或 repository 探索。
 
+## Model Routing
+
+Sol 是稀缺的 reasoning resource，不是高難度 ticket 的預設全程 implementer。Flash／Pro／Sol 的 role 分工、`Sol-assisted` 與 `Sol-led reasoning` 的語意及 escalation 條件，以 `AGENTS.md` 的「Model Routing / Sol Budget Gate」為唯一 canonical policy，本檔不得重複維護分歧規則。
+
 ## Reviewer Gate
 
 Implementation 與必要的本地驗證完成後，才可啟動獨立 `reviewer`。

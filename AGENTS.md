@@ -137,6 +137,43 @@ Reviewer 除立即的 P0／P1 安全或資料遺失中斷外，應完成完整 c
 - Prompt 長度必須依任務規模裁剪，不得重複 Issue、`AGENTS.md` 或 `CLAUDE.md` 已明定的要求。
 - 單一 cycle 完成不得被表述為整個 PR 已 merge-ready，除非 final integration、完整驗證與 reviewer gate 均已完成。
 
+## Model Routing / Sol Budget Gate
+
+本節定義 repo 的 canonical model routing。`CLAUDE.md` 與 GitHub issue 引用本節，不得另立分歧規則。本節只定義 role 分工與 Sol escalation 條件；Flash 的 task-size 分組、bounded cycle 與 merge criteria 由前述「Flash 任務大小 Gate」定義，兩者合併解讀。
+
+### Roles
+
+- **Flash（DeepSeek V4 Flash）** — 預設 bounded implementation model。直接依既有 contract、驗證與 issue scope 實作並執行 targeted validation。不需先詢問 Sol。
+- **Pro（DeepSeek V4 Pro）** — diagnosis、reviewer 與 arbiter model。負責既有 reviewer policy 定義的 review、diagnosis 與需要判斷的單點決策。
+- **Sol** — 稀缺的 architecture／concurrency／security／correctness reasoning resource。只用於對**明確 decision question** 的收斂判斷，不做整張 ticket 的全程實作。
+
+### Sol 使用原則
+
+- Sol invocation 必須針對明確 decision question，包含已收集的 evidence 與收斂後的可行選項。
+- 禁止用 Sol 做：broad repo exploration、找檔案、routine tests／lint、boilerplate、mechanical refactor。
+- 只有 cheap evidence 仍無法解除的 architecture／concurrency／security／correctness ambiguity，才呼叫 Sol。
+- 預設高難度流程：cheap repo evidence collection → narrowly scoped Sol decision → Flash implementation → Pro review → Sol re-entry only if unresolved。
+- `Sol-assisted` 是**按需 escalation**，不是每張票的 mandatory Sol preflight：Flash 依 issue contract、既有 architecture 與 repository evidence 已可無歧義實作時，直接繼續，不呼叫 Sol。
+- `Sol` classification 不等於「整張 ticket 由 Sol 實作」。標記 `Sol` 的 issue 仍以 Flash 執行 implementation，Sol 只介入決策點。
+
+### `Sol-assisted`
+
+- 語意：ticket 以 Flash 為主要 implementer；預先定義需要 Sol 判斷的 decision points；ticket scope 的 execution 依該等 decision 進行。
+- escalation：Flash 在 decision point 上需要 reasoning 判斷時 escalate 到 Sol。Sol 回覆後，Flash 繼續實作，最終由 Pro 做 independent review。
+- 適用：多數現有標記 Sol 的高難度 vertical-slice ticket。
+
+### `Sol-led reasoning`
+
+- 語意：ticket 的**核心輸出是 correctness／security reasoning 或 acceptance verdict**，而不是某個 bounded implementation。Sol 在收斂 decision question 後主導該 reasoning 產出；任何緊接的實作仍由 Flash 執行，並由 Pro 審查。
+- escalation：此模式是 explicit。Sol 只有在進入明確 decision phase 時介入，不觸碰 routine implementation。
+- 適用：integration／release acceptance、security-critical correctness 收斂，例如 #267、#294。
+
+### Issue routing
+
+- issue 的 routing 標記只描述 model 分工與 Sol escalation 語意，不改變 issue scope、acceptance criteria 或 dependencies。
+- `Routing: Sol-assisted` 與 `Routing: Sol-led reasoning` 是 issue 上的唯一合法 Sol routing 標記。`Implementation: Sol` 表示整張 ticket 由 Sol 實作，除非本節明確允許，否則不得使用。
+- coordinator 委派時，Sol-assisted ／ Sol-led 的 ticket 不得整包委派給 Sol 實作；Sol 只處理預先定義的 decision questions。
+
 ## Git 規範
 
 - Branch 名稱使用 `<agent-or-purpose>/<short-description>`，並優先遵循使用者或當前 workflow 指定的命名方式。
