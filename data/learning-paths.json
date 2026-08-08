@@ -34,14 +34,14 @@
       "availabilityReason": "hsk",
       "hsk": {
         "levels": [1],
-        "status": "available"
+        "status": "unavailable"
       },
       "members": [
-        { "type": "vocabulary", "id": "hsk-001" },
-        { "type": "vocabulary", "id": "hsk-002" },
-        { "type": "vocabulary", "id": "hsk-003" },
-        { "type": "vocabulary", "id": "hsk-004" },
-        { "type": "vocabulary", "id": "hsk-005" }
+        { "type": "vocabulary", "id": "hsk-1-32ddf4d4a6f5" },
+        { "type": "vocabulary", "id": "hsk-1-c2e211c93ffd" },
+        { "type": "vocabulary", "id": "hsk-1-f19e5ba46c86" },
+        { "type": "vocabulary", "id": "hsk-1-eafd9b662998" },
+        { "type": "vocabulary", "id": "hsk-1-e122899107b0" }
       ]
     },
     {

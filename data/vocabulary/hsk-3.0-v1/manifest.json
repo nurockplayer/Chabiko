@@ -1,0 +1,129 @@
+{
+  "sourceFile": "synthetic-hsk-workbook.xlsx",
+  "sourceChecksumSha256": "669b631cfa0ec6211fa80e597301e3d8381f60236898fe6f46f82d2bca2cb662",
+  "standardVersion": "hsk-3.0",
+  "sourceSheets": [
+    "HSK Level 1",
+    "HSK Level 2",
+    "HSK Level 3-4"
+  ],
+  "totalRows": 15,
+  "totalByLevel": {
+    "1": 8,
+    "2": 3,
+    "3": 3,
+    "4": 1
+  },
+  "accepted": 12,
+  "acceptedByLevel": {
+    "1": 5,
+    "2": 3,
+    "3": 3,
+    "4": 1
+  },
+  "rejected": 3,
+  "rejectedByLevel": {
+    "1": 3
+  },
+  "duplicateDiagnostics": [
+    {
+      "reason": "duplicate identity (爱, ài): HSK Level 1:8",
+      "sheet": "HSK Level 1",
+      "row": 8
+    },
+    {
+      "reason": "duplicate identity (水, Shuǐ): HSK Level 1:9",
+      "sheet": "HSK Level 1",
+      "row": 9
+    }
+  ],
+  "rejectedRows": [
+    {
+      "reason": "missing simplified: HSK Level 1:7",
+      "sheet": "HSK Level 1",
+      "row": 7
+    },
+    {
+      "reason": "duplicate identity (爱, ài): HSK Level 1:8",
+      "sheet": "HSK Level 1",
+      "row": 8
+    },
+    {
+      "reason": "duplicate identity (水, Shuǐ): HSK Level 1:9",
+      "sheet": "HSK Level 1",
+      "row": 9
+    }
+  ],
+  "batchCount": 1,
+  "batches": [
+    {
+      "filename": "hsk-vocabulary-batch-01.json",
+      "batchNumber": 1,
+      "entryCount": 12,
+      "firstEntryId": "hsk-1-32ddf4d4a6f5",
+      "lastEntryId": "hsk-4-58837eebf47f",
+      "sourceRows": [
+        {
+          "id": "hsk-1-32ddf4d4a6f5",
+          "sheet": "HSK Level 1",
+          "row": 3
+        },
+        {
+          "id": "hsk-1-c2e211c93ffd",
+          "sheet": "HSK Level 1",
+          "row": 6
+        },
+        {
+          "id": "hsk-1-f19e5ba46c86",
+          "sheet": "HSK Level 1",
+          "row": 2
+        },
+        {
+          "id": "hsk-1-eafd9b662998",
+          "sheet": "HSK Level 1",
+          "row": 5
+        },
+        {
+          "id": "hsk-1-e122899107b0",
+          "sheet": "HSK Level 1",
+          "row": 4
+        },
+        {
+          "id": "hsk-2-f41783418fc4",
+          "sheet": "HSK Level 2",
+          "row": 2
+        },
+        {
+          "id": "hsk-2-c32f73d4f4c0",
+          "sheet": "HSK Level 2",
+          "row": 4
+        },
+        {
+          "id": "hsk-2-da8df807ec54",
+          "sheet": "HSK Level 2",
+          "row": 3
+        },
+        {
+          "id": "hsk-3-397d93198bd8",
+          "sheet": "HSK Level 3-4",
+          "row": 2
+        },
+        {
+          "id": "hsk-3-367df9600cd7",
+          "sheet": "HSK Level 3-4",
+          "row": 3
+        },
+        {
+          "id": "hsk-3-fdbb78c8e725",
+          "sheet": "HSK Level 3-4",
+          "row": 4
+        },
+        {
+          "id": "hsk-4-58837eebf47f",
+          "sheet": "HSK Level 3-4",
+          "row": 5
+        }
+      ]
+    }
+  ]
+}

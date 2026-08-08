@@ -90,7 +90,9 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     // The built route links to the exact destinations of available paths.
     const fragment = builtRouteFragment();
     expect(fragment).toContain('href="/lessons/"');
-    expect(fragment).toContain('href="/vocabulary/hsk/"');
+    // HSK is truthfully unavailable until a review pass publishes the imported
+    // (all-draft) batch, so its card is inert text, not a link.
+    expect(fragment).not.toContain('href="/vocabulary/hsk/"');
   });
 
   it('loads paths only through loadLearningPaths() in deterministic frozen order', () => {
@@ -131,23 +133,24 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
 
   it('available paths are real links; unavailable paths are inert text', () => {
     const fragment = builtRouteFragment();
-    // Available: exactly the two declared destinations as anchor hrefs.
+    // Available: exactly the declared destination as an anchor href. The HSK
+    // path is truthfully unavailable (imported rows are all-draft, so no
+    // reviewed/published level-1 slice exists yet) and renders as inert text.
     const lessonsHref = fragment.match(/<a[^>]*href="\/lessons\/"[^>]*>/g);
     const hskHref = fragment.match(
       /<a[^>]*href="\/vocabulary\/hsk\/"[^>]*>/g,
     );
     expect(lessonsHref).toHaveLength(1);
-    expect(hskHref).toHaveLength(1);
+    expect(hskHref).toBeNull();
     expect(lessonsHref![0]).toContain('data-path-availability="available"');
-    expect(hskHref![0]).toContain('data-path-availability="available"');
     // Unavailable: no link, button, click handler, or focusability at all.
     expect(fragment).not.toContain('href="/vocabulary/kanji-bridge/"');
-    const kanjiBlock = fragment.slice(
-      fragment.indexOf('data-path-id="kanji-bridge"'),
-    );
-    expect(kanjiBlock).not.toMatch(
-      /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
-    );
+    for (const unavailableId of ['kanji-bridge', 'hsk-vocabulary']) {
+      const block = fragment.slice(fragment.indexOf(`data-path-id="${unavailableId}"`));
+      expect(block).not.toMatch(
+        /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
+      );
+    }
     // No fake disabled state either — the card is simply a non-interactive div.
     expect(fragment).not.toContain('aria-disabled');
     expect(componentSource).not.toContain('aria-disabled');
@@ -290,7 +293,7 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
       document.learningPaths.map((path) => [path.id, path]),
     );
     expect(byId.get('taiwan-travel')?.availability).toBe('available');
-    expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
+    expect(byId.get('hsk-vocabulary')?.availability).toBe('unavailable');
     expect(byId.get('kanji-bridge')?.availability).toBe('unavailable');
     // The card component branches on availability, with a primary modifier
     // for the first path only.

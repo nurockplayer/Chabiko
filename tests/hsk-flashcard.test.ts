@@ -4,11 +4,16 @@ import { loadHskLevelEntries, loadHskVocabulary } from '../src/content/loadHskVo
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 describe('loadHskVocabulary', () => {
-  it('loads the default HSK vocabulary fixture', () => {
+  it('loads the production HSK batch from the importer output directory', () => {
     const bundle = loadHskVocabulary();
     expect(bundle).toBeDefined();
     expect(Array.isArray(bundle.vocabulary)).toBe(true);
     expect(bundle.vocabulary.length).toBeGreaterThan(0);
+    // Production rows come from scripts/import-hsk-xlsx.py deterministic
+    // batches (stable hashed IDs), not the legacy hsk-00x fixture IDs.
+    const ids = bundle.vocabulary.map((entry) => entry.id);
+    expect(ids.some((id) => id.startsWith('hsk-1-'))).toBe(true);
+    expect(ids.some((id) => id.startsWith('hsk-00'))).toBe(false);
   });
 
   it('every entry has a valid hsk object', () => {
@@ -33,6 +38,22 @@ describe('loadHskLevelEntries', () => {
       expect(entry.pinyin).toBeTruthy();
       expect(entry.japanese).toBeTruthy();
     }
+  });
+
+  it('imported rows are all draft, so the production level-1 slice is empty until review', () => {
+    // The importer emits every row with reviewStatus 'draft' (truthful
+    // provisional content). The loader only renders reviewed/published rows,
+    // so the first HSK 1 production slice is deterministically empty until a
+    // review pass publishes rows. This is the documented production boundary.
+    const bundle = loadHskVocabulary();
+    const levelOneRows = bundle.vocabulary.filter(
+      (entry) => entry.hsk.introducedAtLevel === 1,
+    );
+    expect(levelOneRows.length).toBeGreaterThan(0);
+    for (const row of levelOneRows) {
+      expect(row.reviewStatus).toBe('draft');
+    }
+    expect(loadHskLevelEntries(1)).toEqual([]);
   });
 
   it('is deterministic: same input produces same result', () => {

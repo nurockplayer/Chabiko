@@ -77,9 +77,12 @@ describe('loadLearningPaths', () => {
     expect(byId.get('kanji-bridge')?.availabilityReason).toBe('unavailable');
     expect(byId.get('kanji-bridge')?.availability).toBe('unavailable');
     // hsk-vocabulary availability is derived from current production HSK data.
+    // The imported production batch is all-draft (importer contract), so the
+    // reviewed/published level-1 slice is empty and the path is truthfully
+    // unavailable until a review pass publishes rows.
     expect(byId.get('hsk-vocabulary')?.availabilityReason).toBe('hsk');
-    expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
-    expect(byId.get('hsk-vocabulary')?.hsk?.status).toBe('available');
+    expect(byId.get('hsk-vocabulary')?.availability).toBe('unavailable');
+    expect(byId.get('hsk-vocabulary')?.hsk?.status).toBe('unavailable');
     expect(byId.get('hsk-vocabulary')?.hsk?.levels).toEqual([1]);
   });
 
@@ -186,7 +189,9 @@ describe('loadLearningPaths', () => {
   it('throws when an hsk path declares an hsk status that contradicts production HSK data', () => {
     const document = cloneDocument(loadLearningPaths());
     const path = document.learningPaths[1];
-    (path as { hsk: { status: string } }).hsk.status = 'unavailable';
+    // The production batch is all-draft, so the truthful derived status is
+    // 'unavailable'; declaring 'available' contradicts the data.
+    (path as { hsk: { status: string } }).hsk.status = 'available';
     expect(() => loadLearningPaths(writeTemp(document))).toThrow(
       /contradicts production HSK data/,
     );
