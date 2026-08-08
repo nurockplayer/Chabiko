@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-fixture-transport-001",
+      "scenario": "transport",
+      "titleJa": "道案内をしてもらう",
+      "goalJa": "駅までの道順を中国語で尋ねられる",
+      "guidanceJa": "道に迷ったとき、駅や施設の場所を中国語で尋ねる練習です。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-003"],
+      "phraseRefs": ["phrase-002"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "請問這附近有捷運站嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "请问这附近有捷运站吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?",
+          "japanese": "すみません、この近くにMRTの駅はありますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "有，往前走兩分鐘就到了。",
+          "traditionalStatus": "authored",
+          "pinyin": "yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le",
+          "japanese": "ありますよ。まっすぐ2分歩けば着きますよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "謝謝！那出站以後往哪走？",
+          "traditionalStatus": "authored",
+          "simplified": "谢谢！那出站以后往哪走？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Xièxie! Nà chū zhàn yǐhòu wǎng nǎ zǒu?",
+          "japanese": "ありがとう！では駅を出てからはどこへ行けばいいですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "出站以後往左轉就到了。",
+          "traditionalStatus": "authored",
+          "pinyin": "chū zhàn yǐhòu wǎng zuǒ zhuǎn jiù dào le",
+          "japanese": "駅を出て左に曲がると着きますよ。"
+        }
+      ],
+      "reviewStatus": "draft"
+    }
+  ]
+}
