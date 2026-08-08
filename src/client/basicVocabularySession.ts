@@ -296,8 +296,18 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   const totalElement = total;
 
   function updateProgress(): void {
+    // Preserve persistent live-region announcements (identity-switch or reset,
+    // marked with data-keep-announcement) so a subsequent same-identity sync's
+    // progress re-render does not wipe them before the screen reader can
+    // announce them. Completion announcements are intentionally not preserved.
+    const announcements = Array.from(
+      progressElement.querySelectorAll<HTMLElement>(
+        '[data-keep-announcement="true"]',
+      ),
+    );
     progressElement.textContent =
       `今回 ${state.completedUniqueCount} / ${state.selectedItemIds.length}語`;
+    for (const announcement of announcements) progressElement.append(announcement);
   }
 
   function updateSummary(): void {
@@ -598,6 +608,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
 
     const ann = document.createElement('span');
     ann.className = 'basic-vocabulary-sr-only';
+    ann.dataset.keepAnnouncement = 'true';
     ann.textContent = 'この単語コースの学習記録をリセットしました';
     progressElement.append(ann);
   }
@@ -699,6 +710,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       restartSession();
       const ann = document.createElement('span');
       ann.className = 'basic-vocabulary-sr-only';
+      ann.dataset.keepAnnouncement = 'true';
       ann.textContent = '学習記録を切り替えました';
       progressElement.append(ann);
       return;

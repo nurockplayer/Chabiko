@@ -516,6 +516,38 @@ describe('session identity-switch integration', () => {
     cleanup();
   });
 
+  it('keeps the identity-switch announcement when the user runtime syncs (production path)', async () => {
+    // With a configured repository the switch snapshot announces, then the
+    // same-identity syncing snapshot arrives; the live-region announcement must
+    // survive that re-render.
+    const storage = makeStorage();
+    const repo = new ScriptedRepository();
+    repo.loadScript = [() => ({ resetGeneration: 0, items: [] })];
+    const coordinator = createBasicVocabularyProgressCoordinator(
+      dependencies({ storage, repository: repo }),
+    );
+    setBasicVocabularyProgressCoordinator(coordinator);
+
+    const root = createSessionRoot([...SESSION_IDS]);
+    const cleanup = initBasicVocabularySession(root);
+
+    // Guest rates one item so the switch visibly resets the session metrics.
+    reveal(root);
+    rate(root, 'known');
+    expect(root.querySelector('[data-progress]')?.textContent).toContain('今回 1 / 3語');
+
+    // Switch to the signed-in user (configured repository = production path).
+    coordinator.acceptSignedIn(USER_ID);
+    await new Promise((r) => setTimeout(r, 0));
+
+    const card = root.querySelector('[data-card]') as HTMLElement;
+    expect(card.querySelector('[data-action="reveal"]')).not.toBeNull();
+    expect(root.querySelector('[data-progress]')?.textContent).toContain('今回 0 / 3語');
+    const ann = root.querySelector('.basic-vocabulary-sr-only');
+    expect(ann?.textContent).toBe('学習記録を切り替えました');
+    cleanup();
+  });
+
   it('switching user A to user B restarts concealed without reset or write', () => {
     const storage = makeStorage();
     const coordinator = createBasicVocabularyProgressCoordinator(
