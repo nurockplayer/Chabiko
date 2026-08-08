@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, statSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
@@ -218,5 +218,146 @@ describe('TeacherPreview — build output (fresh build)', () => {
     }
     // Fallback: if no CSS files found (shouldn't happen after build), at least check class present
     expect(html).toContain('flashcard--hidden');
+  });
+});
+
+/**
+ * Account-sync release acceptance — Domain 9 (deployment/rollback).
+ *
+ * Builds the static site with public Supabase config plus decoy secret env vars
+ * present, then verifies:
+ *   1. the auth callback / basic vocabulary / words routes build and carry their
+ *      account-sync markers;
+ *   2. the PUBLIC_ values are inlined into the client bundle (they are public by
+ *      design);
+ *   3. no decoy secret value, no credential-shaped token, and no non-PUBLIC
+ *      credential env name appears anywhere in the build output.
+ *
+ * This must live inside this single-build file (sequential describes) because
+ * concurrent `astro build` runs race on the shared `.astro/.prerender/` cache.
+ */
+describe('Deployment — static account-sync routes and secret hygiene (fresh build)', () => {
+  const SCAN_DIST = resolve(REPO_ROOT, 'dist/scan-verify');
+  const SCAN_CALLBACK = resolve(SCAN_DIST, 'auth/callback/index.html');
+  const SCAN_BASIC = resolve(SCAN_DIST, 'vocabulary/basic/index.html');
+  const SCAN_WORDS = resolve(SCAN_DIST, 'vocabulary/basic/words/index.html');
+
+  const PUBLIC_URL = 'https://acceptance-test-project.supabase.co';
+  const PUBLIC_KEY = 'sb_publishable_acceptance_public_key_0001';
+  const DECOY_SERVICE_ROLE = 'sb_secret_acceptance_service_role_0001';
+  const DECOY_JWT_SECRET = 'jwt-secret-acceptance-decoy-0001';
+  const DECOY_GOOGLE_CLIENT_SECRET = 'google-client-secret-decoy-0001';
+  const DECOY_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.acceptance-anon-decoy';
+
+  const savedEnv = new Map<string, string | undefined>();
+  let callbackHtml: string;
+  let basicHtml: string;
+  let wordsHtml: string;
+  let scanText = '';
+
+  beforeAll(() => {
+    // Record the prior value of every env var we set so afterAll can restore it.
+    for (const name of [
+      'PUBLIC_SUPABASE_URL',
+      'PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'SUPABASE_JWT_SECRET',
+      'GOOGLE_CLIENT_SECRET',
+      'SUPABASE_ANON_KEY',
+    ]) {
+      savedEnv.set(name, process.env[name]);
+    }
+    process.env.PUBLIC_SUPABASE_URL = PUBLIC_URL;
+    process.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY = PUBLIC_KEY;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = DECOY_SERVICE_ROLE;
+    process.env.SUPABASE_JWT_SECRET = DECOY_JWT_SECRET;
+    process.env.GOOGLE_CLIENT_SECRET = DECOY_GOOGLE_CLIENT_SECRET;
+    process.env.SUPABASE_ANON_KEY = DECOY_ANON_KEY;
+
+    // The previous describe's afterAll removed dist/; build to an isolated
+    // test-owned outDir so this scan never reuses stale output.
+    execSync(`pnpm build --outDir ${SCAN_DIST}`, {
+      cwd: REPO_ROOT,
+      stdio: 'pipe',
+      timeout: 120_000,
+    });
+
+    if (!existsSync(SCAN_CALLBACK)) {
+      throw new Error(`Callback build output not found at ${SCAN_CALLBACK}`);
+    }
+    callbackHtml = readFileSync(SCAN_CALLBACK, 'utf-8');
+    basicHtml = readFileSync(SCAN_BASIC, 'utf-8');
+    wordsHtml = readFileSync(SCAN_WORDS, 'utf-8');
+
+    const TEXT_EXT = new Set(['.html', '.js', '.css', '.json', '.svg', '.txt', '.webmanifest']);
+    const texts: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const file = join(dir, entry);
+        const stat = statSync(file);
+        if (stat.isDirectory()) walk(file);
+        else if (TEXT_EXT.has(file.slice(file.lastIndexOf('.')))) {
+          texts.push(readFileSync(file, 'utf-8'));
+        }
+      }
+    };
+    walk(SCAN_DIST);
+    scanText = texts.join('\n');
+  });
+
+  afterAll(() => {
+    // Restore the pre-test environment.
+    for (const [name, value] of savedEnv) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+    // Remove only the test-owned outDir. dist/ is gitignored, but clean it up
+    // so the tree is left exactly as it was found.
+    if (existsSync(SCAN_DIST)) {
+      rmSync(SCAN_DIST, { recursive: true, force: true });
+    }
+  });
+
+  it('builds the auth callback route with the account-sync markers', () => {
+    expect(callbackHtml).toContain('data-supabase-auth-callback');
+    expect(callbackHtml).toContain('data-supabase-auth-callback-status');
+    expect(callbackHtml).toContain('aria-live="polite"');
+    expect(callbackHtml).toContain('noindex');
+    expect(callbackHtml).toContain('nofollow');
+    expect(callbackHtml).toContain('type="module"');
+    // No raw auth material is ever emitted into the built page.
+    expect(callbackHtml).not.toMatch(/access_token|refresh_token/);
+  });
+
+  it('builds the basic vocabulary routes with account/session/catalog markers', () => {
+    expect(basicHtml).toContain('data-basic-vocabulary-account');
+    expect(basicHtml).toContain('data-basic-vocabulary-session');
+    expect(basicHtml).toContain('id="basic-vocabulary-data"');
+    expect(wordsHtml).toContain('data-basic-vocabulary-catalog');
+  });
+
+  it('inlines the public Supabase URL and publishable key (they are public)', () => {
+    expect(scanText).toContain(PUBLIC_URL);
+    expect(scanText).toContain(PUBLIC_KEY);
+  });
+
+  it('never embeds decoy secret values into the build output', () => {
+    expect(scanText).not.toContain(DECOY_SERVICE_ROLE);
+    expect(scanText).not.toContain(DECOY_JWT_SECRET);
+    expect(scanText).not.toContain(DECOY_GOOGLE_CLIENT_SECRET);
+    expect(scanText).not.toContain(DECOY_ANON_KEY);
+  });
+
+  it('emits no credential-shaped tokens or non-PUBLIC credential env names', () => {
+    // JWT header fragment that would appear if a token were inlined.
+    expect(scanText).not.toContain('eyJ');
+    // Secret credential name conventions must never appear in the output.
+    expect(scanText).not.toMatch(
+      /sb_secret_[A-Za-z0-9_-]{12,}/,
+    );
+    expect(scanText).not.toMatch(
+      /SERVICE_ROLE_KEY|GOOGLE_CLIENT_SECRET|SUPABASE_SECRET_KEY|JWT_SECRET|SUPABASE_ANON_KEY/,
+    );
   });
 });
