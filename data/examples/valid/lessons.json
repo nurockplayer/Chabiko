@@ -187,6 +187,188 @@
       "travelTask": "屋台で気になる料理を指差して「我要兩個」と数量で注文してみよう。一つだけ欲しいときは「我要一個」が使える。",
       "painPointTags": ["measure-word", "tone"],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-006",
+      "titleJa": "辛いのを断ってみよう",
+      "level": "beginner",
+      "canDoJa": "料理の辛さを伝えて、辛くしないように注文できる",
+      "learnerOutcomeJa": "「不要〜」を使って、辛さを避けるように頼める",
+      "hookJa": "台湾料理は辛くないものも多いけど、苦手なときはどう言う？",
+      "travelScenario": "food",
+      "coreSentence": "不要辣，謝謝。",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「不要＋名詞」＝〜はいりません／〜しないで。注文時に「辣（辛い）」をつけて「不要辣」＝辛くしないで。この表現は味の好みを伝えるもので、アレルギー対応を保証するものではない。"}
+      ],
+      "chunks": [
+        {"chunk": "不要", "meaning": "〜はいりません／〜しないで", "notesJa": "「不」＝〜ない、「要」＝欲しい。組み合わせて「〜はいらない／〜しないで」の否定の意志を表す。日本語の「〜はいりません」に近い。"},
+        {"chunk": "辣", "meaning": "辛い", "notesJa": "唐辛子などの辛さのこと。日本の「辛い（からい）」と同じ意味だが、中国語では「辣」と書く。辛さのレベルはお店によって違うので、好みに合わせて伝えよう。"},
+        {"chunk": "謝謝", "meaning": "ありがとう", "notesJa": "お礼を添えると丁寧に聞こえる。二文字目は軽声で短く。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "辣", "jpReading": "らつ", "noteJa": "日本語の「辛辣（しんらつ）」などで使う「辣」と同じ漢字。中国語では唐辛子の辛さを表す基本の形容詞。読みは別物なので、日本語の音読みではなく pinyin の「là」で覚えよう。"}
+      ],
+      "soundFocus": [
+        {"item": "不 bú（不要）", "noteJa": "「不 bù」は元は第四声だが、第四声の前に来ると第二声「bú」に変わる。不要は「ブー」と平らに言わず、上昇させて「ブゥ」。同じように音が変わる仲間は lesson-005 の「一」。"},
+        {"item": "辣 là", "noteJa": "第四声。短く急降下。日本語の「ラ」より強く、はっきり下げる。"}
+      ],
+      "examples": [
+        {"traditional": "不要辣，謝謝。", "traditionalStatus": "authored", "pinyin": "bú yào là, xièxie", "japanese": "辛くしないでください、ありがとう"},
+        {"traditional": "我不要辣。", "traditionalStatus": "authored", "pinyin": "wǒ bú yào là", "japanese": "辛いのはやめてください"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「不要辣」はどういう意味？", "answerJa": "辛くしないで（辛いのはいりません）", "distractorsJa": ["辛さが欲しい", "これはいくらですか"]},
+        {"promptJa": "「〜はいりません／〜しないで」と断るときの否定の言葉は？", "answerJa": "不要", "distractorsJa": ["沒有（ない・いない）", "再（もう一度）"]}
+      ],
+      "travelTask": "夜市やお店で辛そうな料理を頼むとき、「不要辣，謝謝」と言ってみよう。辛さが心配なときは、この一言で調整を頼める。",
+      "relatedVocabulary": ["voc-001"],
+      "painPointTags": ["tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-007",
+      "titleJa": "カードで払えるか聞いてみよう",
+      "level": "beginner",
+      "canDoJa": "買い物で、カード払いができるかどうか聞ける",
+      "learnerOutcomeJa": "「可以〜嗎？」を使って、カード払いの可否を尋ねられる",
+      "hookJa": "財布に現金がない！このお店ではカードで払える？",
+      "travelScenario": "shopping",
+      "coreSentence": "可以刷卡嗎？",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「可以〜嗎？」＝〜してもいいですか？／〜できますか？。許可や可能性を尋ねる定型表現。「刷卡」＝カードを端末に通して支払うこと。お店によって対応は違うので、その場で確認しよう。"}
+      ],
+      "chunks": [
+        {"chunk": "可以", "meaning": "〜できる／〜してもいい", "notesJa": "許可や可能性を表す。後ろに動詞を置いて「可以＋動詞？」＝「〜できますか？」。日本語の「〜してもいいですか」に近い。"},
+        {"chunk": "刷卡", "meaning": "カードで支払う", "notesJa": "「刷」＝こする・通す、「卡」＝カード。カードを端末に通して支払う動作をまとめて「刷卡」という。クレジットカードやデビットカードの支払いを指す。"},
+        {"chunk": "嗎", "meaning": "〜か（疑問の助詞）", "notesJa": "文末に置くだけで疑問文になる。語順を変えずに「文＋嗎？」で聞ける便利な助詞。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "卡", "jpReading": "か", "noteJa": "日本語の「カード」の「カ」に近い字。中国語では「カード」を意味する音訳として日常的に使う（信用卡＝クレジットカード）。読みは「カー（kǎ）」と覚えよう。"}
+      ],
+      "soundFocus": [
+        {"item": "刷 shuā", "noteJa": "第一声。高く平らに。sh はそり舌音で、日本語の「シャ」より舌を後ろに引いて出す。"},
+        {"item": "卡 kǎ", "noteJa": "第三声。先に下げてから上げる。日本語の「カー」と違い、短く落ち着かせて「カァ」。"}
+      ],
+      "examples": [
+        {"traditional": "可以刷卡嗎？", "traditionalStatus": "authored", "pinyin": "kěyǐ shuākǎ ma?", "japanese": "カードで払えますか？"},
+        {"traditional": "可以刷卡。", "traditionalStatus": "authored", "pinyin": "kěyǐ shuākǎ", "japanese": "カードで払えますよ"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「可以刷卡嗎？」はどういう意味？", "answerJa": "カードで払えますか？", "distractorsJa": ["カードはどこで買えますか？", "この品物はいくらですか？"]},
+        {"promptJa": "「〜してもいいですか？」と尋ねる定型表現は？", "answerJa": "可以〜嗎？", "distractorsJa": ["我要〜（〜が欲しい）", "不要〜（〜はいらない）"]}
+      ],
+      "travelTask": "お店や屋台で支払うとき、「可以刷卡嗎？」と聞いてみよう。現金しか扱わないお店もあるので、カードが使えるかはその場で確認しよう。",
+      "painPointTags": ["tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-008",
+      "titleJa": "ホテルで予約を伝えよう",
+      "level": "beginner",
+      "canDoJa": "ホテルの受付で、予約していることを伝えてチェックインできる",
+      "learnerOutcomeJa": "「我有〜」を使って、予約があることを伝えられる",
+      "hookJa": "ホテルのフロントに着いた。最初に何て言う？",
+      "travelScenario": "hotel",
+      "coreSentence": "我有預約。",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「我有＋名詞」＝私は〜を持っています／〜があります。ホテルのフロントで予約を伝えるときの基本パターン。「預約」＝予約。名前や予約番号を聞かれたら、それに応えて伝えよう。"}
+      ],
+      "chunks": [
+        {"chunk": "我有", "meaning": "私は〜を持っています", "notesJa": "「我」＝私、「有」＝持っている・ある。後ろに名詞を置いて「〜があります／持っています」。日本語の「〜があります」に近い。"},
+        {"chunk": "預約", "meaning": "予約", "notesJa": "ホテルやレストランの予約のこと。日本語の「予約」と意味は同じだが、繁体字では「預」の字を使う。予約をしたことが伝われば、あとは名前などを聞かれるままに答えよう。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "預", "jpReading": "よ", "noteJa": "日本語の「予約（よやく）」は「予」の字を使うが、中国語（繁体字）では「預約」と書き「預」を使う。意味は同じ「予約」だが字形が違うので注意。読みは「ユゥ（yù）」と覚えよう。"}
+      ],
+      "soundFocus": [
+        {"item": "預 yù", "noteJa": "第四声。短く急降下。日本語の「ヨ」とは違い、強く下げて「ユゥ」。"},
+        {"item": "約 yuē", "noteJa": "第一声。高く平らに。y を軽く入れて「ユエ」と伸ばす。"}
+      ],
+      "examples": [
+        {"traditional": "我有預約。", "traditionalStatus": "authored", "pinyin": "wǒ yǒu yùyuē", "japanese": "予約をしています"},
+        {"traditional": "你好，我有預約。", "traditionalStatus": "authored", "pinyin": "nǐ hǎo, wǒ yǒu yùyuē", "japanese": "こんにちは、予約をしています"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「我有預約。」はどういう意味？", "answerJa": "予約をしています", "distractorsJa": ["予約をしていません", "部屋を予約したいです"]},
+        {"promptJa": "「予約」を中国語の繁体字で言うと？", "answerJa": "預約", "distractorsJa": ["訂房（部屋を予約する）", "出發（出発する）"]}
+      ],
+      "travelTask": "ホテルのフロントで「你好，我有預約」と伝えてみよう。名前や予約番号を聞かれたら、持っている情報をゆっくり伝えよう。",
+      "painPointTags": ["tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-009",
+      "titleJa": "聞き取れないときにもう一度頼もう",
+      "level": "beginner",
+      "canDoJa": "中国語が聞き取れなかったとき、ゆっくり言い直してもらえる",
+      "learnerOutcomeJa": "「可以再說〜嗎？」を使って、言い直しを頼める",
+      "hookJa": "相手の中国語が早くて聞き取れなかった…どう切り抜ける？",
+      "travelScenario": "emergency",
+      "coreSentence": "可以再說慢一點嗎？",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「再」＝もう一度、「說慢一點」＝ゆっくり話す。合わせて「可以再說慢一點嗎？」＝もう一度、ゆっくり話してもらえますか？。聞き取れなかったら、まずこの一言を頼もう。"}
+      ],
+      "chunks": [
+        {"chunk": "再", "meaning": "もう一度", "notesJa": "動作の前に置いて「もう一度〜する」の意味を表す。ここでは「もう一度話す」。"},
+        {"chunk": "說慢一點", "meaning": "ゆっくり話す", "notesJa": "「說」＝話す、「慢」＝遅い・ゆっくり、「一點」＝少し。合わせて「もう少しゆっくり話す」。人に頼む形なので、文頭の「可以〜嗎？」で丁寧に聞く。"},
+        {"chunk": "嗎", "meaning": "〜か（疑問の助詞）", "notesJa": "lesson-007 で学んだ疑問の助詞。文末に置くだけで疑問文になる。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "說", "jpReading": "せつ", "noteJa": "日本語の「説明（せつめい）」の「説」と同じ字（「說」は繁体字の形）。中国語では「話す」の意味の基本動詞。読みは「シュオ（shuō）」と覚えよう。"},
+        {"kanji": "慢", "jpReading": "まん", "noteJa": "日本語の「慢性（まんせい）」「怠慢（たいまん）」の「慢」と同じ字。中国語では「遅い・ゆっくり」の形容詞。意味も近いので覚えやすい。"}
+      ],
+      "soundFocus": [
+        {"item": "慢 màn", "noteJa": "第四声。短く急降下。日本語の「マン」より強く下げる。"},
+        {"item": "一點 yìdiǎn", "noteJa": "「一 yī」は後ろの声調で変わる。第三声「點 diǎn」の前では第四声「yì」になる。ゆっくり「イーディエン」。"}
+      ],
+      "examples": [
+        {"traditional": "可以再說慢一點嗎？", "traditionalStatus": "authored", "pinyin": "kěyǐ zài shuō màn yìdiǎn ma?", "japanese": "もう一度、ゆっくり言ってもらえますか？"},
+        {"traditional": "可以再說一次嗎？", "traditionalStatus": "authored", "pinyin": "kěyǐ zài shuō yí cì ma?", "japanese": "もう一度言ってもらえますか？"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「可以再說慢一點嗎？」はどういう意味？", "answerJa": "もう一度、ゆっくり言ってもらえますか？", "distractorsJa": ["ここはどこですか？", "これはいくらですか？"]},
+        {"promptJa": "「もう一度」を表す言葉は？", "answerJa": "再", "distractorsJa": ["慢（ゆっくり）", "謝謝（ありがとう）"]}
+      ],
+      "travelTask": "相手の中国語が早くて聞き取れなかったら、「可以再說慢一點嗎？」と頼んでみよう。何度でも聞き直して大丈夫。",
+      "painPointTags": ["tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-010",
+      "titleJa": "助けを求めよう",
+      "level": "beginner",
+      "canDoJa": "困ったときに、周りの人に助けを求められる",
+      "learnerOutcomeJa": "「請幫〜」を使って、助けを依頼できる",
+      "hookJa": "道に迷って困った、荷物を持てなくなった…そんなときの一言。",
+      "travelScenario": "emergency",
+      "coreSentence": "請幫幫我。",
+      "sections": [
+        {"headingJa": "基本表現", "contentJa": "「請」＝どうぞ／お願い、「幫」＝助ける。動詞を重ねて「幫幫」にすると、軽くお願いするニュアンスになる。「請幫幫我」＝助けてください。困ったときに周りの人へ声をかけよう。"}
+      ],
+      "chunks": [
+        {"chunk": "請", "meaning": "〜してください／お願い", "notesJa": "依頼の文頭につけると丁寧になる。「お願いします」のニュアンスを添える。"},
+        {"chunk": "幫幫", "meaning": "助けて（動詞の重ね）", "notesJa": "「幫」＝助ける。動詞を重ねて「幫幫」にすると「ちょっと助けて」という軽いお願いのニュアンスになる。重ねずに「幫我」だけでも通じる。"},
+        {"chunk": "我", "meaning": "私", "notesJa": "助けてほしい対象を明確にする。誰に向けての依頼かを伝えられる。"}
+      ],
+      "kanjiBridgeNotes": [
+        {"kanji": "請", "jpReading": "せい", "noteJa": "日本語の「請求（せいきゅう）」などで見られる「請」。中国語では「〜してください」とお願いする文頭の基本語。読みは「チン（qǐng）」と覚えよう。"},
+        {"kanji": "幫", "jpReading": "ほう", "noteJa": "「幫助」などで使う「幫」。「助ける」の意味。中国語では一人で困ったときの強い味方になる基本動詞。"}
+      ],
+      "soundFocus": [
+        {"item": "幫 bāng", "noteJa": "第一声。高く平らに。日本語の「バン」より高く、しっかり伸ばす。"},
+        {"item": "我 wǒ", "noteJa": "第三声。先に下げてから上げる。「ウォ」と短く落ち着かせる。"}
+      ],
+      "examples": [
+        {"traditional": "請幫幫我。", "traditionalStatus": "authored", "pinyin": "qǐng bāng bāng wǒ", "japanese": "助けてください"},
+        {"traditional": "請幫我。", "traditionalStatus": "authored", "pinyin": "qǐng bāng wǒ", "japanese": "手伝ってください（軽いお願い）"}
+      ],
+      "reviewPrompts": [
+        {"promptJa": "「請幫幫我。」はどういう意味？", "answerJa": "助けてください", "distractorsJa": ["ここはどこですか？", "これはいくらですか？"]},
+        {"promptJa": "「お願いします」と丁寧に頼むとき、文頭につける言葉は？", "answerJa": "請", "distractorsJa": ["不要（〜しない）", "再（もう一度）"]}
+      ],
+      "travelTask": "迷子になったり、荷物を持てなくなったら、近くの人に「請幫幫我」と頼んでみよう。緊急のときは、はっきり大きな声で伝えよう。",
+      "painPointTags": ["tone"],
+      "reviewStatus": "draft"
     }
   ]
 }
