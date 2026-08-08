@@ -187,9 +187,9 @@ describe('learner shell uses fixture data', () => {
 });
 
 describe('loadAllRenderableLessons', () => {
-  it('returns all 5 lessons from the default fixture', () => {
+  it('returns all 10 lessons from the default fixture', () => {
     const lessons = loadAllRenderableLessons();
-    expect(lessons).toHaveLength(5);
+    expect(lessons).toHaveLength(10);
   });
 
   it('returns lessons in file order', () => {
@@ -199,6 +199,11 @@ describe('loadAllRenderableLessons', () => {
     expect(lessons[2].id).toBe('lesson-003');
     expect(lessons[3].id).toBe('lesson-004');
     expect(lessons[4].id).toBe('lesson-005');
+    expect(lessons[5].id).toBe('lesson-006');
+    expect(lessons[6].id).toBe('lesson-007');
+    expect(lessons[7].id).toBe('lesson-008');
+    expect(lessons[8].id).toBe('lesson-009');
+    expect(lessons[9].id).toBe('lesson-010');
   });
 
   it('each lesson has all required renderable fields', () => {
@@ -380,10 +385,10 @@ describe('lesson order and navigation', () => {
     expect(lessons[2].id).toBe('lesson-003');
   });
 
-  it('lesson-005 is the last lesson', () => {
+  it('lesson-010 is the last lesson', () => {
     const lessons = loadAllRenderableLessons();
     const lastIndex = lessons.length - 1;
-    expect(lessons[lastIndex].id).toBe('lesson-005');
+    expect(lessons[lastIndex].id).toBe('lesson-010');
   });
 
   it('each lesson id is a valid URL path segment', () => {
@@ -405,7 +410,7 @@ describe('static paths generation', () => {
         nextLesson: i < lessons.length - 1 ? { id: lessons[i + 1].id, titleJa: lessons[i + 1].titleJa } : null,
       },
     }));
-    expect(paths).toHaveLength(5);
+    expect(paths).toHaveLength(10);
     expect(paths[0].params.id).toBe('lesson-001');
     expect(paths[0].props.prevLesson).toBeNull();
     expect(paths[0].props.nextLesson?.id).toBe('lesson-002');
@@ -416,6 +421,16 @@ describe('static paths generation', () => {
     expect(paths[3].props.prevLesson?.id).toBe('lesson-003');
     expect(paths[3].props.nextLesson?.id).toBe('lesson-005');
     expect(paths[4].props.prevLesson?.id).toBe('lesson-004');
-    expect(paths[4].props.nextLesson).toBeNull();
+    expect(paths[4].props.nextLesson?.id).toBe('lesson-006');
+    expect(paths[5].props.prevLesson?.id).toBe('lesson-005');
+    expect(paths[5].props.nextLesson?.id).toBe('lesson-007');
+    expect(paths[6].props.prevLesson?.id).toBe('lesson-006');
+    expect(paths[6].props.nextLesson?.id).toBe('lesson-008');
+    expect(paths[7].props.prevLesson?.id).toBe('lesson-007');
+    expect(paths[7].props.nextLesson?.id).toBe('lesson-009');
+    expect(paths[8].props.prevLesson?.id).toBe('lesson-008');
+    expect(paths[8].props.nextLesson?.id).toBe('lesson-010');
+    expect(paths[9].props.prevLesson?.id).toBe('lesson-009');
+    expect(paths[9].props.nextLesson).toBeNull();
   });
 });
