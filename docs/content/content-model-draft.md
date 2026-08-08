@@ -304,6 +304,24 @@ Each turn contains:
 - `reviewed` / `published` require a truthful `source`.
 - IDs, speaker order, references, and output order are deterministic; `data/examples/valid/phrasebook-dialogs.json` is the executable schema fixture.
 
+## Roleplay Card (#243)
+
+Deterministic Taiwan travel roleplay cards. Collection key: `roleplayCards`.
+See [roleplay-card-contract.md](roleplay-card-contract.md) for the full
+contract, the per-scenario file boundary under `data/roleplay/`, and the
+executable validation rules.
+
+- `id` — stable non-empty string
+- `scenario` (food / transport / hotel / shopping / emergency / airport)
+- `titleJa`, `goalJa`, `guidanceJa` — non-empty Japanese title / goal / guidance
+- `lessonRefs` — optional list of unique lesson `id`s from the same scenario
+- `phraseRefs` — non-empty list of unique phrasebook entry `id`s from the same scenario
+- `allLearnerTurnsRehearsed` — must be exactly `true`
+- `lines` — 4–8 alternating learner/partner line objects (speaker / traditional
+  + traditionalStatus / optional simplified + simplifiedStatus / pinyin / japanese)
+- `reviewStatus` (draft / reviewed / published)
+- `source` (optional; truthful source required for `reviewed` / `published`)
+
 ## Resource
 
 - `id`
@@ -518,4 +536,5 @@ The validator recognizes the following top-level collection keys:
 - `practice`
 - `resources`
 - `illustrations`
+- `roleplayCards`
 
