@@ -117,16 +117,19 @@ PUBLIC_SUPABASE_PUBLISHABLE_KEY = <publishable key>
 ## 6. 正式發布前的驗證清單
 
 ```sh
+supabase start
 supabase db reset --local --yes
 supabase db lint --local --level warning --fail-on warning
 supabase db advisors --local --type all --level info --fail-on warn
 pnpm lint
 pnpm typecheck
-pnpm test          # 含 build secret scan、live schema/repository、domain/runtime/browser 測試
+CHABIKO_REQUIRE_LIVE_SUPABASE=1 pnpm test  # stack/CLI 缺失時 fail closed，不得靜默 skip live suites
 pnpm build
 pnpm test:visual   # 需要可用的瀏覽器環境
 git diff --check
 ```
+
+`CHABIKO_REQUIRE_LIVE_SUPABASE=1` 是 release gate：若 Supabase CLI、Docker 或 local stack 不可用，兩個 live suites 會在 collection 時直接失敗；一般無 DB 的日常／GitHub test 仍可維持明示 skip。
 
 另外手動確認：
 

@@ -765,6 +765,9 @@ function liveSkipReason(): string {
 
 const liveSuiteActive = runLive();
 const liveSuiteSuffix = liveSuiteActive ? '' : ` (SKIPPED: ${liveSkipReason()})`;
+if (process.env.CHABIKO_REQUIRE_LIVE_SUPABASE === '1' && !liveSuiteActive) {
+  throw new Error(`live Supabase acceptance required but unavailable: ${liveSkipReason()}`);
+}
 
 describe.skipIf(!liveSuiteActive)(`basic-vocabulary repository (live database)${liveSuiteSuffix}`, () => {
   let apiUrl: string;
