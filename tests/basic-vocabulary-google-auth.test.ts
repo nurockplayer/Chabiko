@@ -109,10 +109,10 @@ function rootText(root: HTMLElement): string {
   return root.textContent ?? '';
 }
 
-function collectEvents(root: HTMLElement): Array<BasicVocabularyAuthState> {
-  const events: Array<BasicVocabularyAuthState> = [];
+function collectEvents(root: HTMLElement): Array<Pick<BasicVocabularyAuthState, 'kind'>> {
+  const events: Array<Pick<BasicVocabularyAuthState, 'kind'>> = [];
   root.addEventListener(BASIC_VOCABULARY_AUTH_EVENT, (e) => {
-    events.push((e as CustomEvent<BasicVocabularyAuthState>).detail);
+    events.push((e as CustomEvent<Pick<BasicVocabularyAuthState, 'kind'>>).detail);
   });
   return events;
 }
@@ -482,11 +482,7 @@ describe('auth lifecycle', () => {
     expect(kinds[0]).toBe('loading');
     expect(kinds.filter((k) => k === 'signed-in')).toHaveLength(1);
     const signedIn = events.find((e) => e.kind === 'signed-in');
-    expect(signedIn).toEqual({
-      kind: 'signed-in',
-      userId: CANONICAL_USER_ID,
-      email: 'learner@example.com',
-    });
+    expect(signedIn).toEqual({ kind: 'signed-in' });
 
     // A later SIGNED_OUT event transitions to signed-out
     authListeners.forEach((listener) => listener('SIGNED_OUT', null));
@@ -536,6 +532,7 @@ describe('auth lifecycle', () => {
     expect(serialized).not.toContain(FAKE_AVATAR);
     expect(serialized).not.toContain(FAKE_NAME);
     expect(serialized).not.toContain('provider');
+    expect(serialized).not.toContain(CANONICAL_USER_ID);
     expect(rootText(root)).not.toContain(FAKE_JWT);
     expect(rootText(root)).not.toContain(FAKE_SUBJECT);
     expect(rootText(root)).not.toContain(FAKE_AVATAR);

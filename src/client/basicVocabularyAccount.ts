@@ -139,7 +139,9 @@ function render(ui: UiParts, state: BasicVocabularyAuthState): void {
  * signed-in/signed-out state (or unavailable when the client is not
  * configured). Exactly one `onAuthStateChange` subscription processes
  * subsequent events; every accepted state dispatches one bubbling
- * `BASIC_VOCABULARY_AUTH_EVENT` with an immutable safe detail. Returns a
+ * `BASIC_VOCABULARY_AUTH_EVENT` with an immutable kind-only detail. The DOM
+ * event never carries the private user UUID; the coordinator receives the
+ * full safe state through the module-level subscription instead. Returns a
  * cleanup function that unsubscribes and removes the root handler.
  */
 export function initBasicVocabularyAccount(root: HTMLElement): () => void {
@@ -347,10 +349,13 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
 }
 
 function dispatchState(root: HTMLElement, state: BasicVocabularyAuthState): void {
+  const detail: Readonly<Pick<BasicVocabularyAuthState, 'kind'>> = Object.freeze({
+    kind: state.kind,
+  });
   root.dispatchEvent(
-    new CustomEvent<BasicVocabularyAuthState>(BASIC_VOCABULARY_AUTH_EVENT, {
+    new CustomEvent<Readonly<Pick<BasicVocabularyAuthState, 'kind'>>>(BASIC_VOCABULARY_AUTH_EVENT, {
       bubbles: true,
-      detail: Object.freeze(state),
+      detail,
     }),
   );
 }
