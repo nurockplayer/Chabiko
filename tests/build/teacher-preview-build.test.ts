@@ -271,7 +271,7 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
   let wordsHtml: string;
   let scanText = '';
   let scannedRegularFileCount = 0;
-  let byteScanLeaks: string[] = [];
+  const byteScanLeaks: string[] = [];
   let scanParentCreated = false;
 
   beforeAll(() => {
