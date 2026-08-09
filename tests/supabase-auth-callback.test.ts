@@ -95,13 +95,24 @@ afterEach(() => {
 describe('callback route contract', () => {
   it('uses BaseLayout with the exact title and robots, the exact heading/copy, and one root', async () => {
     const route = await readFile('src/pages/auth/callback/index.astro', 'utf8');
-    expect(route).toContain('<BaseLayout title="ログイン" robots="noindex,nofollow">');
+    expect(route).toContain(
+      '<BaseLayout title="ログイン" robots="noindex,nofollow" referrerPolicy="no-referrer">',
+    );
     expect(route).toContain('<h1>ログインを確認しています</h1>');
     expect(route).toContain('data-supabase-auth-callback');
     expect(route.match(/data-supabase-auth-callback-status/g)).toHaveLength(1);
     expect(route).toContain('aria-live="polite"');
     expect(route).toContain("from '../../../client/supabaseAuthCallback'");
     expect(route).toContain('ログインを確認しています');
+  });
+
+  it('emits no-referrer in the head before any callback subresource', async () => {
+    const layout = await readFile('src/layouts/BaseLayout.astro', 'utf8');
+    expect(layout).toContain("referrerPolicy?: 'no-referrer'");
+    const policy = layout.indexOf('<meta name="referrer" content={referrerPolicy} />');
+    const favicon = layout.indexOf('<link rel="icon"');
+    expect(policy).toBeGreaterThan(0);
+    expect(favicon).toBeGreaterThan(policy);
   });
 
   it('contains no progress, session, catalog, or cloud payload', async () => {

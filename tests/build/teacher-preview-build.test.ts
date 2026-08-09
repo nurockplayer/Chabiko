@@ -399,6 +399,7 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
     expect(callbackHtml).toContain('aria-live="polite"');
     expect(callbackHtml).toContain('noindex');
     expect(callbackHtml).toContain('nofollow');
+    expect(callbackHtml).toContain('<meta name="referrer" content="no-referrer">');
     expect(callbackHtml).toContain('type="module"');
     // No raw auth material is ever emitted into the built page.
     expect(callbackHtml).not.toMatch(/access_token|refresh_token/);
