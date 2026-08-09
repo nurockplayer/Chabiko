@@ -56,7 +56,11 @@ jobs:
         run: pnpm test
 
       - name: Build
-        run: pnpm build
+        run: |
+          pnpm build
+          test -f dist/auth/callback/index.html
+          test -f dist/vocabulary/basic/index.html
+          test -f dist/vocabulary/basic/words/index.html
 
   visual:
     name: Visual regression

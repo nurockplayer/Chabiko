@@ -32,7 +32,7 @@ test -f dist/vocabulary/basic/index.html
 test -f dist/vocabulary/basic/words/index.html
 ```
 
-即使環境完全沒有 Supabase 變數，`pnpm build` 也必須成功（guest-only 模式，Domain 1）。CI（`.github/workflows/ci.yml`）在無 Supabase 環境下執行 `pnpm build`，因此任何讓 build 依賴 Supabase 的改動都會在 CI 被攔下。
+即使環境完全沒有 Supabase 變數，`pnpm build` 也必須成功（guest-only 模式，Domain 1）。CI（`.github/workflows/ci.yml`）在無 Supabase 環境下執行正式 `pnpm build`，並直接斷言上述三個 `dist/` route artifacts；任何讓 build 依賴 Supabase 或改壞 Pages 預設輸出目錄的變動都會失敗。
 
 ## 3. 建置輸出的機密性保證
 
