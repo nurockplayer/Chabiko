@@ -270,6 +270,8 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
   let basicHtml: string;
   let wordsHtml: string;
   let scanText = '';
+  let scannedRegularFileCount = 0;
+  let byteScanLeaks: string[] = [];
   let scanParentCreated = false;
 
   beforeAll(() => {
@@ -319,13 +321,51 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
       '.xml',
     ]);
     const texts: string[] = [];
+    const forbiddenBytes = [
+      ['decoy service-role secret', DECOY_SERVICE_ROLE],
+      ['decoy JWT secret', DECOY_JWT_SECRET],
+      ['decoy Google client secret', DECOY_GOOGLE_CLIENT_SECRET],
+      ['decoy anon JWT', DECOY_ANON_KEY],
+      ['service-role env name', 'SERVICE_ROLE_KEY'],
+      ['Google client-secret env name', 'GOOGLE_CLIENT_SECRET'],
+      ['Supabase secret-key env name', 'SUPABASE_SECRET_KEY'],
+      ['JWT secret env name', 'JWT_SECRET'],
+      ['legacy anon-key env name', 'SUPABASE_ANON_KEY'],
+    ].map(([label, value]) => ({ label, value: Buffer.from(value) }));
+    const forbiddenBytePatterns = [
+      ['Supabase secret-shaped value', /sb_secret_[A-Za-z0-9_-]{12,}/],
+      [
+        'JWT-shaped value',
+        /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}(?:\.[A-Za-z0-9_-]{20,})?/,
+      ],
+    ] as const;
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir)) {
         const file = join(dir, entry);
         const stat = statSync(file);
         if (stat.isDirectory()) walk(file);
-        else if (TEXT_EXT.has(file.slice(file.lastIndexOf('.')))) {
-          texts.push(readFileSync(file, 'utf-8'));
+        else if (stat.isFile()) {
+          const bytes = readFileSync(file);
+          scannedRegularFileCount += 1;
+          for (const forbidden of forbiddenBytes) {
+            if (bytes.includes(forbidden.value)) {
+              byteScanLeaks.push(
+                `${file.slice(SCAN_DIST.length + 1)}: ${forbidden.label}`,
+              );
+            }
+          }
+          // latin1 preserves every byte one-to-one. Convert one file at a time
+          // so long credential signatures are checked in binary/extensionless
+          // artifacts without retaining the full asset corpus in memory.
+          const byteText = bytes.toString('latin1');
+          for (const [label, pattern] of forbiddenBytePatterns) {
+            if (pattern.test(byteText)) {
+              byteScanLeaks.push(`${file.slice(SCAN_DIST.length + 1)}: ${label}`);
+            }
+          }
+          if (TEXT_EXT.has(file.slice(file.lastIndexOf('.')))) {
+            texts.push(bytes.toString('utf-8'));
+          }
         }
       }
     };
@@ -377,6 +417,8 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
   });
 
   it('never embeds decoy secret values into the build output', () => {
+    expect(scannedRegularFileCount).toBeGreaterThan(0);
+    expect(byteScanLeaks).toEqual([]);
     expect(scanText).not.toContain(DECOY_SERVICE_ROLE);
     expect(scanText).not.toContain(DECOY_JWT_SECRET);
     expect(scanText).not.toContain(DECOY_GOOGLE_CLIENT_SECRET);
