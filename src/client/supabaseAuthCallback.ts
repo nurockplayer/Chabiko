@@ -52,6 +52,11 @@ export function readCallbackCode(search: string): string | null {
  * same-origin referrer. History failure must not expose raw errors in the UI.
  */
 function clearCallbackLocation(): boolean {
+  // A fallback navigation reloads the clean callback path. Do not attempt the
+  // same replacement again when there is no query/fragment left to scrub.
+  if (window.location.search.length === 0 && window.location.hash.length === 0) {
+    return true;
+  }
   try {
     window.history.replaceState(window.history.state, '', window.location.pathname);
     return true;

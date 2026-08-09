@@ -276,12 +276,32 @@ describe('initSupabaseAuthCallback', () => {
 
     initSupabaseAuthCallback(root);
     await flush();
+    vi.restoreAllMocks();
 
     expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
     expect(statusText(root)).toBe(CALLBACK_CHECKING_TEXT);
     expect(window.location.pathname).toBe('/auth/callback/');
     expect(window.location.search).toBe('');
+  });
+
+  it('does not reload an already-clean callback when history remains locked', async () => {
+    const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
+    const client = createFakeClient();
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    setSearch('');
+    vi.spyOn(History.prototype, 'replaceState').mockImplementation(() => {
+      throw new Error('history locked');
+    });
+    const root = createCallbackRoot();
+
+    initSupabaseAuthCallback(root);
+    await flush();
     vi.restoreAllMocks();
+
+    expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(statusText(root)).toBe(CALLBACK_FAILED_TEXT);
+    expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('on exchange error shows the failed copy, removes the stored return path, and does not navigate', async () => {
