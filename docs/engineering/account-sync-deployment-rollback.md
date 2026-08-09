@@ -108,6 +108,9 @@ PUBLIC_SUPABASE_PUBLISHABLE_KEY = <publishable key>
 ## 6. 正式發布前的驗證清單
 
 ```sh
+supabase db reset --local --yes
+supabase db lint --local --level warning --fail-on warning
+supabase db advisors --local --type all --level info --fail-on warn
 pnpm lint
 pnpm typecheck
 pnpm test          # 含 build secret scan、live schema/repository、domain/runtime/browser 測試
