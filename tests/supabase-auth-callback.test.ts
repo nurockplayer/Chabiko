@@ -253,6 +253,24 @@ describe('initSupabaseAuthCallback', () => {
     expect(window.location.search).toBe('');
   });
 
+  it('falls back to same-path replacement when history scrubbing is unavailable', async () => {
+    const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(null);
+    setSearch(`?code=${CODE}`);
+    vi.spyOn(History.prototype, 'replaceState').mockImplementationOnce(() => {
+      throw new Error('history locked');
+    });
+    const root = createCallbackRoot();
+
+    initSupabaseAuthCallback(root);
+    await flush();
+
+    expect(statusText(root)).toBe(CALLBACK_UNAVAILABLE_TEXT);
+    expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
+    vi.restoreAllMocks();
+  });
+
   it('on exchange error shows the failed copy, removes the stored return path, and does not navigate', async () => {
     const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
     const client = createFakeClient();

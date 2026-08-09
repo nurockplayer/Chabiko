@@ -55,7 +55,9 @@ function clearCallbackLocation(): void {
   try {
     window.history.replaceState(window.history.state, '', window.location.pathname);
   } catch {
-    // A locked-down history implementation must not crash callback handling.
+    // Fail closed if history mutation is locked down: replace the current entry
+    // with the same safe path so callback material still cannot remain visible.
+    window.location.replace(window.location.pathname);
   }
 }
 
