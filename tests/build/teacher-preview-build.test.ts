@@ -1,7 +1,7 @@
 /**
  * Validates teacher-preview build output.
- * Cleans dist/ first, builds, verifies fresh output, then cleans up.
- * This avoids depending on a pre-existing or stale dist/.
+ * Builds into a unique test-owned output, verifies it, then cleans up only that
+ * output. This avoids stale results without touching developer-owned dist/ data.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -10,13 +10,15 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, rmdirSync, st
 import { resolve, join } from 'path';
 
 const REPO_ROOT = resolve(__dirname, '../..');
-const BUILD_FILE = resolve(REPO_ROOT, 'dist/dev/vocabulary/teacher-preview/index.html');
-const BUILD_PREVIEW_FILE = resolve(REPO_ROOT, 'dist/vocabulary/basic/preview/index.html');
-const BUILD_LEARNER_FILE = resolve(REPO_ROOT, 'dist/vocabulary/basic/index.html');
 const DEV_ROOT = resolve(REPO_ROOT, 'public/assets/dev');
 const DEV_SOURCE_DIR = resolve(DEV_ROOT, 'teacher-vocabulary-preview');
 // Unique per-run marker so the test never collides with developer-owned files.
 const TEST_MARKER = `chabiko-preview-test-${process.pid}-${Date.now()}`;
+const BUILD_PARENT = resolve(REPO_ROOT, 'dist');
+const BUILD_DIST = resolve(BUILD_PARENT, TEST_MARKER);
+const BUILD_FILE = resolve(BUILD_DIST, 'dev/vocabulary/teacher-preview/index.html');
+const BUILD_PREVIEW_FILE = resolve(BUILD_DIST, 'vocabulary/basic/preview/index.html');
+const BUILD_LEARNER_FILE = resolve(BUILD_DIST, 'vocabulary/basic/index.html');
 const SENTINEL_PNG = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-sentinel.png`);
 const SENTINEL_JSON = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-sentinel.json`);
 const PREEXISTING_FIXTURE = resolve(DEV_SOURCE_DIR, `${TEST_MARKER}-preexisting.png`);
@@ -30,6 +32,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
   // Directories the test created, deepest first; only these may be removed and
   // only when empty.
   const createdDirs: string[] = [];
+  let buildParentCreated = false;
 
   beforeAll(() => {
     // Record which directories did not exist before the test created them.
@@ -45,13 +48,14 @@ describe('TeacherPreview — build output (fresh build)', () => {
     // the build untouched (the guard only prunes dist/, not public/).
     writeFileSync(PREEXISTING_FIXTURE, Buffer.from('\x89PNG\r\n\x1a\n' + 'y'.repeat(32)));
 
-    // Clean any stale dist/
-    if (existsSync(resolve(REPO_ROOT, 'dist'))) {
-      rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
-    }
-
-    // Run fresh build
-    execSync('pnpm build', { cwd: REPO_ROOT, stdio: 'pipe', timeout: 120_000 });
+    // Run a fresh build in a unique output directory. Record parent ownership
+    // so cleanup never removes a pre-existing developer directory.
+    buildParentCreated = !existsSync(BUILD_PARENT);
+    execSync(`pnpm build --outDir ${BUILD_DIST}`, {
+      cwd: REPO_ROOT,
+      stdio: 'pipe',
+      timeout: 120_000,
+    });
 
     // Read fresh output
     if (!existsSync(BUILD_FILE)) {
@@ -80,9 +84,16 @@ describe('TeacherPreview — build output (fresh build)', () => {
         }
       }
     }
-    // Clean build output so tests don't depend on stale dist/.
-    if (existsSync(resolve(REPO_ROOT, 'dist'))) {
-      rmSync(resolve(REPO_ROOT, 'dist'), { recursive: true, force: true });
+    // Remove only this test's unique build output.
+    if (existsSync(BUILD_DIST)) {
+      rmSync(BUILD_DIST, { recursive: true, force: true });
+    }
+    if (buildParentCreated && existsSync(BUILD_PARENT)) {
+      try {
+        rmdirSync(BUILD_PARENT);
+      } catch {
+        // Another developer-owned output appeared; leave the parent intact.
+      }
     }
   });
 
@@ -95,9 +106,9 @@ describe('TeacherPreview — build output (fresh build)', () => {
   });
 
   it('deploys exactly 1,131 review-only teacher derivatives, prunes no preview assets, and drops dev sentinels', () => {
-    const devDir = resolve(REPO_ROOT, 'dist/assets/dev');
-    const trackedTeacherDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/teacher');
-    const aiDir = resolve(REPO_ROOT, 'dist/assets/vocabulary/teacher-preview/ai');
+    const devDir = resolve(BUILD_DIST, 'assets/dev');
+    const trackedTeacherDir = resolve(BUILD_DIST, 'assets/vocabulary/teacher-preview/teacher');
+    const aiDir = resolve(BUILD_DIST, 'assets/vocabulary/teacher-preview/ai');
     // The legacy local-only dev path must not reach the deployed build, even
     // when sentinel files exist under public/assets/dev/ before the build.
     expect(existsSync(devDir)).toBe(false);
@@ -118,7 +129,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
     // 19 production + 1,131 review-only + 432 AI = 1,582 image-bearing rows.
     expect(imageBearing).toHaveLength(1582);
     const missing = imageBearing.filter(
-      (row: { image: { assetPath: string } }) => !existsSync(resolve(REPO_ROOT, 'dist', row.image.assetPath.replace(/^\//, ''))),
+      (row: { image: { assetPath: string } }) => !existsSync(resolve(BUILD_DIST, row.image.assetPath.replace(/^\//, ''))),
     );
     expect(missing).toHaveLength(0);
     // No obsolete local-only state or path reaches the deployed corpus.
@@ -140,7 +151,10 @@ describe('TeacherPreview — build output (fresh build)', () => {
     // The client bundle is referenced from the built preview route.
     const bundleMatch = previewHtml.match(/src="(\/_astro\/[^"]+\.js)"/);
     expect(bundleMatch).not.toBeNull();
-    const bundle = readFileSync(resolve(REPO_ROOT, `dist${bundleMatch![1]}`), 'utf-8');
+    const bundle = readFileSync(
+      resolve(BUILD_DIST, bundleMatch![1].replace(/^\//, '')),
+      'utf-8',
+    );
     for (const token of OBSOLETE_TOKENS) expect(bundle).not.toContain(token);
   });
 
@@ -165,7 +179,10 @@ describe('TeacherPreview — build output (fresh build)', () => {
     const payload = JSON.parse(renderPayload![1]);
     expect(payload.totalCount).toBe(eligible);
     for (const assetPath of Object.values(payload.render as Record<string, { assetPath: string }>)) {
-      expect(existsSync(resolve(REPO_ROOT, 'dist', assetPath.assetPath.replace(/^\//, ''))), `missing ${assetPath.assetPath}`).toBe(true);
+      expect(
+        existsSync(resolve(BUILD_DIST, assetPath.assetPath.replace(/^\//, ''))),
+        `missing ${assetPath.assetPath}`,
+      ).toBe(true);
     }
 
     // The route shows the total corpus size separately from the session size.
@@ -237,6 +254,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
  * concurrent `astro build` runs race on the shared `.astro/.prerender/` cache.
  */
 describe('Deployment — static account-sync routes and secret hygiene (fresh build)', () => {
+  const SCAN_PARENT = resolve(REPO_ROOT, 'dist');
   const SCAN_DIST = resolve(REPO_ROOT, 'dist/scan-verify');
   const SCAN_CALLBACK = resolve(SCAN_DIST, 'auth/callback/index.html');
   const SCAN_BASIC = resolve(SCAN_DIST, 'vocabulary/basic/index.html');
@@ -255,6 +273,7 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
   let basicHtml: string;
   let wordsHtml: string;
   let scanText = '';
+  let scanParentCreated = false;
 
   beforeAll(() => {
     // Record the prior value of every env var we set so afterAll can restore it.
@@ -277,6 +296,7 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
 
     // The previous describe's afterAll removed dist/; build to an isolated
     // test-owned outDir so this scan never reuses stale output.
+    scanParentCreated = !existsSync(SCAN_PARENT);
     execSync(`pnpm build --outDir ${SCAN_DIST}`, {
       cwd: REPO_ROOT,
       stdio: 'pipe',
@@ -316,6 +336,13 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
     // so the tree is left exactly as it was found.
     if (existsSync(SCAN_DIST)) {
       rmSync(SCAN_DIST, { recursive: true, force: true });
+    }
+    if (scanParentCreated && existsSync(SCAN_PARENT)) {
+      try {
+        rmdirSync(SCAN_PARENT);
+      } catch {
+        // Another developer-owned output appeared; leave the parent intact.
+      }
     }
   });
 
