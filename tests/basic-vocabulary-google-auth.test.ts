@@ -5,7 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BASIC_VOCABULARY_AUTH_EVENT,
   type BasicVocabularyAuthState,
+  clearBasicVocabularyAuthState,
+  getBasicVocabularyAuthState,
   initBasicVocabularyAccount,
+  subscribeBasicVocabularyAuthState,
 } from '../src/client/basicVocabularyAccount';
 import { BASIC_VOCABULARY_PROGRESS_KEY } from '../src/domain/basicVocabularyProgress';
 
@@ -255,6 +258,33 @@ describe('account states and exact copy', () => {
     expect(rootText(root)).not.toContain(FAKE_SUBJECT);
     expect(rootText(root)).not.toContain(FAKE_AVATAR);
     expect(rootText(root)).not.toMatch(/google|Google/);
+  });
+
+  it('publishes an immutable signed-in state that subscribers cannot change', async () => {
+    clearBasicVocabularyAuthState();
+    const observed: BasicVocabularyAuthState[] = [];
+    const unsubscribe = subscribeBasicVocabularyAuthState((state) => observed.push(state));
+    await initRoot({
+      getSession: () =>
+        Promise.resolve({
+          data: { session: fakeSession(CANONICAL_USER_ID, 'learner@example.com') },
+          error: null,
+        }),
+    });
+
+    const signedIn = observed.at(-1);
+    expect(signedIn?.kind).toBe('signed-in');
+    expect(Object.isFrozen(signedIn)).toBe(true);
+    expect(Reflect.set(signedIn as object, 'userId', '22222222-2222-2222-2222-222222222222')).toBe(
+      false,
+    );
+    expect(getBasicVocabularyAuthState()).toEqual({
+      kind: 'signed-in',
+      userId: CANONICAL_USER_ID,
+      email: 'learner@example.com',
+    });
+    unsubscribe();
+    clearBasicVocabularyAuthState();
   });
 
   it('omits the email fragment when the session email is absent', async () => {

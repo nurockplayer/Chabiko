@@ -89,8 +89,12 @@ export function clearBasicVocabularyAuthState(): void {
 }
 
 function publishAuthState(state: BasicVocabularyAuthState): void {
-  currentAuthState = state;
-  for (const listener of [...authStateSubscribers]) listener(state);
+  // Publish a frozen copy: DOM privacy uses a separate kind-only detail, while
+  // module subscribers still require the full identity to select user scope.
+  // No subscriber may mutate the canonical state observed by later consumers.
+  const immutableState = Object.freeze({ ...state }) as BasicVocabularyAuthState;
+  currentAuthState = immutableState;
+  for (const listener of [...authStateSubscribers]) listener(immutableState);
 }
 
 function getActionLabel(state: BasicVocabularyAuthState): string | null {
