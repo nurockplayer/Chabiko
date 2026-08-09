@@ -220,21 +220,18 @@ describe('TeacherPreview — build output (fresh build)', () => {
     // The CSS file must have a higher-specificity selector like
     // .flashcard[data-astro-cid-XXX].flashcard--hidden
     // that beats .flashcard[data-astro-cid-XXX] { display: flex }
-    const cssDir = resolve(REPO_ROOT, 'dist/_astro');
-    if (existsSync(cssDir)) {
-      const cssFiles = readdirSync(cssDir).filter((f) => f.endsWith('.css'));
-      for (const cf of cssFiles) {
-        const css = readFileSync(join(cssDir, cf), 'utf-8');
-        if (css.includes('flashcard--hidden')) {
-          // Must contain a selector with both class scoped and hidden
-          expect(css).toMatch(/\.flashcard\[data-astro-cid-[\w]+\]\.flashcard--hidden/);
-          expect(css).not.toMatch(/[^.\]]\.flashcard--hidden\{/);
-          return;
-        }
-      }
-    }
-    // Fallback: if no CSS files found (shouldn't happen after build), at least check class present
-    expect(html).toContain('flashcard--hidden');
+    const cssDir = resolve(BUILD_DIST, '_astro');
+    expect(existsSync(cssDir)).toBe(true);
+    const cssFiles = readdirSync(cssDir).filter((file) => file.endsWith('.css'));
+    expect(cssFiles.length).toBeGreaterThan(0);
+
+    const matchingCss = cssFiles
+      .map((file) => readFileSync(join(cssDir, file), 'utf-8'))
+      .find((css) => css.includes('flashcard--hidden'));
+    expect(matchingCss).toBeDefined();
+    // Must contain a selector with both class scoped and hidden.
+    expect(matchingCss).toMatch(/\.flashcard\[data-astro-cid-[\w]+\]\.flashcard--hidden/);
+    expect(matchingCss).not.toMatch(/[^.\]]\.flashcard--hidden\{/);
   });
 });
 
@@ -255,7 +252,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
  */
 describe('Deployment — static account-sync routes and secret hygiene (fresh build)', () => {
   const SCAN_PARENT = resolve(REPO_ROOT, 'dist');
-  const SCAN_DIST = resolve(REPO_ROOT, 'dist/scan-verify');
+  const SCAN_DIST = resolve(SCAN_PARENT, `${TEST_MARKER}-scan`);
   const SCAN_CALLBACK = resolve(SCAN_DIST, 'auth/callback/index.html');
   const SCAN_BASIC = resolve(SCAN_DIST, 'vocabulary/basic/index.html');
   const SCAN_WORDS = resolve(SCAN_DIST, 'vocabulary/basic/words/index.html');
@@ -310,7 +307,17 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
     basicHtml = readFileSync(SCAN_BASIC, 'utf-8');
     wordsHtml = readFileSync(SCAN_WORDS, 'utf-8');
 
-    const TEXT_EXT = new Set(['.html', '.js', '.css', '.json', '.svg', '.txt', '.webmanifest']);
+    const TEXT_EXT = new Set([
+      '.css',
+      '.html',
+      '.js',
+      '.json',
+      '.map',
+      '.svg',
+      '.txt',
+      '.webmanifest',
+      '.xml',
+    ]);
     const texts: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir)) {
