@@ -452,5 +452,8 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
     );
     expect(runbook).toContain('production 不得使用 `*`／`**` 寬 wildcard');
     expect(runbook).toContain('這三層 allowlist');
+    expect(runbook).toContain('Rollback to this deployment');
+    expect(runbook).toContain('Preview deployment 不能作為 rollback target');
+    expect(runbook).not.toContain('production branch 指回');
   });
 });

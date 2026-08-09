@@ -141,10 +141,11 @@ account-sync 的設計是「local-first、optional account」：guest 學習進�
 
 ### 7.1 靜態站 rollback（Cloudflare Pages）
 
-1. 在 Pages dashboard 把 production branch 指回前一個已驗證的 commit，或重新部署 guest-only 的 commit。
-2. 移除 `PUBLIC_SUPABASE_URL` 與 `PUBLIC_SUPABASE_PUBLISHABLE_KEY` 兩個變數（或改部署不含它們的 build）。
-3. 重新建置並確認 `/auth/callback`、`/vocabulary/basic`、`/vocabulary/basic/words` 仍建置成功，且 client 回退為 guest-only（不顯示登入 UI、不嘗試連 Supabase）。
-4. 驗證：`readSupabasePublicConfig()` 在缺少任一變數時回傳 `null`，`getSupabaseBrowserClient()` 回傳 `null`，頁面以 legacy guest key 正常運作。
+1. 若已有先前成功建置且驗證為 guest-only 的 production deployment：進入 Pages 專案的 **Deployments → All deployments**，在目標 deployment 的 `…` 選單選 **Rollback to this deployment** 並確認。只有成功的 production deployment 可用；Preview deployment 不能作為 rollback target。
+2. 在 Pages production 環境移除 `PUBLIC_SUPABASE_URL` 與 `PUBLIC_SUPABASE_PUBLISHABLE_KEY`，確保後續 build 也維持 guest-only。這不會改寫已建置 artifact；步驟 1 的 rollback target 本身必須已是 guest-only。
+3. 若沒有可用的 guest-only production deployment：先移除上述兩個 production 變數，再從已驗證的 `main` commit 觸發一次全新的 production build（或透過正常 PR revert 到已驗證 guest-only commit 後部署）。不得把 Pages 的 production branch 設定當成 commit selector。
+4. 確認 `/auth/callback`、`/vocabulary/basic`、`/vocabulary/basic/words` 仍可載入，且 client 回退為 guest-only（不顯示登入 UI、不嘗試連 Supabase）。
+5. 驗證：`readSupabasePublicConfig()` 在缺少任一變數時回傳 `null`，`getSupabaseBrowserClient()` 回傳 `null`，頁面以 legacy guest key 正常運作。
 
 ### 7.2 進度保存保證
 
