@@ -236,6 +236,7 @@ describe('initSupabaseAuthCallback', () => {
       expect(statusText(root)).toBe(CALLBACK_FAILED_TEXT);
       expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
       expect(window.location.pathname).toBe('/auth/callback/');
+      expect(window.location.search).toBe('');
     }
   });
 
@@ -249,6 +250,7 @@ describe('initSupabaseAuthCallback', () => {
 
     expect(statusText(root)).toBe(CALLBACK_UNAVAILABLE_TEXT);
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('on exchange error shows the failed copy, removes the stored return path, and does not navigate', async () => {
@@ -270,6 +272,7 @@ describe('initSupabaseAuthCallback', () => {
     expect(root.textContent).not.toContain('token leak');
     expect(window.sessionStorage.getItem(AUTH_RETURN_PATH_STORAGE_KEY)).toBeNull();
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('on a throwing exchange shows the failed copy without raw errors and does not navigate', async () => {
@@ -287,6 +290,7 @@ describe('initSupabaseAuthCallback', () => {
     expect(root.textContent).not.toContain('network exploded');
     expect(window.sessionStorage.getItem(AUTH_RETURN_PATH_STORAGE_KEY)).toBeNull();
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('does not throw when sessionStorage is unavailable and still completes the exchange', async () => {
@@ -367,6 +371,7 @@ describe('initSupabaseAuthCallback', () => {
 
     // Immediately after init: still the checking copy (pre-dispatch state).
     expect(statusText(root)).toBe(CALLBACK_CHECKING_TEXT);
+    expect(window.location.search).toBe('');
     resolveExchange({
       data: { user: { id: 'x' }, session: {} },
       error: null,

@@ -46,6 +46,20 @@ export function readCallbackCode(search: string): string | null {
 }
 
 /**
+ * Removes callback query/fragment material from the current history entry
+ * without navigating. The exchange keeps its in-memory code argument, while
+ * unavailable/invalid/error states cannot leave that code in history or a
+ * same-origin referrer. History failure must not expose raw errors in the UI.
+ */
+function clearCallbackLocation(): void {
+  try {
+    window.history.replaceState(window.history.state, '', window.location.pathname);
+  } catch {
+    // A locked-down history implementation must not crash callback handling.
+  }
+}
+
+/**
  * Reads and removes the stored return path. Accepts only the two allowlisted
  * paths; missing/invalid/inaccessible storage falls back to
  * `/vocabulary/basic/`. The key is removed whenever storage is reachable so a
@@ -87,13 +101,17 @@ export function initSupabaseAuthCallback(
     if (status) status.textContent = text;
   },
 ): void {
+  // Capture the one-use code in memory, then scrub the URL synchronously before
+  // any client lookup, exchange await, or error state can expose it.
+  const code = readCallbackCode(window.location.search);
+  clearCallbackLocation();
+
   const client = getSupabaseBrowserClient();
   if (client === null) {
     render(CALLBACK_UNAVAILABLE_TEXT);
     return;
   }
 
-  const code = readCallbackCode(window.location.search);
   if (code === null) {
     render(CALLBACK_FAILED_TEXT);
     return;
