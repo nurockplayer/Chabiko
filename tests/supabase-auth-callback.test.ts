@@ -255,7 +255,8 @@ describe('initSupabaseAuthCallback', () => {
 
   it('falls back to same-path replacement when history scrubbing is unavailable', async () => {
     const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
-    vi.mocked(getSupabaseBrowserClient).mockReturnValue(null);
+    const client = createFakeClient();
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     setSearch(`?code=${CODE}`);
     vi.spyOn(History.prototype, 'replaceState').mockImplementationOnce(() => {
       throw new Error('history locked');
@@ -265,7 +266,8 @@ describe('initSupabaseAuthCallback', () => {
     initSupabaseAuthCallback(root);
     await flush();
 
-    expect(statusText(root)).toBe(CALLBACK_UNAVAILABLE_TEXT);
+    expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(statusText(root)).toBe(CALLBACK_CHECKING_TEXT);
     expect(window.location.pathname).toBe('/auth/callback/');
     expect(window.location.search).toBe('');
     vi.restoreAllMocks();

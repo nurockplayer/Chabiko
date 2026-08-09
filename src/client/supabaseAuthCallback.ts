@@ -51,13 +51,17 @@ export function readCallbackCode(search: string): string | null {
  * unavailable/invalid/error states cannot leave that code in history or a
  * same-origin referrer. History failure must not expose raw errors in the UI.
  */
-function clearCallbackLocation(): void {
+function clearCallbackLocation(): boolean {
   try {
     window.history.replaceState(window.history.state, '', window.location.pathname);
+    return true;
   } catch {
     // Fail closed if history mutation is locked down: replace the current entry
     // with the same safe path so callback material still cannot remain visible.
+    // The caller must stop: exchanging while navigation begins could consume the
+    // one-use code without deterministically persisting the resulting session.
     window.location.replace(window.location.pathname);
+    return false;
   }
 }
 
@@ -106,7 +110,7 @@ export function initSupabaseAuthCallback(
   // Capture the one-use code in memory, then scrub the URL synchronously before
   // any client lookup, exchange await, or error state can expose it.
   const code = readCallbackCode(window.location.search);
-  clearCallbackLocation();
+  if (!clearCallbackLocation()) return;
 
   const client = getSupabaseBrowserClient();
   if (client === null) {
