@@ -812,17 +812,15 @@ describe.skipIf(!liveSuiteActive)(`basic-vocabulary repository (live database)${
     if (publishableKey === '') {
       throw new Error('no publishable key from `supabase status`');
     }
-    // Wait for the #287 schema to be present and stable before running, so the
-    // suite still works when the schema suite's `db reset` races this one.
+    // Confirm the #287 schema is present and stable before running. Vitest
+    // serializes this file with the schema reset suite, while this bounded
+    // readiness check still gives a useful failure for a stale local stack.
     await ensureSchemaStable();
   }, 150_000);
 
   /**
-   * Wait until the #287 schema is present and stable. The #287 schema suite's
-   * live `beforeAll` performs a `supabase db reset --local` that drops and
-   * recreates the tables/RPC mid-run; the full-file `pnpm test` runs both live
-   * suites concurrently, so this suite must tolerate that reset window. Polling
-   * is bounded, so a genuinely missing schema fails fast instead of hanging.
+   * Wait until the #287 schema is present and stable. The check is bounded so a
+   * genuinely missing or still-restarting local schema fails instead of hanging.
    */
   async function ensureSchemaStable(): Promise<void> {
     const deadline = Date.now() + 120_000;
@@ -854,12 +852,10 @@ describe.skipIf(!liveSuiteActive)(`basic-vocabulary repository (live database)${
   }
 
   beforeEach(async () => {
-    // Wait for the #287 schema to be stable again after any concurrent
-    // `supabase db reset --local` from the #287 schema suite.
+    // Reconfirm the #287 schema before each live repository scenario.
     await ensureSchemaStable();
-    // Re-seed the two test users idempotently: the #287 schema suite performs a
-    // `supabase db reset --local` that wipes `auth.users` mid-run, so each test
-    // re-ensures its users exist before it runs.
+    // Re-seed the two test users idempotently so every scenario owns its setup,
+    // including after a prior local reset.
     psql(`
 delete from auth.users where email like 'repo-test-%';
 insert into auth.users (id, email, encrypted_password) values
