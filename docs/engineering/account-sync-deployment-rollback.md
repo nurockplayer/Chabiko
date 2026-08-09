@@ -89,7 +89,16 @@ Google PKCE 流程由 Supabase Auth 的 `[auth.external.google]` provider 提供
 
 - 建立 Google OAuth 2.0 client（Cloud Console），授權 callback 為 Supabase 專案的 `https://<PROJECT_REF>.supabase.co/auth/v1/callback`。
 - 在 Supabase 填入 Client ID 與 Client secret（secret 只存在 Supabase 後端，不進 Chabiko repo、不進 Pages）。
-- Supabase 會把回傳流量導回 Chabiko 的 auth callback route；Chabiko 的 callback 只允許 allowlist 內的回傳路徑（`/vocabulary/basic/`、`/vocabulary/basic/words/`）。
+- 上述 Google Cloud callback 是 **Google → Supabase provider**，不是 Chabiko 的 app redirect。
+
+另外在 Supabase dashboard 的 Authentication → URL Configuration 設定 **Supabase → Chabiko app**：
+
+- Site URL：`https://chabiko.pages.dev/`。
+- Redirect URLs 加入 exact production URL：`https://chabiko.pages.dev/auth/callback/`。client 傳給 Supabase 的 `redirectTo` 必須匹配這份 allowlist，否則 PKCE 回程不保證回到 Chabiko callback。
+- production 不得使用 `*`／`**` 寬 wildcard。Preview deployment 預設維持 guest-only；只有需要登入驗收時，才暫時加入該次 preview origin 的 exact `<PREVIEW_ORIGIN>/auth/callback/`，完成後移除。
+- Local Google Auth 預設不啟用；若維護者明確需要本機登入驗收，只加入當次實際 origin 的 exact URL（例如 `http://localhost:4321/auth/callback/`），不得加入全路徑 wildcard，驗收後移除。
+
+Supabase 完成 exchange 後會導回 Chabiko 的 auth callback route；Chabiko 再只允許 app 內 allowlist 的學習回傳路徑（`/vocabulary/basic/`、`/vocabulary/basic/words/`）。這三層 allowlist（Google provider callback、Supabase app Redirect URLs、Chabiko app 內回傳路徑）不得混用。
 
 ### 5.3 Cloudflare Pages
 
@@ -122,6 +131,7 @@ git diff --check
 另外手動確認：
 
 - callback route 在無登入狀態下 200 且不顯示任何 token。
+- Supabase Authentication → URL Configuration 的 Redirect URLs 含 exact `https://chabiko.pages.dev/auth/callback/`，且 production 無寬 wildcard。
 - Google 登入後，回傳路徑只在 allowlist 內；錯的回傳路徑被安全處理（無 raw error）。
 - 多裝置同步與 reset 的既有 acceptance 測試通過。
 

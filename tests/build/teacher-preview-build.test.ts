@@ -436,4 +436,20 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
       /SERVICE_ROLE_KEY|GOOGLE_CLIENT_SECRET|SUPABASE_SECRET_KEY|JWT_SECRET|SUPABASE_ANON_KEY/,
     );
   });
+
+  it('documents distinct exact provider and app callback allowlists', () => {
+    const runbook = readFileSync(
+      resolve(REPO_ROOT, 'docs/engineering/account-sync-deployment-rollback.md'),
+      'utf-8',
+    );
+    expect(runbook).toContain(
+      'https://<PROJECT_REF>.supabase.co/auth/v1/callback',
+    );
+    expect(runbook).toContain('Site URL：`https://chabiko.pages.dev/`');
+    expect(runbook).toContain(
+      'Redirect URLs 加入 exact production URL：`https://chabiko.pages.dev/auth/callback/`',
+    );
+    expect(runbook).toContain('production 不得使用 `*`／`**` 寬 wildcard');
+    expect(runbook).toContain('這三層 allowlist');
+  });
 });
