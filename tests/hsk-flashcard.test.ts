@@ -4,16 +4,20 @@ import { loadHskLevelEntries, loadHskVocabulary } from '../src/content/loadHskVo
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 describe('loadHskVocabulary', () => {
-  it('loads the production HSK batch from the importer output directory', () => {
+  it('loads the production HSK bundle from the production batch path', () => {
     const bundle = loadHskVocabulary();
     expect(bundle).toBeDefined();
     expect(Array.isArray(bundle.vocabulary)).toBe(true);
-    expect(bundle.vocabulary.length).toBeGreaterThan(0);
-    // Production rows come from scripts/import-hsk-xlsx.py deterministic
-    // batches (stable hashed IDs), not the legacy hsk-00x fixture IDs.
-    const ids = bundle.vocabulary.map((entry) => entry.id);
-    expect(ids.some((id) => id.startsWith('hsk-1-'))).toBe(true);
-    expect(ids.some((id) => id.startsWith('hsk-00'))).toBe(false);
+  });
+
+  it('production HSK slice is truthfully empty until a real workbook is imported', () => {
+    // No real HSK workbook exists in the repository (Issue #81). Synthetic or
+    // self-test content is never promoted into the production boundary, so the
+    // production HSK vocabulary is deterministically empty. This is the
+    // truthful unavailable state until a real workbook is imported and its
+    // rows reviewed.
+    const bundle = loadHskVocabulary();
+    expect(bundle.vocabulary).toEqual([]);
   });
 
   it('every entry has a valid hsk object', () => {
@@ -40,19 +44,10 @@ describe('loadHskLevelEntries', () => {
     }
   });
 
-  it('imported rows are all draft, so the production level-1 slice is empty until review', () => {
-    // The importer emits every row with reviewStatus 'draft' (truthful
-    // provisional content). The loader only renders reviewed/published rows,
-    // so the first HSK 1 production slice is deterministically empty until a
-    // review pass publishes rows. This is the documented production boundary.
-    const bundle = loadHskVocabulary();
-    const levelOneRows = bundle.vocabulary.filter(
-      (entry) => entry.hsk.introducedAtLevel === 1,
-    );
-    expect(levelOneRows.length).toBeGreaterThan(0);
-    for (const row of levelOneRows) {
-      expect(row.reviewStatus).toBe('draft');
-    }
+  it('returns empty array while the production slice has no reviewed content', () => {
+    // The production HSK vocabulary is truthfully empty until a real workbook
+    // is imported and rows are reviewed. The loader only renders
+    // reviewed/published rows, so the level-1 slice is deterministically empty.
     expect(loadHskLevelEntries(1)).toEqual([]);
   });
 

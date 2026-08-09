@@ -90,8 +90,8 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     // The built route links to the exact destinations of available paths.
     const fragment = builtRouteFragment();
     expect(fragment).toContain('href="/lessons/"');
-    // HSK is truthfully unavailable until a review pass publishes the imported
-    // (all-draft) batch, so its card is inert text, not a link.
+    // HSK is truthfully unavailable until a real HSK workbook is imported and
+    // its rows reviewed, so its card is inert text, not a link.
     expect(fragment).not.toContain('href="/vocabulary/hsk/"');
   });
 
@@ -134,8 +134,8 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
   it('available paths are real links; unavailable paths are inert text', () => {
     const fragment = builtRouteFragment();
     // Available: exactly the declared destination as an anchor href. The HSK
-    // path is truthfully unavailable (imported rows are all-draft, so no
-    // reviewed/published level-1 slice exists yet) and renders as inert text.
+    // path is truthfully unavailable (no real HSK workbook imported yet) and
+    // renders as inert text.
     const lessonsHref = fragment.match(/<a[^>]*href="\/lessons\/"[^>]*>/g);
     const hskHref = fragment.match(
       /<a[^>]*href="\/vocabulary\/hsk\/"[^>]*>/g,

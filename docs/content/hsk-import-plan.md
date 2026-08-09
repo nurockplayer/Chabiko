@@ -3,9 +3,10 @@
 Status: authoritative import diagnostic / batch manifest for the HSK pipeline.
 
 This document is the plan produced by Issue #81. It records the deterministic
-workbook evidence (or merged-default assumption), the per-level import counts,
-every blocked row with its source location and reason, the deterministic batch
-boundaries, and the first production HSK 1 slice with its loading boundary.
+workbook evidence (and the truthful production state when no real workbook is
+available), the per-level import counts from the importer self-test
+diagnostic, every blocked row with its source location and reason, the
+deterministic batch boundaries, and the production loading boundary.
 
 ## 1. Workbook evidence
 
@@ -18,40 +19,47 @@ The only XLSX on the developer machine is the **teacher** workbook
 recorded in `docs/content/teacher-core-v1-batch-01.md`). It is **not** an HSK
 workbook, so it cannot drive the HSK importer.
 
-### 1.2 Merged-default assumption (documented)
+### 1.2 Production state: truthfully unavailable until a real workbook is imported
 
-Because no real HSK workbook exists in-repo, this issue adopts the
-**merged-default assumption**: the first production HSK slice is generated from
-the **importer's own deterministic synthetic multi-sheet workbook**, the same
-fixture the importer self-test uses to prove its contract. The synthetic
-workbook is committed as the pinned deterministic input with full provenance so
-the batch plan and the production slice are byte-for-byte reproducible.
+Because no real HSK workbook exists in-repo, **no synthetic or self-test
+content is promoted into the production HSK boundary**. The production slice
+is truthfully **empty / unavailable**: `data/vocabulary/hsk-3.0-v1/
+hsk-vocabulary-batch-01.json` carries `{"vocabulary": []}` and
+`data/vocabulary/hsk-3.0-v1/manifest.json` records `productionStatus:
+"unavailable"` with the reason. The production loader
+(`src/content/loadHskVocabulary.ts`) reads this empty batch, and
+`data/learning-paths.json` marks the `hsk-vocabulary` path `unavailable`
+(rendered as inert text) until reviewed production content exists.
 
-Reasoning:
+Rationale:
 
-- The importer (`scripts/import-hsk-xlsx.py`, #75) is the tool contract that
-  the real workbook must satisfy. Its self-test fixture exercises every
-  behavior the plan must document: multi-sheet detection, English/Chinese/mixed
-  header variants, metadata-sheet ignoring, empty-row skipping, duplicate /
-  missing-field / formula rejection, level validation, deterministic hashed
-  IDs, ≤50-row batches, and #74 contract validation.
-- Using the identical workbook for the plan and for production means the plan's
-  counts, IDs, batch boundaries, and blocked rows are the actual production
-  output — no divergence between "planned" and "published".
-- When a real HSK workbook is later provided, this plan's batch files are
-  replaced by re-running the same importer; IDs are content-hashed
+- The importer self-test (`scripts/import-hsk-xlsx.py --test`) uses an
+  in-test synthetic multi-sheet workbook to verify the **importer contract**
+  only — multi-sheet detection, header variants, rejection paths, deterministic
+  hashed IDs, ≤50-row batches, and #74 contract validation. That synthetic
+  fixture is generated in the test directory at run time and is **never
+  committed as production data**.
+- The counts, IDs, batch boundaries, and blocked-row diagnostics documented in
+  this plan (§2–§4) come from that self-test diagnostic run. They prove the
+  importer behaves deterministically, but they are **not** authoritative
+  production HSK content.
+- When a real HSK workbook is later provided, re-run the importer on it to
+  produce the authoritative batch and manifest; IDs are content-hashed
   (`sha256(simplified|pinyin) → 12 hex chars`), so only rows absent from the
-  synthetic set change identity.
+  real source change identity.
 
-### 1.3 Exact tool / sheet / header / standard evidence
+### 1.3 Exact tool / sheet / header / standard evidence (importer diagnostic)
+
+The following records the importer **self-test diagnostic** that proves the
+importer contract. It is not production source data; the production slice is
+empty until a real workbook arrives (see §1.2).
 
 | Field | Value |
 |---|---|
-| Tool | `scripts/import-hsk-xlsx.py` (`--test` self-test + production run) |
-| Command | `uv run --locked python scripts/import-hsk-xlsx.py data/vocabulary/hsk-3.0-v1/synthetic-hsk-workbook.xlsx data/vocabulary/hsk-3.0-v1 hsk-3.0` |
-| Workbook | `data/vocabulary/hsk-3.0-v1/synthetic-hsk-workbook.xlsx` (committed, pinned) |
-| Workbook SHA-256 | `669b631cfa0ec6211fa80e597301e3d8381f60236898fe6f46f82d2bca2cb662` |
-| Standard version | `hsk-3.0` |
+| Tool | `scripts/import-hsk-xlsx.py` (`--test` self-test diagnostic run) |
+| Command | `uv run --locked python scripts/import-hsk-xlsx.py --test` (generates an in-test synthetic workbook, runs the full pipeline) |
+| Workbook | in-test synthetic fixture (`<test_dir>/synthetic.xlsx`), never committed |
+| Standard version | `hsk-3.0` (importer accepts `hsk-3.0` / `hsk-legacy-6-level`) |
 | Data sheets detected | `HSK Level 1`, `HSK Level 2`, `HSK Level 3-4` |
 | Metadata sheet ignored | `Metadata Only` (0 recognised headers) |
 | Empty sheet skipped | `Empty` |
@@ -66,15 +74,17 @@ Sheet → header mapping (resolved by `resolve_headers`):
 | `Metadata Only` | `notes, description` | 0 recognised headers → metadata, ignored |
 | `Empty` | — | no rows → skipped |
 
-The workbook itself is byte-pinned: `openpyxl` stamps creation/modification
-timestamps and ZIP entry dates, so regenerating it is not byte-identical. The
-committed workbook is therefore a **pinned input**: it must never be
-regenerated in place. The importer output (batches + manifest) derived from it
-is byte-identical across runs (verified, see §6).
+The self-test synthetic workbook is generated at run time in the test
+directory; `openpyxl` stamps timestamps and ZIP entry dates, so it is never
+committed or regenerated in place. The importer output is deterministic: the
+self-test asserts byte-identity across re-runs (verified, see §6).
 
-## 2. Import counts by level
+## 2. Import counts by level (importer self-test diagnostic)
 
-Source manifest: `data/vocabulary/hsk-3.0-v1/manifest.json`.
+These counts come from the importer self-test diagnostic run on its in-test
+synthetic workbook. They prove the importer's deterministic behavior and
+rejection paths; they are **not** production HSK content (the production slice
+is empty until a real workbook is imported — see §1.2).
 
 ### 2.1 Top-level totals
 
@@ -119,10 +129,11 @@ rejectedByLevel     3         = 3   ✓
 batch entryCount    12        = accepted (12)  ✓
 ```
 
-## 3. Every blocked row (source location + reason)
+## 3. Every blocked row (importer self-test diagnostic, source location + reason)
 
-All three blocked rows come from the `HSK Level 1` sheet of the synthetic
-workbook. None are blocked from the other sheets.
+All three blocked rows come from the `HSK Level 1` sheet of the self-test
+synthetic workbook. None are blocked from the other sheets. These diagnostics
+prove the importer's rejection paths; they do **not** describe production data.
 
 | Sheet | Row | Reason (verbatim from manifest) | Class |
 |---|---|---|---|
@@ -130,27 +141,33 @@ workbook. None are blocked from the other sheets.
 | `HSK Level 1` | 8 | `duplicate identity (爱, ài): HSK Level 1:8` | duplicate |
 | `HSK Level 1` | 9 | `duplicate identity (水, Shuǐ): HSK Level 1:9` | duplicate (case-variant) |
 
-These are exactly the deliberate defect rows the synthetic workbook embeds to
-exercise the importer's rejection paths. Row 7 has an empty simplified column;
-row 8 repeats `爱 / ài` (already accepted from row 2); row 9 repeats `水` with a
-case-variant pinyin `Shuǐ` (already accepted from row 6, and `_normalize_pinyin`
-case-folds, so it collides). Because the synthetic input is the deterministic
-fixture, these are the only blocked rows and no row is silently dropped.
+These are exactly the deliberate defect rows the self-test synthetic workbook
+embeds to exercise the importer's rejection paths. Row 7 has an empty
+simplified column; row 8 repeats `爱 / ài` (already accepted from row 2);
+row 9 repeats `水` with a case-variant pinyin `Shuǐ` (already accepted from
+row 6, and `_normalize_pinyin` case-folds, so it collides). Because the
+synthetic input is the deterministic self-test fixture, these are the only
+blocked rows and no row is silently dropped.
 
-## 4. Deterministic batch boundaries
+## 4. Deterministic batch boundaries (importer self-test diagnostic)
 
 The importer sorts accepted rows by
 `(introducedAtLevel, simplified, pinyin)` and splits into ≤50-row batches.
+The batch file below is the **empty production batch** (see §1.2); the row
+table documents the self-test diagnostic order that proves deterministic
+sorting and ≤50-row batching of the importer.
 
-### 4.1 Batch files
+### 4.1 Production batch file
 
-| File | Batch # | Entries | First ID | Last ID |
-|---|---|---|---|---|
-| `hsk-vocabulary-batch-01.json` | 1 | 12 | `hsk-1-32ddf4d4a6f5` | `hsk-4-58837eebf47f` |
+| File | Batch # | Entries | Status |
+|---|---|---|---|
+| `hsk-vocabulary-batch-01.json` | 1 | 0 | empty production batch (truthful unavailable until a real workbook is imported) |
 
-### 4.2 Ordered rows (source rows in batch order)
+### 4.2 Self-test diagnostic: ordered rows (source rows in importer sort order)
 
-Batch `hsk-vocabulary-batch-01.json`:
+The importer self-test sorts and batches accepted rows from its synthetic
+workbook as follows (deterministic order, documented for the future real-workbook
+run):
 
 | # | ID | Simplified | Pinyin | Level | Source sheet | Source row | Review status |
 |---|---|---|---|---|---|---|---|
@@ -181,35 +198,32 @@ Batch `hsk-vocabulary-batch-01.json`:
 
 ### 5.1 The slice
 
-The first manifest-defined HSK 1 production batch is
-`data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json`, whose level-1 rows
-are the first HSK 1 slice (5 rows: 你好, 水, 爱, 狗, 猫 — the rows listed in §4.2
-numbered 1–5).
+The production HSK 1 slice is **truthfully empty**. No real HSK workbook is
+available in the repository, and no synthetic/self-test content is promoted
+into the production boundary (see §1.2). `data/vocabulary/hsk-3.0-v1/
+hsk-vocabulary-batch-01.json` carries `{"vocabulary": []}` and the manifest
+records `productionStatus: "unavailable"`.
 
 ### 5.2 Production loading boundary (loader switch)
 
-`src/content/loadHskVocabulary.ts` now reads the **production batch file**
-instead of the legacy fixture:
+`src/content/loadHskVocabulary.ts` reads the **production batch path** (the
+empty batch), not the legacy fixture:
 
 ```
 before: DEFAULT_HSK_PATH = 'data/examples/valid/hsk-vocabulary.json'
 after:  DEFAULT_HSK_PATH = 'data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json'
 ```
 
-- The loader still renders only `reviewStatus ∈ {reviewed, published}` via
-  `PRODUCTION_REVIEW_STATUSES`; draft rows are loaded but not rendered.
-- Because every imported row is `draft` (truthful provisional content — the
-  importer contract), the **rendered** production HSK 1 slice is deterministically
-  **empty** until a review pass promotes rows. This is the truthful state: no
-  review status is fabricated and no un-reviewed content is shown to learners.
+- The loader renders only `reviewStatus ∈ {reviewed, published}` via
+  `PRODUCTION_REVIEW_STATUSES`; with an empty vocabulary the level-1 slice is
+  deterministically empty.
 - The `/vocabulary/hsk/1/` flashcard page therefore renders its existing safe
   empty-fallback (`現在利用できる HSK 1 単語がありません`) rather than stale
-  fixture cards.
-- `data/learning-paths.json` was updated to reference the real production
-  batch IDs (`hsk-1-*`) for the `hsk-vocabulary` path members and to declare
-  `status: "unavailable"`, which matches the loader-derived availability for an
-  empty reviewed level-1 slice. The path is truthfully `unavailable` (rendered
-  as inert text) until reviewed content exists.
+  fixture cards or unverified synthetic content.
+- `data/learning-paths.json` marks the `hsk-vocabulary` path `unavailable`
+  (rendered as inert text) with empty members, matching the loader-derived
+  availability for an empty level-1 slice. The path is truthfully `unavailable`
+  until a real workbook is imported and rows reviewed.
 - Session/progress/storage and route URLs are unchanged: the flashcard session
   key (`chabiko:hsk-vocabulary-progress:v1`), progress domain, and route paths
   are untouched.
@@ -218,33 +232,34 @@ after:  DEFAULT_HSK_PATH = 'data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.j
 
 - `uv run --locked python scripts/import-hsk-xlsx.py --test` — full importer
   self-tests (deterministic re-runs, batch size/order, contract validation).
-- `uv run --locked python scripts/validate-content-schema.py --check data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json` — #74 contract (the importer also runs this automatically on every batch write).
+- `uv run --locked python scripts/validate-content-schema.py --check data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json` — #74 contract (empty vocabulary is a valid bundle).
 - `pnpm vitest run tests/hsk-flashcard.test.ts tests/learning-paths.test.ts tests/learning-paths-route.test.ts` — loader boundary + learning-path availability (route test performs a fresh Astro build).
 - Full `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `git diff --check` — see §6.
 
 ## 6. Determinism evidence
 
-Re-running the importer on the pinned workbook to a second output directory
-produced **byte-identical** `hsk-vocabulary-batch-01.json` and `manifest.json`
-(`diff` clean). IDs are content-hashed, batch order is a pure sort, and the
-manifest carries the pinned workbook SHA-256, so repeated import output is
-byte-identical. The importer self-test independently asserts byte-identity on
-re-runs.
+The importer self-test (`scripts/import-hsk-xlsx.py --test`) generates its
+synthetic workbook in the test directory at run time and asserts the full
+pipeline output is **byte-identical** across re-runs (IDs are content-hashed,
+batch order is a pure sort). This proves the importer is deterministic for any
+workbook. The production batch is empty (truthful unavailable); when a real
+HSK workbook arrives, re-running the importer on it must produce byte-identical
+output for unchanged input (asserted by the same self-test determinism gate).
 
 ## 7. Files produced by this issue
 
 | File | Purpose |
 |---|---|
-| `data/vocabulary/hsk-3.0-v1/synthetic-hsk-workbook.xlsx` | Pinned deterministic input (merged-default assumption, §1.2) |
-| `data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json` | First production HSK batch (12 rows, all draft) |
-| `data/vocabulary/hsk-3.0-v1/manifest.json` | Import diagnostic / reconciliation manifest |
-| `src/content/loadHskVocabulary.ts` | Loader boundary switch to the production batch |
-| `data/learning-paths.json` | HSK path members/status aligned to the production batch |
-| `docs/content/hsk-import-plan.md` | This plan |
-| `tests/hsk-flashcard.test.ts`, `tests/learning-paths.test.ts`, `tests/learning-paths-route.test.ts` | Directly-coupled tests updated for the new boundary |
+| `data/vocabulary/hsk-3.0-v1/hsk-vocabulary-batch-01.json` | Empty production HSK batch — truthful `{"vocabulary": []}`; no synthetic content promoted (see §1.2) |
+| `data/vocabulary/hsk-3.0-v1/manifest.json` | Production-state manifest recording `productionStatus: "unavailable"` with the reason |
+| `src/content/loadHskVocabulary.ts` | Loader boundary: default path switched from the legacy fixture to the production batch path |
+| `data/learning-paths.json` | `hsk-vocabulary` path `unavailable` with empty members, aligned to the empty production slice |
+| `docs/content/hsk-import-plan.md` | This plan (authoritative diagnostic + truthful production-state record) |
+| `tests/hsk-flashcard.test.ts`, `tests/learning-paths.test.ts`, `tests/learning-paths-route.test.ts` | Directly-coupled tests updated for the truthful empty boundary |
 
-The legacy fixture `data/examples/valid/hsk-vocabulary.json` is left in place
-(unchanged) for reference and for the teacher-corpus-independent example corpus;
+The importer self-test synthetic workbook is generated in-test only and is
+**never committed**. The legacy fixture `data/examples/valid/hsk-vocabulary.json`
+is left in place (unchanged) for the teacher-corpus-independent example corpus;
 production no longer reads it for the HSK 1 slice.
 
 ## 8. Parallelization contract (for #82 and later)

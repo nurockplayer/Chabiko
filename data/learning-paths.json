@@ -36,13 +36,7 @@
         "levels": [1],
         "status": "unavailable"
       },
-      "members": [
-        { "type": "vocabulary", "id": "hsk-1-32ddf4d4a6f5" },
-        { "type": "vocabulary", "id": "hsk-1-c2e211c93ffd" },
-        { "type": "vocabulary", "id": "hsk-1-f19e5ba46c86" },
-        { "type": "vocabulary", "id": "hsk-1-eafd9b662998" },
-        { "type": "vocabulary", "id": "hsk-1-e122899107b0" }
-      ]
+      "members": []
     },
     {
       "id": "kanji-bridge",
