@@ -115,3 +115,8 @@ jobs:
             uv run --locked python scripts/validate-script-status.py --check "$f"
             uv run --locked python scripts/validate-content-schema.py --check "$f"
           done
+          # Roleplay card per-scenario files (Issue #243): the ownership
+          # boundary (file name → card scenario) is enforced by --check.
+          for f in data/roleplay/*.json; do
+            uv run --locked python scripts/validate-content-schema.py --check "$f"
+          done

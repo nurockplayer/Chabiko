@@ -2159,8 +2159,10 @@ def _check_roleplay_file_ownership(filepath: str, data: dict) -> list[str]:
 
     Each card in a roleplay file must carry the scenario matching its owning
     file name (e.g. data/roleplay/food.json may only contain scenario
-    "food" cards). A card in the wrong file breaks the per-scenario
-    parallelization boundary, so it fails with a path-specific error.
+    "food" cards). A JSON file directly under data/roleplay/ whose name is
+    not a controlled scenario is itself an error (it would silently bypass
+    the ownership gate), and a card in the wrong file breaks the per-scenario
+    parallelization boundary — both fail with path-specific errors.
     """
     errors: list[str] = []
     dirname = os.path.dirname(filepath)
@@ -2171,7 +2173,13 @@ def _check_roleplay_file_ownership(filepath: str, data: dict) -> list[str]:
     ):
         return errors
     stem, ext = os.path.splitext(basename)
-    if ext.lower() != ".json" or stem not in VALID_SCENARIOS:
+    if ext.lower() != ".json":
+        return errors
+    if stem not in VALID_SCENARIOS:
+        errors.append(
+            f"{filepath}: data/roleplay file name '{basename}' is not a "
+            f"controlled scenario ({', '.join(sorted(VALID_SCENARIOS))})"
+        )
         return errors
     card_records = data.get("roleplayCards", [])
     if not isinstance(card_records, list):
@@ -3124,6 +3132,7 @@ def run_tests():
         test_roleplay_file_ownership_match_passes,
         test_roleplay_file_ownership_mismatch_rejected,
         test_roleplay_file_ownership_only_enforced_for_roleplay_dir,
+        test_roleplay_file_non_controlled_scenario_name_rejected,
 
         # ─── Practice ───
         test_practice_valid,
@@ -5058,6 +5067,22 @@ def test_roleplay_file_ownership_only_enforced_for_roleplay_dir():
     finally:
         os.unlink(tmp_path)
     _assert_no_errors(errors, "roleplay_file_ownership_outside_dir")
+
+
+def test_roleplay_file_non_controlled_scenario_name_rejected():
+    """A JSON file directly under data/roleplay/ whose name is not a
+    controlled scenario must fail (it would otherwise silently bypass the
+    ownership gate)."""
+    roleplay_dir = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay"
+    )
+    card = _minimal_roleplay_card()
+    fixture = {"roleplayCards": [card]}
+    bad_path = os.path.join(roleplay_dir, "not-a-scenario.json")
+    errors = _check_roleplay_file_ownership(bad_path, fixture)
+    assert any("not a controlled scenario" in e for e in errors), (
+        f"Expected non-controlled scenario name error, got: {errors}"
+    )
 
 
 # ─── Practice tests ────────────────────────────────────────────────────────
