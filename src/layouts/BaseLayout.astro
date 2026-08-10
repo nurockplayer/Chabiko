@@ -4,10 +4,11 @@ export interface Props {
   title: string;
   description?: string;
   robots?: string;
+  referrerPolicy?: 'no-referrer';
   themeEnabled?: boolean;
 }
 
-const { title, description, robots, themeEnabled = false } = Astro.props;
+const { title, description, robots, referrerPolicy, themeEnabled = false } = Astro.props;
 const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
@@ -17,6 +18,7 @@ const canonical = url.href;
 <html lang="ja" data-theme-enabled={themeEnabled ? 'true' : undefined}>
   <head>
     <meta charset="utf-8" />
+    {referrerPolicy && <meta name="referrer" content={referrerPolicy} />}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={metaDescription} />
     {robots && <meta name="robots" content={robots} />}

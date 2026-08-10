@@ -12,8 +12,8 @@
  * mobile/desktop containment.
  *
  * The fresh build writes to a unique temporary directory (never the shared
- * dist/) so this suite cannot race with tests/build/teacher-preview-build.test.ts,
- * which owns dist/.
+ * dist/). Vitest also serializes this file with the other Astro build suite
+ * because Astro still writes its repository-local .astro cache.
  */
 
 import { execSync } from 'node:child_process';
