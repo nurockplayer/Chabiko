@@ -29,19 +29,23 @@ export type RoleplayScriptStatus = 'authored' | 'verified' | 'generated';
 
 /**
  * A single learner or partner line with dual-script text, tone-marked pinyin,
- * and natural Japanese. Script provenance rules follow the #24 contract: a
- * present `simplified` requires `simplifiedStatus`; absent `simplified`
- * forbids a non-`unavailable` `simplifiedStatus`.
+ * and natural Japanese. Script provenance rules follow the #24 contract and
+ * mirror the repository's `VocabularyExample` pattern: the simplified presence
+ * and its status form exactly three combinations — no simplified, simplified
+ * unavailable, or simplified with an authored/verified/generated status. Any
+ * other combination is rejected by the executable validator.
  */
-export interface RoleplayLine {
+export type RoleplayLine = {
   readonly speaker: RoleplaySpeaker;
   readonly traditional: string;
   readonly traditionalStatus: RoleplayScriptStatus;
-  readonly simplified?: string;
-  readonly simplifiedStatus?: RoleplayScriptStatus;
   readonly pinyin: string;
   readonly japanese: string;
-}
+} & (
+  | { simplified?: never; simplifiedStatus?: never }
+  | { simplified?: never; simplifiedStatus: 'unavailable' }
+  | { simplified: string; simplifiedStatus: 'authored' | 'verified' | 'generated' }
+);
 
 /** Truthful source for a reviewed/published card. */
 export interface RoleplaySourceInfo {

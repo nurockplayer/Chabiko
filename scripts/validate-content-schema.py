@@ -2017,6 +2017,17 @@ def _check_roleplay_card_line(line: dict, path: str) -> list[str]:
     """Validate one roleplay line object (#243)."""
     errors = []
 
+    # Reject unknown fields with path-specific errors (mirrors the generic
+    # schema unknown-field gate). Roleplay lines come from committed JSON, so
+    # a misspelled or stale key must not silently pass --check.
+    allowed_line_fields = {
+        "speaker", "traditional", "traditionalStatus",
+        "simplified", "simplifiedStatus", "pinyin", "japanese",
+    }
+    for field in line:
+        if field not in allowed_line_fields:
+            errors.append(f"{path}: unknown field '{field}'")
+
     # Speaker is required and controlled (reuses the dialog speaker set).
     speaker = line.get("speaker")
     if speaker is None:
@@ -2086,8 +2097,17 @@ def _check_roleplay_card_references(cards: list, path: str, lessons: list, phras
     determinism holds in every bundle.
     """
     errors: list[str] = []
-    lesson_by_id = {l["id"]: l for l in lessons if isinstance(l.get("id"), str)}
-    phrase_by_id = {p["id"]: p for p in phrasebook if isinstance(p.get("id"), str)}
+    # Filter to dict records with string ids before building the index, so
+    # non-object entries (e.g. `lessons: ["bad"]`) surface the existing
+    # structured validation error instead of an AttributeError traceback.
+    lesson_by_id = {
+        l["id"]: l for l in lessons
+        if isinstance(l, dict) and isinstance(l.get("id"), str)
+    }
+    phrase_by_id = {
+        p["id"]: p for p in phrasebook
+        if isinstance(p, dict) and isinstance(p.get("id"), str)
+    }
     for i, card in enumerate(cards):
         if not isinstance(card, dict):
             continue
@@ -2129,6 +2149,43 @@ def _check_roleplay_card_references(cards: list, path: str, lessons: list, phras
                         f"'{ref}' (card scenario '{scenario}', lesson scenario "
                         f"'{lesson.get('travelScenario')}')"
                     )
+    return errors
+
+
+def _check_roleplay_file_ownership(filepath: str, data: dict) -> list[str]:
+    """
+    Enforce the documented data/roleplay/<scenario>.json → card scenario
+    ownership boundary (Issue #243, contract doc §file boundary).
+
+    Each card in a roleplay file must carry the scenario matching its owning
+    file name (e.g. data/roleplay/food.json may only contain scenario
+    "food" cards). A card in the wrong file breaks the per-scenario
+    parallelization boundary, so it fails with a path-specific error.
+    """
+    errors: list[str] = []
+    dirname = os.path.dirname(filepath)
+    basename = os.path.basename(filepath)
+    # Only enforce for files directly under data/roleplay/.
+    if os.path.normpath(dirname) != os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "data", "roleplay")
+    ):
+        return errors
+    stem, ext = os.path.splitext(basename)
+    if ext.lower() != ".json" or stem not in VALID_SCENARIOS:
+        return errors
+    card_records = data.get("roleplayCards", [])
+    if not isinstance(card_records, list):
+        return errors
+    for i, card in enumerate(card_records):
+        if not isinstance(card, dict):
+            continue
+        scenario = card.get("scenario")
+        if scenario != stem:
+            errors.append(
+                f"{filepath}: card 'roleplayCards[{i}]' has scenario '{scenario}' "
+                f"but the file is data/roleplay/{stem}.json "
+                f"(file/scenario ownership mismatch)"
+            )
     return errors
 
 
@@ -2752,6 +2809,8 @@ def main():
             data = json.load(f)
         warnings = collect_bundle_warnings(data)
         errors = validate_bundle(data)
+        # data/roleplay/<scenario>.json → card scenario ownership boundary.
+        errors.extend(_check_roleplay_file_ownership(filepath, data))
         for warning in warnings:
             print(f"WARNING: {warning}")
         for e in errors:
@@ -3059,6 +3118,12 @@ def run_tests():
         test_roleplay_card_bundle_invalid_item,
         test_roleplay_card_deterministic_error_order,
         test_roleplay_card_committed_fixture_valid,
+        test_roleplay_card_non_object_lesson_reference_is_structured_error,
+        test_roleplay_card_unknown_line_field_rejected,
+        test_roleplay_card_unknown_line_field_rejected_validate_bundle,
+        test_roleplay_file_ownership_match_passes,
+        test_roleplay_file_ownership_mismatch_rejected,
+        test_roleplay_file_ownership_only_enforced_for_roleplay_dir,
 
         # ─── Practice ───
         test_practice_valid,
@@ -4907,6 +4972,92 @@ def test_roleplay_card_committed_fixture_valid():
         data = json.load(f)
     errors = validate_bundle(data)
     _assert_no_errors(errors, "roleplay_committed_fixture")
+
+
+def test_roleplay_card_non_object_lesson_reference_is_structured_error():
+    """Non-object lessons entries must yield the structured validation error,
+    never an AttributeError traceback (review thread #2)."""
+    data = {
+        "roleplayCards": [_minimal_roleplay_card()],
+        "lessons": ["bad"],
+        "phrasebook": ["bad"],
+    }
+    exit_code, stdout = _cli_check_result(data)
+    assert "AttributeError" not in stdout, f"AttributeError leaked: {stdout}"
+    # The structured validator reports the non-object lesson entry.
+    assert "expected a JSON object" in stdout or "must be a JSON object" in stdout, (
+        f"Expected structured object error, got: {stdout}"
+    )
+
+
+def test_roleplay_card_unknown_line_field_rejected():
+    """Unknown fields inside a roleplay line must fail --check with a
+    path-specific error (review thread #3)."""
+    card = _minimal_roleplay_card()
+    # Insert an unknown key into the first line.
+    card["lines"][0]["traditonal"] = "typo"
+    exit_code, stdout = _cli_check_result(_roleplay_card_bundle(card))
+    assert exit_code != 0, f"Expected unknown line field to fail: {stdout}"
+    assert "unknown field 'traditonal'" in stdout, (
+        f"Expected path-specific unknown-field error, got: {stdout}"
+    )
+
+
+def test_roleplay_card_unknown_line_field_rejected_validate_bundle():
+    """The same unknown-field rejection holds through validate_bundle."""
+    card = _minimal_roleplay_card()
+    card["lines"][0]["traditonal"] = "typo"
+    errors = validate_bundle(_roleplay_card_bundle(card))
+    assert any("unknown field 'traditonal'" in e for e in errors), (
+        f"Expected unknown-field error, got: {errors}"
+    )
+
+
+def test_roleplay_file_ownership_match_passes():
+    """A card whose scenario matches its owning file passes --check."""
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay", "transport.json"
+    )
+    with open(fixture_path, encoding="utf-8") as f:
+        data = json.load(f)
+    errors = _check_roleplay_file_ownership(fixture_path, data)
+    _assert_no_errors(errors, "roleplay_file_ownership_match")
+
+
+def test_roleplay_file_ownership_mismatch_rejected():
+    """A card placed in the wrong scenario file must fail with a
+    path-specific ownership error (review thread #4, negative regression)."""
+    roleplay_dir = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay"
+    )
+    card = _minimal_roleplay_card()  # scenario "transport"
+    fixture = {"roleplayCards": [card]}
+    # Simulate the documented boundary: data/roleplay/food.json containing a
+    # transport card. The ownership helper only inspects the path + in-memory
+    # bundle, so no file needs to be written.
+    food_path = os.path.join(roleplay_dir, "food.json")
+    errors = _check_roleplay_file_ownership(food_path, fixture)
+    assert any("ownership mismatch" in e for e in errors), (
+        f"Expected ownership mismatch error, got: {errors}"
+    )
+
+
+def test_roleplay_file_ownership_only_enforced_for_roleplay_dir():
+    """Ownership check only applies to files directly under data/roleplay/."""
+    import tempfile
+
+    card = _minimal_roleplay_card()
+    fixture = {"roleplayCards": [card]}
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as f:
+        json.dump(fixture, f)
+        tmp_path = f.name
+    try:
+        errors = _check_roleplay_file_ownership(tmp_path, fixture)
+    finally:
+        os.unlink(tmp_path)
+    _assert_no_errors(errors, "roleplay_file_ownership_outside_dir")
 
 
 # ─── Practice tests ────────────────────────────────────────────────────────

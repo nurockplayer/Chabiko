@@ -74,3 +74,56 @@ describe('roleplay card type contract – fixed rehearsal invariant', () => {
     expect(_line).toBeDefined();
   });
 });
+
+describe('roleplay card type contract – simplified/status discriminated union', () => {
+  it('mirrors the VocabularyExample combinations (compile-time)', () => {
+    // 1. No simplified at all.
+    const noSimplified: RoleplayLine = {
+      speaker: 'partner',
+      traditional: '有，往前走兩分鐘就到了。',
+      traditionalStatus: 'authored',
+      pinyin: 'yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le',
+      japanese: 'ありますよ。まっすぐ2分歩けば着きますよ。',
+    };
+    // 2. Simplified unavailable (status only).
+    const unavailable: RoleplayLine = {
+      ...noSimplified,
+      simplifiedStatus: 'unavailable',
+    };
+    // 3. Simplified with an authored/verified/generated status.
+    const withSimplified: RoleplayLine = {
+      ...noSimplified,
+      simplified: '请问这附近有捷运站吗？',
+      simplifiedStatus: 'verified',
+    };
+    expect(noSimplified.simplified).toBeUndefined();
+    expect(unavailable.simplifiedStatus).toBe('unavailable');
+    expect(withSimplified.simplified).toBeTruthy();
+  });
+
+  it('rejects simplified without status (compile-time)', () => {
+    // @ts-expect-error – simplified present but simplifiedStatus omitted
+    const _line: RoleplayLine = {
+      speaker: 'learner',
+      traditional: '請問這附近有捷運站嗎？',
+      traditionalStatus: 'authored',
+      simplified: '请问这附近有捷运站吗？',
+      pinyin: 'Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?',
+      japanese: 'すみません、この近くにMRTの駅はありますか？',
+    };
+    expect(_line).toBeDefined();
+  });
+
+  it('rejects authored status without simplified (compile-time)', () => {
+    // @ts-expect-error – simplifiedStatus authored but simplified omitted
+    const _line: RoleplayLine = {
+      speaker: 'partner',
+      traditional: '有，往前走兩分鐘就到了。',
+      traditionalStatus: 'authored',
+      simplifiedStatus: 'authored',
+      pinyin: 'yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le',
+      japanese: 'ありますよ。',
+    };
+    expect(_line).toBeDefined();
+  });
+});
