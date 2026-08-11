@@ -1,7 +1,9 @@
 import { ProgressStore, STORAGE_KEY } from '../lib/progress';
-import { BasicVocabularyProgressStore } from '../domain/basicVocabularyProgress';
 import { VocabularyProgressStore } from '../domain/vocabularyProgress';
-import { getBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
+import {
+  ensureBasicVocabularyProgressCoordinator,
+  getBasicVocabularyProgressCoordinator,
+} from './basicVocabularyProgressCoordinator';
 import type { LearningPathMemberRef } from '../types/learningPath';
 import type {
   TravelQuestReadinessDocument,
@@ -58,15 +60,13 @@ export function initPathsReadiness(
     const lessonStore = new ProgressStore();
     const completedLessons = new Set(lessonStore.getCompletedIds());
     const hskStore = new VocabularyProgressStore();
-    // Read the basic-vocabulary progress through the document-level
-    // coordinator when one exists (so a signed-in user's user-scoped progress
-    // is reflected), and fall back to the guest store otherwise. Read-only:
-    // the coordinator store is consumed, never written, migrated, or reset.
-    const coordinator = getBasicVocabularyProgressCoordinator();
-    const basicStore =
-      coordinator !== null
-        ? coordinator.getStore()
-        : new BasicVocabularyProgressStore();
+    // Ensure the document-level auth-aware coordinator exists before reading
+    // (Issue #293), so a signed-in user's user-scoped basic-vocabulary progress
+    // is available on direct /paths/ load. If it was already created elsewhere
+    // this is a no-op. Read-only: the coordinator store is consumed, never
+    // written, migrated, or reset.
+    const coordinator = ensureBasicVocabularyProgressCoordinator();
+    const basicStore = coordinator.getStore();
     const learnedVocabulary = new Set<string>();
     for (const [id, entry] of [
       ...Object.entries(hskStore.getAllEntries()),

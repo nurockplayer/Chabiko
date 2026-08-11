@@ -9,7 +9,7 @@ import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
 import {
-  createBasicVocabularyProgressCoordinator,
+  getBasicVocabularyProgressCoordinator,
   resetBasicVocabularyProgressCoordinator,
   setBasicVocabularyProgressCoordinator,
 } from '../src/client/basicVocabularyProgressCoordinator';
@@ -218,18 +218,13 @@ describe('progress signals', () => {
 
   it('reflects user-scoped basic-vocabulary progress via the coordinator (signed-in)', () => {
     const root = createRoot();
-    // Install a coordinator whose active store is user-scoped: a signed-in user
-    // writes basic-vocabulary progress to the user key, never the guest key.
-    const storage = window.localStorage;
-    const coordinator = createBasicVocabularyProgressCoordinator({
-      storage,
-      repository: null,
-      isOnline: () => true,
-      createResetId: () => '00000000-0000-4000-8000-000000000001',
-    });
-    coordinator.acceptSignedIn('f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e');
-    setBasicVocabularyProgressCoordinator(coordinator);
+    // The route must initialize the auth-aware coordinator itself (no
+    // pre-installed coordinator). initialize triggers initPathsReadiness which
+    // calls ensureBasicVocabularyProgressCoordinator.
     initialize(root);
+    const coordinator = getBasicVocabularyProgressCoordinator();
+    expect(coordinator).not.toBeNull();
+    coordinator!.acceptSignedIn('f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e');
 
     // A learner-rated item under the user key, not the guest key.
     const userScope: BasicVocabularyProgressScope = {
@@ -237,7 +232,7 @@ describe('progress signals', () => {
       userId: 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e',
     };
     const userStore = new BasicVocabularyProgressStore(
-      storage,
+      window.localStorage,
       getBasicVocabularyProgressStorageKey(userScope),
     );
     userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
@@ -249,7 +244,18 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
-    coordinator.dispose();
+    coordinator!.dispose();
+  });
+
+  it('guests read the guest store when no coordinator was created elsewhere', () => {
+    const root = createRoot();
+    initialize(root);
+    // initPathsReadiness ensures the coordinator; a guest (no signed-in) reads
+    // the guest store, so guest progress counts.
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
   });
 });
 
