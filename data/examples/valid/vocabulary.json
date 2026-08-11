@@ -597,20 +597,20 @@
     },
     {
       "id": "kanji-bridge-029",
-      "traditional": "妻子",
+      "traditional": "研究生",
       "traditionalStatus": "authored",
-      "simplified": "妻子",
+      "simplified": "研究生",
       "simplifiedStatus": "authored",
-      "pinyin": "qīzi",
-      "japanese": "妻",
-      "kana": "つま",
-      "category": "family",
+      "pinyin": "yánjiūshēng",
+      "japanese": "大学院生（修士・博士課程）",
+      "kana": "けんきゅうせい",
+      "category": "education",
       "similarityType": "partial-overlap",
-      "toneNote": "qī は第一声、zi は軽声。q は日本語の「チ」に近い無気音。",
+      "toneNote": "研 yán は第二声、究 jiū は第一声、生 shēng は第一声。",
       "painPointTags": ["same-kanji-different-meaning"],
-      "caution": "日本語の「妻子（さいし）」＝ 妻と子。中国語の「妻子」＝ 妻（wife）のみ。「子」が含まれていても「子ども」の意味ではない。",
+      "caution": "日本語の「研究生」＝ 正規の学位課程に属さない研究員。中国語の「研究生」＝ 大学院の修士・博士課程の学生。どちらも研究に関わる点は共通だが、学位課程かどうかが違う。",
       "examples": [
-        {"traditional": "他的妻子", "traditionalStatus": "authored", "simplified": "他的妻子", "simplifiedStatus": "authored", "pinyin": "tā de qīzi", "japanese": "彼の妻"}
+        {"traditional": "他是研究生", "traditionalStatus": "authored", "simplified": "他是研究生", "simplifiedStatus": "authored", "pinyin": "tā shì yánjiūshēng", "japanese": "彼は大学院生です"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
