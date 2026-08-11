@@ -13,6 +13,7 @@ const { path, emphasized = false } = Astro.props;
 const scriptLabel = path.script === 'simplified' ? '簡体字' : '繁体字';
 const available = path.availability === 'available';
 const primaryClass = emphasized ? ' learning-path-card--primary' : '';
+const totalMembers = path.members.length;
 ---
 
 {
@@ -30,6 +31,11 @@ const primaryClass = emphasized ? ' learning-path-card--primary' : '';
           <span class="learning-path-card__script">{scriptLabel}表示</span>
           <span class="learning-path-card__status">利用できます</span>
         </span>
+        {totalMembers > 0 && (
+          <span class="learning-path-card__progress" data-path-progress aria-live="polite">
+            {`0 / ${totalMembers}`}
+          </span>
+        )}
       </span>
       <span class="learning-path-card__arrow" aria-hidden="true">→</span>
     </a>
@@ -46,6 +52,11 @@ const primaryClass = emphasized ? ' learning-path-card--primary' : '';
           <span class="learning-path-card__script">{scriptLabel}表示</span>
           <span class="learning-path-card__status">準備中です</span>
         </span>
+        {totalMembers > 0 && (
+          <span class="learning-path-card__progress" data-path-progress aria-live="polite">
+            {`0 / ${totalMembers}`}
+          </span>
+        )}
       </span>
     </div>
   )
@@ -100,6 +111,15 @@ const primaryClass = emphasized ? ' learning-path-card--primary' : '';
     padding: 0 var(--space-sm);
     font-size: 0.6875rem;
     font-weight: 700;
+  }
+  .learning-path-card__progress {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+    font-variant-numeric: tabular-nums;
   }
   .learning-path-card__arrow {
     flex: 0 0 auto;

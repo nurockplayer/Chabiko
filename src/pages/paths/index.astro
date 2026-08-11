@@ -3,9 +3,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import LearningPathCard from '../../components/LearningPathCard.astro';
 import { loadLearningPaths } from '../../content/loadLearningPaths';
+import { evaluateTravelQuestReadiness } from '../../domain/travelQuestReadiness';
+import { buildReadinessInput } from '../../domain/pathsProgress';
+import readinessData from '../../../data/travel-quest-readiness.json';
+import type { TravelQuestReadinessDocument } from '../../types/travelQuestReadiness';
 
 const document = loadLearningPaths();
 const learningPaths = document.learningPaths;
+
+const readinessTargets = (readinessData as TravelQuestReadinessDocument).targets;
+// Initial SSR snapshot: no progress signals (storage is client-only), so every
+// target renders at 0 with its fixed denominator and any contract-level
+// unavailable evidence already surfaced truthfully.
+const initialReadiness = evaluateTravelQuestReadiness(
+  buildReadinessInput(readinessTargets, {
+    completedLessons: new Set(),
+    learnedVocabulary: new Set(),
+  }),
+);
+
+const pathsPayload = JSON.stringify({
+  paths: learningPaths.map((path) => ({ id: path.id, members: path.members })),
+}).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout title="学習ルート" description="Chabiko の学習ルート一覧です。">
@@ -13,20 +32,103 @@ const learningPaths = document.learningPaths;
     <Header />
   </Fragment>
 
-  <section class="paths-page" aria-labelledby="paths-heading">
-    <p class="paths-kicker">学習ルート</p>
-    <h1 id="paths-heading" class="paths-heading">ルートを選んで中国語を学ぼう</h1>
-    <p class="paths-lead">目的に合ったルートを選んでください。</p>
+  <div class="paths-root" data-paths-root>
+    <section class="paths-page" aria-labelledby="paths-heading">
+      <p class="paths-kicker">学習ルート</p>
+      <h1 id="paths-heading" class="paths-heading">ルートを選んで中国語を学ぼう</h1>
+      <p class="paths-lead">目的に合ったルートを選んでください。</p>
 
-    <ol class="paths-list">
-      {learningPaths.map((path, index) => (
-        <li class="paths-list-item" data-path-id={path.id}>
-          <LearningPathCard path={path} emphasized={index === 0} />
-        </li>
-      ))}
-    </ol>
-  </section>
+      <ol class="paths-list">
+        {learningPaths.map((path, index) => (
+          <li class="paths-list-item" data-path-id={path.id}>
+            <LearningPathCard path={path} emphasized={index === 0} />
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section
+      class="readiness-section"
+      data-readiness-section
+      aria-labelledby="readiness-heading"
+    >
+      <p class="readiness-kicker">Travel Quest</p>
+      <h2 id="readiness-heading" class="readiness-heading">旅行の準備度</h2>
+      <p class="readiness-lead">実際に台湾で使える場面ごとの準備度です。</p>
+      <ol class="readiness-list">
+        {initialReadiness.map((result) => {
+          const target = readinessTargets.find(
+            (t) => t.id === result.targetId,
+          );
+          return (
+            <li
+              class="readiness-list-item"
+              data-readiness-target={result.targetId}
+            >
+              <div class="readiness-item">
+                <div class="readiness-item__head">
+                  <h3 class="readiness-item__label">{target?.labelJa}</h3>
+                  <span
+                    class="readiness-item__status"
+                    data-readiness-status
+                    data-status={result.status}
+                  >未開始</span>
+                </div>
+                {target?.goalJa && (
+                  <p class="readiness-item__goal">{target.goalJa}</p>
+                )}
+                <div class="readiness-item__meta">
+                  <span class="readiness-item__count" data-readiness-count>
+                    {result.numerator} / {result.denominator}
+                  </span>
+                  <span class="readiness-item__percent" data-readiness-percent>
+                    {result.percentage}%
+                  </span>
+                </div>
+                <p
+                  class="readiness-item__note"
+                  data-readiness-note
+                  hidden={result.unavailableEvidence.length === 0}
+                >
+                  この準備度にはまだ利用できない項目があります。
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  </div>
+
+  <script is:inline type="application/json" id="paths-progress-data" set:html={pathsPayload}></script>
 </BaseLayout>
+
+<script>
+  import { initPathsReadiness } from '../../client/pathsReadiness';
+
+  const root = document.querySelector<HTMLElement>('[data-paths-root]');
+  if (root) {
+    const script = document.getElementById('paths-progress-data');
+    let payload: Parameters<typeof initPathsReadiness>[1] | null = null;
+    if (script?.textContent) {
+      try {
+        const parsed = JSON.parse(script.textContent) as unknown;
+        if (
+          parsed !== null &&
+          typeof parsed === 'object' &&
+          Array.isArray((parsed as { paths?: unknown }).paths)
+        ) {
+          payload = parsed as Parameters<typeof initPathsReadiness>[1];
+        }
+      } catch {
+        /* malformed payload — leave readiness unhydrated, cards keep SSR */
+      }
+    }
+    if (payload) {
+      initPathsReadiness(root, payload);
+    }
+  }
+</script>
 
 <style>
   .paths-page {
@@ -61,6 +163,107 @@ const learningPaths = document.learningPaths;
   }
   @media (width >= 768px) {
     .paths-list {
+      gap: var(--space-lg);
+    }
+  }
+
+  .paths-root {
+    min-width: 0;
+  }
+  .readiness-section {
+    min-width: 0;
+    margin-top: var(--space-2xl);
+  }
+  .readiness-kicker {
+    color: var(--c-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+  }
+  .readiness-heading {
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+  }
+  .readiness-lead {
+    max-width: 44rem;
+    font-size: 0.875rem;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-lg);
+  }
+  .readiness-list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-md);
+  }
+  .readiness-list-item {
+    min-width: 0;
+  }
+  .readiness-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+    min-width: 0;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    overflow-wrap: anywhere;
+  }
+  .readiness-item__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+  .readiness-item__label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text);
+    min-width: 0;
+  }
+  .readiness-item__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 var(--space-sm);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    background: var(--c-primary-light);
+    color: var(--c-text-secondary);
+  }
+  .readiness-item__status[data-status='ready'] {
+    background: var(--c-success-bg);
+    color: var(--color-status-success);
+  }
+  .readiness-item__status[data-status='in-progress'] {
+    background: var(--c-accent-light);
+    color: var(--color-status-current);
+  }
+  .readiness-item__goal {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--c-text-secondary);
+  }
+  .readiness-item__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--c-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .readiness-item__note {
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+  }
+  @media (width >= 768px) {
+    .readiness-list {
       gap: var(--space-lg);
     }
   }
