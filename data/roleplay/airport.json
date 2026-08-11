@@ -37,10 +37,10 @@
         },
         {
           "speaker": "partner",
-          "traditional": "出關以後往右走，跟著「機場捷運」的指標走就可以了。",
+          "traditional": "出關以後，跟著「機場捷運」的指標走就可以了。",
           "traditionalStatus": "authored",
-          "pinyin": "chū guān yǐhòu wǎng yòu zǒu, gēnzhe \"jīchǎng jiéyùn\" de zhǐbiāo zǒu jiù kěyǐ le",
-          "japanese": "入国審査を出て右へ行き、「空港MRT」の案内板に従って進めば大丈夫です。"
+          "pinyin": "chū guān yǐhòu, gēnzhe \"jīchǎng jiéyùn\" de zhǐbiāo zǒu jiù kěyǐ le",
+          "japanese": "税関を出たら、「空港MRT」の案内板に従って進めば大丈夫です。"
         },
         {
           "speaker": "learner",
@@ -53,10 +53,10 @@
         },
         {
           "speaker": "partner",
-          "traditional": "好的，出關以後往右走，就能看到機場捷運的指示牌。",
+          "traditional": "好的，出關以後跟著指標走，就能看到機場捷運的指示牌。",
           "traditionalStatus": "authored",
-          "pinyin": "hǎo de, chū guān yǐhòu wǎng yòu zǒu, jiù néng kàndào jīchǎng jiéyùn de zhǐshìpái",
-          "japanese": "はい、入国審査を出て右に行くと、空港MRTの案内板が見えますよ。"
+          "pinyin": "hǎo de, chū guān yǐhòu gēnzhe zhǐbiāo zǒu, jiù néng kàndào jīchǎng jiéyùn de zhǐshìpái",
+          "japanese": "はい、税関を出たら案内板に従って進むと、空港MRTの案内板が見えますよ。"
         }
       ],
       "reviewStatus": "draft",
