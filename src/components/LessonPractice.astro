@@ -17,7 +17,7 @@ const json = JSON.stringify(questions);
       <p class="practice-label">確認クイズ</p>
       <h2 id="practice-heading">練習</h2>
       <p class="practice-intro">各質問に答えて、レッスンを完了しましょう。</p>
-      <div id="practice-root" role="region" aria-labelledby="practice-heading" aria-live="polite">
+      <div id="practice-root" aria-live="polite">
         <p class="loading-placeholder">読み込み中…</p>
       </div>
     </section>
@@ -64,6 +64,8 @@ const json = JSON.stringify(questions);
       syncBadge();
       root.innerHTML =
         '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+      if (complete) complete.tabIndex = -1;
     }
 
     function render() {
@@ -77,6 +79,8 @@ const json = JSON.stringify(questions);
       if (isComplete && getCurrentIndex(session) === 0) {
         root.innerHTML =
           '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
+        const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+        if (complete) complete.tabIndex = -1;
         return;
       }
 
@@ -130,12 +134,22 @@ const json = JSON.stringify(questions);
           '<p class="feedback-correct"><span class="feedback-icon" aria-hidden="true">✓</span><span>正解！</span></p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
+        feedback.tabIndex = -1;
+        feedback.focus();
         if (result.session.status === 'completed') {
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
-          timer.schedule(() => renderCompleted(), 1200);
+          timer.schedule(() => {
+            renderCompleted();
+            const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+            if (complete) complete.focus();
+          }, 1200);
         } else {
-          timer.schedule(() => render(), 1200);
+          timer.schedule(() => {
+            render();
+            const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+            if (firstChoice) firstChoice.focus();
+          }, 1200);
         }
       } else {
         btn.classList.add('practice-choice--incorrect');
@@ -146,7 +160,13 @@ const json = JSON.stringify(questions);
           '</p>';
         feedback.className = 'practice-feedback feedback-visible feedback-visible--incorrect';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        timer.schedule(() => render(), 2000);
+        feedback.tabIndex = -1;
+        feedback.focus();
+        timer.schedule(() => {
+          render();
+          const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+          if (firstChoice) firstChoice.focus();
+        }, 2000);
       }
     }
 

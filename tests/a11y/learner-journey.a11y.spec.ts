@@ -1,0 +1,86 @@
+import { fileURLToPath } from 'node:url';
+import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { A11Y_CASES, A11Y_THEMES } from './matrix';
+import {
+  assertNoExternalRequests,
+  assertStructuralContract,
+  PROGRESS_STORAGE_KEY,
+  readStorage,
+  setupSurface,
+  THEME_STORAGE_KEY,
+} from './helpers';
+
+/**
+ * Required axe tags for the automated WCAG AA pass: color contrast,
+ * landmarks/headings structure, accessible names/roles/states, language
+ * attributes, form/control semantics and duplicate-id detection are all
+ * members of these tags. Running the full default rule set keeps serious and
+ * critical violations visible and unsuppressed.
+ */
+const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+/** Only serious and critical impacts block the matrix. */
+const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
+
+for (const theme of A11Y_THEMES) {
+  test.describe(`${theme} theme`, () => {
+    test.use({
+      colorScheme: theme,
+      storageState: fileURLToPath(
+        new URL(`./fixtures/${theme}.storage.json`, import.meta.url),
+      ),
+    });
+
+    for (const a11yCase of A11Y_CASES.filter(
+      (candidate) => candidate.theme === theme,
+    )) {
+      test(`axe WCAG AA scan: ${a11yCase.surface}`, async ({ page }) => {
+        const externalRequests = await setupSurface(
+          page,
+          a11yCase.surface,
+          theme,
+        );
+
+        await assertStructuralContract(page);
+        assertNoExternalRequests(externalRequests);
+
+        const results = await new AxeBuilder({ page })
+          .withTags(WCAG_AA_TAGS)
+          .analyze();
+
+        const blocking = results.violations.filter(
+          (violation) =>
+            violation.impact != null && BLOCKING_IMPACTS.has(violation.impact),
+        );
+        if (blocking.length > 0) {
+          const detail = blocking
+            .map((violation) => {
+              const targets = violation.nodes
+                .map((node) => node.target.join(' '))
+                .join(', ');
+              return `[${violation.impact}] ${violation.id} at ${targets}: ${violation.helpUrl}`;
+            })
+            .join('\n');
+          throw new Error(
+            `serious/critical axe violations on ${theme}/${a11yCase.surface}:\n${detail}`,
+          );
+        }
+
+        // The isolated profile is preserved: completion writes only the
+        // progress key for the completed lesson.
+        const storage = await readStorage(page);
+        const expectedProgress =
+          a11yCase.surface === 'completion'
+            ? ['lesson-001']
+            : undefined;
+        expect(storage[THEME_STORAGE_KEY]).toBe(theme);
+        if (expectedProgress) {
+          expect(storage[PROGRESS_STORAGE_KEY]).toBe(
+            JSON.stringify(expectedProgress),
+          );
+        }
+      });
+    }
+  });
+}
