@@ -4,6 +4,8 @@ import {
   ensureBasicVocabularyProgressCoordinator,
   getBasicVocabularyProgressCoordinator,
 } from './basicVocabularyProgressCoordinator';
+import { getSupabaseBrowserClient } from '../lib/supabaseBrowserClient';
+import { isValidSupabaseUserId } from '../domain/basicVocabularyProgressScope';
 import type { LearningPathMemberRef } from '../types/learningPath';
 import type {
   TravelQuestReadinessDocument,
@@ -124,6 +126,28 @@ export function initPathsReadiness(
   }
 
   renderAll();
+
+  // Reflect a signed-in user's user-scoped progress on direct /paths/ load.
+  // The account UI is only mounted on the vocabulary pages, so this route
+  // reads the existing Supabase session itself and hands the identity to the
+  // coordinator (which switches to the user-scoped runtime). This is
+  // read-only: no login control, no new key, no migration, no progress write.
+  // A session read can never expose token material into the DOM.
+  void (async () => {
+    const client = getSupabaseBrowserClient();
+    if (client === null) return;
+    try {
+      const { data } = await client.auth.getSession();
+      const session = data.session;
+      if (session !== null && isValidSupabaseUserId(session.user.id)) {
+        ensureBasicVocabularyProgressCoordinator().acceptSignedIn(session.user.id);
+        renderAll();
+      }
+    } catch {
+      // A failed session read is not an auth error we can surface safely;
+      // stay guest-scoped and keep the SSR-empty render.
+    }
+  })();
 
   function onPageShow(): void {
     renderAll();

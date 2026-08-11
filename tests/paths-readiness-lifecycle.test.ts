@@ -1,6 +1,11 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../src/lib/supabaseBrowserClient', () => ({
+  getSupabaseBrowserClient: vi.fn(),
+}));
+import { getSupabaseBrowserClient } from '../src/lib/supabaseBrowserClient';
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
   BasicVocabularyProgressStore,
@@ -124,6 +129,7 @@ afterEach(() => {
   window.localStorage.clear();
   resetBasicVocabularyProgressCoordinator();
   setBasicVocabularyProgressCoordinator(null);
+  vi.mocked(getSupabaseBrowserClient).mockReset();
 });
 
 // ─── Initial SSR-equivalent rendering ─────────────────────────────────────────
@@ -216,21 +222,22 @@ describe('progress signals', () => {
     expect(cardProgress(root, 'hsk-vocabulary')).toBe('5 / 5 完了');
   });
 
-  it('reflects user-scoped basic-vocabulary progress via the coordinator (signed-in)', () => {
+  it('reflects user-scoped basic-vocabulary progress on direct /paths/ load (signed-in session)', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    // The route reads the existing Supabase session itself and hands the
+    // identity to the coordinator (no login UI, no pre-installed coordinator).
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue({
+      auth: {
+        getSession: async () => ({
+          data: { session: { user: { id: userId } } },
+        }),
+      },
+    } as never);
     const root = createRoot();
-    // The route must initialize the auth-aware coordinator itself (no
-    // pre-installed coordinator). initialize triggers initPathsReadiness which
-    // calls ensureBasicVocabularyProgressCoordinator.
     initialize(root);
-    const coordinator = getBasicVocabularyProgressCoordinator();
-    expect(coordinator).not.toBeNull();
-    coordinator!.acceptSignedIn('f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e');
 
     // A learner-rated item under the user key, not the guest key.
-    const userScope: BasicVocabularyProgressScope = {
-      kind: 'user',
-      userId: 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e',
-    };
+    const userScope: BasicVocabularyProgressScope = { kind: 'user', userId };
     const userStore = new BasicVocabularyProgressStore(
       window.localStorage,
       getBasicVocabularyProgressStorageKey(userScope),
@@ -238,13 +245,15 @@ describe('progress signals', () => {
     userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
     userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
 
-    // The readiness re-render reads the coordinator's user-scoped store, so the
-    // learned item counts toward order-and-pay even though the guest key is
-    // untouched.
-    window.dispatchEvent(new Event('pageshow'));
+    // Await the async session read + coordinator switch + re-render.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
-    coordinator!.dispose();
+    const coordinator = getBasicVocabularyProgressCoordinator();
+    expect(coordinator?.getStore().getStorageKey()).toBe(
+      getBasicVocabularyProgressStorageKey(userScope),
+    );
+    coordinator?.dispose();
   });
 
   it('guests read the guest store when no coordinator was created elsewhere', () => {
