@@ -66,6 +66,974 @@
       "caution": "日本語の「手紙（てがみ）」＝ letter とは意味がまったく違う。中国語では「手に使う紙」＝ toilet paper。",
       "painPointTags": ["kanji-false-friend"],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "kanji-bridge-001",
+      "traditional": "電話",
+      "traditionalStatus": "authored",
+      "simplified": "电话",
+      "simplifiedStatus": "authored",
+      "pinyin": "diànhuà",
+      "japanese": "電話（でんわ）",
+      "kana": "でんわ",
+      "category": "communication",
+      "similarityType": "same-meaning",
+      "toneNote": "diàn は第四声、huà も第四声。日本語の「でんわ」の平板アクセントと違い、二つの音節をそれぞれはっきり下げる。",
+      "examples": [
+        {"traditional": "我打個電話", "traditionalStatus": "authored", "simplified": "我打个电话", "simplifiedStatus": "authored", "pinyin": "wǒ dǎ gè diànhuà", "japanese": "電話を一本かけます"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-002",
+      "traditional": "交通",
+      "traditionalStatus": "authored",
+      "simplified": "交通",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiāotōng",
+      "japanese": "交通（こうつう）",
+      "kana": "こうつう",
+      "category": "transport",
+      "similarityType": "same-meaning",
+      "toneNote": "jiāo は第一声、tōng は第一声。日本語の「こうつう」と違い、両方の音節を高く平らに保つ。",
+      "examples": [
+        {"traditional": "這裡交通很方便", "traditionalStatus": "authored", "simplified": "这里交通很方便", "simplifiedStatus": "authored", "pinyin": "zhèlǐ jiāotōng hěn fāngbiàn", "japanese": "ここは交通の便がとてもいい"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-003",
+      "traditional": "銀行",
+      "traditionalStatus": "authored",
+      "simplified": "银行",
+      "simplifiedStatus": "authored",
+      "pinyin": "yínháng",
+      "japanese": "銀行（ぎんこう）",
+      "kana": "ぎんこう",
+      "category": "money",
+      "similarityType": "same-meaning",
+      "toneNote": "yín は第二声（上がる音）、háng は第二声。日本語の「ぎんこう」の平板アクセントと違い、上がりに注意する。",
+      "examples": [
+        {"traditional": "銀行在哪裡", "traditionalStatus": "authored", "simplified": "银行在哪里", "simplifiedStatus": "authored", "pinyin": "yínháng zài nǎlǐ", "japanese": "銀行はどこですか"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-004",
+      "traditional": "安全",
+      "traditionalStatus": "authored",
+      "simplified": "安全",
+      "simplifiedStatus": "authored",
+      "pinyin": "ānquán",
+      "japanese": "安全（あんぜん）",
+      "kana": "あんぜん",
+      "category": "general",
+      "similarityType": "same-meaning",
+      "toneNote": "ān は第一声、quán は第二声。日本語の「あんぜん」の平板アクセントと違い、ān を高く保ち quán を上げる。",
+      "examples": [
+        {"traditional": "注意安全", "traditionalStatus": "authored", "simplified": "注意安全", "simplifiedStatus": "authored", "pinyin": "zhùyì ānquán", "japanese": "安全に気をつけてください"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-005",
+      "traditional": "台灣",
+      "traditionalStatus": "authored",
+      "simplified": "台湾",
+      "simplifiedStatus": "authored",
+      "pinyin": "Táiwān",
+      "japanese": "台湾（たいわん）",
+      "kana": "たいわん",
+      "category": "place",
+      "similarityType": "same-meaning",
+      "toneNote": "Tái は第二声、wān は第一声。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本語の「台湾」は簡体字「台湾」と同じ形。台湾で使われる繁体字では「台灣」と書く。「灣」は「湾」の繁体字。看板の形を見てどちらの表記かを判断しよう。",
+      "examples": [
+        {"traditional": "我住在台灣", "traditionalStatus": "authored", "simplified": "我住在台湾", "simplifiedStatus": "authored", "pinyin": "wǒ zhù zài Táiwān", "japanese": "私は台湾に住んでいます"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-006",
+      "traditional": "體",
+      "traditionalStatus": "authored",
+      "simplified": "体",
+      "simplifiedStatus": "authored",
+      "pinyin": "tǐ",
+      "japanese": "体（からだ）",
+      "kana": "からだ",
+      "category": "body",
+      "similarityType": "same-meaning",
+      "toneNote": "tǐ は第三声（低くから上がる）。日本語の「からだ／たい」とは発音が違う。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本の新字体「体」は簡体字「体」と同形だが、繁体字では「體」。中国語の読みは日本語の「からだ／たい」とは違い tǐ（ティー）。「體」の形を覚えよう。",
+      "examples": [
+        {"traditional": "身體健康", "traditionalStatus": "authored", "simplified": "身体健康", "simplifiedStatus": "authored", "pinyin": "shēntǐ jiànkāng", "japanese": "体が健康です"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-007",
+      "traditional": "捷運",
+      "traditionalStatus": "authored",
+      "simplified": "捷运",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiéyùn",
+      "japanese": "MRT／地下鉄（台北）",
+      "kana": "エムアールティー",
+      "category": "transport",
+      "similarityType": "same-meaning",
+      "toneNote": "jié は第二声、yùn は第四声。日本語の「捷（ショウ）」の音読みから発音を推測しない。",
+      "painPointTags": ["taiwan-mainland-usage"],
+      "caution": "台湾では地下鉄／MRT を「捷運」と呼ぶ。中国本土では「地铁（dìtiě）」が一般的なので、混同しないこと。読み jié は日本語の「捷（ショウ）」とは異なる。",
+      "examples": [
+        {"traditional": "坐捷運去台北車站", "traditionalStatus": "authored", "simplified": "坐捷运去台北车站", "simplifiedStatus": "authored", "pinyin": "zuò jiéyùn qù Táiběi chēzhàn", "japanese": "地下鉄で台北駅へ行く"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-008",
+      "traditional": "便利",
+      "traditionalStatus": "authored",
+      "simplified": "便利",
+      "simplifiedStatus": "authored",
+      "pinyin": "biànlì",
+      "japanese": "便利（べんり）",
+      "kana": "べんり",
+      "category": "adjective",
+      "similarityType": "same-meaning",
+      "toneNote": "biàn は第四声、lì は第四声。",
+      "painPointTags": ["pinyin-pronunciation"],
+      "caution": "意味は同じ「べんり」だが、発音は似ているだけで別物。ベンリではなく「ビエンリー（biànlì）」と覚える。音の似た感じは覚え方のヒントにだけ使い、正しい発音の代わりにしてはいけない。",
+      "examples": [
+        {"traditional": "這家店很便利", "traditionalStatus": "authored", "simplified": "这家店很便利", "simplifiedStatus": "authored", "pinyin": "zhè jiā diàn hěn biànlì", "japanese": "この店はとても便利だ"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-009",
+      "traditional": "食物",
+      "traditionalStatus": "authored",
+      "simplified": "食物",
+      "simplifiedStatus": "authored",
+      "pinyin": "shíwù",
+      "japanese": "食べ物（しょくもつ）",
+      "kana": "しょくもつ",
+      "category": "food",
+      "similarityType": "same-meaning",
+      "toneNote": "shí は第二声、wù は第四声。shí の sh は舌を後ろに巻くそり舌音。",
+      "examples": [
+        {"traditional": "這裡的食物很好吃", "traditionalStatus": "authored", "simplified": "这里的食物很好吃", "simplifiedStatus": "authored", "pinyin": "zhèlǐ de shíwù hěn hǎochī", "japanese": "ここの食べ物はとてもおいしい"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-010",
+      "traditional": "世界",
+      "traditionalStatus": "authored",
+      "simplified": "世界",
+      "simplifiedStatus": "authored",
+      "pinyin": "shìjiè",
+      "japanese": "世界（せかい）",
+      "kana": "せかい",
+      "category": "general",
+      "similarityType": "same-meaning",
+      "toneNote": "shì は第四声、jiè は第四声。日本語の「せかい」の平板アクセントと違い、声調を下げる。",
+      "examples": [
+        {"traditional": "全世界", "traditionalStatus": "authored", "simplified": "全世界", "simplifiedStatus": "authored", "pinyin": "quán shìjiè", "japanese": "全世界"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-011",
+      "traditional": "動物",
+      "traditionalStatus": "authored",
+      "simplified": "动物",
+      "simplifiedStatus": "authored",
+      "pinyin": "dòngwù",
+      "japanese": "動物（どうぶつ）",
+      "kana": "どうぶつ",
+      "category": "animal",
+      "similarityType": "same-meaning",
+      "toneNote": "dòng は第四声、wù は第四声。「動」の読みは日本語の「ドウ」とは違い、d は無気音。",
+      "examples": [
+        {"traditional": "我喜歡動物", "traditionalStatus": "authored", "simplified": "我喜欢动物", "simplifiedStatus": "authored", "pinyin": "wǒ xǐhuān dòngwù", "japanese": "私は動物が好きです"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-012",
+      "traditional": "中心",
+      "traditionalStatus": "authored",
+      "simplified": "中心",
+      "simplifiedStatus": "authored",
+      "pinyin": "zhōngxīn",
+      "japanese": "中心（ちゅうしん）",
+      "kana": "ちゅうしん",
+      "category": "place",
+      "similarityType": "same-meaning",
+      "toneNote": "zhōng は第一声、xīn は第一声。zh のそり舌と x の摩擦音に注意。",
+      "examples": [
+        {"traditional": "市中心", "traditionalStatus": "authored", "simplified": "市中心", "simplifiedStatus": "authored", "pinyin": "shì zhōngxīn", "japanese": "市の中心部"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-013",
+      "traditional": "大學",
+      "traditionalStatus": "authored",
+      "simplified": "大学",
+      "simplifiedStatus": "authored",
+      "pinyin": "dàxué",
+      "japanese": "大学（だいがく）",
+      "kana": "だいがく",
+      "category": "education",
+      "similarityType": "same-meaning",
+      "toneNote": "dà は第四声、xué は第二声。日本語の「だいがく」とはアクセントが違う。",
+      "examples": [
+        {"traditional": "我在大學讀書", "traditionalStatus": "authored", "simplified": "我在大学读书", "simplifiedStatus": "authored", "pinyin": "wǒ zài dàxué dúshū", "japanese": "私は大学で勉強しています"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-014",
+      "traditional": "病院",
+      "traditionalStatus": "authored",
+      "simplified": "病院",
+      "simplifiedStatus": "authored",
+      "pinyin": "bìngyuàn",
+      "japanese": "病院（びょういん）",
+      "kana": "びょういん",
+      "category": "health",
+      "similarityType": "same-meaning",
+      "toneNote": "bìng は第四声、yuàn は第四声。日本語の「びょういん」と違い、両方下げる。",
+      "examples": [
+        {"traditional": "我去病院", "traditionalStatus": "authored", "simplified": "我去病院", "simplifiedStatus": "authored", "pinyin": "wǒ qù bìngyuàn", "japanese": "病院に行く"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-015",
+      "traditional": "教室",
+      "traditionalStatus": "authored",
+      "simplified": "教室",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiàoshì",
+      "japanese": "教室（きょうしつ）",
+      "kana": "きょうしつ",
+      "category": "education",
+      "similarityType": "same-meaning",
+      "toneNote": "jiào は第四声、shì は第四声。日本語の「きょうしつ」と違い、両方下げる。",
+      "examples": [
+        {"traditional": "教室在哪裡", "traditionalStatus": "authored", "simplified": "教室在哪里", "simplifiedStatus": "authored", "pinyin": "jiàoshì zài nǎlǐ", "japanese": "教室はどこですか"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-016",
+      "traditional": "動物園",
+      "traditionalStatus": "authored",
+      "simplified": "动物园",
+      "simplifiedStatus": "authored",
+      "pinyin": "dòngwùyuán",
+      "japanese": "動物園（どうぶつえん）",
+      "kana": "どうぶつえん",
+      "category": "place",
+      "similarityType": "same-meaning",
+      "toneNote": "dòng 第四声、wù 第四声、yuán 第二声。",
+      "examples": [
+        {"traditional": "明天去動物園", "traditionalStatus": "authored", "simplified": "明天去动物园", "simplifiedStatus": "authored", "pinyin": "míngtiān qù dòngwùyuán", "japanese": "明日動物園に行きます"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-017",
+      "traditional": "時間",
+      "traditionalStatus": "authored",
+      "simplified": "时间",
+      "simplifiedStatus": "authored",
+      "pinyin": "shíjiān",
+      "japanese": "時間（じかん）",
+      "kana": "じかん",
+      "category": "time",
+      "similarityType": "same-meaning",
+      "toneNote": "shí は第二声、jiān は第一声。日本語の「じかん」の音読みから推測せず、shí のそり舌に注意する。",
+      "examples": [
+        {"traditional": "沒有時間", "traditionalStatus": "authored", "simplified": "没有时间", "simplifiedStatus": "authored", "pinyin": "méiyǒu shíjiān", "japanese": "時間がない"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-018",
+      "traditional": "問題",
+      "traditionalStatus": "authored",
+      "simplified": "问题",
+      "simplifiedStatus": "authored",
+      "pinyin": "wèntí",
+      "japanese": "問題（もんだい）",
+      "kana": "もんだい",
+      "category": "general",
+      "similarityType": "same-meaning",
+      "toneNote": "wèn は第四声、tí は第二声。日本語の「もんだい」とアクセントが異なる。",
+      "examples": [
+        {"traditional": "有問題嗎", "traditionalStatus": "authored", "simplified": "有问题吗", "simplifiedStatus": "authored", "pinyin": "yǒu wèntí ma", "japanese": "問題はありますか"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-019",
+      "traditional": "文化",
+      "traditionalStatus": "authored",
+      "simplified": "文化",
+      "simplifiedStatus": "authored",
+      "pinyin": "wénhuà",
+      "japanese": "文化（ぶんか）",
+      "kana": "ぶんか",
+      "category": "culture",
+      "similarityType": "same-meaning",
+      "toneNote": "wén は第二声、huà は第四声。日本語の「ぶんか」の平板アクセントとは違う。",
+      "examples": [
+        {"traditional": "台灣文化很有趣", "traditionalStatus": "authored", "simplified": "台湾文化很有趣", "simplifiedStatus": "authored", "pinyin": "Táiwān wénhuà hěn yǒuqù", "japanese": "台湾の文化はとても面白い"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-020",
+      "traditional": "社會",
+      "traditionalStatus": "authored",
+      "simplified": "社会",
+      "simplifiedStatus": "authored",
+      "pinyin": "shèhuì",
+      "japanese": "社会（しゃかい）",
+      "kana": "しゃかい",
+      "category": "general",
+      "similarityType": "same-meaning",
+      "toneNote": "shè は第四声、huì は第四声。日本語の「しゃかい」と違い、両方下げる。",
+      "examples": [
+        {"traditional": "現代社會", "traditionalStatus": "authored", "simplified": "现代社会", "simplifiedStatus": "authored", "pinyin": "xiàndài shèhuì", "japanese": "現代社会"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-021",
+      "traditional": "歡迎",
+      "traditionalStatus": "authored",
+      "simplified": "欢迎",
+      "simplifiedStatus": "authored",
+      "pinyin": "huānyíng",
+      "japanese": "歓迎する／ようこそ",
+      "kana": "かんげい",
+      "category": "greeting",
+      "similarityType": "partial-overlap",
+      "toneNote": "huān は第一声、yíng は第二声。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本の「歓迎」の「歓」の形は中国語では使われない。正しい形は「歡迎」（繁体）「欢迎」（简体）。意味は「ようこそ／歓迎」で共通している。",
+      "examples": [
+        {"traditional": "歡迎光臨", "traditionalStatus": "authored", "simplified": "欢迎光临", "simplifiedStatus": "authored", "pinyin": "huānyíng guānglín", "japanese": "ようこそお越しくださいました"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-022",
+      "traditional": "樂",
+      "traditionalStatus": "authored",
+      "simplified": "乐",
+      "simplifiedStatus": "authored",
+      "pinyin": "lè",
+      "japanese": "楽しさ",
+      "kana": "たのしさ",
+      "category": "adjective",
+      "similarityType": "partial-overlap",
+      "toneNote": "「快樂/快乐」では lè（第四声）。「音樂/音乐」では yuè（第四声）。文脈で読みが変わる。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本語の「楽」の形は中国語では使われない。正しい形は「樂」（繁体）「乐」（简体）。読みは文脈で変わる——「快樂/快乐」では lè（楽しさ）、「音樂/音乐」では yuè（音楽）。日本語の「楽（らく）」＝ easy の意味と混同しないこと。",
+      "examples": [
+        {"traditional": "快樂", "traditionalStatus": "authored", "simplified": "快乐", "simplifiedStatus": "authored", "pinyin": "kuàilè", "japanese": "楽しい"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-023",
+      "traditional": "發",
+      "traditionalStatus": "authored",
+      "simplified": "发",
+      "simplifiedStatus": "authored",
+      "pinyin": "fā",
+      "japanese": "出す／送る",
+      "kana": "はつ",
+      "category": "action",
+      "similarityType": "partial-overlap",
+      "toneNote": "fā は第一声（高く平ら）。日本語の「ハツ」の促音とは発音が違う。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本語の「発」の形は中国語では使われない。正しい形は「發」（繁体）「发」（简体）。読みは fā（ファー）。",
+      "examples": [
+        {"traditional": "出發", "traditionalStatus": "authored", "simplified": "出发", "simplifiedStatus": "authored", "pinyin": "chūfā", "japanese": "出発する"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-024",
+      "traditional": "熱",
+      "traditionalStatus": "authored",
+      "simplified": "热",
+      "simplifiedStatus": "authored",
+      "pinyin": "rè",
+      "japanese": "熱い／熱",
+      "kana": "ねつ",
+      "category": "adjective",
+      "similarityType": "partial-overlap",
+      "toneNote": "rè は第四声。r はそり舌音で、日本語の「る」とは発音が違う。",
+      "painPointTags": ["traditional-simplified"],
+      "caution": "日本の「熱」は繁体字「熱」と同形。簡体字は「热」なので混同しないこと。読みは rè（ルー）。",
+      "examples": [
+        {"traditional": "天氣很熱", "traditionalStatus": "authored", "simplified": "天气很热", "simplifiedStatus": "authored", "pinyin": "tiānqì hěn rè", "japanese": "天気がとても暑い"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-025",
+      "traditional": "走",
+      "traditionalStatus": "authored",
+      "simplified": "走",
+      "simplifiedStatus": "authored",
+      "pinyin": "zǒu",
+      "japanese": "歩く",
+      "kana": "あるく",
+      "category": "action",
+      "similarityType": "partial-overlap",
+      "toneNote": "zǒu は第三声（低くから上がる）。日本語の「ソウ」の音読みから発音を推測しない。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語では「走」＝ 走る（run）。中国語では「走」＝ 歩く（walk）。「車が走る」は中国語で「車跑（pǎo）」。「走」を見たら必ず「歩く」を思い出すこと。",
+      "examples": [
+        {"traditional": "往前走", "traditionalStatus": "authored", "simplified": "往前走", "simplifiedStatus": "authored", "pinyin": "wǎng qián zǒu", "japanese": "前へ歩いて行く"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-026",
+      "traditional": "湯",
+      "traditionalStatus": "authored",
+      "simplified": "汤",
+      "simplifiedStatus": "authored",
+      "pinyin": "tāng",
+      "japanese": "スープ",
+      "kana": "スープ",
+      "category": "food",
+      "similarityType": "partial-overlap",
+      "toneNote": "tāng は第一声。日本語の「トウ」とは母音が違う。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「湯（ゆ）」＝ お湯／風呂。中国語の「湯」＝ スープ。日本語の意味を当てると「お湯」になってしまう。「熱湯」は中国語で「熱水（rèshuǐ）」。",
+      "examples": [
+        {"traditional": "喝湯", "traditionalStatus": "authored", "simplified": "喝汤", "simplifiedStatus": "authored", "pinyin": "hē tāng", "japanese": "スープを飲む"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-027",
+      "traditional": "床",
+      "traditionalStatus": "authored",
+      "simplified": "床",
+      "simplifiedStatus": "authored",
+      "pinyin": "chuáng",
+      "japanese": "ベッド",
+      "kana": "ベッド",
+      "category": "furniture",
+      "similarityType": "partial-overlap",
+      "toneNote": "chuáng は第二声。ch はそり舌音。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「床（ゆか）」＝ 床（floor）。中国語の「床」＝ ベッド。日本語の「床」の意味を当てると意味が通じない。床（floor）は「地板（dìbǎn）」。",
+      "examples": [
+        {"traditional": "一張床", "traditionalStatus": "authored", "simplified": "一张床", "simplifiedStatus": "authored", "pinyin": "yī zhāng chuáng", "japanese": "ベッド一台"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-028",
+      "traditional": "本",
+      "traditionalStatus": "authored",
+      "simplified": "本",
+      "simplifiedStatus": "authored",
+      "pinyin": "běn",
+      "japanese": "もと／量詞",
+      "kana": "ほん",
+      "category": "object",
+      "similarityType": "partial-overlap",
+      "toneNote": "běn は第三声。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「本（ほん）」＝ 本（book）。中国語の「本」は単独では「もと／根源」や量詞（冊）として使う。「book」は「書／書籍（shū）」。「一本」＝ 一冊で、日本語の「いっぽん」と範囲が違うので注意。",
+      "examples": [
+        {"traditional": "一本書", "traditionalStatus": "authored", "simplified": "一本书", "simplifiedStatus": "authored", "pinyin": "yī běn shū", "japanese": "本一冊"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-029",
+      "traditional": "妻子",
+      "traditionalStatus": "authored",
+      "simplified": "妻子",
+      "simplifiedStatus": "authored",
+      "pinyin": "qīzi",
+      "japanese": "妻",
+      "kana": "つま",
+      "category": "family",
+      "similarityType": "partial-overlap",
+      "toneNote": "qī は第一声、zi は軽声。q は日本語の「チ」に近い無気音。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「妻子（さいし）」＝ 妻と子。中国語の「妻子」＝ 妻（wife）のみ。「子」が含まれていても「子ども」の意味ではない。",
+      "examples": [
+        {"traditional": "他的妻子", "traditionalStatus": "authored", "simplified": "他的妻子", "simplifiedStatus": "authored", "pinyin": "tā de qīzi", "japanese": "彼の妻"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-030",
+      "traditional": "道具",
+      "traditionalStatus": "authored",
+      "simplified": "道具",
+      "simplifiedStatus": "authored",
+      "pinyin": "dàojù",
+      "japanese": "道具（どうぐ）",
+      "kana": "どうぐ",
+      "category": "object",
+      "similarityType": "partial-overlap",
+      "toneNote": "dào は第四声、jù は第四声。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「道具」＝ 道具（tool）。中国語の「道具」は「（舞台・撮影用の）小道具」の意味が強く、日常の工具は「工具（gōngjù）」。文脈に注意。",
+      "examples": [
+        {"traditional": "買道具", "traditionalStatus": "authored", "simplified": "买道具", "simplifiedStatus": "authored", "pinyin": "mǎi dàojù", "japanese": "小道具を買う"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-031",
+      "traditional": "左右",
+      "traditionalStatus": "authored",
+      "simplified": "左右",
+      "simplifiedStatus": "authored",
+      "pinyin": "zuǒyòu",
+      "japanese": "左右／およそ",
+      "kana": "さゆう",
+      "category": "general",
+      "similarityType": "partial-overlap",
+      "toneNote": "zuǒ は第三声、yòu は第四声。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「左右」＝ 左右・支配（左右する）。中国語の「左右」は「左右」と数量の後ろに置く「およそ」の意味。「左右する」の意味は中国語では「影響（yǐngxiǎng）」を使う。",
+      "examples": [
+        {"traditional": "十個人左右", "traditionalStatus": "authored", "simplified": "十个人左右", "simplifiedStatus": "authored", "pinyin": "shí gè rén zuǒyòu", "japanese": "十人ほど"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-032",
+      "traditional": "相對",
+      "traditionalStatus": "authored",
+      "simplified": "相对",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiāngduì",
+      "japanese": "相対的",
+      "kana": "そうたい",
+      "category": "adjective",
+      "similarityType": "partial-overlap",
+      "toneNote": "xiāng は第一声、duì は第四声。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「相対」＝ 相対（relative）。中国語の「相對」は「相対的」に加えて「向かい合う」の意味もある。「相對來說」＝ 相対的に言えば。",
+      "examples": [
+        {"traditional": "相對來說", "traditionalStatus": "authored", "simplified": "相对来说", "simplifiedStatus": "authored", "pinyin": "xiāngduì lái shuō", "japanese": "相対的に言えば"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-033",
+      "traditional": "有",
+      "traditionalStatus": "authored",
+      "simplified": "有",
+      "simplifiedStatus": "authored",
+      "pinyin": "yǒu",
+      "japanese": "持っている／ある",
+      "kana": "もっている",
+      "category": "grammar",
+      "similarityType": "partial-overlap",
+      "toneNote": "yǒu は第三声。",
+      "painPointTags": ["same-kanji-different-usage"],
+      "caution": "日本語の「有る（ある）」は存在を表すが、中国語の「有」は所有の意味が強い。「我有兄弟」のように所有構造になる。否定は「沒有（méiyǒu）」で、存在と所有の否定の両方に使う。",
+      "examples": [
+        {"traditional": "我有兩個小孩", "traditionalStatus": "authored", "simplified": "我有两个小孩", "simplifiedStatus": "authored", "pinyin": "wǒ yǒu liǎng gè xiǎohái", "japanese": "私には子どもが二人いる"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-034",
+      "traditional": "作業",
+      "traditionalStatus": "authored",
+      "simplified": "作业",
+      "simplifiedStatus": "authored",
+      "pinyin": "zuòyè",
+      "japanese": "宿題・作業",
+      "kana": "しゅくだい",
+      "category": "education",
+      "similarityType": "partial-overlap",
+      "toneNote": "zuò は第四声、yè は第四声。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「作業（さぎょう）」＝ 仕事・作業（work）。中国語の「作業」は主に「宿題・課題（homework）」や「（軍事）作戦」の意味。「作業をしましょう」は中国語で「寫作業」だと「宿題をしましょう」に近い。",
+      "examples": [
+        {"traditional": "寫作業", "traditionalStatus": "authored", "simplified": "写作业", "simplifiedStatus": "authored", "pinyin": "xiě zuòyè", "japanese": "宿題をする"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-035",
+      "traditional": "事情",
+      "traditionalStatus": "authored",
+      "simplified": "事情",
+      "simplifiedStatus": "authored",
+      "pinyin": "shìqing",
+      "japanese": "用事・事柄",
+      "kana": "じじょう",
+      "category": "general",
+      "similarityType": "partial-overlap",
+      "toneNote": "shì は第四声、qing は軽声（軽く短く）。",
+      "painPointTags": ["same-kanji-different-meaning"],
+      "caution": "日本語の「事情（じじょう）」＝ 事情・理由（背景）。中国語の「事情」＝ 事・用事（matter, affair）。「用事がある」は「有事情」。日本語の「事情を説明する」は中国語で「説明情況／情况（qíngkuàng）」。",
+      "examples": [
+        {"traditional": "有事情要做", "traditionalStatus": "authored", "simplified": "有事情要做", "simplifiedStatus": "authored", "pinyin": "yǒu shìqing yào zuò", "japanese": "用事がある"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-036",
+      "traditional": "大丈夫",
+      "traditionalStatus": "authored",
+      "simplified": "大丈夫",
+      "simplifiedStatus": "authored",
+      "pinyin": "dàzhàngfu",
+      "japanese": "立派な男",
+      "kana": "だいじょうぶ",
+      "category": "adjective",
+      "similarityType": "false-friend",
+      "toneNote": "dà 第四声、zhàng 第四声、fu 軽声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男。「大丈夫ですか」の意味で使うと「立派な男ですか」になる。OK は中国語では「沒關係（méiguānxi）」や「可以（kěyǐ）」。",
+      "examples": [
+        {"traditional": "他是個大丈夫", "traditionalStatus": "authored", "simplified": "他是个大丈夫", "simplifiedStatus": "authored", "pinyin": "tā shì gè dàzhàngfu", "japanese": "彼は立派な男だ"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-037",
+      "traditional": "勉強",
+      "traditionalStatus": "authored",
+      "simplified": "勉强",
+      "simplifiedStatus": "authored",
+      "pinyin": "miǎnqiǎng",
+      "japanese": "無理に／仕方なく",
+      "kana": "べんきょう",
+      "category": "adjective",
+      "similarityType": "false-friend",
+      "toneNote": "miǎn 第三声、qiǎng 第三声。3-3 の連続は 2-3 に変化する。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「勉強（べんきょう）」＝ 勉強する（study）。中国語の「勉強」＝ 無理に／仕方なく（forced, reluctant）。「勉強します」は中国語で「學習（xuéxí）」。日本語の意味で使うと全く通じない。",
+      "examples": [
+        {"traditional": "勉強答應", "traditionalStatus": "authored", "simplified": "勉强答应", "simplifiedStatus": "authored", "pinyin": "miǎnqiǎng dāying", "japanese": "無理やり承諾する"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-038",
+      "traditional": "新聞",
+      "traditionalStatus": "authored",
+      "simplified": "新闻",
+      "simplifiedStatus": "authored",
+      "pinyin": "xīnwén",
+      "japanese": "ニュース",
+      "kana": "しんぶん",
+      "category": "media",
+      "similarityType": "false-friend",
+      "toneNote": "xīn は第一声、wén は第二声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「新聞」＝ 新聞（newspaper）。中国語の「新聞」＝ ニュース（news）。新聞（newspaper）は中国語で「報紙（bàozhǐ）」。「看新聞」＝ ニュースを見る、で新聞紙を見る意味ではない。",
+      "examples": [
+        {"traditional": "看新聞", "traditionalStatus": "authored", "simplified": "看新闻", "simplifiedStatus": "authored", "pinyin": "kàn xīnwén", "japanese": "ニュースを見る"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-039",
+      "traditional": "汽車",
+      "traditionalStatus": "authored",
+      "simplified": "汽车",
+      "simplifiedStatus": "authored",
+      "pinyin": "qìchē",
+      "japanese": "自動車",
+      "kana": "きしゃ",
+      "category": "transport",
+      "similarityType": "false-friend",
+      "toneNote": "qì 第四声、chē 第一声。q は無気音で、日本語の「キ」とは違う。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「汽車（きしゃ）」＝ 列車（train）。中国語の「汽車」＝ 自動車（car）。列車（train）は中国語で「火車（huǒchē）」。",
+      "examples": [
+        {"traditional": "坐汽車去", "traditionalStatus": "authored", "simplified": "坐汽车去", "simplifiedStatus": "authored", "pinyin": "zuò qìchē qù", "japanese": "車で行く"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-040",
+      "traditional": "娘",
+      "traditionalStatus": "authored",
+      "simplified": "娘",
+      "simplifiedStatus": "authored",
+      "pinyin": "niáng",
+      "japanese": "母（口語）",
+      "kana": "むすめ",
+      "category": "family",
+      "similarityType": "false-friend",
+      "toneNote": "niáng は第二声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「娘（むすめ）」＝ 娘（daughter）。中国語の「娘」＝ 母（口語）や女性。「娘（daughter）」は中国語で「女兒（nǚ'ér）」。",
+      "examples": [
+        {"traditional": "她是我娘", "traditionalStatus": "authored", "simplified": "她是我娘", "simplifiedStatus": "authored", "pinyin": "tā shì wǒ niáng", "japanese": "彼女は私の母だ"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-041",
+      "traditional": "老婆",
+      "traditionalStatus": "authored",
+      "simplified": "老婆",
+      "simplifiedStatus": "authored",
+      "pinyin": "lǎopo",
+      "japanese": "妻（口語）",
+      "kana": "ろうば",
+      "category": "family",
+      "similarityType": "false-friend",
+      "toneNote": "lǎo 第三声、po 軽声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「老婆（ろうば）」＝ 年寄りの女。中国語の「老婆」＝ 妻（口語）。妻は正式には「太太（tàitai）」や「妻子（qīzi）」。",
+      "examples": [
+        {"traditional": "我老婆", "traditionalStatus": "authored", "simplified": "我老婆", "simplifiedStatus": "authored", "pinyin": "wǒ lǎopo", "japanese": "うちの妻"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-042",
+      "traditional": "檢討",
+      "traditionalStatus": "authored",
+      "simplified": "检讨",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiǎntǎo",
+      "japanese": "反省・自己批判",
+      "kana": "けんとう",
+      "category": "action",
+      "similarityType": "false-friend",
+      "toneNote": "jiǎn 第三声、tǎo 第三声。3-3 の連続は 2-3 に変化する。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「検討（けんとう）」＝ 検討する（examine, consider）。中国語の「檢討」＝ 反省・自己批判（self-criticism）。「検討します」は中国語で「考慮（kǎolǜ）」や「研究（yánjiū）」。会議で「檢討しましょう」と言うと「反省しましょう」になる。",
+      "examples": [
+        {"traditional": "自我檢討", "traditionalStatus": "authored", "simplified": "自我检讨", "simplifiedStatus": "authored", "pinyin": "zìwǒ jiǎntǎo", "japanese": "自己反省する"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-043",
+      "traditional": "放心",
+      "traditionalStatus": "authored",
+      "simplified": "放心",
+      "simplifiedStatus": "authored",
+      "pinyin": "fàngxīn",
+      "japanese": "安心する",
+      "kana": "ほうしん",
+      "category": "adjective",
+      "similarityType": "false-friend",
+      "toneNote": "fàng 第四声、xīn 第一声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「放心（ほうしん）」＝ 放心・ぼんやりする（absent-minded）。中国語の「放心」＝ 安心する（don't worry）。「你放心」＝ 安心してください。日本語の「放心」の意味は中国語で「發呆（fādāi）」。",
+      "examples": [
+        {"traditional": "你放心", "traditionalStatus": "authored", "simplified": "你放心", "simplifiedStatus": "authored", "pinyin": "nǐ fàngxīn", "japanese": "安心してください"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-044",
+      "traditional": "結束",
+      "traditionalStatus": "authored",
+      "simplified": "结束",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiéshù",
+      "japanese": "終わる",
+      "kana": "けっそく",
+      "category": "action",
+      "similarityType": "false-friend",
+      "toneNote": "jié 第二声、shù 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「結束（けっそく）」＝ 結束・団結（binding together）。中国語の「結束」＝ 終わる・終える（end）。「會議結束」＝ 会議が終わる。日本語の「結束」の意味は中国語で「團結（tuánjié）」。",
+      "examples": [
+        {"traditional": "會議結束", "traditionalStatus": "authored", "simplified": "会议结束", "simplifiedStatus": "authored", "pinyin": "huìyì jiéshù", "japanese": "会議が終わる"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-045",
+      "traditional": "工夫",
+      "traditionalStatus": "authored",
+      "simplified": "工夫",
+      "simplifiedStatus": "authored",
+      "pinyin": "gōngfu",
+      "japanese": "時間・暇",
+      "kana": "くふう",
+      "category": "noun",
+      "similarityType": "false-friend",
+      "toneNote": "gōng 第一声、fu 軽声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「工夫（くふう）」＝ 工夫・アイデア（ingenuity）。中国語の「工夫」＝ 時間・暇（time）。「沒工夫」＝ 暇がない。「工夫する」の意味は中国語で「想辦法（xiǎng bànfǎ）」や「下功夫（xià gōngfu）」。",
+      "examples": [
+        {"traditional": "沒工夫", "traditionalStatus": "authored", "simplified": "没工夫", "simplifiedStatus": "authored", "pinyin": "méi gōngfu", "japanese": "暇がない"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-046",
+      "traditional": "野菜",
+      "traditionalStatus": "authored",
+      "simplified": "野菜",
+      "simplifiedStatus": "authored",
+      "pinyin": "yěcài",
+      "japanese": "野に生える食用の草",
+      "kana": "やさい",
+      "category": "food",
+      "similarityType": "false-friend",
+      "toneNote": "yě 第三声、cài 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「野菜（やさい）」＝ 野菜（vegetable）。中国語の「野菜」＝ 野に生える食用の草（wild greens）。野菜（vegetable）は中国語で「蔬菜（shūcài）」。「買野菜」は「野草を買う」に近い意味になる。",
+      "examples": [
+        {"traditional": "山裡的野菜", "traditionalStatus": "authored", "simplified": "山里的野菜", "simplifiedStatus": "authored", "pinyin": "shān lǐ de yěcài", "japanese": "山の中の野草"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-047",
+      "traditional": "取締",
+      "traditionalStatus": "authored",
+      "simplified": "取缔",
+      "simplifiedStatus": "authored",
+      "pinyin": "qǔdì",
+      "japanese": "取り締まる",
+      "kana": "とりしまり",
+      "category": "action",
+      "similarityType": "false-friend",
+      "toneNote": "qǔ 第三声、dì 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「取締（とりしまり）」＝ 取り締まり・取締役（control）。中国語の「取締」＝ 取り締まる・禁止する（ban, suppress）。「取締役」は中国語で「董事（dǒngshì）」。",
+      "examples": [
+        {"traditional": "取締非法經營", "traditionalStatus": "authored", "simplified": "取缔非法经营", "simplifiedStatus": "authored", "pinyin": "qǔdì fēifǎ jīngyíng", "japanese": "違法営業を取り締まる"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-048",
+      "traditional": "百姓",
+      "traditionalStatus": "authored",
+      "simplified": "百姓",
+      "simplifiedStatus": "authored",
+      "pinyin": "bǎixìng",
+      "japanese": "庶民",
+      "kana": "ひゃくしょう",
+      "category": "noun",
+      "similarityType": "false-friend",
+      "toneNote": "bǎi 第三声、xìng 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「百姓（ひゃくしょう）」＝ 農民（farmer）。中国語の「百姓」＝ 一般の人々・庶民（common people）。「老百姓（lǎobǎixìng）」＝ 庶民。",
+      "examples": [
+        {"traditional": "老百姓", "traditionalStatus": "authored", "simplified": "老百姓", "simplifiedStatus": "authored", "pinyin": "lǎobǎixìng", "japanese": "庶民"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-049",
+      "traditional": "經理",
+      "traditionalStatus": "authored",
+      "simplified": "经理",
+      "simplifiedStatus": "authored",
+      "pinyin": "jīnglǐ",
+      "japanese": "マネージャー",
+      "kana": "けいり",
+      "category": "business",
+      "similarityType": "false-friend",
+      "toneNote": "jīng 第一声、lǐ 第三声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「経理（けいり）」＝ 経理・会計（accounting）。中国語の「經理」＝ 支配人・マネージャー（manager）。経理（accounting）は中国語で「會計（kuàijì）」。「張經理」＝ 張マネージャー。",
+      "examples": [
+        {"traditional": "他是經理", "traditionalStatus": "authored", "simplified": "他是经理", "simplifiedStatus": "authored", "pinyin": "tā shì jīnglǐ", "japanese": "彼はマネージャーだ"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
+    },
+    {
+      "id": "kanji-bridge-050",
+      "traditional": "結構",
+      "traditionalStatus": "authored",
+      "simplified": "结构",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiégòu",
+      "japanese": "構造・仕組み",
+      "kana": "けっこう",
+      "category": "noun",
+      "similarityType": "false-friend",
+      "toneNote": "jié 第二声、gòu 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「結構（けっこう）」＝ 結構・けっこう（splendid, quite）。中国語の「結構」＝ 構造・仕組み（structure）。「結構です」の意味は中国語にない。日本語の「けっこう」は中国語で「不錯（búcuò）」など。",
+      "examples": [
+        {"traditional": "這座橋的結構", "traditionalStatus": "authored", "simplified": "这座桥的结构", "simplifiedStatus": "authored", "pinyin": "zhè zuò qiáo de jiégòu", "japanese": "この橋の構造"}
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づく自作者による語彙"}
     }
   ]
 }
