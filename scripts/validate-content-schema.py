@@ -118,6 +118,11 @@ VALID_DIALOG_SPEAKERS = frozenset({"learner", "partner"})
 VALID_REVIEW_STATUSES_REQUIRING_SOURCE = frozenset({"reviewed", "published"})
 # Dialogs and turns only use CONTROLLED_STATUSES / VALID_SCENARIOS defined above.
 
+# Roleplay card contract (#243) controlled vocabularies.
+# Speakers reuse the phrasebook dialog set; lines only use CONTROLLED_STATUSES
+# and VALID_SCENARIOS defined above.
+VALID_ROLEPLAY_LINE_COUNTS = frozenset({4, 5, 6, 7, 8})
+
 # ─── Content type schemas ──────────────────────────────────────────────────
 # Each schema defines:
 #   required: fields that must be present (non-None)
@@ -1171,6 +1176,36 @@ def _build_schemas():
         ],
     }
 
+    # Roleplay Card (#243): deterministic alternating learner/partner cards.
+    # Line objects are validated by _check_roleplay_card_line; reference lists
+    # by _check_roleplay_card_reference_lists; bundle-level cross-references
+    # by _check_roleplay_card_references.
+    SCHEMAS["roleplay-card"] = {
+        "required": [
+            "id", "scenario", "titleJa", "goalJa", "guidanceJa",
+            "phraseRefs", "allLearnerTurnsRehearsed", "lines", "reviewStatus",
+        ],
+        "optional": [
+            "lessonRefs", "source",
+        ],
+        "field_types": {
+            "id": str, "scenario": str, "titleJa": str, "goalJa": str,
+            "guidanceJa": str,
+            "phraseRefs": list, "lessonRefs": list,
+            "allLearnerTurnsRehearsed": bool,
+            "lines": list, "reviewStatus": str, "source": dict,
+        },
+        "controlled_fields": {
+            "scenario": VALID_SCENARIOS,
+            "reviewStatus": VALID_REVIEW_STATUSES,
+        },
+        "extra_validators": [
+            _check_review_status,
+            _check_source_content,
+            _check_roleplay_card_record,
+        ],
+    }
+
     # Practice Item
     SCHEMAS["practice"] = {
         "required": [
@@ -1530,6 +1565,7 @@ COLLECTION_MAP = {
     "illustrations": "illustration",
     "learningPaths": "learning-path",
     "learning_paths": "learning-path",
+    "roleplayCards": "roleplay-card",
 }
 
 
@@ -1659,6 +1695,10 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
         if schema_type == "phrasebook-dialog":
             errors.extend(_check_phrasebook_dialog_duplicate_ids(value, collection_path))
 
+        # Roleplay card duplicate checks
+        if schema_type == "roleplay-card":
+            errors.extend(_check_roleplay_card_duplicate_ids(value, collection_path))
+
     # Cross-reference: phrasebook dialogs ↔ phrasebook phrases.
     # A dialog's relatedPhraseIds must reference existing same-scenario phrases
     # in the same bundle, or in the committed data/examples/valid/phrasebook.json
@@ -1671,6 +1711,25 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
                 phrasebook_records = json.load(f).get("phrasebook", [])
         errors.extend(_check_phrasebook_dialog_references(
             dialog_records, f"{path}.phrasebookDialogs", phrasebook_records
+        ))
+
+    # Cross-reference: roleplay cards ↔ lessons and phrasebook.
+    # A card's phraseRefs/lessonRefs must reference existing same-scenario
+    # lessons/phrases in the same bundle, or in the committed
+    # data/examples/valid/lessons.json and phrasebook.json when the bundle
+    # carries no such collection.
+    card_records = data.get("roleplayCards", [])
+    if isinstance(card_records, list) and len(card_records) > 0:
+        lesson_records = data.get("lessons")
+        if not isinstance(lesson_records, list):
+            with open(_LESSON_REFERENCE_PATH, encoding="utf-8") as f:
+                lesson_records = json.load(f).get("lessons", [])
+        phrasebook_records = data.get("phrasebook")
+        if not isinstance(phrasebook_records, list):
+            with open(_PHRASEBOOK_REFERENCE_PATH, encoding="utf-8") as f:
+                phrasebook_records = json.load(f).get("phrasebook", [])
+        errors.extend(_check_roleplay_card_references(
+            card_records, f"{path}.roleplayCards", lesson_records, phrasebook_records
         ))
 
     # Cross-reference: teacher vocabulary ↔ illustrations
@@ -1803,6 +1862,338 @@ def _check_phrasebook_dialog_duplicate_ids(dialogs: list, path: str) -> list[str
             )
         else:
             seen[dialog_id] = i
+    return errors
+
+
+def _check_roleplay_card_reference_lists(record: dict, path: str) -> list[str]:
+    """Validate roleplay card phraseRefs/lessonRefs (Issue #243).
+
+    `phraseRefs` must be a non-empty list of unique non-empty string ids.
+    `lessonRefs` (optional) must be a list of unique non-empty string ids.
+    Cross-reference resolution against existing same-scenario lessons/phrases
+    happens at bundle level in _check_roleplay_card_references.
+    """
+    errors: list[str] = []
+
+    related = record.get("phraseRefs")
+    if not isinstance(related, list):
+        return errors  # type error already reported by the schema field_types
+    if len(related) == 0:
+        errors.append(f"{path}.phraseRefs must not be empty")
+    seen = set()
+    for j, ref in enumerate(related):
+        if not isinstance(ref, str):
+            errors.append(
+                f"{path}.phraseRefs[{j}] must be a string, "
+                f"got {type(ref).__name__}"
+            )
+            continue
+        if ref.strip() == "":
+            errors.append(
+                f"{path}.phraseRefs[{j}] must be a non-empty string"
+            )
+        if ref in seen:
+            errors.append(
+                f"{path}.phraseRefs[{j}]: duplicate phrase id '{ref}'"
+            )
+        seen.add(ref)
+
+    lesson_refs = record.get("lessonRefs")
+    if lesson_refs is None:
+        return errors
+    if not isinstance(lesson_refs, list):
+        return errors  # type error already reported by the schema field_types
+    if len(lesson_refs) == 0:
+        # lessonRefs is optional; an empty array is treated as absent, matching
+        # the painPointTags / examples convention for optional arrays.
+        return errors
+    seen = set()
+    for j, ref in enumerate(lesson_refs):
+        if not isinstance(ref, str):
+            errors.append(
+                f"{path}.lessonRefs[{j}] must be a string, "
+                f"got {type(ref).__name__}"
+            )
+            continue
+        if ref.strip() == "":
+            errors.append(
+                f"{path}.lessonRefs[{j}] must be a non-empty string"
+            )
+        if ref in seen:
+            errors.append(
+                f"{path}.lessonRefs[{j}]: duplicate lesson id '{ref}'"
+            )
+        seen.add(ref)
+
+    return errors
+
+
+def _check_roleplay_card_record(record: dict, path: str) -> list[str]:
+    """Validate the roleplay card record contract (#243).
+
+    Enforces a stable non-empty id, controlled scenario, Japanese title/goal/
+    guidance, unique reference lists, 4–8 alternating learner/partner lines,
+    the fixed `allLearnerTurnsRehearsed: true` invariant, per-line script
+    provenance, and the reviewStatus/source pairing.
+    """
+    errors = []
+
+    # id must be a stable non-empty string.
+    card_id = record.get("id")
+    if not isinstance(card_id, str) or card_id.strip() == "":
+        errors.append(f"{path}.id must be a non-empty string")
+
+    # Japanese title/goal/guidance must be non-empty strings when present.
+    for field in ("titleJa", "goalJa", "guidanceJa"):
+        value = record.get(field)
+        if not isinstance(value, str):
+            continue  # type error already reported by the schema field_types
+        if value.strip() == "":
+            errors.append(f"{path}.{field} must be a non-empty string")
+
+    # The fixed rehearsal invariant is part of the executable contract.
+    if record.get("allLearnerTurnsRehearsed") is not True:
+        errors.append(
+            f"{path}.allLearnerTurnsRehearsed must be exactly true; "
+            "every roleplay card is a rehearsed exchange where the learner "
+            "performs all learner turns"
+        )
+
+    errors.extend(_check_roleplay_card_reference_lists(record, path))
+
+    # Lines must be a list of 4-8 alternating learner/partner turn objects.
+    lines = record.get("lines")
+    if not isinstance(lines, list):
+        return errors  # type error already reported by the schema field_types
+    if len(lines) not in VALID_ROLEPLAY_LINE_COUNTS:
+        errors.append(
+            f"{path}.lines must contain between 4 and 8 lines, got {len(lines)}"
+        )
+    review_status = record.get("reviewStatus")
+    for i, line in enumerate(lines):
+        line_path = f"{path}.lines[{i}]"
+        if not isinstance(line, dict):
+            errors.append(f"{line_path}: expected a JSON object")
+            continue
+        errors.extend(_check_roleplay_card_line(line, line_path))
+        # Generated script forms may not be paired with a reviewed or
+        # published card (deterministic contract, mirrors phrasebook dialog).
+        if review_status in VALID_REVIEW_STATUSES_REQUIRING_SOURCE:
+            for field in ("traditionalStatus", "simplifiedStatus"):
+                if line.get(field) == "generated":
+                    errors.append(
+                        f"{line_path}: card 'reviewStatus' is '{review_status}' "
+                        f"but '{field}' is 'generated' — generated-only form must "
+                        f"not be used as production-ready"
+                    )
+
+    # Lines must strictly alternate learner/partner, starting with learner.
+    # A rehearsed card always leads with the learner's line.
+    for i, line in enumerate(lines):
+        if not isinstance(line, dict):
+            continue
+        speaker = line.get("speaker")
+        if not isinstance(speaker, str):
+            continue  # speaker type/controlled error already reported
+        expected = "learner" if i % 2 == 0 else "partner"
+        if speaker != expected:
+            errors.append(
+                f"{path}.lines[{i}].speaker must be '{expected}' for "
+                f"alternating learner/partner lines (line {i + 1} of "
+                f"{len(lines)}), got '{speaker}'"
+            )
+
+    # reviewed/published cards require a truthful source; draft does not.
+    if review_status in VALID_REVIEW_STATUSES_REQUIRING_SOURCE:
+        if not record.get("source"):
+            errors.append(
+                f"{path}: 'source' is required when 'reviewStatus' is '{review_status}'"
+            )
+
+    return errors
+
+
+def _check_roleplay_card_line(line: dict, path: str) -> list[str]:
+    """Validate one roleplay line object (#243)."""
+    errors = []
+
+    # Reject unknown fields with path-specific errors (mirrors the generic
+    # schema unknown-field gate). Roleplay lines come from committed JSON, so
+    # a misspelled or stale key must not silently pass --check.
+    allowed_line_fields = {
+        "speaker", "traditional", "traditionalStatus",
+        "simplified", "simplifiedStatus", "pinyin", "japanese",
+    }
+    for field in line:
+        if field not in allowed_line_fields:
+            errors.append(f"{path}: unknown field '{field}'")
+
+    # Speaker is required and controlled (reuses the dialog speaker set).
+    speaker = line.get("speaker")
+    if speaker is None:
+        errors.append(f"{path}: missing 'speaker'")
+    else:
+        errors.extend(_validate_controlled(speaker, VALID_DIALOG_SPEAKERS, f"{path}.speaker"))
+        if not isinstance(speaker, str):
+            errors.append(f"{path}.speaker must be a string, got {type(speaker).__name__}")
+
+    # Script provenance reuses the #24 per-form rules. The generated-only
+    # vs reviewed/published pairing is enforced at card level (lines carry
+    # no reviewStatus of their own).
+    errors.extend(_check_script_fields(line, path))
+
+    # Non-empty Traditional line (script provenance only type-checks it).
+    traditional = line.get("traditional")
+    if isinstance(traditional, str) and traditional.strip() == "":
+        errors.append(f"{path}.traditional must be a non-empty string")
+
+    # Non-empty pinyin and Japanese lines.
+    pinyin = line.get("pinyin")
+    if not isinstance(pinyin, str):
+        errors.append(f"{path}.pinyin must be a string, got {type(pinyin).__name__}")
+    elif pinyin.strip() == "":
+        errors.append(f"{path}.pinyin must be a non-empty string")
+    japanese = line.get("japanese")
+    if not isinstance(japanese, str):
+        errors.append(f"{path}.japanese must be a string, got {type(japanese).__name__}")
+    elif japanese.strip() == "":
+        errors.append(f"{path}.japanese must be a non-empty string")
+
+    return errors
+
+
+def _check_roleplay_card_duplicate_ids(cards: list, path: str) -> list[str]:
+    """
+    Detect roleplay cards with duplicate 'id' values within the same bundle.
+    """
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for i, card in enumerate(cards):
+        if not isinstance(card, dict):
+            continue
+        card_id = card.get("id")
+        if not isinstance(card_id, str):
+            continue
+        if card_id in seen:
+            errors.append(
+                f"{path}[{i}]: duplicate card id '{card_id}' "
+                f"(first occurrence at {path}[{seen[card_id]}])"
+            )
+        else:
+            seen[card_id] = i
+    return errors
+
+
+def _check_roleplay_card_references(cards: list, path: str, lessons: list, phrasebook: list) -> list[str]:
+    """
+    Resolve roleplay card phraseRefs/lessonRefs against the same-bundle
+    lessons/phrasebook (Issue #243).
+
+    Each phraseRef must be a non-empty, existing phrasebook id from the same
+    scenario as the card. Each lessonRef must be a non-empty, existing lesson
+    id from the same scenario. Missing (stale) and cross-scenario references
+    fail with path-specific errors. Bundles that carry no lessons/phrasebook
+    collection resolve against the committed data/examples/valid fixtures, so
+    determinism holds in every bundle.
+    """
+    errors: list[str] = []
+    # Filter to dict records with string ids before building the index, so
+    # non-object entries (e.g. `lessons: ["bad"]`) surface the existing
+    # structured validation error instead of an AttributeError traceback.
+    lesson_by_id = {
+        l["id"]: l for l in lessons
+        if isinstance(l, dict) and isinstance(l.get("id"), str)
+    }
+    phrase_by_id = {
+        p["id"]: p for p in phrasebook
+        if isinstance(p, dict) and isinstance(p.get("id"), str)
+    }
+    for i, card in enumerate(cards):
+        if not isinstance(card, dict):
+            continue
+        card_path = f"{path}[{i}]"
+        scenario = card.get("scenario")
+        if not isinstance(scenario, str):
+            continue
+        phrase_refs = card.get("phraseRefs")
+        if isinstance(phrase_refs, list):
+            for j, ref in enumerate(phrase_refs):
+                if not isinstance(ref, str) or ref.strip() == "":
+                    continue
+                phrase = phrase_by_id.get(ref)
+                if phrase is None:
+                    errors.append(
+                        f"{card_path}.phraseRefs[{j}]: stale phrase id '{ref}' "
+                        f"(no phrasebook phrase with that id exists)"
+                    )
+                elif phrase.get("scenario") != scenario:
+                    errors.append(
+                        f"{card_path}.phraseRefs[{j}]: cross-scenario phrase id "
+                        f"'{ref}' (card scenario '{scenario}', phrase scenario "
+                        f"'{phrase.get('scenario')}')"
+                    )
+        lesson_refs = card.get("lessonRefs")
+        if isinstance(lesson_refs, list):
+            for j, ref in enumerate(lesson_refs):
+                if not isinstance(ref, str) or ref.strip() == "":
+                    continue
+                lesson = lesson_by_id.get(ref)
+                if lesson is None:
+                    errors.append(
+                        f"{card_path}.lessonRefs[{j}]: stale lesson id '{ref}' "
+                        f"(no lesson with that id exists)"
+                    )
+                elif lesson.get("travelScenario") != scenario:
+                    errors.append(
+                        f"{card_path}.lessonRefs[{j}]: cross-scenario lesson id "
+                        f"'{ref}' (card scenario '{scenario}', lesson scenario "
+                        f"'{lesson.get('travelScenario')}')"
+                    )
+    return errors
+
+
+def _check_roleplay_file_ownership(filepath: str, data: dict) -> list[str]:
+    """
+    Enforce the documented data/roleplay/<scenario>.json → card scenario
+    ownership boundary (Issue #243, contract doc §file boundary).
+
+    Each card in a roleplay file must carry the scenario matching its owning
+    file name (e.g. data/roleplay/food.json may only contain scenario
+    "food" cards). A JSON file directly under data/roleplay/ whose name is
+    not a controlled scenario is itself an error (it would silently bypass
+    the ownership gate), and a card in the wrong file breaks the per-scenario
+    parallelization boundary — both fail with path-specific errors.
+    """
+    errors: list[str] = []
+    dirname = os.path.dirname(filepath)
+    basename = os.path.basename(filepath)
+    # Only enforce for files directly under data/roleplay/.
+    if os.path.normpath(dirname) != os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "data", "roleplay")
+    ):
+        return errors
+    stem, ext = os.path.splitext(basename)
+    if ext.lower() != ".json":
+        return errors
+    if stem not in VALID_SCENARIOS:
+        errors.append(
+            f"{filepath}: data/roleplay file name '{basename}' is not a "
+            f"controlled scenario ({', '.join(sorted(VALID_SCENARIOS))})"
+        )
+        return errors
+    card_records = data.get("roleplayCards", [])
+    if not isinstance(card_records, list):
+        return errors
+    for i, card in enumerate(card_records):
+        if not isinstance(card, dict):
+            continue
+        scenario = card.get("scenario")
+        if scenario != stem:
+            errors.append(
+                f"{filepath}: card 'roleplayCards[{i}]' has scenario '{scenario}' "
+                f"but the file is data/roleplay/{stem}.json "
+                f"(file/scenario ownership mismatch)"
+            )
     return errors
 
 
@@ -2426,6 +2817,8 @@ def main():
             data = json.load(f)
         warnings = collect_bundle_warnings(data)
         errors = validate_bundle(data)
+        # data/roleplay/<scenario>.json → card scenario ownership boundary.
+        errors.extend(_check_roleplay_file_ownership(filepath, data))
         for warning in warnings:
             print(f"WARNING: {warning}")
         for e in errors:
@@ -2683,6 +3076,63 @@ def run_tests():
         test_dialog_unknown_collection_key_fails,
         test_dialog_deterministic_error_order,
         test_dialog_reference_checks_committed_phrasebook,
+
+        # ─── Roleplay card (#243) ───
+        test_roleplay_card_valid,
+        test_roleplay_card_six_lines_valid,
+        test_roleplay_card_eight_lines_valid,
+        test_roleplay_card_scenarios_all_controlled,
+        test_roleplay_card_missing_required,
+        test_roleplay_card_empty_id,
+        test_roleplay_card_empty_ja_fields,
+        test_roleplay_card_all_learner_turns_rehearsed_invariant,
+        test_roleplay_card_line_count_too_few,
+        test_roleplay_card_line_count_too_many,
+        test_roleplay_card_lines_not_list,
+        test_roleplay_card_line_not_object,
+        test_roleplay_card_non_alternating_rejected,
+        test_roleplay_card_must_start_with_learner,
+        test_roleplay_card_missing_turn_speaker,
+        test_roleplay_card_invalid_speaker,
+        test_roleplay_card_invalid_scenario,
+        test_roleplay_card_invalid_review_status,
+        test_roleplay_card_line_script_status_contract,
+        test_roleplay_card_line_traditional_empty_rejected,
+        test_roleplay_card_line_pinyin_japanese_empty_rejected,
+        test_roleplay_card_generated_not_production,
+        test_roleplay_card_empty_phrase_refs,
+        test_roleplay_card_duplicate_phrase_ref,
+        test_roleplay_card_phrase_ref_non_string,
+        test_roleplay_card_phrase_ref_empty_string,
+        test_roleplay_card_empty_lesson_refs_ok,
+        test_roleplay_card_duplicate_lesson_ref,
+        test_roleplay_card_lesson_ref_non_string,
+        test_roleplay_card_stale_phrase_ref,
+        test_roleplay_card_cross_scenario_phrase_ref,
+        test_roleplay_card_stale_lesson_ref,
+        test_roleplay_card_cross_scenario_lesson_ref,
+        test_roleplay_card_references_valid_scenario,
+        test_roleplay_card_airport_phrase_reference_valid,
+        test_roleplay_card_no_lesson_refs_ok,
+        test_roleplay_card_reviewed_requires_source,
+        test_roleplay_card_published_requires_source,
+        test_roleplay_card_draft_without_source_ok,
+        test_roleplay_card_source_valid,
+        test_roleplay_card_source_non_dict_rejected,
+        test_roleplay_card_unknown_field,
+        test_roleplay_card_duplicate_id_detection,
+        test_roleplay_card_duplicate_id_deterministic_order,
+        test_roleplay_card_bundle_valid,
+        test_roleplay_card_bundle_invalid_item,
+        test_roleplay_card_deterministic_error_order,
+        test_roleplay_card_committed_fixture_valid,
+        test_roleplay_card_non_object_lesson_reference_is_structured_error,
+        test_roleplay_card_unknown_line_field_rejected,
+        test_roleplay_card_unknown_line_field_rejected_validate_bundle,
+        test_roleplay_file_ownership_match_passes,
+        test_roleplay_file_ownership_mismatch_rejected,
+        test_roleplay_file_ownership_only_enforced_for_roleplay_dir,
+        test_roleplay_file_non_controlled_scenario_name_rejected,
 
         # ─── Practice ───
         test_practice_valid,
@@ -4018,6 +4468,621 @@ def test_dialog_reference_checks_committed_phrasebook():
         data = json.load(f)
     errors = validate_bundle(data)
     _assert_no_errors(errors, "dialog_committed_fixture")
+
+
+# ─── Roleplay card tests (#243) ────────────────────────────────────────────
+
+def _minimal_roleplay_card(**overrides):
+    """Minimal valid 4-line transport roleplay card; references lesson-003
+    (transport) and phrase-002 (transport)."""
+    data = {
+        "id": "roleplay-fixture-transport-001",
+        "scenario": "transport",
+        "titleJa": "道案内をしてもらう",
+        "goalJa": "駅までの道順を中国語で尋ねられる",
+        "guidanceJa": "道に迷ったとき、駅や施設の場所を中国語で尋ねる練習です。",
+        "lessonRefs": ["lesson-003"],
+        "phraseRefs": ["phrase-002"],
+        "allLearnerTurnsRehearsed": True,
+        "lines": [
+            {
+                "speaker": "learner",
+                "traditional": "請問這附近有捷運站嗎？",
+                "traditionalStatus": "authored",
+                "simplified": "请问这附近有捷运站吗？",
+                "simplifiedStatus": "verified",
+                "pinyin": "Qǐngwèn zhè fùjìn yǒu jiéyùnzhàn ma?",
+                "japanese": "すみません、この近くにMRTの駅はありますか？",
+            },
+            {
+                "speaker": "partner",
+                "traditional": "有，往前走兩分鐘就到了。",
+                "traditionalStatus": "authored",
+                "pinyin": "yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le",
+                "japanese": "ありますよ。まっすぐ2分歩けば着きますよ。",
+            },
+            {
+                "speaker": "learner",
+                "traditional": "謝謝！那出站以後往哪走？",
+                "traditionalStatus": "authored",
+                "simplified": "谢谢！那出站以后往哪走？",
+                "simplifiedStatus": "verified",
+                "pinyin": "Xièxie! Nà chū zhàn yǐhòu wǎng nǎ zǒu?",
+                "japanese": "ありがとう！では駅を出てからはどこへ行けばいいですか？",
+            },
+            {
+                "speaker": "partner",
+                "traditional": "出站以後往左轉就到了。",
+                "traditionalStatus": "authored",
+                "pinyin": "chū zhàn yǐhòu wǎng zuǒ zhuǎn jiù dào le",
+                "japanese": "駅を出て左に曲がると着きますよ。",
+            },
+        ],
+        "reviewStatus": "draft",
+    }
+    data.update(overrides)
+    return data
+
+
+def _six_line_roleplay_card(**overrides):
+    """Valid 6-line alternating roleplay card, both speakers."""
+    lines = _minimal_roleplay_card()["lines"]
+    lines = lines + [
+        {
+            "speaker": "learner",
+            "traditional": "好的，非常感謝！",
+            "traditionalStatus": "authored",
+            "pinyin": "Hǎo de, fēicháng gǎnxiè!",
+            "japanese": "はい、どうもありがとうございます！",
+        },
+        {
+            "speaker": "partner",
+            "traditional": "不客氣，路上小心。",
+            "traditionalStatus": "authored",
+            "pinyin": "bú kèqi, lùshang xiǎoxīn",
+            "japanese": "どういたしまして、お気をつけて。",
+        },
+    ]
+    return dict(_minimal_roleplay_card(), lines=lines)
+
+
+def _roleplay_card_bundle(*cards):
+    """A CLI bundle for deterministic collection-order tests."""
+    return {"roleplayCards": list(cards)}
+
+
+def test_roleplay_card_valid():
+    errs = validate_single(_minimal_roleplay_card(), "roleplay-card")
+    _assert_no_errors(errs, "roleplay_card_valid")
+
+
+def test_roleplay_card_six_lines_valid():
+    errs = validate_single(_six_line_roleplay_card(), "roleplay-card")
+    _assert_no_errors(errs, "roleplay_card_six_lines_valid")
+
+
+def test_roleplay_card_eight_lines_valid():
+    """An 8-line alternating card is the upper boundary."""
+    lines = _six_line_roleplay_card()["lines"] + [
+        {
+            "speaker": "learner",
+            "traditional": "那我出發了，再見！",
+            "traditionalStatus": "authored",
+            "pinyin": "Nà wǒ chūfā le, zàijiàn!",
+            "japanese": "それでは出発します、さようなら！",
+        },
+        {
+            "speaker": "partner",
+            "traditional": "再見，旅途愉快！",
+            "traditionalStatus": "authored",
+            "pinyin": "zàijiàn, lǚtú yúkuài",
+            "japanese": "さようなら、良い旅を！",
+        },
+    ]
+    errs = validate_single(_minimal_roleplay_card(lines=lines), "roleplay-card")
+    _assert_no_errors(errs, "roleplay_card_eight_lines_valid")
+
+
+def test_roleplay_card_scenarios_all_controlled():
+    """Every controlled scenario passes; unknown scenarios fail."""
+    # validate_single does not resolve references, so non-empty placeholder
+    # ids are sufficient here; reference resolution is tested separately via
+    # the CLI bundle.
+    for scenario in sorted(VALID_SCENARIOS):
+        errs = validate_single(
+            _minimal_roleplay_card(
+                scenario=scenario,
+                lessonRefs=["lesson-003"],
+                phraseRefs=["phrase-002"],
+            ),
+            "roleplay-card",
+        )
+        _assert_no_errors(errs, f"roleplay_card_scenario_{scenario}")
+    errs = validate_single(_minimal_roleplay_card(scenario="weather"), "roleplay-card")
+    _assert_has_error(errs, "'weather' is not valid", "roleplay_card_invalid_scenario")
+
+
+def test_roleplay_card_missing_required():
+    errs = validate_single({"id": "roleplay-001"}, "roleplay-card")
+    _assert_has_error(errs, "missing required field 'scenario'", "roleplay_missing_scenario")
+    _assert_has_error(errs, "missing required field 'lines'", "roleplay_missing_lines")
+    _assert_has_error(errs, "missing required field 'phraseRefs'", "roleplay_missing_phrase_refs")
+    _assert_has_error(errs, "missing required field 'reviewStatus'", "roleplay_missing_review")
+    _assert_has_error(errs, "missing required field 'allLearnerTurnsRehearsed'", "roleplay_missing_rehearsed")
+
+
+def test_roleplay_card_empty_id():
+    errs = validate_single(_minimal_roleplay_card(id=""), "roleplay-card")
+    _assert_has_error(errs, "id must be a non-empty string", "roleplay_empty_id")
+    errs = validate_single(_minimal_roleplay_card(id="   "), "roleplay-card")
+    _assert_has_error(errs, "id must be a non-empty string", "roleplay_whitespace_id")
+
+
+def test_roleplay_card_empty_ja_fields():
+    """titleJa/goalJa/guidanceJa must be non-empty strings when present."""
+    for field in ("titleJa", "goalJa", "guidanceJa"):
+        for value in ("", "   "):
+            errs = validate_single(
+                _minimal_roleplay_card(**{field: value}),
+                "roleplay-card",
+            )
+            _assert_has_error(
+                errs, f"{field} must be a non-empty string", f"roleplay_empty_{field}_{value!r}"
+            )
+
+
+def test_roleplay_card_all_learner_turns_rehearsed_invariant():
+    """The fixed rehearsal invariant is part of the executable contract."""
+    errs = validate_single(
+        _minimal_roleplay_card(allLearnerTurnsRehearsed=False),
+        "roleplay-card",
+    )
+    _assert_has_error(errs, "allLearnerTurnsRehearsed must be exactly true", "roleplay_rehearsed_false")
+    errs = validate_single(
+        _minimal_roleplay_card(allLearnerTurnsRehearsed="yes"),
+        "roleplay-card",
+    )
+    _assert_has_error(errs, "allLearnerTurnsRehearsed must be exactly true", "roleplay_rehearsed_string")
+
+
+def test_roleplay_card_line_count_too_few():
+    lines = _minimal_roleplay_card()["lines"][:3]
+    errs = validate_single(_minimal_roleplay_card(lines=lines), "roleplay-card")
+    _assert_has_error(errs, "must contain between 4 and 8 lines, got 3", "roleplay_lines_too_few")
+
+
+def test_roleplay_card_line_count_too_many():
+    lines = _six_line_roleplay_card()["lines"] + _six_line_roleplay_card()["lines"]
+    errs = validate_single(_minimal_roleplay_card(lines=lines), "roleplay-card")
+    _assert_has_error(errs, "must contain between 4 and 8 lines, got 12", "roleplay_lines_too_many")
+
+
+def test_roleplay_card_lines_not_list():
+    errs = validate_single(_minimal_roleplay_card(lines="not-a-list"), "roleplay-card")
+    _assert_has_error(errs, "lines must be list", "roleplay_lines_not_list")
+
+
+def test_roleplay_card_line_not_object():
+    errs = validate_single(_minimal_roleplay_card(lines=["not-an-object"]), "roleplay-card")
+    _assert_has_error(errs, "expected a JSON object", "roleplay_line_not_object")
+
+
+def test_roleplay_card_non_alternating_rejected():
+    """Non-alternating speaker sequences fail with a path-specific error."""
+    record = _minimal_roleplay_card()
+    record["lines"][1]["speaker"] = "learner"
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "lines[1].speaker must be 'partner'", "roleplay_non_alternating")
+
+
+def test_roleplay_card_must_start_with_learner():
+    """A card must start with the learner line (rehearsed invariant)."""
+    record = _minimal_roleplay_card()
+    record["lines"][0]["speaker"] = "partner"
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "lines[0].speaker must be 'learner'", "roleplay_must_start_learner")
+
+
+def test_roleplay_card_missing_turn_speaker():
+    record = _minimal_roleplay_card()
+    del record["lines"][0]["speaker"]
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "lines[0]: missing 'speaker'", "roleplay_line_missing_speaker")
+
+
+def test_roleplay_card_invalid_speaker():
+    record = _minimal_roleplay_card()
+    record["lines"][0]["speaker"] = "both"
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'both' is not valid", "roleplay_invalid_speaker")
+
+
+def test_roleplay_card_invalid_scenario():
+    errs = validate_single(_minimal_roleplay_card(scenario="weather"), "roleplay-card")
+    _assert_has_error(errs, "'weather' is not valid", "roleplay_scenario")
+
+
+def test_roleplay_card_invalid_review_status():
+    errs = validate_single(_minimal_roleplay_card(reviewStatus="live"), "roleplay-card")
+    _assert_has_error(errs, "'live' is not valid", "roleplay_review_status")
+
+
+def test_roleplay_card_line_script_status_contract():
+    """Per-line script provenance follows the #24 rules."""
+    record = _minimal_roleplay_card()
+    del record["lines"][0]["simplifiedStatus"]
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'simplifiedStatus' is required when 'simplified' is present", "roleplay_line_status_missing")
+    record = _minimal_roleplay_card()
+    record["lines"][1]["simplifiedStatus"] = "verified"
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'simplifiedStatus' must be 'unavailable' when 'simplified' is absent", "roleplay_line_status_extra")
+
+
+def test_roleplay_card_line_traditional_empty_rejected():
+    for value in ("", "   "):
+        record = _minimal_roleplay_card()
+        record["lines"][0]["traditional"] = value
+        errs = validate_single(record, "roleplay-card")
+        _assert_has_error(errs, "lines[0].traditional must be a non-empty string", f"roleplay_trad_empty_{value!r}")
+
+
+def test_roleplay_card_line_pinyin_japanese_empty_rejected():
+    record = _minimal_roleplay_card()
+    record["lines"][0]["pinyin"] = "   "
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "pinyin must be a non-empty string", "roleplay_pinyin_empty")
+    record = _minimal_roleplay_card()
+    record["lines"][0]["japanese"] = ""
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "japanese must be a non-empty string", "roleplay_japanese_empty")
+
+
+def test_roleplay_card_generated_not_production():
+    """Generated forms are rejected for reviewed/published cards."""
+    record = _minimal_roleplay_card(reviewStatus="published")
+    record["lines"][0]["traditionalStatus"] = "generated"
+    record["source"] = {"type": "authored", "note": "generated test"}
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'reviewStatus' is 'published' but 'traditionalStatus' is 'generated'", "roleplay_generated_published")
+    record = _minimal_roleplay_card(reviewStatus="reviewed")
+    record["lines"][0]["simplifiedStatus"] = "generated"
+    record["source"] = {"type": "authored", "note": "generated test"}
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'reviewStatus' is 'reviewed' but 'simplifiedStatus' is 'generated'", "roleplay_generated_reviewed")
+    record = _minimal_roleplay_card(reviewStatus="draft")
+    record["lines"][0]["traditionalStatus"] = "generated"
+    errs = validate_single(record, "roleplay-card")
+    _assert_no_errors(errs, "roleplay_generated_draft_ok")
+
+
+def test_roleplay_card_empty_phrase_refs():
+    errs = validate_single(_minimal_roleplay_card(phraseRefs=[]), "roleplay-card")
+    _assert_has_error(errs, "phraseRefs must not be empty", "roleplay_phrase_refs_empty")
+
+
+def test_roleplay_card_duplicate_phrase_ref():
+    record = _minimal_roleplay_card(phraseRefs=["phrase-002", "phrase-002"])
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "phraseRefs[1]: duplicate phrase id 'phrase-002'", "roleplay_phrase_ref_duplicate")
+
+
+def test_roleplay_card_phrase_ref_non_string():
+    record = _minimal_roleplay_card(phraseRefs=["phrase-002", 42])
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "phraseRefs[1] must be a string, got int", "roleplay_phrase_ref_type")
+
+
+def test_roleplay_card_phrase_ref_empty_string():
+    record = _minimal_roleplay_card(phraseRefs=["phrase-002", ""])
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "phraseRefs[1] must be a non-empty string", "roleplay_phrase_ref_empty_string")
+
+
+def test_roleplay_card_empty_lesson_refs_ok():
+    """lessonRefs is optional; an empty array is treated as absent."""
+    errs = validate_single(_minimal_roleplay_card(lessonRefs=[]), "roleplay-card")
+    _assert_no_errors(errs, "roleplay_lesson_refs_empty_ok")
+
+
+def test_roleplay_card_duplicate_lesson_ref():
+    record = _minimal_roleplay_card(lessonRefs=["lesson-003", "lesson-003"])
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "lessonRefs[1]: duplicate lesson id 'lesson-003'", "roleplay_lesson_ref_duplicate")
+
+
+def test_roleplay_card_lesson_ref_non_string():
+    record = _minimal_roleplay_card(lessonRefs=["lesson-003", 7])
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "lessonRefs[1] must be a string, got int", "roleplay_lesson_ref_type")
+
+
+def test_roleplay_card_stale_phrase_ref():
+    """A stale phrase reference fails with a path-specific error via CLI."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(_minimal_roleplay_card(phraseRefs=["phrase-999"]))
+    )
+    assert exit_code != 0, f"Expected stale phrase id to fail: {stdout}"
+    assert "roleplayCards[0].phraseRefs[0]: stale phrase id 'phrase-999'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_roleplay_card_cross_scenario_phrase_ref():
+    """A phrase from a different scenario fails."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(_minimal_roleplay_card(phraseRefs=["phrase-001"]))
+    )
+    assert exit_code != 0, f"Expected cross-scenario phrase id to fail: {stdout}"
+    assert "roleplayCards[0].phraseRefs[0]: cross-scenario phrase id 'phrase-001'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_roleplay_card_stale_lesson_ref():
+    """A stale lesson reference fails with a path-specific error via CLI."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(_minimal_roleplay_card(lessonRefs=["lesson-999"]))
+    )
+    assert exit_code != 0, f"Expected stale lesson id to fail: {stdout}"
+    assert "roleplayCards[0].lessonRefs[0]: stale lesson id 'lesson-999'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_roleplay_card_cross_scenario_lesson_ref():
+    """A lesson from a different scenario fails."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(_minimal_roleplay_card(lessonRefs=["lesson-001"]))
+    )
+    assert exit_code != 0, f"Expected cross-scenario lesson id to fail: {stdout}"
+    assert "roleplayCards[0].lessonRefs[0]: cross-scenario lesson id 'lesson-001'" in stdout, (
+        f"Unexpected stdout: {stdout}"
+    )
+
+
+def test_roleplay_card_references_valid_scenario():
+    """Same-scenario references pass the CLI bundle."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(
+            _minimal_roleplay_card(
+                scenario="transport",
+                lessonRefs=["lesson-003"],
+                phraseRefs=["phrase-002"],
+            )
+        )
+    )
+    assert exit_code == 0, f"Expected valid transport references to pass: {stdout}"
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(
+            _minimal_roleplay_card(
+                scenario="food",
+                lessonRefs=["lesson-001"],
+                phraseRefs=["phrase-001"],
+            )
+        )
+    )
+    assert exit_code == 0, f"Expected valid food references to pass: {stdout}"
+
+
+def test_roleplay_card_airport_phrase_reference_valid():
+    """Airport phrases resolve against the committed phrasebook fixture."""
+    exit_code, stdout = _cli_check_result(
+        _roleplay_card_bundle(
+            _minimal_roleplay_card(
+                scenario="airport",
+                lessonRefs=[],
+                phraseRefs=["phrase-airport-001"],
+            )
+        )
+    )
+    assert exit_code == 0, f"Expected valid airport phrase reference to pass: {stdout}"
+
+
+def test_roleplay_card_no_lesson_refs_ok():
+    """lessonRefs is optional; a card without it is valid."""
+    record = _minimal_roleplay_card()
+    del record["lessonRefs"]
+    errs = validate_single(record, "roleplay-card")
+    _assert_no_errors(errs, "roleplay_no_lesson_refs_ok")
+
+
+def test_roleplay_card_reviewed_requires_source():
+    record = _minimal_roleplay_card(reviewStatus="reviewed")
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'source' is required when 'reviewStatus' is 'reviewed'", "roleplay_reviewed_no_source")
+
+
+def test_roleplay_card_published_requires_source():
+    record = _minimal_roleplay_card(reviewStatus="published")
+    errs = validate_single(record, "roleplay-card")
+    _assert_has_error(errs, "'source' is required when 'reviewStatus' is 'published'", "roleplay_published_no_source")
+
+
+def test_roleplay_card_draft_without_source_ok():
+    errs = validate_single(_minimal_roleplay_card(reviewStatus="draft"), "roleplay-card")
+    _assert_no_errors(errs, "roleplay_draft_no_source_ok")
+
+
+def test_roleplay_card_source_valid():
+    errs = validate_single(
+        _minimal_roleplay_card(reviewStatus="reviewed", source={"type": "authored", "note": "test"}),
+        "roleplay-card",
+    )
+    _assert_no_errors(errs, "roleplay_source_valid")
+
+
+def test_roleplay_card_source_non_dict_rejected():
+    errs = validate_single(_minimal_roleplay_card(source="not-an-object"), "roleplay-card")
+    _assert_has_error(errs, "must be a JSON object", "roleplay_source_string")
+
+
+def test_roleplay_card_unknown_field():
+    errs = validate_single(_minimal_roleplay_card(extra="surprise"), "roleplay-card")
+    _assert_has_error(errs, "unknown field 'extra'", "roleplay_unknown_field")
+
+
+def test_roleplay_card_duplicate_id_detection():
+    """Duplicate card ids fail with a path-specific error."""
+    base = _minimal_roleplay_card()
+    bundle = _roleplay_card_bundle(
+        dict(base, id="dup-card-001"),
+        dict(base, id="dup-card-001", lines=_six_line_roleplay_card()["lines"]),
+    )
+    exit_code, stdout = _cli_check_result(bundle)
+    assert exit_code != 0, f"Expected duplicate card id to fail: {stdout}"
+    assert "duplicate card id 'dup-card-001'" in stdout, f"Unexpected stdout: {stdout}"
+
+
+def test_roleplay_card_duplicate_id_deterministic_order():
+    """Duplicate-id errors follow collection order."""
+    base = _minimal_roleplay_card()
+    bundle = _roleplay_card_bundle(
+        dict(base, id="dup-card-002"),
+        dict(base, id="dup-card-003", lines=_six_line_roleplay_card()["lines"]),
+        dict(base, id="dup-card-002", lines=_six_line_roleplay_card()["lines"]),
+    )
+    exit_code, stdout = _cli_check_result(bundle)
+    assert exit_code != 0, f"Expected duplicate card id to fail: {stdout}"
+    lines = [l for l in stdout.splitlines() if "duplicate card id 'dup-card-002'" in l]
+    assert len(lines) == 1, f"Expected exactly one duplicate error for dup-card-002, got: {stdout}"
+    assert "roleplayCards[2]" in lines[0], f"Expected index 2 error, got: {lines[0]}"
+
+
+def test_roleplay_card_bundle_valid():
+    """A bundle with a valid card fixture passes --check."""
+    exit_code, stdout = _cli_check_result(_roleplay_card_bundle(_minimal_roleplay_card()))
+    assert exit_code == 0, f"Expected valid card bundle to pass: {stdout}"
+
+
+def test_roleplay_card_bundle_invalid_item():
+    """An invalid card fails --check with its path in the output."""
+    record = _minimal_roleplay_card(scenario="weather")
+    exit_code, stdout = _cli_check_result(_roleplay_card_bundle(record))
+    assert exit_code != 0, f"Expected invalid card bundle to fail: {stdout}"
+    assert "roleplayCards[0].scenario" in stdout, f"Expected path-specific error: {stdout}"
+
+
+def test_roleplay_card_deterministic_error_order():
+    """Errors are reported in deterministic collection/field order."""
+    record = _minimal_roleplay_card(scenario="weather", phraseRefs=[])
+    errs = validate_single(record, "roleplay-card")
+    assert len(errs) == 2, f"Expected 2 errors, got {errs}"
+    assert "scenario" in errs[0], f"Scenario error should be first, got {errs}"
+    assert "phraseRefs must not be empty" in errs[1], f"Reference error should be second, got {errs}"
+
+
+def test_roleplay_card_committed_fixture_valid():
+    """The committed data/roleplay/transport.json fixture stays valid."""
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay", "transport.json"
+    )
+    with open(fixture_path, encoding="utf-8") as f:
+        data = json.load(f)
+    errors = validate_bundle(data)
+    _assert_no_errors(errors, "roleplay_committed_fixture")
+
+
+def test_roleplay_card_non_object_lesson_reference_is_structured_error():
+    """Non-object lessons entries must yield the structured validation error,
+    never an AttributeError traceback (review thread #2)."""
+    data = {
+        "roleplayCards": [_minimal_roleplay_card()],
+        "lessons": ["bad"],
+        "phrasebook": ["bad"],
+    }
+    exit_code, stdout = _cli_check_result(data)
+    assert "AttributeError" not in stdout, f"AttributeError leaked: {stdout}"
+    # The structured validator reports the non-object lesson entry.
+    assert "expected a JSON object" in stdout or "must be a JSON object" in stdout, (
+        f"Expected structured object error, got: {stdout}"
+    )
+
+
+def test_roleplay_card_unknown_line_field_rejected():
+    """Unknown fields inside a roleplay line must fail --check with a
+    path-specific error (review thread #3)."""
+    card = _minimal_roleplay_card()
+    # Insert an unknown key into the first line.
+    card["lines"][0]["traditonal"] = "typo"
+    exit_code, stdout = _cli_check_result(_roleplay_card_bundle(card))
+    assert exit_code != 0, f"Expected unknown line field to fail: {stdout}"
+    assert "unknown field 'traditonal'" in stdout, (
+        f"Expected path-specific unknown-field error, got: {stdout}"
+    )
+
+
+def test_roleplay_card_unknown_line_field_rejected_validate_bundle():
+    """The same unknown-field rejection holds through validate_bundle."""
+    card = _minimal_roleplay_card()
+    card["lines"][0]["traditonal"] = "typo"
+    errors = validate_bundle(_roleplay_card_bundle(card))
+    assert any("unknown field 'traditonal'" in e for e in errors), (
+        f"Expected unknown-field error, got: {errors}"
+    )
+
+
+def test_roleplay_file_ownership_match_passes():
+    """A card whose scenario matches its owning file passes --check."""
+    fixture_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay", "transport.json"
+    )
+    with open(fixture_path, encoding="utf-8") as f:
+        data = json.load(f)
+    errors = _check_roleplay_file_ownership(fixture_path, data)
+    _assert_no_errors(errors, "roleplay_file_ownership_match")
+
+
+def test_roleplay_file_ownership_mismatch_rejected():
+    """A card placed in the wrong scenario file must fail with a
+    path-specific ownership error (review thread #4, negative regression)."""
+    roleplay_dir = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay"
+    )
+    card = _minimal_roleplay_card()  # scenario "transport"
+    fixture = {"roleplayCards": [card]}
+    # Simulate the documented boundary: data/roleplay/food.json containing a
+    # transport card. The ownership helper only inspects the path + in-memory
+    # bundle, so no file needs to be written.
+    food_path = os.path.join(roleplay_dir, "food.json")
+    errors = _check_roleplay_file_ownership(food_path, fixture)
+    assert any("ownership mismatch" in e for e in errors), (
+        f"Expected ownership mismatch error, got: {errors}"
+    )
+
+
+def test_roleplay_file_ownership_only_enforced_for_roleplay_dir():
+    """Ownership check only applies to files directly under data/roleplay/."""
+    import tempfile
+
+    card = _minimal_roleplay_card()
+    fixture = {"roleplayCards": [card]}
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as f:
+        json.dump(fixture, f)
+        tmp_path = f.name
+    try:
+        errors = _check_roleplay_file_ownership(tmp_path, fixture)
+    finally:
+        os.unlink(tmp_path)
+    _assert_no_errors(errors, "roleplay_file_ownership_outside_dir")
+
+
+def test_roleplay_file_non_controlled_scenario_name_rejected():
+    """A JSON file directly under data/roleplay/ whose name is not a
+    controlled scenario must fail (it would otherwise silently bypass the
+    ownership gate)."""
+    roleplay_dir = os.path.join(
+        os.path.dirname(__file__), "..", "data", "roleplay"
+    )
+    card = _minimal_roleplay_card()
+    fixture = {"roleplayCards": [card]}
+    bad_path = os.path.join(roleplay_dir, "not-a-scenario.json")
+    errors = _check_roleplay_file_ownership(bad_path, fixture)
+    assert any("not a controlled scenario" in e for e in errors), (
+        f"Expected non-controlled scenario name error, got: {errors}"
+    )
 
 
 # ─── Practice tests ────────────────────────────────────────────────────────
@@ -6539,6 +7604,12 @@ _COMMITTED_RIGHTS_PATH = os.path.join(
 # (Issue #220): a dialog fixture may reference the existing phrase records.
 _PHRASEBOOK_REFERENCE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "data", "examples", "valid", "phrasebook.json"
+)
+
+# Committed lesson reference set for roleplay card lessonRefs (Issue #243):
+# a card fixture may reference the existing lesson records.
+_LESSON_REFERENCE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "examples", "valid", "lessons.json"
 )
 
 
