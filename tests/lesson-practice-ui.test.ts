@@ -76,14 +76,16 @@ describe('lesson practice answer visibility', () => {
     // users hear the result and focus does not fall to the document body.
     expect(practiceComponentSource).toContain('feedback.tabIndex = -1;');
     expect(practiceComponentSource).toContain('feedback.focus();');
-    // After the correct/completed re-render, focus moves to the completion status.
+    // After the correct/completed re-render, focus moves to the completion status
+    // only when the user has not moved focus elsewhere during the feedback window.
     expect(practiceComponentSource).toContain(
-      "timer.schedule(() => {\n            renderCompleted();\n            const complete = root.querySelector('.practice-complete') as HTMLElement | null;\n            if (complete) complete.focus();\n          }, 1200);",
+      "const shouldTakeFocus = feedback.contains(document.activeElement);\n            renderCompleted();\n            if (shouldTakeFocus) {\n              const complete = root.querySelector('.practice-complete') as HTMLElement | null;\n              if (complete) complete.focus();\n            }",
     );
     // After a non-completing correct answer or an incorrect answer, the next
-    // question's first choice receives focus so the learner can continue.
+    // question's first choice receives focus (again, only if focus is still on
+    // the feedback) so the learner can continue without focus loss or a trap.
     expect(practiceComponentSource).toContain(
-      "const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;\n            if (firstChoice) firstChoice.focus();",
+      "const shouldTakeFocus = feedback.contains(document.activeElement);\n            render();\n            if (shouldTakeFocus) {\n              const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;\n              if (firstChoice) firstChoice.focus();\n            }",
     );
   });
 });

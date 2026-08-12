@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { A11Y_THEMES } from './matrix';
-import { BASE_URL } from './helpers';
+import { BASE_URL, freezeClock } from './helpers';
 
 const CLOCK_START = '2026-01-15T11:00:00+09:00';
 
@@ -80,6 +80,9 @@ for (const theme of A11Y_THEMES) {
     }) => {
       await page.clock.install({ time: CLOCK_START });
       await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
+      // Freeze the clock after load so feedback/transition timers never fire
+      // during keyboard interaction; retry/completion steps advance explicitly.
+      await freezeClock(page);
 
       // Skip straight to main content, then Tab to the first lesson card.
       await page.keyboard.press('Tab'); // skip link
@@ -107,6 +110,7 @@ for (const theme of A11Y_THEMES) {
       await page.goto(`${BASE_URL}/lessons/lesson-001/`, {
         waitUntil: 'load',
       });
+      await freezeClock(page);
       const firstChoice = page.locator('.practice-choice').first();
       await expect(firstChoice).toBeVisible();
 

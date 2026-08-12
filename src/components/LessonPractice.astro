@@ -140,15 +140,24 @@ const json = JSON.stringify(questions);
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
           timer.schedule(() => {
+            // Decide focus before the re-render replaces the feedback element:
+            // only take focus if the user has not moved it elsewhere (e.g. Tab
+            // into the lesson navigation) during the feedback window.
+            const shouldTakeFocus = feedback.contains(document.activeElement);
             renderCompleted();
-            const complete = root.querySelector('.practice-complete') as HTMLElement | null;
-            if (complete) complete.focus();
+            if (shouldTakeFocus) {
+              const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+              if (complete) complete.focus();
+            }
           }, 1200);
         } else {
           timer.schedule(() => {
+            const shouldTakeFocus = feedback.contains(document.activeElement);
             render();
-            const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
-            if (firstChoice) firstChoice.focus();
+            if (shouldTakeFocus) {
+              const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+              if (firstChoice) firstChoice.focus();
+            }
           }, 1200);
         }
       } else {
@@ -163,9 +172,13 @@ const json = JSON.stringify(questions);
         feedback.tabIndex = -1;
         feedback.focus();
         timer.schedule(() => {
+          // Preserve an explicit focus move away from the feedback.
+          const shouldTakeFocus = feedback.contains(document.activeElement);
           render();
-          const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
-          if (firstChoice) firstChoice.focus();
+          if (shouldTakeFocus) {
+            const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+            if (firstChoice) firstChoice.focus();
+          }
         }, 2000);
       }
     }

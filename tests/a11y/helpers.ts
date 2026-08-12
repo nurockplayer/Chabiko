@@ -53,6 +53,18 @@ export async function readStorage(page: Page): Promise<Record<string, string>> {
   );
 }
 
+/**
+ * Freeze the installed Playwright clock at its current position. The clock
+ * auto-advances from the install time while the page loads, so the practice
+ * transition timers (1200ms completion / 2000ms retry) would keep counting
+ * down during structural assertions and the axe scan. fastForward(0) advances
+ * 0ms and pauses the clock, freezing it exactly at the current time with no
+ * timer fired — the surface is then scanned as its named transient state.
+ */
+export async function freezeClock(page: Page): Promise<void> {
+  await page.clock.fastForward(0);
+}
+
 interface Question {
   correctAnswer: string;
   choices: string[];
@@ -122,7 +134,7 @@ export async function setupSurface(
     // is showing, so the 1200ms completion transition timer never advances
     // while the structural assertions and the axe scan run — the surface is
     // scanned as the named practice-correct transient state.
-    await page.clock.pauseAt();
+    await freezeClock(page);
     return externalRequests;
   }
 
@@ -133,7 +145,7 @@ export async function setupSurface(
     // Freeze the clock at its current position so the 2000ms retry transition
     // timer never advances while the structural assertions and the axe scan
     // run.
-    await page.clock.pauseAt();
+    await freezeClock(page);
     return externalRequests;
   }
 
