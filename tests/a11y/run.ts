@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export const PLAYWRIGHT_IMAGE =
@@ -12,11 +13,16 @@ const STORE_VOLUME = 'chabiko-a11y-pnpm-store-v1';
  * dependencies from the frozen lockfile (including @axe-core/playwright) and
  * executes the axe + keyboard-flow specs against a freshly built preview.
  */
-export function buildDockerArgs(workingDirectory: string): string[] {
+export function buildDockerArgs(
+  workingDirectory: string,
+  commonGitDirectory?: string,
+): string[] {
   // The bind-mounted /work is a Git checkout owned by the host runner, while
   // git inside the container runs as a different UID. Without this, `git
   // ls-files` in the production corpus loader's tracked-asset validation aborts
-  // with "dubious ownership"; the fail-closed check itself stays untouched.
+  // with "dubious ownership"; the fail-closed check itself stays untouched. In
+  // a linked worktree the `.git` file points outside /work, so the common git
+  // directory is mounted too (mirrors tests/visual/run.ts).
   const playwrightCommand = [
     'set -euo pipefail',
     'git config --global --add safe.directory /work',
@@ -33,6 +39,9 @@ export function buildDockerArgs(workingDirectory: string): string[] {
     '--ipc=host',
     '--mount',
     `type=bind,source=${workingDirectory},target=/work`,
+    ...(commonGitDirectory
+      ? ['--mount', `type=bind,source=${commonGitDirectory},target=${commonGitDirectory}`]
+      : []),
     '--mount',
     `type=volume,source=${STORE_VOLUME},target=/pnpm/store`,
     '--mount',
@@ -46,12 +55,31 @@ export function buildDockerArgs(workingDirectory: string): string[] {
   ];
 }
 
+function resolveCommonGitDirectory(workingDirectory: string): string {
+  const result = spawnSync(
+    'git',
+    ['-C', workingDirectory, 'rev-parse', '--git-common-dir'],
+    { encoding: 'utf8' },
+  );
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `cannot resolve the a11y checkout git metadata: ${result.error?.message ?? result.stderr}`,
+    );
+  }
+  const directory = result.stdout.trim();
+  if (!directory) throw new Error('git returned an empty common directory');
+  return isAbsolute(directory) ? directory : resolve(workingDirectory, directory);
+}
+
 export function runA11yTests(
   workingDirectory = process.cwd(),
 ): number {
-  const result = spawnSync('docker', buildDockerArgs(workingDirectory), {
-    stdio: 'inherit',
-  });
+  const commonGitDirectory = resolveCommonGitDirectory(workingDirectory);
+  const result = spawnSync(
+    'docker',
+    buildDockerArgs(workingDirectory, commonGitDirectory),
+    { stdio: 'inherit' },
+  );
 
   if (result.error) {
     throw result.error;
