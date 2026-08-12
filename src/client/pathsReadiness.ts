@@ -306,9 +306,17 @@ export function initPathsReadiness(
   // the newer scope.
   let identityVersion = 0;
 
-  if (client != null) {
+  // Re-resolve the trusted identity from the auth session (read-only). Used for
+  // the initial load and again on `pageshow`, because a BFCache-restored
+  // document may have missed auth changes that happened while it was frozen —
+  // re-confirming the session prevents a previous user's scoped progress from
+  // being surfaced after logout/switch elsewhere. The identityVersion guard
+  // drops any reply superseded by a newer auth event; the disposal guard drops
+  // replies after cleanup.
+  function resolveIdentity(): void {
+    const client = getSupabaseBrowserClient();
+    if (client == null) return;
     const versionAtStart = identityVersion;
-    // Resolve the initial trusted identity (read-only).
     void client.auth
       .getSession()
       .then((result) => {
@@ -336,6 +344,11 @@ export function initPathsReadiness(
         // A failed session read is not an auth error we can surface safely;
         // keep identity unknown so basic-vocabulary evidence stays unavailable.
       });
+  }
+
+  if (client != null) {
+    // Resolve the initial trusted identity (read-only).
+    resolveIdentity();
 
     const subscription = client.auth.onAuthStateChange((event, session) => {
       identityVersion += 1;
@@ -354,6 +367,11 @@ export function initPathsReadiness(
   }
 
   function onPageShow(): void {
+    // Re-confirm the current identity: a BFCache-restored document may have
+    // missed auth changes while frozen (e.g. the user logged out or switched
+    // on another page), so the cached scope must not keep surfacing a previous
+    // user's progress.
+    resolveIdentity();
     renderAll();
   }
 

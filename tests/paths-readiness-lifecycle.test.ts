@@ -168,6 +168,7 @@ function fakeSupabaseClient(
   client: { auth: FakeAuthClient };
   emit: (event: string, session: unknown) => void;
   deferNextGetSession: () => (session: { user: { id: string } } | null) => void;
+  setSessionSilently: (session: { user: { id: string } } | null) => void;
 } {
   let currentSession: { user: { id: string } } | null =
     initialUserId !== null ? { user: { id: initialUserId } } : null;
@@ -214,6 +215,12 @@ function fakeSupabaseClient(
       return (session: { user: { id: string } } | null) => {
         if (pendingResolve !== null) pendingResolve(session);
       };
+    },
+    // Simulate an auth change that this page's listeners did NOT receive
+    // (e.g. the user logged out or switched on another page while this one was
+    // frozen in BFCache): the session store changes but no event fires here.
+    setSessionSilently: (session: { user: { id: string } } | null) => {
+      currentSession = session;
     },
   };
 }
@@ -601,6 +608,36 @@ describe('progress signals', () => {
     // An untrustworthy login event (non-canonical user id) must fail closed to
     // unknown from any scope: the guest progress is no longer surfaced.
     emit('SIGNED_IN', { user: { id: 'not-a-uuid' } });
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
+  it('re-resolves identity on pageshow so a BFCache-restored document drops a stale user scope', async () => {
+    const userA = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client, setSessionSilently } = fakeSupabaseClient(userA);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    const userScope: BasicVocabularyProgressScope = { kind: 'user', userId: userA };
+    const userStore = new BasicVocabularyProgressStore(
+      window.localStorage,
+      getBasicVocabularyProgressStorageKey(userScope),
+    );
+    userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    window.dispatchEvent(new Event('pageshow'));
+    await flushAsync();
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+
+    // The user logged out on another page while this document was frozen
+    // (BFCache): the session changed but this page received no auth event.
+    setSessionSilently(null);
+    window.dispatchEvent(new Event('pageshow'));
+    await flushAsync();
+
+    // pageshow re-resolves the session: identity becomes signed-out and the
+    // previous user's scoped progress is no longer surfaced.
     expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
