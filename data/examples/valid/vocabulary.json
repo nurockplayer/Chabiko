@@ -477,60 +477,60 @@
     },
     {
       "id": "kanji-bridge-023",
-      "traditional": "發",
+      "traditional": "氣",
       "traditionalStatus": "generated",
-      "simplified": "发",
+      "simplified": "气",
       "simplifiedStatus": "generated",
-      "pinyin": "fā",
-      "japanese": "出す／送る",
-      "kana": "はつ",
-      "category": "action",
+      "pinyin": "qì",
+      "japanese": "気・空気",
+      "kana": "き",
+      "category": "noun",
       "similarityType": "partial-overlap",
-      "toneNote": "fā は第一声（高く平ら）。日本語の「ハツ」の促音とは発音が違う。",
+      "toneNote": "qì は第四声。q は送気音で、日本語の「キ」とは違う。",
       "painPointTags": ["traditional-simplified"],
-      "caution": "日本語の「発」の形は中国語では使われない。正しい形は「發」（繁体）「发」（简体）。読みは fā（ファー）。",
+      "caution": "日本語の「気（き）」＝ 気持ち・気分（mood）。中国語の「氣/气」＝ 空気・息（air, breath）。共通する「元気・気力」の意味はあるが、「気持ち」は中国語で「心情（xīnqíng）」、「気にする」は「在意（zàiyì）」。形は日本語の「気」ではなく「氣」（繁体）「气」（简体）。",
       "examples": [
-        {"traditional": "出發", "traditionalStatus": "generated", "simplified": "出发", "simplifiedStatus": "generated", "pinyin": "chūfā", "japanese": "出発する"}
+        {"traditional": "生氣", "traditionalStatus": "generated", "simplified": "生气", "simplifiedStatus": "generated", "pinyin": "shēngqì", "japanese": "怒る"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-024",
-      "traditional": "熱",
+      "traditional": "白",
       "traditionalStatus": "generated",
-      "simplified": "热",
+      "simplified": "白",
       "simplifiedStatus": "generated",
-      "pinyin": "rè",
-      "japanese": "熱い／熱",
-      "kana": "ねつ",
+      "pinyin": "bái",
+      "japanese": "白い／むだに",
+      "kana": "しろ",
       "category": "adjective",
       "similarityType": "partial-overlap",
-      "toneNote": "rè は第四声。r はそり舌音で、日本語の「る」とは発音が違う。",
-      "painPointTags": ["traditional-simplified"],
-      "caution": "日本の「熱」は繁体字「熱」と同形。簡体字は「热」なので混同しないこと。読みは rè（そり舌音の「レ」に近い）。",
+      "toneNote": "bái は第二声。",
+      "painPointTags": ["same-kanji-different-usage"],
+      "caution": "日中の「白」とも「白い色（white）」の意味。中国語の「白」はさらに副詞で「むだに・ただで（in vain, for free）」——「白跑一趟（むだ足を踏む）」「白吃（ただ食いする）」。日本語の「白い」だけを思い浮かべないこと。",
       "examples": [
-        {"traditional": "天氣很熱", "traditionalStatus": "generated", "simplified": "天气很热", "simplifiedStatus": "generated", "pinyin": "tiānqì hěn rè", "japanese": "天気がとても暑い"}
+        {"traditional": "白吃", "traditionalStatus": "generated", "simplified": "白吃", "simplifiedStatus": "generated", "pinyin": "bái chī", "japanese": "ただ食いする"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-025",
-      "traditional": "走",
+      "traditional": "真面目",
       "traditionalStatus": "generated",
-      "simplified": "走",
+      "simplified": "真面目",
       "simplifiedStatus": "generated",
-      "pinyin": "zǒu",
-      "japanese": "歩く",
-      "kana": "あるく",
-      "category": "action",
+      "pinyin": "zhēnmiànmù",
+      "japanese": "本当の顔・本性",
+      "kana": "しんめんもく",
+      "category": "noun",
       "similarityType": "false-friend",
-      "toneNote": "zǒu は第三声（低くから上がる）。日本語の「ソウ」の音読みから発音を推測しない。",
-      "painPointTags": ["same-kanji-different-meaning"],
-      "caution": "日本語の「走る（はしる）」は run。中国語の「走 zǒu」は主に「歩く・行く・立ち去る」で、人が走る場合は普通「跑 pǎo」を使う。「走」を見たら「走る」ではなく「歩く」を思い出すこと。",
+      "toneNote": "zhēn 第一声、miàn 第四声、mù 第四声。",
+      "painPointTags": ["kanji-false-friend"],
+      "caution": "日本語の「真面目（まじめ）」＝ 真面目・真剣（serious）。中国語の「真面目」＝ 本当の顔・本性（true face, real nature）。「彼は真面目だ」は中国語で「他很認真（tā hěn rènzhēn）」。中国語の「真面目」を「まじめ」の意味で使うと通じない。",
       "examples": [
-        {"traditional": "往前走", "traditionalStatus": "generated", "simplified": "往前走", "simplifiedStatus": "generated", "pinyin": "wǎng qián zǒu", "japanese": "前へ歩いて行く"}
+        {"traditional": "露出真面目", "traditionalStatus": "generated", "simplified": "露出真面目", "simplifiedStatus": "generated", "pinyin": "lùchū zhēnmiànmù", "japanese": "本性を現す"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -677,20 +677,20 @@
     },
     {
       "id": "kanji-bridge-033",
-      "traditional": "有",
+      "traditional": "安",
       "traditionalStatus": "generated",
-      "simplified": "有",
+      "simplified": "安",
       "simplifiedStatus": "generated",
-      "pinyin": "yǒu",
-      "japanese": "持っている／ある",
-      "kana": "もっている",
-      "category": "grammar",
+      "pinyin": "ān",
+      "japanese": "安心・安全",
+      "kana": "あん",
+      "category": "adjective",
       "similarityType": "partial-overlap",
-      "toneNote": "yǒu は第三声。",
+      "toneNote": "ān は第一声。",
       "painPointTags": ["same-kanji-different-usage"],
-      "caution": "日本語の「有る（ある）」は存在を表すが、中国語の「有」は所有の意味が強い。「我有兄弟」のように所有構造になる。否定は「沒有（méiyǒu）」で、存在と所有の否定の両方に使う。",
+      "caution": "日中とも「安心（あんしん）」「安全（あんぜん）」の意味は重なる。ただし日本語の「安い（やすい）＝ 安価」は中国語では「便宜（piányi）」。中国語の「安」を「安い（安価）」の意味で使うと通じない。",
       "examples": [
-        {"traditional": "我有兩個小孩", "traditionalStatus": "generated", "simplified": "我有两个小孩", "simplifiedStatus": "generated", "pinyin": "wǒ yǒu liǎng gè xiǎohái", "japanese": "私には子どもが二人いる"}
+        {"traditional": "安心", "traditionalStatus": "generated", "simplified": "安心", "simplifiedStatus": "generated", "pinyin": "ānxīn", "japanese": "安心する"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -748,7 +748,7 @@
       "similarityType": "false-friend",
       "toneNote": "dà 第四声、zhàng 第四声、fū 第一声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男。「大丈夫ですか」の意味で使うと「立派な男ですか」になる。OK は中国語では「沒關係（méiguānxi）」や「可以（kěyǐ）」。",
+      "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男（a strong man）。「大丈夫ですか？」の意味で使うと「立派な男ですか」になる。人の状態を気遣う質問は「你還好嗎？（nǐ hái hǎo ma）」「你沒事吧？（nǐ méishì ba）」、「問題ない」は「沒問題（méiwèntí）」、許可「〜してもいい？」は「可以嗎？（kěyǐ ma）」。なお「沒關係（méiguānxi）」は「大丈夫だよ・気にしないで」という慰めで、質問の答えには使わない。",
       "examples": [
         {"traditional": "他是個大丈夫", "traditionalStatus": "generated", "simplified": "他是个大丈夫", "simplifiedStatus": "generated", "pinyin": "tā shì gè dàzhàngfū", "japanese": "彼は立派な男だ"}
       ],
