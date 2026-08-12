@@ -586,6 +586,24 @@ describe('progress signals', () => {
     expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
+  it('fails closed to unknown on an invalid login event while signed out', async () => {
+    const { client, emit } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    // Signed-out: guest progress counts.
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+
+    // An untrustworthy login event (non-canonical user id) must fail closed to
+    // unknown from any scope: the guest progress is no longer surfaced.
+    emit('SIGNED_IN', { user: { id: 'not-a-uuid' } });
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
   it('keeps identity unknown when getSession reports an error', async () => {
     // An errored session read (corrupt/unreadable persisted session) is not a
     // signed-out signal: basic-vocabulary evidence stays unavailable rather
@@ -640,6 +658,26 @@ describe('progress signals', () => {
     const key = VOCABULARY_PROGRESS_KEY;
     const raw = JSON.parse(window.localStorage.getItem(key) ?? '{}');
     raw.entries['hsk-001'] = { status: 'learned', knownStreak: 0 };
+    window.localStorage.setItem(key, JSON.stringify(raw));
+    window.dispatchEvent(new Event('pageshow'));
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+  });
+
+  it('ignores an HSK learned record whose knownStreak is not an integer', async () => {
+    // A corrupt HSK entry claiming status learned with a non-integer streak
+    // (e.g. 2.5) must not count: `learned` requires a finite non-negative
+    // integer knownStreak >= 2. The hsk-vocabulary path stays 0 / 5.
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+    const hskStore = new VocabularyProgressStore(window.localStorage);
+    hskStore.applyRating('hsk-001', 'known');
+    hskStore.applyRating('hsk-001', 'known');
+    const key = VOCABULARY_PROGRESS_KEY;
+    const raw = JSON.parse(window.localStorage.getItem(key) ?? '{}');
+    raw.entries['hsk-001'] = { status: 'learned', knownStreak: 2.5 };
     window.localStorage.setItem(key, JSON.stringify(raw));
     window.dispatchEvent(new Event('pageshow'));
     expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');

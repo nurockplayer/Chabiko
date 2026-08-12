@@ -128,10 +128,12 @@ export function initPathsReadiness(
     // vocabulary member or a readiness evidence key.
     const hskStore = new VocabularyProgressStore(safeLocalStorage());
     for (const [id, entry] of Object.entries(hskStore.getAllEntries())) {
-      // `learned` requires knownStreak >= 2; a corrupt record claiming
-      // `status: learned` with a zero streak must not count.
+      // `learned` requires a finite, non-negative integer knownStreak >= 2; a
+      // corrupt record claiming `status: learned` with a zero or non-integer
+      // streak must not count.
       if (
         entry.status === 'learned' &&
+        Number.isInteger(entry.knownStreak) &&
         entry.knownStreak >= 2 &&
         hskCorpusIds.has(id)
       ) {
@@ -246,12 +248,11 @@ export function initPathsReadiness(
 
   function applyTrustedUserId(userId: string): void {
     if (disposed) return;
-    // A non-canonical user ID is a safe Auth error: never expose or use it. If
-    // we were already signed in, this new identity event invalidates the
-    // previously trusted user, so fail closed to unknown rather than continuing
-    // to surface the stale user's progress.
+    // A non-canonical user ID is a safe Auth error: never expose or use it. An
+    // identity event carrying it is untrustworthy from any current scope — fail
+    // closed to unknown so no scope's progress is surfaced.
     if (!isValidSupabaseUserId(userId)) {
-      if (identityScope.kind === 'signed-in') applyUnknown();
+      if (identityScope.kind !== 'unknown') applyUnknown();
       return;
     }
     const next: PathsIdentityScope = { kind: 'signed-in', userId };
@@ -287,11 +288,10 @@ export function initPathsReadiness(
       event === 'TOKEN_REFRESHED' ||
       event === 'INITIAL_SESSION'
     ) {
-      // An identity event without a usable user id is not trustworthy. If we
-      // were already signed in it invalidates the previously trusted user —
-      // fail closed to unknown so a stale user scope's progress is never shown.
-      // Otherwise keep the current (non-signed-in) scope.
-      if (identityScope.kind === 'signed-in') applyUnknown();
+      // An identity event without a usable user id is not trustworthy: fail
+      // closed to unknown from any current scope so no stale or guest scope's
+      // progress is surfaced.
+      if (identityScope.kind !== 'unknown') applyUnknown();
     }
   }
 
