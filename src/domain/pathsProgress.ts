@@ -146,3 +146,33 @@ export function summarizePathProgress(
         : 'empty';
   return { completedCount, totalCount, state };
 }
+
+/**
+ * IDs a basic-vocabulary path or readiness target can reference on this route:
+ * the vocabulary members of every non-HSK path plus the
+ * `completed-vocabulary-session` readiness evidence ids. Used by the route to
+ * intersect against the production writer corpus before serializing the
+ * route-local projection payload, so stale `voc-*`/`hsk-*`/unknown ids can
+ * never be accepted from BasicVocabularyProgressStore.
+ *
+ * Pure and deterministic: identical paths and targets always produce identical
+ * output.
+ */
+export function basicVocabularyRelevantIds(
+  paths: readonly { readonly id: string; readonly members: readonly LearningPathMemberRef[] }[],
+  targets: readonly TravelQuestTargetSpec[],
+): string[] {
+  const ids = new Set<string>();
+  for (const path of paths) {
+    if (path.id === 'hsk-vocabulary') continue;
+    for (const member of path.members) {
+      if (member.type === 'vocabulary') ids.add(member.id);
+    }
+  }
+  for (const target of targets) {
+    for (const spec of target.evidence) {
+      if (spec.type === 'completed-vocabulary-session') ids.add(spec.id);
+    }
+  }
+  return [...ids];
+}

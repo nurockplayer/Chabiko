@@ -5,7 +5,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../src/lib/supabaseBrowserClient', () => ({
   getSupabaseBrowserClient: vi.fn(),
 }));
+// The progress coordinator is the boundary that would persist and sync basic
+// vocabulary progress. /paths/ is a route-local read-only projection and must
+// never reach it; mocking the module arms the negative-drift guard so a future
+// regression that imports/calls it fails the "never writes" test.
+vi.mock('../src/client/basicVocabularyProgressCoordinator', () => ({
+  createBasicVocabularyProgressCoordinator: vi.fn(),
+  ensureBasicVocabularyProgressCoordinator: vi.fn(),
+  getBasicVocabularyProgressCoordinator: vi.fn(),
+  setBasicVocabularyProgressCoordinator: vi.fn(),
+  resetBasicVocabularyProgressCoordinator: vi.fn(),
+}));
 import { getSupabaseBrowserClient } from '../src/lib/supabaseBrowserClient';
+import {
+  createBasicVocabularyProgressCoordinator,
+  ensureBasicVocabularyProgressCoordinator,
+  getBasicVocabularyProgressCoordinator,
+  setBasicVocabularyProgressCoordinator,
+} from '../src/client/basicVocabularyProgressCoordinator';
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
   BasicVocabularyProgressStore,
@@ -14,7 +31,9 @@ import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
 import learnerManifest from '../data/teacher-vocabulary-preview/learner-manifest.json';
+import readinessData from '../data/travel-quest-readiness.json';
 import type { LearnerManifest } from '../src/types/learnerManifest';
+import type { TravelQuestReadinessDocument } from '../src/types/travelQuestReadiness';
 import {
   getBasicVocabularyProgressStorageKey,
   type BasicVocabularyProgressScope,
@@ -23,12 +42,14 @@ import {
   initPathsReadiness,
   type PathsProgressPayload,
 } from '../src/client/pathsReadiness';
+import { basicVocabularyRelevantIds } from '../src/domain/pathsProgress';
 
 // ─── Test harness ──────────────────────────────────────────────────────────────
 
 const cleanups = new Set<() => void>();
 
 const document_ = loadLearningPaths();
+const readinessDocument_ = readinessData as TravelQuestReadinessDocument;
 
 /** Build the route root exactly as the /paths/ page renders it: each card plus
  * the Travel Quest readiness section, driven by the frozen loader contract. */
@@ -73,16 +94,22 @@ function createRoot(): HTMLElement {
 }
 
 function payload(): PathsProgressPayload {
+  // Mirrors the /paths/ route: the writer corpus intersected with the ids this
+  // page can reference (basic path vocabulary members + completed-vocabulary-
+  // session readiness evidence), so the route-local projection accepts only the
+  // exact learnerIds the production basic-vocabulary writer can produce.
+  const writerIds = new Set(
+    (learnerManifest as LearnerManifest).rows.map((row) => row.learnerId),
+  );
   return {
     paths: document_.learningPaths.map((path) => ({
       id: path.id,
       members: path.members,
     })),
-    // Mirrors the /paths/ route: the exact learner-manifest learnerIds are the
-    // only ids the production basic-vocabulary writer can produce.
-    basicVocabularyWriterIds: (learnerManifest as LearnerManifest).rows.map(
-      (row) => row.learnerId,
-    ),
+    basicVocabularyWriterIds: basicVocabularyRelevantIds(
+      document_.learningPaths,
+      readinessDocument_.targets,
+    ).filter((id) => writerIds.has(id)),
   };
 }
 
@@ -453,7 +480,6 @@ describe('progress signals', () => {
   it('never writes progress, sync metadata, or cloud state merely from viewing', async () => {
     const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
     const { client } = fakeSupabaseClient(userId);
-    const repository = { reset: vi.fn(), push: vi.fn(), load: vi.fn() };
     vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
 
@@ -463,10 +489,13 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
     dispatchStorage(STORAGE_KEY, window.localStorage);
 
+    // Read-only projection: no progress/sync/cloud writes and no coordinator
+    // boundary reached merely from viewing /paths/.
     expect(JSON.stringify(window.localStorage)).toBe(before);
-    expect(repository.reset).not.toHaveBeenCalled();
-    expect(repository.push).not.toHaveBeenCalled();
-    expect(repository.load).not.toHaveBeenCalled();
+    expect(createBasicVocabularyProgressCoordinator).not.toHaveBeenCalled();
+    expect(ensureBasicVocabularyProgressCoordinator).not.toHaveBeenCalled();
+    expect(getBasicVocabularyProgressCoordinator).not.toHaveBeenCalled();
+    expect(setBasicVocabularyProgressCoordinator).not.toHaveBeenCalled();
   });
 
   it('guests read the guest store without a coordinator', async () => {
