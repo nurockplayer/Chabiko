@@ -123,18 +123,20 @@
     },
     {
       "id": "kanji-bridge-004",
-      "traditional": "安全",
+      "traditional": "海",
       "traditionalStatus": "generated",
-      "simplified": "安全",
+      "simplified": "海",
       "simplifiedStatus": "generated",
-      "pinyin": "ānquán",
-      "japanese": "安全（あんぜん）",
-      "kana": "あんぜん",
-      "category": "general",
+      "pinyin": "hǎi",
+      "japanese": "海（うみ）",
+      "kana": "うみ",
+      "category": "noun",
       "similarityType": "same-meaning",
-      "toneNote": "ān は第一声、quán は第二声。日本語の「あんぜん」の平板アクセントと違い、ān を高く保ち quán を上げる。",
+      "toneNote": "hǎi は第三声。日本語の音読み「かい」に近いが、h の子音に注意。",
+      "painPointTags": [],
+      "caution": "日中の「海」とも「海（うみ）」の意味。日本語の音読み「かい」と華語「hǎi」は音が近く、字義も一致する。",
       "examples": [
-        {"traditional": "注意安全", "traditionalStatus": "generated", "simplified": "注意安全", "simplifiedStatus": "generated", "pinyin": "zhùyì ānquán", "japanese": "安全に気をつけてください"}
+        {"traditional": "海邊", "traditionalStatus": "generated", "simplified": "海边", "simplifiedStatus": "generated", "pinyin": "hǎibiān", "japanese": "海辺"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -437,20 +439,20 @@
     },
     {
       "id": "kanji-bridge-021",
-      "traditional": "歡迎",
+      "traditional": "食",
       "traditionalStatus": "generated",
-      "simplified": "欢迎",
+      "simplified": "食",
       "simplifiedStatus": "generated",
-      "pinyin": "huānyíng",
-      "japanese": "歓迎する／ようこそ",
-      "kana": "かんげい",
-      "category": "greeting",
+      "pinyin": "shí",
+      "japanese": "食べ物・食べる",
+      "kana": "しょく",
+      "category": "noun",
       "similarityType": "partial-overlap",
-      "toneNote": "huān は第一声、yíng は第二声。",
-      "painPointTags": ["traditional-simplified"],
-      "caution": "日本の「歓迎」の「歓」の形は中国語では使われない。正しい形は「歡迎」（繁体）「欢迎」（简体）。意味は「ようこそ／歓迎」で共通している。",
+      "toneNote": "shí は第二声。",
+      "painPointTags": [],
+      "caution": "日中の「食」とも「食べる・食物」の意味。ただし台湾華語の口語では「吃（chī）」が普通で、「食」は「食物（shíwù）」「食品（shípǐn）」「飲食（yǐnshí）」のような複合語に使うことが多い。単独で動詞として使うと不自然。",
       "examples": [
-        {"traditional": "歡迎光臨", "traditionalStatus": "generated", "simplified": "欢迎光临", "simplifiedStatus": "generated", "pinyin": "huānyíng guānglín", "japanese": "ようこそお越しくださいました"}
+        {"traditional": "食物", "traditionalStatus": "generated", "simplified": "食物", "simplifiedStatus": "generated", "pinyin": "shíwù", "japanese": "食べ物"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -490,7 +492,7 @@
       "painPointTags": ["traditional-simplified"],
       "caution": "日本語の「気（き）」＝ 気持ち・気分（mood）。中国語の「氣/气」＝ 空気・息（air, breath）。共通する「元気・気力」の意味はあるが、「気持ち」は中国語で「心情（xīnqíng）」、「気にする」は「在意（zàiyì）」。形は日本語の「気」ではなく「氣」（繁体）「气」（简体）。",
       "examples": [
-        {"traditional": "生氣", "traditionalStatus": "generated", "simplified": "生气", "simplifiedStatus": "generated", "pinyin": "shēngqì", "japanese": "怒る"}
+        {"traditional": "空氣", "traditionalStatus": "generated", "simplified": "空气", "simplifiedStatus": "generated", "pinyin": "kōngqì", "japanese": "空気"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -877,20 +879,20 @@
     },
     {
       "id": "kanji-bridge-043",
-      "traditional": "放心",
+      "traditional": "階段",
       "traditionalStatus": "generated",
-      "simplified": "放心",
+      "simplified": "阶段",
       "simplifiedStatus": "generated",
-      "pinyin": "fàngxīn",
-      "japanese": "安心する",
-      "kana": "ほうしん",
-      "category": "action",
+      "pinyin": "jiēduàn",
+      "japanese": "段階・時期",
+      "kana": "かいだん",
+      "category": "noun",
       "similarityType": "false-friend",
-      "toneNote": "fàng 第四声、xīn 第一声。",
+      "toneNote": "jiē は第一声、duàn は第四声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「放心（ほうしん）」＝ 放心・ぼんやりする（absent-minded）。中国語の「放心」＝ 安心する（don't worry）。「你放心」＝ 安心してください。日本語の「放心」の意味は中国語で「發呆（fādāi）」。",
+      "caution": "日本語の「階段（かいだん）」＝ 階段（stairs）。中国語の「階段」＝ 段階・時期（stage, phase）。「階段を上る」は中国語で「爬樓梯（pá lóutī）」。中国語の「階段」を「階段（stairs）」の意味で使うと通じない。",
       "examples": [
-        {"traditional": "你放心", "traditionalStatus": "generated", "simplified": "你放心", "simplifiedStatus": "generated", "pinyin": "nǐ fàngxīn", "japanese": "安心してください"}
+        {"traditional": "進入第二階段", "traditionalStatus": "generated", "simplified": "进入第二阶段", "simplifiedStatus": "generated", "pinyin": "jìnrù dì èr jiēduàn", "japanese": "第二段階に入る"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
