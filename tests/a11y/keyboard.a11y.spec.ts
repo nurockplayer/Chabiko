@@ -142,6 +142,10 @@ for (const theme of A11Y_THEMES) {
       await page.goto(`${BASE_URL}/lessons/lesson-001/`, {
         waitUntil: 'load',
       });
+      // Freeze before answering so the 2000ms retry transition timer stays
+      // frozen during the feedback assertions; the retry advances only via the
+      // explicit runFor below.
+      await freezeClock(page);
       await expect(page.locator('.practice-choice').first()).toBeVisible();
 
       const questions = await page.locator('[data-questions]').evaluate((el) =>
@@ -192,6 +196,9 @@ for (const theme of A11Y_THEMES) {
       await page.goto(`${BASE_URL}/lessons/lesson-001/`, {
         waitUntil: 'load',
       });
+      // Freeze before answering so the 1200ms completion transition timer stays
+      // frozen until the explicit runFor below.
+      await freezeClock(page);
       await expect(page.locator('.practice-choice').first()).toBeVisible();
 
       const questions = await page.locator('[data-questions]').evaluate((el) =>

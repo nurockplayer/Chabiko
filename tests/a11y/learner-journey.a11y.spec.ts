@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { A11Y_CASES, A11Y_THEMES } from './matrix';
 import {
+  analyzeWithPausedClock,
   assertNoExternalRequests,
   assertStructuralContract,
   PROGRESS_STORAGE_KEY,
@@ -45,9 +46,10 @@ for (const theme of A11Y_THEMES) {
         await assertStructuralContract(page);
         assertNoExternalRequests(externalRequests);
 
-        const results = await new AxeBuilder({ page })
-          .withTags(WCAG_AA_TAGS)
-          .analyze();
+        const results = await analyzeWithPausedClock(
+          page,
+          new AxeBuilder({ page }).withTags(WCAG_AA_TAGS),
+        );
 
         const blocking = results.violations.filter(
           (violation) =>
@@ -82,5 +84,31 @@ for (const theme of A11Y_THEMES) {
         }
       });
     }
+
+    // Transient-state stability regression (#71): a practice transition timer
+    // must never fire from real wall-clock time alone. Each case waits longer
+    // than its transition window and asserts the named transient surface is
+    // still showing — these fail if real elapsed time can transition it.
+    test(`practice-correct stays frozen past the transition window (${theme})`, async ({
+      page,
+    }) => {
+      await setupSurface(page, 'practice-correct', theme);
+      // Wait longer than the 1200ms completion transition in real wall-clock
+      // time; the feedback surface must not transition to completion.
+      await page.waitForTimeout(1500);
+      await expect(page.locator('.feedback-correct')).toContainText('正解！');
+      await expect(page.locator('.practice-complete')).not.toBeVisible();
+    });
+
+    test(`practice-incorrect stays frozen past the transition window (${theme})`, async ({
+      page,
+    }) => {
+      await setupSurface(page, 'practice-incorrect', theme);
+      // Wait longer than the 2000ms retry transition in real wall-clock time;
+      // the feedback surface must not re-render the question.
+      await page.waitForTimeout(2500);
+      await expect(page.locator('.feedback-incorrect')).toContainText('不正解。');
+      await expect(page.locator('.feedback-answer')).toContainText('正解：');
+    });
   });
 }
