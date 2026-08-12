@@ -132,9 +132,9 @@
       "kana": "うみ",
       "category": "noun",
       "similarityType": "same-meaning",
-      "toneNote": "hǎi は第三声。日本語の音読み「かい」に近いが、h の子音に注意。",
-      "painPointTags": [],
-      "caution": "日中の「海」とも「海（うみ）」の意味。日本語の音読み「かい」と華語「hǎi」は音が近く、字義も一致する。",
+      "toneNote": "hǎi は第三声。日本語の音読み「かい」とは母音・声調が異なる別の読みで、近似は記憶の助けに過ぎない。",
+      "painPointTags": ["pinyin-pronunciation"],
+      "caution": "日中の「海」とも「海（うみ）」の意味で字義は一致する。ただし日本語の音読み「かい」と華語「hǎi」は別の読みであり、類似は記憶の助けに過ぎない——発音は拼音 hǎi を基準にする。",
       "examples": [
         {"traditional": "海邊", "traditionalStatus": "generated", "simplified": "海边", "simplifiedStatus": "generated", "pinyin": "hǎibiān", "japanese": "海辺"}
       ],
@@ -250,7 +250,7 @@
       "kana": "せかい",
       "category": "general",
       "similarityType": "same-meaning",
-      "toneNote": "shì は第四声、jiè は第四声。日本語の「せかい」の平板アクセントと違い、声調を下げる。",
+      "toneNote": "shì は第四声、jiè は第四声。",
       "examples": [
         {"traditional": "全世界", "traditionalStatus": "generated", "simplified": "全世界", "simplifiedStatus": "generated", "pinyin": "quán shìjiè", "japanese": "全世界"}
       ],
@@ -412,7 +412,7 @@
       "kana": "ぶんか",
       "category": "culture",
       "similarityType": "same-meaning",
-      "toneNote": "wén は第二声、huà は第四声。日本語の「ぶんか」の平板アクセントとは違う。",
+      "toneNote": "wén は第二声、huà は第四声。",
       "examples": [
         {"traditional": "台灣文化很有趣", "traditionalStatus": "generated", "simplified": "台湾文化很有趣", "simplifiedStatus": "generated", "pinyin": "Táiwān wénhuà hěn yǒuqù", "japanese": "台湾の文化はとても面白い"}
       ],
