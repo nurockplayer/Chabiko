@@ -193,12 +193,21 @@ export function initPathsReadiness(
     return null;
   }
 
-  function applySessionUserId(userId: string | null): void {
+  function applySignedOut(): void {
     if (disposed) return;
-    const next: PathsIdentityScope =
-      userId !== null && isValidSupabaseUserId(userId)
-        ? { kind: 'signed-in', userId }
-        : { kind: 'signed-out' };
+    const changed = identityScope.kind !== 'signed-out';
+    identityScope = { kind: 'signed-out' };
+    if (changed) renderAll();
+  }
+
+  function applyTrustedUserId(userId: string): void {
+    if (disposed) return;
+    // A non-canonical user ID is a safe Auth error: never expose or use it,
+    // and never downgrade to the shared guest scope (which would surface
+    // another scope's progress). Keep the identity unknown so basic-vocabulary
+    // evidence stays unavailable.
+    if (!isValidSupabaseUserId(userId)) return;
+    const next: PathsIdentityScope = { kind: 'signed-in', userId };
     const changed =
       next.kind !== identityScope.kind ||
       (next.kind === 'signed-in' &&
@@ -211,14 +220,24 @@ export function initPathsReadiness(
   function handleAuthEvent(event: string, session: unknown): void {
     if (disposed) return;
     if (event === 'SIGNED_OUT') {
-      applySessionUserId(null);
+      applySignedOut();
       return;
     }
     const ses = (session ?? null) as
       | { user?: { id?: string } }
       | null;
-    const userId = ses?.user?.id ?? null;
-    applySessionUserId(typeof userId === 'string' ? userId : null);
+    const userId = ses?.user?.id;
+    if (typeof userId === 'string' && userId.length > 0) {
+      applyTrustedUserId(userId);
+    } else if (
+      event === 'SIGNED_IN' ||
+      event === 'TOKEN_REFRESHED' ||
+      event === 'INITIAL_SESSION'
+    ) {
+      // An identity event without a usable user id is not trustworthy: keep the
+      // current scope rather than treating it as signed-out.
+      return;
+    }
   }
 
   renderAll();
@@ -239,8 +258,18 @@ export function initPathsReadiness(
       .getSession()
       .then((result) => {
         if (disposed || identityVersion !== versionAtStart) return;
+        // An errored session read (corrupt/unreadable persisted session) is not
+        // a signed-out signal: keep the identity unknown so basic-vocabulary
+        // evidence stays unavailable instead of showing another scope's guest
+        // progress.
+        if (result.error) return;
         const session = result.data.session;
-        applySessionUserId(session?.user?.id ?? null);
+        const userId = session?.user?.id;
+        if (typeof userId === 'string' && userId.length > 0) {
+          applyTrustedUserId(userId);
+        } else {
+          applySignedOut();
+        }
       })
       .catch(() => {
         // A failed session read is not an auth error we can surface safely;

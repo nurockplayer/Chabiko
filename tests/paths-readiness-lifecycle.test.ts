@@ -118,14 +118,19 @@ function cardProgress(root: HTMLElement, pathId: string): string | null {
 type AuthListener = (event: string, session: unknown) => void;
 
 interface FakeAuthClient {
-  getSession: () => Promise<{ data: { session: { user: { id: string } } | null } }>;
+  getSession: () => Promise<
+    { data: { session: { user: { id: string } } | null } } | { data: { session: null }; error: Error }
+  >;
   onAuthStateChange: (listener: AuthListener) => {
     data: { subscription: { unsubscribe: () => void } };
   };
 }
 
 /** Build a fake Supabase auth client plus a trigger for auth events. */
-function fakeSupabaseClient(initialUserId: string | null): {
+function fakeSupabaseClient(
+  initialUserId: string | null,
+  options: { getSessionError?: boolean } = {},
+): {
   client: { auth: FakeAuthClient };
   emit: (event: string, session: unknown) => void;
   deferNextGetSession: () => (session: { user: { id: string } } | null) => void;
@@ -148,6 +153,9 @@ function fakeSupabaseClient(initialUserId: string | null): {
               },
             );
             return { data: { session } };
+          }
+          if (options.getSessionError) {
+            return { data: { session: null }, error: new Error('stale session') };
           }
           return { data: { session: currentSession } };
         },
@@ -408,6 +416,36 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+  });
+
+  it('does not downgrade an invalid signed-in identity to the guest scope', async () => {
+    // A persisted session whose user id is not a canonical UUID is a safe Auth
+    // error: keep identity unknown (basic-vocabulary evidence stays
+    // unavailable) instead of reading the shared guest key.
+    const { client } = fakeSupabaseClient('not-a-uuid');
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
+  it('keeps identity unknown when getSession reports an error', async () => {
+    // An errored session read (corrupt/unreadable persisted session) is not a
+    // signed-out signal: basic-vocabulary evidence stays unavailable rather
+    // than surfacing another scope's guest progress.
+    const { client } = fakeSupabaseClient(null, { getSessionError: true });
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
   it('ignores a stale initial getSession after a newer auth event', async () => {
