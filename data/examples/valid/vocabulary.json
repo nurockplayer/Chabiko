@@ -174,7 +174,7 @@
       "similarityType": "same-meaning",
       "toneNote": "tǐ は第三声（低くから上がる）。日本語の「からだ／たい」とは発音が違う。",
       "painPointTags": ["traditional-simplified"],
-      "caution": "日本の新字体「体」は簡体字「体」と同形だが、繁体字では「體」。中国語の読みは日本語の「からだ／たい」とは違い tǐ（ティー）。「體」の形を覚えよう。",
+      "caution": "日本の新字体「体」は簡体字「体」と同形だが、繁体字では「體」。中国語の読みは日本語の「からだ／たい」とは違い tǐ（第三声、送気音の t）で、日本語の読み方を当てないこと。「體」の形を覚えよう。",
       "examples": [
         {"traditional": "身體健康", "traditionalStatus": "generated", "simplified": "身体健康", "simplifiedStatus": "generated", "pinyin": "shēntǐ jiànkāng", "japanese": "体が健康です"}
       ],
@@ -519,20 +519,20 @@
     },
     {
       "id": "kanji-bridge-025",
-      "traditional": "真面目",
+      "traditional": "邪魔",
       "traditionalStatus": "generated",
-      "simplified": "真面目",
+      "simplified": "邪魔",
       "simplifiedStatus": "generated",
-      "pinyin": "zhēnmiànmù",
-      "japanese": "本当の顔・本性",
-      "kana": "しんめんもく",
+      "pinyin": "xiémó",
+      "japanese": "妖魔・悪人",
+      "kana": "じゃま",
       "category": "noun",
       "similarityType": "false-friend",
-      "toneNote": "zhēn 第一声、miàn 第四声、mù 第四声。",
+      "toneNote": "xié は第二声、mó は第二声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「真面目（まじめ）」＝ 真面目・真剣（serious）。中国語の「真面目」＝ 本当の顔・本性（true face, real nature）。「彼は真面目だ」は中国語で「他很認真（tā hěn rènzhēn）」。中国語の「真面目」を「まじめ」の意味で使うと通じない。",
+      "caution": "日本語の「邪魔（じゃま）」＝ 邪魔・妨げ（obstruction, nuisance）。中国語の「邪魔」＝ 妖魔・悪人（demon, evil person）。「お邪魔します」は中国語で「打擾了（dǎrǎo le）」。中国語の「邪魔」を「じゃま」の意味で使うと通じない。",
       "examples": [
-        {"traditional": "露出真面目", "traditionalStatus": "generated", "simplified": "露出真面目", "simplifiedStatus": "generated", "pinyin": "lùchū zhēnmiànmù", "japanese": "本性を現す"}
+        {"traditional": "邪魔歪道", "traditionalStatus": "generated", "simplified": "邪魔歪道", "simplifiedStatus": "generated", "pinyin": "xiémó wāidào", "japanese": "邪道・よこしまなやり方"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}

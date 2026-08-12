@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "input": {
     "scalarInventoryPath": "data/unicode/generated/scalar-inventory.json",
-    "scalarInventorySha256": "115c488d6f59ce4d4b44b91bbccacaae765f7d678561f1e8344ce124e8afa7b2",
-    "scalarCount": 1699
+    "scalarInventorySha256": "164ed0fb53a722b2fb481cf48b11ccf9a37e967aa3c6af592c0662e6ba17f9db",
+    "scalarCount": 1700
   },
   "renderingEnvironment": {
     "id": "playwright-chromium-unifont-v1",
@@ -2161,6 +2161,12 @@
       "perceptualHash64": "0033361712122a00"
     },
     {
+      "id": "u9001",
+      "scalar": 36865,
+      "derivativeSha256": "aace2bc05faeb55140fb0f9d54e82383f3be4c391e410d65d3bdb6afb2479b92",
+      "perceptualHash64": "00292324272b4900"
+    },
+    {
       "id": "u5065",
       "scalar": 20581,
       "derivativeSha256": "4b5431f384271e5db189d30a34b110940f5776b8d73d209ad17dd277ce4c9bd7",
@@ -2557,12 +2563,6 @@
       "perceptualHash64": "000b75220e080b00"
     },
     {
-      "id": "u9001",
-      "scalar": 36865,
-      "derivativeSha256": "aace2bc05faeb55140fb0f9d54e82383f3be4c391e410d65d3bdb6afb2479b92",
-      "perceptualHash64": "00292324272b4900"
-    },
-    {
       "id": "u5206",
       "scalar": 20998,
       "derivativeSha256": "8d263c794a2a4a9883aed6afa7ffe8493c229185e939f4660c5e56d4d0b296b9",
@@ -2617,40 +2617,52 @@
       "perceptualHash64": "00354f252b2b6b00"
     },
     {
-      "id": "u771f",
-      "scalar": 30495,
-      "derivativeSha256": "1262b05d5f27b5f5a8fa6e9af8f507d462728e9ed8766e5f5d116a9881dccaa5",
-      "perceptualHash64": "000b0f2606373200"
+      "id": "u90aa",
+      "scalar": 37034,
+      "derivativeSha256": "6bc623c7ab1602a2263c63090211c75eb23ce4eec0372c0d2350725947afca32",
+      "perceptualHash64": "001b371715175400"
     },
     {
-      "id": "u9854",
-      "scalar": 38996,
-      "derivativeSha256": "94695c297730aef2583e8969e8c725efb59f5e6e4ae55fb03f42575508df20c1",
-      "perceptualHash64": "0033375757673700"
+      "id": "u9b54",
+      "scalar": 39764,
+      "derivativeSha256": "8bbaae7888985b0c8b32a5cb5804fe9738f68d539c01ba6c80f224572038c2bd",
+      "perceptualHash64": "000b131f0a067300"
     },
     {
-      "id": "u4ed6",
-      "scalar": 20182,
-      "derivativeSha256": "77fb260b7ee76e35542ea0b434aa5c4c9ba3b6f1f2df2d00de0645947898964f",
-      "perceptualHash64": "0014363a32352300"
+      "id": "u5996",
+      "scalar": 22934,
+      "derivativeSha256": "53388e16d538c763d46c8604ac8f0d2727eda8215a234b0d73dab15051e43bae",
+      "perceptualHash64": "0023341736224900"
     },
     {
-      "id": "u5263",
-      "scalar": 21091,
-      "derivativeSha256": "b2c1a3c6ed53306f03d47e8a984be1ecfdd33d34ffb0741ed5b7d9b9b84a7ad4",
-      "perceptualHash64": "001327171f1b2b00"
+      "id": "u60aa",
+      "scalar": 24746,
+      "derivativeSha256": "9815bb013833df6e1af87f1886fe5d30c5480074d7126b58917d928e2d046e75",
+      "perceptualHash64": "001716160b5b4700"
     },
     {
-      "id": "u5f7c",
-      "scalar": 24444,
-      "derivativeSha256": "21d101c103f1bfa171b9b07292aaffdd70e6d96f0703613c81257c9aa8051b97",
-      "perceptualHash64": "001407272b363b00"
+      "id": "u4e86",
+      "scalar": 20102,
+      "derivativeSha256": "feab720be43bed65532021a54e11eeeb3b01574974792821049a2d6995af9331",
+      "perceptualHash64": "0006060c08080800"
     },
     {
-      "id": "u9732",
-      "scalar": 38706,
-      "derivativeSha256": "0e7e1f19b229fbc3943ba294159eaa6b839c00d57fea53e39f90162dfd7c4f8f",
-      "perceptualHash64": "000f4f06362b6600"
+      "id": "u59a8",
+      "scalar": 22952,
+      "derivativeSha256": "52a63535418e675acf9d43fb12d0c18a6d9118f1cdadea10b5909f83bfb4f6cc",
+      "perceptualHash64": "0024271737234b00"
+    },
+    {
+      "id": "u64fe",
+      "scalar": 25854,
+      "derivativeSha256": "49db255591eacd135e42dcfa2680bcf7934d6aded514749316bccebbcd6ab67b",
+      "perceptualHash64": "002f2a0b232f4b00"
+    },
+    {
+      "id": "u6b6a",
+      "scalar": 27498,
+      "derivativeSha256": "2d481c1e12bfee86fc2a03d97113c2c29905b4ab9e4a9b5331a829f9218cfa20",
+      "perceptualHash64": "000b0e2b2b2e2b00"
     },
     {
       "id": "u6e6f",
@@ -2821,10 +2833,22 @@
       "perceptualHash64": "00232b2b2b374900"
     },
     {
+      "id": "u4ed6",
+      "scalar": 20182,
+      "derivativeSha256": "77fb260b7ee76e35542ea0b434aa5c4c9ba3b6f1f2df2d00de0645947898964f",
+      "perceptualHash64": "0014363a32352300"
+    },
+    {
       "id": "u662f",
       "scalar": 26159,
       "derivativeSha256": "7f20a518ba92958da1b9eea926e8c00349f2277b7b5301275db2e8b2b7bdf37d",
       "perceptualHash64": "002626062b2e4b00"
+    },
+    {
+      "id": "u5f7c",
+      "scalar": 24444,
+      "derivativeSha256": "21d101c103f1bfa171b9b07292aaffdd70e6d96f0703613c81257c9aa8051b97",
+      "perceptualHash64": "001407272b363b00"
     },
     {
       "id": "u5177",
@@ -3931,12 +3955,6 @@
       "perceptualHash64": "002b173727364700"
     },
     {
-      "id": "u4e86",
-      "scalar": 20102,
-      "derivativeSha256": "feab720be43bed65532021a54e11eeeb3b01574974792821049a2d6995af9331",
-      "perceptualHash64": "0006060c08080800"
-    },
-    {
       "id": "u5c31",
       "scalar": 23601,
       "derivativeSha256": "13159f0abcd582f064a44f221944363fa918c46355f0abdabf90d84c94656650",
@@ -4981,6 +4999,12 @@
       "perceptualHash64": "0017575b5b335700"
     },
     {
+      "id": "u771f",
+      "scalar": 30495,
+      "derivativeSha256": "1262b05d5f27b5f5a8fa6e9af8f507d462728e9ed8766e5f5d116a9881dccaa5",
+      "perceptualHash64": "000b0f2606373200"
+    },
+    {
       "id": "u62cd",
       "scalar": 25293,
       "derivativeSha256": "1d1a078ceb748eb59f135ea56aaf12cd2452cc1f4ad31ebd752e2b8715cdcd8f",
@@ -5015,12 +5039,6 @@
       "scalar": 20882,
       "derivativeSha256": "a3a1bfe98e85c8ebd4e85da5cd28825a179c47659b4846e46d299b896e9282dc",
       "perceptualHash64": "00220a2a06062600"
-    },
-    {
-      "id": "u90aa",
-      "scalar": 37034,
-      "derivativeSha256": "6bc623c7ab1602a2263c63090211c75eb23ce4eec0372c0d2350725947afca32",
-      "perceptualHash64": "001b371715175400"
     },
     {
       "id": "u5f97",
@@ -9415,12 +9433,6 @@
       "perceptualHash64": "002a065627273600"
     },
     {
-      "id": "u60aa",
-      "scalar": 24746,
-      "derivativeSha256": "9815bb013833df6e1af87f1886fe5d30c5480074d7126b58917d928e2d046e75",
-      "perceptualHash64": "001716160b5b4700"
-    },
-    {
       "id": "u77ee",
       "scalar": 30702,
       "derivativeSha256": "a0243d2a980436bcdc231c7dabacca824ff97315de5538d2e2a3477883feded8",
@@ -10195,12 +10207,6 @@
       "perceptualHash64": "000b175706260600"
     },
     {
-      "id": "u6b6a",
-      "scalar": 27498,
-      "derivativeSha256": "2d481c1e12bfee86fc2a03d97113c2c29905b4ab9e4a9b5331a829f9218cfa20",
-      "perceptualHash64": "000b0e2b2b2e2b00"
-    },
-    {
       "id": "u50be",
       "scalar": 20670,
       "derivativeSha256": "cef88ac8477164c83ef1de3c8ff41061d4eff2e60009264c60c52cc8b849c316",
@@ -10737,6 +10743,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "926c3b354807b9609dce1d7e7e93f850e5691a0f34cc1d98f6526c25db25f3de"
+    },
+    {
+      "id": "visual-u512a-u64fe",
+      "leftScalar": 20778,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u512a",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002f2a0b232f0b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 1,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "5f745ddb89675cd2d634f7432504489ff0f40faa2568861a3d4f2d1364a0fdde"
     },
     {
       "id": "visual-u513f-u51e0",
@@ -14477,23 +14500,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "4a9b1099338b36cae1aac0567bcca2d3b4c259e3d53a77bb9910ab08771a9351"
-    },
-    {
-      "id": "visual-u9854-u989c",
-      "leftScalar": 38996,
-      "rightScalar": 39068,
-      "leftGlyphRef": "u9854",
-      "rightGlyphRef": "u989c",
-      "leftPerceptualHash64": "0033375757673700",
-      "rightPerceptualHash64": "0033375753673500",
-      "distance": 2,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "fe68fb380dc65be3fce97830b251912735a5e194f64646ea78543f7d7dc5ce17"
     },
     {
       "id": "visual-u4e2d-u5c71",
@@ -21226,40 +21232,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "7ad3badc91a4a612fa4249981487706b64b0db304324e2ee575bef72bc6e9d00"
-    },
-    {
-      "id": "visual-u5236-u5263",
-      "leftScalar": 21046,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u5236",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "001317171f1b1b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 4,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "de31105cca766605f4a6e87212b442c0732779e8da1c8bfc573d9f665e6c86a7"
-    },
-    {
-      "id": "visual-u5263-u9a7e",
-      "leftScalar": 21091,
-      "rightScalar": 39550,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u9a7e",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00132717141b0b00",
-      "distance": 4,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "224c2dacf7e8cffafd0a3cb4f8ef9e1afca4341f7b3eb6a984565597a1843318"
     },
     {
       "id": "visual-u529b-u529e",
@@ -38430,6 +38402,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "1697d8d4f14c8ccf60c2bd7dbe57834170cfe28c87e3720cee6543c5f2b08f13"
+    },
+    {
+      "id": "visual-u5806-u59a8",
+      "leftScalar": 22534,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u5806",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "002c273727374b00",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 5,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "935b1bfea27f6c861b08017409ca314467064351a59f080cd84714e534215d09"
     },
     {
       "id": "visual-u5806-u62bd",
@@ -66312,23 +66301,6 @@
       "checksumSha256": "ff97b6e8913eb16f755fc6a4254dc12083f127880b717b23f8ab00f8b763f882"
     },
     {
-      "id": "visual-u5212-u5263",
-      "leftScalar": 21010,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u5212",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "003b2737371b6b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 6,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "8fa8439f4dcdc3fda7bcdc7794f5f4234bd18be4abc872b9242eaf5c1c956c33"
-    },
-    {
       "id": "visual-u5212-u5272",
       "leftScalar": 21010,
       "rightScalar": 21106,
@@ -66344,23 +66316,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "16fc9ba1d633e5f85a73c016b53380705a84e219ef1ca1c3dda430bc89dee53b"
-    },
-    {
-      "id": "visual-u521b-u5263",
-      "leftScalar": 21019,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u521b",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "0013273737330b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 6,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "c3e1c868e24237f6420d110854ad2a509a45478b492cef1a4eb4ba41a482f8f4"
     },
     {
       "id": "visual-u521b-u671f",
@@ -66922,23 +66877,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "b21cd6416d49557e42820327bae1bb0ed67a901f4496feabacac010ce42d1659"
-    },
-    {
-      "id": "visual-u5263-u56de",
-      "leftScalar": 21091,
-      "rightScalar": 22238,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u56de",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00232717172b2300",
-      "distance": 6,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "70b54116a289d15672b8f41e04eb6efae63b35a0bbc477c719d2775b9d60fb17"
     },
     {
       "id": "visual-u5267-u535a",
@@ -73265,6 +73203,74 @@
       "checksumSha256": "1246b73ccf01f20a866c22a838399c4535850a50e4b145fb03592b0b7625f507"
     },
     {
+      "id": "visual-u59a8-u59cb",
+      "leftScalar": 22952,
+      "rightScalar": 22987,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u59cb",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024370b332b4b00",
+      "distance": 6,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "ae7434aa54d3e213378ffb23cc47bed8313c7fe4e808a49b8cce726604fea0bb"
+    },
+    {
+      "id": "visual-u59a8-u62bd",
+      "leftScalar": 22952,
+      "rightScalar": 25277,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u62bd",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024272727272b00",
+      "distance": 6,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c0d890ccecb7cd6d288b382b3f2b3f3bd464c1a6ec47e3db54ac347a453d9a3a"
+    },
+    {
+      "id": "visual-u59a8-u7aef",
+      "leftScalar": 22952,
+      "rightScalar": 31471,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u7aef",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0027275767236b00",
+      "distance": 6,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "b2a47531ae270ea39cbed2430cb0f7508563f7a8b94dc8c838f33da535600a15"
+    },
+    {
+      "id": "visual-u59a8-u89e6",
+      "leftScalar": 22952,
+      "rightScalar": 35302,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u89e6",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0034273737375900",
+      "distance": 6,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "cd1397ff45e708363ca1991abad84c5b5763899d2425307a36a97dc8e9b60e34"
+    },
+    {
       "id": "visual-u59bb-u5f04",
       "leftScalar": 22971,
       "rightScalar": 24324,
@@ -73637,6 +73643,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "539560f37c4c555fe108c733b3b177add21668614b0623e4f2ad6e5e59957986"
+    },
+    {
+      "id": "visual-u5a18-u64fe",
+      "leftScalar": 23064,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5a18",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "00272b0b272b4d00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 6,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "1535480693d396f5f7284a404b81ec73c4c402bc138070e3384a9d74ac2ca4bf"
     },
     {
       "id": "visual-u5a18-u89c4",
@@ -123942,6 +123965,23 @@
       "checksumSha256": "784f3ee794811811709475851d395346f2d80d4c2f484d0f883853941f222bbc"
     },
     {
+      "id": "visual-u51c6-u59a8",
+      "leftScalar": 20934,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u51c6",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "006c071727370b00",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "d349d3999bc81ed69e0b05b0e5cafac7f61f115f9b59203f11c8506e4a159dcb"
+    },
+    {
       "id": "visual-u51c6-u62bd",
       "leftScalar": 20934,
       "rightScalar": 25277,
@@ -125812,23 +125852,6 @@
       "checksumSha256": "645278853320bb8e71286abe6a123c2db0d4db609454fc848564bbc72c391582"
     },
     {
-      "id": "visual-u5224-u5263",
-      "leftScalar": 21028,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u5224",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "005b171717132300",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "3c2fa9a931e87b3924f729d0ebcf5e2e6a0a5a7d5c92c95538ccea7e3e68e2c0"
-    },
-    {
       "id": "visual-u5224-u5951",
       "leftScalar": 21028,
       "rightScalar": 22865,
@@ -126558,125 +126581,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "f0dece9172d8f4315ba8d7297fc5646421ad3011eea554fad405f3481c3ddbb6"
-    },
-    {
-      "id": "visual-u5263-u5267",
-      "leftScalar": 21091,
-      "rightScalar": 21095,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u5267",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "002b2f17172b2b00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "d84240e36c49770d6be6ab42800fe37db3464c37c62837b0ae879e6c566602fe"
-    },
-    {
-      "id": "visual-u5263-u535a",
-      "leftScalar": 21091,
-      "rightScalar": 21338,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u535a",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00272717130b2a00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "f45e7ccc79289392808dc0f41a661e3a00cfc283b5175a0cadf445664bbbb256"
-    },
-    {
-      "id": "visual-u5263-u54bd",
-      "leftScalar": 21091,
-      "rightScalar": 21693,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u54bd",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00033717371b1300",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "c03c39ff2f5b98cf6541551d070a8f5e1fa6323785d509ec7f7e477388816cf8"
-    },
-    {
-      "id": "visual-u5263-u67b6",
-      "leftScalar": 21091,
-      "rightScalar": 26550,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u67b6",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "001327270b0f6b00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "f7d2d31d2251c2b77e0087399a8968498b188dfcb32bbfdc51f97896e3e034d8"
-    },
-    {
-      "id": "visual-u5263-u805a",
-      "leftScalar": 21091,
-      "rightScalar": 32858,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u805a",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "0033331f0f2b2b00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "2929f3cb2ab3edf36842294eb00930eda0093f20f8b2e60786d42f5fec12f2e1"
-    },
-    {
-      "id": "visual-u5263-u80e1",
-      "leftScalar": 21091,
-      "rightScalar": 32993,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u80e1",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00171717373b0b00",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "e992ea9a8a27712238e578b15281526c319760e2bdfca9c5a8e1377ef2199330"
-    },
-    {
-      "id": "visual-u5263-u89aa",
-      "leftScalar": 21091,
-      "rightScalar": 35242,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u89aa",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "0037371717132100",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "e0e2908dd12bcd4b6c12d0a69ccdc89ae1d8c0ae978e5f8388e4641542662d41"
     },
     {
       "id": "visual-u5267-u5beb",
@@ -128088,6 +127992,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "19940eb4314daff9d274bc5ec20dc43b9ce6df4ca17c2603f63216944d75a511"
+    },
+    {
+      "id": "visual-u5319-u59a8",
+      "leftScalar": 21273,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u5319",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "0034371617335300",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "709b54559d4bee7124d5eba98738afd6619a777e84a328a073d5028678d8ef11"
     },
     {
       "id": "visual-u5319-u76e3",
@@ -135519,6 +135440,23 @@
       "checksumSha256": "b0baa32fe2ee575be91011e4be3a4d0986828163a6979b4491d42ca8c18ca626"
     },
     {
+      "id": "visual-u5834-u64fe",
+      "leftScalar": 22580,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5834",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002a2a272b274b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "4c768ffe7504f0b6b2d40e0eec4acc740827fd185e1da804ced3bef39d7c10c3"
+    },
+    {
       "id": "visual-u5834-u6a61",
       "leftScalar": 22580,
       "rightScalar": 27233,
@@ -135959,6 +135897,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "9c505fbd90db4149b36e5810859d9b8d4c950fd1ce9ce3a7039f1a138b333a07"
+    },
+    {
+      "id": "visual-u5869-u64fe",
+      "leftScalar": 22633,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5869",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002b2f2a2b2b4b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "cbcc943b44c7be9123b3367e16a1682d5d04f8da0c14ab48e343e2e802c1beae"
     },
     {
       "id": "visual-u5869-u65e7",
@@ -137047,6 +137002,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "2cecf9906e44f0f2abd496fa0414906182c580e28b59bbce4bdd970bd547e084"
+    },
+    {
+      "id": "visual-u58ca-u59a8",
+      "leftScalar": 22730,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u58ca",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "00272727272f4b00",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "f798216481ef61b9801c539cef104ff25e4bffa4cf439e4bc6d2db910bdeffb3"
     },
     {
       "id": "visual-u58ca-u5c42",
@@ -138460,6 +138432,210 @@
       "checksumSha256": "53bd1b663e0e3ca0b1dcf6f37329ba2682bf81e7eafabfd4dd630c891104b169"
     },
     {
+      "id": "visual-u5996-u74dc",
+      "leftScalar": 22934,
+      "rightScalar": 29916,
+      "leftGlyphRef": "u5996",
+      "rightGlyphRef": "u74dc",
+      "leftPerceptualHash64": "0023341736224900",
+      "rightPerceptualHash64": "0006343436264900",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e65b61b915d92297da66f5371464141f1d909420ed7353b5c7ae5f036d8b2a4e"
+    },
+    {
+      "id": "visual-u59a8-u59b9",
+      "leftScalar": 22952,
+      "rightScalar": 22969,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u59b9",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024371736275500",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c0a352da19310f70e69c17be78a9d9a39c7afdd3ace015a214a2f8eff6d967e2"
+    },
+    {
+      "id": "visual-u59a8-u59d1",
+      "leftScalar": 22952,
+      "rightScalar": 22993,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u59d1",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "002437142b2b4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e29c2699d2c40831afe2341f4930a4f801f86d883922c5491370f90c1df19f6c"
+    },
+    {
+      "id": "visual-u59a8-u6210",
+      "leftScalar": 22952,
+      "rightScalar": 25104,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u6210",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0006273737354900",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "54e6445cc1c0b4e6c7dfb34f635ad6fd83e85692de81f8e5efca720a8d9f5c1a"
+    },
+    {
+      "id": "visual-u59a8-u631f",
+      "leftScalar": 22952,
+      "rightScalar": 25375,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u631f",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024272727222900",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "72a6989d4cebfb8df154a969f35e3f38107423ea661d4537131e8ef54da7600f"
+    },
+    {
+      "id": "visual-u59a8-u670b",
+      "leftScalar": 22952,
+      "rightScalar": 26379,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u670b",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0037373737374b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c2e323617dc22da5405c147995ccb18aeb2934db9afd374eebf2bdf854004cef"
+    },
+    {
+      "id": "visual-u59a8-u7470",
+      "leftScalar": 22952,
+      "rightScalar": 29808,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u7470",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0027273727235100",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c053e10eb3343161e3702ea84f68ee5980339ed9d6b227eab040f09ca21e0d08"
+    },
+    {
+      "id": "visual-u59a8-u77ee",
+      "leftScalar": 22952,
+      "rightScalar": 30702,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u77ee",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00272735272a4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "9f19a8346a40dbfb12d5e737818fe7c2c9159243a118b5c33bb838865b6b0b4f"
+    },
+    {
+      "id": "visual-u59a8-u7d75",
+      "leftScalar": 22952,
+      "rightScalar": 32117,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u7d75",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00262b2777274b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "219e5228c3da67f9d9aeded6cc7a87b420f0805e7d3e3dd462ae7eea8c85fa7a"
+    },
+    {
+      "id": "visual-u59a8-u8a2a",
+      "leftScalar": 22952,
+      "rightScalar": 35370,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u8a2a",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024373717535b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "2b6cc1056daa50b0193d164d0b6f4b46a7ec057d178d749c677e3c9c76712c20"
+    },
+    {
+      "id": "visual-u59a8-u8ff7",
+      "leftScalar": 22952,
+      "rightScalar": 36855,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u8ff7",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0026272727374300",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "d9e25c8f73a85f9ead3c7d5cc8d3ab7856173214537061b07a6483fb70bc1d65"
+    },
+    {
+      "id": "visual-u59a8-u9244",
+      "leftScalar": 22952,
+      "rightScalar": 37444,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u9244",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024273437326900",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "44626d05672eacda9c2ec011922d58753d6638e490f0ce0e7d4c0a10dfe621a6"
+    },
+    {
       "id": "visual-u59b9-u5acc",
       "leftScalar": 22969,
       "rightScalar": 23244,
@@ -138696,6 +138872,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "063bcf607919ff57ab61ddd1ee154892241a672b0831ef337980a1f6bcd2e993"
+    },
+    {
+      "id": "visual-u59d0-u64fe",
+      "leftScalar": 22992,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u59d0",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002a2a0a2a2a4b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "4491537e1591bfa475edc2bf4895c7bac9772bbf26b4a3d6b34aee4d9f96dbae"
     },
     {
       "id": "visual-u59d0-u673a",
@@ -159251,6 +159444,23 @@
       "checksumSha256": "17c9791d33dc738a338a7ae416ac3977811004f137d4a163281a52910040d199"
     },
     {
+      "id": "visual-u62b1-u64fe",
+      "leftScalar": 25265,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u62b1",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002f2b2b2b2b2300",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "cd16fd0c4420e759e4ea482b1f289c72b519d7258f1a62a524f5a11fbc6a4cc6"
+    },
+    {
       "id": "visual-u62b1-u673a",
       "leftScalar": 25265,
       "rightScalar": 26426,
@@ -162277,6 +162487,23 @@
       "checksumSha256": "a9282350a7408f8a45fd0266870df418609bafb65bb42c7bc1163958d0a01b4d"
     },
     {
+      "id": "visual-u62d2-u64fe",
+      "leftScalar": 25298,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u62d2",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002b2b2b2b2b2b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "5585fd99886c6aa1641d147390b8a75fbe9146cedf9be94e15a46e47988c0744"
+    },
+    {
       "id": "visual-u62d2-u673a",
       "leftScalar": 25298,
       "rightScalar": 26426,
@@ -163295,6 +163522,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "99185f6b4e3b7250c60513e1ba9a4e2bcaa893db3af29f55280aa42b61667290"
+    },
+    {
+      "id": "visual-u62db-u64fe",
+      "leftScalar": 25307,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u62db",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002b2b2b2b2b2b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e82ad833263378139692cccbb979c59dad647cdb7e1128895f880ef8f0506aa1"
     },
     {
       "id": "visual-u62db-u673a",
@@ -169723,6 +169967,23 @@
       "checksumSha256": "9f34ecceab114f840cc619c4233956c5c87e6eb852c31cd600f579691b3dee0c"
     },
     {
+      "id": "visual-u63a8-u64fe",
+      "leftScalar": 25512,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u63a8",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002e2b2b2b2b2b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "fdf0ec7ba832d9e9091ede9f9429fc4f660b2621832488b18ec9e0cf633a5eea"
+    },
+    {
       "id": "visual-u63a8-u6781",
       "leftScalar": 25512,
       "rightScalar": 26497,
@@ -171727,6 +171988,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "d5e3f441dd2d60ec34d3c8ffa9cc48528a7b07135928064812f41a18b57d1760"
+    },
+    {
+      "id": "visual-u640d-u64fe",
+      "leftScalar": 25613,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u640d",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002a2a2b2b2b2b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "af117f868bbf30dc1e4860279a2a1f388d25a5d8fed1a0db6274e76a6e717517"
     },
     {
       "id": "visual-u640d-u6781",
@@ -175008,6 +175286,159 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "5a6384a030b8ec9708053ec7167739beaba44290f67f0ce30dcbadd1937bc4f2"
+    },
+    {
+      "id": "visual-u64fe-u67dc",
+      "leftScalar": 25854,
+      "rightScalar": 26588,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u67dc",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b2b2b2b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "8a5849dc59862790263986616ed97dc4e310797d54fd5491cdab8294b799a237"
+    },
+    {
+      "id": "visual-u64fe-u6912",
+      "leftScalar": 25854,
+      "rightScalar": 26898,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u6912",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b2b2b2b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "a754e9c1b4e674dfcb58ca332b4dba8a3042572a08c73009dafd4b4ba7a05f17"
+    },
+    {
+      "id": "visual-u64fe-u6c92",
+      "leftScalar": 25854,
+      "rightScalar": 27794,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u6c92",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002f2b432b260b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "1ec6a7dc73d5c3783b784c35a48cbeb3249c7de9c83aca2adc400ec2d2ae7bd9"
+    },
+    {
+      "id": "visual-u64fe-u6ca1",
+      "leftScalar": 25854,
+      "rightScalar": 27809,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u6ca1",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002e2a3b2a2e0b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e204fabe92e7fc5f4656fff450e7c9e7d32b7b11847698fdd58fe47492d44a4f"
+    },
+    {
+      "id": "visual-u64fe-u73fe",
+      "leftScalar": 25854,
+      "rightScalar": 29694,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u73fe",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b2b276900",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "30795328dffebe3cf492c79121af74412360bfa095ff6000f98a98343aef6e1f"
+    },
+    {
+      "id": "visual-u64fe-u7ecd",
+      "leftScalar": 25854,
+      "rightScalar": 32461,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u7ecd",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b6b2b6b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "95e3978d651fc1e43d5e45ea23d4c11979880408b479371744c704f1ba2d7b7e"
+    },
+    {
+      "id": "visual-u64fe-u888d",
+      "leftScalar": 25854,
+      "rightScalar": 34957,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u888d",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002f2b2b2b2b2300",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "9b4e3e8efd7527f59ffce1ea487f812cbc8547cb486ab50b63d007b6abb1174a"
+    },
+    {
+      "id": "visual-u64fe-u8d9f",
+      "leftScalar": 25854,
+      "rightScalar": 36255,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u8d9f",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "0027232b272b4300",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e68bee56e8004c7beaf4a8f7795879a0bbefaefc17eb6650431e287134fd9119"
+    },
+    {
+      "id": "visual-u64fe-u96be",
+      "leftScalar": 25854,
+      "rightScalar": 38590,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u96be",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002e4b0b2b0b4b00",
+      "distance": 7,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "92792f31418a4f3980ded4c31cc793e73c8012a4aea46a7cc99b666178780809"
     },
     {
       "id": "visual-u652f-u9ea6",
@@ -208738,23 +209169,6 @@
       "checksumSha256": "19137efd2842dd413cb187131e512fad0f97e5f928f3b32d3fa4f1327471948c"
     },
     {
-      "id": "visual-u916a-u9854",
-      "leftScalar": 37226,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u916a",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0037331757575700",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 7,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "3347bf2c8388dfdd365ce63285c0eb61bc198daf6ae856d3929deb6716ad49b4"
-    },
-    {
       "id": "visual-u916a-u9858",
       "leftScalar": 37226,
       "rightScalar": 39000,
@@ -225364,23 +225778,6 @@
       "checksumSha256": "7c7a8d7bae7a51712fe8ba865ea4c97079b11dd05ec4e9563b9d04456edfe590"
     },
     {
-      "id": "visual-u5085-u5263",
-      "leftScalar": 20613,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u5085",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "00172737332b2a00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "c8cd44cfb045ded60a87cbb12a7d5f2732fb0ecf14e35b3e7aec8327c8d8a97e"
-    },
-    {
       "id": "visual-u5085-u56de",
       "leftScalar": 20613,
       "rightScalar": 22238,
@@ -234221,6 +234618,23 @@
       "checksumSha256": "a1509485abc6d080def46cfe3a47cec516df0cfa3a849f8ea7bb4f0f08f759c2"
     },
     {
+      "id": "visual-u5207-u59a8",
+      "leftScalar": 20999,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u5207",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "00232737372b1300",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "18e467a2a8cdea17ebbe63b99bd5aa6bba14b08f279e20526d3b6a4b8dfd9bd9"
+    },
+    {
       "id": "visual-u5207-u5acc",
       "leftScalar": 20999,
       "rightScalar": 23244,
@@ -235052,6 +235466,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "7e8267564c7055fa0d49de78ef11f83ef5a3a4545ade3658f1f7091309e7480f"
+    },
+    {
+      "id": "visual-u521b-u59a8",
+      "leftScalar": 21019,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u521b",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "0013273737330b00",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "0d909e5b1f9851a15a7389a94a6d18fcf681e2e9ca56b9ca6076855010553843"
     },
     {
       "id": "visual-u521b-u6446",
@@ -236431,23 +236862,6 @@
       "checksumSha256": "7a0e237682da0b713c6358f6df683ba86ec02e475ff1c61296846630792d984d"
     },
     {
-      "id": "visual-u522e-u5263",
-      "leftScalar": 21038,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u522e",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "001b1717176b6b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "3267aa0740094cec9991927ea3f0f3262e7933aba4c6b4b9b16ea4f4bb8fc09c"
-    },
-    {
       "id": "visual-u522e-u56de",
       "leftScalar": 21038,
       "rightScalar": 22238,
@@ -236633,23 +237047,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "76415894becc5574a480e51029c57e3e93dbe818721db1c36e9bd4b9daf8539e"
-    },
-    {
-      "id": "visual-u5230-u5263",
-      "leftScalar": 21040,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u5230",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "001b370f17137b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "9255956e1b6c910293f61e8bf08a654bfb2fa1b9c054cdda3dd05a20b4ff2968"
     },
     {
       "id": "visual-u5230-u52d5",
@@ -237026,23 +237423,6 @@
       "checksumSha256": "37d3d867f58f0c117f0b45e77484bbd5cbc1e26f3c3379e3b9478f0d5d0d7328"
     },
     {
-      "id": "visual-u523b-u5263",
-      "leftScalar": 21051,
-      "rightScalar": 21091,
-      "leftGlyphRef": "u523b",
-      "rightGlyphRef": "u5263",
-      "leftPerceptualHash64": "00331f3717136b00",
-      "rightPerceptualHash64": "001327171f1b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "b68208679144c618dfc3848b19d6ae59f7fccb0fdc8ebe9e8051ffbfc9e8769d"
-    },
-    {
       "id": "visual-u523b-u52d5",
       "leftScalar": 21051,
       "rightScalar": 21205,
@@ -237381,159 +237761,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "3c132d09ba0c139cd1963a4681ce9ab340394a2ce3051db711349de8595d65c8"
-    },
-    {
-      "id": "visual-u5263-u5272",
-      "leftScalar": 21091,
-      "rightScalar": 21106,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u5272",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "003b4f17170b6b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "672c2ec1abd6ebdfd0ad3d7418439738077c5c8a79f0de8f3ff0db6ee6c91ea1"
-    },
-    {
-      "id": "visual-u5263-u5395",
-      "leftScalar": 21091,
-      "rightScalar": 21397,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u5395",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00232b2f1f1b6b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "e8d327e5096cdd48d839d5dfc28c572f9de17106da4e50c8c314a918f310d24c"
-    },
-    {
-      "id": "visual-u5263-u5951",
-      "leftScalar": 21091,
-      "rightScalar": 22865,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u5951",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "001317170b173300",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "881d2583c18bb98288ca56d2a17df4e5007fb60ffbadbe9e4dee7c5f64f59d9b"
-    },
-    {
-      "id": "visual-u5263-u60c5",
-      "leftScalar": 21091,
-      "rightScalar": 24773,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u60c5",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "002727172b2b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "495868935d6854173007f0bc12200c5929fe43c12b3fde32dd1b85a1d6b2ea67"
-    },
-    {
-      "id": "visual-u5263-u6234",
-      "leftScalar": 21091,
-      "rightScalar": 25140,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u6234",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "0017171f173b2d00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "a56cb062651ec2b1b65ae5367525fb72d784e58ac640b69ce24fee877667ee73"
-    },
-    {
-      "id": "visual-u5263-u6613",
-      "leftScalar": 21091,
-      "rightScalar": 26131,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u6613",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00161616175b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "2726e65a2b634800c4e5674101b119cb6f5a092a41b5fdc2bc2353132bb3c0f8"
-    },
-    {
-      "id": "visual-u5263-u671f",
-      "leftScalar": 21091,
-      "rightScalar": 26399,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u671f",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "00373737371b4b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "f9a89cedb7343dc5191ad1f85874436aa2011ab915b0788ca3c1fa237aa1d87d"
-    },
-    {
-      "id": "visual-u5263-u731c",
-      "leftScalar": 21091,
-      "rightScalar": 29468,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u731c",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "005727572b4b2b00",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "2185933a6b608f91808e710b4daf13637802a6480d36fbca41f8d1a20fc5cfb7"
-    },
-    {
-      "id": "visual-u5263-u7840",
-      "leftScalar": 21091,
-      "rightScalar": 30784,
-      "leftGlyphRef": "u5263",
-      "rightGlyphRef": "u7840",
-      "leftPerceptualHash64": "001327171f1b2b00",
-      "rightPerceptualHash64": "0037273717372300",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "4e004b68231c89ff69a64e3501f71349e736fc52c5f608e2c3f4b3af5bab2926"
     },
     {
       "id": "visual-u5267-u585e",
@@ -238641,6 +238868,23 @@
       "checksumSha256": "1f95a0a6b08643f7c02a5799cff586892257ec1ac0dac7531821cbd08b33dbf2"
     },
     {
+      "id": "visual-u52a0-u59a8",
+      "leftScalar": 21152,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u52a0",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "0020373737375700",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "ec395d9bf5ebfe3e90023c1a705890f66943f01751f799b0742a9ae6dc0c7df8"
+    },
+    {
       "id": "visual-u52a0-u59d3",
       "leftScalar": 21152,
       "rightScalar": 22995,
@@ -239693,6 +239937,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "dea33031140536f94e0ce449621f7f9a9067bc53e96e2c66b2bdfde6b2707886"
+    },
+    {
+      "id": "visual-u52e4-u59a8",
+      "leftScalar": 21220,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u52e4",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "0034371717171b00",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "d6027bfab2e440693bf31bbb6c11085f77cdc7d9fe3f88ff433b05e91278d98c"
     },
     {
       "id": "visual-u52e4-u6211",
@@ -243297,6 +243558,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "7e147656074e6745f686ef078032f7b66e105e0481294b4b758408d5eeac8a50"
+    },
+    {
+      "id": "visual-u53b3-u64fe",
+      "leftScalar": 21427,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u53b3",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002b2b0b0b0b4d00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c8a7b4877e4146d3c236cc3efb48cd104b3b7aabedf2395759c3e1c6e27a6ce6"
     },
     {
       "id": "visual-u53b3-u6652",
@@ -250439,23 +250717,6 @@
       "checksumSha256": "178b3c7dfe98e8e82ac6c02300ec6044eba1e6a2b4131ef5b62d2530c21e2d8c"
     },
     {
-      "id": "visual-u5609-u9732",
-      "leftScalar": 22025,
-      "rightScalar": 38706,
-      "leftGlyphRef": "u5609",
-      "rightGlyphRef": "u9732",
-      "leftPerceptualHash64": "000b0e0637274700",
-      "rightPerceptualHash64": "000f4f06362b6600",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "4dc9cabfb6b65c31ae0c783c42911cf43fe533c106315838d22b79a3fed63608"
-    },
-    {
       "id": "visual-u5614-u56db",
       "leftScalar": 22036,
       "rightScalar": 22235,
@@ -251117,6 +251378,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "1c33245d7a1a7b5203378cffd17cb55a0588e871c28c259934dd0c7861df0640"
+    },
+    {
+      "id": "visual-u56de-u59a8",
+      "leftScalar": 22238,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u56de",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "00232717172b2300",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "7cf7c27b5493129c886d937ace0104a40e986b7a40641ba1c6c874c27ec38e3c"
     },
     {
       "id": "visual-u56de-u5beb",
@@ -258786,6 +259064,23 @@
       "checksumSha256": "7bb04d621297836c3aaa856ee7469eefd876522e1aaf3a754f489dc3a04a598f"
     },
     {
+      "id": "visual-u58ca-u64fe",
+      "leftScalar": 22730,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u58ca",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "00272727272f4b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "59912a4d1c8a9d627d386a1e75d9411fe5bb15834479296e063aebf79f7c0209"
+    },
+    {
       "id": "visual-u58ca-u65bd",
       "leftScalar": 22730,
       "rightScalar": 26045,
@@ -259753,6 +260048,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "161628e00b4698d2ca899e239694bd72fe281e80fc0cb5034496e3f76bb3dda0"
+    },
+    {
+      "id": "visual-u5909-u9b54",
+      "leftScalar": 22793,
+      "rightScalar": 39764,
+      "leftGlyphRef": "u5909",
+      "rightGlyphRef": "u9b54",
+      "leftPerceptualHash64": "000b1717160c3300",
+      "rightPerceptualHash64": "000b131f0a067300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "db21cc849e09985dbeb651e99457a14ec61e4bdc011efcdd094365fdc6df208a"
     },
     {
       "id": "visual-u590d-u5bde",
@@ -260945,6 +261257,23 @@
       "checksumSha256": "9ec716d11cf371a4761e88133ec7158f17b768b011ec380c8e149782bfbe8c26"
     },
     {
+      "id": "visual-u5951-u9b54",
+      "leftScalar": 22865,
+      "rightScalar": 39764,
+      "leftGlyphRef": "u5951",
+      "rightGlyphRef": "u9b54",
+      "leftPerceptualHash64": "001317170b173300",
+      "rightPerceptualHash64": "000b131f0a067300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "11462f75ed06eb3dfe6074e76ec0ed616bc50a81e7b668f8592dfc53966aee77"
+    },
+    {
       "id": "visual-u5957-u6625",
       "leftScalar": 22871,
       "rightScalar": 26149,
@@ -261217,6 +261546,23 @@
       "checksumSha256": "65014e3c4781271cbb79c097e0b98670d57cbce149ade3fea5e1a68f5895be5e"
     },
     {
+      "id": "visual-u5976-u64fe",
+      "leftScalar": 22902,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5976",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "00262a132b2b5300",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c6f72f8c196311fa75cbd892d6403a21732f119392824ca34eb4b1af7c82958e"
+    },
+    {
       "id": "visual-u5976-u70ed",
       "leftScalar": 22902,
       "rightScalar": 28909,
@@ -261283,6 +261629,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "619c4e0a788178122017f67931973091cbc20a8afeb5bc1f862af388c45452cc"
+    },
+    {
+      "id": "visual-u5979-u59a8",
+      "leftScalar": 22905,
+      "rightScalar": 22952,
+      "leftGlyphRef": "u5979",
+      "rightGlyphRef": "u59a8",
+      "leftPerceptualHash64": "0024270f272d5300",
+      "rightPerceptualHash64": "0024271737234b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "896daf9c45a9fb8eff4240cd611ff124cf290c588e57f03ce4003df20fc580ee"
     },
     {
       "id": "visual-u5979-u59cb",
@@ -261812,6 +262175,23 @@
       "checksumSha256": "785d46123ca23fecc34764dc92b8cb8a66046a7b87e31d356541f2686110c08a"
     },
     {
+      "id": "visual-u5988-u64fe",
+      "leftScalar": 22920,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5988",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "00263a0b33235300",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "a326402a4edfec118619baf066a9a82604bb6913abde57a58e685cf5c35baf97"
+    },
+    {
       "id": "visual-u5988-u8239",
       "leftScalar": 22920,
       "rightScalar": 33337,
@@ -261827,6 +262207,227 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "f26ece131066dfbe109508da527057d06e98c13287278e2172a56c60e1bf8736"
+    },
+    {
+      "id": "visual-u59a8-u59d3",
+      "leftScalar": 22952,
+      "rightScalar": 22995,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u59d3",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024271437344700",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "7cd84297a5a2c39cc9a1bf9b6d2624a106ff282922ecaaa492668d811f8627f2"
+    },
+    {
+      "id": "visual-u59a8-u5acc",
+      "leftScalar": 22952,
+      "rightScalar": 23244,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u5acc",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0022270337275700",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "45049937587539f4b0ed7e0ffea65e70074b0521bb24c88d1a79e4623e8f4096"
+    },
+    {
+      "id": "visual-u59a8-u5c31",
+      "leftScalar": 22952,
+      "rightScalar": 23601,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u5c31",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00363757362b2b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "718be66be347b5951ddef9811626db00b23d97cf057e4b913cd42cc6d6bab64d"
+    },
+    {
+      "id": "visual-u59a8-u60c5",
+      "leftScalar": 22952,
+      "rightScalar": 24773,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u60c5",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "002727172b2b2b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "40636b4d501fcfb986e957d5a43e7371ff3c7b4fd973d3486efad9349dd4166c"
+    },
+    {
+      "id": "visual-u59a8-u6368",
+      "leftScalar": 22952,
+      "rightScalar": 25448,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u6368",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00262b37272b2b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "d20b37c14d31964f560a03f039964cf3e5dde9e607c031a7f1c0f5e5a3b945aa"
+    },
+    {
+      "id": "visual-u59a8-u6446",
+      "leftScalar": 22952,
+      "rightScalar": 25670,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u6446",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00272727272b2b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "8d662ccf06bb494efd17a2e1f9a72677986325b8312302ecf8b326336aee583c"
+    },
+    {
+      "id": "visual-u59a8-u671f",
+      "leftScalar": 22952,
+      "rightScalar": 26399,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u671f",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00373737371b4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "8c4d2524524dee12249f969858c6c450fd7761dec873aa6b7baa476f17f0a8bf"
+    },
+    {
+      "id": "visual-u59a8-u7092",
+      "leftScalar": 22952,
+      "rightScalar": 28818,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u7092",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024272537324c00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "9c1affbd513aabcab5ac7eb5836ee2f9cf3e2e05ef2814b3fa72da204c8ff75f"
+    },
+    {
+      "id": "visual-u59a8-u70e4",
+      "leftScalar": 22952,
+      "rightScalar": 28900,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u70e4",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0027272727335300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "860b5f02146db2a85370063b9eb1f9b0e1886a66f6ce920341be65a6b6e65b25"
+    },
+    {
+      "id": "visual-u59a8-u73e0",
+      "leftScalar": 22952,
+      "rightScalar": 29664,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u73e0",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "0024273726275500",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "3d8d782bccd2481dc96620bbc6e331b8b5d3cf5fbebca0b9d23cc63af53494fd"
+    },
+    {
+      "id": "visual-u59a8-u7626",
+      "leftScalar": 22952,
+      "rightScalar": 30246,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u7626",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "00073713272b5b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "fca599965e4c7778b6a5b3481fcb8a42542031d97d1c2d75e83075011087ba65"
+    },
+    {
+      "id": "visual-u59a8-u775b",
+      "leftScalar": 22952,
+      "rightScalar": 30555,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u775b",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "002767572b2b4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e1f98ba87db6ba29e735d3845f8a875fa9b205c84f7c42fd63e964cfbad9ccc4"
+    },
+    {
+      "id": "visual-u59a8-u8fb9",
+      "leftScalar": 22952,
+      "rightScalar": 36793,
+      "leftGlyphRef": "u59a8",
+      "rightGlyphRef": "u8fb9",
+      "leftPerceptualHash64": "0024271737234b00",
+      "rightPerceptualHash64": "002427232b334300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c877b6f71e5d5c7795c29771f2369aa1948bede9a32c4a2198095109fe541384"
     },
     {
       "id": "visual-u59b9-u621a",
@@ -276160,6 +276761,23 @@
       "checksumSha256": "5e0622ecc1d6af121ca88cd6fd65e078cc04cc252bde17907915674b283957e6"
     },
     {
+      "id": "visual-u5ec1-u64fe",
+      "leftScalar": 24257,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u5ec1",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "000f2b0f0f0f6b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "51af87af3d7624416e36276ad6476ac9dcd2ae2520b5284a0f3576805aebb5e4"
+    },
+    {
       "id": "visual-u5ec1-u67b6",
       "leftScalar": 24257,
       "rightScalar": 26550,
@@ -286326,6 +286944,23 @@
       "checksumSha256": "d8fba6e9475d6b4a8bdda6af38e0d2e1aaddc40dc54b86618f15f416ed8a3dd0"
     },
     {
+      "id": "visual-u60dc-u64fe",
+      "leftScalar": 24796,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u60dc",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002a2b2b2b2b2b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "bd58079b61b6c66a38202c5733c75cc9b09894141021733069604832421d989f"
+    },
+    {
       "id": "visual-u60dc-u677e",
       "leftScalar": 24796,
       "rightScalar": 26494,
@@ -291169,6 +291804,23 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "050294793f80cdea60062c0b3d880aaf7577b0924379419c207c4e20aa38b4c1"
+    },
+    {
+      "id": "visual-u6247-u64fe",
+      "leftScalar": 25159,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u6247",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "000b23232b2b4b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c8d85a47a9296570268cb31f574253f90cead7cfb35a79f663c81abc37391460"
     },
     {
       "id": "visual-u6247-u65e7",
@@ -318286,6 +318938,23 @@
       "checksumSha256": "7af162331904f35fa42b05b847f229001cdf948822a583133514c2d00fc77a07"
     },
     {
+      "id": "visual-u642c-u64fe",
+      "leftScalar": 25644,
+      "rightScalar": 25854,
+      "leftGlyphRef": "u642c",
+      "rightGlyphRef": "u64fe",
+      "leftPerceptualHash64": "002b2f0d330b4b00",
+      "rightPerceptualHash64": "002f2a0b232f4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "660c7026af89fc00f3d30e0ad3d3fdf34b30bf6a4ed2739599d256e117b2a08e"
+    },
+    {
       "id": "visual-u642c-u70e7",
       "leftScalar": 25644,
       "rightScalar": 28903,
@@ -322330,6 +322999,278 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "1d40a92e65049c6fd9800cd1d873c91159673c425c23f4433d39fea282ab1558"
+    },
+    {
+      "id": "visual-u64fe-u67d3",
+      "leftScalar": 25854,
+      "rightScalar": 26579,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u67d3",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002e2b392b0f6b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "082d4404117d1f704e569ce44dbb7980c1c2f14a8588b72f0cd1d9cadf0a686b"
+    },
+    {
+      "id": "visual-u64fe-u6fc3",
+      "leftScalar": 25854,
+      "rightScalar": 28611,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u6fc3",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b0b43262f0b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "333da4fc667328db0e0ed3ee183fb659dd8b5d7601936ce161654bd5cbf9e70d"
+    },
+    {
+      "id": "visual-u64fe-u70e6",
+      "leftScalar": 25854,
+      "rightScalar": 28902,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u70e6",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "0027272b27374b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "66621083fd524a73b5ab141d1b8630a6ce4ace24d54db723e6f8dccba366e467"
+    },
+    {
+      "id": "visual-u64fe-u70e7",
+      "leftScalar": 25854,
+      "rightScalar": 28903,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u70e7",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b272b2b2b5b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "96dd5945e567880bc3b88d1465c9d3be345ad2b24cf074ec8dc6763b350063c3"
+    },
+    {
+      "id": "visual-u64fe-u73ed",
+      "leftScalar": 25854,
+      "rightScalar": 29677,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u73ed",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b2a2b5300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "c22a88912fb369901d1523422e647f74c2bd57d5cf5dba89b417e154c419c7ae"
+    },
+    {
+      "id": "visual-u64fe-u77ed",
+      "leftScalar": 25854,
+      "rightScalar": 30701,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u77ed",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "0023232b23374300",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "dd6cfa2641dac5e583f05c0ba581fff7c58e7f929bf7b8b4785ad14b79ecfe01"
+    },
+    {
+      "id": "visual-u64fe-u78ba",
+      "leftScalar": 25854,
+      "rightScalar": 30906,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u78ba",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "00272f2b4b2b4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "97650d07950625394f6c49f96a5992932e2c348f2dfe980345647ddc5ed3e2bb"
+    },
+    {
+      "id": "visual-u64fe-u8239",
+      "leftScalar": 25854,
+      "rightScalar": 33337,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u8239",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "0036321b2b2b4b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "71695435f3d3299f5a54ad0fb5eef61b9aa539291f96c915092369a784f76e3f"
+    },
+    {
+      "id": "visual-u64fe-u8907",
+      "leftScalar": 25854,
+      "rightScalar": 35079,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u8907",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b0b2b272b2b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "e6a5007d4a1257e57c9f4fd7b713eb171bf08339a6ac579d2b698bb75eb16dfc"
+    },
+    {
+      "id": "visual-u64fe-u898f",
+      "leftScalar": 25854,
+      "rightScalar": 35215,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u898f",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "00232b2b2b374900",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "344597bda87b71bc01b288184d085150dd9f623e84b93f60a6ea5c50632dc011"
+    },
+    {
+      "id": "visual-u64fe-u8996",
+      "leftScalar": 25854,
+      "rightScalar": 35222,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u8996",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2b2b272900",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "077c107aaf6a12584fe3d09051a75ee5bbd0fbe04a60500ad0469927383a8626"
+    },
+    {
+      "id": "visual-u64fe-u89c4",
+      "leftScalar": 25854,
+      "rightScalar": 35268,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u89c4",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b2b2f272b5900",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "6e7939c8961c7d6f8163ceadc1b635534685589771d5144c42511ff647b7c71a"
+    },
+    {
+      "id": "visual-u64fe-u9280",
+      "leftScalar": 25854,
+      "rightScalar": 37504,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u9280",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002a2a2a272e6900",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "d715e3591d77b99f0f0914a2fb60b33bdeed6c214dbfb660469c654021608a05"
+    },
+    {
+      "id": "visual-u64fe-u92ed",
+      "leftScalar": 25854,
+      "rightScalar": 37613,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u92ed",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "002b232b372b5b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "93116ad3819fbc9aaa4b2abe83db18bc9be3d6907127770a7b10bfc576ba62ac"
+    },
+    {
+      "id": "visual-u64fe-u94a5",
+      "leftScalar": 25854,
+      "rightScalar": 38053,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u94a5",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "00232b2b2b2b1b00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "73489a4f0b663b46e9ae1aa2a9f782905b9b561ba7de349ba3dd8dc29966428e"
+    },
+    {
+      "id": "visual-u64fe-u96d1",
+      "leftScalar": 25854,
+      "rightScalar": 38609,
+      "leftGlyphRef": "u64fe",
+      "rightGlyphRef": "u96d1",
+      "leftPerceptualHash64": "002f2a0b232f4b00",
+      "rightPerceptualHash64": "00262b4b232b2f00",
+      "distance": 8,
+      "renderingEnvironmentRefs": [
+        "playwright-chromium-unifont-v1"
+      ],
+      "reviewStatus": "provisional",
+      "learnerEligible": false,
+      "cautionJa": null,
+      "checksumSha256": "4e407ae5bf48b76257778f721ded902c1e21a3789be864b746eb66e120fdf51c"
     },
     {
       "id": "visual-u652f-u6587",
@@ -358406,23 +359347,6 @@
       "checksumSha256": "a216dea7b92fa646527af9fc6cfbe9bb7c9abe5db67e5fcdc985085a4459dbc0"
     },
     {
-      "id": "visual-u77e5-u9854",
-      "leftScalar": 30693,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u77e5",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0023171717375700",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "16b749644956891be0e149d209921f0e58cde4cbe7e1c04a71df17730f2cad23"
-    },
-    {
       "id": "visual-u77e5-u9858",
       "leftScalar": 30693,
       "rightScalar": 39000,
@@ -368026,23 +368950,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "4b58ef34f7ff5df363c12230e4206537b757f5590e5a7e1735c753750246c9df"
-    },
-    {
-      "id": "visual-u805e-u9854",
-      "leftScalar": 32862,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u805e",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0017175757574700",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "23de8037912e76e8663d6684abfca47199a7eccbd1190467f07cf0d30a301acf"
     },
     {
       "id": "visual-u805e-u99c5",
@@ -383600,23 +384507,6 @@
       "checksumSha256": "a96315456cf187b9dfc59097df3c0c87665ea5f80ca463a96ac1249e9a051941"
     },
     {
-      "id": "visual-u95fb-u9854",
-      "leftScalar": 38395,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u95fb",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0023575757576300",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "d9fa943c9e3b3bcab65f940e47aa0b2e714e68b7b1282e88d2d111e9519d34fe"
-    },
-    {
       "id": "visual-u95fb-u9858",
       "leftScalar": 38395,
       "rightScalar": 39000,
@@ -383804,23 +384694,6 @@
       "checksumSha256": "5546024e9d0b7c7dc9376dd0cec771ba1e23987b4b7d08cbcebde7e9005d1c84"
     },
     {
-      "id": "visual-u96fb-u9732",
-      "leftScalar": 38651,
-      "rightScalar": 38706,
-      "leftGlyphRef": "u96fb",
-      "rightGlyphRef": "u9732",
-      "leftPerceptualHash64": "000f4f062e2b0900",
-      "rightPerceptualHash64": "000f4f06362b6600",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "af616ddb3f50953f5ed28cc065873b3dcf2c337dbeb92c23d41926ec229253e4"
-    },
-    {
       "id": "visual-u9707-u9760",
       "leftScalar": 38663,
       "rightScalar": 38752,
@@ -383921,23 +384794,6 @@
       "learnerEligible": false,
       "cautionJa": null,
       "checksumSha256": "8781af6199bbc504832d0482d9446c0af949ab3a2dd558c693c05bdf24258c06"
-    },
-    {
-      "id": "visual-u978b-u9854",
-      "leftScalar": 38795,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u978b",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0037373737372700",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "2847519af90b2cfc951e5b3e26a5a3fc5f0689c5fc3ec9d8bb2fa87a3854362f"
     },
     {
       "id": "visual-u97f3-u98df",
@@ -384195,23 +385051,6 @@
       "checksumSha256": "71e54dacd4af4a51f1498e84b95b0e06acd49bb07f25c8bc3e3c3b4a926a1b94"
     },
     {
-      "id": "visual-u984c-u9854",
-      "leftScalar": 38988,
-      "rightScalar": 38996,
-      "leftGlyphRef": "u984c",
-      "rightGlyphRef": "u9854",
-      "leftPerceptualHash64": "0033371717374f00",
-      "rightPerceptualHash64": "0033375757673700",
-      "distance": 8,
-      "renderingEnvironmentRefs": [
-        "playwright-chromium-unifont-v1"
-      ],
-      "reviewStatus": "provisional",
-      "learnerEligible": false,
-      "cautionJa": null,
-      "checksumSha256": "c5e792e149456f88c6a68a2724fddf0b7a233902067ff14ca736551b19e6a674"
-    },
-    {
       "id": "visual-u985e-u987e",
       "leftScalar": 39006,
       "rightScalar": 39038,
@@ -384315,7 +385154,7 @@
     }
   ],
   "totals": {
-    "glyphs": 1699,
-    "candidates": 22003
+    "glyphs": 1700,
+    "candidates": 22052
   }
 }
