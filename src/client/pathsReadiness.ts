@@ -75,6 +75,29 @@ export function initPathsReadiness(
   cleanups.get(root)?.();
 
   const targets = (readinessData as TravelQuestReadinessDocument).targets;
+  // Authoritative production corpora for vocabulary progress. A learned entry
+  // is only meaningful if its id belongs to the corpus of the store it was
+  // read from: HSK storage may only satisfy HSK-path members, and basic
+  // storage may only satisfy basic/readiness members. This prevents a stale
+  // cross-source entry (e.g. `voc-001: learned` in HSK storage, or
+  // `hsk-001: learned` in basic storage) from advancing the wrong path.
+  const hskCorpusIds = new Set<string>();
+  const basicCorpusIds = new Set<string>();
+  for (const path of payload.paths) {
+    for (const member of path.members) {
+      if (member.type !== 'vocabulary') continue;
+      if (path.id === 'hsk-vocabulary') {
+        hskCorpusIds.add(member.id);
+      } else {
+        basicCorpusIds.add(member.id);
+      }
+    }
+  }
+  for (const target of targets) {
+    for (const spec of target.evidence) {
+      if (spec.type === 'completed-vocabulary-session') basicCorpusIds.add(spec.id);
+    }
+  }
   let identityScope: PathsIdentityScope = { kind: 'unknown' };
   // Disposal guard: once cleanup runs (or a fresh init tears this instance
   // down), no late async auth reply may mutate identityScope or re-render into
@@ -97,42 +120,52 @@ export function initPathsReadiness(
     // its getDefaultStorage() localStorage probe on this read-only path.
     const lessonStore = new ProgressStore(safeLocalStorage());
     const completedLessons = new Set(lessonStore.getCompletedIds());
-    const hskStore = new VocabularyProgressStore(safeLocalStorage());
     const learnedVocabulary = new Set<string>();
+    const learnedBasicVocabulary = new Set<string>();
+
+    // HSK storage is only authoritative for ids in the HSK production corpus.
+    // A stale cross-source `learned` entry (e.g. `voc-001` or
+    // `teacher-star-1-...`) in HSK storage must never satisfy a taiwan-travel
+    // vocabulary member or a readiness evidence key.
+    const hskStore = new VocabularyProgressStore(safeLocalStorage());
     for (const [id, entry] of Object.entries(hskStore.getAllEntries())) {
       // `learned` requires knownStreak >= 2; a corrupt record claiming
       // `status: learned` with a zero streak must not count.
-      if (entry.status === 'learned' && entry.knownStreak >= 2) {
+      if (
+        entry.status === 'learned' &&
+        entry.knownStreak >= 2 &&
+        hskCorpusIds.has(id)
+      ) {
         learnedVocabulary.add(id);
       }
     }
-    const learnedBasicVocabulary = new Set<string>();
-    // Read the basic-vocabulary store scoped to the trusted identity. An
-    // unknown (still-loading) identity keeps basic-vocabulary evidence
+
+    // Basic-vocabulary storage (guest or the signed-in user's scoped key) is
+    // only authoritative for ids in the basic production corpus. A stale
+    // `hsk-*` learned entry in basic storage must never advance the HSK path.
+    // An unknown (still-loading) identity keeps basic-vocabulary evidence
     // unavailable so a signed-in learner's progress is never briefly miscounted
     // as guest progress. Read-only: only `getAllItems()` is used.
+    const collectBasic = (store: BasicVocabularyProgressStore): void => {
+      for (const [id, entry] of Object.entries(store.getAllItems())) {
+        if (entry.status === 'learned' && basicCorpusIds.has(id)) {
+          learnedVocabulary.add(id);
+          learnedBasicVocabulary.add(id);
+        }
+      }
+    };
     if (identityScope.kind === 'signed-in') {
-      const userStore = new BasicVocabularyProgressStore(
-        safeLocalStorage(),
-        getBasicVocabularyProgressStorageKey({
-          kind: 'user',
-          userId: identityScope.userId,
-        }),
+      collectBasic(
+        new BasicVocabularyProgressStore(
+          safeLocalStorage(),
+          getBasicVocabularyProgressStorageKey({
+            kind: 'user',
+            userId: identityScope.userId,
+          }),
+        ),
       );
-      for (const [id, entry] of Object.entries(userStore.getAllItems())) {
-        if (entry.status === 'learned') {
-          learnedVocabulary.add(id);
-          learnedBasicVocabulary.add(id);
-        }
-      }
     } else if (identityScope.kind === 'signed-out') {
-      const guestStore = new BasicVocabularyProgressStore(safeLocalStorage());
-      for (const [id, entry] of Object.entries(guestStore.getAllItems())) {
-        if (entry.status === 'learned') {
-          learnedVocabulary.add(id);
-          learnedBasicVocabulary.add(id);
-        }
-      }
+      collectBasic(new BasicVocabularyProgressStore(safeLocalStorage()));
     }
     return { completedLessons, learnedVocabulary, learnedBasicVocabulary };
   }

@@ -298,6 +298,47 @@ describe('progress signals', () => {
     expect(cardProgress(root, 'hsk-vocabulary')).toBe('5 / 5 完了');
   });
 
+  it('never lets stale HSK-store learned entries advance the taiwan-travel path', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    // A stale cross-source `voc-*: learned` record written into HSK storage
+    // (e.g. by an old client, a botched merge, or manual editing) must never
+    // satisfy the taiwan-travel vocabulary members. Only ids in the HSK
+    // production corpus (hsk-*) count from HSK storage.
+    const hskStore = new VocabularyProgressStore(window.localStorage);
+    for (const id of ['voc-001', 'voc-002', 'voc-003', 'voc-004']) {
+      hskStore.applyRating(id, 'known');
+      hskStore.applyRating(id, 'known');
+    }
+    window.dispatchEvent(new Event('pageshow'));
+
+    expect(cardProgress(root, 'taiwan-travel')).toBe('0 / 14 未開始');
+  });
+
+  it('never lets stale basic-store learned entries advance the HSK path', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    // A stale cross-source `hsk-*: learned` record written into basic
+    // vocabulary storage must never satisfy the HSK path members. Only ids in
+    // the basic production corpus count from basic storage.
+    const basicStore = new BasicVocabularyProgressStore(window.localStorage);
+    for (const id of ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-004', 'hsk-005']) {
+      basicStore.applyRating(id, 'known');
+      basicStore.applyRating(id, 'known');
+    }
+    window.dispatchEvent(new Event('pageshow'));
+
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+  });
+
   it('reads the user-scoped basic-vocabulary store on direct /paths/ load (signed-in session)', async () => {
     const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
     const { client } = fakeSupabaseClient(userId);
