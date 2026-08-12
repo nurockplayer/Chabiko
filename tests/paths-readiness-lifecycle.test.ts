@@ -376,6 +376,28 @@ describe('progress signals', () => {
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
   });
 
+  it('falls back to empty progress when the localStorage getter throws (privacy/sandbox)', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client } = fakeSupabaseClient(userId);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    // Simulate a sandboxed iframe / privacy mode where the localStorage getter
+    // itself throws a SecurityError. initPathsReadiness must not throw and must
+    // render empty basic-vocabulary evidence (all stores fall back to null).
+    const getter = vi.spyOn(window, 'localStorage', 'get');
+    getter.mockImplementation(() => {
+      throw new Error('SecurityError: access to localStorage is denied');
+    });
+    const root = createRoot();
+    let cleanup: () => void;
+    expect(() => {
+      cleanup = initialize(root);
+    }).not.toThrow();
+    await flushAsync();
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+    cleanup!();
+    getter.mockRestore();
+  });
+
   it('reads the guest store when no Supabase client is configured (guest-only mode)', async () => {
     // No Supabase config (getSupabaseBrowserClient returns null) is the
     // supported guest-only production mode: /paths/ reads the guest store.
