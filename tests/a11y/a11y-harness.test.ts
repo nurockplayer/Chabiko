@@ -40,6 +40,21 @@ describe('accessibility suite harness contract', () => {
     );
   });
 
+  it('mounts the git common directory for a linked worktree checkout', () => {
+    // In a Coordinator-created linked worktree the .git file points outside the
+    // bind-mounted /work, so the containerized Astro build (which runs
+    // validateLearnerManifest's git ls-files) needs the common git directory
+    // mounted. Mirrors tests/visual/run.ts.
+    const args = buildDockerArgs('/repo', '/host/.git');
+    expect(args).toContain('type=bind,source=/host/.git,target=/host/.git');
+  });
+
+  it('omits the git mount when no common directory is supplied', () => {
+    const args = buildDockerArgs('/repo');
+    expect(args).not.toContain('target=/host/.git');
+    expect(args.some((a) => a.startsWith('type=bind,source=/host'))).toBe(false);
+  });
+
   it('wires the accessibility suite into CI without introducing snapshot updates', () => {
     expect(workflow).toContain('name: Accessibility');
     expect(workflow).toContain('run: pnpm test:a11y');
