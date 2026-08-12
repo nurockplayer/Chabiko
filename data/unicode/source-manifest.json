@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "chabiko-learner-unicode-sources-v1",
+  "unicodeVersion": "16.0.0",
+  "sources": [
+    {
+      "id": "lessons-v1",
+      "path": "data/examples/valid/lessons.json",
+      "sha256": "2ed506004448d76320b8a8ab62a4b8035020d1aec478a8085d77dd2c1c38941e",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "coreSentence", "language": "zh-Hant" },
+        { "field": "chunk", "language": "zh-Hant" },
+        { "field": "answerJa", "language": "ja" },
+        { "field": "canDoJa", "language": "ja" },
+        { "field": "contentJa", "language": "ja" },
+        { "field": "headingJa", "language": "ja" },
+        { "field": "hookJa", "language": "ja" },
+        { "field": "item", "language": "mixed" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "jpReading", "language": "ja" },
+        { "field": "kanji", "language": "ja" },
+        { "field": "learnerOutcomeJa", "language": "ja" },
+        { "field": "meaning", "language": "ja" },
+        { "field": "noteJa", "language": "ja" },
+        { "field": "notesJa", "language": "ja" },
+        { "field": "promptJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" },
+        { "field": "travelTask", "language": "mixed" },
+        { "field": "distractorsJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "general-vocabulary-v1",
+      "path": "data/examples/valid/vocabulary.json",
+      "sha256": "23e7de43aaf1123b38b0e5443cbd68cbac402a56d3ab4f27ffcf8cabdc80cd7f",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "kana", "language": "ja" },
+        { "field": "note", "language": "ja" },
+        { "field": "caution", "language": "ja" },
+        { "field": "toneNote", "language": "ja" }
+      ]
+    },
+    {
+      "id": "hsk-runtime-v1",
+      "path": "data/examples/valid/hsk-vocabulary.json",
+      "sha256": "47c569d4c54df3bdc4002d2d9e256a35e6e9e47e25d144951e95bc005ea4a532",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "kana", "language": "ja" }
+      ]
+    },
+    {
+      "id": "phrasebook-v1",
+      "path": "data/examples/valid/phrasebook.json",
+      "sha256": "eddc18c4e441ccf1cf0f6b3a627c2fec3876fa9c0caa395fd553ee264abeb1bd",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "note", "language": "ja" },
+        { "field": "usageNotesJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "practice-v1",
+      "path": "data/examples/valid/practice.json",
+      "sha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "format": "json",
+      "textFields": [
+        { "field": "correctAnswer", "language": "ja" },
+        { "field": "distractors", "language": "ja" },
+        { "field": "interferenceJa", "language": "ja" },
+        { "field": "promptJa", "language": "ja" },
+        { "field": "toneContourHintJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "learning-paths-v1",
+      "path": "data/learning-paths.json",
+      "sha256": "6e003011bfb42217acfd094c086e8df10d4d326e1f0f4ab68aa59517ce02288b",
+      "format": "json",
+      "textFields": [
+        { "field": "labelJa", "language": "ja" },
+        { "field": "descriptionJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "roleplay-airport-v1",
+      "path": "data/roleplay/airport.json",
+      "sha256": "37fe13cdecbdd8d2abeac8178befac108d0377112f429fc7acff200359a88d45",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" },
+        { "field": "note", "language": "ja" }
+      ]
+    },
+    {
+      "id": "roleplay-transport-v1",
+      "path": "data/roleplay/transport.json",
+      "sha256": "acaedab8aa3a2fc10db5a9ba5b456898df40e5ec61e2000a57587398def3254e",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "teacher-core-v1-batch-01",
+      "path": "data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json",
+      "sha256": "8cbc3e6bff77f3e6823fa13ef7b86a66ecf7cf053bb43bc2004b32107f469e27",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "note", "language": "ja" }
+      ]
+    },
+    {
+      "id": "production-learner-manifest-v1",
+      "path": "data/teacher-vocabulary-preview/learner-manifest.json",
+      "sha256": "702a92cb7b2cf6a8e1d67caa7ed2e4651007edd7a062fd72ae054af3a1e8d5b1",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" }
+      ]
+    },
+    {
+      "id": "travel-quest-readiness-v1",
+      "path": "data/travel-quest-readiness.json",
+      "sha256": "972f4c9705d870486f6e0e0e8e06de7f8dedb16faabfd0b379c492fc55275ebf",
+      "format": "json",
+      "textFields": [
+        { "field": "goalJa", "language": "ja" },
+        { "field": "labelJa", "language": "ja" }
+      ]
+    }
+  ]
+}

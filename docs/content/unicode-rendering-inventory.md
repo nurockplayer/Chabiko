@@ -64,6 +64,8 @@ are **not** present. Any comparison that must run in CI must use a
 repository-approved redistributable font (Section 3.1), never a macOS
 system font.
 
+<a id="pinned-reference-renderer"></a>
+
 ### 2.3 Deterministic visual harness (the pinned reference renderer)
 
 From `docs/qa/visual-regression.md` and `tests/visual/run.ts`:
