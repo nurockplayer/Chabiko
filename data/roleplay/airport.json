@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-airport-001",
+      "scenario": "airport",
+      "titleJa": "空港到着",
+      "goalJa": "空港に着いたとき、旅行の目的を伝え、空港MRTの場所を尋ねられる",
+      "guidanceJa": "空港に着いたとき、入国審査で旅行の目的を答え、空港MRTの場所を尋ね、聞き取れないときはゆっくり話してもらう練習です。学習者は全ターンを練習します。",
+      "phraseRefs": ["phrase-airport-001", "phrase-airport-004", "phrase-airport-005"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "我是來台灣旅遊的。",
+          "traditionalStatus": "authored",
+          "simplified": "我是来台湾旅游的。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ shì lái Táiwān lǚyóu de",
+          "japanese": "台湾へ旅行に来ました。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "歡迎來台灣。",
+          "traditionalStatus": "authored",
+          "pinyin": "huānyíng lái Táiwān",
+          "japanese": "台湾へようこそ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "請問機場捷運在哪裡？",
+          "traditionalStatus": "authored",
+          "simplified": "请问机场捷运在哪里？",
+          "simplifiedStatus": "verified",
+          "pinyin": "qǐngwèn jīchǎng jiéyùn zài nǎlǐ",
+          "japanese": "空港MRTはどこですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "出關以後，跟著「機場捷運」的指標走就可以了。",
+          "traditionalStatus": "authored",
+          "pinyin": "chū guān yǐhòu, gēnzhe \"jīchǎng jiéyùn\" de zhǐbiāo zǒu jiù kěyǐ le",
+          "japanese": "税関を出たら、「空港MRT」の案内板に従って進めば大丈夫です。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "不好意思，我聽不懂。可以說慢一點嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "不好意思，我听不懂。可以说慢一点吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "bù hǎoyìsi, wǒ tīng bù dǒng. kěyǐ shuō màn yìdiǎn ma",
+          "japanese": "すみません、聞き取れません。もう少しゆっくり話してもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，出關以後跟著指標走，就能看到機場捷運的指示牌。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, chū guān yǐhòu gēnzhe zhǐbiāo zǒu, jiù néng kàndào jīchǎng jiéyùn de zhǐshìpái",
+          "japanese": "はい、税関を出たら案内板に従って進むと、空港MRTの案内板が見えますよ。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan airport arrival roleplay content; no third-party text copied"}
+    }
+  ]
+}
