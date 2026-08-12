@@ -721,16 +721,16 @@
       "traditionalStatus": "generated",
       "simplified": "事情",
       "simplifiedStatus": "generated",
-      "pinyin": "shìqing",
+      "pinyin": "shìqíng",
       "japanese": "用事・事柄",
       "kana": "じじょう",
       "category": "general",
       "similarityType": "partial-overlap",
-      "toneNote": "shì は第四声、qing は軽声（軽く短く）。",
+      "toneNote": "shì は第四声、qíng は第二声。",
       "painPointTags": [],
       "caution": "日本語の「事情（じじょう）」＝ 事情・理由（背景）。中国語の「事情」＝ 事・用事（matter, affair）。「用事がある」は「有事情」。日本語の「事情を説明する」は中国語で「說明情況／说明情况（qíngkuàng）」。",
       "examples": [
-        {"traditional": "有事情要做", "traditionalStatus": "generated", "simplified": "有事情要做", "simplifiedStatus": "generated", "pinyin": "yǒu shìqing yào zuò", "japanese": "用事がある"}
+        {"traditional": "有事情要做", "traditionalStatus": "generated", "simplified": "有事情要做", "simplifiedStatus": "generated", "pinyin": "yǒu shìqíng yào zuò", "japanese": "用事がある"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -741,16 +741,16 @@
       "traditionalStatus": "generated",
       "simplified": "大丈夫",
       "simplifiedStatus": "generated",
-      "pinyin": "dàzhàngfu",
+      "pinyin": "dàzhàngfū",
       "japanese": "立派な男",
       "kana": "だいじょうぶ",
       "category": "noun",
       "similarityType": "false-friend",
-      "toneNote": "dà 第四声、zhàng 第四声、fu 軽声。",
+      "toneNote": "dà 第四声、zhàng 第四声、fū 第一声。",
       "painPointTags": ["kanji-false-friend"],
       "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男。「大丈夫ですか」の意味で使うと「立派な男ですか」になる。OK は中国語では「沒關係（méiguānxi）」や「可以（kěyǐ）」。",
       "examples": [
-        {"traditional": "他是個大丈夫", "traditionalStatus": "generated", "simplified": "他是个大丈夫", "simplifiedStatus": "generated", "pinyin": "tā shì gè dàzhàngfu", "japanese": "彼は立派な男だ"}
+        {"traditional": "他是個大丈夫", "traditionalStatus": "generated", "simplified": "他是个大丈夫", "simplifiedStatus": "generated", "pinyin": "tā shì gè dàzhàngfū", "japanese": "彼は立派な男だ"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -846,11 +846,11 @@
       "kana": "ろうば",
       "category": "family",
       "similarityType": "false-friend",
-      "toneNote": "lǎo 第三声、po 軽声。",
+      "toneNote": "lǎo 第三声、pó 第二声。",
       "painPointTags": ["kanji-false-friend"],
       "caution": "日本語の「老婆（ろうば）」＝ 年寄りの女。中国語の「老婆」＝ 妻（口語）。妻は正式には「太太（tàitai）」や「妻子（qīzi）」。",
       "examples": [
-        {"traditional": "我老婆", "traditionalStatus": "generated", "simplified": "我老婆", "simplifiedStatus": "generated", "pinyin": "wǒ lǎopo", "japanese": "うちの妻"}
+        {"traditional": "我老婆", "traditionalStatus": "generated", "simplified": "我老婆", "simplifiedStatus": "generated", "pinyin": "wǒ lǎopó", "japanese": "うちの妻"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -884,7 +884,7 @@
       "pinyin": "fàngxīn",
       "japanese": "安心する",
       "kana": "ほうしん",
-      "category": "adjective",
+      "category": "action",
       "similarityType": "false-friend",
       "toneNote": "fàng 第四声、xīn 第一声。",
       "painPointTags": ["kanji-false-friend"],
