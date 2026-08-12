@@ -1,11 +1,11 @@
 import { ProgressStore, STORAGE_KEY } from '../lib/progress';
+import { BasicVocabularyProgressStore } from '../domain/basicVocabularyProgress';
 import { VocabularyProgressStore } from '../domain/vocabularyProgress';
-import {
-  ensureBasicVocabularyProgressCoordinator,
-  getBasicVocabularyProgressCoordinator,
-} from './basicVocabularyProgressCoordinator';
 import { getSupabaseBrowserClient } from '../lib/supabaseBrowserClient';
-import { isValidSupabaseUserId } from '../domain/basicVocabularyProgressScope';
+import {
+  getBasicVocabularyProgressStorageKey,
+  isValidSupabaseUserId,
+} from '../domain/basicVocabularyProgressScope';
 import type { LearningPathMemberRef } from '../types/learningPath';
 import type {
   TravelQuestReadinessDocument,
@@ -34,19 +34,37 @@ export interface PathsProgressPayload {
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
 
+/** Identity scope for the read-only projection (Sol decision for #233). */
+type PathsIdentityScope =
+  | { readonly kind: 'signed-in'; readonly userId: string }
+  | { readonly kind: 'signed-out' }
+  | { readonly kind: 'unknown' };
+
 /**
  * Read-only browser controller for the learner-facing `/paths/` route (Issue
  * #233). Reads existing lesson, HSK, and basic-vocabulary progress stores and
  * re-renders every card's path summary plus the four Travel Quest readiness
  * targets.
  *
+ * This is a route-local read-only projection (Sol decision, #233): it never
+ * creates or switches the #293 progress coordinator, never calls
+ * `acceptSignedIn`/`syncNow`, and therefore can never trigger progress, sync
+ * metadata, or cloud writes merely from viewing `/paths/`. It resolves the
+ * trusted Supabase identity itself, subscribes to Supabase auth state changes,
+ * and reads the scoped local cache for that identity:
+ *
+ * - signed-in → user-scoped key
+ * - signed-out → guest key
+ * - unknown (loading) → basic-vocabulary evidence stays unavailable (never
+ *   briefly counted as guest progress)
+ *
  * - Reads existing progress only; never writes, migrates, resets, or adds a
  *   new storage key.
  * - Missing, unavailable, duplicate, stale, or malformed evidence never
  *   inflates readiness or shrinks the fixed denominator.
- * - Refreshes on `pageshow` and relevant `storage` events; cleanup removes
- *   every listener and a fresh init tears down the prior instance, so no
- *   duplicate listeners or stale callbacks accumulate.
+ * - Refreshes on `pageshow`, relevant `storage` events, and Supabase auth
+ *   state changes (login/logout/switch re-selects the scoped store); cleanup
+ *   removes every subscription and a fresh init tears down the prior instance.
  * - Passive viewing never counts: only completed lesson practices and
  *   `learned` vocabulary items produce progress signals.
  */
@@ -57,24 +75,36 @@ export function initPathsReadiness(
   cleanups.get(root)?.();
 
   const targets = (readinessData as TravelQuestReadinessDocument).targets;
+  let identityScope: PathsIdentityScope = { kind: 'unknown' };
 
   function readSignals(): ProgressSignals {
     const lessonStore = new ProgressStore();
     const completedLessons = new Set(lessonStore.getCompletedIds());
     const hskStore = new VocabularyProgressStore();
-    // Ensure the document-level auth-aware coordinator exists before reading
-    // (Issue #293), so a signed-in user's user-scoped basic-vocabulary progress
-    // is available on direct /paths/ load. If it was already created elsewhere
-    // this is a no-op. Read-only: the coordinator store is consumed, never
-    // written, migrated, or reset.
-    const coordinator = ensureBasicVocabularyProgressCoordinator();
-    const basicStore = coordinator.getStore();
     const learnedVocabulary = new Set<string>();
-    for (const [id, entry] of [
-      ...Object.entries(hskStore.getAllEntries()),
-      ...Object.entries(basicStore.getAllItems()),
-    ]) {
+    for (const [id, entry] of Object.entries(hskStore.getAllEntries())) {
       if (entry.status === 'learned') learnedVocabulary.add(id);
+    }
+    // Read the basic-vocabulary store scoped to the trusted identity. An
+    // unknown (still-loading) identity keeps basic-vocabulary evidence
+    // unavailable so a signed-in learner's progress is never briefly miscounted
+    // as guest progress. Read-only: only `getAllItems()` is used.
+    if (identityScope.kind === 'signed-in') {
+      const userStore = new BasicVocabularyProgressStore(
+        localStorage,
+        getBasicVocabularyProgressStorageKey({
+          kind: 'user',
+          userId: identityScope.userId,
+        }),
+      );
+      for (const [id, entry] of Object.entries(userStore.getAllItems())) {
+        if (entry.status === 'learned') learnedVocabulary.add(id);
+      }
+    } else if (identityScope.kind === 'signed-out') {
+      const guestStore = new BasicVocabularyProgressStore();
+      for (const [id, entry] of Object.entries(guestStore.getAllItems())) {
+        if (entry.status === 'learned') learnedVocabulary.add(id);
+      }
     }
     return { completedLessons, learnedVocabulary };
   }
@@ -125,44 +155,82 @@ export function initPathsReadiness(
     }
   }
 
+  // The currently relevant basic-vocabulary storage key for the trusted
+  // identity, used by the storage listener. Unknown → null (no basic-vocab key
+  // is relevant until the identity resolves).
+  function currentBasicKey(): string | null {
+    if (identityScope.kind === 'signed-in') {
+      return getBasicVocabularyProgressStorageKey({
+        kind: 'user',
+        userId: identityScope.userId,
+      });
+    }
+    if (identityScope.kind === 'signed-out') return BASIC_VOCABULARY_PROGRESS_KEY;
+    return null;
+  }
+
+  function applySessionUserId(userId: string | null): void {
+    const next: PathsIdentityScope =
+      userId !== null && isValidSupabaseUserId(userId)
+        ? { kind: 'signed-in', userId }
+        : { kind: 'signed-out' };
+    const changed =
+      next.kind !== identityScope.kind ||
+      (next.kind === 'signed-in' &&
+        identityScope.kind === 'signed-in' &&
+        next.userId !== identityScope.userId);
+    identityScope = next;
+    if (changed) renderAll();
+  }
+
+  function handleAuthEvent(event: string, session: unknown): void {
+    if (event === 'SIGNED_OUT') {
+      applySessionUserId(null);
+      return;
+    }
+    const ses = (session ?? null) as
+      | { user?: { id?: string } }
+      | null;
+    const userId = ses?.user?.id ?? null;
+    applySessionUserId(typeof userId === 'string' ? userId : null);
+  }
+
   renderAll();
 
-  // Reflect a signed-in user's user-scoped progress on direct /paths/ load.
-  // The account UI is only mounted on the vocabulary pages, so this route
-  // reads the existing Supabase session itself and hands the identity to the
-  // coordinator (which switches to the user-scoped runtime). This is
-  // read-only: no login control, no new key, no migration, no progress write.
-  // A session read can never expose token material into the DOM.
-  void (async () => {
-    const client = getSupabaseBrowserClient();
-    if (client === null) return;
-    try {
-      const { data } = await client.auth.getSession();
-      const session = data.session;
-      if (session !== null && isValidSupabaseUserId(session.user.id)) {
-        ensureBasicVocabularyProgressCoordinator().acceptSignedIn(session.user.id);
-        renderAll();
-      }
-    } catch {
-      // A failed session read is not an auth error we can surface safely;
-      // stay guest-scoped and keep the SSR-empty render.
-    }
-  })();
+  const client = getSupabaseBrowserClient();
+  let authUnsubscribe: (() => void) | null = null;
+
+  if (client != null) {
+    // Resolve the initial trusted identity (read-only).
+    void client.auth
+      .getSession()
+      .then((result) => {
+        const session = result.data.session;
+        applySessionUserId(session?.user?.id ?? null);
+      })
+      .catch(() => {
+        // A failed session read is not an auth error we can surface safely;
+        // keep identity unknown so basic-vocabulary evidence stays unavailable.
+      });
+
+    const subscription = client.auth.onAuthStateChange((event, session) => {
+      handleAuthEvent(event, session);
+    });
+    authUnsubscribe = () => {
+      subscription.data.subscription.unsubscribe();
+    };
+  }
 
   function onPageShow(): void {
     renderAll();
   }
 
   function onStorage(event: StorageEvent): void {
-    const coordinator = getBasicVocabularyProgressCoordinator();
-    const basicKey =
-      coordinator !== null
-        ? coordinator.getStore().getStorageKey()
-        : BASIC_VOCABULARY_PROGRESS_KEY;
+    const basicKey = currentBasicKey();
     if (
       event.key === null ||
       event.key === STORAGE_KEY ||
-      event.key === basicKey ||
+      (basicKey !== null && event.key === basicKey) ||
       event.key === VOCABULARY_PROGRESS_KEY
     ) {
       renderAll();
@@ -173,6 +241,10 @@ export function initPathsReadiness(
   window.addEventListener('storage', onStorage);
 
   const cleanup = (): void => {
+    if (authUnsubscribe !== null) {
+      authUnsubscribe();
+      authUnsubscribe = null;
+    }
     window.removeEventListener('pageshow', onPageShow);
     window.removeEventListener('storage', onStorage);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);

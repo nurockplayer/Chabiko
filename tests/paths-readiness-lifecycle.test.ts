@@ -14,11 +14,6 @@ import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
 import {
-  getBasicVocabularyProgressCoordinator,
-  resetBasicVocabularyProgressCoordinator,
-  setBasicVocabularyProgressCoordinator,
-} from '../src/client/basicVocabularyProgressCoordinator';
-import {
   getBasicVocabularyProgressStorageKey,
   type BasicVocabularyProgressScope,
 } from '../src/domain/basicVocabularyProgressScope';
@@ -118,6 +113,53 @@ function cardProgress(root: HTMLElement, pathId: string): string | null {
   return card?.querySelector<HTMLElement>('[data-path-progress]')?.textContent ?? null;
 }
 
+// ─── Fake Supabase auth client (Sol decision: route-local read-only) ──────────
+
+type AuthListener = (event: string, session: unknown) => void;
+
+interface FakeAuthClient {
+  getSession: () => Promise<{ data: { session: { user: { id: string } } | null } }>;
+  onAuthStateChange: (listener: AuthListener) => {
+    data: { subscription: { unsubscribe: () => void } };
+  };
+}
+
+/** Build a fake Supabase auth client plus a trigger for auth events. */
+function fakeSupabaseClient(initialUserId: string | null): {
+  client: { auth: FakeAuthClient };
+  emit: (event: string, session: unknown) => void;
+} {
+  let currentSession: { user: { id: string } } | null =
+    initialUserId !== null ? { user: { id: initialUserId } } : null;
+  const listeners = new Set<AuthListener>();
+  return {
+    client: {
+      auth: {
+        getSession: async () => ({ data: { session: currentSession } }),
+        onAuthStateChange: (listener: AuthListener) => {
+          listeners.add(listener);
+          return {
+            data: {
+              subscription: {
+                unsubscribe: () => listeners.delete(listener),
+              },
+            },
+          };
+        },
+      },
+    },
+    emit: (event: string, session: unknown) => {
+      currentSession = (session ?? null) as { user: { id: string } } | null;
+      for (const listener of [...listeners]) listener(event, session);
+    },
+  };
+}
+
+/** Wait a macrotask so the async session read + render settle. */
+function flushAsync(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 function target(root: HTMLElement, id: string): HTMLElement {
   return root.querySelector<HTMLElement>(`[data-readiness-target="${id}"]`)!;
 }
@@ -127,8 +169,6 @@ afterEach(() => {
   cleanups.clear();
   document.body.replaceChildren();
   window.localStorage.clear();
-  resetBasicVocabularyProgressCoordinator();
-  setBasicVocabularyProgressCoordinator(null);
   vi.mocked(getSupabaseBrowserClient).mockReset();
 });
 
@@ -170,7 +210,10 @@ describe('initial render', () => {
 // ─── Lesson/vocabulary signals drive readiness and path progress ─────────────
 
 describe('progress signals', () => {
-  it('reflects completed lessons and learned vocabulary in readiness', () => {
+  it('reflects completed lessons and learned vocabulary in readiness', async () => {
+    // Signed-out identity resolves the guest store, so guest progress counts.
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
 
@@ -179,6 +222,7 @@ describe('progress signals', () => {
     setHskLearned('hsk-001');
     setBasicLearned('teacher-star-1-bdc7865a507e');
     window.dispatchEvent(new Event('pageshow'));
+    await flushAsync();
 
     const order = target(root, 'order-and-pay');
     // lesson-001 + lesson-002 + vocabulary session → 3 of 5.
@@ -202,7 +246,9 @@ describe('progress signals', () => {
     expect(recover.querySelector('[data-readiness-status]')?.textContent).toBe('未開始');
   });
 
-  it('drives path-level partial/complete summaries from stable members', () => {
+  it('drives path-level partial/complete summaries from stable members', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
 
@@ -211,6 +257,7 @@ describe('progress signals', () => {
     for (const id of ['lesson-001', 'lesson-002', 'lesson-003']) setLessonCompleted(id);
     for (const id of ['voc-001', 'voc-002', 'voc-003', 'voc-004']) setBasicLearned(id);
     window.dispatchEvent(new Event('pageshow'));
+    await flushAsync();
 
     expect(cardProgress(root, 'taiwan-travel')).toBe('7 / 14 進行中');
 
@@ -222,17 +269,10 @@ describe('progress signals', () => {
     expect(cardProgress(root, 'hsk-vocabulary')).toBe('5 / 5 完了');
   });
 
-  it('reflects user-scoped basic-vocabulary progress on direct /paths/ load (signed-in session)', async () => {
+  it('reads the user-scoped basic-vocabulary store on direct /paths/ load (signed-in session)', async () => {
     const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
-    // The route reads the existing Supabase session itself and hands the
-    // identity to the coordinator (no login UI, no pre-installed coordinator).
-    vi.mocked(getSupabaseBrowserClient).mockReturnValue({
-      auth: {
-        getSession: async () => ({
-          data: { session: { user: { id: userId } } },
-        }),
-      },
-    } as never);
+    const { client } = fakeSupabaseClient(userId);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
 
@@ -245,22 +285,70 @@ describe('progress signals', () => {
     userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
     userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
 
-    // Await the async session read + coordinator switch + re-render.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // Await the async getSession → render.
+    await flushAsync();
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
-    const coordinator = getBasicVocabularyProgressCoordinator();
-    expect(coordinator?.getStore().getStorageKey()).toBe(
-      getBasicVocabularyProgressStorageKey(userScope),
-    );
-    coordinator?.dispose();
   });
 
-  it('guests read the guest store when no coordinator was created elsewhere', () => {
+  it('re-renders on login/logout/user switch via auth state changes', async () => {
+    const userA = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const userB = 'aa0e8c7d-3b5f-4e8a-9a2c-7d6f5e4b3a2c';
+    const { client, emit } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
-    // initPathsReadiness ensures the coordinator; a guest (no signed-in) reads
-    // the guest store, so guest progress counts.
+    await flushAsync();
+
+    // Guest start: guest progress counts (empty → 0/5).
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+
+    // Login as userA → user-scoped progress counts.
+    const scopeA: BasicVocabularyProgressScope = { kind: 'user', userId: userA };
+    const storeA = new BasicVocabularyProgressStore(
+      window.localStorage,
+      getBasicVocabularyProgressStorageKey(scopeA),
+    );
+    storeA.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    storeA.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    emit('SIGNED_IN', { user: { id: userA } });
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+
+    // Switch to userB → their (empty) scoped progress counts.
+    storeA.applyRating('other-id', 'known'); // write to A, must not count for B
+    emit('SIGNED_IN', { user: { id: userB } });
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+
+    // Logout → guest progress counts.
+    emit('SIGNED_OUT', null);
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
+  it('never writes progress, sync metadata, or cloud state merely from viewing', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client } = fakeSupabaseClient(userId);
+    const repository = { reset: vi.fn(), push: vi.fn(), load: vi.fn() };
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+
+    const before = JSON.stringify(window.localStorage);
+    initialize(root);
+    await flushAsync();
+    window.dispatchEvent(new Event('pageshow'));
+    dispatchStorage(STORAGE_KEY, window.localStorage);
+
+    expect(JSON.stringify(window.localStorage)).toBe(before);
+    expect(repository.reset).not.toHaveBeenCalled();
+    expect(repository.push).not.toHaveBeenCalled();
+    expect(repository.load).not.toHaveBeenCalled();
+  });
+
+  it('guests read the guest store without a coordinator', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
     setBasicLearned('teacher-star-1-bdc7865a507e');
     window.dispatchEvent(new Event('pageshow'));
     const order = target(root, 'order-and-pay');
@@ -271,9 +359,12 @@ describe('progress signals', () => {
 // ─── Storage refresh and cleanup ──────────────────────────────────────────────
 
 describe('storage and pageshow refresh', () => {
-  it('refreshes on the exact lesson, HSK, and basic-vocabulary storage keys', () => {
+  it('refreshes on the exact lesson, HSK, and basic-vocabulary storage keys', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
+    await flushAsync();
 
     setLessonCompleted('lesson-001');
     dispatchStorage(STORAGE_KEY, window.localStorage);
