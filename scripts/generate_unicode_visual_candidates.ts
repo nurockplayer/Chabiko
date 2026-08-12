@@ -31,6 +31,11 @@ export class RendererUnavailableError extends Error {
   }
 }
 
+export function mapRendererOperationError(error: unknown): RendererUnavailableError {
+  if (error instanceof RendererUnavailableError) return error;
+  return new RendererUnavailableError(`pinned renderer operation failed: ${(error as Error).message}`);
+}
+
 function sha256(bytes: string | Buffer | Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');
 }
@@ -65,15 +70,13 @@ function assertInventoryCoverage(scalars: number[]): void {
   }
 }
 
-async function renderGlyphs(scalars: number[]) {
-  if (!existsSync(fontPath)) throw new RendererUnavailableError(`pinned container font is unavailable: ${fontPath}`);
-  const fontChecksumSha256 = sha256(readFileSync(fontPath));
-  assertInventoryCoverage(scalars);
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--disable-lcd-text', '--font-render-hinting=none', '--force-color-profile=srgb'],
-  });
+async function collectRendererPixels(scalars: number[]) {
+  let browser: Awaited<ReturnType<typeof chromium.launch>>;
   try {
+    browser = await chromium.launch({
+      headless: true,
+      args: ['--disable-lcd-text', '--font-render-hinting=none', '--force-color-profile=srgb'],
+    });
     const page = await browser.newPage({ viewport: { width: 64, height: 64 }, deviceScaleFactor: 1, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', colorScheme: 'light', reducedMotion: 'reduce' });
     await page.route('**/*', (route) => {
       const url = new URL(route.request().url());
@@ -108,37 +111,47 @@ async function renderGlyphs(scalars: number[]) {
     }, scalars);
     const missing = pixels.filter((item) => item.faceCount === 0).map((item) => item.scalar);
     if (missing.length) throw new RendererUnavailableError(`pinned font lacks ${missing.length} inventory scalars: ${missing.slice(0, 10).map((value) => `U+${value.toString(16).toUpperCase()}`).join(', ')}`);
-    return {
-      fontChecksumSha256,
-      glyphs: pixels.map(({ faceCount: _faceCount, grayscaleBase64, ...item }) => {
-        const grayscale = Buffer.from(grayscaleBase64, 'base64');
-        const averages: number[] = [];
-        for (let row = 0; row < 8; row += 1) for (let column = 0; column < 9; column += 1) {
-          const x0 = Math.floor(column * 64 / 9);
-          const x1 = Math.floor((column + 1) * 64 / 9);
-          let sum = 0;
-          let count = 0;
-          for (let y = row * 8; y < (row + 1) * 8; y += 1) for (let x = x0; x < x1; x += 1) {
-            sum += grayscale[y * 64 + x];
-            count += 1;
-          }
-          averages.push(Math.floor(sum / count));
+    return pixels;
+  } catch (error) {
+    throw mapRendererOperationError(error);
+  } finally {
+    await browser?.close();
+  }
+}
+
+async function renderGlyphs(scalars: number[]) {
+  if (!existsSync(fontPath)) throw new RendererUnavailableError(`pinned container font is unavailable: ${fontPath}`);
+  const fontChecksumSha256 = sha256(readFileSync(fontPath));
+  assertInventoryCoverage(scalars);
+  const pixels = await collectRendererPixels(scalars);
+  return {
+    fontChecksumSha256,
+    glyphs: pixels.map(({ faceCount: _faceCount, grayscaleBase64, ...item }) => {
+      const grayscale = Buffer.from(grayscaleBase64, 'base64');
+      const averages: number[] = [];
+      for (let row = 0; row < 8; row += 1) for (let column = 0; column < 9; column += 1) {
+        const x0 = Math.floor(column * 64 / 9);
+        const x1 = Math.floor((column + 1) * 64 / 9);
+        let sum = 0;
+        let count = 0;
+        for (let y = row * 8; y < (row + 1) * 8; y += 1) for (let x = x0; x < x1; x += 1) {
+          sum += grayscale[y * 64 + x];
+          count += 1;
         }
-        let bits = 0n;
-        for (let row = 0; row < 8; row += 1) for (let column = 0; column < 8; column += 1) {
-          bits = (bits << 1n) | BigInt(averages[row * 9 + column] < averages[row * 9 + column + 1] ? 1 : 0);
-        }
-        return {
+        averages.push(Math.floor(sum / count));
+      }
+      let bits = 0n;
+      for (let row = 0; row < 8; row += 1) for (let column = 0; column < 8; column += 1) {
+        bits = (bits << 1n) | BigInt(averages[row * 9 + column] < averages[row * 9 + column + 1] ? 1 : 0);
+      }
+      return {
         id: `u${item.scalar.toString(16).padStart(4, '0')}`,
         ...item,
-          derivativeSha256: sha256(grayscale),
-          perceptualHash64: bits.toString(16).padStart(16, '0'),
-        };
-      }),
-    };
-  } finally {
-    await browser.close();
-  }
+        derivativeSha256: sha256(grayscale),
+        perceptualHash64: bits.toString(16).padStart(16, '0'),
+      };
+    }),
+  };
 }
 
 async function generate() {

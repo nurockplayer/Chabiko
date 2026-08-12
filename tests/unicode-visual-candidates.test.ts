@@ -10,7 +10,7 @@ import {
   sha256Json,
   validateVisualArtifacts,
 } from '../scripts/unicode_visual_contract';
-import { assertFontCoverage, publishTransactionally, RendererUnavailableError } from '../scripts/generate_unicode_visual_candidates';
+import { assertFontCoverage, mapRendererOperationError, publishTransactionally, RendererUnavailableError } from '../scripts/generate_unicode_visual_candidates';
 
 describe('Unicode visual candidate contract (#262)', () => {
   it('uses exact 64-bit Hamming distance and immutable <=50 batches', () => {
@@ -166,6 +166,15 @@ describe('Unicode visual candidate contract (#262)', () => {
         if (!(error instanceof RendererUnavailableError)) throw error;
       }
     }).toThrow('malformed #260 inventory');
+  });
+
+  it('maps pinned browser-operation failures, but not input failures, to unavailable-renderer output', () => {
+    expect(mapRendererOperationError(new Error('Chromium launch failed'))).toMatchObject({
+      name: 'RendererUnavailableError',
+      message: 'pinned renderer operation failed: Chromium launch failed',
+    });
+    const unavailable = new RendererUnavailableError('pinned font lacks inventory coverage');
+    expect(mapRendererOperationError(unavailable)).toBe(unavailable);
   });
 
   it('stages both owned artifacts beside their destination before atomic publication', () => {
