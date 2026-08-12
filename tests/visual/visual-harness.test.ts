@@ -46,10 +46,14 @@ describe('visual regression harness contract', () => {
 
     const verifyArgs = buildDockerArgs('verify', '/repo');
     const updateArgs = buildDockerArgs('update', '/repo');
+    const worktreeArgs = buildDockerArgs('verify', '/repo', '/host/.git');
     expect(verifyArgs.at(-1)).toContain('--update-snapshots=none');
     expect(updateArgs.at(-1)).toContain('--update-snapshots=all');
     expect(verifyArgs).toContain(PLAYWRIGHT_IMAGE);
     expect(PLAYWRIGHT_IMAGE).toContain('@sha256:');
+    expect(worktreeArgs).toContain(
+      'type=bind,source=/host/.git,target=/host/.git',
+    );
 
     // The bind-mounted checkout is owned by the host, so the container must
     // declare it safe before git ls-files runs during the Astro build.
