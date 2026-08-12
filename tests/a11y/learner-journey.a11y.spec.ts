@@ -1,7 +1,12 @@
 import { fileURLToPath } from 'node:url';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { A11Y_CASES, A11Y_THEMES } from './matrix';
+import {
+  A11Y_CASES,
+  A11Y_SURFACE_SCAN_TARGET,
+  A11Y_THEMES,
+  type A11ySurface,
+} from './matrix';
 import {
   analyzeWithPausedClock,
   assertNoExternalRequests,
@@ -23,6 +28,14 @@ const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 /** Only serious and critical impacts block the matrix. */
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
+
+/** Build the axe builder for a surface, scoping to the surface's region when
+ *  the matrix declares one (reading vs practice). Never weakens the rule set. */
+function builderForSurface(page: Page, surface: A11ySurface): AxeBuilder {
+  const target = A11Y_SURFACE_SCAN_TARGET[surface];
+  const builder = new AxeBuilder({ page }).withTags(WCAG_AA_TAGS);
+  return target !== undefined ? builder.include(target) : builder;
+}
 
 for (const theme of A11Y_THEMES) {
   test.describe(`${theme} theme`, () => {
@@ -48,7 +61,7 @@ for (const theme of A11Y_THEMES) {
 
         const results = await analyzeWithPausedClock(
           page,
-          new AxeBuilder({ page }).withTags(WCAG_AA_TAGS),
+          builderForSurface(page, a11yCase.surface),
         );
 
         const blocking = results.violations.filter(

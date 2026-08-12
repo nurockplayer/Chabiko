@@ -29,5 +29,24 @@ export const A11Y_CASES: readonly A11yCase[] = A11Y_THEMES.flatMap(
     })),
 );
 
+/**
+ * Per-surface axe include target. Each surface scans the region that holds its
+ * distinct state: `lesson-reading` scans the lesson reading region,
+ * `practice-unanswered`/`practice-correct`/`practice-incorrect`/`completion`
+ * scan the practice region (which carries the question/feedback/completion
+ * states), and `home` scans the whole home page (`undefined` = no include).
+ * This makes the six surfaces genuinely distinct scans, not labels over the
+ * same whole-page Axe run.
+ */
+export const A11Y_SURFACE_SCAN_TARGET: Readonly<Record<A11ySurface, string | undefined>> = {
+  home: undefined,
+  'lesson-reading':
+    '.lesson-intro, .can-do-section, .core-section, .reading-section, .bridge-section',
+  'practice-unanswered': '.lesson-practice',
+  'practice-correct': '.lesson-practice',
+  'practice-incorrect': '.lesson-practice',
+  completion: '.lesson-practice',
+};
+
 /** The lesson used to render the practice and completion surfaces. */
 export const A11Y_LESSON_ID = 'lesson-001';
