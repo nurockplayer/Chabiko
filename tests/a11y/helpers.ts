@@ -128,24 +128,24 @@ export async function setupSurface(
   }
 
   if (surface === 'practice-correct') {
+    // Freeze the clock before interacting so the 1200ms completion transition
+    // timer is frozen the moment it is scheduled — the feedback assertion and
+    // axe scan then see the stable practice-correct state regardless of CI
+    // timing.
+    await freezeClock(page);
     await answerPractice(page, 'correct');
     await expect(page.locator('.feedback-correct')).toContainText('正解！');
-    // Freeze the clock at its current position now that the correct feedback
-    // is showing, so the 1200ms completion transition timer never advances
-    // while the structural assertions and the axe scan run — the surface is
-    // scanned as the named practice-correct transient state.
-    await freezeClock(page);
     return externalRequests;
   }
 
   if (surface === 'practice-incorrect') {
+    // Freeze before interacting so the 2000ms retry transition timer is frozen
+    // the moment it is scheduled; the feedback assertions and axe scan see the
+    // stable practice-incorrect state.
+    await freezeClock(page);
     await answerPractice(page, 'incorrect');
     await expect(page.locator('.feedback-incorrect')).toContainText('不正解。');
     await expect(page.locator('.feedback-answer')).toContainText('正解：');
-    // Freeze the clock at its current position so the 2000ms retry transition
-    // timer never advances while the structural assertions and the axe scan
-    // run.
-    await freezeClock(page);
     return externalRequests;
   }
 
