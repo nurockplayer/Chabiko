@@ -570,7 +570,7 @@
       "painPointTags": ["same-kanji-different-meaning"],
       "caution": "中国語の「床 chuáng」はベッド。日本語の「床（とこ）＝寝床」とは重なるが、普段の「床（ゆか）＝floor」とは違う。floor は「地板 dìbǎn」。",
       "examples": [
-        {"traditional": "一張床", "traditionalStatus": "generated", "simplified": "一张床", "simplifiedStatus": "generated", "pinyin": "yī zhāng chuáng", "japanese": "ベッド一台"}
+        {"traditional": "一張床", "traditionalStatus": "generated", "simplified": "一张床", "simplifiedStatus": "generated", "pinyin": "yì zhāng chuáng", "japanese": "ベッド一台"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -590,7 +590,7 @@
       "painPointTags": ["same-kanji-different-meaning"],
       "caution": "「根本・もと」の意味は日中で重なる。ただし日本語の「本＝book」を中国語で単純に「本」とは言わず、書物は「書／书 shū」。「一本書」の「本」は書冊を数える量詞で、日本語の助数詞「本」とは対象が違う。",
       "examples": [
-        {"traditional": "一本書", "traditionalStatus": "generated", "simplified": "一本书", "simplifiedStatus": "generated", "pinyin": "yī běn shū", "japanese": "本一冊"}
+        {"traditional": "一本書", "traditionalStatus": "generated", "simplified": "一本书", "simplifiedStatus": "generated", "pinyin": "yì běn shū", "japanese": "本一冊"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -770,7 +770,7 @@
       "painPointTags": ["kanji-false-friend"],
       "caution": "日本語の「勉強（べんきょう）」＝ 勉強する（study）。中国語の「勉強」＝ 無理に／仕方なく（forced, reluctant）。「勉強します」は中国語で「學習（xuéxí）」。日本語の意味で使うと全く通じない。",
       "examples": [
-        {"traditional": "勉強答應", "traditionalStatus": "generated", "simplified": "勉强答应", "simplifiedStatus": "generated", "pinyin": "miǎnqiǎng dāying", "japanese": "しぶしぶ承諾する"}
+        {"traditional": "勉強答應", "traditionalStatus": "generated", "simplified": "勉强答应", "simplifiedStatus": "generated", "pinyin": "miǎnqiǎng dāyìng", "japanese": "しぶしぶ承諾する"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
