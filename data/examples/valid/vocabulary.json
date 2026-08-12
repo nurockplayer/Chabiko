@@ -509,7 +509,7 @@
       "category": "adjective",
       "similarityType": "partial-overlap",
       "toneNote": "bái は第二声。",
-      "painPointTags": ["same-kanji-different-usage"],
+      "painPointTags": ["same-kanji-different-meaning"],
       "caution": "日中の「白」とも「白い色（white）」の意味。中国語の「白」はさらに副詞で「むだに・ただで（in vain, for free）」——「白跑一趟（むだ足を踏む）」「白吃（ただ食いする）」。日本語の「白い」だけを思い浮かべないこと。",
       "examples": [
         {"traditional": "白吃", "traditionalStatus": "generated", "simplified": "白吃", "simplifiedStatus": "generated", "pinyin": "bái chī", "japanese": "ただ食いする"}
@@ -689,7 +689,7 @@
       "category": "adjective",
       "similarityType": "partial-overlap",
       "toneNote": "ān は第一声。",
-      "painPointTags": ["same-kanji-different-usage"],
+      "painPointTags": ["same-kanji-different-meaning"],
       "caution": "日中とも「安心（あんしん）」「安全（あんぜん）」の意味は重なる。ただし日本語の「安い（やすい）＝ 安価」は中国語では「便宜（piányi）」。中国語の「安」を「安い（安価）」の意味で使うと通じない。",
       "examples": [
         {"traditional": "安心", "traditionalStatus": "generated", "simplified": "安心", "simplifiedStatus": "generated", "pinyin": "ānxīn", "japanese": "安心する"}
