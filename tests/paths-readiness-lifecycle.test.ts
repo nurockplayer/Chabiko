@@ -633,7 +633,9 @@ describe('progress signals', () => {
     // The user logged out on another page while this document was frozen
     // (BFCache): the session changed but this page received no auth event.
     setSessionSilently(null);
-    window.dispatchEvent(new Event('pageshow'));
+    const restored = new Event('pageshow');
+    Object.defineProperty(restored, 'persisted', { value: true });
+    window.dispatchEvent(restored);
     await flushAsync();
 
     // pageshow re-resolves the session: identity becomes signed-out and the

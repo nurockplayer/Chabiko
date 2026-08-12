@@ -310,17 +310,27 @@ export function initPathsReadiness(
   // the initial load and again on `pageshow`, because a BFCache-restored
   // document may have missed auth changes that happened while it was frozen —
   // re-confirming the session prevents a previous user's scoped progress from
-  // being surfaced after logout/switch elsewhere. The identityVersion guard
-  // drops any reply superseded by a newer auth event; the disposal guard drops
-  // replies after cleanup.
+  // being surfaced after logout/switch elsewhere. `resolveGeneration` is
+  // bumped per resolution so only the most recently started request applies its
+  // result; `identityVersion` still drops any reply superseded by a newer auth
+  // event, and the disposal guard drops replies after cleanup.
+  let resolveGeneration = 0;
   function resolveIdentity(): void {
     const client = getSupabaseBrowserClient();
     if (client == null) return;
+    resolveGeneration += 1;
+    const generationAtStart = resolveGeneration;
     const versionAtStart = identityVersion;
     void client.auth
       .getSession()
       .then((result) => {
-        if (disposed || identityVersion !== versionAtStart) return;
+        if (
+          disposed ||
+          resolveGeneration !== generationAtStart ||
+          identityVersion !== versionAtStart
+        ) {
+          return;
+        }
         // An errored session read (corrupt/unreadable persisted session) is not
         // a signed-out signal: keep the identity unknown so basic-vocabulary
         // evidence stays unavailable instead of showing another scope's guest
@@ -366,11 +376,12 @@ export function initPathsReadiness(
     renderAll();
   }
 
-  function onPageShow(): void {
-    // Re-confirm the current identity: a BFCache-restored document may have
-    // missed auth changes while frozen (e.g. the user logged out or switched
-    // on another page), so the cached scope must not keep surfacing a previous
-    // user's progress.
+  function onPageShow(event: Event): void {
+    // A BFCache-restored document may have missed auth changes while frozen, so
+    // its cached scope could be a previous user. Fail closed to unknown before
+    // the async re-resolution so a stale user's progress is never flashed, then
+    // re-confirm the identity and render.
+    if ((event as PageTransitionEvent).persisted) applyUnknown();
     resolveIdentity();
     renderAll();
   }
