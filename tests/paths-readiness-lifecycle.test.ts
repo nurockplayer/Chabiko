@@ -393,12 +393,13 @@ describe('progress signals', () => {
     const { client, emit, deferNextGetSession } = fakeSupabaseClient(null);
     vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
-    initialize(root);
 
-    // Defer the initial getSession. Before it resolves, a SIGNED_OUT event
-    // arrives and pins the guest scope. The stale getSession later resolves a
-    // signed-in session — it must NOT flip identity back.
+    // Defer the NEXT getSession (i.e. the initial one, before initialize calls
+    // it synchronously). Before it resolves, a SIGNED_OUT event arrives and
+    // pins the guest scope. The stale getSession later resolves a signed-in
+    // session — it must NOT flip identity back.
     const resolveSession = deferNextGetSession();
+    initialize(root);
     emit('SIGNED_OUT', null);
     resolveSession({ user: { id: userId } });
     await flushAsync();

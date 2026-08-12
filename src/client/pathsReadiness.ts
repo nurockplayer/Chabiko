@@ -1,4 +1,4 @@
-import { ProgressStore, STORAGE_KEY } from '../lib/progress';
+import { ProgressStore, STORAGE_KEY, type StorageLike } from '../lib/progress';
 import { BasicVocabularyProgressStore } from '../domain/basicVocabularyProgress';
 import { VocabularyProgressStore } from '../domain/vocabularyProgress';
 import { getSupabaseBrowserClient } from '../lib/supabaseBrowserClient';
@@ -81,6 +81,17 @@ export function initPathsReadiness(
   // the (possibly re-initialized) root.
   let disposed = false;
 
+  /** Safe localStorage accessor: a SecurityError from the getter (privacy/
+   * sandbox policy) falls back to null, mirroring the progress store's
+   * unavailable-storage handling. */
+  function safeLocalStorage(): StorageLike | null {
+    try {
+      return typeof localStorage !== 'undefined' ? localStorage : null;
+    } catch {
+      return null;
+    }
+  }
+
   function readSignals(): ProgressSignals {
     const lessonStore = new ProgressStore();
     const completedLessons = new Set(lessonStore.getCompletedIds());
@@ -95,7 +106,7 @@ export function initPathsReadiness(
     // as guest progress. Read-only: only `getAllItems()` is used.
     if (identityScope.kind === 'signed-in') {
       const userStore = new BasicVocabularyProgressStore(
-        localStorage,
+        safeLocalStorage(),
         getBasicVocabularyProgressStorageKey({
           kind: 'user',
           userId: identityScope.userId,
