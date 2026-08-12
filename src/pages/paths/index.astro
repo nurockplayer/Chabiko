@@ -6,7 +6,9 @@ import { loadLearningPaths } from '../../content/loadLearningPaths';
 import { evaluateTravelQuestReadiness } from '../../domain/travelQuestReadiness';
 import { buildReadinessInput } from '../../domain/pathsProgress';
 import readinessData from '../../../data/travel-quest-readiness.json';
+import learnerManifest from '../../../data/teacher-vocabulary-preview/learner-manifest.json';
 import type { TravelQuestReadinessDocument } from '../../types/travelQuestReadiness';
+import type { LearnerManifest } from '../../types/learnerManifest';
 
 const document = loadLearningPaths();
 const learningPaths = document.learningPaths;
@@ -23,8 +25,16 @@ const initialReadiness = evaluateTravelQuestReadiness(
   }),
 );
 
+// Exact production basic-vocabulary writer corpus: the learner-manifest
+// learnerIds are the only ids the /vocabulary/basic/ writer can produce, so the
+// route-local projection accepts only those from BasicVocabularyProgressStore.
+const basicVocabularyWriterIds = (
+  learnerManifest as LearnerManifest
+).rows.map((row) => row.learnerId);
+
 const pathsPayload = JSON.stringify({
   paths: learningPaths.map((path) => ({ id: path.id, members: path.members })),
+  basicVocabularyWriterIds,
 }).replace(/</g, '\\u003c');
 ---
 

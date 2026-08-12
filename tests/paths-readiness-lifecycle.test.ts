@@ -13,6 +13,8 @@ import {
 import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
+import learnerManifest from '../data/teacher-vocabulary-preview/learner-manifest.json';
+import type { LearnerManifest } from '../src/types/learnerManifest';
 import {
   getBasicVocabularyProgressStorageKey,
   type BasicVocabularyProgressScope,
@@ -76,6 +78,11 @@ function payload(): PathsProgressPayload {
       id: path.id,
       members: path.members,
     })),
+    // Mirrors the /paths/ route: the exact learner-manifest learnerIds are the
+    // only ids the production basic-vocabulary writer can produce.
+    basicVocabularyWriterIds: (learnerManifest as LearnerManifest).rows.map(
+      (row) => row.learnerId,
+    ),
   };
 }
 
@@ -281,14 +288,16 @@ describe('progress signals', () => {
     const root = createRoot();
     initialize(root);
 
-    // taiwan-travel: complete lesson-001..003 and learned voc-001..004, but the
-    // phrase members never count → partial (never complete).
+    // taiwan-travel: complete lesson-001..003; the vocabulary members voc-001..
+    // 004 are NOT producible by the basic-vocabulary writer, so they never count
+    // from the basic store, and the phrase members never count either →
+    // partial (never complete).
     for (const id of ['lesson-001', 'lesson-002', 'lesson-003']) setLessonCompleted(id);
     for (const id of ['voc-001', 'voc-002', 'voc-003', 'voc-004']) setBasicLearned(id);
     window.dispatchEvent(new Event('pageshow'));
     await flushAsync();
 
-    expect(cardProgress(root, 'taiwan-travel')).toBe('7 / 14 進行中');
+    expect(cardProgress(root, 'taiwan-travel')).toBe('3 / 14 進行中');
 
     // HSK path: learn all five members → complete.
     for (const id of ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-004', 'hsk-005']) {
@@ -328,7 +337,7 @@ describe('progress signals', () => {
 
     // A stale cross-source `hsk-*: learned` record written into basic
     // vocabulary storage must never satisfy the HSK path members. Only ids in
-    // the basic production corpus count from basic storage.
+    // the exact writer corpus count from basic storage.
     const basicStore = new BasicVocabularyProgressStore(window.localStorage);
     for (const id of ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-004', 'hsk-005']) {
       basicStore.applyRating(id, 'known');
@@ -337,6 +346,53 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
 
     expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+  });
+
+  it('never accepts a basic-store learned entry that the writer cannot produce', async () => {
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    // The authoritative basic corpus is the exact learner-manifest learnerId
+    // set, not the `teacher-` prefix: a manually-injected `teacher-*` id that is
+    // not in the manifest must not satisfy readiness evidence. `teacher-star-1-
+    // bdc7865a507e` IS in the manifest and does count; a fake id does not.
+    const basicStore = new BasicVocabularyProgressStore(window.localStorage);
+    basicStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    basicStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    basicStore.applyRating('teacher-fake-0000000000000000', 'known');
+    basicStore.applyRating('teacher-fake-0000000000000000', 'known');
+    window.dispatchEvent(new Event('pageshow'));
+
+    // Only the real manifest learnerId advances the vocabulary-session
+    // readiness evidence (1 of 5 for order-and-pay).
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+  });
+
+  it('treats an INITIAL_SESSION with null session as signed-out and drops the stale getSession reply', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client, emit, deferNextGetSession } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+
+    // Defer the initial getSession. Before it resolves, a normal INITIAL_SESSION
+    // with a null session arrives (signed-out user): it must resolve the identity
+    // to signed-out, and the older getSession reply (a signed-in session) must be
+    // dropped so it cannot flip the scope back.
+    const resolveSession = deferNextGetSession();
+    initialize(root);
+    emit('INITIAL_SESSION', null);
+    resolveSession({ user: { id: userId } });
+    await flushAsync();
+
+    // Identity is signed-out: the guest basic-vocabulary store is read, so a
+    // guest learned item counts.
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
   });
 
   it('reads the user-scoped basic-vocabulary store on direct /paths/ load (signed-in session)', async () => {
@@ -513,7 +569,9 @@ describe('progress signals', () => {
 
   it('ignores an HSK learned record whose knownStreak is inconsistent', async () => {
     // A corrupt HSK entry claiming status learned with knownStreak 0 must not
-    // count (learned requires knownStreak >= 2).
+    // count (learned requires knownStreak >= 2): the hsk-vocabulary path stays
+    // 0 / 5. This asserts the HSK path so it would fail if the status/streak
+    // guard were removed.
     const { client } = fakeSupabaseClient(null);
     vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
@@ -528,8 +586,7 @@ describe('progress signals', () => {
     raw.entries['hsk-001'] = { status: 'learned', knownStreak: 0 };
     window.localStorage.setItem(key, JSON.stringify(raw));
     window.dispatchEvent(new Event('pageshow'));
-    const order = target(root, 'order-and-pay');
-    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
   });
 
   it('ignores a stale initial getSession after a newer auth event', async () => {

@@ -30,6 +30,12 @@ import readinessData from '../../data/travel-quest-readiness.json';
  */
 export interface PathsProgressPayload {
   readonly paths: readonly { readonly id: string; readonly members: readonly LearningPathMemberRef[] }[];
+  /** Exact IDs the production basic-vocabulary writer can produce (the learner
+   *  manifest learnerIds), emitted by the route. Only these may be accepted
+   *  from BasicVocabularyProgressStore, so a stale/manual `voc-*`, `hsk-*`, or
+   *  unknown `teacher-*` entry can never inflate path progress (Sol decision,
+   *  #233). */
+  readonly basicVocabularyWriterIds: readonly string[];
 }
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
@@ -78,26 +84,19 @@ export function initPathsReadiness(
   // Authoritative production corpora for vocabulary progress. A learned entry
   // is only meaningful if its id belongs to the corpus of the store it was
   // read from: HSK storage may only satisfy HSK-path members, and basic
-  // storage may only satisfy basic/readiness members. This prevents a stale
-  // cross-source entry (e.g. `voc-001: learned` in HSK storage, or
-  // `hsk-001: learned` in basic storage) from advancing the wrong path.
+  // storage may only satisfy the exact IDs the production basic-vocabulary
+  // writer can produce (the learner-manifest learnerIds emitted by the route).
+  // This prevents a stale cross-source or manually-injected entry (e.g.
+  // `voc-001: learned` in HSK storage, `hsk-001: learned` in basic storage, or
+  // an unknown `teacher-*` id) from advancing the wrong path.
   const hskCorpusIds = new Set<string>();
-  const basicCorpusIds = new Set<string>();
   for (const path of payload.paths) {
     for (const member of path.members) {
       if (member.type !== 'vocabulary') continue;
-      if (path.id === 'hsk-vocabulary') {
-        hskCorpusIds.add(member.id);
-      } else {
-        basicCorpusIds.add(member.id);
-      }
+      if (path.id === 'hsk-vocabulary') hskCorpusIds.add(member.id);
     }
   }
-  for (const target of targets) {
-    for (const spec of target.evidence) {
-      if (spec.type === 'completed-vocabulary-session') basicCorpusIds.add(spec.id);
-    }
-  }
+  const basicWriterCorpusIds = new Set(payload.basicVocabularyWriterIds);
   let identityScope: PathsIdentityScope = { kind: 'unknown' };
   // Disposal guard: once cleanup runs (or a fresh init tears this instance
   // down), no late async auth reply may mutate identityScope or re-render into
@@ -141,14 +140,15 @@ export function initPathsReadiness(
     }
 
     // Basic-vocabulary storage (guest or the signed-in user's scoped key) is
-    // only authoritative for ids in the basic production corpus. A stale
-    // `hsk-*` learned entry in basic storage must never advance the HSK path.
-    // An unknown (still-loading) identity keeps basic-vocabulary evidence
-    // unavailable so a signed-in learner's progress is never briefly miscounted
-    // as guest progress. Read-only: only `getAllItems()` is used.
+    // only authoritative for the exact writer-producible learnerIds. A stale
+    // `voc-*`, `hsk-*`, or unknown `teacher-*` learned entry in basic storage
+    // must never advance a path or readiness target. An unknown (still-loading)
+    // identity keeps basic-vocabulary evidence unavailable so a signed-in
+    // learner's progress is never briefly miscounted as guest progress.
+    // Read-only: only `getAllItems()` is used.
     const collectBasic = (store: BasicVocabularyProgressStore): void => {
       for (const [id, entry] of Object.entries(store.getAllItems())) {
-        if (entry.status === 'learned' && basicCorpusIds.has(id)) {
+        if (entry.status === 'learned' && basicWriterCorpusIds.has(id)) {
           learnedVocabulary.add(id);
           learnedBasicVocabulary.add(id);
         }
@@ -266,15 +266,15 @@ export function initPathsReadiness(
     const userId = ses?.user?.id;
     if (typeof userId === 'string' && userId.length > 0) {
       applyTrustedUserId(userId);
-    } else if (
-      event === 'SIGNED_IN' ||
-      event === 'TOKEN_REFRESHED' ||
-      event === 'INITIAL_SESSION'
-    ) {
-      // An identity event without a usable user id is not trustworthy: keep the
-      // current scope rather than treating it as signed-out.
-      return;
+    } else if (event === 'INITIAL_SESSION' && session === null) {
+      // A normal initial session event with no session is a signed-out signal,
+      // not an untrustworthy identity event: resolving to guest shows the guest
+      // basic-vocabulary progress. The identityVersion guard drops any older
+      // getSession reply that would otherwise overwrite this newer event.
+      applySignedOut();
     }
+    // Other identity events without a usable user id are not trustworthy: keep
+    // the current scope rather than treating them as signed-out.
   }
 
   renderAll();
