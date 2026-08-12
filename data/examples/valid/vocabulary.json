@@ -83,7 +83,7 @@
         {"traditional": "我打個電話", "traditionalStatus": "generated", "simplified": "我打个电话", "simplifiedStatus": "generated", "pinyin": "wǒ dǎ gè diànhuà", "japanese": "電話を一本かけます"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-002",
@@ -101,7 +101,7 @@
         {"traditional": "這裡交通很方便", "traditionalStatus": "generated", "simplified": "这里交通很方便", "simplifiedStatus": "generated", "pinyin": "zhèlǐ jiāotōng hěn fāngbiàn", "japanese": "ここは交通の便がとてもいい"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-003",
@@ -119,7 +119,7 @@
         {"traditional": "銀行在哪裡", "traditionalStatus": "generated", "simplified": "银行在哪里", "simplifiedStatus": "generated", "pinyin": "yínháng zài nǎlǐ", "japanese": "銀行はどこですか"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-004",
@@ -137,7 +137,7 @@
         {"traditional": "注意安全", "traditionalStatus": "generated", "simplified": "注意安全", "simplifiedStatus": "generated", "pinyin": "zhùyì ānquán", "japanese": "安全に気をつけてください"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-005",
@@ -157,7 +157,7 @@
         {"traditional": "我住在台灣", "traditionalStatus": "generated", "simplified": "我住在台湾", "simplifiedStatus": "generated", "pinyin": "wǒ zhù zài Táiwān", "japanese": "私は台湾に住んでいます"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-006",
@@ -177,7 +177,7 @@
         {"traditional": "身體健康", "traditionalStatus": "generated", "simplified": "身体健康", "simplifiedStatus": "generated", "pinyin": "shēntǐ jiànkāng", "japanese": "体が健康です"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-007",
@@ -197,7 +197,7 @@
         {"traditional": "坐捷運去台北車站", "traditionalStatus": "generated", "simplified": "坐捷运去台北车站", "simplifiedStatus": "generated", "pinyin": "zuò jiéyùn qù Táiběi chēzhàn", "japanese": "地下鉄で台北駅へ行く"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-008",
@@ -217,7 +217,7 @@
         {"traditional": "這家店很便利", "traditionalStatus": "generated", "simplified": "这家店很便利", "simplifiedStatus": "generated", "pinyin": "zhè jiā diàn hěn biànlì", "japanese": "この店はとても便利だ"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-009",
@@ -235,7 +235,7 @@
         {"traditional": "這裡的食物很好吃", "traditionalStatus": "generated", "simplified": "这里的食物很好吃", "simplifiedStatus": "generated", "pinyin": "zhèlǐ de shíwù hěn hǎochī", "japanese": "ここの食べ物はとてもおいしい"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-010",
@@ -253,7 +253,7 @@
         {"traditional": "全世界", "traditionalStatus": "generated", "simplified": "全世界", "simplifiedStatus": "generated", "pinyin": "quán shìjiè", "japanese": "全世界"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-011",
@@ -271,7 +271,7 @@
         {"traditional": "我喜歡動物", "traditionalStatus": "generated", "simplified": "我喜欢动物", "simplifiedStatus": "generated", "pinyin": "wǒ xǐhuān dòngwù", "japanese": "私は動物が好きです"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-012",
@@ -289,7 +289,7 @@
         {"traditional": "市中心", "traditionalStatus": "generated", "simplified": "市中心", "simplifiedStatus": "generated", "pinyin": "shì zhōngxīn", "japanese": "市の中心部"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-013",
@@ -307,7 +307,7 @@
         {"traditional": "我在大學讀書", "traditionalStatus": "generated", "simplified": "我在大学读书", "simplifiedStatus": "generated", "pinyin": "wǒ zài dàxué dúshū", "japanese": "私は大学で勉強しています"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-014",
@@ -325,7 +325,7 @@
         {"traditional": "討論政治", "traditionalStatus": "generated", "simplified": "讨论政治", "simplifiedStatus": "generated", "pinyin": "tǎolùn zhèngzhì", "japanese": "政治について話し合う"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-015",
@@ -343,7 +343,7 @@
         {"traditional": "教室在哪裡", "traditionalStatus": "generated", "simplified": "教室在哪里", "simplifiedStatus": "generated", "pinyin": "jiàoshì zài nǎlǐ", "japanese": "教室はどこですか"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-016",
@@ -361,7 +361,7 @@
         {"traditional": "明天去動物園", "traditionalStatus": "generated", "simplified": "明天去动物园", "simplifiedStatus": "generated", "pinyin": "míngtiān qù dòngwùyuán", "japanese": "明日動物園に行きます"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-017",
@@ -379,7 +379,7 @@
         {"traditional": "沒有時間", "traditionalStatus": "generated", "simplified": "没有时间", "simplifiedStatus": "generated", "pinyin": "méiyǒu shíjiān", "japanese": "時間がない"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-018",
@@ -397,7 +397,7 @@
         {"traditional": "有問題嗎", "traditionalStatus": "generated", "simplified": "有问题吗", "simplifiedStatus": "generated", "pinyin": "yǒu wèntí ma", "japanese": "問題はありますか"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-019",
@@ -415,7 +415,7 @@
         {"traditional": "台灣文化很有趣", "traditionalStatus": "generated", "simplified": "台湾文化很有趣", "simplifiedStatus": "generated", "pinyin": "Táiwān wénhuà hěn yǒuqù", "japanese": "台湾の文化はとても面白い"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-020",
@@ -433,7 +433,7 @@
         {"traditional": "現代社會", "traditionalStatus": "generated", "simplified": "现代社会", "simplifiedStatus": "generated", "pinyin": "xiàndài shèhuì", "japanese": "現代社会"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-021",
@@ -453,7 +453,7 @@
         {"traditional": "歡迎光臨", "traditionalStatus": "generated", "simplified": "欢迎光临", "simplifiedStatus": "generated", "pinyin": "huānyíng guānglín", "japanese": "ようこそお越しくださいました"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-022",
@@ -473,7 +473,7 @@
         {"traditional": "快樂", "traditionalStatus": "generated", "simplified": "快乐", "simplifiedStatus": "generated", "pinyin": "kuàilè", "japanese": "楽しい"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-023",
@@ -493,7 +493,7 @@
         {"traditional": "出發", "traditionalStatus": "generated", "simplified": "出发", "simplifiedStatus": "generated", "pinyin": "chūfā", "japanese": "出発する"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-024",
@@ -513,7 +513,7 @@
         {"traditional": "天氣很熱", "traditionalStatus": "generated", "simplified": "天气很热", "simplifiedStatus": "generated", "pinyin": "tiānqì hěn rè", "japanese": "天気がとても暑い"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-025",
@@ -533,7 +533,7 @@
         {"traditional": "往前走", "traditionalStatus": "generated", "simplified": "往前走", "simplifiedStatus": "generated", "pinyin": "wǎng qián zǒu", "japanese": "前へ歩いて行く"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-026",
@@ -553,7 +553,7 @@
         {"traditional": "喝湯", "traditionalStatus": "generated", "simplified": "喝汤", "simplifiedStatus": "generated", "pinyin": "hē tāng", "japanese": "スープを飲む"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-027",
@@ -573,7 +573,7 @@
         {"traditional": "一張床", "traditionalStatus": "generated", "simplified": "一张床", "simplifiedStatus": "generated", "pinyin": "yī zhāng chuáng", "japanese": "ベッド一台"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-028",
@@ -593,7 +593,7 @@
         {"traditional": "一本書", "traditionalStatus": "generated", "simplified": "一本书", "simplifiedStatus": "generated", "pinyin": "yī běn shū", "japanese": "本一冊"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-029",
@@ -613,7 +613,7 @@
         {"traditional": "他是研究生", "traditionalStatus": "generated", "simplified": "他是研究生", "simplifiedStatus": "generated", "pinyin": "tā shì yánjiūshēng", "japanese": "彼は大学院生です"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-030",
@@ -633,7 +633,7 @@
         {"traditional": "買道具", "traditionalStatus": "generated", "simplified": "买道具", "simplifiedStatus": "generated", "pinyin": "mǎi dàojù", "japanese": "小道具を買う"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-031",
@@ -653,7 +653,7 @@
         {"traditional": "十個人左右", "traditionalStatus": "generated", "simplified": "十个人左右", "simplifiedStatus": "generated", "pinyin": "shí gè rén zuǒyòu", "japanese": "十人ほど"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-032",
@@ -673,7 +673,7 @@
         {"traditional": "相對來說", "traditionalStatus": "generated", "simplified": "相对来说", "simplifiedStatus": "generated", "pinyin": "xiāngduì lái shuō", "japanese": "相対的に言えば"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-033",
@@ -693,7 +693,7 @@
         {"traditional": "我有兩個小孩", "traditionalStatus": "generated", "simplified": "我有两个小孩", "simplifiedStatus": "generated", "pinyin": "wǒ yǒu liǎng gè xiǎohái", "japanese": "私には子どもが二人いる"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-034",
@@ -713,7 +713,7 @@
         {"traditional": "寫作業", "traditionalStatus": "generated", "simplified": "写作业", "simplifiedStatus": "generated", "pinyin": "xiě zuòyè", "japanese": "宿題をする"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-035",
@@ -728,12 +728,12 @@
       "similarityType": "partial-overlap",
       "toneNote": "shì は第四声、qing は軽声（軽く短く）。",
       "painPointTags": [],
-      "caution": "日本語の「事情（じじょう）」＝ 事情・理由（背景）。中国語の「事情」＝ 事・用事（matter, affair）。「用事がある」は「有事情」。日本語の「事情を説明する」は中国語で「説明情況／情况（qíngkuàng）」。",
+      "caution": "日本語の「事情（じじょう）」＝ 事情・理由（背景）。中国語の「事情」＝ 事・用事（matter, affair）。「用事がある」は「有事情」。日本語の「事情を説明する」は中国語で「說明情況／说明情况（qíngkuàng）」。",
       "examples": [
         {"traditional": "有事情要做", "traditionalStatus": "generated", "simplified": "有事情要做", "simplifiedStatus": "generated", "pinyin": "yǒu shìqing yào zuò", "japanese": "用事がある"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-036",
@@ -744,7 +744,7 @@
       "pinyin": "dàzhàngfu",
       "japanese": "立派な男",
       "kana": "だいじょうぶ",
-      "category": "adjective",
+      "category": "noun",
       "similarityType": "false-friend",
       "toneNote": "dà 第四声、zhàng 第四声、fu 軽声。",
       "painPointTags": ["kanji-false-friend"],
@@ -753,7 +753,7 @@
         {"traditional": "他是個大丈夫", "traditionalStatus": "generated", "simplified": "他是个大丈夫", "simplifiedStatus": "generated", "pinyin": "tā shì gè dàzhàngfu", "japanese": "彼は立派な男だ"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-037",
@@ -773,7 +773,7 @@
         {"traditional": "勉強答應", "traditionalStatus": "generated", "simplified": "勉强答应", "simplifiedStatus": "generated", "pinyin": "miǎnqiǎng dāying", "japanese": "無理やり承諾する"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-038",
@@ -793,7 +793,7 @@
         {"traditional": "看新聞", "traditionalStatus": "generated", "simplified": "看新闻", "simplifiedStatus": "generated", "pinyin": "kàn xīnwén", "japanese": "ニュースを見る"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-039",
@@ -813,7 +813,7 @@
         {"traditional": "坐汽車去", "traditionalStatus": "generated", "simplified": "坐汽车去", "simplifiedStatus": "generated", "pinyin": "zuò qìchē qù", "japanese": "車で行く"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-040",
@@ -828,12 +828,12 @@
       "similarityType": "false-friend",
       "toneNote": "niáng は第二声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「娘（むすめ）」＝ 娘（daughter）。中国語の「娘」＝ 母（口語）や女性。「娘（daughter）」は中国語で「女兒（nǚ'ér）」。",
+      "caution": "日本語の「娘（むすめ）」＝ 娘（daughter）。中国語の「娘」＝ 母や女性を指すが、台湾では古風・方言的で、日常の「お母さん」は「媽媽（māma）」や「母親（mǔqīn）」。旅行で「她是我娘」は不自然。",
       "examples": [
         {"traditional": "她是我娘", "traditionalStatus": "generated", "simplified": "她是我娘", "simplifiedStatus": "generated", "pinyin": "tā shì wǒ niáng", "japanese": "彼女は私の母だ"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-041",
@@ -853,7 +853,7 @@
         {"traditional": "我老婆", "traditionalStatus": "generated", "simplified": "我老婆", "simplifiedStatus": "generated", "pinyin": "wǒ lǎopo", "japanese": "うちの妻"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-042",
@@ -873,7 +873,7 @@
         {"traditional": "自我檢討", "traditionalStatus": "generated", "simplified": "自我检讨", "simplifiedStatus": "generated", "pinyin": "zìwǒ jiǎntǎo", "japanese": "自己反省する"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-043",
@@ -893,7 +893,7 @@
         {"traditional": "你放心", "traditionalStatus": "generated", "simplified": "你放心", "simplifiedStatus": "generated", "pinyin": "nǐ fàngxīn", "japanese": "安心してください"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-044",
@@ -913,7 +913,7 @@
         {"traditional": "會議結束", "traditionalStatus": "generated", "simplified": "会议结束", "simplifiedStatus": "generated", "pinyin": "huìyì jiéshù", "japanese": "会議が終わる"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-045",
@@ -928,12 +928,12 @@
       "similarityType": "false-friend",
       "toneNote": "gōng 第一声、fu 軽声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「工夫（くふう）」＝ 工夫・アイデア（ingenuity）。中国語の「工夫」＝ 時間・暇（time）。「沒工夫」＝ 暇がない。「工夫する」の意味は中国語で「想辦法（xiǎng bànfǎ）」や「下功夫（xià gōngfu）」。",
+      "caution": "日本語の「工夫（くふう）」＝ 工夫・アイデア（ingenuity）。中国語の「工夫」＝ 時間・暇（time）。「沒工夫」＝ 暇がない。「工夫する」（知恵を絞る）は中国語で「想辦法（xiǎng bànfǎ）」。なお「下功夫（xià gōngfu）」は「時間や努力を費やす」という別の意味で、中国語の「工夫」と同系の語義。",
       "examples": [
         {"traditional": "沒工夫", "traditionalStatus": "generated", "simplified": "没工夫", "simplifiedStatus": "generated", "pinyin": "méi gōngfu", "japanese": "暇がない"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-046",
@@ -953,7 +953,7 @@
         {"traditional": "山裡的野菜", "traditionalStatus": "generated", "simplified": "山里的野菜", "simplifiedStatus": "generated", "pinyin": "shān lǐ de yěcài", "japanese": "山の中の野草"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-047",
@@ -973,7 +973,7 @@
         {"traditional": "取締非法經營", "traditionalStatus": "generated", "simplified": "取缔非法经营", "simplifiedStatus": "generated", "pinyin": "qǔdì fēifǎ jīngyíng", "japanese": "違法営業を取り締まる"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-048",
@@ -993,7 +993,7 @@
         {"traditional": "老百姓", "traditionalStatus": "generated", "simplified": "老百姓", "simplifiedStatus": "generated", "pinyin": "lǎobǎixìng", "japanese": "庶民"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-049",
@@ -1013,7 +1013,7 @@
         {"traditional": "他是經理", "traditionalStatus": "generated", "simplified": "他是经理", "simplifiedStatus": "generated", "pinyin": "tā shì jīnglǐ", "japanese": "彼はマネージャーだ"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     },
     {
       "id": "kanji-bridge-050",
@@ -1028,12 +1028,12 @@
       "similarityType": "false-friend",
       "toneNote": "rén 第二声、shēn 第一声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「人参（にんじん）」＝ ニンジン（carrot）。中国語の「人參／人参（rénshēn）」＝ 高麗人参（ginseng）。台湾で「人参」と言うと漢方の高麗人参を指し、ニンジンは「紅蘿蔔（hóngluóbo）」と言う。",
+      "caution": "日本語の「人参（にんじん）」＝ ニンジン（carrot）。中国語の「人參／人参（rénshēn）」＝ 高麗人参（ginseng）。台湾で「人參」と言うと漢方の高麗人参を指し、ニンジンは「紅蘿蔔（hóngluóbo）」と言う。",
       "examples": [
         {"traditional": "人參湯", "traditionalStatus": "generated", "simplified": "人参汤", "simplifiedStatus": "generated", "pinyin": "rénshēn tāng", "japanese": "高麗人参のスープ"}
       ],
       "reviewStatus": "draft",
-      "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
+      "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
     }
   ]
 }
