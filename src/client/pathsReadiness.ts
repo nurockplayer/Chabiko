@@ -100,7 +100,11 @@ export function initPathsReadiness(
     const hskStore = new VocabularyProgressStore(safeLocalStorage());
     const learnedVocabulary = new Set<string>();
     for (const [id, entry] of Object.entries(hskStore.getAllEntries())) {
-      if (entry.status === 'learned') learnedVocabulary.add(id);
+      // `learned` requires knownStreak >= 2; a corrupt record claiming
+      // `status: learned` with a zero streak must not count.
+      if (entry.status === 'learned' && entry.knownStreak >= 2) {
+        learnedVocabulary.add(id);
+      }
     }
     const learnedBasicVocabulary = new Set<string>();
     // Read the basic-vocabulary store scoped to the trusted identity. An
@@ -264,11 +268,17 @@ export function initPathsReadiness(
         // progress.
         if (result.error) return;
         const session = result.data.session;
-        const userId = session?.user?.id;
+        // Only an explicit null session is a signed-out signal. A non-null
+        // session without a usable canonical user id is not trustworthy: keep
+        // the identity unknown so basic-vocabulary evidence stays unavailable
+        // rather than showing another scope's guest progress.
+        if (session === null) {
+          applySignedOut();
+          return;
+        }
+        const userId = session.user?.id;
         if (typeof userId === 'string' && userId.length > 0) {
           applyTrustedUserId(userId);
-        } else {
-          applySignedOut();
         }
       })
       .catch(() => {

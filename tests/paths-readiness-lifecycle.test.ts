@@ -448,6 +448,49 @@ describe('progress signals', () => {
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
+  it('does not treat a non-null session without a usable user id as signed-out', async () => {
+    // getSession returns a non-null session whose user.id is missing: that is
+    // not a trustworthy identity and must not fall back to the shared guest
+    // scope.
+    const client = {
+      auth: {
+        getSession: async () => ({ data: { session: { user: {} } } }),
+        onAuthStateChange: () => ({
+          data: { subscription: { unsubscribe: () => undefined } },
+        }),
+      },
+    };
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
+  it('ignores an HSK learned record whose knownStreak is inconsistent', async () => {
+    // A corrupt HSK entry claiming status learned with knownStreak 0 must not
+    // count (learned requires knownStreak >= 2).
+    const { client } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+    const hskStore = new VocabularyProgressStore(window.localStorage);
+    hskStore.applyRating('hsk-001', 'known');
+    hskStore.applyRating('hsk-001', 'known');
+    // Corrupt the record to learned with zero streak.
+    const key = VOCABULARY_PROGRESS_KEY;
+    const raw = JSON.parse(window.localStorage.getItem(key) ?? '{}');
+    raw.entries['hsk-001'] = { status: 'learned', knownStreak: 0 };
+    window.localStorage.setItem(key, JSON.stringify(raw));
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
   it('ignores a stale initial getSession after a newer auth event', async () => {
     const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
     const { client, emit, deferNextGetSession } = fakeSupabaseClient(null);
