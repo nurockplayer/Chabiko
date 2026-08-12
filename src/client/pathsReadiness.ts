@@ -76,6 +76,10 @@ export function initPathsReadiness(
 
   const targets = (readinessData as TravelQuestReadinessDocument).targets;
   let identityScope: PathsIdentityScope = { kind: 'unknown' };
+  // Disposal guard: once cleanup runs (or a fresh init tears this instance
+  // down), no late async auth reply may mutate identityScope or re-render into
+  // the (possibly re-initialized) root.
+  let disposed = false;
 
   function readSignals(): ProgressSignals {
     const lessonStore = new ProgressStore();
@@ -170,6 +174,7 @@ export function initPathsReadiness(
   }
 
   function applySessionUserId(userId: string | null): void {
+    if (disposed) return;
     const next: PathsIdentityScope =
       userId !== null && isValidSupabaseUserId(userId)
         ? { kind: 'signed-in', userId }
@@ -184,6 +189,7 @@ export function initPathsReadiness(
   }
 
   function handleAuthEvent(event: string, session: unknown): void {
+    if (disposed) return;
     if (event === 'SIGNED_OUT') {
       applySessionUserId(null);
       return;
@@ -241,6 +247,7 @@ export function initPathsReadiness(
   window.addEventListener('storage', onStorage);
 
   const cleanup = (): void => {
+    disposed = true;
     if (authUnsubscribe !== null) {
       authUnsubscribe();
       authUnsubscribe = null;

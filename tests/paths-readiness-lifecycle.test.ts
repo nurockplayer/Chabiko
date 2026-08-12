@@ -128,14 +128,29 @@ interface FakeAuthClient {
 function fakeSupabaseClient(initialUserId: string | null): {
   client: { auth: FakeAuthClient };
   emit: (event: string, session: unknown) => void;
+  deferNextGetSession: () => (session: { user: { id: string } } | null) => void;
 } {
   let currentSession: { user: { id: string } } | null =
     initialUserId !== null ? { user: { id: initialUserId } } : null;
+  let pendingResolve: ((session: { user: { id: string } } | null) => void) | null =
+    null;
+  let deferNext = false;
   const listeners = new Set<AuthListener>();
   return {
     client: {
       auth: {
-        getSession: async () => ({ data: { session: currentSession } }),
+        getSession: async () => {
+          if (deferNext) {
+            deferNext = false;
+            const session = await new Promise<{ user: { id: string } } | null>(
+              (resolve) => {
+                pendingResolve = resolve;
+              },
+            );
+            return { data: { session } };
+          }
+          return { data: { session: currentSession } };
+        },
         onAuthStateChange: (listener: AuthListener) => {
           listeners.add(listener);
           return {
@@ -151,6 +166,12 @@ function fakeSupabaseClient(initialUserId: string | null): {
     emit: (event: string, session: unknown) => {
       currentSession = (session ?? null) as { user: { id: string } } | null;
       for (const listener of [...listeners]) listener(event, session);
+    },
+    deferNextGetSession: () => {
+      deferNext = true;
+      return (session: { user: { id: string } } | null) => {
+        if (pendingResolve !== null) pendingResolve(session);
+      };
     },
   };
 }
@@ -410,6 +431,28 @@ describe('storage and pageshow refresh', () => {
     // Re-init: prior cleanup runs; the card still reflects storage exactly once.
     initialize(root);
     expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 14');
+  });
+
+  it('ignores a late getSession reply after cleanup (disposal-safe)', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client, deferNextGetSession } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    const cleanup = initialize(root);
+
+    // The initial getSession is deferred; before it resolves, cleanup runs.
+    const resolveSession = deferNextGetSession();
+    cleanup();
+    cleanups.delete(cleanup);
+
+    // Late reply resolves a signed-in session after cleanup — must not re-render
+    // into the released root or flip identity.
+    resolveSession({ user: { id: userId } });
+    await flushAsync();
+
+    // The root's readiness stays at the SSR-empty default (no basic-vocabulary
+    // evidence), and no signed-in identity leaked into the DOM.
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 });
 
