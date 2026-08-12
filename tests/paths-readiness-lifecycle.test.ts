@@ -559,6 +559,33 @@ describe('progress signals', () => {
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
+  it('fails closed to unknown when a later identity event carries an invalid user id', async () => {
+    // A previously trusted user scope is invalidated by a SIGNED_IN /
+    // TOKEN_REFRESHED event whose user id is not a canonical UUID: identity
+    // returns to unknown (basic-vocabulary evidence unavailable) instead of
+    // continuing to surface the stale user's progress.
+    const userA = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client, emit } = fakeSupabaseClient(userA);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+    await flushAsync();
+
+    const userScope: BasicVocabularyProgressScope = { kind: 'user', userId: userA };
+    const userStore = new BasicVocabularyProgressStore(
+      window.localStorage,
+      getBasicVocabularyProgressStorageKey(userScope),
+    );
+    userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    userStore.applyRating('teacher-star-1-bdc7865a507e', 'known');
+    window.dispatchEvent(new Event('pageshow'));
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+
+    // An invalid identity event invalidates the previously trusted user.
+    emit('TOKEN_REFRESHED', { user: { id: 'not-a-uuid' } });
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
+  });
+
   it('keeps identity unknown when getSession reports an error', async () => {
     // An errored session read (corrupt/unreadable persisted session) is not a
     // signed-out signal: basic-vocabulary evidence stays unavailable rather

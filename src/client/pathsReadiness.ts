@@ -237,13 +237,23 @@ export function initPathsReadiness(
     if (changed) renderAll();
   }
 
+  function applyUnknown(): void {
+    if (disposed) return;
+    const changed = identityScope.kind !== 'unknown';
+    identityScope = { kind: 'unknown' };
+    if (changed) renderAll();
+  }
+
   function applyTrustedUserId(userId: string): void {
     if (disposed) return;
-    // A non-canonical user ID is a safe Auth error: never expose or use it,
-    // and never downgrade to the shared guest scope (which would surface
-    // another scope's progress). Keep the identity unknown so basic-vocabulary
-    // evidence stays unavailable.
-    if (!isValidSupabaseUserId(userId)) return;
+    // A non-canonical user ID is a safe Auth error: never expose or use it. If
+    // we were already signed in, this new identity event invalidates the
+    // previously trusted user, so fail closed to unknown rather than continuing
+    // to surface the stale user's progress.
+    if (!isValidSupabaseUserId(userId)) {
+      if (identityScope.kind === 'signed-in') applyUnknown();
+      return;
+    }
     const next: PathsIdentityScope = { kind: 'signed-in', userId };
     const changed =
       next.kind !== identityScope.kind ||
@@ -272,9 +282,17 @@ export function initPathsReadiness(
       // basic-vocabulary progress. The identityVersion guard drops any older
       // getSession reply that would otherwise overwrite this newer event.
       applySignedOut();
+    } else if (
+      event === 'SIGNED_IN' ||
+      event === 'TOKEN_REFRESHED' ||
+      event === 'INITIAL_SESSION'
+    ) {
+      // An identity event without a usable user id is not trustworthy. If we
+      // were already signed in it invalidates the previously trusted user —
+      // fail closed to unknown so a stale user scope's progress is never shown.
+      // Otherwise keep the current (non-signed-in) scope.
+      if (identityScope.kind === 'signed-in') applyUnknown();
     }
-    // Other identity events without a usable user id are not trustworthy: keep
-    // the current scope rather than treating them as signed-out.
   }
 
   renderAll();
