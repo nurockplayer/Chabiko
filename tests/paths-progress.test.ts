@@ -16,10 +16,12 @@ import type { TravelQuestReadinessDocument } from '../src/types/travelQuestReadi
 function signals(
   completedLessons: readonly string[] = [],
   learnedVocabulary: readonly string[] = [],
+  learnedBasicVocabulary: readonly string[] = learnedVocabulary,
 ): ProgressSignals {
   return {
     completedLessons: new Set(completedLessons),
     learnedVocabulary: new Set(learnedVocabulary),
+    learnedBasicVocabulary: new Set(learnedBasicVocabulary),
   };
 }
 
@@ -50,6 +52,22 @@ describe('buildReadinessInput', () => {
         'completed-vocabulary-session:teacher-star-1-bdc7865a507e',
       ]),
     );
+  });
+
+  it('scores vocabulary-session evidence only from the basic-vocabulary store', () => {
+    // A learned HSK entry (e.g. hsk-001) that happens to share the same ID
+    // namespace must not satisfy the basic-vocabulary evidence key. Only
+    // learnedBasicVocabulary counts for completed-vocabulary-session.
+    const hskOnly = buildReadinessInput(
+      targets,
+      signals([], ['teacher-star-1-bdc7865a507e'], []),
+    );
+    expect(hskOnly.completed.has('completed-vocabulary-session:teacher-star-1-bdc7865a507e')).toBe(false);
+    const basicOnly = buildReadinessInput(
+      targets,
+      signals([], [], ['teacher-star-1-bdc7865a507e']),
+    );
+    expect(basicOnly.completed.has('completed-vocabulary-session:teacher-star-1-bdc7865a507e')).toBe(true);
   });
 
   it('reports phrase-practice and roleplay-rehearsal evidence as unavailable', () => {

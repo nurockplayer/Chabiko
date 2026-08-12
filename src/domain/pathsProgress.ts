@@ -19,9 +19,14 @@ import { evidenceKey } from './travelQuestReadiness';
 export interface ProgressSignals {
   /** IDs of completed lesson practices (`chabiko_completed_lessons`). */
   readonly completedLessons: ReadonlySet<string>;
-  /** IDs of vocabulary items currently at `learned` status. The HSK and basic
-   *  vocabulary stores share one learned vocabulary namespace. */
+  /** IDs of vocabulary items currently at `learned` status, across the HSK and
+   *  basic vocabulary stores (used for per-path progress summaries). */
   readonly learnedVocabulary: ReadonlySet<string>;
+  /** IDs of learned basic-vocabulary items only. Readiness vocabulary-session
+   *  evidence must be scored against this source-specific set so a stale
+   *  cross-source `learned` entry in the HSK store can never satisfy a
+   *  basic-vocabulary evidence key. */
+  readonly learnedBasicVocabulary: ReadonlySet<string>;
 }
 
 /** Evidence types with no production completion source in v1. These can never
@@ -59,7 +64,7 @@ export function buildReadinessInput(
         (spec.type === 'completed-lesson-practice' &&
           signals.completedLessons.has(spec.id)) ||
         (spec.type === 'completed-vocabulary-session' &&
-          signals.learnedVocabulary.has(spec.id));
+          signals.learnedBasicVocabulary.has(spec.id));
       if (isComplete) {
         completed.add(key);
       } else if (UNAVAILABLE_EVIDENCE_TYPES.has(spec.type)) {

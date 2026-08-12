@@ -93,13 +93,16 @@ export function initPathsReadiness(
   }
 
   function readSignals(): ProgressSignals {
-    const lessonStore = new ProgressStore();
+    // Pass the safe storage accessor explicitly so no store constructor runs
+    // its getDefaultStorage() localStorage probe on this read-only path.
+    const lessonStore = new ProgressStore(safeLocalStorage());
     const completedLessons = new Set(lessonStore.getCompletedIds());
-    const hskStore = new VocabularyProgressStore();
+    const hskStore = new VocabularyProgressStore(safeLocalStorage());
     const learnedVocabulary = new Set<string>();
     for (const [id, entry] of Object.entries(hskStore.getAllEntries())) {
       if (entry.status === 'learned') learnedVocabulary.add(id);
     }
+    const learnedBasicVocabulary = new Set<string>();
     // Read the basic-vocabulary store scoped to the trusted identity. An
     // unknown (still-loading) identity keeps basic-vocabulary evidence
     // unavailable so a signed-in learner's progress is never briefly miscounted
@@ -113,15 +116,21 @@ export function initPathsReadiness(
         }),
       );
       for (const [id, entry] of Object.entries(userStore.getAllItems())) {
-        if (entry.status === 'learned') learnedVocabulary.add(id);
+        if (entry.status === 'learned') {
+          learnedVocabulary.add(id);
+          learnedBasicVocabulary.add(id);
+        }
       }
     } else if (identityScope.kind === 'signed-out') {
-      const guestStore = new BasicVocabularyProgressStore();
+      const guestStore = new BasicVocabularyProgressStore(safeLocalStorage());
       for (const [id, entry] of Object.entries(guestStore.getAllItems())) {
-        if (entry.status === 'learned') learnedVocabulary.add(id);
+        if (entry.status === 'learned') {
+          learnedVocabulary.add(id);
+          learnedBasicVocabulary.add(id);
+        }
       }
     }
-    return { completedLessons, learnedVocabulary };
+    return { completedLessons, learnedVocabulary, learnedBasicVocabulary };
   }
 
   function renderAll(): void {
