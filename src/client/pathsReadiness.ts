@@ -380,8 +380,15 @@ export function initPathsReadiness(
     // A BFCache-restored document may have missed auth changes while frozen, so
     // its cached scope could be a previous user. Fail closed to unknown before
     // the async re-resolution so a stale user's progress is never flashed, then
-    // re-confirm the identity and render.
-    if ((event as PageTransitionEvent).persisted) applyUnknown();
+    // re-confirm the identity and render. In guest-only mode (no Supabase
+    // client) there is no identity to re-resolve and the scope is already the
+    // signed-out guest scope, so it must not be cleared.
+    if (
+      (event as PageTransitionEvent).persisted &&
+      getSupabaseBrowserClient() != null
+    ) {
+      applyUnknown();
+    }
     resolveIdentity();
     renderAll();
   }

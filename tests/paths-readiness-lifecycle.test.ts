@@ -643,6 +643,25 @@ describe('progress signals', () => {
     expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });
 
+  it('keeps the guest scope on a persisted pageshow in guest-only mode', async () => {
+    // No Supabase configuration: guest-only mode resolves identity to signed-out
+    // at init. A persisted (BFCache) pageshow must not clear it, because there
+    // is no client to re-resolve with — the guest progress stays visible.
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(null as never);
+    const root = createRoot();
+    initialize(root);
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    await flushAsync();
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+
+    const restored = new Event('pageshow');
+    Object.defineProperty(restored, 'persisted', { value: true });
+    window.dispatchEvent(restored);
+    await flushAsync();
+    expect(target(root, 'order-and-pay').querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+  });
+
   it('keeps identity unknown when getSession reports an error', async () => {
     // An errored session read (corrupt/unreadable persisted session) is not a
     // signed-out signal: basic-vocabulary evidence stays unavailable rather
