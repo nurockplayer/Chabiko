@@ -33,12 +33,6 @@ export async function openUrl(
   });
 
   await page.clock.install({ time: CLOCK_START });
-  // Freeze the clock after install so the practice transition timers
-  // (1200ms completion / 2000ms retry) never advance while we set up,
-  // assert structure, and run the axe scan for practice-correct and
-  // practice-incorrect. Only the completion surface explicitly advances
-  // time (via page.clock.runFor in setupSurface).
-  await page.clock.pauseAt(CLOCK_START);
   await page.goto(url, { waitUntil: 'load' });
 
   // The theme bootstrap runs on load from the seeded storageState, so the page
@@ -124,6 +118,11 @@ export async function setupSurface(
   if (surface === 'practice-correct') {
     await answerPractice(page, 'correct');
     await expect(page.locator('.feedback-correct')).toContainText('正解！');
+    // Freeze the clock at its current position now that the correct feedback
+    // is showing, so the 1200ms completion transition timer never advances
+    // while the structural assertions and the axe scan run — the surface is
+    // scanned as the named practice-correct transient state.
+    await page.clock.pauseAt();
     return externalRequests;
   }
 
@@ -131,6 +130,10 @@ export async function setupSurface(
     await answerPractice(page, 'incorrect');
     await expect(page.locator('.feedback-incorrect')).toContainText('不正解。');
     await expect(page.locator('.feedback-answer')).toContainText('正解：');
+    // Freeze the clock at its current position so the 2000ms retry transition
+    // timer never advances while the structural assertions and the axe scan
+    // run.
+    await page.clock.pauseAt();
     return externalRequests;
   }
 
