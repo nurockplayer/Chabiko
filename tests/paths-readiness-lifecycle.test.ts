@@ -375,6 +375,41 @@ describe('progress signals', () => {
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
   });
+
+  it('reads the guest store when no Supabase client is configured (guest-only mode)', async () => {
+    // No Supabase config (getSupabaseBrowserClient returns null) is the
+    // supported guest-only production mode: /paths/ reads the guest store.
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(null as never);
+    const root = createRoot();
+    initialize(root);
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+  });
+
+  it('ignores a stale initial getSession after a newer auth event', async () => {
+    const userId = 'f0b6d6c4-2f4e-4d8a-9a1c-6f5c4b3a2d1e';
+    const { client, emit, deferNextGetSession } = fakeSupabaseClient(null);
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    const root = createRoot();
+    initialize(root);
+
+    // Defer the initial getSession. Before it resolves, a SIGNED_OUT event
+    // arrives and pins the guest scope. The stale getSession later resolves a
+    // signed-in session — it must NOT flip identity back.
+    const resolveSession = deferNextGetSession();
+    emit('SIGNED_OUT', null);
+    resolveSession({ user: { id: userId } });
+    await flushAsync();
+
+    // Identity stays signed-out: a guest store read is used, so a guest learned
+    // item counts.
+    setBasicLearned('teacher-star-1-bdc7865a507e');
+    window.dispatchEvent(new Event('pageshow'));
+    const order = target(root, 'order-and-pay');
+    expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+  });
 });
 
 // ─── Storage refresh and cleanup ──────────────────────────────────────────────

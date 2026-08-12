@@ -206,11 +206,19 @@ export function initPathsReadiness(
   const client = getSupabaseBrowserClient();
   let authUnsubscribe: (() => void) | null = null;
 
+  // Generation token for the initial getSession reply. Each auth state event
+  // increments it, so a stale initial getSession reply (which started before a
+  // SIGNED_IN/SIGNED_OUT/switch arrived) is ignored: the event already applied
+  // the newer scope.
+  let identityVersion = 0;
+
   if (client != null) {
+    const versionAtStart = identityVersion;
     // Resolve the initial trusted identity (read-only).
     void client.auth
       .getSession()
       .then((result) => {
+        if (disposed || identityVersion !== versionAtStart) return;
         const session = result.data.session;
         applySessionUserId(session?.user?.id ?? null);
       })
@@ -220,11 +228,19 @@ export function initPathsReadiness(
       });
 
     const subscription = client.auth.onAuthStateChange((event, session) => {
+      identityVersion += 1;
       handleAuthEvent(event, session);
     });
     authUnsubscribe = () => {
       subscription.data.subscription.unsubscribe();
     };
+  } else {
+    // No Supabase configuration (guest-only production mode): there is no
+    // identity to resolve, so read the guest store directly instead of staying
+    // in the unknown state (which would make basic-vocabulary evidence
+    // unavailable).
+    identityScope = { kind: 'signed-out' };
+    renderAll();
   }
 
   function onPageShow(): void {
