@@ -770,7 +770,7 @@
       "painPointTags": ["kanji-false-friend"],
       "caution": "日本語の「勉強（べんきょう）」＝ 勉強する（study）。中国語の「勉強」＝ 無理に／仕方なく（forced, reluctant）。「勉強します」は中国語で「學習（xuéxí）」。日本語の意味で使うと全く通じない。",
       "examples": [
-        {"traditional": "勉強答應", "traditionalStatus": "generated", "simplified": "勉强答应", "simplifiedStatus": "generated", "pinyin": "miǎnqiǎng dāying", "japanese": "無理やり承諾する"}
+        {"traditional": "勉強答應", "traditionalStatus": "generated", "simplified": "勉强答应", "simplifiedStatus": "generated", "pinyin": "miǎnqiǎng dāying", "japanese": "しぶしぶ承諾する"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "generated", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
@@ -841,7 +841,7 @@
       "traditionalStatus": "generated",
       "simplified": "老婆",
       "simplifiedStatus": "generated",
-      "pinyin": "lǎopo",
+      "pinyin": "lǎopó",
       "japanese": "妻（口語）",
       "kana": "ろうば",
       "category": "family",
@@ -1022,7 +1022,7 @@
       "simplified": "人参",
       "simplifiedStatus": "generated",
       "pinyin": "rénshēn",
-      "japanese": "ニンジン（carrot）",
+      "japanese": "高麗人参（ginseng）",
       "kana": "にんじん",
       "category": "food",
       "similarityType": "false-friend",

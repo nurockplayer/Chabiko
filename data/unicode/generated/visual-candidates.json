@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "input": {
     "scalarInventoryPath": "data/unicode/generated/scalar-inventory.json",
-    "scalarInventorySha256": "716e8dc0a1241b1f025dbefa0c406dee1b8f43e111373b8e6251fec9178335a4",
+    "scalarInventorySha256": "ec46f00aef1b2a9e1791050f5264859655cb8acf31ef6daebcb4a02548e6788c",
     "scalarCount": 1688
   },
   "renderingEnvironment": {
@@ -3547,6 +3547,12 @@
       "perceptualHash64": "00141f274b161c00"
     },
     {
+      "id": "u9e97",
+      "scalar": 40599,
+      "derivativeSha256": "4d087c35687f495d87f67fd19ba81af2e0d025ce98ea0e29e247dc68e97dc8ae",
+      "perceptualHash64": "0013370f36375700"
+    },
+    {
       "id": "u7d05",
       "scalar": 32005,
       "derivativeSha256": "272281c766a160e0d75114538aec89ddcb6fa9ee9221171016cced6ce94cd680",
@@ -3563,12 +3569,6 @@
       "scalar": 34367,
       "derivativeSha256": "05b9ba9153c50e1ffec29180b3e0b4dc5474d626b26c44dbf228e5878bb0a59b",
       "perceptualHash64": "0017172f27276f00"
-    },
-    {
-      "id": "u9e97",
-      "scalar": 40599,
-      "derivativeSha256": "4d087c35687f495d87f67fd19ba81af2e0d025ce98ea0e29e247dc68e97dc8ae",
-      "perceptualHash64": "0013370f36375700"
     },
     {
       "id": "u7231",
