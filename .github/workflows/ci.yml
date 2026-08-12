@@ -33,6 +33,14 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Reject non-pnpm lockfiles
         run: |
           found=false
