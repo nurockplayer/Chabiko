@@ -867,7 +867,7 @@
       "category": "action",
       "similarityType": "partial-overlap",
       "toneNote": "jiǎn 第三声、tǎo 第三声。3-3 の連続は 2-3 に変化する。",
-      "painPointTags": ["kanji-false-friend"],
+      "painPointTags": [],
       "caution": "日本語の「検討（けんとう）」は検討・考慮。中国語の「檢討／检讨 jiǎntǎo」は基本「検視・探討」で重なるが、「自我檢討」などでは反省・自己批判の含みが強くなる。会議で「檢討しましょう」と言うと「反省しましょう」に近い。",
       "examples": [
         {"traditional": "自我檢討", "traditionalStatus": "generated", "simplified": "自我检讨", "simplifiedStatus": "generated", "pinyin": "zìwǒ jiǎntǎo", "japanese": "自己反省する"}
@@ -967,7 +967,7 @@
       "category": "action",
       "similarityType": "partial-overlap",
       "toneNote": "qǔ 第三声、dì 第四声。",
-      "painPointTags": ["kanji-false-friend"],
+      "painPointTags": [],
       "caution": "日本語の「取り締まる」と中国語の「取締／取缔 qǔdì」は、違法行為を規制・監督する場面で重なる。ただし中国語は行政上の禁止・管理・監督に使われ、一般的な「管理する」すべてを指すわけではない。「取締役」は別語で、中国語では「董事 dǒngshì」。",
       "examples": [
         {"traditional": "取締非法經營", "traditionalStatus": "generated", "simplified": "取缔非法经营", "simplifiedStatus": "generated", "pinyin": "qǔdì fēifǎ jīngyíng", "japanese": "違法営業を取り締まる"}
@@ -1017,20 +1017,20 @@
     },
     {
       "id": "kanji-bridge-050",
-      "traditional": "結構",
+      "traditional": "人參",
       "traditionalStatus": "generated",
-      "simplified": "结构",
+      "simplified": "人参",
       "simplifiedStatus": "generated",
-      "pinyin": "jiégòu",
-      "japanese": "構造・仕組み",
-      "kana": "けっこう",
-      "category": "noun",
+      "pinyin": "rénshēn",
+      "japanese": "ニンジン（carrot）",
+      "kana": "にんじん",
+      "category": "food",
       "similarityType": "false-friend",
-      "toneNote": "jié 第二声、gòu 第四声。",
+      "toneNote": "rén 第二声、shēn 第一声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「結構（けっこう）」＝ 結構・けっこう（splendid, quite）。中国語の「結構」＝ 構造・仕組み（structure）。「結構です」の意味は中国語にない。日本語の「けっこう」は中国語で「不錯（búcuò）」など。",
+      "caution": "日本語の「人参（にんじん）」＝ ニンジン（carrot）。中国語の「人參／人参（rénshēn）」＝ 高麗人参（ginseng）。台湾で「人参」と言うと漢方の高麗人参を指し、ニンジンは「紅蘿蔔（hóngluóbo）」と言う。",
       "examples": [
-        {"traditional": "這座橋的結構", "traditionalStatus": "generated", "simplified": "这座桥的结构", "simplifiedStatus": "generated", "pinyin": "zhè zuò qiáo de jiégòu", "japanese": "この橋の構造"}
+        {"traditional": "人參湯", "traditionalStatus": "generated", "simplified": "人参汤", "simplifiedStatus": "generated", "pinyin": "rénshēn tāng", "japanese": "高麗人参のスープ"}
       ],
       "reviewStatus": "draft",
       "source": {"type": "authored", "note": "漢字ブリッジ契約（#16）に基づくAI生成語彙（未検証）"}
