@@ -550,7 +550,7 @@
       "similarityType": "false-friend",
       "toneNote": "tāng は第一声。日本語の「トウ」とは母音が違う。",
       "painPointTags": ["same-kanji-different-meaning"],
-      "caution": "日本語の「湯（ゆ）」はお湯・風呂だが、中国語の「湯／汤 tāng」はスープや煮汁。お湯は「熱水／热水 rèshuǐ」と言う。「熱湯」は中国語で「熱水（rèshuǐ）」。",
+      "caution": "日本語の「湯（ゆ）」はお湯・風呂（hot water, bath）。中国語の「湯／汤 tāng」はスープや煮汁（soup）で、お湯は「熱水（rèshuǐ）」や「開水（kāishuǐ）」。中国語の「熱湯」も熱いスープの意味で、お湯の意味ではない。",
       "examples": [
         {"traditional": "喝湯", "traditionalStatus": "generated", "simplified": "喝汤", "simplifiedStatus": "generated", "pinyin": "hē tāng", "japanese": "スープを飲む"}
       ],

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "input": {
     "scalarInventoryPath": "data/unicode/generated/scalar-inventory.json",
-    "scalarInventorySha256": "bb9a0e0d688f7225b1b0ac93a3cd169f94779fcd70fffbd8ffb0e7940369ec96",
+    "scalarInventorySha256": "bf9f118b118636e9017c66ac8115e23123953a63498174a6519708a74fd9c9eb",
     "scalarCount": 1700
   },
   "renderingEnvironment": {
@@ -2695,12 +2695,6 @@
       "perceptualHash64": "0024244724242400"
     },
     {
-      "id": "u70ed",
-      "scalar": 28909,
-      "derivativeSha256": "60ece170c18cd4d64fa8abec5d7ac4f9090eb425a91df935fbe90b7b48f1785a",
-      "perceptualHash64": "0024263229295700"
-    },
-    {
       "id": "u716e",
       "scalar": 29038,
       "derivativeSha256": "b9bbb5cedf1bae23cb69853a265767aabfae5654699fdde6c29202cbcdef0bd5",
@@ -2711,6 +2705,12 @@
       "scalar": 29105,
       "derivativeSha256": "249377e5f65055cf8cc5f676483b04508d69b5b5f16f815d10541fa15616b76c",
       "perceptualHash64": "0034363229495700"
+    },
+    {
+      "id": "u958b",
+      "scalar": 38283,
+      "derivativeSha256": "2d36548866102b78fcf6e2096d2b822ba08389356cab70cb7016190090082015",
+      "perceptualHash64": "0012125a5a4a6a00"
     },
     {
       "id": "u98a8",
@@ -4325,12 +4325,6 @@
       "scalar": 20966,
       "derivativeSha256": "b3df66991602873b32ae1f48cebaa83c2ad812014e5bc45c76ef5cb9e074ad47",
       "perceptualHash64": "00260a2a0b1b6300"
-    },
-    {
-      "id": "u958b",
-      "scalar": 38283,
-      "derivativeSha256": "2d36548866102b78fcf6e2096d2b822ba08389356cab70cb7016190090082015",
-      "perceptualHash64": "0012125a5a4a6a00"
     },
     {
       "id": "u5fc5",
@@ -7817,6 +7811,12 @@
       "scalar": 30719,
       "derivativeSha256": "a6b8f1188e602be77bf7b7df5182a00bdbb2fa88c1aa318b1eeeea37cbf85cf9",
       "perceptualHash64": "0036233c1c3c2800"
+    },
+    {
+      "id": "u70ed",
+      "scalar": 28909,
+      "derivativeSha256": "60ece170c18cd4d64fa8abec5d7ac4f9090eb425a91df935fbe90b7b48f1785a",
+      "perceptualHash64": "0024263229295700"
     },
     {
       "id": "u4e4c",
