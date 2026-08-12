@@ -31,9 +31,16 @@ export class RendererUnavailableError extends Error {
   }
 }
 
-export function mapRendererOperationError(error: unknown): RendererUnavailableError {
+export function mapRendererOperationError(
+  error: unknown,
+  operation: 'launch' | 'page',
+): Error {
   if (error instanceof RendererUnavailableError) return error;
-  return new RendererUnavailableError(`pinned renderer operation failed: ${(error as Error).message}`);
+  const message = (error as Error).message;
+  if (operation === 'launch' || /browser has been closed|target page, context or browser has been closed|protocol error/i.test(message)) {
+    return new RendererUnavailableError(`pinned renderer operation failed: ${message}`);
+  }
+  return error as Error;
 }
 
 function sha256(bytes: string | Buffer | Uint8Array): string {
@@ -77,6 +84,10 @@ async function collectRendererPixels(scalars: number[]) {
       headless: true,
       args: ['--disable-lcd-text', '--font-render-hinting=none', '--force-color-profile=srgb'],
     });
+  } catch (error) {
+    throw mapRendererOperationError(error, 'launch');
+  }
+  try {
     const page = await browser.newPage({ viewport: { width: 64, height: 64 }, deviceScaleFactor: 1, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', colorScheme: 'light', reducedMotion: 'reduce' });
     await page.route('**/*', (route) => {
       const url = new URL(route.request().url());
@@ -113,7 +124,7 @@ async function collectRendererPixels(scalars: number[]) {
     if (missing.length) throw new RendererUnavailableError(`pinned font lacks ${missing.length} inventory scalars: ${missing.slice(0, 10).map((value) => `U+${value.toString(16).toUpperCase()}`).join(', ')}`);
     return pixels;
   } catch (error) {
-    throw mapRendererOperationError(error);
+    throw mapRendererOperationError(error, 'page');
   } finally {
     await browser?.close();
   }

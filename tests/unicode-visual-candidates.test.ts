@@ -117,6 +117,15 @@ describe('Unicode visual candidate contract (#262)', () => {
     staleMetadataPlan.candidateManifestSha256 = sha256Json(staleMetadata);
     expect(() => validateVisualArtifacts(staleMetadata, staleMetadataPlan, process.cwd())).toThrow(/count|ordering metadata|totals/i);
 
+    const missingCandidate = structuredClone(candidates);
+    missingCandidate.candidates.pop();
+    missingCandidate.totals.candidates = missingCandidate.candidates.length;
+    const missingCandidatePlan = structuredClone(reviewPlan);
+    missingCandidatePlan.batches = buildReviewBatches(missingCandidate.candidates);
+    missingCandidatePlan.totals = { candidates: missingCandidate.candidates.length, batches: missingCandidatePlan.batches.length };
+    missingCandidatePlan.candidateManifestSha256 = sha256Json(missingCandidate);
+    expect(() => validateVisualArtifacts(missingCandidate, missingCandidatePlan, process.cwd())).toThrow(/candidate set.*glyph evidence/i);
+
     const unavailable = structuredClone(candidates);
     unavailable.renderingEnvironment = null;
     unavailable.availability = { status: 'unavailable', reason: 'pinned renderer unavailable or lacks complete inventory coverage' };
@@ -169,12 +178,14 @@ describe('Unicode visual candidate contract (#262)', () => {
   });
 
   it('maps pinned browser-operation failures, but not input failures, to unavailable-renderer output', () => {
-    expect(mapRendererOperationError(new Error('Chromium launch failed'))).toMatchObject({
+    expect(mapRendererOperationError(new Error('Chromium launch failed'), 'launch')).toMatchObject({
       name: 'RendererUnavailableError',
       message: 'pinned renderer operation failed: Chromium launch failed',
     });
     const unavailable = new RendererUnavailableError('pinned font lacks inventory coverage');
-    expect(mapRendererOperationError(unavailable)).toBe(unavailable);
+    expect(mapRendererOperationError(unavailable, 'page')).toBe(unavailable);
+    const programmingError = new Error('page script regression');
+    expect(mapRendererOperationError(programmingError, 'page')).toBe(programmingError);
   });
 
   it('stages both owned artifacts beside their destination before atomic publication', () => {

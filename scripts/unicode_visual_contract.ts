@@ -139,6 +139,20 @@ export function validateVisualArtifacts(candidates: any, reviewPlan: any, repoRo
     requireCondition(!prior || key[0] > prior[0] || (key[0] === prior[0] && (key[1] > prior[1] || (key[1] === prior[1] && key[2] > prior[2]))), 'candidate order mismatch');
     prior = key;
   }
+  const expectedCandidateIds = new Set<string>();
+  const orderedGlyphs = [...candidates.glyphs].sort((left: any, right: any) => left.scalar - right.scalar);
+  for (let leftIndex = 0; leftIndex < orderedGlyphs.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < orderedGlyphs.length; rightIndex += 1) {
+      const left = orderedGlyphs[leftIndex];
+      const right = orderedGlyphs[rightIndex];
+      const pairKey = `${left.scalar}:${right.scalar}`;
+      if (authoredPairs.has(pairKey)) continue;
+      if (hammingDistance64(left.perceptualHash64, right.perceptualHash64) <= MAX_HAMMING_DISTANCE) {
+        expectedCandidateIds.add(`visual-u${left.scalar.toString(16).padStart(4, '0')}-u${right.scalar.toString(16).padStart(4, '0')}`);
+      }
+    }
+  }
+  requireCondition(candidateIds.size === expectedCandidateIds.size && [...candidateIds].every((id) => expectedCandidateIds.has(id)), 'candidate set does not match glyph evidence, threshold, and exclusions');
 
   requireCondition(reviewPlan.candidateManifestPath === 'data/unicode/generated/visual-candidates.json', 'review plan candidate manifest path mismatch');
   requireCondition(reviewPlan.ordering?.join(',') === 'distance,leftScalar,rightScalar', 'review plan ordering mismatch');
