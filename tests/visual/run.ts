@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { isAbsolute, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export type VisualRunMode = 'verify' | 'update';
@@ -15,6 +16,7 @@ function snapshotMode(mode: VisualRunMode): 'none' | 'all' {
 export function buildDockerArgs(
   mode: VisualRunMode,
   workingDirectory: string,
+  commonGitDirectory?: string,
 ): string[] {
   // The bind-mounted /work is a Git checkout owned by the host runner, while
   // git inside the container runs as a different UID. Without this, `git
@@ -27,6 +29,9 @@ export function buildDockerArgs(
     'corepack pnpm install --frozen-lockfile',
     'corepack pnpm exec playwright test --config=playwright.visual.config.ts ' +
       `--update-snapshots=${snapshotMode(mode)}`,
+    ...(mode === 'verify'
+      ? ['corepack pnpm exec node scripts/generate_unicode_visual_candidates.ts --internal --check']
+      : []),
   ].join('\n');
 
   return [
@@ -37,6 +42,9 @@ export function buildDockerArgs(
     '--ipc=host',
     '--mount',
     `type=bind,source=${workingDirectory},target=/work`,
+    ...(commonGitDirectory
+      ? ['--mount', `type=bind,source=${commonGitDirectory},target=${commonGitDirectory}`]
+      : []),
     '--mount',
     `type=volume,source=${STORE_VOLUME},target=/pnpm/store`,
     '--mount',
@@ -50,11 +58,31 @@ export function buildDockerArgs(
   ];
 }
 
+function resolveCommonGitDirectory(workingDirectory: string): string {
+  const result = spawnSync(
+    'git',
+    ['-C', workingDirectory, 'rev-parse', '--git-common-dir'],
+    { encoding: 'utf8' },
+  );
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `cannot resolve the visual checkout git metadata: ${result.error?.message ?? result.stderr}`,
+    );
+  }
+  const directory = result.stdout.trim();
+  if (!directory) throw new Error('git returned an empty common directory');
+  return isAbsolute(directory) ? directory : resolve(workingDirectory, directory);
+}
+
 export function runVisualTests(
   mode: VisualRunMode,
   workingDirectory = process.cwd(),
 ): number {
-  const result = spawnSync('docker', buildDockerArgs(mode, workingDirectory), {
+  const result = spawnSync('docker', buildDockerArgs(
+    mode,
+    workingDirectory,
+    resolveCommonGitDirectory(workingDirectory),
+  ), {
     stdio: 'inherit',
   });
 
