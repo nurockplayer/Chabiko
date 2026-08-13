@@ -14,7 +14,7 @@
 // tier (a local override); without it the classifier decides from the diff.
 
 import { spawnSync } from 'node:child_process';
-import { globSync, writeFileSync } from 'node:fs';
+import { existsSync, globSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import {
   CLASS_LABEL,
@@ -34,7 +34,7 @@ function gitChangedFiles(base: string): string[] {
   // checkout is clean, so this alone yields the PR's change set.
   const committed = spawnSync(
     'git',
-    ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`],
+    ['diff', '--name-only', '--diff-filter=ACMRD', `${base}...HEAD`],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   if (committed.status !== 0) {
@@ -47,12 +47,12 @@ function gitChangedFiles(base: string): string[] {
   // diff alone would under-report.
   const unstaged = spawnSync(
     'git',
-    ['diff', '--name-only', '--diff-filter=ACMR'],
+    ['diff', '--name-only', '--diff-filter=ACMRD'],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   const staged = spawnSync(
     'git',
-    ['diff', '--name-only', '--diff-filter=ACMR', '--cached'],
+    ['diff', '--name-only', '--diff-filter=ACMRD', '--cached'],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   const untracked = spawnSync(
@@ -171,7 +171,12 @@ function runAffectedVitest(plan: Classification): number {
   for (const glob of plan.affectedTestGlobs) {
     for (const file of globSync(glob)) files.add(file);
   }
-  for (const file of plan.affectedTests) files.add(file);
+  // A deleted test path (tracked with D) can land in `affectedTests` but no
+  // longer exists on disk; passing it to vitest fails with "No test files
+  // found". Drop nonexistent files here so the fail-safe below handles them.
+  for (const file of plan.affectedTests) {
+    if (existsSync(file)) files.add(file);
+  }
 
   if (files.size === 0) {
     return run('pnpm', ['exec', 'vitest', 'run']);
