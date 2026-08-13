@@ -332,7 +332,9 @@ Tier 定義（minimum required）：
 分類取「所有變更檔案的 tier 的 max」，全部檔案都屬低風險時才會降到低 tier。以下
 surface 保守升級：schema／repository contract（`src/types`、`src/data`）、
 auth／account／Supabase、generator／build／CI／`scripts`、`package.json`／lockfile／
-config、generated 資料（`data/**/generated`、`data/unicode`）。無法分類的檔案一律
+config、generated 資料（`data/**/generated`、`data/unicode`）、學習者可見的
+UI／component（`src/components`、`src/pages`、`src/layouts`、`.astro`——可能影響
+layout 或鍵盤 focus 順序，需跑 visual regression 與 accessibility）。無法分類的檔案一律
 fail safe 到 T3；`main` push 一律 T3。PR CI 用同一 classifier 跳過不相關的昂貴 job，
 high-risk／unknown 仍跑 full gate。classifier 的 risk-class → tier 對照與
 affected-test 選擇以 `scripts/validation/classify.ts` 為準，並由

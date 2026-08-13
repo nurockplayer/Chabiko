@@ -55,14 +55,19 @@ export interface Classification {
 
 export const TIER_ORDER: Record<Tier, number> = { t0: 0, t1: 1, t2: 2, t3: 3 };
 
-/** Risk class → minimum tier. `unknown` and infra/contract classes are T3. */
+/**
+ * Risk class → minimum tier. `unknown` and infra/contract classes are T3.
+ * Learner-visible UI/component changes also escalate to T3: they can change
+ * layout or keyboard focus order, so they must run visual regression and the
+ * accessibility/keyboard checks in the full gate (test:visual / test:a11y).
+ */
 export const RISK_TO_TIER: Record<RiskClass, Tier> = {
   docs: 't0',
   content: 't1',
   tests: 't1',
   domain: 't1',
   client: 't2',
-  ui: 't2',
+  ui: 't3',
   auth: 't3',
   contract: 't3',
   'build-ci': 't3',
@@ -161,6 +166,9 @@ function isContent(file: string): boolean {
 }
 
 function isUi(file: string): boolean {
+  // Learner-visible UI/component surfaces: changing them can affect layout or
+  // keyboard focus order, so they map to T3 and run visual + a11y checks
+  // (see RISK_TO_TIER). Any `.astro` file under src/ is treated as learner-visible.
   return (
     file.startsWith('src/components/') ||
     file.startsWith('src/pages/') ||
