@@ -254,6 +254,30 @@ const sessionSize = Math.min(10, ids.length);
     gap: clamp(0.375rem, 2vw, 0.75rem);
   }
 
+  .basic-vocabulary-detail-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: var(--space-sm) var(--space-lg);
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    border-radius: var(--radius);
+  }
+
+  .basic-vocabulary-detail-link:hover {
+    background: var(--c-slot-bg);
+    text-decoration: underline;
+  }
+
+  .basic-vocabulary-detail-link:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 3px;
+  }
+
   .basic-vocabulary-rating {
     min-width: 0;
     padding: var(--space-sm) 0.375rem;

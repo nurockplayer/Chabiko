@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BasicVocabularyDetail from '../../../../../components/vocabulary/BasicVocabularyDetail.astro';
+import {
+  toBasicVocabularyDetailItem,
+  type BasicVocabularyDetailItem,
+} from '../../../../../content/basicVocabularyDetail';
+import { loadProductionLearnerCorpus } from '../../../../../content/loadProductionLearnerCorpus';
+import BaseLayout from '../../../../../layouts/BaseLayout.astro';
+
+/** Stable detail route keyed by the opaque learner ID, generated once from the
+ * canonical production learner corpus. Each page renders only that item's
+ * approved learner data (including the #340 example, when present). */
+export const getStaticPaths = (() => {
+  const corpus = loadProductionLearnerCorpus();
+  return corpus.map((item) => ({
+    params: { learnerId: item.learnerId },
+    props: { item: toBasicVocabularyDetailItem(item) },
+  }));
+}) satisfies GetStaticPaths;
+
+const { item } = Astro.props as { item: BasicVocabularyDetailItem };
+---
+
+<BaseLayout title={item.simplified}>
+  <div class="basic-vocabulary-detail-page">
+    <BasicVocabularyDetail item={item} />
+  </div>
+</BaseLayout>
+
+<style>
+  .basic-vocabulary-detail-page {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+  }
+</style>

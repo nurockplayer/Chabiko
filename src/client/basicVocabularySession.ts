@@ -34,6 +34,7 @@ interface SessionItem {
   pinyin?: string;
   japanese?: string;
   traditional?: string;
+  example?: string;
   illustration: SessionIllustration | null;
 }
 
@@ -47,7 +48,7 @@ interface RenderPayload {
  * import, never in the serialized HTML payload. */
 const answerById = new Map<
   string,
-  { simplified: string; pinyin?: string; japanese?: string; traditional?: string }
+  { simplified: string; pinyin?: string; japanese?: string; traditional?: string; example?: string }
 >();
 for (const row of (manifest as LearnerManifest).rows) {
   answerById.set(row.learnerId, {
@@ -55,6 +56,7 @@ for (const row of (manifest as LearnerManifest).rows) {
     pinyin: row.pinyin,
     japanese: row.japanese,
     traditional: row.traditional,
+    example: row.example,
   });
 }
 
@@ -160,6 +162,7 @@ function initializeFromIds(
       pinyin: match.pinyin,
       japanese: match.japanese,
       traditional: match.traditional,
+      example: match.example,
       illustration: payload?.render[id] ?? null,
     });
   }
@@ -419,6 +422,17 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
         ratings.append(ratingButton);
       }
       fragment.append(ratings);
+
+      // Example-sentence detail navigation (#342): a native link, shown only
+      // when the item has a truthful authored example, and kept distinct from
+      // the reveal/rating flow so card behavior stays predictable.
+      if (entry.example) {
+        const detailLink = document.createElement('a');
+        detailLink.className = 'basic-vocabulary-detail-link';
+        detailLink.href = `/vocabulary/basic/words/${encodeURIComponent(entry.id)}/`;
+        detailLink.textContent = '例文を見る';
+        fragment.append(detailLink);
+      }
     } else {
       fragment.append(button(document, 'basic-vocabulary-action basic-vocabulary-reveal', '答えを見る', 'reveal'));
     }
