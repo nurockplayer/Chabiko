@@ -13,7 +13,13 @@
     "test": "vitest run",
     "test:a11y": "node tests/a11y/run.ts",
     "test:visual": "node tests/visual/run.ts verify",
-    "test:visual:update": "node tests/visual/run.ts update"
+    "test:visual:update": "node tests/visual/run.ts update",
+    "validate": "node scripts/validation/run.ts run",
+    "validate:affected": "node scripts/validation/run.ts run --tier t1",
+    "validate:integration": "node scripts/validation/run.ts run --tier t2",
+    "validate:full": "node scripts/validation/run.ts run --tier t3",
+    "validate:classify": "node scripts/validation/run.ts classify",
+    "validate:content": "bash scripts/validate-content.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.0",
