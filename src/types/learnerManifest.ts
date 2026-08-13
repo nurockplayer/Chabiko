@@ -22,6 +22,11 @@ export interface LearnerManifestRow {
   pinyin?: string;
   japanese?: string;
   difficulty?: string;
+  /** Teacher-authored example sentence from the workbook `造词/造句` column,
+   * preserved verbatim (only normalized). Absent when the source cell is
+   * empty — a deliberate missing-example state, never an invitation to
+   * generate content. */
+  example?: string;
   image: {
     state: LearnerImageState;
     assetPath: string;

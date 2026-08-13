@@ -30,5 +30,9 @@ export interface ProductionLearnerItem {
   readonly pinyin?: string;
   readonly japanese?: string;
   readonly difficulty?: string;
+  /** Teacher-authored example sentence (Simplified Chinese), preserved
+   * verbatim from the workbook `造词/造句` column. Absent when the source
+   * cell is empty — a deliberate missing-example state. */
+  readonly example?: string;
   readonly illustration: ProductionLearnerIllustration;
 }

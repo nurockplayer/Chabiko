@@ -34,7 +34,7 @@
     {
       "id": "general-vocabulary-v1",
       "path": "data/examples/valid/vocabulary.json",
-      "sha256": "23e7de43aaf1123b38b0e5443cbd68cbac402a56d3ab4f27ffcf8cabdc80cd7f",
+      "sha256": "5d389092bcb2e1515d81e2b52d6cde5cc83be00b53eab5b9b6b111f8a0f98d0a",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
@@ -138,7 +138,7 @@
     {
       "id": "production-learner-manifest-v1",
       "path": "data/teacher-vocabulary-preview/learner-manifest.json",
-      "sha256": "702a92cb7b2cf6a8e1d67caa7ed2e4651007edd7a062fd72ae054af3a1e8d5b1",
+      "sha256": "1a334649c477658a3ace0c9c7ad0c3d75021188cbf9d64700f9131ac408553ce",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },

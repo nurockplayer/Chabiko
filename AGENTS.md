@@ -309,6 +309,36 @@ JS-free 互動工作必須：
 - Mobile / desktop 主要畫面無重疊、無截斷。
 - pnpm lockfile policy。
 
+## 驗證階梯（risk-based validation ladder）
+
+Bounded cycle 的最小驗證層級由「變更風險」決定，不由 model 判斷。可執行分級器在
+`scripts/validation/classify.ts`，依變更檔案把風險對應到 minimum tier。Agent 用下列
+穩定指令（各指令保證「至少」該 tier，classifier 分級更高時會自動升級），不要自行挑
+測試：
+
+- `pnpm validate` — 自動分級目前對 `origin/main` 的 diff 並執行對應 tier。
+- `pnpm validate:affected` — T1 Affected：affected-domain tests + lint + typecheck。
+- `pnpm validate:integration` — T2 Integration：full Vitest + lint + typecheck + build。
+- `pnpm validate:full` — T3 Full Gate：T2 + visual + accessibility + content。
+- `pnpm validate:classify` — 只列出 tier 與理由，不執行。
+
+Tier 定義（minimum required）：
+
+- **T0 Smoke** — 實作當下直接對應的 focused test/validator；無 repo-wide 指令。
+- **T1 Affected** — 受影響 domain 的測試 + 最小 static check（lint、typecheck）。
+- **T2 Integration** — full Vitest + lint + typecheck + build（final review 前）。
+- **T3 Full Gate** — T2 + visual regression + accessibility + content／cross-cutting（merge-ready、high-risk、`main`）。
+
+分類取「所有變更檔案的 tier 的 max」，全部檔案都屬低風險時才會降到低 tier。以下
+surface 保守升級：schema／repository contract（`src/types`、`src/data`）、
+auth／account／Supabase、generator／build／CI／`scripts`、`package.json`／lockfile／
+config、generated 資料（`data/**/generated`、`data/unicode`）。無法分類的檔案一律
+fail safe 到 T3；`main` push 一律 T3。PR CI 用同一 classifier 跳過不相關的昂貴 job，
+high-risk／unknown 仍跑 full gate。classifier 的 risk-class → tier 對照與
+affected-test 選擇以 `scripts/validation/classify.ts` 為準，並由
+`tests/validation/classifier.test.ts` 守護（含「每個 domain source 都有 affected
+test 對照」的 coverage 斷言）。
+
 ## 回報格式
 
 回報保持精簡：

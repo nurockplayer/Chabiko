@@ -40,6 +40,7 @@
 * 不得順手重構、擴大 scope 或自動處理 non-blocking finding。
 * 發現 scope 外問題時，只在最終回報中簡短列為 deferred finding。
 * 不得相信 PR body、舊摘要或其他 agent 對完成狀態的宣稱，必須自行驗證。
+* 驗證層級由根目錄 `AGENTS.md` 的「驗證階梯」決定（`scripts/validation/classify.ts`），以 `pnpm validate`／`validate:affected`／`validate:integration`／`validate:full` 執行，不得自行挑測試。
 
 ## Subagent
 

@@ -53,6 +53,7 @@
       "sourceRow": 2,
       "pinyin": "kàn",
       "japanese": "・(もの)を見る ・(本など)を読む",
+      "example": "看电视 看书",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7ad36739fbc3fedd.webp",
@@ -67,6 +68,7 @@
       "sourceRow": 3,
       "pinyin": "tīng",
       "japanese": "・聞く ・聞き入れる",
+      "example": "听音乐 听妈妈的话",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1dc1145dd3529208.webp",
@@ -81,6 +83,7 @@
       "sourceRow": 4,
       "pinyin": "xiě",
       "japanese": "・書く",
+      "example": "写字 写功课",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1908c5b741eba4dd.webp",
@@ -95,6 +98,7 @@
       "sourceRow": 5,
       "pinyin": "huà",
       "japanese": "・(絵など)描く/書く",
+      "example": "画画儿 画风景",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-522661af67d2d95c.webp",
@@ -109,6 +113,7 @@
       "sourceRow": 6,
       "pinyin": "shuō",
       "japanese": "・話す",
+      "example": "说话 说汉语",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fdfef862adeb01c8.webp",
@@ -123,6 +128,7 @@
       "sourceRow": 7,
       "pinyin": "jiǎng",
       "japanese": "・話す ・(ストーリーなど)語る",
+      "example": "讲话 讲故事",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6a80a10245fcce7e.webp",
@@ -137,6 +143,7 @@
       "sourceRow": 8,
       "pinyin": "tán",
       "japanese": "・(じっくり)話す/相談する ・(じっくり)議論する/討論する",
+      "example": "他们谈了很久 谈生意",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c2be8b9e8158837c.webp",
@@ -151,6 +158,7 @@
       "sourceRow": 9,
       "pinyin": "niàn",
       "japanese": "・(声を出して)読む ・勉強する",
+      "example": "念课本 他在念小学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3c4a5e2504fd7388.webp",
@@ -165,6 +173,7 @@
       "sourceRow": 10,
       "pinyin": "wèn",
       "japanese": "・(問題を)聞く/質問する",
+      "example": "问老师问题 问路",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-efd0b3a8b4cec5e2.webp",
@@ -179,6 +188,7 @@
       "sourceRow": 11,
       "pinyin": "jiào",
       "japanese": "・呼ぶ/叫ぶ ・~させる",
+      "example": "大声叫妈妈 请叫我小王 妈妈叫我写功课",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a9a0872c7c82c308.webp",
@@ -193,6 +203,7 @@
       "sourceRow": 13,
       "pinyin": "chī",
       "japanese": "・食べる",
+      "example": "在家吃饭",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8d644bb41ac20826.webp",
@@ -207,6 +218,7 @@
       "sourceRow": 14,
       "pinyin": "hē",
       "japanese": "・飲む",
+      "example": "喝水",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-582a49e472be30a7.webp",
@@ -221,6 +233,7 @@
       "sourceRow": 15,
       "pinyin": "jiàn",
       "japanese": "・会う ・見る ・*なくなる [不见]",
+      "example": "明天见 我在学校见了很多朋友 我的课本不见了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-379fe7809a085134.webp",
@@ -235,6 +248,7 @@
       "sourceRow": 16,
       "pinyin": "cháng",
       "japanese": "・味見する ・味わう",
+      "example": "尝一下日本料理 品尝韩国料理",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e65bbeb2241ad225.webp",
@@ -249,6 +263,7 @@
       "sourceRow": 17,
       "pinyin": "diǎn",
       "japanese": "・注文/オーダーする ・(頭など)上下に動かす ・(スクリーンを)クリック・タップする",
+      "example": "点菜 点头 点一下屏幕",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-28a6d2560ff6a0e3.webp",
@@ -263,6 +278,7 @@
       "sourceRow": 18,
       "pinyin": "chuān",
       "japanese": "・(服など)着る",
+      "example": "穿衣服",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3000cdddc1fcae9c.webp",
@@ -277,6 +293,7 @@
       "sourceRow": 19,
       "pinyin": "dài",
       "japanese": "・(帽子・メガネ・手袋・腕時計など) かぶる/身に着ける",
+      "example": "戴帽子 戴眼镜 戴手表",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c00e47f5c5b5bdc0.webp",
@@ -291,6 +308,7 @@
       "sourceRow": 20,
       "pinyin": "ná",
       "japanese": "・(手で)運ぶ ・(手で)つかむ/持つ",
+      "example": "帮爸爸拿东西 拿筷子吃饭",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5eff5e560983dd10.webp",
@@ -305,6 +323,7 @@
       "sourceRow": 21,
       "pinyin": "fàng",
       "japanese": "・入れる/加える ・置く/放置する/放す ・放つ/放送する",
+      "example": "在汤里放盐 把料理放在桌子上 把鱼放回池塘里 放音乐",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6c88a8d0b381a4e2.webp",
@@ -319,6 +338,7 @@
       "sourceRow": 22,
       "pinyin": "dài",
       "japanese": "・持っていく/携帯する ・連れていく",
+      "example": "带一些水果回家 带儿子去学校",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-16d109c2d6510417.webp",
@@ -333,6 +353,7 @@
       "sourceRow": 23,
       "pinyin": "diū",
       "japanese": "・なくす/落とす ・投げる/捨てる",
+      "example": "钱包丢了 丢垃圾",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-021a5f17fcee858d.webp",
@@ -347,6 +368,7 @@
       "sourceRow": 24,
       "pinyin": "shì",
       "japanese": "・~は...です",
+      "example": "这是我妈妈 我是日本人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-99b29db7a73e3bd3.webp",
@@ -361,6 +383,7 @@
       "sourceRow": 25,
       "pinyin": "xìng",
       "japanese": "・(苗字は)~です",
+      "example": "你姓什么？ 我姓林",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-da2900c615231713.webp",
@@ -375,6 +398,7 @@
       "sourceRow": 26,
       "pinyin": "dāng",
       "japanese": "・(仕事・役割)になる",
+      "example": "我想当Youtuber 哥哥当了班长",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-941609e8d45cad93.webp",
@@ -389,6 +413,7 @@
       "sourceRow": 27,
       "pinyin": "yǒu",
       "japanese": "・(~を)持っている/所有している ・(~が)ある",
+      "example": "爸爸有钱 我家有一只狗",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-131cfa6410d948e8.webp",
@@ -403,6 +428,7 @@
       "sourceRow": 28,
       "pinyin": "zài",
       "japanese": "・(~に)いる/存在する",
+      "example": "弟弟在家学习 你在哪儿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0051f4993d70a800.webp",
@@ -417,6 +443,7 @@
       "sourceRow": 29,
       "pinyin": "zuò",
       "japanese": "・(物を)作る ・(動作・行為を)する/やる",
+      "example": "做料理 做工作 做功课",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2c736e32c57fdf5c.webp",
@@ -431,6 +458,7 @@
       "sourceRow": 30,
       "pinyin": "bàn",
       "japanese": "・(手続きなどを)行う/処理する ・(集まりなどを)開く/開催する",
+      "example": "办手续 办会议",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8e1df1cf342e778d.webp",
@@ -445,6 +473,7 @@
       "sourceRow": 32,
       "pinyin": "yào",
       "japanese": "・(~を)欲しい/必要とする ・要求する ・(~を)したい/するつもり/しなければならない[助動詞]",
+      "example": "妈妈，我要钱！！ 老师要我好好学习 出门要关灯 我明天要去逛街",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a1f846795cc94f54.webp",
@@ -459,6 +488,7 @@
       "sourceRow": 33,
       "pinyin": "xiǎng",
       "japanese": "・思う/考える ・~したい[助動詞]",
+      "example": "问这个问题，他想了很久 我想去美国留学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ed0f41f88fc69f9d.webp",
@@ -473,6 +503,7 @@
       "sourceRow": 34,
       "pinyin": "ài",
       "japanese": "・愛してる ・(~が)好きだ",
+      "example": "妈妈爱我 小王爱旅游",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-19fc2fb04e1b9045.webp",
@@ -487,6 +518,7 @@
       "sourceRow": 35,
       "pinyin": "xiào",
       "japanese": "・笑う",
+      "example": "大声笑",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5aac3254076b06bd.webp",
@@ -501,6 +533,7 @@
       "sourceRow": 36,
       "pinyin": "kū",
       "japanese": "・泣く",
+      "example": "弟弟每天都在学校哭",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-71f2570dc3eb4962.webp",
@@ -515,6 +548,7 @@
       "sourceRow": 37,
       "pinyin": "pà",
       "japanese": "・怖がる/恐れる",
+      "example": "我家的猫怕狗",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3f4a19681d4d498d.webp",
@@ -529,6 +563,7 @@
       "sourceRow": 38,
       "pinyin": "dǒng",
       "japanese": "・わかる/理解する/知る",
+      "example": "我懂了 他懂英语",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1c47c21c3044fb96.webp",
@@ -543,6 +578,7 @@
       "sourceRow": 39,
       "pinyin": "jì",
       "japanese": "・覚える/記憶する/暗記する ・書き留める/書き残す",
+      "example": "上课中记了很多新的单词 记在本子上",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7eefa4efad7fd080.webp",
@@ -557,6 +593,7 @@
       "sourceRow": 41,
       "pinyin": "zhù",
       "japanese": "・住む",
+      "example": "小王住上海、力宏住北京",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a559e59b4d91a1da.webp",
@@ -571,6 +608,7 @@
       "sourceRow": 42,
       "pinyin": "yòng",
       "japanese": "・使用する/使う ・(~を用いて)...する/(~で)...する",
+      "example": "弟弟吃饭用汤匙跟叉子。 今天用了很多钱。 用课本学习。 用他的方法解决问题。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6a3d9b986ff55a47.webp",
@@ -585,6 +623,7 @@
       "sourceRow": 43,
       "pinyin": "xǐ",
       "japanese": "・洗う",
+      "example": "洗衣服 洗澡",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ce4bb187e0bec8ab.webp",
@@ -599,6 +638,7 @@
       "sourceRow": 44,
       "pinyin": "cā",
       "japanese": "・拭く/磨く/こする ・(クリーム・油など)つける/塗る",
+      "example": "擦桌子 擦黑板 在手上擦药",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8a785cf4dadf7f5d.webp",
@@ -613,6 +653,7 @@
       "sourceRow": 45,
       "pinyin": "zhǎo",
       "japanese": "・探す",
+      "example": "小王在找他的课本，但是找不到 爸爸在找工作",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1c7931d9e1b88ebb.webp",
@@ -627,6 +668,7 @@
       "sourceRow": 46,
       "pinyin": "kāi",
       "japanese": "・開く ・(乗り物を)運転する ・(電気・電化製品を)つける",
+      "example": "开门 花开了 开车 开灯",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-87ce0a4106b4759e.webp",
@@ -641,6 +683,7 @@
       "sourceRow": 47,
       "pinyin": "guān",
       "japanese": "・閉める ・閉じ込める ・(電気・電化製品を)消す",
+      "example": "关门 今天把小狗关在家里 关灯",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7dc0de363c0ff3ae.webp",
@@ -655,6 +698,7 @@
       "sourceRow": 48,
       "pinyin": "tuī",
       "japanese": "・押す",
+      "example": "我推了弟弟的自行车。弟弟很高兴。 推开门",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1aa9e83616f50b75.webp",
@@ -669,6 +713,7 @@
       "sourceRow": 49,
       "pinyin": "lā",
       "japanese": "・引っ張る/引く",
+      "example": "拉他起来 拉绳子",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-498fdf8aa1b2dc2d.webp",
@@ -683,6 +728,7 @@
       "sourceRow": 50,
       "pinyin": "zhàn",
       "japanese": "・立つ",
+      "example": "站起来 站在床上",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-34eff95304727176.webp",
@@ -697,6 +743,7 @@
       "sourceRow": 51,
       "pinyin": "zuò",
       "japanese": "・座る ・(乗り物に)乗る",
+      "example": "坐在椅子上 坐车上学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d433afd7a26e1aee.webp",
@@ -711,6 +758,7 @@
       "sourceRow": 52,
       "pinyin": "tán",
       "japanese": "・(楽器を)弾く",
+      "example": "弹钢琴 弹吉他",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ad8d7cf2c9e3c186.webp",
@@ -725,6 +773,7 @@
       "sourceRow": 53,
       "pinyin": "tī",
       "japanese": "・蹴る",
+      "example": "哥哥踢了弟弟，弟弟哭了。 我爱踢足球。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d42a6856426195d2.webp",
@@ -739,6 +788,7 @@
       "sourceRow": 54,
       "pinyin": "jì",
       "japanese": "・(郵送などの方法で)送る",
+      "example": "寄信给外国的朋友 妈妈寄钱给我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-39f0f638976f3d26.webp",
@@ -753,6 +803,7 @@
       "sourceRow": 55,
       "pinyin": "fā",
       "japanese": "・(物・書類・メールなどを)送る/発送する ・(お金を)支給する/出す",
+      "example": "发邮件 发工资",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-41aa0023c0d60bd5.webp",
@@ -766,6 +817,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 56,
       "pinyin": "sòng",
+      "example": "送她一朵花 送她去车站",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0a466b8995023205.webp",
@@ -780,6 +832,7 @@
       "sourceRow": 57,
       "pinyin": "shōu",
       "japanese": "・送り届ける/見送る ・プレゼントする",
+      "example": "收衣服 店员跟客人收钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7b175a602ea4bdb8.webp",
@@ -794,6 +847,7 @@
       "sourceRow": 58,
       "pinyin": "jiē",
       "japanese": "・迎えに行く/迎える ・キャッチする ・(電話・メール)を受ける ・つなぎ合わせる",
+      "example": "开车去车站接朋友回来 用手接球 接电话 把两条绳子接起来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-bc0b064e7eeb3420.webp",
@@ -808,6 +862,7 @@
       "sourceRow": 59,
       "pinyin": "gěi",
       "japanese": "・(~を)あげる/与える ・~に...する",
+      "example": "给他一朵花 哥哥给弟弟送了一本书 我要给朋友打电话",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0c3fb4414dfc3050.webp",
@@ -822,6 +877,7 @@
       "sourceRow": 61,
       "pinyin": "zhù",
       "japanese": "・祝う/祝福する/願う",
+      "example": "祝你幸福快乐 祝你好运",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-db4910cc7308d79a.webp",
@@ -836,6 +892,7 @@
       "sourceRow": 62,
       "pinyin": "qǐng",
       "japanese": "・ご馳走する/招待する ・~してもらう ・~してください *何かをお願いする時",
+      "example": "请他吃晚餐 请老师教你英语 请坐",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3b8f60c9f4850fbe.webp",
@@ -850,6 +907,7 @@
       "sourceRow": 63,
       "pinyin": "děng",
       "japanese": "・(~を)待つ ・(~を)待ってから....する/~してから....する",
+      "example": "学生在车站等车 等老师来了，我们再问问题",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f2c3cdf108cabe74.webp",
@@ -864,6 +922,7 @@
       "sourceRow": 64,
       "pinyin": "jiāo",
       "japanese": "・教える",
+      "example": "哥哥教弟弟写字 教汉语",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-bd819fa4351e02d2.webp",
@@ -878,6 +937,7 @@
       "sourceRow": 66,
       "pinyin": "dú",
       "japanese": "・音読する/読み上げる ・読む ・学習する",
+      "example": "小朋友，请读课文。 英语报纸太难了，我读不懂 弟弟在读小学、哥哥在读高中。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-75f063b679e689ed.webp",
@@ -892,6 +952,7 @@
       "sourceRow": 67,
       "pinyin": "bāo",
       "japanese": "・(袋などで)包む/くるむ ・つつむ",
+      "example": "包饺子 用纸把虫包起来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ac6420d8de59cce5.webp",
@@ -906,6 +967,7 @@
       "sourceRow": 68,
       "pinyin": "dǎ",
       "japanese": "・なぐる/たたく ・電話する ・鉄砲をうつ",
+      "example": "请不要打同学 打电话 警察打了一枪",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5b4d2f96747121d9.webp",
@@ -920,6 +982,7 @@
       "sourceRow": 70,
       "pinyin": "chàng",
       "japanese": "・歌う",
+      "example": "唱歌",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aacb29afa63915dd.webp",
@@ -934,6 +997,7 @@
       "sourceRow": 71,
       "pinyin": "qí",
       "japanese": "・(バイク・自転車・馬などに)乗る/またがる",
+      "example": "骑自行车 骑摩托车 骑马",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f0abeb7c9087061f.webp",
@@ -948,6 +1012,7 @@
       "sourceRow": 72,
       "pinyin": "wán",
       "japanese": "・遊ぶ ・(~をして)遊ぶ",
+      "example": "小朋友们在公园玩 他们在晚玩球",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-800acbcb5ea31ee1.webp",
@@ -962,6 +1027,7 @@
       "sourceRow": 73,
       "pinyin": "shì",
       "japanese": "・(~を)試す",
+      "example": "试衣服 试吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-46cfa7ae5b47d597.webp",
@@ -976,6 +1042,7 @@
       "sourceRow": 74,
       "pinyin": "huàn",
       "japanese": "・交換する/替える",
+      "example": "换新的手机 去国外要换钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-82906bcde8811e1c.webp",
@@ -990,6 +1057,7 @@
       "sourceRow": 75,
       "pinyin": "biàn",
       "japanese": "・変化する/変わる",
+      "example": "天气变了 小美变可爱了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d3fd11060af32c7b.webp",
@@ -1004,6 +1072,7 @@
       "sourceRow": 76,
       "pinyin": "wán",
       "japanese": "・終わる/完了する ・(~を)し終わる",
+      "example": "上课已经完了 我做完蛋糕了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-84e0d9901cddfc36.webp",
@@ -1018,6 +1087,7 @@
       "sourceRow": 77,
       "pinyin": "mǎi",
       "japanese": "・買う",
+      "example": "在商店买东西 买菜",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fe0447ae939a0f1a.webp",
@@ -1032,6 +1102,7 @@
       "sourceRow": 78,
       "pinyin": "mài",
       "japanese": "・売る",
+      "example": "他的工作是卖面包",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0df2d2d97c8c0003.webp",
@@ -1046,6 +1117,7 @@
       "sourceRow": 79,
       "pinyin": "fù",
       "japanese": "・(お金を)払う",
+      "example": "付钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d124365ec0eb0421.webp",
@@ -1060,6 +1132,7 @@
       "sourceRow": 81,
       "pinyin": "jiè",
       "japanese": "・(お金・物を)借りる/貸す",
+      "example": "跟同学借书",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c2c6aa4cfde0a020.webp",
@@ -1074,6 +1147,7 @@
       "sourceRow": 83,
       "pinyin": "guàng",
       "japanese": "・(~を)ぶらぶらする",
+      "example": "周末去逛商店",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-21cb4be65f278094.webp",
@@ -1088,6 +1162,7 @@
       "sourceRow": 84,
       "pinyin": "jìn",
       "japanese": "・(~に)入る",
+      "example": "进房间里",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-28c31cd2d0a37c41.webp",
@@ -1102,6 +1177,7 @@
       "sourceRow": 85,
       "pinyin": "chū",
       "japanese": "・(外へ)出る",
+      "example": "8点出门，10点回家 早上5点太阳出来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1bbde98d13d078b3.webp",
@@ -1116,6 +1192,7 @@
       "sourceRow": 88,
       "pinyin": "qù",
       "japanese": "・行く",
+      "example": "你今天去学校吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6ccfb4cda4e0105c.webp",
@@ -1130,6 +1207,7 @@
       "sourceRow": 89,
       "pinyin": "lái",
       "japanese": "・来る",
+      "example": "朋友来我家了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-55ab60d56f6d325c.webp",
@@ -1144,6 +1222,7 @@
       "sourceRow": 90,
       "pinyin": "huí",
       "japanese": "・返す/返る",
+      "example": "回家 明年回国",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0b1aa1945d7d85ef.webp",
@@ -1158,6 +1237,7 @@
       "sourceRow": 91,
       "pinyin": "guò",
       "japanese": "・渡る/通過する ・来る ・行く/去っていく ・(時間・生活を)過ごす",
+      "example": "过马路 过来 过去 来中国以后两年过去了 过幸福的生活",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-68c1048a811cc614.webp",
@@ -1172,6 +1252,7 @@
       "sourceRow": 92,
       "pinyin": "dào",
       "japanese": "・到着する ・(時間・程度に)なる/達する",
+      "example": "地铁到车站了 时间到了。我们走吧。 参加人数到了20个人了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cbfc24ae27ba4386.webp",
@@ -1186,6 +1267,7 @@
       "sourceRow": 93,
       "pinyin": "zǒu",
       "japanese": "・歩く/移動する ・なくなってしまう/消える",
+      "example": "走路回家 汽车爸爸开走了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a7ddfb626c8aa648.webp",
@@ -1200,6 +1282,7 @@
       "sourceRow": 94,
       "pinyin": "pǎo",
       "japanese": "・走る ・逃げる",
+      "example": "我每天早上都跑5公里 小狗从家里跑走了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-734f4001b70769c4.webp",
@@ -1214,6 +1297,7 @@
       "sourceRow": 95,
       "pinyin": "tiào",
       "japanese": "・ジャンプする",
+      "example": "兔子在跳 他能跳很高",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-48c27009ecfd9ff9.webp",
@@ -1228,6 +1312,7 @@
       "sourceRow": 96,
       "pinyin": "tíng",
       "japanese": "・止まる/停まる",
+      "example": "雨停了 车子停在这里",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-588869ec1e1a21db.webp",
@@ -1242,6 +1327,7 @@
       "sourceRow": 97,
       "pinyin": "pá",
       "japanese": "・(4つ足で)はう ・(木や山を)登る ・起き上がる",
+      "example": "小虫在地上爬 我爱爬山 猴子在爬树 小男孩努力爬起来了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0017c3125efeb528.webp",
@@ -1256,6 +1342,7 @@
       "sourceRow": 98,
       "pinyin": "fēi",
       "japanese": "・(空を)飛ぶ",
+      "example": "小鸟飞在天空 球飞走了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9f25600245f62b83.webp",
@@ -1270,6 +1357,7 @@
       "sourceRow": 99,
       "pinyin": "qǐ chuáng",
       "japanese": "・(朝)起きる",
+      "example": "早上8点起床",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6b39fe51c6ec34de.webp",
@@ -1284,6 +1372,7 @@
       "sourceRow": 100,
       "pinyin": "sàn bù",
       "japanese": "・散歩する",
+      "example": "奶奶跟爷爷早上都去散步",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c81f7c150b36736c.webp",
@@ -1298,6 +1387,7 @@
       "sourceRow": 101,
       "pinyin": "shōu shi",
       "japanese": "・片づける/整理整頓する",
+      "example": "收拾房间",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5da9d919c832ae0d.webp",
@@ -1312,6 +1402,7 @@
       "sourceRow": 102,
       "pinyin": "chōu yān",
       "japanese": "・煙草を吸う",
+      "example": "这里不能抽烟",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2db9397dabee64e9.webp",
@@ -1326,6 +1417,7 @@
       "sourceRow": 103,
       "pinyin": "kāi chē",
       "japanese": "・(車を)運転する",
+      "example": "爸爸每天开车去公司",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a6e9e9f42c30594a.webp",
@@ -1340,6 +1432,7 @@
       "sourceRow": 104,
       "pinyin": "dǎ gōng",
       "japanese": "・アルバイトする",
+      "example": "哥哥下课后都去打工",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9562626f9208d82e.webp",
@@ -1354,6 +1447,7 @@
       "sourceRow": 105,
       "pinyin": "huí jiā",
       "japanese": "・家に帰る",
+      "example": "下课后就回家",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-745393c1e9fdc397.webp",
@@ -1368,6 +1462,7 @@
       "sourceRow": 106,
       "pinyin": "xǐ zǎo",
       "japanese": "・(お風呂やシャワーなどで)体を洗う",
+      "example": "回家后就洗澡",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4aba0a1e27ecd691.webp",
@@ -1382,6 +1477,7 @@
       "sourceRow": 107,
       "pinyin": "shuì jiào",
       "japanese": "・寝る",
+      "example": "我每天晚上十点睡觉",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-133c41952df70ede.webp",
@@ -1396,6 +1492,7 @@
       "sourceRow": 108,
       "pinyin": "shàng bān",
       "japanese": "・(会社に行って)仕事をする",
+      "example": "爸爸早上八点去公司上班",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fdefa7ca8741b56e.webp",
@@ -1410,6 +1507,7 @@
       "sourceRow": 109,
       "pinyin": "xià bān",
       "japanese": "・仕事を終える",
+      "example": "爸爸下午六点下班回家",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-db6ee34b58a9cd51.webp",
@@ -1424,6 +1522,7 @@
       "sourceRow": 110,
       "pinyin": "gōng zuò",
       "japanese": "・仕事をする/作業をする",
+      "example": "他工作了很久 我们今天的工作是洗车",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c13f6894ff1bb3f8.webp",
@@ -1438,6 +1537,7 @@
       "sourceRow": 111,
       "pinyin": "fàng jià",
       "japanese": "・休みになる/休暇する",
+      "example": "暑假放假十天 我明天放假",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4fda743d6c75a0bb.webp",
@@ -1452,6 +1552,7 @@
       "sourceRow": 112,
       "pinyin": "qǐng jià",
       "japanese": "・休みを取る/休みをもらう/休む",
+      "example": "爸爸生病了，今天请假了。 我生病了，要请假。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2b5350c02ea7b1b6.webp",
@@ -1466,6 +1567,7 @@
       "sourceRow": 113,
       "pinyin": "shàng xué",
       "japanese": "・登校する/学校へ行く",
+      "example": "很多小学生都是八点半上学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-214cafce2dc4b6b8.webp",
@@ -1480,6 +1582,7 @@
       "sourceRow": 114,
       "pinyin": "xià xué",
       "japanese": "・学校が終わる",
+      "example": "每天下学回家，妈妈都在家等我",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-88d412ba709a1b8d.webp",
@@ -1494,6 +1597,7 @@
       "sourceRow": 115,
       "pinyin": "fàng xué",
       "japanese": "・学校が終わる",
+      "example": "每天下学回家，妈妈都在家等我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fa9cfa1dbbad3796.webp",
@@ -1508,6 +1612,7 @@
       "sourceRow": 116,
       "pinyin": "chí dào",
       "japanese": "・遅れる/遅刻する",
+      "example": "我昨天上课迟到了... 老师很生气",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d6cb0a817e518900.webp",
@@ -1522,6 +1627,7 @@
       "sourceRow": 117,
       "pinyin": "shàng kè",
       "japanese": "・授業を受ける/授業に出る",
+      "example": "我很喜欢去学校上课 上汉语课",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1c3c21071c8e91d4.webp",
@@ -1536,6 +1642,7 @@
       "sourceRow": 118,
       "pinyin": "xià kè",
       "japanese": "・授業を終える/授業が終わる",
+      "example": "我们下课后去玩儿吧",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-52d184e38ee5fa5f.webp",
@@ -1550,6 +1657,7 @@
       "sourceRow": 119,
       "pinyin": "liàn xí",
       "japanese": "・練習する",
+      "example": "我每天练习写汉字",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a205058d2f0c7de5.webp",
@@ -1564,6 +1672,7 @@
       "sourceRow": 120,
       "pinyin": "yù xí",
       "japanese": "・予習する",
+      "example": "上课前先预习",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-bdee23a2cb582af6.webp",
@@ -1578,6 +1687,7 @@
       "sourceRow": 121,
       "pinyin": "fù xí",
       "japanese": "・復習する",
+      "example": "下课后回家复习",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e9e20922e8fd007a.webp",
@@ -1592,6 +1702,7 @@
       "sourceRow": 123,
       "pinyin": "liú xué",
       "japanese": "・留学する",
+      "example": "我想去美国留学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-364d0366ce5c68c2.webp",
@@ -1606,6 +1717,7 @@
       "sourceRow": 125,
       "pinyin": "tiào wǔ",
       "japanese": "・ダンスをする",
+      "example": "我周末去练习跳舞",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-180c9bf47a8ce658.webp",
@@ -1620,6 +1732,7 @@
       "sourceRow": 127,
       "pinyin": "xiū xi",
       "japanese": "・休む/休憩する",
+      "example": "工作累了回家休息",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ad805ff29fbf4c30.webp",
@@ -1634,6 +1747,7 @@
       "sourceRow": 128,
       "pinyin": "zhǔn bèi",
       "japanese": "・準備する",
+      "example": "老师在准备上课的教材",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ac1ee1b5a2778952.webp",
@@ -1648,6 +1762,7 @@
       "sourceRow": 129,
       "pinyin": "kāi shǐ",
       "japanese": "・開始する/始める/始まる",
+      "example": "暑假开始了 考试要开始了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8e0bfbf9791caf1e.webp",
@@ -1662,6 +1777,7 @@
       "sourceRow": 130,
       "pinyin": "chū fā",
       "japanese": "・出発する",
+      "example": "我们的巴士从北京出发",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0fc0cceb7aac2e94.webp",
@@ -1676,6 +1792,7 @@
       "sourceRow": 131,
       "pinyin": "cān jiā",
       "japanese": "・参加する",
+      "example": "我们三个人参加了学校的棒球队",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e95d0decda3618b9.webp",
@@ -1690,6 +1807,7 @@
       "sourceRow": 132,
       "pinyin": "cān guān",
       "japanese": "・見学する/参観する",
+      "example": "爸爸妈妈来参观了我的课",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-37a9e2b39d98ce76.webp",
@@ -1704,6 +1822,7 @@
       "sourceRow": 133,
       "pinyin": "lǚ yóu",
       "japanese": "・旅行する/観光する",
+      "example": "周末我们家人要去南京旅游",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-71fe750cdc3c844c.webp",
@@ -1718,6 +1837,7 @@
       "sourceRow": 134,
       "pinyin": "zhào xiàng",
       "japanese": "・写真を撮る",
+      "example": "大家一起照相吧",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-321d452e5a5b586b.webp",
@@ -1732,6 +1852,7 @@
       "sourceRow": 135,
       "pinyin": "pāi zhào",
       "japanese": "・写真を撮る",
+      "example": "大家一起拍照吧",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-47a06c859a59c27a.webp",
@@ -1746,6 +1867,7 @@
       "sourceRow": 136,
       "pinyin": "xià yǔ",
       "japanese": "・雨が降る",
+      "example": "今天会下雨 下大雨",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6bd6c00c7c66136c.webp",
@@ -1760,6 +1882,7 @@
       "sourceRow": 137,
       "pinyin": "guā fēng",
       "japanese": "・風が吹く",
+      "example": "外面刮风了 刮大风",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aec6b594dcf7d7ea.webp",
@@ -1774,6 +1897,7 @@
       "sourceRow": 138,
       "pinyin": "gǎn mào",
       "japanese": "・風邪をひく",
+      "example": "弟弟感冒了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a54c9b481a675ed6.webp",
@@ -1788,6 +1912,7 @@
       "sourceRow": 140,
       "pinyin": "kàn jiàn",
       "japanese": "・見える",
+      "example": "这里的河水很干净，能看见很多鱼",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aa0ea94a8733a29e.webp",
@@ -1802,6 +1927,7 @@
       "sourceRow": 141,
       "pinyin": "tīng jiàn",
       "japanese": "・聞こえる",
+      "example": "从妹妹的床下听见了老鼠的声音",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-70ccc40841d82be1.webp",
@@ -1816,6 +1942,7 @@
       "sourceRow": 142,
       "pinyin": "jué de",
       "japanese": "・思う/感じる",
+      "example": "你觉得今天冷吗 你觉得他会来吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9d7cc0130b7a2369.webp",
@@ -1830,6 +1957,7 @@
       "sourceRow": 143,
       "pinyin": "rèn shi",
       "japanese": "・知っている/認識する",
+      "example": "在学校认识了很多朋友 我认识了2000个汉字",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ca0a84be1debf262.webp",
@@ -1844,6 +1972,7 @@
       "sourceRow": 144,
       "pinyin": "míng bái",
       "japanese": "・理解する/わかる",
+      "example": "老师教的，你明白了吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5ad1dae1de42976f.webp",
@@ -1858,6 +1987,7 @@
       "sourceRow": 145,
       "pinyin": "zhī dào",
       "japanese": "・知る/わかる",
+      "example": "你知道他的名字吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5b86b1bbe8d32d2a.webp",
@@ -1872,6 +2002,7 @@
       "sourceRow": 146,
       "pinyin": "fàng xīn",
       "japanese": "・安心する",
+      "example": "小朋友们请放心，这次考试不难",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c8a1d59b72be40f2.webp",
@@ -1886,6 +2017,7 @@
       "sourceRow": 147,
       "pinyin": "mǎn yì",
       "japanese": "・満足する",
+      "example": "我考试考很好。妈妈很满意",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-058f68e5e43c13e1.webp",
@@ -1900,6 +2032,7 @@
       "sourceRow": 148,
       "pinyin": "xǐ huan",
       "japanese": "・好き",
+      "example": "小雨喜欢力宏呢",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9a1434d096efd90f.webp",
@@ -1914,6 +2047,7 @@
       "sourceRow": 149,
       "pinyin": "shēng qì",
       "japanese": "・怒る",
+      "example": "学生不听话，老师生气了。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ac6a5b3d4d60de03.webp",
@@ -1928,6 +2062,7 @@
       "sourceRow": 150,
       "pinyin": "zháo jí",
       "japanese": "・焦る",
+      "example": "弟弟今天很晚起床，早上很着急。",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-288a2c14b0d551df.webp",
@@ -1942,6 +2077,7 @@
       "sourceRow": 152,
       "pinyin": "zhù yì",
       "japanese": "・注目する/注意する",
+      "example": "同学们都在注意听老师的课 在外国旅行，要注意安全。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-30f2a1e5cf9ee28b.webp",
@@ -1956,6 +2092,7 @@
       "sourceRow": 153,
       "pinyin": "tīng shuō",
       "japanese": "・(聞くところによると)~だそうだ",
+      "example": "听说明天会下雨 听说他爸爸妈妈是韩国人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-956a591a6537f7cf.webp",
@@ -1970,6 +2107,7 @@
       "sourceRow": 154,
       "pinyin": "gào su",
       "japanese": "・伝える/知らせる",
+      "example": "妈妈告诉了我一个秘密",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6482f69faa2a446b.webp",
@@ -1984,6 +2122,7 @@
       "sourceRow": 155,
       "pinyin": "shuō huà",
       "japanese": "・話をする",
+      "example": "看电影时不要说话",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-de583fb7ba3e5af4.webp",
@@ -1998,6 +2137,7 @@
       "sourceRow": 156,
       "pinyin": "shuō míng",
       "japanese": "・説明する",
+      "example": "请说明今天迟到的理由",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f5d31116c7c3616d.webp",
@@ -2012,6 +2152,7 @@
       "sourceRow": 157,
       "pinyin": "shāng liáng",
       "japanese": "・相談する",
+      "example": "学校有问题，请跟老师商量！",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f337df9cc45426a4.webp",
@@ -2026,6 +2167,7 @@
       "sourceRow": 158,
       "pinyin": "huí xìn",
       "japanese": "・返信する",
+      "example": "他写了一封信给我，我需要回信",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1fe7e3ddf5d37ea5.webp",
@@ -2040,6 +2182,7 @@
       "sourceRow": 160,
       "pinyin": "jiè shào",
       "japanese": "・紹介する",
+      "example": "李红介绍一个朋友给我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e6aa207b1d0982db.webp",
@@ -2054,6 +2197,7 @@
       "sourceRow": 161,
       "pinyin": "huān yíng",
       "japanese": "・歓迎する",
+      "example": "同学们欢迎了新来的留学生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9e1826ad381d97ac.webp",
@@ -2068,6 +2212,7 @@
       "sourceRow": 162,
       "pinyin": "gǎn xiè",
       "japanese": "・感謝する",
+      "example": "我很感谢朋友们送我到机场",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a9eb67322b39ed5a.webp",
@@ -2082,6 +2227,7 @@
       "sourceRow": 163,
       "pinyin": "jié hūn",
       "japanese": "・結婚する",
+      "example": "莉莉跟保罗结婚了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-496da5206601720c.webp",
@@ -2096,6 +2242,7 @@
       "sourceRow": 2,
       "pinyin": "shēng",
       "japanese": "・生まれる ・生む",
+      "example": "姐姐生了一个小孩 我是1990年出生的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e8d62bf8bb27cae7.webp",
@@ -2110,6 +2257,7 @@
       "sourceRow": 3,
       "pinyin": "yǎng",
       "japanese": "・養う ・育てる",
+      "example": "我家养一只猫咪 我是爷爷奶奶把我养大的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1502e093a2cbd2b5.webp",
@@ -2124,6 +2272,7 @@
       "sourceRow": 4,
       "pinyin": "chū shēng",
       "japanese": "・生まれる",
+      "example": "我是在上海出生的 出生地",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-09b19bb0b6979135.webp",
@@ -2138,6 +2287,7 @@
       "sourceRow": 5,
       "pinyin": "shēng zhǎng",
       "japanese": "・育つ ・生まれ育つ",
+      "example": "这是我生长的农村 植物可以生长的环境",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-18661dca17958562.webp",
@@ -2152,6 +2302,7 @@
       "sourceRow": 6,
       "pinyin": "chéng zhǎng",
       "japanese": "・成長する",
+      "example": "这种花成长得很快 我喜欢看动物的成长",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-56294ea4b088da97.webp",
@@ -2166,6 +2317,7 @@
       "sourceRow": 7,
       "pinyin": "huó",
       "japanese": "・生きる",
+      "example": "我爷爷活了100岁 虽然工作辛苦，但是活得很快乐 有些人喜欢吃活鱼",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-48516140d106a093.webp",
@@ -2180,6 +2332,7 @@
       "sourceRow": 8,
       "pinyin": "sǐ",
       "japanese": "・死ぬ",
+      "example": "我家养的鱼死了...",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7de028d4d23b7797.webp",
@@ -2194,6 +2347,7 @@
       "sourceRow": 9,
       "pinyin": "shā",
       "japanese": "・殺す",
+      "example": "不要随便杀动物 在战争中很多人被杀了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7b4d7dd232d85022.webp",
@@ -2208,6 +2362,7 @@
       "sourceRow": 10,
       "pinyin": "hèn",
       "japanese": "・恨む",
+      "example": "我非常狠老板",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d88e6e2d7c54f4a1.webp",
@@ -2222,6 +2377,7 @@
       "sourceRow": 11,
       "pinyin": "fā shēng",
       "japanese": "・発生する/起こる",
+      "example": "在这里发生了交通事故 今天在学校发生了很多事情",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9ccd44b71244ec6f.webp",
@@ -2236,6 +2392,7 @@
       "sourceRow": 12,
       "pinyin": "shēng chǎn",
       "japanese": "・生産する",
+      "example": "在工厂里生产很多商品 提高机器的生产力",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a1f66150e628c21e.webp",
@@ -2250,6 +2407,7 @@
       "sourceRow": 13,
       "pinyin": "yǐng xiǎng",
       "japanese": "・影響する ・影響を与える",
+      "example": "天气影响了蔬菜的价格 我的老师影响了我的人生 抽烟会影响身体的健康",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a5ba6b0d8333766e.webp",
@@ -2264,6 +2422,7 @@
       "sourceRow": 14,
       "pinyin": "chū xiàn",
       "japanese": "・現れる/出現する",
+      "example": "在森林里出现了一只老虎 人老了会出现很多毛病",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-954d068f90b6e148.webp",
@@ -2278,6 +2437,7 @@
       "sourceRow": 15,
       "pinyin": "xiāo shī",
       "japanese": "・消える",
+      "example": "小孩子突然消失，让父母亲很着急 一颗流星消失在夜空中",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a587af628b661766.webp",
@@ -2292,6 +2452,7 @@
       "sourceRow": 16,
       "pinyin": "fā zhǎn",
       "japanese": "・発展する",
+      "example": "中国的大城市发展得很快 两个人的关系发展得怎么样？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-62bbc7010e44b6c0.webp",
@@ -2306,6 +2467,7 @@
       "sourceRow": 17,
       "pinyin": "fáng zhǐ",
       "japanese": "・防止する/防ぐ",
+      "example": "防止事故的发生 防止环境的破坏",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-26f68d5580053a1a.webp",
@@ -2320,6 +2482,7 @@
       "sourceRow": 18,
       "pinyin": "bì miǎn",
       "japanese": "・免れる ・防ぐ",
+      "example": "应该想办法避免两国的战争。 避免同样的错误。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-04769e3feece3a37.webp",
@@ -2334,6 +2497,7 @@
       "sourceRow": 19,
       "pinyin": "wéi fǎn",
       "japanese": "・違反する ・~に反する",
+      "example": "请不要违反学校的规定 违反法律",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8a18a68fe5604cf6.webp",
@@ -2348,6 +2512,7 @@
       "sourceRow": 20,
       "pinyin": "wū rǎn",
       "japanese": "・汚染する",
+      "example": "人类污染的自然的环境 这家工厂造成了周围的环境污染 空气污染",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0ddaf212eb008b4b.webp",
@@ -2362,6 +2527,7 @@
       "sourceRow": 21,
       "pinyin": "yóu lǎn",
       "japanese": "・遊覧する ・観光する",
+      "example": "游览观光景点 游览车",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-26bbb4542a7ad2e8.webp",
@@ -2376,6 +2542,7 @@
       "sourceRow": 22,
       "pinyin": "fǎng wèn",
       "japanese": "・訪問する",
+      "example": "美国总统访问中国 大公司老板要访问我们公司",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4836493408ee8f32.webp",
@@ -2390,6 +2557,7 @@
       "sourceRow": 23,
       "pinyin": "zuò kè",
       "japanese": "・客となる ・(客として)訪問する",
+      "example": "去朋友家做客",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5f7bd7c88a4c48c9.webp",
@@ -2404,6 +2572,7 @@
       "sourceRow": 24,
       "pinyin": "zhāo dài",
       "japanese": "・もてなす",
+      "example": "用大餐来招待客人 中国人招待客人的方式",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3905e5a7ec6d614a.webp",
@@ -2418,6 +2587,7 @@
       "sourceRow": 25,
       "pinyin": "jiē dài",
       "japanese": "・接待する",
+      "example": "接待客人时要有礼貌 他要接待大老板",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3b8fac39d076b882.webp",
@@ -2432,6 +2602,7 @@
       "sourceRow": 26,
       "pinyin": "chū chāi",
       "japanese": "・出張する",
+      "example": "爸爸去外国出差",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d306881b3ed953be.webp",
@@ -2446,6 +2617,7 @@
       "sourceRow": 27,
       "pinyin": "bìng",
       "japanese": "・病気になる",
+      "example": "他病得很严重 弟弟常常生病",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-d3d6f266c8532393.webp",
@@ -2460,6 +2632,7 @@
       "sourceRow": 28,
       "pinyin": "zuì",
       "japanese": "・酔う/酔っぱらう",
+      "example": "爸爸喝醉了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-84578509e8369485.webp",
@@ -2474,6 +2647,7 @@
       "sourceRow": 29,
       "pinyin": "tǔ tù",
       "japanese": "・(tǔ)吐く ・(tù)吐いてしまう/嘔吐する",
+      "example": "吐口水 小宝宝把牛奶吐出来了 坐公车会晕车，容易吐",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6af9d86dc9b96a2d.webp",
@@ -2488,6 +2662,7 @@
       "sourceRow": 30,
       "pinyin": "xī",
       "japanese": "・吸う",
+      "example": "蚊子会吸血 吸烟丢身体没有好处 吸毒",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-69ff26e7dc3de753.webp",
@@ -2502,6 +2677,7 @@
       "sourceRow": 31,
       "pinyin": "chuī",
       "japanese": "・(風が)吹く ・(息を)吹きかける",
+      "example": "吹口哨 吹笛子 大风吹 进去房间里面吹冷气",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d7a34c2619ab6376.webp",
@@ -2516,6 +2692,7 @@
       "sourceRow": 32,
       "pinyin": "yǎo",
       "japanese": "・噛む",
+      "example": "被狗咬了 咬一口苹果 咬牙忍痛",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-934258dee6c2c97f.webp",
@@ -2530,6 +2707,7 @@
       "sourceRow": 33,
       "pinyin": "tiǎn",
       "japanese": "・(舌で)なめる",
+      "example": "舔一口冰淇淋 我家小狗喜欢舔我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a6a03b3ac3350094.webp",
@@ -2544,6 +2722,7 @@
       "sourceRow": 34,
       "pinyin": "hū xī",
       "japanese": "・呼吸する/息をする",
+      "example": "深呼吸 在森林里呼吸新鲜的空气 有人倒在地上没有呼吸心跳",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c6d4f7a809429b3c.webp",
@@ -2558,6 +2737,7 @@
       "sourceRow": 35,
       "pinyin": "ké sou",
       "japanese": "・咳をする",
+      "example": "她感冒了，一直在咳嗽",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b8fd7ca6ef9b1d07.webp",
@@ -2572,6 +2752,7 @@
       "sourceRow": 36,
       "pinyin": "kàn bìng",
       "japanese": "・(病気を)診てもらう ・(病気を)診察する",
+      "example": "感冒要去医院看病 医生为我们看病",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-27a8dce743138cac.webp",
@@ -2586,6 +2767,7 @@
       "sourceRow": 37,
       "pinyin": "fā shāo",
       "japanese": "・発熱する",
+      "example": "被雨淋湿后开始发烧了 发烧发38度",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ce38d577c6ba4425.webp",
@@ -2600,6 +2782,7 @@
       "sourceRow": 38,
       "pinyin": "zhù yuàn",
       "japanese": "・入院する",
+      "example": "病很严重的话需要住院 小雨住院住了一个星期",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-17919d26f1d4cd8e.webp",
@@ -2614,6 +2797,7 @@
       "sourceRow": 39,
       "pinyin": "chū yuàn",
       "japanese": "・退院する",
+      "example": "你明天就可以出院了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-275c0f445bd38536.webp",
@@ -2628,6 +2812,7 @@
       "sourceRow": 40,
       "pinyin": "dǎ zhēn",
       "japanese": "・注射をする",
+      "example": "打针疼不疼？ 打预防针 我不想打针，请给我开药",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-97cbe953ae97f3b0.webp",
@@ -2642,6 +2827,7 @@
       "sourceRow": 41,
       "pinyin": "zhì liáo",
       "japanese": "・治療する",
+      "example": "治疗病人 治疗伤口 他的病需要住院治疗",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3ce7243e018bb240.webp",
@@ -2656,6 +2842,7 @@
       "sourceRow": 42,
       "pinyin": "dòng shǒu shù",
       "japanese": "・手術する",
+      "example": "她生了大病，需要动手术。 他小时候动过大手术",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7165d39e86822022.webp",
@@ -2670,6 +2857,7 @@
       "sourceRow": 43,
       "pinyin": "huī fù",
       "japanese": "・回復する ・元通りになる",
+      "example": "动了手术后，她慢慢恢复了健康。 大地震后日本的经济慢慢恢复了。 两国的国际关系恢复正常了。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-102b8828142e2da4.webp",
@@ -2684,6 +2872,7 @@
       "sourceRow": 45,
       "pinyin": "shòu",
       "japanese": "・受ける ・~される",
+      "example": "爷爷以前很穷，受了很多苦。 小王很有人气，在学校很受欢迎。 受同学的批评",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8c6cc6980a657085.webp",
@@ -2698,6 +2887,7 @@
       "sourceRow": 47,
       "pinyin": "qǔ dé",
       "japanese": "・獲得する ・勝ち取る",
+      "example": "这次任务取得了成功 篮球队取得了胜利 取得日本国籍",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-646af68db9fe0ff0.webp",
@@ -2712,6 +2902,7 @@
       "sourceRow": 48,
       "pinyin": "huò dé",
       "japanese": "・獲得する ・手に入れる",
+      "example": "获得成功 获得奖励 获得冠军",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ee7b599e5f5431c6.webp",
@@ -2726,6 +2917,7 @@
       "sourceRow": 49,
       "pinyin": "jiāo huàn",
       "japanese": "・交換する",
+      "example": "交换礼物 交换意见 我的卡片跟你的交换一下",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dfae173d5d14b943.webp",
@@ -2740,6 +2932,7 @@
       "sourceRow": 50,
       "pinyin": "tí gōng",
       "japanese": "・提供する",
+      "example": "为穷人提供食物 给上司提供资料 为客户提供服务",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9d850a0eb6589086.webp",
@@ -2754,6 +2947,7 @@
       "sourceRow": 51,
       "pinyin": "gōng jǐ",
       "japanese": "・供給する",
+      "example": "供给电力 石油的供给不足",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c7c4bbd0379f0558.webp",
@@ -2768,6 +2962,7 @@
       "sourceRow": 52,
       "pinyin": "xū yào",
       "japanese": "・必要とする ・需要",
+      "example": "人需要朋友 明天考试我需要努力学习 为了生活爸爸需要努力工作",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a28d6df6905ff8a5.webp",
@@ -2782,6 +2977,7 @@
       "sourceRow": 53,
       "pinyin": "fēn pèi",
       "japanese": "・分配する/配る",
+      "example": "公平地分配食物 工作量的分配",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-628cee721e518394.webp",
@@ -2796,6 +2992,7 @@
       "sourceRow": 54,
       "pinyin": "mǎn zú",
       "japanese": "・満足する/満たす",
+      "example": "满足老板的要求 满足人民的需要 对我现在的生活很满足",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-eb9c97053a2623c2.webp",
@@ -2810,6 +3007,7 @@
       "sourceRow": 55,
       "pinyin": "tiáo zhěng",
       "japanese": "・調整する",
+      "example": "调整价格 行程需要调整一下 手表慢了3分钟，需要调整",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-78f455edc4294f54.webp",
@@ -2824,6 +3022,7 @@
       "sourceRow": 56,
       "pinyin": "yāo qiú",
       "japanese": "・要求する",
+      "example": "每天要求爸爸给我零用钱 要求妈妈原谅我 老师对我们的要求很高",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6009c0bd62af4a39.webp",
@@ -2838,6 +3037,7 @@
       "sourceRow": 57,
       "pinyin": "qiú",
       "japanese": "・お願いする",
+      "example": "求求你，分我一点食物 我求过他，但他并不帮我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ce9dcab00cf1b3f9.webp",
@@ -2852,6 +3052,7 @@
       "sourceRow": 58,
       "pinyin": "jiù",
       "japanese": "・救助する/救う ・助ける",
+      "example": "救命啊！！ 我掉进海里时，他救了我一命 他不会游泳，我得去救他",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-278aa9f010f812f0.webp",
@@ -2866,6 +3067,7 @@
       "sourceRow": 59,
       "pinyin": "jiā",
       "japanese": "・加える ・(数などを)足す",
+      "example": "一加一等于二 咖啡里加一点糖 我们球队加入了一个新人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a1a7892251409306.webp",
@@ -2880,6 +3082,7 @@
       "sourceRow": 60,
       "pinyin": "suàn",
       "japanese": "・(~と)みなす ・計算する/数える",
+      "example": "他们算是好朋友 这次你赢，算你运气好 请算一下一共多少钱 这一题你算的出来吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-668ecfb8c339e708.webp",
@@ -2894,6 +3097,7 @@
       "sourceRow": 61,
       "pinyin": "shǔ",
       "japanese": "・(数字を)数える",
+      "example": "让我数一下这里有几个人 我们一起数到一百吧",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8f786baa73f5f9e0.webp",
@@ -2908,6 +3112,7 @@
       "sourceRow": 62,
       "pinyin": "fēn",
       "japanese": "・分ける",
+      "example": "把一个巧克力分给弟弟 男女分开",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-41fbff397f4ba473.webp",
@@ -2922,6 +3127,7 @@
       "sourceRow": 63,
       "pinyin": "shèng",
       "japanese": "・余る/残る",
+      "example": "饭要吃完，别吃剩 学生都回家了，教室里就剩老师而已",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ccb2e905dd365b55.webp",
@@ -2936,6 +3142,7 @@
       "sourceRow": 64,
       "pinyin": "liú",
       "japanese": "・残る ・とどまる ・髪を伸ばす",
+      "example": "妈妈一个人留在家照顾小狗 不要留下我一个人离开 留长头发",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d50babad03d01181.webp",
@@ -2950,6 +3157,7 @@
       "sourceRow": 65,
       "pinyin": "zhàn",
       "japanese": "・(割合などを)占める ・占領する",
+      "example": "赞成占多数，反对占少数。 占优势 同学占了我的位子 暑假期间学习占了大部分的时间",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-064699ae50862619.webp",
@@ -2964,6 +3172,7 @@
       "sourceRow": 66,
       "pinyin": "dìng",
       "japanese": "・予定する/予約する ・取り決める",
+      "example": "把旅游的行程定下来 订机票 订饭店 订座位",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-010196e3400d0c8a.webp",
@@ -2978,6 +3187,7 @@
       "sourceRow": 67,
       "pinyin": "gǎi",
       "japanese": "・変更する ・改める/訂正する",
+      "example": "帮你改作文 我们改天再约时间吧 行程改了，我们不去南京了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cf2ec5b4223db3ba.webp",
@@ -2992,6 +3202,7 @@
       "sourceRow": 68,
       "pinyin": "gǎi zào",
       "japanese": "・改造する",
+      "example": "改造汽车 改造过的机车非常快",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fbba881d3b0f373b.webp",
@@ -3006,6 +3217,7 @@
       "sourceRow": 69,
       "pinyin": "gǎi biàn",
       "japanese": "・変更する",
+      "example": "人的性格改变不了 改变世界的发明 生活习惯需要改变",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-2b87a7d496763ed9.webp",
@@ -3020,6 +3232,7 @@
       "sourceRow": 70,
       "pinyin": "cún",
       "japanese": "・貯める ・保存する",
+      "example": "存钱 把粮食存起来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d1128f4653c917b4.webp",
@@ -3034,6 +3247,7 @@
       "sourceRow": 71,
       "pinyin": "péi",
       "japanese": "・賠償する/弁償する ・(お金を)損する",
+      "example": "不小心打破玻璃，我得赔钱 赔偿对方 生意失败了，爸爸赔了很多钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5a7e73bed90cb257.webp",
@@ -3048,6 +3262,7 @@
       "sourceRow": 73,
       "pinyin": "guā",
       "japanese": "・(ヒゲを)そる ・削る ・(風が)吹く",
+      "example": "刮胡子 汽车上有很多挂上 刮风",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f9c2b515c418ae72.webp",
@@ -3062,6 +3277,7 @@
       "sourceRow": 74,
       "pinyin": "rēng",
       "japanese": "・投げる ・投げ捨てる/捨てる",
+      "example": "扔球 扔垃圾",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a2ee788a90ab3341.webp",
@@ -3076,6 +3292,7 @@
       "sourceRow": 75,
       "pinyin": "wén",
       "japanese": "・(においを)かぐ ・(においが)する",
+      "example": "闻到了臭味 这朵花的香味让你问一下",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-80eae86db92e266f.webp",
@@ -3090,6 +3307,7 @@
       "sourceRow": 76,
       "pinyin": "xǐng",
       "japanese": "・目が覚める",
+      "example": "爷爷每天早上5点就醒来 爸爸在睡觉，别把他吵醒 已经10点了，但是哥哥还没醒",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e18fc0f29d33a3dd.webp",
@@ -3104,6 +3322,7 @@
       "sourceRow": 77,
       "pinyin": "shēn",
       "japanese": "・(手や体の部位を)伸ばす ・(援助を)差し出す",
+      "example": "伸手 伸出舌头 乌龟把头伸出来了 伸出援手",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-06e21c26747c0f76.webp",
@@ -3118,6 +3337,7 @@
       "sourceRow": 78,
       "pinyin": "guì",
       "japanese": "・ひざまずく",
+      "example": "跪下 跪求原谅 跪着道歉",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f64b0f213dd4b383.webp",
@@ -3132,6 +3352,7 @@
       "sourceRow": 79,
       "pinyin": "dūn",
       "japanese": "・しゃがむ",
+      "example": "深蹲 蹲下来 在路上蹲着抽烟",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-232cdffb367a9589.webp",
@@ -3146,6 +3367,7 @@
       "sourceRow": 80,
       "pinyin": "pā",
       "japanese": "・うつ伏せ",
+      "example": "趴在床上 小狗在地上趴着睡觉",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d473ae27b46170df.webp",
@@ -3160,6 +3382,7 @@
       "sourceRow": 81,
       "pinyin": "tǎng",
       "japanese": "・横たわる",
+      "example": "一躺下就睡着了 躺着看书",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f172a9881fda0515.webp",
@@ -3174,6 +3397,7 @@
       "sourceRow": 82,
       "pinyin": "bào",
       "japanese": "・抱っこする/ハグする ・(気持ちを)抱く",
+      "example": "男女朋友一见面就紧紧抱住 把哭不停的孩子抱起来 对未来抱有希望",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-60e6a8276b7f89b0.webp",
@@ -3188,6 +3412,7 @@
       "sourceRow": 83,
       "pinyin": "dòng",
       "japanese": "・動く/動かす",
+      "example": "你缺少运动，得出去动动身 不要随便动别人的东西 不要动，把双手举起来！ 小狗躺着一动也不动",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7c7b87fe2f831f69.webp",
@@ -3202,6 +3427,7 @@
       "sourceRow": 84,
       "pinyin": "pèng",
       "japanese": "・触る/触れる ・ぶつかる ・出くわす/遭遇する ・(運を)試してみる",
+      "example": "在路上碰见老朋友 旧玻璃窗一碰就破了 碰运气",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e5f432138a73a6e4.webp",
@@ -3216,6 +3442,7 @@
       "sourceRow": 85,
       "pinyin": "pāi",
       "japanese": "・たたく/はたく ・(写真・映像を)とる",
+      "example": "拍手 拍打 拍照片 拍影片",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ce18da4f90fb2c0b.webp",
@@ -3230,6 +3457,7 @@
       "sourceRow": 86,
       "pinyin": "àn",
       "japanese": "・(ボタンなどを)押す ・[前置詞] ~に応じて",
+      "example": "按按钮 按顺序排列",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c177f8c7845a6a6d.webp",
@@ -3244,6 +3472,7 @@
       "sourceRow": 87,
       "pinyin": "mō",
       "japanese": "・触る/触れる",
+      "example": "弟弟很喜欢摸狗 墙壁刚涂了油漆，还不能摸",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-111a78ca73381c1b.webp",
@@ -3258,6 +3487,7 @@
       "sourceRow": 88,
       "pinyin": "cǎi",
       "japanese": "・踏む/踏みつける",
+      "example": "他把虫踩死了 踩到大便了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-72be7894ce0e1045.webp",
@@ -3272,6 +3502,7 @@
       "sourceRow": 89,
       "pinyin": "niǔ",
       "japanese": "・ねじる/ひねる",
+      "example": "他扭到脚了 扭紧盖子",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e1281191f71697cd.webp",
@@ -3286,6 +3517,7 @@
       "sourceRow": 90,
       "pinyin": "shuā",
       "japanese": "・みがく",
+      "example": "刷牙",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-402369857a9688c2.webp",
@@ -3300,6 +3532,7 @@
       "sourceRow": 91,
       "pinyin": "tú",
       "japanese": "・塗る",
+      "example": "小朋友喜欢画画，涂颜色。 涂油漆 涂口红",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a6b65cced954e8d3.webp",
@@ -3314,6 +3547,7 @@
       "sourceRow": 92,
       "pinyin": "qiē",
       "japanese": "・切る",
+      "example": "切菜 把苹果切成两半",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3b0e36e931449879.webp",
@@ -3328,6 +3562,7 @@
       "sourceRow": 93,
       "pinyin": "jiǎn",
       "japanese": "・(ハサミで)切る",
+      "example": "剪头发 用剪刀剪",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ccbbb6b06b88a1dc.webp",
@@ -3342,6 +3577,7 @@
       "sourceRow": 94,
       "pinyin": "jiā",
       "japanese": "・(物と物で)挟む ・(物体の間に)挟む",
+      "example": "用筷子夹菜 夹子 把一封信夹在书中 前后都被敌人夹住了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-19558644393ed327.webp",
@@ -3356,6 +3592,7 @@
       "sourceRow": 95,
       "pinyin": "cì",
       "japanese": "・(鋭いもので)刺す",
+      "example": "被针刺到了 把气球刺破了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-927bdfb9f7259f77.webp",
@@ -3370,6 +3607,7 @@
       "sourceRow": 96,
       "pinyin": "zhuàng",
       "japanese": "・ぶつかる/衝突する",
+      "example": "被汽车撞到了 撞墙",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d091835217bd9c55.webp",
@@ -3384,6 +3622,7 @@
       "sourceRow": 97,
       "pinyin": "jiǎo",
       "japanese": "・かき回す/混ぜる ・かき乱される",
+      "example": "我的旅行计划被搅乱了 用筷子搅一搅 加鸡蛋之后需要搅拌",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d3a491844ae0e66e.webp",
@@ -3398,6 +3637,7 @@
       "sourceRow": 98,
       "pinyin": "yáo",
       "japanese": "・揺らす ・(左右に)振る",
+      "example": "我摇摇头对他说\"对不起\" 浪很大，船摇得很厉害 花草被吹得摇来摇去",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7d209322e3acd43c.webp",
@@ -3412,6 +3652,7 @@
       "sourceRow": 99,
       "pinyin": "pò",
       "japanese": "・破れる/割れる/壊れる ・(記録などを)破る",
+      "example": "衣服破了一个洞 玻璃被打破了 他破了世界纪录",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ac076861c6918970.webp",
@@ -3426,6 +3667,7 @@
       "sourceRow": 100,
       "pinyin": "pò huài",
       "japanese": "・破壊する",
+      "example": "破坏别人的生活 大自然被人类破坏了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-18f6ec9c49a6d452.webp",
@@ -3440,6 +3682,7 @@
       "sourceRow": 101,
       "pinyin": "chāi",
       "japanese": "・取り壊す/取り外す/分解する ・開封する",
+      "example": "拆开信封 拆房子 把汽车拆开",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3d33e22a24def9f5.webp",
@@ -3454,6 +3697,7 @@
       "sourceRow": 102,
       "pinyin": "diào",
       "japanese": "・(物が地面に)落ちる ・(色が)落ちる",
+      "example": "树上的苹果掉在地上 我家小狗掉很多毛 洗完以后衣服的颜色掉了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-10ca06af3655edcc.webp",
@@ -3468,6 +3712,7 @@
       "sourceRow": 103,
       "pinyin": "suì",
       "japanese": "・(ガラスなどが)割れる ・粉々になる",
+      "example": "把玻璃打碎 心碎了 被子的碎片",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-891e631fd255eb11.webp",
@@ -3482,6 +3727,7 @@
       "sourceRow": 104,
       "pinyin": "shuāi",
       "japanese": "・転ぶ ・落とす/落ちる",
+      "example": "摔了一跤 小男孩走路时不小心摔倒了 从斜坡上摔下来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-527b4acb86201c22.webp",
@@ -3496,6 +3742,7 @@
       "sourceRow": 105,
       "pinyin": "shī qù",
       "japanese": "・失う/なくす",
+      "example": "失去良心 失去感情 失去了最重要的东西",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-83005f333e52c652.webp",
@@ -3510,6 +3757,7 @@
       "sourceRow": 106,
       "pinyin": "dǎ sǎo",
       "japanese": "・掃除する",
+      "example": "打扫房间 打扫干净",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-cd075156311f01fe.webp",
@@ -3524,6 +3772,7 @@
       "sourceRow": 107,
       "pinyin": "zhgěng lǐ",
       "japanese": "・整理する/片付ける",
+      "example": "整理房间 车里太乱了，需要整理整理 明天坐飞机，今晚得整理行李",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-b16d8990c4c3e9d9.webp",
@@ -3538,6 +3787,7 @@
       "sourceRow": 109,
       "pinyin": "lián",
       "japanese": "・つながる/つなぐ",
+      "example": "把两个线连起来 心连心 这条河连接着大海",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-005f91308f634643.webp",
@@ -3552,6 +3802,7 @@
       "sourceRow": 110,
       "pinyin": "tiē",
       "japanese": "・貼り付ける",
+      "example": "把邮票贴在信封上 在墙上贴一张海报",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-ddc7fbcc00d200ec.webp",
@@ -3566,6 +3817,7 @@
       "sourceRow": 111,
       "pinyin": "gài",
       "japanese": "・ふたをする/かぶせる ・(家を)建てる ・印鑑をする",
+      "example": "盖上盖子 盖棉被 盖房子 盖章",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-efcd63603713bec3.webp",
@@ -3580,6 +3832,7 @@
       "sourceRow": 112,
       "pinyin": "guà",
       "japanese": "・(壁などに)掛ける",
+      "example": "在墙上挂一幅图 教室里挂了一张大大的地图 挂衣服",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-567a0c15beb22be5.webp",
@@ -3594,6 +3847,7 @@
       "sourceRow": 113,
       "pinyin": "qiāo",
       "japanese": "・たたく/ノックする",
+      "example": "敲门 敲大鼓",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-35ddd0759642f993.webp",
@@ -3608,6 +3862,7 @@
       "sourceRow": 114,
       "pinyin": "xiǎng",
       "japanese": "・(音が)響く ・(音が)鳴る",
+      "example": "手机突然响起来了 门铃响了",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-b4d6dbc6ac145cf4.webp",
@@ -3622,6 +3877,7 @@
       "sourceRow": 115,
       "pinyin": "dǎ kāi",
       "japanese": "・(ドアや本を)開く ・(電源を)つける",
+      "example": "打开课本 打开门 打开空调 打开灯",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-95bfd6449ab64950.webp",
@@ -3636,6 +3892,7 @@
       "sourceRow": 116,
       "pinyin": "gōng kāi",
       "japanese": "・公開する ・公開された/公の[形容詞]",
+      "example": "公开学生的成绩 不能公开的秘密 公开的信息",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-2a4c8b6d46a02472.webp",
@@ -3650,6 +3907,7 @@
       "sourceRow": 117,
       "pinyin": "shǐ yòng",
       "japanese": "・使用する",
+      "example": "使用最新的工具 使用电脑查资料 不能使用暴力解决问题",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-b25edba655b110ca.webp",
@@ -3664,6 +3922,7 @@
       "sourceRow": 118,
       "pinyin": "lì yòng",
       "japanese": "・利用する",
+      "example": "利用网络查询资料 利用很多人力盖大楼 小王被坏人利用了",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-c588c46a5f743796.webp",
@@ -3678,6 +3937,7 @@
       "sourceRow": 120,
       "pinyin": "qǔ xiāo",
       "japanese": "・取り消す",
+      "example": "计划取消了 取消预约 因为天气不好，比赛被取消了",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-b2ba9010fad962ab.webp",
@@ -3692,6 +3952,7 @@
       "sourceRow": 121,
       "pinyin": "xiū gǎi",
       "japanese": "・修正する",
+      "example": "写错的地方需要修改 作文已经修改好了 修改法律",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-f810cf471ae9890f.webp",
@@ -3706,6 +3967,7 @@
       "sourceRow": 122,
       "pinyin": "què dìng",
       "japanese": "・確定する ・確かな/明確な",
+      "example": "活动的时间还没确定 你确定他不是坏人？ 请确定旅行的计划",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-b5a44e84f5b45a27.webp",
@@ -3720,6 +3982,7 @@
       "sourceRow": 123,
       "pinyin": "guī dìng",
       "japanese": "・規定する/定める ・規定",
+      "example": "校长规定学校的事情 总经理规定员工的工作方式 不能违反法律的规定",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-32af1697d7963ac9.webp",
@@ -3734,6 +3997,7 @@
       "sourceRow": 124,
       "pinyin": "dìng",
       "japanese": "・定める/決める",
+      "example": "开会的时间跟地点定下来了 需要定好外国旅行的计划 时间暂时定在八点怎么样？",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-012c7e8988164d3c.webp",
@@ -3748,6 +4012,7 @@
       "sourceRow": 127,
       "pinyin": "qiān míng",
       "japanese": "・サインする ・署名する",
+      "example": "送货员要求我签名字 请在报名表上面签名 跟明星要签名",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-6e625001b053a7b2.webp",
@@ -3762,6 +4027,7 @@
       "sourceRow": 128,
       "pinyin": "zàn chéng",
       "japanese": "・賛成する ・同意する",
+      "example": "我赞成你的想法 我们班里只有他不赞成",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-566b9c0d498aa7c8.webp",
@@ -3776,6 +4042,7 @@
       "sourceRow": 129,
       "pinyin": "fǎn duì",
       "japanese": "・反対する",
+      "example": "反对意见很多 他对这个计划表示反对 我们很反对这个政策",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-1bc3fe2a12c2f38e.webp",
@@ -3790,6 +4057,7 @@
       "sourceRow": 130,
       "pinyin": "fǒu dìng",
       "japanese": "・否定する",
+      "example": "提出的意见被同学否定了 父母亲不能否定孩子的梦想要支持他们 老板否定了我的意见",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-c4a3adfe83129127.webp",
@@ -3804,6 +4072,7 @@
       "sourceRow": 131,
       "pinyin": "kěn dìng",
       "japanese": "・肯定する/認める/支持する ・肯定・支持 [名詞 ・確実に/絶対に [副詞]",
+      "example": "不要一直否定别人，肯定自己 老师对学生的肯定与鼓励 我的成绩得到父母亲的肯定 他今天肯定会来的",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-a070d0a085c78d05.webp",
@@ -3818,6 +4087,7 @@
       "sourceRow": 133,
       "pinyin": "yǔn xǔ",
       "japanese": "・許可する",
+      "example": "爸爸不允许我6点以后出门 今天请允许我喝酒",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-7270fef1bed59df6.webp",
@@ -3832,6 +4102,7 @@
       "sourceRow": 134,
       "pinyin": "bǎo zhèng",
       "japanese": "・保証する ・保証[名詞]",
+      "example": "我保证你明天一定会参加你的婚礼 我不敢保证这个东西是真的 保证人",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-fffa586947c0d5e0.webp",
@@ -3846,6 +4117,7 @@
       "sourceRow": 135,
       "pinyin": "dā yìng",
       "japanese": "・返答する ・了承する/承諾する",
+      "example": "她想了很久，终于答应我的要求 不要随便答应别人的请求 我叫了几声，但是房子里没人答应",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-798ce3a25ca35b16.webp",
@@ -3860,6 +4132,7 @@
       "sourceRow": 136,
       "pinyin": "fǎn yìng",
       "japanese": "・反応する ・反応[名詞]",
+      "example": "闹钟一直响，但他都没反应 老鼠出来时，小猫的反应速度很快 现场观众的反应都很好",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-abaff26cb27fb64f.webp",
@@ -3874,6 +4147,7 @@
       "sourceRow": 137,
       "pinyin": "shì hé",
       "japanese": "・適している/合っている",
+      "example": "老人适合穿深色的衣服 这个工作不适合我",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-def823c409d3bdd5.webp",
@@ -3888,6 +4162,7 @@
       "sourceRow": 139,
       "pinyin": "tōng zhī",
       "japanese": "・通知する/知らせる",
+      "example": "如果同学做坏事，请通知老师 你到教室时，请通知我一声",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-1014be81b5ba36fc.webp",
@@ -6772,6 +7047,7 @@
       "pinyin": "dà jiā",
       "japanese": "みんな",
       "difficulty": "☆",
+      "example": "大家好 大家请听",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-37e0eb213f0f.webp",
@@ -6788,6 +7064,7 @@
       "pinyin": "rén",
       "japanese": "人（ひと）",
       "difficulty": "☆",
+      "example": "他是日本人 我们是人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-a66948a76fda.webp",
@@ -6802,6 +7079,7 @@
       "sourceRow": 4,
       "pinyin": "dà rén",
       "japanese": "・大人(おとな)",
+      "example": "这里有两个大人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f3f37b00670ad118.webp",
@@ -6816,6 +7094,7 @@
       "sourceRow": 5,
       "pinyin": "xiǎo hái r",
       "japanese": "・子供(こども)",
+      "example": "他们是个小孩儿",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-3beb1fd09cf9f6cd.webp",
@@ -6830,6 +7109,7 @@
       "sourceRow": 6,
       "pinyin": "ér tóng",
       "japanese": "・児童・子供",
+      "example": "儿童课 儿童班",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-e431cd2fee25738f.webp",
@@ -6846,6 +7126,7 @@
       "pinyin": "kè ren",
       "japanese": "お客さん",
       "difficulty": "☆",
+      "example": "来了一位客人 有很多乘客",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-86f5cdb6e25c.webp",
@@ -6862,6 +7143,7 @@
       "pinyin": "péng you",
       "japanese": "友達",
       "difficulty": "☆",
+      "example": "这是我的好朋友 男朋友 女朋友",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-bdc7865a507e.webp",
@@ -6878,6 +7160,7 @@
       "pinyin": "xiān sheng",
       "japanese": "先生（男性）",
       "difficulty": "☆",
+      "example": "王先生很帅 先生，您好",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-86367b2d53f6.webp",
@@ -6894,6 +7177,7 @@
       "pinyin": "zì jǐ",
       "japanese": "自分",
       "difficulty": "☆",
+      "example": "自己做饭自己吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-2cfcacc0503e.webp",
@@ -6908,6 +7192,7 @@
       "sourceRow": 12,
       "pinyin": "jiā rén",
       "japanese": "家族",
+      "example": "这是我的家人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3a5e25379fafc13c.webp",
@@ -6922,6 +7207,7 @@
       "sourceRow": 13,
       "pinyin": "jiā tíng",
       "japanese": "家庭",
+      "example": "温暖的家庭",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d363fa5683379014.webp",
@@ -6938,6 +7224,7 @@
       "pinyin": "bà ba",
       "japanese": "お父さん",
       "difficulty": "☆",
+      "example": "他是一个好爸爸",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-e7bc12c4f23a.webp",
@@ -6954,6 +7241,7 @@
       "pinyin": "mā ma",
       "japanese": "お母さん",
       "difficulty": "☆",
+      "example": "妈妈很爱我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-e64490a207eb.webp",
@@ -6970,6 +7258,7 @@
       "pinyin": "fù qin",
       "japanese": "父親",
       "difficulty": "☆",
+      "example": "父亲现在不在",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-bada4e11125d.webp",
@@ -6986,6 +7275,7 @@
       "pinyin": "mǔ qin",
       "japanese": "母親",
       "difficulty": "☆",
+      "example": "我母亲是老师",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-d903f490725f.webp",
@@ -7002,6 +7292,7 @@
       "pinyin": "gē ge",
       "japanese": "お兄さん",
       "difficulty": "☆",
+      "example": "哥哥常常跟我玩儿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-7420330fee5c.webp",
@@ -7018,6 +7309,7 @@
       "pinyin": "jiě jie",
       "japanese": "お姉さん",
       "difficulty": "☆",
+      "example": "姐姐不跟我玩儿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-ed096023b3be.webp",
@@ -7034,6 +7326,7 @@
       "pinyin": "dì di",
       "japanese": "弟",
       "difficulty": "☆",
+      "example": "弟弟很可爱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-cb42fb8775e5.webp",
@@ -7074,6 +7367,7 @@
       "pinyin": "mèi mei",
       "japanese": "妹",
       "difficulty": "☆",
+      "example": "我有一个妹妹",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-c39a19585434.webp",
@@ -7118,6 +7412,7 @@
       "pinyin": "ài rén",
       "japanese": "配偶者",
       "difficulty": "☆",
+      "example": "我爱人很会做饭 我爱人很有钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-3e6fabf09358.webp",
@@ -7134,6 +7429,7 @@
       "pinyin": "zhàng fu",
       "japanese": "夫",
       "difficulty": "☆",
+      "example": "他是个好丈夫 他是个好老公",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-1c0cdf0b2b9c.webp",
@@ -7150,6 +7446,7 @@
       "pinyin": "qī zi",
       "japanese": "妻",
       "difficulty": "☆",
+      "example": "我妻子很吵 我老婆很吵",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-8fea4ac29b4c.webp",
@@ -7166,6 +7463,7 @@
       "pinyin": "hái zi",
       "japanese": "子ども",
       "difficulty": "☆",
+      "example": "我有两个孩子 小孩子很可爱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-94757170c2b0.webp",
@@ -7182,6 +7480,7 @@
       "pinyin": "ér zi",
       "japanese": "息子",
       "difficulty": "☆",
+      "example": "这是我的儿子",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-core-v1/ill-teacher-star-1-0cc5799cdbbc.webp",
@@ -7196,6 +7495,7 @@
       "sourceRow": 31,
       "pinyin": "nǚ ér",
       "japanese": "娘",
+      "example": "这是我的女儿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e0d64b8a9c9bdb9b.webp",
@@ -7209,6 +7509,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 32,
       "japanese": "年寄、老人",
+      "example": "老人在走路",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-05b5093cc670cbc1.webp",
@@ -7223,6 +7524,7 @@
       "sourceRow": 33,
       "pinyin": "nián qīng rén",
       "japanese": "若い人",
+      "example": "年轻人跟老人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-be2ecb790e2602ba.webp",
@@ -7237,6 +7539,7 @@
       "sourceRow": 34,
       "pinyin": "nán hái r",
       "japanese": "男の子",
+      "example": "男孩喜欢出去玩",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-966a591b6c22a6c8.webp",
@@ -7251,6 +7554,7 @@
       "sourceRow": 35,
       "pinyin": "nǚ hái r",
       "japanese": "女の子",
+      "example": "她是个好女孩",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-c5bdd905e263f802.webp",
@@ -7265,6 +7569,7 @@
       "sourceRow": 36,
       "pinyin": "nán shēng",
       "japanese": "男性/男の子",
+      "example": "小学的男生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dbeff7abf3b73d1b.webp",
@@ -7279,6 +7584,7 @@
       "sourceRow": 37,
       "pinyin": "nǚ shēng",
       "japanese": "女性/女の子",
+      "example": "一个小女生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f41e197e52adb83c.webp",
@@ -7293,6 +7599,7 @@
       "sourceRow": 38,
       "pinyin": "nán rén",
       "japanese": "男性/男の人",
+      "example": "他是一个好男人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-27e7d8b4fc5e585f.webp",
@@ -7307,6 +7614,7 @@
       "sourceRow": 39,
       "pinyin": "nǚ rén",
       "japanese": "女性/女の人",
+      "example": "很美丽的女人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-daefecd9183fb6b6.webp",
@@ -7321,6 +7629,7 @@
       "sourceRow": 40,
       "pinyin": "yé ye",
       "japanese": "おじいちゃん",
+      "example": "现在爷爷在家",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5841b670b18ec9e9.webp",
@@ -7335,6 +7644,7 @@
       "sourceRow": 41,
       "pinyin": "nǎi nai",
       "japanese": "おばあちゃん",
+      "example": "他去了奶奶家",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3b36c87d3d8affaa.webp",
@@ -7349,6 +7659,7 @@
       "sourceRow": 42,
       "pinyin": "sūn zi",
       "japanese": "孫",
+      "example": "奶奶很爱孙子",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0e230e5ca9b50421.webp",
@@ -7363,6 +7674,7 @@
       "sourceRow": 43,
       "pinyin": "shū shu",
       "japanese": "・おじさん(父方の兄弟) ・おじさん(親戚関係ではない)",
+      "example": "弟弟很喜欢叔叔 那位叔叔是谁？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-565b523e9e5db86c.webp",
@@ -7391,6 +7703,7 @@
       "sourceRow": 45,
       "pinyin": "lǎo shī",
       "japanese": "先生/教師",
+      "example": "老师很忙 张老师",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1fe394978e1e2ad9.webp",
@@ -7405,6 +7718,7 @@
       "sourceRow": 46,
       "pinyin": "xué shēng",
       "japanese": "学生/生徒",
+      "example": "学生在努力学习",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-229b8cc431c4092d.webp",
@@ -7419,6 +7733,7 @@
       "sourceRow": 47,
       "pinyin": "dà xué shēng",
       "japanese": "大学生",
+      "example": "哥哥是大学生了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-eebafb805ea84aa2.webp",
@@ -7433,6 +7748,7 @@
       "sourceRow": 48,
       "pinyin": "liú xué shēng",
       "japanese": "留学生",
+      "example": "学校有很多留学生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c24cc45921591d81.webp",
@@ -7447,6 +7763,7 @@
       "sourceRow": 49,
       "pinyin": "tóng xué",
       "japanese": "・同級生・クラスメイト ・~くん・~さん(学生に対して呼ぶ)",
+      "example": "我跟她是同学 李同学早上好",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a0e6d9dd5d1ba776.webp",
@@ -7461,6 +7778,7 @@
       "sourceRow": 50,
       "pinyin": "tóng shì",
       "japanese": "(職場の)同僚",
+      "example": "公司的同事",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-484271cb843ccb38.webp",
@@ -7475,6 +7793,7 @@
       "sourceRow": 51,
       "pinyin": "zhí yè",
       "japanese": "職業",
+      "example": "爸爸的职业是什么",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cea89eb3d16465d6.webp",
@@ -7489,6 +7808,7 @@
       "sourceRow": 52,
       "pinyin": "gōng rén",
       "japanese": "作業員・労働者",
+      "example": "工人的工作很辛苦",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cc325cec17b61ddf.webp",
@@ -7503,6 +7823,7 @@
       "sourceRow": 54,
       "pinyin": "shī fu",
       "japanese": "職人さん・技術者の人",
+      "example": "师傅，我要吃面 司机师傅，多少钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-69949d88db4389bf.webp",
@@ -7517,6 +7838,7 @@
       "sourceRow": 55,
       "pinyin": "sī jī",
       "japanese": "運転手",
+      "example": "他是一个好司机",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d18bb890c05723f5.webp",
@@ -7531,6 +7853,7 @@
       "sourceRow": 56,
       "pinyin": "fú wù yuán",
       "japanese": "スタッフ(*主に接客をする人)",
+      "example": "餐厅的服务员 商店的服务员",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-879b334f95d6b61d.webp",
@@ -7545,6 +7868,7 @@
       "sourceRow": 57,
       "pinyin": "diàn yuán",
       "japanese": "店員",
+      "example": "商店的店员",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2107258c48a95970.webp",
@@ -7559,6 +7883,7 @@
       "sourceRow": 58,
       "pinyin": "shòu huò yuán",
       "japanese": "販売員・セールスマン",
+      "example": "百货公司的售货员",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ca72b8019dff4422.webp",
@@ -7573,6 +7898,7 @@
       "sourceRow": 59,
       "pinyin": "yī shēng",
       "japanese": "お医者さん",
+      "example": "他是好医生 去医院看医生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aa3004d5f6bb82a8.webp",
@@ -7587,6 +7913,7 @@
       "sourceRow": 60,
       "pinyin": "dài fu",
       "japanese": "お医者さん",
+      "example": "他是好大夫",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f19e08773da9d8ad.webp",
@@ -7601,6 +7928,7 @@
       "sourceRow": 61,
       "pinyin": "yǎn jīng",
       "japanese": "目",
+      "example": "眼睛很好",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f3261083bddc1e30.webp",
@@ -8736,6 +9064,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词1",
       "sourceRow": 176,
+      "example": "讲话",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-572276a292a39eeb.webp",
@@ -11232,6 +11561,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词1",
       "sourceRow": 428,
+      "example": "有空",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-bd52860f1425eb6c.webp",
@@ -15012,6 +15342,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 251,
+      "example": "帮你找好对象",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-220c69329ba9e2f8.webp",
@@ -15264,6 +15595,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 272,
+      "example": "这是代表2020年的词",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ef59e72f0bb84919.webp",
@@ -16680,6 +17012,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 394,
+      "example": "大家的外语水平都不一样",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4173218ee7ecf8f3.webp",
@@ -16776,6 +17109,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 403,
+      "example": "我很希望世界和平...（祈祷）",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aa79f9e2dfd1b905.webp",
@@ -16788,6 +17122,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 405,
+      "example": "他给人的印象很好",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-01a7cdd0b4f0e657.webp",
@@ -16896,6 +17231,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 414,
+      "example": "朋友：「加油，你可以的！！要有信心」",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1dfe2c1b946dad85.webp",
@@ -16944,6 +17280,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 419,
+      "example": "妈妈：「请说清楚你做坏事的理由」",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-312a032d51f2da1d.webp",
@@ -16980,6 +17317,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 422,
+      "example": "身体的作用",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b121527facab153e.webp",
@@ -17112,6 +17450,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 436,
+      "example": "这个医生很专业",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-93ddd52fd6580418.webp",
@@ -17160,6 +17499,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 440,
+      "example": "新课本的内容很复杂",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d2a80fc123a736c6.webp",
@@ -17184,6 +17524,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 442,
+      "example": "世界的生活情况很不一样",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-03c8c28e0bca5398.webp",
@@ -17196,6 +17537,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 444,
+      "example": "各个国家的传统不一样",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e709a34ba08f36ba.webp",
@@ -17208,6 +17550,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 445,
+      "example": "他在想什么？我不懂他的意思？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-bcdc76d3aef2c404.webp",
@@ -17220,6 +17563,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 446,
+      "example": "享受生活才是人生的意义",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a90cd5f8005f5236.webp",
@@ -17244,6 +17588,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 448,
+      "example": "坏人的目的是害人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7b68d7e21c3ad233.webp",
@@ -17292,6 +17637,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 453,
+      "example": "被解放后自由了！！",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e27c61956295a52f.webp",
@@ -17304,6 +17650,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 454,
+      "example": "老板：「又失败了？你要怎么给我付上责任呢？」",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c2e1c4758a3e7349.webp",
@@ -17316,6 +17663,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 455,
+      "example": "平时小王不努力，考试前才努力",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2c0f78a8ad9ec26f.webp",
@@ -17340,6 +17688,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 457,
+      "example": "妈妈：「当时的爸爸很帅呢」",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c3224e0c0c433c6f.webp",
@@ -17472,6 +17821,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 468,
+      "example": "时代慢慢变化了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-94b11bdd1187bdf1.webp",
@@ -17508,6 +17858,7 @@
       "partOfSpeech": "noun",
       "sourceSheet": "名词2",
       "sourceRow": 471,
+      "example": "人类最初是猴子呢",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-af31e41509b2c2ec.webp",
@@ -17594,6 +17945,7 @@
       "sourceRow": 2,
       "pinyin": "hǎo",
       "japanese": "・よい ・とても~だ[副詞] ・わかりました",
+      "example": "今天天气很好 好吃 这只狗好可爱啊 好，知道了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aadfaaf50fd3cb98.webp",
@@ -17608,6 +17960,7 @@
       "sourceRow": 3,
       "pinyin": "bùhǎo",
       "japanese": "・よくない/悪い",
+      "example": "爷爷身体不好 不好吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-10e24dbc94d4e991.webp",
@@ -17622,6 +17975,7 @@
       "sourceRow": 4,
       "pinyin": "huài",
       "japanese": "・わるい ・壊れる/悪くなる",
+      "example": "小王爱打人，很坏 他是个坏孩子 自行车坏了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-afc5a9b394e97a2b.webp",
@@ -17636,6 +17990,7 @@
       "sourceRow": 5,
       "pinyin": "duì",
       "japanese": "・合っている/正しい/正確な ・(答える時)はい、そうです。",
+      "example": "老师，这一题对吗? 小美说得不对 对，我是他弟弟",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fe2668a9c67385f9.webp",
@@ -17650,6 +18005,7 @@
       "sourceRow": 6,
       "pinyin": "cuò",
       "japanese": "・間違っている/正しくない",
+      "example": "这个问题很难，老师也错了。 我们走错路了！",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-039ce5a5f8e4fbba.webp",
@@ -17664,6 +18020,7 @@
       "sourceRow": 8,
       "pinyin": "dà",
       "japanese": "・大きい",
+      "example": "他的个子很大 大人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-162bdcceeee92ba5.webp",
@@ -17678,6 +18035,7 @@
       "sourceRow": 9,
       "pinyin": "xiǎo",
       "japanese": "・小さい",
+      "example": "我的学校比他的小一点儿 小孩子",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0ad9b3d264f91f8a.webp",
@@ -17692,6 +18050,7 @@
       "sourceRow": 10,
       "pinyin": "duō",
       "japanese": "・多い",
+      "example": "我的班里有很多留学生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7e395cc2a8617ea0.webp",
@@ -17706,6 +18065,7 @@
       "sourceRow": 13,
       "pinyin": "duǎn",
       "japanese": "・短い",
+      "example": "这支铅笔太短了 短裤",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f8384ea613f6d164.webp",
@@ -17720,6 +18080,7 @@
       "sourceRow": 14,
       "pinyin": "gāo",
       "japanese": "・高い",
+      "example": "高山 弟弟比哥哥高",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2104c35ed7e45731.webp",
@@ -17734,6 +18095,7 @@
       "sourceRow": 15,
       "pinyin": "dī",
       "japanese": "・低い",
+      "example": "今天的气温很低",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a0e3e6960e1887b3.webp",
@@ -17748,6 +18110,7 @@
       "sourceRow": 16,
       "pinyin": "ǎi",
       "japanese": "・(身長などの高さが)低い",
+      "example": "我是班上最矮的学生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-936a5b2880718aee.webp",
@@ -17762,6 +18125,7 @@
       "sourceRow": 17,
       "pinyin": "shēn",
       "japanese": "・深い",
+      "example": "这个游泳池很深，要小心 这个苹果颜色深",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b88318509b4f31c7.webp",
@@ -17776,6 +18140,7 @@
       "sourceRow": 18,
       "pinyin": "qiǎn",
       "japanese": "・浅い",
+      "example": "水太浅了，不能游泳 浅蓝色的衣服",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-32fc76fc20037116.webp",
@@ -17790,6 +18155,7 @@
       "sourceRow": 19,
       "pinyin": "qīng",
       "japanese": "・軽い",
+      "example": "课本很轻，词典很重",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9635622ce2c73f8a.webp",
@@ -17804,6 +18170,7 @@
       "sourceRow": 20,
       "pinyin": "zhòng",
       "japanese": "・重い",
+      "example": "今天背包太重了... 病重的老人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2f7720f219a08770.webp",
@@ -17818,6 +18185,7 @@
       "sourceRow": 21,
       "pinyin": "kuài",
       "japanese": "・(スピードが)早い ・もうすぐ/まもなく[副詞]",
+      "example": "爸爸吃饭很快 小王跑得快 快8点了，我们快迟到了。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d99c155d37630a30.webp",
@@ -17832,6 +18200,7 @@
       "sourceRow": 22,
       "pinyin": "màn",
       "japanese": "・(スピードが)遅い/ゆっくりである",
+      "example": "老人走路很慢 吃饭要慢慢吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3204f964c154457c.webp",
@@ -17846,6 +18215,7 @@
       "sourceRow": 23,
       "pinyin": "zǎo",
       "japanese": "・(時間が)早い",
+      "example": "爷爷早上很早起床 老师叫我早一点来上学",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-651faaaae42a0965.webp",
@@ -17860,6 +18230,7 @@
       "sourceRow": 24,
       "pinyin": "wǎn",
       "japanese": "・(時間が)遅い",
+      "example": "莉莉晚上很晚睡觉 排队7点开始，他们来晚了。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6fb4c7d10cdf408b.webp",
@@ -17874,6 +18245,7 @@
       "sourceRow": 25,
       "pinyin": "yuǎn",
       "japanese": "・(距離や時間が)遠い",
+      "example": "我家离学校很远 离毕业不远了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f32846c59bd753e6.webp",
@@ -17888,6 +18260,7 @@
       "sourceRow": 26,
       "pinyin": "jìn",
       "japanese": "・(距離が)近い",
+      "example": "教室离食堂很近",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f1e31bedf0645427.webp",
@@ -17902,6 +18275,7 @@
       "sourceRow": 27,
       "pinyin": "cū",
       "japanese": "・(物が)太い",
+      "example": "爸爸很胖，腿很粗。 小王的声音很粗 很粗的眉毛",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-be6d40804a1b88ec.webp",
@@ -17916,6 +18290,7 @@
       "sourceRow": 28,
       "pinyin": "xì",
       "japanese": "・(物が)細い ・(仕事などが)細かい/丁寧である",
+      "example": "很粗的线跟很细的线 他做事很细，很认真",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b939b17e474c6174.webp",
@@ -17930,6 +18305,7 @@
       "sourceRow": 29,
       "pinyin": "xīn",
       "japanese": "・新しい",
+      "example": "买了一个新的书包 我交了新朋友",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-da615a84e1c78ccd.webp",
@@ -17944,6 +18320,7 @@
       "sourceRow": 30,
       "pinyin": "jiù",
       "japanese": "・古い",
+      "example": "爷爷奶奶穿的衣服都很旧",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-015ec51b7f2245db.webp",
@@ -17958,6 +18335,7 @@
       "sourceRow": 31,
       "pinyin": "pián yi",
       "japanese": "・(値段が)安い",
+      "example": "妈妈喜欢在百货店买便宜的东西",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-477724e52fb289ab.webp",
@@ -17972,6 +18350,7 @@
       "sourceRow": 32,
       "pinyin": "guì",
       "japanese": "・(値段が)高い",
+      "example": "东京的房子太贵了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d12cae852ee88095.webp",
@@ -17986,6 +18365,7 @@
       "sourceRow": 33,
       "pinyin": "hǎo kàn",
       "japanese": "・見た目が良い ・キレイ/かっこいい",
+      "example": "这件衣服很好看 小王长得很好看 莉莉长得很好看",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6c8df77d4ebd1e56.webp",
@@ -18000,6 +18380,7 @@
       "sourceRow": 34,
       "pinyin": "piào liang",
       "japanese": "・キレイである",
+      "example": "很漂亮的美女 教室里整理得漂漂亮亮的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a7ad942fa533df4e.webp",
@@ -18014,6 +18395,7 @@
       "sourceRow": 35,
       "pinyin": "kě ài",
       "japanese": "・可愛い",
+      "example": "我家有一只很可爱的小狗",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ecf8a1d094a265b6.webp",
@@ -18028,6 +18410,7 @@
       "sourceRow": 36,
       "pinyin": "chǒu",
       "japanese": "・不細工である/醜い",
+      "example": "我家的狗很可爱，小王家的狗很丑 我弟弟字写得很丑",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-242668e15ae571fc.webp",
@@ -18042,6 +18425,7 @@
       "sourceRow": 37,
       "pinyin": "shòu",
       "japanese": "・やせている",
+      "example": "生病后瘦了很多",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ec015569a1d882ef.webp",
@@ -18056,6 +18440,7 @@
       "sourceRow": 38,
       "pinyin": "pàng",
       "japanese": "・太っている",
+      "example": "弟弟很瘦，哥哥很胖",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-420ab0a4f63bd9d2.webp",
@@ -18070,6 +18455,7 @@
       "sourceRow": 39,
       "pinyin": "lǎo",
       "japanese": "・年をとっている",
+      "example": "奶奶老了，走路很慢了 老人 老奶奶",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-606f2cb2e9791a33.webp",
@@ -18084,6 +18470,7 @@
       "sourceRow": 40,
       "pinyin": "nián qīng",
       "japanese": "・若い",
+      "example": "小美的爸爸很老，妈妈很年轻",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0ede4bdc42611849.webp",
@@ -18098,6 +18485,7 @@
       "sourceRow": 41,
       "pinyin": "róng yì",
       "japanese": "・容易である/簡単である ・~しやすい/~しがちである",
+      "example": "这一题很容易 她很容易生病",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a81dec36c1bfed5d.webp",
@@ -18112,6 +18500,7 @@
       "sourceRow": 42,
       "pinyin": "jiǎn dān",
       "japanese": "・簡単である ・すごい(*不简单の場合)",
+      "example": "今天的考试很简单 你考试考了100分，真不简单",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-5a4a3de444f8cee1.webp",
@@ -18126,6 +18515,7 @@
       "sourceRow": 43,
       "pinyin": "nán",
       "japanese": "・難しい",
+      "example": "很难的汉语书 老师的问题很难",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-eda5a3c16779f726.webp",
@@ -18140,6 +18530,7 @@
       "sourceRow": 44,
       "pinyin": "kùn nán",
       "japanese": "・困難",
+      "example": "你有困难，朋友会帮忙",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4acf080511b366cf.webp",
@@ -18154,6 +18545,7 @@
       "sourceRow": 45,
       "pinyin": "xīn kǔ",
       "japanese": "・つらい/大変な/苦労する",
+      "example": "爸爸的工作很辛苦 外国辛苦了一年，才学会了外语",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-489f1455613996b4.webp",
@@ -18168,6 +18560,7 @@
       "sourceRow": 46,
       "pinyin": "máng",
       "japanese": "・忙しい",
+      "example": "爸爸工作很忙，7点上班，12点下班。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6ffb3e6bdaa985ce.webp",
@@ -18182,6 +18575,7 @@
       "sourceRow": 47,
       "pinyin": "lèi",
       "japanese": "・疲れる",
+      "example": "我回家后要做家事，真的很累。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-074c3a69b4e8022f.webp",
@@ -18196,6 +18590,7 @@
       "sourceRow": 48,
       "pinyin": "kùn",
       "japanese": "・眠い",
+      "example": "运动后上课很困 英语老师的课很困",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-918a05422c02a396.webp",
@@ -18210,6 +18605,7 @@
       "sourceRow": 51,
       "pinyin": "è",
       "japanese": "・お腹がすいている",
+      "example": "肚子饿了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-bccf2bdf3385cc1e.webp",
@@ -18224,6 +18620,7 @@
       "sourceRow": 53,
       "pinyin": "kě",
       "japanese": "・のどが渇く",
+      "example": "口渴了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-017177262751eb9b.webp",
@@ -18238,6 +18635,7 @@
       "sourceRow": 54,
       "pinyin": "jǐn zhāng",
       "japanese": "・緊張している",
+      "example": "我考试前都很紧张",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b07d1eb6eff66f00.webp",
@@ -18252,6 +18650,7 @@
       "sourceRow": 55,
       "pinyin": "lěng",
       "japanese": "・寒い",
+      "example": "冬天很冷",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-23e8349d5bf8d665.webp",
@@ -18266,6 +18665,7 @@
       "sourceRow": 56,
       "pinyin": "rè",
       "japanese": "・(気温が)暑い ・(温度を)熱くする",
+      "example": "今天天气很热 大太阳天很热 饭凉了，帮我加热",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-026b608a6cc05218.webp",
@@ -18280,6 +18680,7 @@
       "sourceRow": 57,
       "pinyin": "liáng",
       "japanese": "・(気温や気候が)涼しい",
+      "example": "海边的风很凉 夏天白天很热，晚上很凉",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b64cbfd607a39e79.webp",
@@ -18294,6 +18695,7 @@
       "sourceRow": 58,
       "pinyin": "nuǎn",
       "japanese": "・(温度や気候が)あたたかい",
+      "example": "春天了，天暖了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-be91bf05f69ad93a.webp",
@@ -18308,6 +18710,7 @@
       "sourceRow": 60,
       "pinyin": "shī",
       "japanese": "・濡れている/湿っている",
+      "example": "下雨天，衣服湿了 衣服还没干，湿湿的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dc065e6138045238.webp",
@@ -18322,6 +18725,7 @@
       "sourceRow": 61,
       "pinyin": "gāo xìng",
       "japanese": "・うれしい",
+      "example": "朋友给我礼物，我很高兴",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6681dac71261ffbb.webp",
@@ -18336,6 +18740,7 @@
       "sourceRow": 62,
       "pinyin": "yú kuài",
       "japanese": "・(気持ちが)愉快な/楽しい",
+      "example": "妈妈的心情很愉快",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-32ba7851a03d9817.webp",
@@ -18350,6 +18755,7 @@
       "sourceRow": 63,
       "pinyin": "xìng fú",
       "japanese": "・幸せな ・幸福",
+      "example": "幸福的生活 跟你一起，我很幸福",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e4df0f3c9f8e20e5.webp",
@@ -18364,6 +18770,7 @@
       "sourceRow": 64,
       "pinyin": "shū fu",
       "japanese": "・気持ちいい",
+      "example": "在沙发上睡觉很舒服 很舒服的衣服",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-15ba8771abc9ae1e.webp",
@@ -18378,6 +18785,7 @@
       "sourceRow": 65,
       "pinyin": "kuài lè",
       "japanese": "・楽しい",
+      "example": "生日快乐 我们过了很快乐的时间",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d180f14427666ae4.webp",
@@ -18392,6 +18800,7 @@
       "sourceRow": 66,
       "pinyin": "kāi xīn",
       "japanese": "・うれしい",
+      "example": "我们玩得很开心 爷爷来我家找我，我很开心。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-72f48753178e60bd.webp",
@@ -18406,6 +18815,7 @@
       "sourceRow": 67,
       "pinyin": "má fan",
       "japanese": "・めんどう",
+      "example": "每天要做家事，很麻烦。 麻烦你帮我找课本。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a3558afa785f7e2f.webp",
@@ -18420,6 +18830,7 @@
       "sourceRow": 68,
       "pinyin": "yǒu yì si",
       "japanese": "・おもしろい/興味深い",
+      "example": "这个游戏很有意思 有意思的书",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-82f2d3dfeaf8e67f.webp",
@@ -18434,6 +18845,7 @@
       "sourceRow": 70,
       "pinyin": "nán guò",
       "japanese": "・つらい/悲しい",
+      "example": "老师骂了我。我觉得很难过。 心里很难过",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-09ae54b83e5dddcc.webp",
@@ -18448,6 +18860,7 @@
       "sourceRow": 71,
       "pinyin": "suān",
       "japanese": "・すっぱい",
+      "example": "很酸的橘子 酸奶 酸梅",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-62c115cd9180a7c9.webp",
@@ -18462,6 +18875,7 @@
       "sourceRow": 72,
       "pinyin": "tián",
       "japanese": "・あまい",
+      "example": "糖果很甜 很甜的苹果",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5d9af57768ee4916.webp",
@@ -18476,6 +18890,7 @@
       "sourceRow": 73,
       "pinyin": "kǔ",
       "japanese": "・(味が)苦い ・つらい/苦しい",
+      "example": "很苦的茶 工人的工作很苦 爸爸以前吃了很多苦",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-54212ace1b8d0d1a.webp",
@@ -18490,6 +18905,7 @@
       "sourceRow": 74,
       "pinyin": "là",
       "japanese": "・辛い",
+      "example": "很辣的麻婆豆腐 辣椒很辣",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4dbc4e6f375ca9f1.webp",
@@ -18504,6 +18920,7 @@
       "sourceRow": 75,
       "pinyin": "xián",
       "japanese": "・塩辛い/しょっぱい",
+      "example": "这条鱼很咸",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f29efbbbd15fb16e.webp",
@@ -18518,6 +18935,7 @@
       "sourceRow": 76,
       "pinyin": "xiāng",
       "japanese": "・香り高い/いい香り ・(ご飯などが)おいしい",
+      "example": "很香的花 这家店的炒菜很香 我的料理他吃得很香",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4504bf50dba5b0e7.webp",
@@ -18532,6 +18950,7 @@
       "sourceRow": 77,
       "pinyin": "dàn",
       "japanese": "・(味や色が)うすい",
+      "example": "这个菜的味道很淡 颜色很淡",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5accb6e53bc6acbc.webp",
@@ -18546,6 +18965,7 @@
       "sourceRow": 78,
       "pinyin": "tàng",
       "japanese": "・(温度が)熱い ・やけどする ・あたためる",
+      "example": "他烫到了手 很烫的汤 烫衣服 烫头发",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7da77f19d5d26538.webp",
@@ -18560,6 +18980,7 @@
       "sourceRow": 79,
       "pinyin": "hǎo chī",
       "japanese": "・(食べ物が)おいしい",
+      "example": "好吃的料理",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-88ba27378d3cfe89.webp",
@@ -18574,6 +18995,7 @@
       "sourceRow": 80,
       "pinyin": "hǎo hē",
       "japanese": "・(飲み物が)おいしい",
+      "example": "好喝的饮料 这碗汤很好喝",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f481f6ab6987c0a2.webp",
@@ -18588,6 +19010,7 @@
       "sourceRow": 81,
       "pinyin": "nán chī",
       "japanese": "・(食べ物が)不味い/おいしくない",
+      "example": "学校食堂的料理很难吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b546c0b88bacc4c9.webp",
@@ -18602,6 +19025,7 @@
       "sourceRow": 82,
       "pinyin": "nán hē",
       "japanese": "・(飲み物が)不味い/おいしくない",
+      "example": "这杯咖啡很苦，很难喝",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ffc3ad2a3fef0187.webp",
@@ -18616,6 +19040,7 @@
       "sourceRow": 83,
       "pinyin": "hǎo tīng",
       "japanese": "・(音楽や声が)いい音/心地よい/美しい",
+      "example": "莉莉弹钢琴很好听 小鸟的歌声很好听",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b09ace670c79fe2b.webp",
@@ -18630,6 +19055,7 @@
       "sourceRow": 84,
       "pinyin": "fāng biàn",
       "japanese": "・便利な ・都合がいい",
+      "example": "城市的生活很方便 现在方便讲电话吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-343c2f8858fd5b4f.webp",
@@ -18644,6 +19070,7 @@
       "sourceRow": 85,
       "pinyin": "gān jìng",
       "japanese": "・キレイ/清潔 ・きれいさっぱりに",
+      "example": "很干净的房间 打扫得很干净 全部的料理都吃得干干净净",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cb3b0d368ef8fdcd.webp",
@@ -18658,6 +19085,7 @@
       "sourceRow": 86,
       "pinyin": "qīng chu",
       "japanese": "・はっきりと/明確に",
+      "example": "听得清楚吗？ 看得清楚吗？ 请说清楚理由",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-78971a0af3ee1bcf.webp",
@@ -18672,6 +19100,7 @@
       "sourceRow": 87,
       "pinyin": "xíng",
       "japanese": "・よい/よろしい/OK ・とてもできる人/優秀な人",
+      "example": "这样做，行不行？ 行，我带你去吧！ 不行，你不可以去。 我们一起去，行吗？ 他这个人很真行",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9078d664c365ad5a.webp",
@@ -18686,6 +19115,7 @@
       "sourceRow": 89,
       "pinyin": "rè nao",
       "japanese": "・にぎやかな",
+      "example": "很热闹的城市 中国的春节很热闹",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e0f98b7897ee1cf1.webp",
@@ -18700,6 +19130,7 @@
       "sourceRow": 90,
       "pinyin": "zhòng yào",
       "japanese": "・重要な",
+      "example": "很重要的工作 这一件事很重要",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a585650269d1dee3.webp",
@@ -18714,6 +19145,7 @@
       "sourceRow": 91,
       "pinyin": "yí yàng",
       "japanese": "・同じである",
+      "example": "我跟他一样高 我们的名字一样 我们做一样的工作",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ed92005250aeb8d6.webp",
@@ -18728,6 +19160,7 @@
       "sourceRow": 92,
       "pinyin": "chà bu duō",
       "japanese": "・(程度が)だいたい同じである ・ほんとんどの~/ほぼ全部の ・約/だいたい",
+      "example": "这两件衣服差不多一样贵 这家餐厅的料理我差不多都吃过 这本书差不多十块钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fa8b1b648172016a.webp",
@@ -18742,6 +19175,7 @@
       "sourceRow": 93,
       "pinyin": "yǒu míng",
       "japanese": "・有名である",
+      "example": "我爸爸是有名人 这位老板很有名",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2f3dcda6deecb9bd.webp",
@@ -18756,6 +19190,7 @@
       "sourceRow": 3,
       "pinyin": "bàng",
       "japanese": "・すごい/すばらしい",
+      "example": "好棒啊！！日本队有得分了。 他的料理很棒！！",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dcc2aefdc950022e.webp",
@@ -18770,6 +19205,7 @@
       "sourceRow": 4,
       "pinyin": "liǎo bu qǐ",
       "japanese": "・たいしたものである ・すばらしい",
+      "example": "他在学校的成绩很了不起",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b7df01c44ab94507.webp",
@@ -18784,6 +19220,7 @@
       "sourceRow": 5,
       "pinyin": "wěi dà",
       "japanese": "・偉大である",
+      "example": "历史上的伟大人物 伟大的发明",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dc0148d3062acd0a.webp",
@@ -18798,6 +19235,7 @@
       "sourceRow": 6,
       "pinyin": "yòng gōng",
       "japanese": "・一生懸命である ・(勉強など)がんばっている",
+      "example": "她学习很用功",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a70123e50eb44d0d.webp",
@@ -18812,6 +19250,7 @@
       "sourceRow": 7,
       "pinyin": "yōu xiù",
       "japanese": "・優秀な/優れている",
+      "example": "他的作品最优秀 班上最优秀的学生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-82f6ce62428af67e.webp",
@@ -18826,6 +19265,7 @@
       "sourceRow": 8,
       "pinyin": "néng gàn",
       "japanese": "・(仕事など)よくできる ・(能力的に)よくできる",
+      "example": "我的上司是很能干的人 很能干的女人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-50dfd502139ed539.webp",
@@ -18840,6 +19280,7 @@
       "sourceRow": 9,
       "pinyin": "shǎ",
       "japanese": "・まぬけ ・ぼうっとしている",
+      "example": "傻孩子，不懂事。 小孩子傻傻的，大人要看好。 事情太突然了，我们都看傻了。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cab60861aceb4a4b.webp",
@@ -18854,6 +19295,7 @@
       "sourceRow": 10,
       "pinyin": "yán zhòng",
       "japanese": "・深刻である/重大である",
+      "example": "他的病越来越严重了 严重的交通事故",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1a2c73b19eb7e537.webp",
@@ -18868,6 +19310,7 @@
       "sourceRow": 11,
       "pinyin": "yán gé",
       "japanese": "・厳しい人である/厳格である ・(ルールなど)厳しい",
+      "example": "很严格的老师 学校的规定很严格 父母亲的要求很严格",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-42116820bc34b36c.webp",
@@ -18882,6 +19325,7 @@
       "sourceRow": 13,
       "pinyin": "fēng fù",
       "japanese": "・豊富である/たくさんある",
+      "example": "食物很丰富 丰富的工作经验 博士有丰富的知识",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-671f2fb38557bd1e.webp",
@@ -18896,6 +19340,7 @@
       "sourceRow": 15,
       "pinyin": "yóu nì",
       "japanese": "・(味が)脂っこい",
+      "example": "莉莉喜欢做油腻的料理 吃太多肉，嘴里很油腻",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-cfd5be69522afeab.webp",
@@ -18910,6 +19355,7 @@
       "sourceRow": 16,
       "pinyin": "nì",
       "japanese": "・飽きる/いやになる ・(味が)脂っこい",
+      "example": "这本小说看多很多遍，看你了 吃腻了一样的料理 这首歌听腻了 炒菜用很多油，很腻",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3ba1469a2bb9c3aa.webp",
@@ -18924,6 +19370,7 @@
       "sourceRow": 17,
       "pinyin": "chòu",
       "japanese": "・臭い",
+      "example": "别乱丢垃圾，很臭呢 学校的厕所很臭",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-58ea3af1ee67881b.webp",
@@ -18938,6 +19385,7 @@
       "sourceRow": 18,
       "pinyin": "ě xin",
       "japanese": "・吐き気がする ・(見た目)気持ちが悪い",
+      "example": "这种虫看起来很恶心 身体不舒服，有点儿恶心",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-468386a0940f0a47.webp",
@@ -18952,6 +19400,7 @@
       "sourceRow": 20,
       "pinyin": "nóng",
       "japanese": "・(色・味・匂いが)濃い",
+      "example": "茶叶放太多了，味道很浓 味道很浓的汤 我家的花园，花香味很浓郁 浓雾",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0704c412b2184ae1.webp",
@@ -18966,6 +19415,7 @@
       "sourceRow": 22,
       "pinyin": "àn",
       "japanese": "・(光がなく)暗い ・(色が)暗い",
+      "example": "天黑了，外面变暗了 灯坏了，所以房间里很暗。 乡下的夜晚很暗，外出要小心",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ddd51d34a15f32d6.webp",
@@ -18980,6 +19430,7 @@
       "sourceRow": 23,
       "pinyin": "jīng cǎi",
       "japanese": "・見ごたえがある ・(文章・発言が)すばらしい",
+      "example": "昨天的足球比赛特别精彩 精彩的表演 总统的演讲非常精彩",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-77fdd955e8248f50.webp",
@@ -18994,6 +19445,7 @@
       "sourceRow": 24,
       "pinyin": "tòng kuài",
       "japanese": "・思う存分/痛快に ・すっきりする/晴れ晴れする",
+      "example": "准备了大餐，希望你们吃个痛快 我想去游乐园玩个痛快 我的要求他痛快地答应了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3292bf149d3a2817.webp",
@@ -19008,6 +19460,7 @@
       "sourceRow": 25,
       "pinyin": "fù zá",
       "japanese": "・複雑である",
+      "example": "问题很复杂，需要找律师 老师说的内容他复杂，我听不懂",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d026d28ce8231f05.webp",
@@ -19022,6 +19475,7 @@
       "sourceRow": 26,
       "pinyin": "xiáng xì",
       "japanese": "・詳細である/細かい",
+      "example": "老师解释得非常详细 详细内容请参考说明书",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fc6d162d3d31cf70.webp",
@@ -19036,6 +19490,7 @@
       "sourceRow": 27,
       "pinyin": "zǐ xì",
       "japanese": "・注意深い/細心である",
+      "example": "仔细听老师的课就不会错了 仔细想一下你将来的计划 教练教你的动作要仔细看好",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c9dcdbe338c09157.webp",
@@ -19050,6 +19505,7 @@
       "sourceRow": 28,
       "pinyin": "yìng",
       "japanese": "・硬い",
+      "example": "菜还没煮熟，还很硬 他喜欢是硬的面包，而我喜欢软的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-4e040884ffd11f2e.webp",
@@ -19064,6 +19520,7 @@
       "sourceRow": 29,
       "pinyin": "ruǎn",
       "japanese": "・やわらかい",
+      "example": "小雨的身体很软，很会运动 香蕉熟了就变软了 家里的沙发很软很舒服",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5d8f189249b47bf9.webp",
@@ -19078,6 +19535,7 @@
       "sourceRow": 30,
       "pinyin": "rè liè",
       "japanese": "・熱烈である",
+      "example": "以热烈的掌声迎接客人 热烈的讨论一个问题",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e0af89a989981265.webp",
@@ -19092,6 +19550,7 @@
       "sourceRow": 31,
       "pinyin": "qíng",
       "japanese": "・晴れている",
+      "example": "天晴了，我们出去玩吧 明天是晴天，后天是雨天",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5a55102287b90df4.webp",
@@ -19106,6 +19565,7 @@
       "sourceRow": 32,
       "pinyin": "yīn",
       "japanese": "・曇っている ・(日が当たってない)日陰",
+      "example": "阴天很冷 天阴了，开始下雨了 大热天需要在树阴下休息",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1bf7d3bee09debfe.webp",
@@ -19120,6 +19580,7 @@
       "sourceRow": 34,
       "pinyin": "cháo shī",
       "japanese": "・(天気が)湿っている/じめじめしている",
+      "example": "已经下雨下10天了，空气非常潮湿 台湾的气候很潮湿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fecbac126747f58d.webp",
@@ -19134,6 +19595,7 @@
       "sourceRow": 35,
       "pinyin": "gān zào",
       "japanese": "・乾燥している",
+      "example": "冬天的空气很干燥 嘴里很干燥需要喝点儿水 水果干很好吃",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7c1fe561180224d1.webp",
@@ -19148,6 +19610,7 @@
       "sourceRow": 36,
       "pinyin": "nuǎn huo",
       "japanese": "・あたたかい",
+      "example": "春天了，慢慢变暖和了 南方地区一整年都很暖和",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0a436fa6d992a063.webp",
@@ -19162,6 +19625,7 @@
       "sourceRow": 37,
       "pinyin": "qīn ài",
       "japanese": "・親愛なる/愛している ・(愛しい人への)呼びかけ",
+      "example": "这是我亲爱的宝贝 亲爱的，我回来了！！",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e221c8a5c93f13ca.webp",
@@ -19176,6 +19640,7 @@
       "sourceRow": 38,
       "pinyin": "xǔ duō",
       "japanese": "・多くの/少なくない",
+      "example": "这次的演讲，许多学生来参加了 他最近胖了许多",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aea04916f3994086.webp",
@@ -19190,6 +19655,7 @@
       "sourceRow": 40,
       "pinyin": "suǒ yǒu",
       "japanese": "・すべての ・所有している",
+      "example": "所有的人都需要上学 所有的钱都花在房子上面 所有权",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-43ad131e5cf70149.webp",
@@ -19204,6 +19670,7 @@
       "sourceRow": 41,
       "pinyin": "tóng",
       "japanese": "・同じ",
+      "example": "我跟弟弟上同一个学校 兄弟的性格是不同的 这个照片里的人跟他不是同一个人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-468f66fe91c8c79c.webp",
@@ -19218,6 +19685,7 @@
       "sourceRow": 44,
       "pinyin": "zhí jiē",
       "japanese": "・直接的である",
+      "example": "我妈妈讲话很直接 不懂的直接问老师吧，别问我",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-66417e3f6a3410f6.webp",
@@ -19232,6 +19700,7 @@
       "sourceRow": 45,
       "pinyin": "yuán lái",
       "japanese": "・(事実がわかって)なるほど ・もともと/元来",
+      "example": "昨天有人一直打电话过来，原来是你啊！！ 王力从原来住的地方搬出来了 长大后小美的脾气比原来好多了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9d3f94ab697b20ac.webp",
@@ -19246,6 +19715,7 @@
       "sourceRow": 46,
       "pinyin": "tū rán",
       "japanese": "・突然",
+      "example": "爷爷的病情变化，太突然了 突然，有一只鸟飞进了上课中的教室里",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c601509a4e18ed4c.webp",
@@ -19260,6 +19730,7 @@
       "sourceRow": 47,
       "pinyin": "yǒu hǎo",
       "japanese": "・友好的である/仲がいい",
+      "example": "我们家跟邻居都很友好 日美友好关系",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-afb952f8d7fb1442.webp",
@@ -19274,6 +19745,7 @@
       "sourceRow": 48,
       "pinyin": "yǒu yòng",
       "japanese": "・役に立つ",
+      "example": "手机是一个很有用的发明 我要努力学习当一个有用的人 这匹马一点力气都没有，太没用了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-650d36ae4b78c478.webp",
@@ -19288,6 +19760,7 @@
       "sourceRow": 49,
       "pinyin": "zhèng cháng",
       "japanese": "・正常である",
+      "example": "北方冷、南方热是很正常的 我的生活习惯不正常",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8cd27d0cd4d84996.webp",
@@ -19302,6 +19775,7 @@
       "sourceRow": 51,
       "pinyin": "zhēn zhèng",
       "japanese": "・本物の/本当の ・正真正銘の",
+      "example": "真正的朋友互相帮助 哪一个才是真正的作品呢？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c83de52230ae9da7.webp",
@@ -19316,6 +19790,7 @@
       "sourceRow": 52,
       "pinyin": "jiǎ",
       "japanese": "・偽の/嘘の",
+      "example": "说假话 假哭 假钱 花瓶破了，但假装什么都不知道",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d81abf5b25a5cec6.webp",
@@ -19330,6 +19805,7 @@
       "sourceRow": 53,
       "pinyin": "shùn lì",
       "japanese": "・(物事が)順調である",
+      "example": "小王在北京顺利地找到工作了 这次的考试顺利不顺利？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-217618e8a439887a.webp",
@@ -19344,6 +19820,7 @@
       "sourceRow": 54,
       "pinyin": "què shí",
       "japanese": "・確かに/確実に ・確かである/正確である",
+      "example": "这一题确实很难 确实性 这是确实的消息吗？",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e978544ea42d001c.webp",
@@ -19358,6 +19835,7 @@
       "sourceRow": 55,
       "pinyin": "zhǔ yào",
       "japanese": "・主要な/主な",
+      "example": "这次失败的主要原因 中国的主要城市",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8531db172ca02604.webp",
@@ -19372,6 +19850,7 @@
       "sourceRow": 56,
       "pinyin": "hé shì",
       "japanese": "・ちょうどいい/ぴったりな ・(サイズなどが)合っている",
+      "example": "这个季节穿这种衣服不合适 找到了最合适的工作",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-2c71e31678ac4df7.webp",
@@ -19386,6 +19865,7 @@
       "sourceRow": 57,
       "pinyin": "kè qi",
       "japanese": "・遠慮する ・礼儀正しい",
+      "example": "多吃一点儿，别客气 你先出手的，那我就不客气了 在别人的家里要客气点儿",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-128026d456fc1cc1.webp",
@@ -19400,6 +19880,7 @@
       "sourceRow": 58,
       "pinyin": "zāng",
       "japanese": "・汚い/汚れている",
+      "example": "脏衣服需要西 说脏话 他的房间很脏，需要清洁",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-93050f20ac9410eb.webp",
@@ -19414,6 +19895,7 @@
       "sourceRow": 59,
       "pinyin": "ān jìng",
       "japanese": "・静かである",
+      "example": "我们邻居都很安静，晚上很好睡 安安静静的夜晚 上课中请安静",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e3085559673bedf1.webp",
@@ -19428,6 +19910,7 @@
       "sourceRow": 60,
       "pinyin": "chǎo",
       "japanese": "・うるさい/騒がしい",
+      "example": "我们家小孩子很多，每天都很吵 别吵，爸爸在睡觉呢",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-57924a50c17236e9.webp",
@@ -19442,6 +19925,7 @@
       "sourceRow": 61,
       "pinyin": "zhǎi",
       "japanese": "・狭い",
+      "example": "这条小路很窄，很难走",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-92bf733148dabd7d.webp",
@@ -19456,6 +19940,7 @@
       "sourceRow": 62,
       "pinyin": "kuān",
       "japanese": "・[形容詞]広い ・[名詞]幅・広さ",
+      "example": "很宽的空间 这双鞋太宽了 这个田地长50米，宽100米",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-15d643d50387eca5.webp",
@@ -19470,6 +19955,7 @@
       "sourceRow": 63,
       "pinyin": "hòu",
       "japanese": "・ぶ厚い",
+      "example": "很厚的一本书 厚厚的词典",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-efa57d5a727a2122.webp",
@@ -19484,6 +19970,7 @@
       "sourceRow": 65,
       "pinyin": "mǎn",
       "japanese": "・あふれている/いっぱいである ・(全体が)すべて~でいっぱいである",
+      "example": "满满的一杯水 袋子里装满了食物 满头大汗 今天晚上满天星星，真美",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-6bb2433991b9ddc3.webp",
@@ -19498,6 +19985,7 @@
       "sourceRow": 66,
       "pinyin": "zhěng qí",
       "japanese": "・整っている/整然としている",
+      "example": "妈妈的房间很整齐 商店里的商品摆得整整齐齐的",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0cd05586ad2ba7b4.webp",
@@ -19512,6 +20000,7 @@
       "sourceRow": 67,
       "pinyin": "luàn",
       "japanese": "・乱れている/ちらかっている ・むやみに/てきとうに",
+      "example": "妹妹都不整理房间，所以很乱 因为天气不好，我的计划乱掉了 乱扔垃圾 功课要好好写，不能乱写",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-162ae88eae09de97.webp",
@@ -19526,6 +20015,7 @@
       "sourceRow": 68,
       "pinyin": "qīng sōng",
       "japanese": "・(負担がなく)簡単な/楽な",
+      "example": "很辛苦的工作跟请轻松的工作 他轻轻松松地跑完了50公里",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-51ba9ce87fa08f6c.webp",
@@ -19540,6 +20030,7 @@
       "sourceRow": 69,
       "pinyin": "xīn xiān",
       "japanese": "・新鮮である",
+      "example": "新鲜的食材 乡下的空气很新鲜",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-0266845219997b43.webp",
@@ -19554,6 +20045,7 @@
       "sourceRow": 70,
       "pinyin": "kě pà",
       "japanese": "・こわい/恐ろしい",
+      "example": "可怕的老师 很可怕的事件",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-77fabc1d0b9ac77e.webp",
@@ -19568,6 +20060,7 @@
       "sourceRow": 71,
       "pinyin": "wēi xiǎn",
       "japanese": "・危険な ・危険",
+      "example": "危险的地方 危险人物 在这边晚上一个人走路很危险",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-892128df3533ebd4.webp",
@@ -19582,6 +20075,7 @@
       "sourceRow": 72,
       "pinyin": "ān quán",
       "japanese": "・安全な",
+      "example": "过马路时要注意安全 一个人在国外生活没有安全感 国家的安全",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-8c9e87cd7432b096.webp",
@@ -19596,6 +20090,7 @@
       "sourceRow": 73,
       "pinyin": "píng ān",
       "japanese": "・平和な/平穏な",
+      "example": "平平安安过生活 祝你们平安无事 一路平安",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-3c12c7bdde27ca42.webp",
@@ -19610,6 +20105,7 @@
       "sourceRow": 74,
       "pinyin": "yūn",
       "japanese": "・めまいがする ・気を失う",
+      "example": "今天有点儿头晕 李明运动中晕倒了 我容易晕车",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-97086ef52e802617.webp",
@@ -19624,6 +20120,7 @@
       "sourceRow": 76,
       "pinyin": "kě lián",
       "japanese": "・かわいそうな/あわれな ・[動詞]憐れむ",
+      "example": "穷到没饭吃，真可怜 可怜的小女孩迷路了 我们都很可怜她",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b4b3c632b9abe595.webp",
@@ -19638,6 +20135,7 @@
       "sourceRow": 77,
       "pinyin": "kě xī",
       "japanese": "・もったいない/惜しい/残念だ ・残念ながら",
+      "example": "好不容易抓到的鱼跑走了，真可惜 途中退学太可惜了 终于找到商品，可以没有钱",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-99ef46db2576a821.webp",
@@ -19652,6 +20150,7 @@
       "sourceRow": 78,
       "pinyin": "yí hàn",
       "japanese": "・とても残念である",
+      "example": "老师遗憾地说我考了0分 我对这次失败感到遗憾 最好的朋友要搬家了，真遗憾",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7bc2d95403e32d02.webp",
@@ -19666,6 +20165,7 @@
       "sourceRow": 79,
       "pinyin": "zāo gāo",
       "japanese": "・やばい/しまった",
+      "example": "下雨了！！糟糕，忘了收衣服 他的开车技术很糟糕 料理非常糟糕的餐厅",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-805f076634780573.webp",
@@ -19680,6 +20180,7 @@
       "sourceRow": 80,
       "pinyin": "qīn qiè",
       "japanese": "・親しみやすい",
+      "example": "亲切的笑容 亲切的态度",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-fa0d13d143d9196a.webp",
@@ -19694,6 +20195,7 @@
       "sourceRow": 81,
       "pinyin": "wēn róu",
       "japanese": "・(心が)あたたかい/やさしい",
+      "example": "温柔的性格 妈妈很温柔，爸爸很凶",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a4a3be5c319471db.webp",
@@ -19708,6 +20210,7 @@
       "sourceRow": 82,
       "pinyin": "tǎo yàn",
       "japanese": "・嫌いな ・嫌う[動詞]",
+      "example": "说谎的人很讨厌 中国人讨厌没有礼貌的人",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-f00dabfe67baf0af.webp",
@@ -19722,6 +20225,7 @@
       "sourceRow": 83,
       "pinyin": "zhuān xīn",
       "japanese": "・集中する/専念している",
+      "example": "请专心上课！！ 专心学习",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e4e08d04e3c3fc9f.webp",
@@ -19736,6 +20240,7 @@
       "sourceRow": 84,
       "pinyin": "chà",
       "japanese": "・悪い/劣っている ・差がある",
+      "example": "成绩很差 小美跟小王的身高差不多 我的成绩离100分还差很多",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-dd3da80c75cff0d5.webp",
@@ -19750,6 +20255,7 @@
       "sourceRow": 85,
       "pinyin": "shuài",
       "japanese": "・カッコいい/粋だ",
+      "example": "他的打球的动作很帅 他的穿着很帅 班里最帅的男生",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d50ef1d0f217c41d.webp",
@@ -19764,6 +20270,7 @@
       "sourceRow": 86,
       "pinyin": "nán kàn",
       "japanese": "・見た目が悪い",
+      "example": "很难看的发型 脸色很难看",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-63dc9136924383bf.webp",
@@ -19778,6 +20285,7 @@
       "sourceRow": 87,
       "pinyin": "miáo tiáo",
       "japanese": "・スレンダーな/細身な",
+      "example": "苗条的身材",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-78dfc3c50959c5cf.webp",
@@ -19792,6 +20300,7 @@
       "sourceRow": 88,
       "pinyin": "lǎo shí",
       "japanese": "・誠実な/正直な",
+      "example": "做人要老实 老实的态度 老实说：\"我挺喜欢你的\"",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-5f97a2e88c443906.webp",
@@ -19806,6 +20315,7 @@
       "sourceRow": 89,
       "pinyin": "qiān xū",
       "japanese": "・謙虚な",
+      "example": "谦虚的态度 做人要谦虚",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7f08f02205c93c8e.webp",
@@ -19820,6 +20330,7 @@
       "sourceRow": 90,
       "pinyin": "qín kuài",
       "japanese": "・(仕事が)まめである/効率的",
+      "example": "工作勤快的人很受欢迎 妈妈做事很勤快",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c5cd15ea11f4cace.webp",
@@ -19834,6 +20345,7 @@
       "sourceRow": 91,
       "pinyin": "lěng jìng",
       "japanese": "・冷静である/落ち着いている",
+      "example": "考试时要冷静下来，不要紧张 遇到困难时要冷静下来",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-9cd4d1760144e325.webp",
@@ -19848,6 +20360,7 @@
       "sourceRow": 92,
       "pinyin": "jì mò",
       "japanese": "・寂しい",
+      "example": "很好的朋友回国了，有点儿寂寞。 一个人生活很寂寞。",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-eeac27453bc0a1c0.webp",
@@ -19862,6 +20375,7 @@
       "sourceRow": 93,
       "pinyin": "jī dòng",
       "japanese": "・感激する ・興奮する",
+      "example": "好消息让我很激动 他激动地说：\"我考上大学了\"",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-b9ec2c769d9fd786.webp",
@@ -19876,6 +20390,7 @@
       "sourceRow": 94,
       "pinyin": "bào qiàn",
       "japanese": "・ごめんなさい/すみません ・申し訳なく思う",
+      "example": "抱歉，我又迟到了 因为昨天的失败，我感到十分抱歉",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-1f7c1d211def6df7.webp",
@@ -19890,6 +20405,7 @@
       "sourceRow": 95,
       "pinyin": "yǎng",
       "japanese": "・かゆい ・くすぐったい",
+      "example": "被虫咬了，皮肤很痒 我很怕痒",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-d1feaa059092d7db.webp",
@@ -19904,6 +20420,7 @@
       "sourceRow": 96,
       "pinyin": "huāng",
       "japanese": "・あせる",
+      "example": "老板一生气，员工就慌了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-81d3b91bd2292727.webp",
@@ -19918,6 +20435,7 @@
       "sourceRow": 97,
       "pinyin": "shāng xīn",
       "japanese": "・悲しむ/心を痛める",
+      "example": "这次考试成绩不好，所以很伤心 他被妈妈骂，感到很伤心",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aaea5e61f7d5ef72.webp",
@@ -19932,6 +20450,7 @@
       "sourceRow": 99,
       "pinyin": "zhí",
       "japanese": "・まっすぐな/曲がってない",
+      "example": "直走 个性很直 把手伸直",
       "image": {
         "state": "ai-generated",
         "assetPath": "/assets/vocabulary/teacher-preview/ai/teacher-preview-ea6082f43283828e.webp",
@@ -19946,6 +20465,7 @@
       "sourceRow": 100,
       "pinyin": "wān",
       "japanese": "・曲がっている",
+      "example": "拐弯 汤匙弯了 一条弯弯的小路",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-31c882e12324535c.webp",
@@ -19960,6 +20480,7 @@
       "sourceRow": 101,
       "pinyin": "wāi",
       "japanese": "・ゆがんでいる ・傾いている",
+      "example": "歪曲事实 他只是对你好而已，别想歪了 红绿灯被撞歪了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-841843700c5b104a.webp",
@@ -19974,6 +20495,7 @@
       "sourceRow": 102,
       "pinyin": "píng",
       "japanese": "・平らな/フラットな ・(競技などが)同点/同等である",
+      "example": "我住平地，小王住山地。 这条路很平，骑车很方便。 比赛结果一比一平分 两个足球队打成平手",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-64ce6c98461426c6.webp",
@@ -19988,6 +20510,7 @@
       "sourceRow": 103,
       "pinyin": "biǎn",
       "japanese": "・平べったい",
+      "example": "鼻子很扁 不小心把面包压扁了 小王捏的饺子扁扁的，很难看",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aa46dea75105c2dc.webp",
@@ -20002,6 +20525,7 @@
       "sourceRow": 104,
       "pinyin": "xié",
       "japanese": "・斜めな",
+      "example": "斜坡 画一条斜线 我女朋友坐我斜对面",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-ed0ff162e29f3d15.webp",
@@ -20016,6 +20540,7 @@
       "sourceRow": 105,
       "pinyin": "jiān",
       "japanese": "・とがっている ・(先が)鋭利である",
+      "example": "尖尖的铅笔 这只狗的牙齿很尖",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e9b0ada7fc69ccdb.webp",
@@ -20030,6 +20555,7 @@
       "sourceRow": 106,
       "pinyin": "yuán",
       "japanese": "・丸い/まるまるとした",
+      "example": "圆形 中秋节圆圆的月亮，真美",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-c651874be234ab05.webp",
@@ -20044,6 +20570,7 @@
       "sourceRow": 107,
       "pinyin": "báo / bó",
       "japanese": "・薄い",
+      "example": "薄薄的课本跟厚厚的词典 味道很薄",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-aacc81372a244afb.webp",
@@ -20058,6 +20585,7 @@
       "sourceRow": 108,
       "pinyin": "qiáng",
       "japanese": "・強い/すごい",
+      "example": "他的身体很强 很强的选手 他的成绩比我强多了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-7df64ffaa8fc3884.webp",
@@ -20072,6 +20600,7 @@
       "sourceRow": 109,
       "pinyin": "ruò",
       "japanese": "・弱い",
+      "example": "爷爷身体很弱，容易生病 弱点",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-a9fc8a3d45c3f7ee.webp",
@@ -20086,6 +20615,7 @@
       "sourceRow": 110,
       "pinyin": "jǐn",
       "japanese": "・きつい/ゆるくない/固い",
+      "example": "他们紧紧的拥抱了 盖子盖得很紧，打不开 鞋带绑得很紧",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-073b79c8c5007ad3.webp",
@@ -20100,6 +20630,7 @@
       "sourceRow": 111,
       "pinyin": "sōng",
       "japanese": "・ゆるい ・リラックスしている",
+      "example": "休息时间应该放松放松 鞋带绑得很松 螺丝松了",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-e3a7304521d4ebab.webp",
@@ -20114,6 +20645,7 @@
       "sourceRow": 112,
       "pinyin": "xián",
       "japanese": "・ヒマである/退屈な",
+      "example": "爷爷奶奶不工作了，每天都很闲 休息天闲着没事做",
       "image": {
         "state": "teacher-mapped",
         "assetPath": "/assets/vocabulary/teacher-preview/teacher/teacher-preview-afc7a35acbcf7a0b.webp",
