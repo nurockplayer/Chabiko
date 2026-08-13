@@ -69,7 +69,7 @@ SHEET_META = {
     "动词2": {"partOfSpeech": "verb"},
 }
 SHEET_ORDER = tuple(SHEET_META)
-HEADERS = ("单词", "拼音", "日语翻译", "难易度")
+HEADERS = ("单词", "拼音", "日语翻译", "难易度", "造词/造句")
 
 # These phrases cannot safely be resolved to a single concept without adding
 # text, context, or an invented interpretation. The list is intentionally
@@ -154,6 +154,19 @@ def normalize(value: Any) -> str:
     return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value).strip())
 
 
+def normalize_example(value: Any) -> str:
+    """Normalize the teacher-authored example sentence (#340) preserving the
+    teacher's full-width CJK punctuation.
+
+    NFC + whitespace collapse only — never NFKC (which would convert full-width
+    punctuation such as `？` to half-width `?`). This matches the sibling
+    importer (`import-teacher-vocabulary-xlsx.py` normalize_text) so the same
+    workbook column yields byte-identical learner content across both writers.
+    """
+    value = "" if value is None else str(value)
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", value).strip())
+
+
 def stable_preview_id(sheet: str, row: int, word: str) -> str:
     seed = f"teacher-preview-v1|{sheet}|{row}|{normalize(word)}"
     return f"teacher-preview-{hashlib.sha256(seed.encode('utf-8')).hexdigest()[:16]}"
@@ -198,7 +211,7 @@ def load_workbook_rows(workbook_path: Path) -> list[dict[str, Any]]:
             word = normalize(worksheet.cell(row_number, header_columns["单词"]).value)
             if not word:
                 continue
-            rows.append({
+            row_dict = {
                 "key": f"{sheet_name}:{row_number}",
                 "sourceSheet": sheet_name,
                 "sourceRow": row_number,
@@ -207,7 +220,15 @@ def load_workbook_rows(workbook_path: Path) -> list[dict[str, Any]]:
                 "japanese": normalize(worksheet.cell(row_number, header_columns["日语翻译"]).value),
                 "difficulty": normalize(worksheet.cell(row_number, header_columns["难易度"]).value),
                 "partOfSpeech": SHEET_META[sheet_name]["partOfSpeech"],
-            })
+            }
+            # Teacher-authored example sentence (#340): preserved verbatim, only
+            # normalized with NFC + whitespace collapse (full-width punctuation
+            # kept). An empty cell is a supported missing-example state, so the
+            # field is omitted rather than generated.
+            example = normalize_example(worksheet.cell(row_number, header_columns["造词/造句"]).value)
+            if example:
+                row_dict["example"] = example
+            rows.append(row_dict)
     if len(rows) != 1865:
         raise ValueError(f"Expected 1,865 workbook candidate rows, found {len(rows)}")
     return rows
@@ -674,6 +695,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             "sourceRow": row["sourceRow"],
             "reviewStatus": "draft",
         }
+        # Teacher-authored example sentence (#340): propagated verbatim from the
+        # workbook `造词/造句` column. An empty cell stays absent — a supported
+        # missing-example state, never fabricated.
+        if row.get("example"):
+            preview_row["example"] = row["example"]
         if production:
             preview_row.update({
                 "productionVocabularyId": production["id"],

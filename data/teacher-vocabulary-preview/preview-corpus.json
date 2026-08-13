@@ -54,6 +54,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 2,
       "reviewStatus": "draft",
+      "example": "大家好 大家请听",
       "productionVocabularyId": "teacher-star-1-37e0eb213f0f",
       "image": {
         "state": "teacher-mapped",
@@ -78,6 +79,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 3,
       "reviewStatus": "draft",
+      "example": "他是日本人 我们是人",
       "productionVocabularyId": "teacher-star-1-a66948a76fda",
       "image": {
         "state": "teacher-mapped",
@@ -100,6 +102,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 4,
       "reviewStatus": "draft",
+      "example": "这里有两个大人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -126,6 +129,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 5,
       "reviewStatus": "draft",
+      "example": "他们是个小孩儿",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -160,6 +164,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 6,
       "reviewStatus": "draft",
+      "example": "儿童课 儿童班",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -196,6 +201,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 7,
       "reviewStatus": "draft",
+      "example": "来了一位客人 有很多乘客",
       "productionVocabularyId": "teacher-star-1-86f5cdb6e25c",
       "image": {
         "state": "teacher-mapped",
@@ -220,6 +226,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 8,
       "reviewStatus": "draft",
+      "example": "这是我的好朋友 男朋友 女朋友",
       "productionVocabularyId": "teacher-star-1-bdc7865a507e",
       "image": {
         "state": "teacher-mapped",
@@ -244,6 +251,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 9,
       "reviewStatus": "draft",
+      "example": "王先生很帅 先生，您好",
       "productionVocabularyId": "teacher-star-1-86367b2d53f6",
       "image": {
         "state": "teacher-mapped",
@@ -267,6 +275,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 10,
       "reviewStatus": "draft",
+      "example": "李小姐很漂亮 小姐，您好",
       "productionVocabularyId": "teacher-star-1-8b957a100bd4",
       "image": {
         "state": "text-only",
@@ -289,6 +298,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 11,
       "reviewStatus": "draft",
+      "example": "自己做饭自己吃",
       "productionVocabularyId": "teacher-star-1-2cfcacc0503e",
       "image": {
         "state": "teacher-mapped",
@@ -311,6 +321,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 12,
       "reviewStatus": "draft",
+      "example": "这是我的家人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -337,6 +348,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 13,
       "reviewStatus": "draft",
+      "example": "温暖的家庭",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -365,6 +377,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 14,
       "reviewStatus": "draft",
+      "example": "他是一个好爸爸",
       "productionVocabularyId": "teacher-star-1-e7bc12c4f23a",
       "image": {
         "state": "teacher-mapped",
@@ -389,6 +402,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 15,
       "reviewStatus": "draft",
+      "example": "妈妈很爱我",
       "productionVocabularyId": "teacher-star-1-e64490a207eb",
       "image": {
         "state": "teacher-mapped",
@@ -413,6 +427,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 16,
       "reviewStatus": "draft",
+      "example": "父亲现在不在",
       "productionVocabularyId": "teacher-star-1-bada4e11125d",
       "image": {
         "state": "teacher-mapped",
@@ -437,6 +452,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 17,
       "reviewStatus": "draft",
+      "example": "我母亲是老师",
       "productionVocabularyId": "teacher-star-1-d903f490725f",
       "image": {
         "state": "teacher-mapped",
@@ -461,6 +477,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 18,
       "reviewStatus": "draft",
+      "example": "哥哥常常跟我玩儿",
       "productionVocabularyId": "teacher-star-1-7420330fee5c",
       "image": {
         "state": "teacher-mapped",
@@ -485,6 +502,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 19,
       "reviewStatus": "draft",
+      "example": "姐姐不跟我玩儿",
       "productionVocabularyId": "teacher-star-1-ed096023b3be",
       "image": {
         "state": "teacher-mapped",
@@ -509,6 +527,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 20,
       "reviewStatus": "draft",
+      "example": "弟弟很可爱",
       "productionVocabularyId": "teacher-star-1-cb42fb8775e5",
       "image": {
         "state": "teacher-mapped",
@@ -601,6 +620,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 23,
       "reviewStatus": "draft",
+      "example": "我有一个妹妹",
       "productionVocabularyId": "teacher-star-1-c39a19585434",
       "image": {
         "state": "teacher-mapped",
@@ -693,6 +713,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 26,
       "reviewStatus": "draft",
+      "example": "我爱人很会做饭 我爱人很有钱",
       "productionVocabularyId": "teacher-star-1-3e6fabf09358",
       "image": {
         "state": "teacher-mapped",
@@ -717,6 +738,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 27,
       "reviewStatus": "draft",
+      "example": "他是个好丈夫 他是个好老公",
       "productionVocabularyId": "teacher-star-1-1c0cdf0b2b9c",
       "image": {
         "state": "teacher-mapped",
@@ -741,6 +763,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 28,
       "reviewStatus": "draft",
+      "example": "我妻子很吵 我老婆很吵",
       "productionVocabularyId": "teacher-star-1-8fea4ac29b4c",
       "image": {
         "state": "teacher-mapped",
@@ -765,6 +788,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 29,
       "reviewStatus": "draft",
+      "example": "我有两个孩子 小孩子很可爱",
       "productionVocabularyId": "teacher-star-1-94757170c2b0",
       "image": {
         "state": "teacher-mapped",
@@ -789,6 +813,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 30,
       "reviewStatus": "draft",
+      "example": "这是我的儿子",
       "productionVocabularyId": "teacher-star-1-0cc5799cdbbc",
       "image": {
         "state": "teacher-mapped",
@@ -811,6 +836,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 31,
       "reviewStatus": "draft",
+      "example": "这是我的女儿",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -836,6 +862,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 32,
       "reviewStatus": "draft",
+      "example": "老人在走路",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -863,6 +890,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 33,
       "reviewStatus": "draft",
+      "example": "年轻人跟老人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -889,6 +917,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 34,
       "reviewStatus": "draft",
+      "example": "男孩喜欢出去玩",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -923,6 +952,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 35,
       "reviewStatus": "draft",
+      "example": "她是个好女孩",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -957,6 +987,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 36,
       "reviewStatus": "draft",
+      "example": "小学的男生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -983,6 +1014,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 37,
       "reviewStatus": "draft",
+      "example": "一个小女生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1009,6 +1041,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 38,
       "reviewStatus": "draft",
+      "example": "他是一个好男人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1035,6 +1068,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 39,
       "reviewStatus": "draft",
+      "example": "很美丽的女人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1061,6 +1095,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 40,
       "reviewStatus": "draft",
+      "example": "现在爷爷在家",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1087,6 +1122,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 41,
       "reviewStatus": "draft",
+      "example": "他去了奶奶家",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1113,6 +1149,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 42,
       "reviewStatus": "draft",
+      "example": "奶奶很爱孙子",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1139,6 +1176,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 43,
       "reviewStatus": "draft",
+      "example": "弟弟很喜欢叔叔 那位叔叔是谁？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1191,6 +1229,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 45,
       "reviewStatus": "draft",
+      "example": "老师很忙 张老师",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1217,6 +1256,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 46,
       "reviewStatus": "draft",
+      "example": "学生在努力学习",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1243,6 +1283,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 47,
       "reviewStatus": "draft",
+      "example": "哥哥是大学生了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1269,6 +1310,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 48,
       "reviewStatus": "draft",
+      "example": "学校有很多留学生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1295,6 +1337,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 49,
       "reviewStatus": "draft",
+      "example": "我跟她是同学 李同学早上好",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1321,6 +1364,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 50,
       "reviewStatus": "draft",
+      "example": "公司的同事",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1347,6 +1391,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 51,
       "reviewStatus": "draft",
+      "example": "爸爸的职业是什么",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1373,6 +1418,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 52,
       "reviewStatus": "draft",
+      "example": "工人的工作很辛苦",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1399,6 +1445,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 53,
       "reviewStatus": "draft",
+      "example": "我的工作是翻译 请帮我翻译！",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -1419,6 +1466,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 54,
       "reviewStatus": "draft",
+      "example": "师傅，我要吃面 司机师傅，多少钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1445,6 +1493,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 55,
       "reviewStatus": "draft",
+      "example": "他是一个好司机",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1471,6 +1520,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 56,
       "reviewStatus": "draft",
+      "example": "餐厅的服务员 商店的服务员",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1497,6 +1547,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 57,
       "reviewStatus": "draft",
+      "example": "商店的店员",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1523,6 +1574,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 58,
       "reviewStatus": "draft",
+      "example": "百货公司的售货员",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1549,6 +1601,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 59,
       "reviewStatus": "draft",
+      "example": "他是好医生 去医院看医生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1575,6 +1628,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 60,
       "reviewStatus": "draft",
+      "example": "他是好大夫",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -1601,6 +1655,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 61,
       "reviewStatus": "draft",
+      "example": "眼睛很好",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -4467,6 +4522,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 176,
       "reviewStatus": "draft",
+      "example": "讲话",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -10947,6 +11003,7 @@
       "sourceSheet": "名词1",
       "sourceRow": 428,
       "reviewStatus": "draft",
+      "example": "有空",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -13601,6 +13658,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 2,
       "reviewStatus": "draft",
+      "example": "看电视 看书",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13627,6 +13685,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 3,
       "reviewStatus": "draft",
+      "example": "听音乐 听妈妈的话",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13653,6 +13712,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 4,
       "reviewStatus": "draft",
+      "example": "写字 写功课",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13679,6 +13739,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 5,
       "reviewStatus": "draft",
+      "example": "画画儿 画风景",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13705,6 +13766,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 6,
       "reviewStatus": "draft",
+      "example": "说话 说汉语",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13731,6 +13793,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 7,
       "reviewStatus": "draft",
+      "example": "讲话 讲故事",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13757,6 +13820,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 8,
       "reviewStatus": "draft",
+      "example": "他们谈了很久 谈生意",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13783,6 +13847,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 9,
       "reviewStatus": "draft",
+      "example": "念课本 他在念小学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13809,6 +13874,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 10,
       "reviewStatus": "draft",
+      "example": "问老师问题 问路",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13835,6 +13901,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 11,
       "reviewStatus": "draft",
+      "example": "大声叫妈妈 请叫我小王 妈妈叫我写功课",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13861,6 +13928,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 12,
       "reviewStatus": "draft",
+      "example": "他们在聊天 待会儿聊",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -13881,6 +13949,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 13,
       "reviewStatus": "draft",
+      "example": "在家吃饭",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13907,6 +13976,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 14,
       "reviewStatus": "draft",
+      "example": "喝水",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13933,6 +14003,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 15,
       "reviewStatus": "draft",
+      "example": "明天见 我在学校见了很多朋友 我的课本不见了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13959,6 +14030,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 16,
       "reviewStatus": "draft",
+      "example": "尝一下日本料理 品尝韩国料理",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -13985,6 +14057,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 17,
       "reviewStatus": "draft",
+      "example": "点菜 点头 点一下屏幕",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14011,6 +14084,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 18,
       "reviewStatus": "draft",
+      "example": "穿衣服",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14037,6 +14111,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 19,
       "reviewStatus": "draft",
+      "example": "戴帽子 戴眼镜 戴手表",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14063,6 +14138,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 20,
       "reviewStatus": "draft",
+      "example": "帮爸爸拿东西 拿筷子吃饭",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14089,6 +14165,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 21,
       "reviewStatus": "draft",
+      "example": "在汤里放盐 把料理放在桌子上 把鱼放回池塘里 放音乐",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14115,6 +14192,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 22,
       "reviewStatus": "draft",
+      "example": "带一些水果回家 带儿子去学校",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14141,6 +14219,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 23,
       "reviewStatus": "draft",
+      "example": "钱包丢了 丢垃圾",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14167,6 +14246,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 24,
       "reviewStatus": "draft",
+      "example": "这是我妈妈 我是日本人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14193,6 +14273,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 25,
       "reviewStatus": "draft",
+      "example": "你姓什么？ 我姓林",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14219,6 +14300,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 26,
       "reviewStatus": "draft",
+      "example": "我想当Youtuber 哥哥当了班长",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14245,6 +14327,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 27,
       "reviewStatus": "draft",
+      "example": "爸爸有钱 我家有一只狗",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14271,6 +14354,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 28,
       "reviewStatus": "draft",
+      "example": "弟弟在家学习 你在哪儿",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14297,6 +14381,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 29,
       "reviewStatus": "draft",
+      "example": "做料理 做工作 做功课",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14323,6 +14408,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 30,
       "reviewStatus": "draft",
+      "example": "办手续 办会议",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14349,6 +14435,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 31,
       "reviewStatus": "draft",
+      "example": "好好干事 你以后想干什么？",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -14369,6 +14456,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 32,
       "reviewStatus": "draft",
+      "example": "妈妈，我要钱！！ 老师要我好好学习 出门要关灯 我明天要去逛街",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14395,6 +14483,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 33,
       "reviewStatus": "draft",
+      "example": "问这个问题，他想了很久 我想去美国留学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14421,6 +14510,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 34,
       "reviewStatus": "draft",
+      "example": "妈妈爱我 小王爱旅游",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14447,6 +14537,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 35,
       "reviewStatus": "draft",
+      "example": "大声笑",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14473,6 +14564,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 36,
       "reviewStatus": "draft",
+      "example": "弟弟每天都在学校哭",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14499,6 +14591,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 37,
       "reviewStatus": "draft",
+      "example": "我家的猫怕狗",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14525,6 +14618,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 38,
       "reviewStatus": "draft",
+      "example": "我懂了 他懂英语",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14551,6 +14645,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 39,
       "reviewStatus": "draft",
+      "example": "上课中记了很多新的单词 记在本子上",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14577,6 +14672,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 40,
       "reviewStatus": "draft",
+      "example": "上课中的内容都忘记了 今天忘了带课本",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -14597,6 +14693,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 41,
       "reviewStatus": "draft",
+      "example": "小王住上海、力宏住北京",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14623,6 +14720,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 42,
       "reviewStatus": "draft",
+      "example": "弟弟吃饭用汤匙跟叉子。 今天用了很多钱。 用课本学习。 用他的方法解决问题。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14649,6 +14747,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 43,
       "reviewStatus": "draft",
+      "example": "洗衣服 洗澡",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14675,6 +14774,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 44,
       "reviewStatus": "draft",
+      "example": "擦桌子 擦黑板 在手上擦药",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14701,6 +14801,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 45,
       "reviewStatus": "draft",
+      "example": "小王在找他的课本，但是找不到 爸爸在找工作",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14727,6 +14828,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 46,
       "reviewStatus": "draft",
+      "example": "开门 花开了 开车 开灯",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14753,6 +14855,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 47,
       "reviewStatus": "draft",
+      "example": "关门 今天把小狗关在家里 关灯",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14779,6 +14882,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 48,
       "reviewStatus": "draft",
+      "example": "我推了弟弟的自行车。弟弟很高兴。 推开门",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14805,6 +14909,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 49,
       "reviewStatus": "draft",
+      "example": "拉他起来 拉绳子",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14831,6 +14936,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 50,
       "reviewStatus": "draft",
+      "example": "站起来 站在床上",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14857,6 +14963,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 51,
       "reviewStatus": "draft",
+      "example": "坐在椅子上 坐车上学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14883,6 +14990,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 52,
       "reviewStatus": "draft",
+      "example": "弹钢琴 弹吉他",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14909,6 +15017,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 53,
       "reviewStatus": "draft",
+      "example": "哥哥踢了弟弟，弟弟哭了。 我爱踢足球。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14935,6 +15044,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 54,
       "reviewStatus": "draft",
+      "example": "寄信给外国的朋友 妈妈寄钱给我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14961,6 +15071,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 55,
       "reviewStatus": "draft",
+      "example": "发邮件 发工资",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -14986,6 +15097,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 56,
       "reviewStatus": "draft",
+      "example": "送她一朵花 送她去车站",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15013,6 +15125,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 57,
       "reviewStatus": "draft",
+      "example": "收衣服 店员跟客人收钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15039,6 +15152,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 58,
       "reviewStatus": "draft",
+      "example": "开车去车站接朋友回来 用手接球 接电话 把两条绳子接起来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15065,6 +15179,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 59,
       "reviewStatus": "draft",
+      "example": "给他一朵花 哥哥给弟弟送了一本书 我要给朋友打电话",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15091,6 +15206,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 60,
       "reviewStatus": "draft",
+      "example": "帮妈妈洗碗 弟弟帮忙妈妈做家事",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15111,6 +15227,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 61,
       "reviewStatus": "draft",
+      "example": "祝你幸福快乐 祝你好运",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15137,6 +15254,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 62,
       "reviewStatus": "draft",
+      "example": "请他吃晚餐 请老师教你英语 请坐",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15163,6 +15281,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 63,
       "reviewStatus": "draft",
+      "example": "学生在车站等车 等老师来了，我们再问问题",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15189,6 +15308,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 64,
       "reviewStatus": "draft",
+      "example": "哥哥教弟弟写字 教汉语",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15215,6 +15335,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 65,
       "reviewStatus": "draft",
+      "example": "学习汉语 跟李老师学英语",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15235,6 +15356,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 66,
       "reviewStatus": "draft",
+      "example": "小朋友，请读课文。 英语报纸太难了，我读不懂 弟弟在读小学、哥哥在读高中。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15261,6 +15383,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 67,
       "reviewStatus": "draft",
+      "example": "包饺子 用纸把虫包起来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15287,6 +15410,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 68,
       "reviewStatus": "draft",
+      "example": "请不要打同学 打电话 警察打了一枪",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15313,6 +15437,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 69,
       "reviewStatus": "draft",
+      "example": "长大 长高 从地上长出来",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15333,6 +15458,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 70,
       "reviewStatus": "draft",
+      "example": "唱歌",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15359,6 +15485,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 71,
       "reviewStatus": "draft",
+      "example": "骑自行车 骑摩托车 骑马",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15385,6 +15512,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 72,
       "reviewStatus": "draft",
+      "example": "小朋友们在公园玩 他们在晚玩球",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15411,6 +15539,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 73,
       "reviewStatus": "draft",
+      "example": "试衣服 试吃",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15437,6 +15566,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 74,
       "reviewStatus": "draft",
+      "example": "换新的手机 去国外要换钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15463,6 +15593,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 75,
       "reviewStatus": "draft",
+      "example": "天气变了 小美变可爱了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15489,6 +15620,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 76,
       "reviewStatus": "draft",
+      "example": "上课已经完了 我做完蛋糕了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15515,6 +15647,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 77,
       "reviewStatus": "draft",
+      "example": "在商店买东西 买菜",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15541,6 +15674,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 78,
       "reviewStatus": "draft",
+      "example": "他的工作是卖面包",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15567,6 +15701,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 79,
       "reviewStatus": "draft",
+      "example": "付钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15593,6 +15728,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 80,
       "reviewStatus": "draft",
+      "example": "花了很多时间跟钱学习外语",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15613,6 +15749,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 81,
       "reviewStatus": "draft",
+      "example": "跟同学借书",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15639,6 +15776,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 82,
       "reviewStatus": "draft",
+      "example": "去图书馆还书 借了钱要还",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15659,6 +15797,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 83,
       "reviewStatus": "draft",
+      "example": "周末去逛商店",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15685,6 +15824,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 84,
       "reviewStatus": "draft",
+      "example": "进房间里",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15711,6 +15851,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 85,
       "reviewStatus": "draft",
+      "example": "8点出门，10点回家 早上5点太阳出来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15737,6 +15878,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 86,
       "reviewStatus": "draft",
+      "example": "走上去二楼 在上海上车",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15757,6 +15899,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 87,
       "reviewStatus": "draft",
+      "example": "下去一楼买菜 在北京下车",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -15777,6 +15920,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 88,
       "reviewStatus": "draft",
+      "example": "你今天去学校吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15803,6 +15947,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 89,
       "reviewStatus": "draft",
+      "example": "朋友来我家了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15829,6 +15974,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 90,
       "reviewStatus": "draft",
+      "example": "回家 明年回国",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15855,6 +16001,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 91,
       "reviewStatus": "draft",
+      "example": "过马路 过来 过去 来中国以后两年过去了 过幸福的生活",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15881,6 +16028,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 92,
       "reviewStatus": "draft",
+      "example": "地铁到车站了 时间到了。我们走吧。 参加人数到了20个人了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15907,6 +16055,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 93,
       "reviewStatus": "draft",
+      "example": "走路回家 汽车爸爸开走了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15933,6 +16082,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 94,
       "reviewStatus": "draft",
+      "example": "我每天早上都跑5公里 小狗从家里跑走了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15959,6 +16109,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 95,
       "reviewStatus": "draft",
+      "example": "兔子在跳 他能跳很高",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -15985,6 +16136,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 96,
       "reviewStatus": "draft",
+      "example": "雨停了 车子停在这里",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16011,6 +16163,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 97,
       "reviewStatus": "draft",
+      "example": "小虫在地上爬 我爱爬山 猴子在爬树 小男孩努力爬起来了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16037,6 +16190,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 98,
       "reviewStatus": "draft",
+      "example": "小鸟飞在天空 球飞走了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16063,6 +16217,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 99,
       "reviewStatus": "draft",
+      "example": "早上8点起床",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16089,6 +16244,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 100,
       "reviewStatus": "draft",
+      "example": "奶奶跟爷爷早上都去散步",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16115,6 +16271,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 101,
       "reviewStatus": "draft",
+      "example": "收拾房间",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16141,6 +16298,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 102,
       "reviewStatus": "draft",
+      "example": "这里不能抽烟",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16167,6 +16325,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 103,
       "reviewStatus": "draft",
+      "example": "爸爸每天开车去公司",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16193,6 +16352,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 104,
       "reviewStatus": "draft",
+      "example": "哥哥下课后都去打工",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16219,6 +16379,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 105,
       "reviewStatus": "draft",
+      "example": "下课后就回家",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16245,6 +16406,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 106,
       "reviewStatus": "draft",
+      "example": "回家后就洗澡",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16271,6 +16433,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 107,
       "reviewStatus": "draft",
+      "example": "我每天晚上十点睡觉",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16297,6 +16460,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 108,
       "reviewStatus": "draft",
+      "example": "爸爸早上八点去公司上班",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16323,6 +16487,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 109,
       "reviewStatus": "draft",
+      "example": "爸爸下午六点下班回家",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16349,6 +16514,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 110,
       "reviewStatus": "draft",
+      "example": "他工作了很久 我们今天的工作是洗车",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16375,6 +16541,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 111,
       "reviewStatus": "draft",
+      "example": "暑假放假十天 我明天放假",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16401,6 +16568,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 112,
       "reviewStatus": "draft",
+      "example": "爸爸生病了，今天请假了。 我生病了，要请假。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16427,6 +16595,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 113,
       "reviewStatus": "draft",
+      "example": "很多小学生都是八点半上学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16453,6 +16622,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 114,
       "reviewStatus": "draft",
+      "example": "每天下学回家，妈妈都在家等我",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -16487,6 +16657,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 115,
       "reviewStatus": "draft",
+      "example": "每天下学回家，妈妈都在家等我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16513,6 +16684,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 116,
       "reviewStatus": "draft",
+      "example": "我昨天上课迟到了... 老师很生气",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16539,6 +16711,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 117,
       "reviewStatus": "draft",
+      "example": "我很喜欢去学校上课 上汉语课",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16565,6 +16738,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 118,
       "reviewStatus": "draft",
+      "example": "我们下课后去玩儿吧",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16591,6 +16765,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 119,
       "reviewStatus": "draft",
+      "example": "我每天练习写汉字",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16617,6 +16792,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 120,
       "reviewStatus": "draft",
+      "example": "上课前先预习",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16643,6 +16819,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 121,
       "reviewStatus": "draft",
+      "example": "下课后回家复习",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16669,6 +16846,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 122,
       "reviewStatus": "draft",
+      "example": "明天考英语，后天考汉语 今天下午我要考试",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -16689,6 +16867,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 123,
       "reviewStatus": "draft",
+      "example": "我想去美国留学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16715,6 +16894,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 124,
       "reviewStatus": "draft",
+      "example": "去海边游泳",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -16735,6 +16915,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 125,
       "reviewStatus": "draft",
+      "example": "我周末去练习跳舞",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16761,6 +16942,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 126,
       "reviewStatus": "draft",
+      "example": "爷爷奶奶每天都去公园运动",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -16781,6 +16963,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 127,
       "reviewStatus": "draft",
+      "example": "工作累了回家休息",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16807,6 +16990,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 128,
       "reviewStatus": "draft",
+      "example": "老师在准备上课的教材",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16833,6 +17017,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 129,
       "reviewStatus": "draft",
+      "example": "暑假开始了 考试要开始了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16859,6 +17044,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 130,
       "reviewStatus": "draft",
+      "example": "我们的巴士从北京出发",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16885,6 +17071,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 131,
       "reviewStatus": "draft",
+      "example": "我们三个人参加了学校的棒球队",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16911,6 +17098,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 132,
       "reviewStatus": "draft",
+      "example": "爸爸妈妈来参观了我的课",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16937,6 +17125,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 133,
       "reviewStatus": "draft",
+      "example": "周末我们家人要去南京旅游",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16963,6 +17152,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 134,
       "reviewStatus": "draft",
+      "example": "大家一起照相吧",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -16989,6 +17179,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 135,
       "reviewStatus": "draft",
+      "example": "大家一起拍照吧",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -17023,6 +17214,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 136,
       "reviewStatus": "draft",
+      "example": "今天会下雨 下大雨",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17049,6 +17241,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 137,
       "reviewStatus": "draft",
+      "example": "外面刮风了 刮大风",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17075,6 +17268,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 138,
       "reviewStatus": "draft",
+      "example": "弟弟感冒了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17101,6 +17295,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 139,
       "reviewStatus": "draft",
+      "example": "李明生病了。今天休息。",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -17121,6 +17316,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 140,
       "reviewStatus": "draft",
+      "example": "这里的河水很干净，能看见很多鱼",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17147,6 +17343,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 141,
       "reviewStatus": "draft",
+      "example": "从妹妹的床下听见了老鼠的声音",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17173,6 +17370,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 142,
       "reviewStatus": "draft",
+      "example": "你觉得今天冷吗 你觉得他会来吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17199,6 +17397,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 143,
       "reviewStatus": "draft",
+      "example": "在学校认识了很多朋友 我认识了2000个汉字",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17225,6 +17424,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 144,
       "reviewStatus": "draft",
+      "example": "老师教的，你明白了吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17251,6 +17451,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 145,
       "reviewStatus": "draft",
+      "example": "你知道他的名字吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17277,6 +17478,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 146,
       "reviewStatus": "draft",
+      "example": "小朋友们请放心，这次考试不难",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17303,6 +17505,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 147,
       "reviewStatus": "draft",
+      "example": "我考试考很好。妈妈很满意",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17329,6 +17532,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 148,
       "reviewStatus": "draft",
+      "example": "小雨喜欢力宏呢",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17355,6 +17559,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 149,
       "reviewStatus": "draft",
+      "example": "学生不听话，老师生气了。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17381,6 +17586,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 150,
       "reviewStatus": "draft",
+      "example": "弟弟今天很晚起床，早上很着急。",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -17415,6 +17621,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 151,
       "reviewStatus": "draft",
+      "example": "开车要小心。慢慢开。",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -17435,6 +17642,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 152,
       "reviewStatus": "draft",
+      "example": "同学们都在注意听老师的课 在外国旅行，要注意安全。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17461,6 +17669,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 153,
       "reviewStatus": "draft",
+      "example": "听说明天会下雨 听说他爸爸妈妈是韩国人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17487,6 +17696,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 154,
       "reviewStatus": "draft",
+      "example": "妈妈告诉了我一个秘密",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17513,6 +17723,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 155,
       "reviewStatus": "draft",
+      "example": "看电影时不要说话",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17539,6 +17750,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 156,
       "reviewStatus": "draft",
+      "example": "请说明今天迟到的理由",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17565,6 +17777,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 157,
       "reviewStatus": "draft",
+      "example": "学校有问题，请跟老师商量！",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17591,6 +17804,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 158,
       "reviewStatus": "draft",
+      "example": "他写了一封信给我，我需要回信",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17617,6 +17831,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 159,
       "reviewStatus": "draft",
+      "example": "我明天跟小王在公园见面",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -17637,6 +17852,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 160,
       "reviewStatus": "draft",
+      "example": "李红介绍一个朋友给我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17663,6 +17879,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 161,
       "reviewStatus": "draft",
+      "example": "同学们欢迎了新来的留学生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17689,6 +17906,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 162,
       "reviewStatus": "draft",
+      "example": "我很感谢朋友们送我到机场",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17715,6 +17933,7 @@
       "sourceSheet": "动词1",
       "sourceRow": 163,
       "reviewStatus": "draft",
+      "example": "莉莉跟保罗结婚了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17741,6 +17960,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 2,
       "reviewStatus": "draft",
+      "example": "今天天气很好 好吃 这只狗好可爱啊 好，知道了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17767,6 +17987,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 3,
       "reviewStatus": "draft",
+      "example": "爷爷身体不好 不好吃",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17793,6 +18014,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 4,
       "reviewStatus": "draft",
+      "example": "小王爱打人，很坏 他是个坏孩子 自行车坏了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17819,6 +18041,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 5,
       "reviewStatus": "draft",
+      "example": "老师，这一题对吗? 小美说得不对 对，我是他弟弟",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17845,6 +18068,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 6,
       "reviewStatus": "draft",
+      "example": "这个问题很难，老师也错了。 我们走错路了！",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17871,6 +18095,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 7,
       "reviewStatus": "draft",
+      "example": "他的英语不错",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -17891,6 +18116,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 8,
       "reviewStatus": "draft",
+      "example": "他的个子很大 大人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17917,6 +18143,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 9,
       "reviewStatus": "draft",
+      "example": "我的学校比他的小一点儿 小孩子",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17943,6 +18170,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 10,
       "reviewStatus": "draft",
+      "example": "我的班里有很多留学生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -17969,6 +18197,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 11,
       "reviewStatus": "draft",
+      "example": "弟弟钱很少，哥哥钱很多。 今天少了一个人，不能打球",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -17989,6 +18218,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 12,
       "reviewStatus": "draft",
+      "example": "妹妹的头发很长",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -18009,6 +18239,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 13,
       "reviewStatus": "draft",
+      "example": "这支铅笔太短了 短裤",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18035,6 +18266,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 14,
       "reviewStatus": "draft",
+      "example": "高山 弟弟比哥哥高",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18061,6 +18293,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 15,
       "reviewStatus": "draft",
+      "example": "今天的气温很低",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18087,6 +18320,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 16,
       "reviewStatus": "draft",
+      "example": "我是班上最矮的学生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18113,6 +18347,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 17,
       "reviewStatus": "draft",
+      "example": "这个游泳池很深，要小心 这个苹果颜色深",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18139,6 +18374,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 18,
       "reviewStatus": "draft",
+      "example": "水太浅了，不能游泳 浅蓝色的衣服",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18165,6 +18401,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 19,
       "reviewStatus": "draft",
+      "example": "课本很轻，词典很重",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18191,6 +18428,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 20,
       "reviewStatus": "draft",
+      "example": "今天背包太重了... 病重的老人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18217,6 +18455,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 21,
       "reviewStatus": "draft",
+      "example": "爸爸吃饭很快 小王跑得快 快8点了，我们快迟到了。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18243,6 +18482,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 22,
       "reviewStatus": "draft",
+      "example": "老人走路很慢 吃饭要慢慢吃",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18269,6 +18509,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 23,
       "reviewStatus": "draft",
+      "example": "爷爷早上很早起床 老师叫我早一点来上学",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18295,6 +18536,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 24,
       "reviewStatus": "draft",
+      "example": "莉莉晚上很晚睡觉 排队7点开始，他们来晚了。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18321,6 +18563,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 25,
       "reviewStatus": "draft",
+      "example": "我家离学校很远 离毕业不远了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18347,6 +18590,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 26,
       "reviewStatus": "draft",
+      "example": "教室离食堂很近",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18373,6 +18617,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 27,
       "reviewStatus": "draft",
+      "example": "爸爸很胖，腿很粗。 小王的声音很粗 很粗的眉毛",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18399,6 +18644,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 28,
       "reviewStatus": "draft",
+      "example": "很粗的线跟很细的线 他做事很细，很认真",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18425,6 +18671,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 29,
       "reviewStatus": "draft",
+      "example": "买了一个新的书包 我交了新朋友",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18451,6 +18698,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 30,
       "reviewStatus": "draft",
+      "example": "爷爷奶奶穿的衣服都很旧",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18477,6 +18725,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 31,
       "reviewStatus": "draft",
+      "example": "妈妈喜欢在百货店买便宜的东西",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18503,6 +18752,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 32,
       "reviewStatus": "draft",
+      "example": "东京的房子太贵了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18529,6 +18779,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 33,
       "reviewStatus": "draft",
+      "example": "这件衣服很好看 小王长得很好看 莉莉长得很好看",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18555,6 +18806,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 34,
       "reviewStatus": "draft",
+      "example": "很漂亮的美女 教室里整理得漂漂亮亮的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18581,6 +18833,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 35,
       "reviewStatus": "draft",
+      "example": "我家有一只很可爱的小狗",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18607,6 +18860,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 36,
       "reviewStatus": "draft",
+      "example": "我家的狗很可爱，小王家的狗很丑 我弟弟字写得很丑",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18633,6 +18887,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 37,
       "reviewStatus": "draft",
+      "example": "生病后瘦了很多",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18659,6 +18914,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 38,
       "reviewStatus": "draft",
+      "example": "弟弟很瘦，哥哥很胖",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18685,6 +18941,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 39,
       "reviewStatus": "draft",
+      "example": "奶奶老了，走路很慢了 老人 老奶奶",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18711,6 +18968,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 40,
       "reviewStatus": "draft",
+      "example": "小美的爸爸很老，妈妈很年轻",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18737,6 +18995,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 41,
       "reviewStatus": "draft",
+      "example": "这一题很容易 她很容易生病",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18763,6 +19022,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 42,
       "reviewStatus": "draft",
+      "example": "今天的考试很简单 你考试考了100分，真不简单",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -18797,6 +19057,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 43,
       "reviewStatus": "draft",
+      "example": "很难的汉语书 老师的问题很难",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18823,6 +19084,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 44,
       "reviewStatus": "draft",
+      "example": "你有困难，朋友会帮忙",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18849,6 +19111,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 45,
       "reviewStatus": "draft",
+      "example": "爸爸的工作很辛苦 外国辛苦了一年，才学会了外语",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18875,6 +19138,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 46,
       "reviewStatus": "draft",
+      "example": "爸爸工作很忙，7点上班，12点下班。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18901,6 +19165,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 47,
       "reviewStatus": "draft",
+      "example": "我回家后要做家事，真的很累。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18927,6 +19192,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 48,
       "reviewStatus": "draft",
+      "example": "运动后上课很困 英语老师的课很困",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -18953,6 +19219,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 49,
       "reviewStatus": "draft",
+      "example": "肚子痛 头疼",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -18973,6 +19240,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 50,
       "reviewStatus": "draft",
+      "example": "爷爷90岁了，身体还很健康！ 健康检查",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -18993,6 +19261,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 51,
       "reviewStatus": "draft",
+      "example": "肚子饿了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19019,6 +19288,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 52,
       "reviewStatus": "draft",
+      "example": "肚子饱",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -19039,6 +19309,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 53,
       "reviewStatus": "draft",
+      "example": "口渴了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19065,6 +19336,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 54,
       "reviewStatus": "draft",
+      "example": "我考试前都很紧张",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19091,6 +19363,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 55,
       "reviewStatus": "draft",
+      "example": "冬天很冷",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19117,6 +19390,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 56,
       "reviewStatus": "draft",
+      "example": "今天天气很热 大太阳天很热 饭凉了，帮我加热",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19143,6 +19417,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 57,
       "reviewStatus": "draft",
+      "example": "海边的风很凉 夏天白天很热，晚上很凉",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19169,6 +19444,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 58,
       "reviewStatus": "draft",
+      "example": "春天了，天暖了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19195,6 +19471,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 59,
       "reviewStatus": "draft",
+      "example": "太阳很大，衣服干了 牛肉干 葡萄干",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -19215,6 +19492,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 60,
       "reviewStatus": "draft",
+      "example": "下雨天，衣服湿了 衣服还没干，湿湿的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19241,6 +19519,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 61,
       "reviewStatus": "draft",
+      "example": "朋友给我礼物，我很高兴",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19267,6 +19546,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 62,
       "reviewStatus": "draft",
+      "example": "妈妈的心情很愉快",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19293,6 +19573,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 63,
       "reviewStatus": "draft",
+      "example": "幸福的生活 跟你一起，我很幸福",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19319,6 +19600,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 64,
       "reviewStatus": "draft",
+      "example": "在沙发上睡觉很舒服 很舒服的衣服",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19345,6 +19627,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 65,
       "reviewStatus": "draft",
+      "example": "生日快乐 我们过了很快乐的时间",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19371,6 +19654,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 66,
       "reviewStatus": "draft",
+      "example": "我们玩得很开心 爷爷来我家找我，我很开心。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19397,6 +19681,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 67,
       "reviewStatus": "draft",
+      "example": "每天要做家事，很麻烦。 麻烦你帮我找课本。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19423,6 +19708,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 68,
       "reviewStatus": "draft",
+      "example": "这个游戏很有意思 有意思的书",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19449,6 +19735,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 69,
       "reviewStatus": "draft",
+      "example": "踢足球很好玩儿 很好玩的游乐园",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -19469,6 +19756,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 70,
       "reviewStatus": "draft",
+      "example": "老师骂了我。我觉得很难过。 心里很难过",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19495,6 +19783,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 71,
       "reviewStatus": "draft",
+      "example": "很酸的橘子 酸奶 酸梅",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19521,6 +19810,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 72,
       "reviewStatus": "draft",
+      "example": "糖果很甜 很甜的苹果",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19547,6 +19837,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 73,
       "reviewStatus": "draft",
+      "example": "很苦的茶 工人的工作很苦 爸爸以前吃了很多苦",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19573,6 +19864,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 74,
       "reviewStatus": "draft",
+      "example": "很辣的麻婆豆腐 辣椒很辣",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19599,6 +19891,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 75,
       "reviewStatus": "draft",
+      "example": "这条鱼很咸",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19625,6 +19918,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 76,
       "reviewStatus": "draft",
+      "example": "很香的花 这家店的炒菜很香 我的料理他吃得很香",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19651,6 +19945,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 77,
       "reviewStatus": "draft",
+      "example": "这个菜的味道很淡 颜色很淡",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19677,6 +19972,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 78,
       "reviewStatus": "draft",
+      "example": "他烫到了手 很烫的汤 烫衣服 烫头发",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19703,6 +19999,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 79,
       "reviewStatus": "draft",
+      "example": "好吃的料理",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19729,6 +20026,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 80,
       "reviewStatus": "draft",
+      "example": "好喝的饮料 这碗汤很好喝",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19755,6 +20053,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 81,
       "reviewStatus": "draft",
+      "example": "学校食堂的料理很难吃",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19781,6 +20080,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 82,
       "reviewStatus": "draft",
+      "example": "这杯咖啡很苦，很难喝",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19807,6 +20107,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 83,
       "reviewStatus": "draft",
+      "example": "莉莉弹钢琴很好听 小鸟的歌声很好听",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19833,6 +20134,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 84,
       "reviewStatus": "draft",
+      "example": "城市的生活很方便 现在方便讲电话吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19859,6 +20161,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 85,
       "reviewStatus": "draft",
+      "example": "很干净的房间 打扫得很干净 全部的料理都吃得干干净净",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19885,6 +20188,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 86,
       "reviewStatus": "draft",
+      "example": "听得清楚吗？ 看得清楚吗？ 请说清楚理由",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19911,6 +20215,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 87,
       "reviewStatus": "draft",
+      "example": "这样做，行不行？ 行，我带你去吧！ 不行，你不可以去。 我们一起去，行吗？ 他这个人很真行",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19937,6 +20242,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 88,
       "reviewStatus": "draft",
+      "example": "小王的日语不错 不错！这碗汤很好喝",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -19957,6 +20263,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 89,
       "reviewStatus": "draft",
+      "example": "很热闹的城市 中国的春节很热闹",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -19983,6 +20290,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 90,
       "reviewStatus": "draft",
+      "example": "很重要的工作 这一件事很重要",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -20009,6 +20317,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 91,
       "reviewStatus": "draft",
+      "example": "我跟他一样高 我们的名字一样 我们做一样的工作",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -20035,6 +20344,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 92,
       "reviewStatus": "draft",
+      "example": "这两件衣服差不多一样贵 这家餐厅的料理我差不多都吃过 这本书差不多十块钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -20061,6 +20371,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 93,
       "reviewStatus": "draft",
+      "example": "我爸爸是有名人 这位老板很有名",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -20087,6 +20398,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 94,
       "reviewStatus": "draft",
+      "example": "我弟弟很聪明，学习很努力。 聪明的小朋友",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20107,6 +20419,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 95,
       "reviewStatus": "draft",
+      "example": "小明很笨，小美很聪明 笨小孩",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20127,6 +20440,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 96,
       "reviewStatus": "draft",
+      "example": "他的中文很流利 他的信写得很流利",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20147,6 +20461,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 97,
       "reviewStatus": "draft",
+      "example": "他的成绩全班第一名，真厉害。 今天下雨下得很厉害 他病得很厉害",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20167,6 +20482,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 98,
       "reviewStatus": "draft",
+      "example": "她每天在家睡觉不工作，很懒。 哥哥很懒惰，都不帮忙做家事。",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -20187,6 +20503,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 99,
       "reviewStatus": "draft",
+      "example": "学习很努力 努力工作",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20207,6 +20524,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 100,
       "reviewStatus": "draft",
+      "example": "休息时间只有小雨在认真学习 认真做事",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20227,6 +20545,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 101,
       "reviewStatus": "draft",
+      "example": "过马路要小心 开车要小心",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -20247,6 +20566,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 102,
       "reviewStatus": "draft",
+      "example": "乖孩子听爸爸妈妈的话 小王很坏，莉莉很乖",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -20267,6 +20587,7 @@
       "sourceSheet": "形容词1",
       "sourceRow": 103,
       "reviewStatus": "draft",
+      "example": "妈妈热情地招待客人",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -28923,6 +29244,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 251,
       "reviewStatus": "draft",
+      "example": "帮你找好对象",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -29493,6 +29815,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 272,
       "reviewStatus": "draft",
+      "example": "这是代表2020年的词",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -32657,6 +32980,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 392,
       "reviewStatus": "draft",
+      "example": "新来的厨师很有经验",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -32697,6 +33021,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 394,
       "reviewStatus": "draft",
+      "example": "大家的外语水平都不一样",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -32941,6 +33266,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 403,
       "reviewStatus": "draft",
+      "example": "我很希望世界和平...（祈祷）",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -32987,6 +33313,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 405,
       "reviewStatus": "draft",
+      "example": "他给人的印象很好",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -33237,6 +33564,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 414,
       "reviewStatus": "draft",
+      "example": "朋友：「加油，你可以的！！要有信心」",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -33361,6 +33689,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 419,
       "reviewStatus": "draft",
+      "example": "妈妈：「请说清楚你做坏事的理由」",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -33439,6 +33768,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 422,
       "reviewStatus": "draft",
+      "example": "身体的作用",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -33801,6 +34131,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 436,
       "reviewStatus": "draft",
+      "example": "这个医生很专业",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -33913,6 +34244,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 440,
       "reviewStatus": "draft",
+      "example": "新课本的内容很复杂",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -33965,6 +34297,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 442,
       "reviewStatus": "draft",
+      "example": "世界的生活情况很不一样",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34011,6 +34344,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 444,
       "reviewStatus": "draft",
+      "example": "各个国家的传统不一样",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34037,6 +34371,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 445,
       "reviewStatus": "draft",
+      "example": "他在想什么？我不懂他的意思？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34063,6 +34398,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 446,
       "reviewStatus": "draft",
+      "example": "享受生活才是人生的意义",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34115,6 +34451,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 448,
       "reviewStatus": "draft",
+      "example": "坏人的目的是害人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34239,6 +34576,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 453,
       "reviewStatus": "draft",
+      "example": "被解放后自由了！！",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34265,6 +34603,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 454,
       "reviewStatus": "draft",
+      "example": "老板：「又失败了？你要怎么给我付上责任呢？」",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34291,6 +34630,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 455,
       "reviewStatus": "draft",
+      "example": "平时小王不努力，考试前才努力",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34351,6 +34691,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 457,
       "reviewStatus": "draft",
+      "example": "妈妈：「当时的爸爸很帅呢」",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34653,6 +34994,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 468,
       "reviewStatus": "draft",
+      "example": "时代慢慢变化了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34731,6 +35073,7 @@
       "sourceSheet": "名词2",
       "sourceRow": 471,
       "reviewStatus": "draft",
+      "example": "人类最初是猴子呢",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -34959,6 +35302,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 2,
       "reviewStatus": "draft",
+      "example": "美丽的风景里有一个美女",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -34979,6 +35323,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 3,
       "reviewStatus": "draft",
+      "example": "好棒啊！！日本队有得分了。 他的料理很棒！！",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35005,6 +35350,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 4,
       "reviewStatus": "draft",
+      "example": "他在学校的成绩很了不起",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35031,6 +35377,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 5,
       "reviewStatus": "draft",
+      "example": "历史上的伟大人物 伟大的发明",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35057,6 +35404,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 6,
       "reviewStatus": "draft",
+      "example": "她学习很用功",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35083,6 +35431,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 7,
       "reviewStatus": "draft",
+      "example": "他的作品最优秀 班上最优秀的学生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35109,6 +35458,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 8,
       "reviewStatus": "draft",
+      "example": "我的上司是很能干的人 很能干的女人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35135,6 +35485,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 9,
       "reviewStatus": "draft",
+      "example": "傻孩子，不懂事。 小孩子傻傻的，大人要看好。 事情太突然了，我们都看傻了。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35161,6 +35512,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 10,
       "reviewStatus": "draft",
+      "example": "他的病越来越严重了 严重的交通事故",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35187,6 +35539,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 11,
       "reviewStatus": "draft",
+      "example": "很严格的老师 学校的规定很严格 父母亲的要求很严格",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35213,6 +35566,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 12,
       "reviewStatus": "draft",
+      "example": "家里很穷没饭吃 贫穷的家庭",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35233,6 +35587,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 13,
       "reviewStatus": "draft",
+      "example": "食物很丰富 丰富的工作经验 博士有丰富的知识",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35259,6 +35614,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 14,
       "reviewStatus": "draft",
+      "example": "妈妈的料理味道很清淡 味道清淡的乌龙茶",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -35279,6 +35635,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 15,
       "reviewStatus": "draft",
+      "example": "莉莉喜欢做油腻的料理 吃太多肉，嘴里很油腻",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35305,6 +35662,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 16,
       "reviewStatus": "draft",
+      "example": "这本小说看多很多遍，看你了 吃腻了一样的料理 这首歌听腻了 炒菜用很多油，很腻",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35331,6 +35689,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 17,
       "reviewStatus": "draft",
+      "example": "别乱丢垃圾，很臭呢 学校的厕所很臭",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35357,6 +35716,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 18,
       "reviewStatus": "draft",
+      "example": "这种虫看起来很恶心 身体不舒服，有点儿恶心",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35383,6 +35743,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 19,
       "reviewStatus": "draft",
+      "example": "我对这里很熟悉 我跟他很熟 料理煮熟了",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35403,6 +35764,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 20,
       "reviewStatus": "draft",
+      "example": "茶叶放太多了，味道很浓 味道很浓的汤 我家的花园，花香味很浓郁 浓雾",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35429,6 +35791,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 21,
       "reviewStatus": "draft",
+      "example": "已经7点了，外面还很亮 大城市的夜晚很亮 天亮了 灯不亮了，坏掉了",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35449,6 +35812,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 22,
       "reviewStatus": "draft",
+      "example": "天黑了，外面变暗了 灯坏了，所以房间里很暗。 乡下的夜晚很暗，外出要小心",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35475,6 +35839,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 23,
       "reviewStatus": "draft",
+      "example": "昨天的足球比赛特别精彩 精彩的表演 总统的演讲非常精彩",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35501,6 +35866,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 24,
       "reviewStatus": "draft",
+      "example": "准备了大餐，希望你们吃个痛快 我想去游乐园玩个痛快 我的要求他痛快地答应了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35527,6 +35893,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 25,
       "reviewStatus": "draft",
+      "example": "问题很复杂，需要找律师 老师说的内容他复杂，我听不懂",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35553,6 +35920,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 26,
       "reviewStatus": "draft",
+      "example": "老师解释得非常详细 详细内容请参考说明书",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35579,6 +35947,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 27,
       "reviewStatus": "draft",
+      "example": "仔细听老师的课就不会错了 仔细想一下你将来的计划 教练教你的动作要仔细看好",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35605,6 +35974,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 28,
       "reviewStatus": "draft",
+      "example": "菜还没煮熟，还很硬 他喜欢是硬的面包，而我喜欢软的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35631,6 +36001,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 29,
       "reviewStatus": "draft",
+      "example": "小雨的身体很软，很会运动 香蕉熟了就变软了 家里的沙发很软很舒服",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35657,6 +36028,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 30,
       "reviewStatus": "draft",
+      "example": "以热烈的掌声迎接客人 热烈的讨论一个问题",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35683,6 +36055,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 31,
       "reviewStatus": "draft",
+      "example": "天晴了，我们出去玩吧 明天是晴天，后天是雨天",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35709,6 +36082,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 32,
       "reviewStatus": "draft",
+      "example": "阴天很冷 天阴了，开始下雨了 大热天需要在树阴下休息",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35735,6 +36109,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 33,
       "reviewStatus": "draft",
+      "example": "下雨天，天气很闷热 家里太闷了，开开门吧 跟妈妈吵架之后，心里闷闷的",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35755,6 +36130,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 34,
       "reviewStatus": "draft",
+      "example": "已经下雨下10天了，空气非常潮湿 台湾的气候很潮湿",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35781,6 +36157,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 35,
       "reviewStatus": "draft",
+      "example": "冬天的空气很干燥 嘴里很干燥需要喝点儿水 水果干很好吃",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35807,6 +36184,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 36,
       "reviewStatus": "draft",
+      "example": "春天了，慢慢变暖和了 南方地区一整年都很暖和",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35833,6 +36211,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 37,
       "reviewStatus": "draft",
+      "example": "这是我亲爱的宝贝 亲爱的，我回来了！！",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35859,6 +36238,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 38,
       "reviewStatus": "draft",
+      "example": "这次的演讲，许多学生来参加了 他最近胖了许多",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35885,6 +36265,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 39,
       "reviewStatus": "draft",
+      "example": "睡眠时间还不足够 食材已经够了，不用再买了 我受够了，已经受不了了",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35905,6 +36286,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 40,
       "reviewStatus": "draft",
+      "example": "所有的人都需要上学 所有的钱都花在房子上面 所有权",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35931,6 +36313,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 41,
       "reviewStatus": "draft",
+      "example": "我跟弟弟上同一个学校 兄弟的性格是不同的 这个照片里的人跟他不是同一个人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -35957,6 +36340,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 42,
       "reviewStatus": "draft",
+      "example": "他虽然很有名，但是穿着很普通 我只是一个普普通通的农民 普通教育",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -35977,6 +36361,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 43,
       "reviewStatus": "draft",
+      "example": "她学了5年英语，一般的文章都能理解 我的成绩很一般，在学校里并不突出 一般，城市人的收入比乡下人高 如老虎一般的脾气",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -35997,6 +36382,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 44,
       "reviewStatus": "draft",
+      "example": "我妈妈讲话很直接 不懂的直接问老师吧，别问我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36023,6 +36409,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 45,
       "reviewStatus": "draft",
+      "example": "昨天有人一直打电话过来，原来是你啊！！ 王力从原来住的地方搬出来了 长大后小美的脾气比原来好多了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36049,6 +36436,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 46,
       "reviewStatus": "draft",
+      "example": "爷爷的病情变化，太突然了 突然，有一只鸟飞进了上课中的教室里",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36075,6 +36463,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 47,
       "reviewStatus": "draft",
+      "example": "我们家跟邻居都很友好 日美友好关系",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36101,6 +36490,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 48,
       "reviewStatus": "draft",
+      "example": "手机是一个很有用的发明 我要努力学习当一个有用的人 这匹马一点力气都没有，太没用了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36127,6 +36517,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 49,
       "reviewStatus": "draft",
+      "example": "北方冷、南方热是很正常的 我的生活习惯不正常",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36153,6 +36544,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 50,
       "reviewStatus": "draft",
+      "example": "正确的答案 你说得很正确，对方才是错的。",
       "image": {
         "state": "unsuitable",
         "provenance": null,
@@ -36173,6 +36565,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 51,
       "reviewStatus": "draft",
+      "example": "真正的朋友互相帮助 哪一个才是真正的作品呢？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36199,6 +36592,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 52,
       "reviewStatus": "draft",
+      "example": "说假话 假哭 假钱 花瓶破了，但假装什么都不知道",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36225,6 +36619,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 53,
       "reviewStatus": "draft",
+      "example": "小王在北京顺利地找到工作了 这次的考试顺利不顺利？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36251,6 +36646,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 54,
       "reviewStatus": "draft",
+      "example": "这一题确实很难 确实性 这是确实的消息吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36277,6 +36673,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 55,
       "reviewStatus": "draft",
+      "example": "这次失败的主要原因 中国的主要城市",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36303,6 +36700,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 56,
       "reviewStatus": "draft",
+      "example": "这个季节穿这种衣服不合适 找到了最合适的工作",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36329,6 +36727,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 57,
       "reviewStatus": "draft",
+      "example": "多吃一点儿，别客气 你先出手的，那我就不客气了 在别人的家里要客气点儿",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36355,6 +36754,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 58,
       "reviewStatus": "draft",
+      "example": "脏衣服需要西 说脏话 他的房间很脏，需要清洁",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36381,6 +36781,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 59,
       "reviewStatus": "draft",
+      "example": "我们邻居都很安静，晚上很好睡 安安静静的夜晚 上课中请安静",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36407,6 +36808,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 60,
       "reviewStatus": "draft",
+      "example": "我们家小孩子很多，每天都很吵 别吵，爸爸在睡觉呢",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36433,6 +36835,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 61,
       "reviewStatus": "draft",
+      "example": "这条小路很窄，很难走",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36459,6 +36862,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 62,
       "reviewStatus": "draft",
+      "example": "很宽的空间 这双鞋太宽了 这个田地长50米，宽100米",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36485,6 +36889,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 63,
       "reviewStatus": "draft",
+      "example": "很厚的一本书 厚厚的词典",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36511,6 +36916,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 64,
       "reviewStatus": "draft",
+      "example": "上下班时间火车里总是很拥挤 平日的路上很拥挤 教室里太挤了，夏天很热",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -36531,6 +36937,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 65,
       "reviewStatus": "draft",
+      "example": "满满的一杯水 袋子里装满了食物 满头大汗 今天晚上满天星星，真美",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36557,6 +36964,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 66,
       "reviewStatus": "draft",
+      "example": "妈妈的房间很整齐 商店里的商品摆得整整齐齐的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36583,6 +36991,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 67,
       "reviewStatus": "draft",
+      "example": "妹妹都不整理房间，所以很乱 因为天气不好，我的计划乱掉了 乱扔垃圾 功课要好好写，不能乱写",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36609,6 +37018,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 68,
       "reviewStatus": "draft",
+      "example": "很辛苦的工作跟请轻松的工作 他轻轻松松地跑完了50公里",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36635,6 +37045,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 69,
       "reviewStatus": "draft",
+      "example": "新鲜的食材 乡下的空气很新鲜",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36661,6 +37072,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 70,
       "reviewStatus": "draft",
+      "example": "可怕的老师 很可怕的事件",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36687,6 +37099,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 71,
       "reviewStatus": "draft",
+      "example": "危险的地方 危险人物 在这边晚上一个人走路很危险",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36713,6 +37126,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 72,
       "reviewStatus": "draft",
+      "example": "过马路时要注意安全 一个人在国外生活没有安全感 国家的安全",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36739,6 +37153,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 73,
       "reviewStatus": "draft",
+      "example": "平平安安过生活 祝你们平安无事 一路平安",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36765,6 +37180,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 74,
       "reviewStatus": "draft",
+      "example": "今天有点儿头晕 李明运动中晕倒了 我容易晕车",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36791,6 +37207,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 75,
       "reviewStatus": "draft",
+      "example": "最理想的生活 这次的成绩不太理想 努力实现自己的理想",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -36811,6 +37228,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 76,
       "reviewStatus": "draft",
+      "example": "穷到没饭吃，真可怜 可怜的小女孩迷路了 我们都很可怜她",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36837,6 +37255,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 77,
       "reviewStatus": "draft",
+      "example": "好不容易抓到的鱼跑走了，真可惜 途中退学太可惜了 终于找到商品，可以没有钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36863,6 +37282,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 78,
       "reviewStatus": "draft",
+      "example": "老师遗憾地说我考了0分 我对这次失败感到遗憾 最好的朋友要搬家了，真遗憾",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36889,6 +37309,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 79,
       "reviewStatus": "draft",
+      "example": "下雨了！！糟糕，忘了收衣服 他的开车技术很糟糕 料理非常糟糕的餐厅",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36915,6 +37336,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 80,
       "reviewStatus": "draft",
+      "example": "亲切的笑容 亲切的态度",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36941,6 +37363,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 81,
       "reviewStatus": "draft",
+      "example": "温柔的性格 妈妈很温柔，爸爸很凶",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36967,6 +37390,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 82,
       "reviewStatus": "draft",
+      "example": "说谎的人很讨厌 中国人讨厌没有礼貌的人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -36993,6 +37417,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 83,
       "reviewStatus": "draft",
+      "example": "请专心上课！！ 专心学习",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37019,6 +37444,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 84,
       "reviewStatus": "draft",
+      "example": "成绩很差 小美跟小王的身高差不多 我的成绩离100分还差很多",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37045,6 +37471,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 85,
       "reviewStatus": "draft",
+      "example": "他的打球的动作很帅 他的穿着很帅 班里最帅的男生",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37071,6 +37498,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 86,
       "reviewStatus": "draft",
+      "example": "很难看的发型 脸色很难看",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37097,6 +37525,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 87,
       "reviewStatus": "draft",
+      "example": "苗条的身材",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37123,6 +37552,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 88,
       "reviewStatus": "draft",
+      "example": "做人要老实 老实的态度 老实说：\"我挺喜欢你的\"",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37149,6 +37579,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 89,
       "reviewStatus": "draft",
+      "example": "谦虚的态度 做人要谦虚",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37175,6 +37606,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 90,
       "reviewStatus": "draft",
+      "example": "工作勤快的人很受欢迎 妈妈做事很勤快",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37201,6 +37633,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 91,
       "reviewStatus": "draft",
+      "example": "考试时要冷静下来，不要紧张 遇到困难时要冷静下来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37227,6 +37660,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 92,
       "reviewStatus": "draft",
+      "example": "很好的朋友回国了，有点儿寂寞。 一个人生活很寂寞。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37253,6 +37687,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 93,
       "reviewStatus": "draft",
+      "example": "好消息让我很激动 他激动地说：\"我考上大学了\"",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37279,6 +37714,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 94,
       "reviewStatus": "draft",
+      "example": "抱歉，我又迟到了 因为昨天的失败，我感到十分抱歉",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37305,6 +37741,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 95,
       "reviewStatus": "draft",
+      "example": "被虫咬了，皮肤很痒 我很怕痒",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37331,6 +37768,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 96,
       "reviewStatus": "draft",
+      "example": "老板一生气，员工就慌了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37357,6 +37795,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 97,
       "reviewStatus": "draft",
+      "example": "这次考试成绩不好，所以很伤心 他被妈妈骂，感到很伤心",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37383,6 +37822,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 98,
       "reviewStatus": "draft",
+      "example": "3岁的弟弟现在走路很稳定了 公司很稳定的成长中",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -37403,6 +37843,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 99,
       "reviewStatus": "draft",
+      "example": "直走 个性很直 把手伸直",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -37437,6 +37878,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 100,
       "reviewStatus": "draft",
+      "example": "拐弯 汤匙弯了 一条弯弯的小路",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37463,6 +37905,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 101,
       "reviewStatus": "draft",
+      "example": "歪曲事实 他只是对你好而已，别想歪了 红绿灯被撞歪了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37489,6 +37932,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 102,
       "reviewStatus": "draft",
+      "example": "我住平地，小王住山地。 这条路很平，骑车很方便。 比赛结果一比一平分 两个足球队打成平手",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37515,6 +37959,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 103,
       "reviewStatus": "draft",
+      "example": "鼻子很扁 不小心把面包压扁了 小王捏的饺子扁扁的，很难看",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37541,6 +37986,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 104,
       "reviewStatus": "draft",
+      "example": "斜坡 画一条斜线 我女朋友坐我斜对面",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37567,6 +38013,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 105,
       "reviewStatus": "draft",
+      "example": "尖尖的铅笔 这只狗的牙齿很尖",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37593,6 +38040,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 106,
       "reviewStatus": "draft",
+      "example": "圆形 中秋节圆圆的月亮，真美",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37619,6 +38067,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 107,
       "reviewStatus": "draft",
+      "example": "薄薄的课本跟厚厚的词典 味道很薄",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37645,6 +38094,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 108,
       "reviewStatus": "draft",
+      "example": "他的身体很强 很强的选手 他的成绩比我强多了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37671,6 +38121,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 109,
       "reviewStatus": "draft",
+      "example": "爷爷身体很弱，容易生病 弱点",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37697,6 +38148,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 110,
       "reviewStatus": "draft",
+      "example": "他们紧紧的拥抱了 盖子盖得很紧，打不开 鞋带绑得很紧",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37723,6 +38175,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 111,
       "reviewStatus": "draft",
+      "example": "休息时间应该放松放松 鞋带绑得很松 螺丝松了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37749,6 +38202,7 @@
       "sourceSheet": "形容词2",
       "sourceRow": 112,
       "reviewStatus": "draft",
+      "example": "爷爷奶奶不工作了，每天都很闲 休息天闲着没事做",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37775,6 +38229,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 2,
       "reviewStatus": "draft",
+      "example": "姐姐生了一个小孩 我是1990年出生的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37801,6 +38256,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 3,
       "reviewStatus": "draft",
+      "example": "我家养一只猫咪 我是爷爷奶奶把我养大的",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37827,6 +38283,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 4,
       "reviewStatus": "draft",
+      "example": "我是在上海出生的 出生地",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37853,6 +38310,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 5,
       "reviewStatus": "draft",
+      "example": "这是我生长的农村 植物可以生长的环境",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37879,6 +38337,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 6,
       "reviewStatus": "draft",
+      "example": "这种花成长得很快 我喜欢看动物的成长",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37905,6 +38364,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 7,
       "reviewStatus": "draft",
+      "example": "我爷爷活了100岁 虽然工作辛苦，但是活得很快乐 有些人喜欢吃活鱼",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37931,6 +38391,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 8,
       "reviewStatus": "draft",
+      "example": "我家养的鱼死了...",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37957,6 +38418,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 9,
       "reviewStatus": "draft",
+      "example": "不要随便杀动物 在战争中很多人被杀了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -37983,6 +38445,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 10,
       "reviewStatus": "draft",
+      "example": "我非常狠老板",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38009,6 +38472,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 11,
       "reviewStatus": "draft",
+      "example": "在这里发生了交通事故 今天在学校发生了很多事情",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38035,6 +38499,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 12,
       "reviewStatus": "draft",
+      "example": "在工厂里生产很多商品 提高机器的生产力",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38061,6 +38526,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 13,
       "reviewStatus": "draft",
+      "example": "天气影响了蔬菜的价格 我的老师影响了我的人生 抽烟会影响身体的健康",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38087,6 +38553,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 14,
       "reviewStatus": "draft",
+      "example": "在森林里出现了一只老虎 人老了会出现很多毛病",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38113,6 +38580,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 15,
       "reviewStatus": "draft",
+      "example": "小孩子突然消失，让父母亲很着急 一颗流星消失在夜空中",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38139,6 +38607,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 16,
       "reviewStatus": "draft",
+      "example": "中国的大城市发展得很快 两个人的关系发展得怎么样？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38165,6 +38634,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 17,
       "reviewStatus": "draft",
+      "example": "防止事故的发生 防止环境的破坏",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38191,6 +38661,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 18,
       "reviewStatus": "draft",
+      "example": "应该想办法避免两国的战争。 避免同样的错误。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38217,6 +38688,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 19,
       "reviewStatus": "draft",
+      "example": "请不要违反学校的规定 违反法律",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38243,6 +38715,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 20,
       "reviewStatus": "draft",
+      "example": "人类污染的自然的环境 这家工厂造成了周围的环境污染 空气污染",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38269,6 +38742,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 21,
       "reviewStatus": "draft",
+      "example": "游览观光景点 游览车",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38295,6 +38769,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 22,
       "reviewStatus": "draft",
+      "example": "美国总统访问中国 大公司老板要访问我们公司",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38321,6 +38796,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 23,
       "reviewStatus": "draft",
+      "example": "去朋友家做客",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38347,6 +38823,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 24,
       "reviewStatus": "draft",
+      "example": "用大餐来招待客人 中国人招待客人的方式",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38373,6 +38850,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 25,
       "reviewStatus": "draft",
+      "example": "接待客人时要有礼貌 他要接待大老板",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38399,6 +38877,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 26,
       "reviewStatus": "draft",
+      "example": "爸爸去外国出差",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38425,6 +38904,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 27,
       "reviewStatus": "draft",
+      "example": "他病得很严重 弟弟常常生病",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -38459,6 +38939,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 28,
       "reviewStatus": "draft",
+      "example": "爸爸喝醉了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38485,6 +38966,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 29,
       "reviewStatus": "draft",
+      "example": "吐口水 小宝宝把牛奶吐出来了 坐公车会晕车，容易吐",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38511,6 +38993,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 30,
       "reviewStatus": "draft",
+      "example": "蚊子会吸血 吸烟丢身体没有好处 吸毒",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38537,6 +39020,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 31,
       "reviewStatus": "draft",
+      "example": "吹口哨 吹笛子 大风吹 进去房间里面吹冷气",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38563,6 +39047,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 32,
       "reviewStatus": "draft",
+      "example": "被狗咬了 咬一口苹果 咬牙忍痛",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38589,6 +39074,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 33,
       "reviewStatus": "draft",
+      "example": "舔一口冰淇淋 我家小狗喜欢舔我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38615,6 +39101,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 34,
       "reviewStatus": "draft",
+      "example": "深呼吸 在森林里呼吸新鲜的空气 有人倒在地上没有呼吸心跳",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38641,6 +39128,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 35,
       "reviewStatus": "draft",
+      "example": "她感冒了，一直在咳嗽",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38667,6 +39155,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 36,
       "reviewStatus": "draft",
+      "example": "感冒要去医院看病 医生为我们看病",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38693,6 +39182,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 37,
       "reviewStatus": "draft",
+      "example": "被雨淋湿后开始发烧了 发烧发38度",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38719,6 +39209,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 38,
       "reviewStatus": "draft",
+      "example": "病很严重的话需要住院 小雨住院住了一个星期",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38745,6 +39236,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 39,
       "reviewStatus": "draft",
+      "example": "你明天就可以出院了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38771,6 +39263,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 40,
       "reviewStatus": "draft",
+      "example": "打针疼不疼？ 打预防针 我不想打针，请给我开药",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38797,6 +39290,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 41,
       "reviewStatus": "draft",
+      "example": "治疗病人 治疗伤口 他的病需要住院治疗",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38823,6 +39317,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 42,
       "reviewStatus": "draft",
+      "example": "她生了大病，需要动手术。 他小时候动过大手术",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38849,6 +39344,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 43,
       "reviewStatus": "draft",
+      "example": "动了手术后，她慢慢恢复了健康。 大地震后日本的经济慢慢恢复了。 两国的国际关系恢复正常了。",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38875,6 +39371,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 44,
       "reviewStatus": "draft",
+      "example": "老师经验过很多困难 我在外国留学时经验了很多事情 拥有丰富的经验",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -38895,6 +39392,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 45,
       "reviewStatus": "draft",
+      "example": "爷爷以前很穷，受了很多苦。 小王很有人气，在学校很受欢迎。 受同学的批评",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38921,6 +39419,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 46,
       "reviewStatus": "draft",
+      "example": "这次考试他得了第一名 考试得了100分 得到同学们的支持",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -38941,6 +39440,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 47,
       "reviewStatus": "draft",
+      "example": "这次任务取得了成功 篮球队取得了胜利 取得日本国籍",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38967,6 +39467,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 48,
       "reviewStatus": "draft",
+      "example": "获得成功 获得奖励 获得冠军",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -38993,6 +39494,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 49,
       "reviewStatus": "draft",
+      "example": "交换礼物 交换意见 我的卡片跟你的交换一下",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39019,6 +39521,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 50,
       "reviewStatus": "draft",
+      "example": "为穷人提供食物 给上司提供资料 为客户提供服务",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39045,6 +39548,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 51,
       "reviewStatus": "draft",
+      "example": "供给电力 石油的供给不足",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39071,6 +39575,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 52,
       "reviewStatus": "draft",
+      "example": "人需要朋友 明天考试我需要努力学习 为了生活爸爸需要努力工作",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39097,6 +39602,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 53,
       "reviewStatus": "draft",
+      "example": "公平地分配食物 工作量的分配",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39123,6 +39629,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 54,
       "reviewStatus": "draft",
+      "example": "满足老板的要求 满足人民的需要 对我现在的生活很满足",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39149,6 +39656,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 55,
       "reviewStatus": "draft",
+      "example": "调整价格 行程需要调整一下 手表慢了3分钟，需要调整",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39175,6 +39683,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 56,
       "reviewStatus": "draft",
+      "example": "每天要求爸爸给我零用钱 要求妈妈原谅我 老师对我们的要求很高",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39201,6 +39710,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 57,
       "reviewStatus": "draft",
+      "example": "求求你，分我一点食物 我求过他，但他并不帮我",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39227,6 +39737,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 58,
       "reviewStatus": "draft",
+      "example": "救命啊！！ 我掉进海里时，他救了我一命 他不会游泳，我得去救他",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39253,6 +39764,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 59,
       "reviewStatus": "draft",
+      "example": "一加一等于二 咖啡里加一点糖 我们球队加入了一个新人",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39279,6 +39791,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 60,
       "reviewStatus": "draft",
+      "example": "他们算是好朋友 这次你赢，算你运气好 请算一下一共多少钱 这一题你算的出来吗？",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39305,6 +39818,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 61,
       "reviewStatus": "draft",
+      "example": "让我数一下这里有几个人 我们一起数到一百吧",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39331,6 +39845,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 62,
       "reviewStatus": "draft",
+      "example": "把一个巧克力分给弟弟 男女分开",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39357,6 +39872,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 63,
       "reviewStatus": "draft",
+      "example": "饭要吃完，别吃剩 学生都回家了，教室里就剩老师而已",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39383,6 +39899,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 64,
       "reviewStatus": "draft",
+      "example": "妈妈一个人留在家照顾小狗 不要留下我一个人离开 留长头发",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39409,6 +39926,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 65,
       "reviewStatus": "draft",
+      "example": "赞成占多数，反对占少数。 占优势 同学占了我的位子 暑假期间学习占了大部分的时间",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39435,6 +39953,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 66,
       "reviewStatus": "draft",
+      "example": "把旅游的行程定下来 订机票 订饭店 订座位",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39461,6 +39980,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 67,
       "reviewStatus": "draft",
+      "example": "帮你改作文 我们改天再约时间吧 行程改了，我们不去南京了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39487,6 +40007,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 68,
       "reviewStatus": "draft",
+      "example": "改造汽车 改造过的机车非常快",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39513,6 +40034,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 69,
       "reviewStatus": "draft",
+      "example": "人的性格改变不了 改变世界的发明 生活习惯需要改变",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -39547,6 +40069,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 70,
       "reviewStatus": "draft",
+      "example": "存钱 把粮食存起来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39573,6 +40096,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 71,
       "reviewStatus": "draft",
+      "example": "不小心打破玻璃，我得赔钱 赔偿对方 生意失败了，爸爸赔了很多钱",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39599,6 +40123,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 72,
       "reviewStatus": "draft",
+      "example": "坏人骗了爷爷的10万元 你在说谎，别欺骗我！",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -39619,6 +40144,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 73,
       "reviewStatus": "draft",
+      "example": "刮胡子 汽车上有很多挂上 刮风",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39645,6 +40171,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 74,
       "reviewStatus": "draft",
+      "example": "扔球 扔垃圾",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39671,6 +40198,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 75,
       "reviewStatus": "draft",
+      "example": "闻到了臭味 这朵花的香味让你问一下",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39697,6 +40225,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 76,
       "reviewStatus": "draft",
+      "example": "爷爷每天早上5点就醒来 爸爸在睡觉，别把他吵醒 已经10点了，但是哥哥还没醒",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39723,6 +40252,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 77,
       "reviewStatus": "draft",
+      "example": "伸手 伸出舌头 乌龟把头伸出来了 伸出援手",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39749,6 +40279,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 78,
       "reviewStatus": "draft",
+      "example": "跪下 跪求原谅 跪着道歉",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39775,6 +40306,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 79,
       "reviewStatus": "draft",
+      "example": "深蹲 蹲下来 在路上蹲着抽烟",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39801,6 +40333,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 80,
       "reviewStatus": "draft",
+      "example": "趴在床上 小狗在地上趴着睡觉",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39827,6 +40360,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 81,
       "reviewStatus": "draft",
+      "example": "一躺下就睡着了 躺着看书",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39853,6 +40387,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 82,
       "reviewStatus": "draft",
+      "example": "男女朋友一见面就紧紧抱住 把哭不停的孩子抱起来 对未来抱有希望",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39879,6 +40414,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 83,
       "reviewStatus": "draft",
+      "example": "你缺少运动，得出去动动身 不要随便动别人的东西 不要动，把双手举起来！ 小狗躺着一动也不动",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39905,6 +40441,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 84,
       "reviewStatus": "draft",
+      "example": "在路上碰见老朋友 旧玻璃窗一碰就破了 碰运气",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39931,6 +40468,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 85,
       "reviewStatus": "draft",
+      "example": "拍手 拍打 拍照片 拍影片",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39957,6 +40495,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 86,
       "reviewStatus": "draft",
+      "example": "按按钮 按顺序排列",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -39983,6 +40522,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 87,
       "reviewStatus": "draft",
+      "example": "弟弟很喜欢摸狗 墙壁刚涂了油漆，还不能摸",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40009,6 +40549,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 88,
       "reviewStatus": "draft",
+      "example": "他把虫踩死了 踩到大便了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40035,6 +40576,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 89,
       "reviewStatus": "draft",
+      "example": "他扭到脚了 扭紧盖子",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40061,6 +40603,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 90,
       "reviewStatus": "draft",
+      "example": "刷牙",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40087,6 +40630,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 91,
       "reviewStatus": "draft",
+      "example": "小朋友喜欢画画，涂颜色。 涂油漆 涂口红",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40113,6 +40657,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 92,
       "reviewStatus": "draft",
+      "example": "切菜 把苹果切成两半",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40139,6 +40684,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 93,
       "reviewStatus": "draft",
+      "example": "剪头发 用剪刀剪",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40165,6 +40711,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 94,
       "reviewStatus": "draft",
+      "example": "用筷子夹菜 夹子 把一封信夹在书中 前后都被敌人夹住了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40191,6 +40738,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 95,
       "reviewStatus": "draft",
+      "example": "被针刺到了 把气球刺破了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40217,6 +40765,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 96,
       "reviewStatus": "draft",
+      "example": "被汽车撞到了 撞墙",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40243,6 +40792,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 97,
       "reviewStatus": "draft",
+      "example": "我的旅行计划被搅乱了 用筷子搅一搅 加鸡蛋之后需要搅拌",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40269,6 +40819,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 98,
       "reviewStatus": "draft",
+      "example": "我摇摇头对他说\"对不起\" 浪很大，船摇得很厉害 花草被吹得摇来摇去",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40295,6 +40846,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 99,
       "reviewStatus": "draft",
+      "example": "衣服破了一个洞 玻璃被打破了 他破了世界纪录",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40321,6 +40873,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 100,
       "reviewStatus": "draft",
+      "example": "破坏别人的生活 大自然被人类破坏了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40347,6 +40900,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 101,
       "reviewStatus": "draft",
+      "example": "拆开信封 拆房子 把汽车拆开",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40373,6 +40927,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 102,
       "reviewStatus": "draft",
+      "example": "树上的苹果掉在地上 我家小狗掉很多毛 洗完以后衣服的颜色掉了",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40399,6 +40954,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 103,
       "reviewStatus": "draft",
+      "example": "把玻璃打碎 心碎了 被子的碎片",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40425,6 +40981,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 104,
       "reviewStatus": "draft",
+      "example": "摔了一跤 小男孩走路时不小心摔倒了 从斜坡上摔下来",
       "image": {
         "state": "teacher-mapped",
         "provenance": "teacher-provided",
@@ -40451,6 +41008,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 105,
       "reviewStatus": "draft",
+      "example": "失去良心 失去感情 失去了最重要的东西",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40485,6 +41043,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 106,
       "reviewStatus": "draft",
+      "example": "打扫房间 打扫干净",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40519,6 +41078,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 107,
       "reviewStatus": "draft",
+      "example": "整理房间 车里太乱了，需要整理整理 明天坐飞机，今晚得整理行李",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40553,6 +41113,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 108,
       "reviewStatus": "draft",
+      "example": "修自行车 修车 修理手机",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -40573,6 +41134,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 109,
       "reviewStatus": "draft",
+      "example": "把两个线连起来 心连心 这条河连接着大海",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40607,6 +41169,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 110,
       "reviewStatus": "draft",
+      "example": "把邮票贴在信封上 在墙上贴一张海报",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40641,6 +41204,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 111,
       "reviewStatus": "draft",
+      "example": "盖上盖子 盖棉被 盖房子 盖章",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40675,6 +41239,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 112,
       "reviewStatus": "draft",
+      "example": "在墙上挂一幅图 教室里挂了一张大大的地图 挂衣服",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40709,6 +41274,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 113,
       "reviewStatus": "draft",
+      "example": "敲门 敲大鼓",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40743,6 +41309,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 114,
       "reviewStatus": "draft",
+      "example": "手机突然响起来了 门铃响了",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40777,6 +41344,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 115,
       "reviewStatus": "draft",
+      "example": "打开课本 打开门 打开空调 打开灯",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40811,6 +41379,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 116,
       "reviewStatus": "draft",
+      "example": "公开学生的成绩 不能公开的秘密 公开的信息",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40845,6 +41414,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 117,
       "reviewStatus": "draft",
+      "example": "使用最新的工具 使用电脑查资料 不能使用暴力解决问题",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40879,6 +41449,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 118,
       "reviewStatus": "draft",
+      "example": "利用网络查询资料 利用很多人力盖大楼 小王被坏人利用了",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40913,6 +41484,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 119,
       "reviewStatus": "draft",
+      "example": "请决定喝咖啡还是喝茶 想了很久之后终于做出决定",
       "image": {
         "state": "text-only",
         "provenance": null,
@@ -40933,6 +41505,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 120,
       "reviewStatus": "draft",
+      "example": "计划取消了 取消预约 因为天气不好，比赛被取消了",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -40967,6 +41540,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 121,
       "reviewStatus": "draft",
+      "example": "写错的地方需要修改 作文已经修改好了 修改法律",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41001,6 +41575,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 122,
       "reviewStatus": "draft",
+      "example": "活动的时间还没确定 你确定他不是坏人？ 请确定旅行的计划",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41035,6 +41610,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 123,
       "reviewStatus": "draft",
+      "example": "校长规定学校的事情 总经理规定员工的工作方式 不能违反法律的规定",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41069,6 +41645,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 124,
       "reviewStatus": "draft",
+      "example": "开会的时间跟地点定下来了 需要定好外国旅行的计划 时间暂时定在八点怎么样？",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41103,6 +41680,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 125,
       "reviewStatus": "draft",
+      "example": "请挑选自己喜欢的衣服 他挑的菜很好吃",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -41123,6 +41701,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 126,
       "reviewStatus": "draft",
+      "example": "将来的事你应该自己选择 他被选上总统了 选择题 请选择支付方式",
       "image": {
         "state": "ambiguous",
         "provenance": null,
@@ -41143,6 +41722,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 127,
       "reviewStatus": "draft",
+      "example": "送货员要求我签名字 请在报名表上面签名 跟明星要签名",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41177,6 +41757,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 128,
       "reviewStatus": "draft",
+      "example": "我赞成你的想法 我们班里只有他不赞成",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41211,6 +41792,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 129,
       "reviewStatus": "draft",
+      "example": "反对意见很多 他对这个计划表示反对 我们很反对这个政策",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41245,6 +41827,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 130,
       "reviewStatus": "draft",
+      "example": "提出的意见被同学否定了 父母亲不能否定孩子的梦想要支持他们 老板否定了我的意见",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41279,6 +41862,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 131,
       "reviewStatus": "draft",
+      "example": "不要一直否定别人，肯定自己 老师对学生的肯定与鼓励 我的成绩得到父母亲的肯定 他今天肯定会来的",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41313,6 +41897,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 132,
       "reviewStatus": "draft",
+      "example": "很多人同意我的意见 这个办法有得到老板的同意吗？",
       "image": {
         "state": "text-only",
         "provenance": null,
@@ -41333,6 +41918,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 133,
       "reviewStatus": "draft",
+      "example": "爸爸不允许我6点以后出门 今天请允许我喝酒",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41367,6 +41953,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 134,
       "reviewStatus": "draft",
+      "example": "我保证你明天一定会参加你的婚礼 我不敢保证这个东西是真的 保证人",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41401,6 +41988,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 135,
       "reviewStatus": "draft",
+      "example": "她想了很久，终于答应我的要求 不要随便答应别人的请求 我叫了几声，但是房子里没人答应",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41435,6 +42023,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 136,
       "reviewStatus": "draft",
+      "example": "闹钟一直响，但他都没反应 老鼠出来时，小猫的反应速度很快 现场观众的反应都很好",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41469,6 +42058,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 137,
       "reviewStatus": "draft",
+      "example": "老人适合穿深色的衣服 这个工作不适合我",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",
@@ -41503,6 +42093,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 138,
       "reviewStatus": "draft",
+      "example": "他不愿意帮我的忙 你愿不愿意嫁给我？ 小明很愿意帮助别人",
       "image": {
         "state": "text-only",
         "provenance": null,
@@ -41523,6 +42114,7 @@
       "sourceSheet": "动词2",
       "sourceRow": 139,
       "reviewStatus": "draft",
+      "example": "如果同学做坏事，请通知老师 你到教室时，请通知我一声",
       "image": {
         "state": "ai-generated",
         "provenance": "ai-generated",

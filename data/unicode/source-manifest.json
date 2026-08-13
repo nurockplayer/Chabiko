@@ -138,7 +138,7 @@
     {
       "id": "production-learner-manifest-v1",
       "path": "data/teacher-vocabulary-preview/learner-manifest.json",
-      "sha256": "702a92cb7b2cf6a8e1d67caa7ed2e4651007edd7a062fd72ae054af3a1e8d5b1",
+      "sha256": "1a334649c477658a3ace0c9c7ad0c3d75021188cbf9d64700f9131ac408553ce",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },

@@ -1062,7 +1062,7 @@ def _build_schemas():
             "traditional", "traditionalStatus",
             "simplified", "simplifiedStatus", "kana", "category",
             "similarityType", "toneNote", "caution", "travelScenario",
-            "painPointTags", "examples", "source",
+            "painPointTags", "examples", "example", "source",
             "hsk", "curriculum", "illustrationRef",
         ],
         "field_types": {
@@ -1071,6 +1071,7 @@ def _build_schemas():
             "similarityType": str,
             "travelScenario": str,
             "examples": list, "painPointTags": list,
+            "example": str,
             "hsk": dict,
         },
         "controlled_fields": {
@@ -2422,6 +2423,13 @@ def _check_teacher_vocabulary_fields(record: dict, path: str) -> list[str]:
             errors.append(f"{path}.illustrationRef must be a non-empty string when present, got {type(ref).__name__}")
         elif ref.strip() == "":
             errors.append(f"{path}.illustrationRef must be a non-empty string when present")
+
+    # ── example (teacher-authored sentence, #340) is optional ──
+    if "example" in record and record["example"] is not None:
+        if not isinstance(record["example"], str):
+            errors.append(f"{path}.example must be a string, got {type(record['example']).__name__}")
+        elif record["example"].strip() == "":
+            errors.append(f"{path}.example must be a non-empty string when present, got empty")
 
     # ── Reject unauthorised top-level fields (including null) ──
     UNAUTHORISED_TEACHER_FIELDS = {

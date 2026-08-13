@@ -146,11 +146,28 @@ describe('production learner manifest', () => {
     expect(manifest.rows.some((row) => row.traditional === undefined)).toBe(true);
     // Every present optional value is a non-empty string.
     for (const row of manifest.rows) {
-      for (const field of ['pinyin', 'japanese', 'traditional', 'difficulty'] as const) {
+      for (const field of ['pinyin', 'japanese', 'traditional', 'difficulty', 'example'] as const) {
         const value = row[field];
         if (value !== undefined) expect(value.trim().length).toBeGreaterThan(0);
       }
     }
+  });
+
+  describe('example-sentence contract (#340)', () => {
+    it('preserves a non-empty teacher-authored example and accepts it', () => {
+      const m = syntheticManifest(1, 1);
+      const rows = [...m.rows];
+      rows[0] = { ...rows[0], example: '我爱你' };
+      expect(() => assertOptionalFieldsAreNotFabricated(rows)).not.toThrow();
+      expect(rows[0].example).toBe('我爱你');
+    });
+
+    it('rejects an empty example field as a malformed optional value', () => {
+      const m = syntheticManifest(1, 1);
+      const rows = [...m.rows];
+      rows[0] = { ...rows[0], example: '   ' };
+      expect(() => assertOptionalFieldsAreNotFabricated(rows)).toThrow(/empty optional field 'example'/);
+    });
   });
 
   it('does not leak review-only labels, filters, or source filenames into the manifest', () => {

@@ -51,6 +51,7 @@ function toLearnerItem(
     pinyin: row.pinyin,
     japanese: row.japanese,
     difficulty: row.difficulty,
+    example: row.example,
     illustration: {
       assetPath: row.image.assetPath,
       width: dimensions.width,

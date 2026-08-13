@@ -151,7 +151,7 @@ export function assertOptionalFieldsAreNotFabricated(
   rows: readonly LearnerManifestRow[],
 ): void {
   for (const row of rows) {
-    for (const field of ['traditional', 'pinyin', 'japanese', 'difficulty'] as const) {
+    for (const field of ['traditional', 'pinyin', 'japanese', 'difficulty', 'example'] as const) {
       const value = row[field];
       if (value !== undefined) {
         assert(value.trim().length > 0, `row '${row.learnerId}' has an empty optional field '${field}'`);
