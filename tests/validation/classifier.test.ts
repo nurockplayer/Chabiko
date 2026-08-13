@@ -28,8 +28,8 @@ describe('risk classifier selects the intended minimum tier', () => {
     [['src/content/loadLessons.ts'], 't1', 'domain'],
     [['tests/lessons.test.ts'], 't1', 'tests'],
     [['src/client/basicVocabularySession.ts'], 't2', 'client'],
-    [['src/components/LessonPractice.astro'], 't2', 'ui'],
-    [['src/pages/index.astro'], 't2', 'ui'],
+    [['src/components/LessonPractice.astro'], 't3', 'ui'],
+    [['src/pages/index.astro'], 't3', 'ui'],
     [['src/types/vocabulary.ts'], 't3', 'contract'],
     [['src/data/basicVocabularySupabaseRepository.ts'], 't3', 'contract'],
     [['src/lib/supabaseBrowserClient.ts'], 't3', 'auth'],
@@ -53,7 +53,7 @@ describe('tier selects the minimum tier as the max across changed files', () => 
       'src/domain/tonePractice.ts',
       'src/components/LessonPractice.astro',
     ]);
-    expect(classification.tier).toBe('t2');
+    expect(classification.tier).toBe('t3');
   });
 
   it('does not let a docs file lower a high-risk change', () => {
@@ -75,6 +75,7 @@ describe('unknown classification fails safe to the full gate', () => {
 describe('low-risk changes skip irrelevant expensive suites', () => {
   it('a docs-only change runs no expensive suites', () => {
     const classification = classifyFiles(['docs/foo.md']);
+    expect(classification.tier).toBe('t0');
     expect(classification.runFullVitest).toBe(false);
     expect(classification.runAffectedVitest).toBe(false);
     expect(classification.runBuild).toBe(false);
@@ -85,6 +86,7 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
 
   it('a pure domain change runs affected tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['src/domain/tonePractice.ts']);
+    expect(classification.tier).toBe('t1');
     expect(classification.runAffectedVitest).toBe(true);
     expect(classification.affectedTestGlobs).toContain('tests/tone-practice-*.test.ts');
     expect(classification.runFullVitest).toBe(false);
@@ -95,20 +97,36 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
 
   it('a content change runs content validators but not full vitest', () => {
     const classification = classifyFiles(['data/learning-paths.json']);
+    expect(classification.tier).toBe('t1');
     expect(classification.affectedContent).toBe(true);
     expect(classification.runContent).toBe(true);
     expect(classification.runFullVitest).toBe(false);
     expect(classification.runAffectedVitest).toBe(false);
+    expect(classification.runVisual).toBe(false);
+    expect(classification.runA11y).toBe(false);
+  });
+
+  it('a tests-only change runs the changed tests but not visual/a11y/build', () => {
+    const classification = classifyFiles(['tests/lessons.test.ts']);
+    expect(classification.tier).toBe('t1');
+    expect(classification.runAffectedVitest).toBe(true);
+    expect(classification.affectedTests).toContain('tests/lessons.test.ts');
+    expect(classification.runFullVitest).toBe(false);
+    expect(classification.runBuild).toBe(false);
+    expect(classification.runVisual).toBe(false);
+    expect(classification.runA11y).toBe(false);
   });
 });
 
 describe('T2 and T3 coverage', () => {
-  it('a UI change runs full vitest + build, but not visual/a11y/content', () => {
+  it('a UI change runs the full gate including visual + a11y', () => {
     const classification = classifyFiles(['src/components/LessonPractice.astro']);
+    expect(classification.tier).toBe('t3');
     expect(classification.runFullVitest).toBe(true);
     expect(classification.runBuild).toBe(true);
-    expect(classification.runVisual).toBe(false);
-    expect(classification.runA11y).toBe(false);
+    expect(classification.runContent).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
   });
 
   it('a build/CI change runs the full gate including visual + a11y + content', () => {
@@ -116,6 +134,30 @@ describe('T2 and T3 coverage', () => {
     expect(classification.runFullVitest).toBe(true);
     expect(classification.runBuild).toBe(true);
     expect(classification.runContent).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
+  });
+});
+
+describe('#347: learner-visible UI changes escalate to the full gate', () => {
+  it('a #342-like basic-vocabulary UI change set runs visual + a11y at T3', () => {
+    const classification = classifyFiles([
+      'src/components/vocabulary/BasicVocabularyDetail.astro',
+      'src/components/vocabulary/BasicVocabularySession.astro',
+      'src/pages/vocabulary/basic/words/[learnerId]/index.astro',
+    ]);
+    expect(classification.tier).toBe('t3');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
+  });
+
+  it('a focus-order-affecting UI change triggers the a11y/keyboard check', () => {
+    const classification = classifyFiles([
+      'src/components/vocabulary/BasicVocabularySession.astro',
+    ]);
+    expect(classification.tier).toBe('t3');
     expect(classification.runVisual).toBe(true);
     expect(classification.runA11y).toBe(true);
   });
