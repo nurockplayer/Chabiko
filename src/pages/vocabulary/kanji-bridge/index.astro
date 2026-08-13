@@ -1,0 +1,200 @@
+---
+import Header from '../../../components/Header.astro';
+import KanjiBridgeEntry from '../../../components/KanjiBridgeEntry.astro';
+import { loadEligibleKanjiBridge } from '../../../content/loadKanjiBridge';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+// Production-eligibility gate (content-review contract): the route shows only
+// human-reviewed, authored/verified records. The current corpus is entirely
+// generated/draft, so this is empty and the route renders its pending state.
+const entries = loadEligibleKanjiBridge();
+---
+
+<BaseLayout
+  title="漢字ブリッジ 単語"
+  description="日本語の漢字と中国語の漢字の対応を確認できる単語集"
+>
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+
+  {
+    entries.length === 0 ? (
+      <section class="kanji-bridge-page" data-kanji-bridge-page data-kanji-bridge-pending>
+        <h1>漢字ブリッジ 単語</h1>
+        <p class="kanji-bridge-page__subtitle" lang="ja">
+          日本語の漢字と中国語の漢字の対応を確認できる単語集です。
+        </p>
+        <div class="kanji-bridge-pending" lang="ja" role="status">
+          <p>
+            このコンテンツは現在、内容の確認・レビューを進めています。公開の準備が整い次第、ここで単語を確認できるようになります。
+          </p>
+        </div>
+      </section>
+    ) : (
+      <section class="kanji-bridge-page" data-kanji-bridge-page>
+        <h1>漢字ブリッジ 単語</h1>
+        <p class="kanji-bridge-page__subtitle" lang="ja">
+          日本語の漢字と中国語の漢字の対応を確認できる単語集です。基本は繁体字で表示します。
+        </p>
+
+        <div class="kanji-bridge-toolbar" data-kanji-bridge-toolbar>
+          <label class="kanji-bridge-toolbar__label" for="kanji-bridge-relation-filter">
+            関係で絞り込む
+          </label>
+          <select
+            id="kanji-bridge-relation-filter"
+            class="kanji-bridge-toolbar__select"
+            data-relation-filter
+          >
+            <option value="all">すべて</option>
+            <option value="same-meaning">同じ意味</option>
+            <option value="partial-overlap">一部が重なる</option>
+            <option value="false-friend">見せかけの同義語</option>
+          </select>
+          <a class="kanji-bridge-toolbar__reset" href="/vocabulary/kanji-bridge/">
+            絞り込みを解除
+          </a>
+          <p
+            class="kanji-bridge-toolbar__count"
+            data-relation-count
+            role="status"
+          >全{entries.length}件</p>
+          <p class="kanji-bridge-toolbar__no-match" data-kanji-bridge-no-match hidden>
+            該当する単語がありません。
+          </p>
+        </div>
+
+        <ol class="kanji-bridge-list" data-kanji-bridge-list>
+          {
+            entries.map((entry) => (
+              <KanjiBridgeEntry entry={entry} />
+            ))
+          }
+        </ol>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script>
+  import { initKanjiBridgeFilter } from '../../../client/kanjiBridgeFilter';
+  import { initKanjiBridgeScriptPreference } from '../../../client/kanjiBridgeScriptPreference';
+
+  // Only initialize the interactive surface when eligible content is shown;
+  // the pending state has no filter or entries to bind.
+  if (document.querySelector('[data-kanji-bridge-list]')) {
+    initKanjiBridgeFilter();
+    initKanjiBridgeScriptPreference();
+  }
+</script>
+
+<style>
+  .kanji-bridge-page {
+    width: 100%;
+    max-width: 48rem;
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  h1 {
+    margin: 0 0 var(--space-md);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    overflow-wrap: anywhere;
+  }
+
+  .kanji-bridge-page__subtitle {
+    margin: 0 0 var(--space-xl);
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .kanji-bridge-pending {
+    margin: 0 0 var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-pending p {
+    margin: 0;
+  }
+
+  .kanji-bridge-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-xl);
+    padding: var(--space-md);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    min-width: 0;
+  }
+
+  .kanji-bridge-toolbar__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+  }
+
+  .kanji-bridge-toolbar__select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+  .kanji-bridge-toolbar__select:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .kanji-bridge-toolbar__reset {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .kanji-bridge-toolbar__count {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .kanji-bridge-toolbar__no-match {
+    margin: 0;
+    color: var(--c-error);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .kanji-bridge-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  @media (width >= 640px) {
+    .kanji-bridge-toolbar {
+      grid-template-columns: auto minmax(10rem, 16rem) auto;
+      align-items: center;
+      column-gap: var(--space-lg);
+    }
+    .kanji-bridge-toolbar__count,
+    .kanji-bridge-toolbar__no-match {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
