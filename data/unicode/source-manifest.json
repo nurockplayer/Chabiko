@@ -34,7 +34,7 @@
     {
       "id": "general-vocabulary-v1",
       "path": "data/examples/valid/vocabulary.json",
-      "sha256": "23e7de43aaf1123b38b0e5443cbd68cbac402a56d3ab4f27ffcf8cabdc80cd7f",
+      "sha256": "5d389092bcb2e1515d81e2b52d6cde5cc83be00b53eab5b9b6b111f8a0f98d0a",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
