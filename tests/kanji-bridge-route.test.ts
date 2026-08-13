@@ -1,10 +1,12 @@
 /**
  * Kanji-bridge loader + route contract (Issue #235).
  *
- * The route is a static Astro build that loads exactly `kanji-bridge-001`..`050`
- * through loadKanjiBridge() and server-renders the 50 cards in source order with
- * the truthful generated/draft provenance. The loader is deterministic and
- * fail-closed, and each load returns independent, deeply frozen references.
+ * The deterministic loader loads exactly `kanji-bridge-001`..`050` in source
+ * order and is fail-closed. The learner route at `/vocabulary/kanji-bridge/`
+ * additionally applies the production-eligibility gate (content-review
+ * contract): it shows only human-reviewed, authored/verified records. The
+ * current corpus is entirely generated/draft, so the route server-renders its
+ * pending state and never leaks unverified content to learners.
  *
  * The fresh build writes to a unique temporary directory (never the shared
  * dist/). Vitest serializes this file with the other Astro build suites because
@@ -22,7 +24,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadKanjiBridge } from '../src/content/loadKanjiBridge';
+import {
+  isKanjiBridgeProductionEligible,
+  loadEligibleKanjiBridge,
+  loadKanjiBridge,
+} from '../src/content/loadKanjiBridge';
 
 const REPO_ROOT = resolve(__dirname, '..');
 const ROUTE_SOURCE = resolve(
@@ -212,9 +218,67 @@ describe('loadKanjiBridge — fail-closed branches', () => {
   });
 });
 
-// ─── Route: SSR surface (fresh build) ──────────────────────────────────────────
+// ─── Production-eligibility gate (content-review contract) ─────────────────────
 
-describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235)', () => {
+describe('kanji-bridge production-eligibility gate (content-review contract)', () => {
+  it('excludes the entire current corpus (all generated/draft)', () => {
+    const entries = loadKanjiBridge();
+    expect(entries).toHaveLength(50);
+    expect(entries.every(isKanjiBridgeProductionEligible)).toBe(false);
+    expect(loadEligibleKanjiBridge()).toHaveLength(0);
+  });
+
+  it('loads every record once promoted to reviewed + verified, in source order', () => {
+    const doc = cloneDocument(baseVocabularyDocument());
+    for (const record of doc.vocabulary) {
+      record.reviewStatus = 'reviewed';
+      record.traditionalStatus = 'verified';
+      // Example forms must be promoted too (per-form provenance is a separate
+      // fact the eligibility gate checks).
+      (record.examples as { traditionalStatus: string }[])[0].traditionalStatus =
+        'verified';
+    }
+    const eligible = loadEligibleKanjiBridge(writeTemp(doc));
+    expect(eligible).toHaveLength(50);
+    expect(eligible.map((entry) => entry.id)).toEqual(expectedIds());
+    expect(eligible.every(isKanjiBridgeProductionEligible)).toBe(true);
+  });
+
+  it('keeps generated/draft records out even in a mixed corpus', () => {
+    const doc = cloneDocument(baseVocabularyDocument());
+    doc.vocabulary[0].reviewStatus = 'reviewed';
+    doc.vocabulary[0].traditionalStatus = 'verified';
+    (doc.vocabulary[0].examples as { traditionalStatus: string }[])[0]
+      .traditionalStatus = 'verified';
+    const eligible = loadEligibleKanjiBridge(writeTemp(doc));
+    expect(eligible.map((entry) => entry.id)).toEqual(['kanji-bridge-001']);
+  });
+
+  it('excludes a record whose example script form is still generated (per-form gate)', () => {
+    const doc = cloneDocument(baseVocabularyDocument());
+    doc.vocabulary[0].reviewStatus = 'reviewed';
+    doc.vocabulary[0].traditionalStatus = 'verified';
+    // The example form is left generated → the whole record is ineligible.
+    const eligible = loadEligibleKanjiBridge(writeTemp(doc));
+    expect(eligible).toHaveLength(0);
+  });
+
+  it('requires reviewed/published AND an authored/verified traditional form', () => {
+    const doc = cloneDocument(baseVocabularyDocument());
+    // Reviewed but still generated traditional → not eligible.
+    doc.vocabulary[0].reviewStatus = 'reviewed';
+    expect(loadEligibleKanjiBridge(writeTemp(doc))).toHaveLength(0);
+
+    const doc2 = cloneDocument(baseVocabularyDocument());
+    // Verified traditional but still draft → not eligible.
+    doc2.vocabulary[0].traditionalStatus = 'verified';
+    expect(loadEligibleKanjiBridge(writeTemp(doc2))).toHaveLength(0);
+  });
+});
+
+// ─── Route: SSR surface (fresh build, fail-closed) ─────────────────────────────
+
+describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235, fail-closed)', () => {
   beforeAll(() => {
     execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
       cwd: REPO_ROOT,
@@ -231,22 +295,29 @@ describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235)', () => {
     }
   });
 
-  it('renders the exact Japanese title/h1 and loads through the loader', () => {
+  it('renders the exact Japanese title/h1 and loads through the eligible loader', () => {
     expect(existsSync(BUILT_ROUTE)).toBe(true);
     // Exact h1 markup is guaranteed in source; the built HTML (with Astro
     // scope ids) still carries the exact text.
     expect(routeSource).toContain('<h1>漢字ブリッジ 単語</h1>');
     expect(builtHtml).toContain('漢字ブリッジ 単語');
     expect(routeSource).toContain(
-      "import { loadKanjiBridge } from '../../../content/loadKanjiBridge'",
+      "import { loadEligibleKanjiBridge } from '../../../content/loadKanjiBridge'",
     );
-    expect(routeSource.match(/loadKanjiBridge\(\)/g)).toHaveLength(1);
     // The route never reads the data file directly.
     expect(routeSource).not.toMatch(/readFileSync|data\/examples\/valid\/vocabulary\.json/);
   });
 
-  it('fails loudly when the corpus is empty', () => {
-    expect(routeSource).toContain('kanji bridge vocabulary is empty');
+  it('renders the pending state and leaks no generated/draft content while the corpus is unapproved', () => {
+    // The fail-closed pending state is server-rendered.
+    expect(builtHtml).toContain('data-kanji-bridge-pending');
+    expect(builtHtml).toContain('現在、内容の確認・レビューを進めています');
+    // No entry cards, no toolbar, no filter, no provenance claims.
+    expect(builtHtml).not.toMatch(/data-kanji-bridge-entry/);
+    expect(builtHtml).not.toMatch(/data-script-path-default/);
+    expect(builtHtml).not.toContain('kanji-bridge-relation-filter');
+    expect(builtHtml).not.toContain('AI生成・未検証');
+    expect(builtHtml).not.toContain('この表記は未収録のため');
   });
 
   it('includes the Header in the header slot with the global script-preference select', () => {
@@ -257,75 +328,33 @@ describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235)', () => {
     expect(builtHtml).toContain('コース標準');
   });
 
-  it('server-renders all 50 entry cards in loader order', () => {
-    const headwords = [
-      ...builtHtml.matchAll(/data-script-path-default="([^"]+)"/g),
-    ].map((match) => match[1]);
-    expect(headwords).toHaveLength(50);
-    expect(headwords).toEqual(loadKanjiBridge().map((entry) => entry.traditional));
-    // Cards appear strictly in source order.
-    const cardStarts = [
-      ...builtHtml.matchAll(/<li class="kanji-bridge-entry"/g),
-    ].map((match) => match.index ?? 0);
-    expect(cardStarts).toHaveLength(50);
-    for (let i = 1; i < cardStarts.length; i += 1) {
-      expect(cardStarts[i]).toBeGreaterThan(cardStarts[i - 1]);
-    }
+  it('marks the dynamic filter count as a live status region (P2-4)', () => {
+    // The count only renders once eligible content exists; assert the source
+    // contract that it is an aria-live status region.
+    expect(routeSource).toMatch(/data-relation-count[\s\S]*?role="status"/);
   });
 
-  it('exposes the deterministic result count and the no-match state', () => {
-    expect(builtHtml).toContain('>全50件</p>');
-    expect(builtHtml).toContain('該当する単語がありません。');
-  });
-
-  it('renders the relation filter as a native labelled select with a native reset link', () => {
+  it('initializes the interactive clients only when eligible content is present', () => {
     expect(routeSource).toContain(
-      '<select\n        id="kanji-bridge-relation-filter"',
+      "document.querySelector('[data-kanji-bridge-list]')",
     );
-    expect(builtHtml).toMatch(/<select[^>]*id="kanji-bridge-relation-filter"/);
-    expect(builtHtml).toContain('for="kanji-bridge-relation-filter"');
-    for (const [value, label] of [
-      ['all', 'すべて'],
-      ['same-meaning', '同じ意味'],
-      ['partial-overlap', '一部が重なる'],
-      ['false-friend', '見せかけの同義語'],
-    ] as const) {
-      // Astro injects scope ids between the option attributes; assert value
-      // and rendered label independently of attribute order.
-      expect(builtHtml).toContain(`value="${value}"`);
-      expect(builtHtml).toContain(`${label}</option>`);
-    }
-    expect(builtHtml).toContain('href="/vocabulary/kanji-bridge/"');
-    expect(builtHtml).not.toContain('href="#"');
-  });
-
-  it('entry cards carry the exact lang attributes and truthful provenance', () => {
-    // Chinese headword/example labelled Traditional, pinyin Latin, Japanese ja.
-    expect(builtHtml).toContain('lang="zh-Hant"');
-    expect(builtHtml).toContain('lang="zh-Latn"');
-    expect(builtHtml).toContain('lang="ja"');
-    // The provenance line is generated/draft: never claims reviewed/published.
-    expect(builtHtml).toContain('AI生成・未検証（未レビュー）');
-    expect(builtHtml).not.toContain('（レビュー済み）');
-    expect(builtHtml).not.toContain('（公開済み）');
-  });
-
-  it('never presents a generated-only form as reviewed (fallback annotation present)', () => {
-    // Every headword carries the exact #251 fallback annotation in the SSR
-    // markup because every form is generated/unavailable.
-    const annotationCount = builtHtml.split(
-      'この表記は未収録のため、コース標準を表示しています。',
-    ).length - 1;
-    expect(annotationCount).toBe(50);
-    // No card claims an authored/verified status anywhere in the markup.
-    expect(builtHtml).not.toMatch(/data-script-(?:traditional|simplified|path-default)-status="(?:authored|verified)"/);
-  });
-
-  it('initializes the filter and script-preference clients on the route', () => {
     expect(routeSource).toContain('initKanjiBridgeFilter()');
     expect(routeSource).toContain('initKanjiBridgeScriptPreference()');
     expect(filterClientSource).toContain('location.search');
     expect(scriptClientSource).toContain('SCRIPT_PREFERENCE_EVENT');
+  });
+
+  it('presents kana as a labeled headword reading, never appended to the gloss (P2-3)', () => {
+    // The kana is the Japanese on-reading of the headword, not of the full
+    // gloss; appending it after the gloss duplicated readings (e.g. 電話
+    // （でんわ）（でんわ）) and mislabelled false friends. The component must
+    // not append it to the gloss line, and shows a labeled 「日本語読み」
+    // reading only when the gloss does not already contain the kana.
+    expect(componentSource).not.toContain('（{entry.kana}）');
+    expect(componentSource).not.toMatch(/kanji-bridge-entry__kana/);
+    expect(componentSource).toContain('日本語読み：');
+    expect(componentSource).toContain('glossIncludesKana');
+    expect(componentSource).toMatch(/!glossIncludesKana/);
   });
 
   it('keeps overflow-safe wrapping declarations and mobile-first layouts', () => {

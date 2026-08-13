@@ -278,3 +278,43 @@ export function loadKanjiBridge(filePath?: string): readonly KanjiBridgeEntry[] 
 
   return deepFreeze(entries) as readonly KanjiBridgeEntry[];
 }
+
+/**
+ * Production-eligibility gate for learner-facing display (content-review
+ * contract: `docs/content/content-model-draft.md` + `content-review-workflow.md`
+ * + `docs/content/kanji-bridge-and-false-friend-rules.md` §3.6).
+ *
+ * A record may be shown to learners only when a human reviewer has approved it,
+ * its path-default (Traditional) script form is authored or verified, AND every
+ * displayed example script form is authored or verified. `generated`-only forms
+ * and `draft` review status are never learner-facing; they may exist in the
+ * corpus as authoring/preview material awaiting the review-promotion workflow.
+ * The current frozen corpus is entirely generated/draft, so nothing is eligible
+ * until records are promoted.
+ */
+export function isKanjiBridgeProductionEligible(
+  entry: KanjiBridgeEntry,
+): boolean {
+  return (
+    (entry.reviewStatus === 'reviewed' || entry.reviewStatus === 'published') &&
+    (entry.traditionalStatus === 'authored' ||
+      entry.traditionalStatus === 'verified') &&
+    entry.examples.every(
+      (example) =>
+        example.traditionalStatus === 'authored' ||
+        example.traditionalStatus === 'verified',
+    )
+  );
+}
+
+/**
+ * The deterministic, source-order-preserving eligible subset for the learner
+ * route at `/vocabulary/kanji-bridge/`. Fails closed: with the current
+ * all-generated/all-draft corpus this returns an empty array, and the route
+ * renders its pending state instead of leaking unverified content.
+ */
+export function loadEligibleKanjiBridge(
+  filePath?: string,
+): readonly KanjiBridgeEntry[] {
+  return loadKanjiBridge(filePath).filter(isKanjiBridgeProductionEligible);
+}

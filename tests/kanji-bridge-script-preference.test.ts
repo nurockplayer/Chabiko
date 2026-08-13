@@ -4,13 +4,15 @@
  * Kanji-bridge script-preference client (Issue #235 / #256).
  *
  * Every form in the frozen kanji-bridge corpus is `generated`, so under every
- * preference `selectScript` returns `{ status: 'unavailable' }`. The frozen
- * #235/#256 contract therefore says: the headword ALWAYS keeps its static
- * path-default Traditional text (never blank, never fabricated), the `lang`
- * stays `zh-Hant`, and the exact #251 fallback annotation is ALWAYS shown once
- * per headword. The client reads ONLY the root dataset + the #252 document
- * event, never storage, and never touches the filter/URL, scroll, focus, order,
- * or the entry examples.
+ * preference `selectScript` returns `{ status: 'unavailable' }`. For those
+ * records the headword keeps its static path-default Traditional text (never
+ * blank, never fabricated), `lang` stays `zh-Hant`, and the exact #251
+ * fallback annotation shows once per headword. Once the content-review
+ * workflow promotes a record to `authored`/`verified`, the client applies the
+ * directly-selectable form to the headword AND the example text with the
+ * matching `lang` (post-review promotion path, P2-1/P2-2). The client reads
+ * ONLY the root dataset + the #252 document event, never storage, and never
+ * touches the filter/URL, scroll, focus, or order.
  */
 
 import { readFileSync } from 'node:fs';
@@ -48,6 +50,7 @@ function headwordMarkup(entry: (typeof ENTRIES)[number], withAnnotation: boolean
   return (
     `<article data-headword-card>` +
     `<h2 lang="zh-Hant" ` +
+    `data-script-annotation-host ` +
     `data-script-path-default="${escapeHtml(entry.traditional)}" ` +
     `data-script-path-default-status="${entry.traditionalStatus}" ` +
     `data-script-traditional="${escapeHtml(entry.traditional)}" ` +
@@ -56,8 +59,48 @@ function headwordMarkup(entry: (typeof ENTRIES)[number], withAnnotation: boolean
     `data-script-simplified-status="${entry.simplifiedStatus}">` +
     `${escapeHtml(entry.traditional)}${annotation}` +
     `</h2>` +
-    `<p class="kanji-bridge-entry__example-text" lang="zh-Hant">${escapeHtml(example.traditional)}</p>` +
+    `<p class="kanji-bridge-entry__example-text" lang="zh-Hant" ` +
+    `data-script-path-default="${escapeHtml(example.traditional)}" ` +
+    `data-script-path-default-status="${example.traditionalStatus}" ` +
+    `data-script-traditional="${escapeHtml(example.traditional)}" ` +
+    `data-script-traditional-status="${example.traditionalStatus}" ` +
+    `data-script-simplified="${escapeHtml(example.simplified)}" ` +
+    `data-script-simplified-status="${example.simplifiedStatus}">` +
+    `${escapeHtml(example.traditional)}</p>` +
     `<p class="kanji-bridge-entry__example-japanese" lang="ja">${escapeHtml(example.japanese)}</p>` +
+    `</article>`
+  );
+}
+
+/** Build a card whose Traditional and Simplified forms are promoted to the
+ *  given statuses (used to exercise the post-review script-selection path). */
+function promotedMarkup(overrides: {
+  traditional: string;
+  traditionalStatus: 'authored' | 'verified';
+  simplified: string;
+  simplifiedStatus: 'authored' | 'verified' | 'generated';
+  simplifiedPref?: ScriptPreference;
+}): string {
+  const status = (value: string): string => value;
+  return (
+    `<article data-headword-card>` +
+    `<h2 lang="zh-Hant" ` +
+    `data-script-annotation-host ` +
+    `data-script-path-default="${escapeHtml(overrides.traditional)}" ` +
+    `data-script-path-default-status="${status(overrides.traditionalStatus)}" ` +
+    `data-script-traditional="${escapeHtml(overrides.traditional)}" ` +
+    `data-script-traditional-status="${status(overrides.traditionalStatus)}" ` +
+    `data-script-simplified="${escapeHtml(overrides.simplified)}" ` +
+    `data-script-simplified-status="${status(overrides.simplifiedStatus)}">` +
+    `${escapeHtml(overrides.traditional)}` +
+    `</h2>` +
+    `<p class="kanji-bridge-entry__example-text" lang="zh-Hant" ` +
+    `data-script-path-default="我打個電話" ` +
+    `data-script-path-default-status="verified" ` +
+    `data-script-traditional="我打個電話" ` +
+    `data-script-traditional-status="verified" ` +
+    `data-script-simplified="我打个电话" ` +
+    `data-script-simplified-status="verified">我打個電話</p>` +
     `</article>`
   );
 }
@@ -68,8 +111,12 @@ function buildPage(withAnnotation = true): HTMLElement {
   return root;
 }
 
+/** The headword elements (annotation hosts), NOT the example texts which also
+ *  carry `data-script-path-default`. */
 function headwords(root: HTMLElement): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>('[data-script-path-default]'));
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
+  );
 }
 
 /** The headword's own visible text: the leading text node, excluding the
@@ -200,6 +247,107 @@ describe('kanji-bridge script preference — headword contract', () => {
       ).toHaveLength(1);
     }
     expect(fallbackAnnotations(root)).toHaveLength(ENTRIES.length);
+  });
+});
+
+// ─── Promoted forms apply the selected script (post-review path) ──────────────
+
+describe('kanji-bridge script preference — promoted forms apply the selected script', () => {
+  it('applies the verified Simplified headword + zh-Hans under 簡体字 and hides the annotation', () => {
+    setPreference('simplified');
+    const root = document.createElement('section');
+    root.innerHTML = promotedMarkup({
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'verified',
+    });
+    document.body.append(root);
+    init(root);
+
+    const headword = headwords(root)[0];
+    expect(frontText(headword)).toBe('电话');
+    expect(headword.lang).toBe('zh-Hans');
+    expect(headword.querySelector('.script-fallback')).toBeNull();
+  });
+
+  it('keeps the Traditional headword + zh-Hant under path-default and 繁体字', () => {
+    for (const preference of ['path-default', 'traditional'] as ScriptPreference[]) {
+      setPreference(preference);
+      const root = document.createElement('section');
+      root.innerHTML = promotedMarkup({
+        traditional: '電話',
+        traditionalStatus: 'verified',
+        simplified: '电话',
+        simplifiedStatus: 'verified',
+      });
+      document.body.append(root);
+      init(root);
+
+      const headword = headwords(root)[0];
+      expect(frontText(headword)).toBe('電話');
+      expect(headword.lang).toBe('zh-Hant');
+      expect(headword.querySelector('.script-fallback')).toBeNull();
+      document.body.replaceChildren();
+    }
+  });
+
+  it('falls back to path-default + annotation when the requested form is still generated', () => {
+    // Traditional is verified but Simplified is generated: 簡体字 is not
+    // directly selectable, so the headword keeps path-default + annotation.
+    setPreference('simplified');
+    const root = document.createElement('section');
+    root.innerHTML = promotedMarkup({
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'generated',
+    });
+    document.body.append(root);
+    init(root);
+
+    const headword = headwords(root)[0];
+    expect(frontText(headword)).toBe('電話');
+    expect(headword.lang).toBe('zh-Hant');
+    expect(headword.querySelector('.script-fallback')).not.toBeNull();
+  });
+
+  it('applies the selected script to the example text + lang (P2-2)', () => {
+    setPreference('simplified');
+    const root = document.createElement('section');
+    root.innerHTML = promotedMarkup({
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'verified',
+    });
+    document.body.append(root);
+    init(root);
+
+    const example = root.querySelector<HTMLElement>(
+      '.kanji-bridge-entry__example-text',
+    );
+    expect(example?.textContent).toBe('我打个电话');
+    expect(example?.lang).toBe('zh-Hans');
+  });
+
+  it('keeps the example Traditional text + zh-Hant when the preference is not selectable', () => {
+    setPreference('traditional');
+    const root = document.createElement('section');
+    root.innerHTML = promotedMarkup({
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'verified',
+    });
+    document.body.append(root);
+    init(root);
+
+    const example = root.querySelector<HTMLElement>(
+      '.kanji-bridge-entry__example-text',
+    );
+    expect(example?.textContent).toBe('我打個電話');
+    expect(example?.lang).toBe('zh-Hant');
   });
 });
 

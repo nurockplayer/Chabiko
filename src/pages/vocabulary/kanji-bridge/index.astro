@@ -1,73 +1,92 @@
 ---
 import Header from '../../../components/Header.astro';
 import KanjiBridgeEntry from '../../../components/KanjiBridgeEntry.astro';
-import { loadKanjiBridge } from '../../../content/loadKanjiBridge';
+import { loadEligibleKanjiBridge } from '../../../content/loadKanjiBridge';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 
-const entries = loadKanjiBridge();
-
-if (entries.length === 0) {
-  throw new Error('kanji bridge vocabulary is empty');
-}
+// Production-eligibility gate (content-review contract): the route shows only
+// human-reviewed, authored/verified records. The current corpus is entirely
+// generated/draft, so this is empty and the route renders its pending state.
+const entries = loadEligibleKanjiBridge();
 ---
 
 <BaseLayout
   title="漢字ブリッジ 単語"
-  description="日本語の漢字と中国語の漢字の対応を確認できる単語集（繁体字表記・AI生成・未検証）"
+  description="日本語の漢字と中国語の漢字の対応を確認できる単語集"
 >
   <Fragment slot="header">
     <Header />
   </Fragment>
 
-  <section class="kanji-bridge-page" data-kanji-bridge-page>
-    <h1>漢字ブリッジ 単語</h1>
-    <p class="kanji-bridge-page__subtitle" lang="ja">
-      日本語の漢字と中国語の漢字の対応を確認できる単語集です。基本は繁体字で表示します。
-    </p>
+  {
+    entries.length === 0 ? (
+      <section class="kanji-bridge-page" data-kanji-bridge-page data-kanji-bridge-pending>
+        <h1>漢字ブリッジ 単語</h1>
+        <p class="kanji-bridge-page__subtitle" lang="ja">
+          日本語の漢字と中国語の漢字の対応を確認できる単語集です。
+        </p>
+        <div class="kanji-bridge-pending" lang="ja" role="status">
+          <p>
+            このコンテンツは現在、内容の確認・レビューを進めています。公開の準備が整い次第、ここで単語を確認できるようになります。
+          </p>
+        </div>
+      </section>
+    ) : (
+      <section class="kanji-bridge-page" data-kanji-bridge-page>
+        <h1>漢字ブリッジ 単語</h1>
+        <p class="kanji-bridge-page__subtitle" lang="ja">
+          日本語の漢字と中国語の漢字の対応を確認できる単語集です。基本は繁体字で表示します。
+        </p>
 
-    <div class="kanji-bridge-toolbar" data-kanji-bridge-toolbar>
-      <label class="kanji-bridge-toolbar__label" for="kanji-bridge-relation-filter">
-        関係で絞り込む
-      </label>
-      <select
-        id="kanji-bridge-relation-filter"
-        class="kanji-bridge-toolbar__select"
-        data-relation-filter
-      >
-        <option value="all">すべて</option>
-        <option value="same-meaning">同じ意味</option>
-        <option value="partial-overlap">一部が重なる</option>
-        <option value="false-friend">見せかけの同義語</option>
-      </select>
-      <a class="kanji-bridge-toolbar__reset" href="/vocabulary/kanji-bridge/">
-        絞り込みを解除
-      </a>
-      <p class="kanji-bridge-toolbar__count" data-relation-count>全{entries.length}件</p>
-      <p class="kanji-bridge-toolbar__no-match" data-kanji-bridge-no-match hidden>
-        該当する単語がありません。
-      </p>
-    </div>
+        <div class="kanji-bridge-toolbar" data-kanji-bridge-toolbar>
+          <label class="kanji-bridge-toolbar__label" for="kanji-bridge-relation-filter">
+            関係で絞り込む
+          </label>
+          <select
+            id="kanji-bridge-relation-filter"
+            class="kanji-bridge-toolbar__select"
+            data-relation-filter
+          >
+            <option value="all">すべて</option>
+            <option value="same-meaning">同じ意味</option>
+            <option value="partial-overlap">一部が重なる</option>
+            <option value="false-friend">見せかけの同義語</option>
+          </select>
+          <a class="kanji-bridge-toolbar__reset" href="/vocabulary/kanji-bridge/">
+            絞り込みを解除
+          </a>
+          <p
+            class="kanji-bridge-toolbar__count"
+            data-relation-count
+            role="status"
+          >全{entries.length}件</p>
+          <p class="kanji-bridge-toolbar__no-match" data-kanji-bridge-no-match hidden>
+            該当する単語がありません。
+          </p>
+        </div>
 
-    <ol class="kanji-bridge-list" data-kanji-bridge-list>
-      {
-        entries.map((entry) => (
-          <KanjiBridgeEntry entry={entry} />
-        ))
-      }
-    </ol>
-  </section>
+        <ol class="kanji-bridge-list" data-kanji-bridge-list>
+          {
+            entries.map((entry) => (
+              <KanjiBridgeEntry entry={entry} />
+            ))
+          }
+        </ol>
+      </section>
+    )
+  }
 </BaseLayout>
 
 <script>
   import { initKanjiBridgeFilter } from '../../../client/kanjiBridgeFilter';
   import { initKanjiBridgeScriptPreference } from '../../../client/kanjiBridgeScriptPreference';
 
-  // #238 relation filter: URL-only, deterministic, source-order preserving.
-  initKanjiBridgeFilter();
-  // #256/#235 global script preference: headwords keep the path-default
-  // Traditional text with the exact fallback annotation (every form is
-  // generated). The header already owns the preference control + store.
-  initKanjiBridgeScriptPreference();
+  // Only initialize the interactive surface when eligible content is shown;
+  // the pending state has no filter or entries to bind.
+  if (document.querySelector('[data-kanji-bridge-list]')) {
+    initKanjiBridgeFilter();
+    initKanjiBridgeScriptPreference();
+  }
 </script>
 
 <style>
@@ -88,6 +107,18 @@ if (entries.length === 0) {
     margin: 0 0 var(--space-xl);
     color: var(--c-text-secondary);
     overflow-wrap: anywhere;
+  }
+
+  .kanji-bridge-pending {
+    margin: 0 0 var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-pending p {
+    margin: 0;
   }
 
   .kanji-bridge-toolbar {

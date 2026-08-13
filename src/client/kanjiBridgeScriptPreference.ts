@@ -11,8 +11,13 @@ import type { ScriptPreference } from '../lib/scriptPreference';
 /** CSS class used for the #251 fallback annotation element. */
 const FALLBACK_CLASS = 'script-fallback';
 
-/** Selector for every kanji-bridge headword carrying per-form provenance. */
-const HEADWORD_SELECTOR = '[data-script-path-default]';
+/**
+ * Selector for every kanji-bridge field carrying per-form provenance: the
+ * headword AND each example text. The headword is additionally marked
+ * `data-script-annotation-host` because only it shows the #251 fallback
+ * annotation.
+ */
+const FIELD_SELECTOR = '[data-script-path-default]';
 
 // ─── Effective preference ──────────────────────────────────────────────────────
 
@@ -77,22 +82,35 @@ function readFieldForms(element: HTMLElement): FieldForms | null {
   };
 }
 
-// ─── Headword application ──────────────────────────────────────────────────────
+// ─── Field application ─────────────────────────────────────────────────────────
+
+/** Replace the element's leading non-empty text node with the selected form. */
+function setLeadingText(element: HTMLElement, text: string): void {
+  const leading = Array.from(element.childNodes).find(
+    (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim() !== '',
+  );
+  if (leading !== undefined) leading.textContent = text;
+}
 
 /**
- * Apply the effective preference to one kanji-bridge headword. The headword is
- * the path-default Traditional form; every form in the current corpus is
- * `generated` (no authored/verified form exists), so `selectScript` returns
- * `{ status: 'unavailable' }` under every preference. Per the #235/#256
- * contract the headword ALWAYS keeps its static path-default Traditional text
- * (never blank, never fabricated) and ALWAYS shows the exact #251 fallback
- * annotation whenever the requested form is not directly selectable
- * (`isFallback` or `status: 'unavailable'`) — the annotation is therefore
- * present on every entry in every preference state. Updates only the visible
- * Chinese text, the `lang` attribute, and the annotation — never storage,
- * focus, order, the relation filter/URL, or the entry's examples.
+ * Apply the effective preference to one kanji-bridge field (a headword or an
+ * example text element).
+ *
+ * - When `selectScript` returns an available form (post-promotion: the
+ *   requested script is authored/verified), the leading text node is updated
+ *   to that form and `lang` is set to `zh-Hans` (Simplified) or `zh-Hant`
+ *   (Traditional) accordingly.
+ * - When no eligible form exists (`status: 'unavailable'`), the static
+ *   path-default SSR text and its `lang` are kept — the runtime never
+ *   fabricates or converts a script form.
+ * - The #251 fallback annotation is managed ONLY on headword hosts
+ *   (`data-script-annotation-host`); example texts follow the preference
+ *   without their own annotation.
+ *
+ * Updates only the visible text, `lang`, and (for headwords) the annotation —
+ * never storage, focus, order, the relation filter/URL, or the example set.
  */
-function applyHeadword(element: HTMLElement, preference: ScriptPreference): void {
+function applyField(element: HTMLElement, preference: ScriptPreference): void {
   const forms = readFieldForms(element);
   if (forms === null) return;
 
@@ -103,10 +121,22 @@ function applyHeadword(element: HTMLElement, preference: ScriptPreference): void
     simplifiedStatus: forms.simplifiedStatus,
   });
 
-  // The headword keeps its static path-default text (never blank/fabricated).
-  // The lang attribute follows the displayed form (always the Traditional
-  // course standard for this corpus).
-  element.lang = 'zh-Hant';
+  // An available result carries the directly-selectable form's status
+  // ('authored' | 'verified'); 'unavailable' means no eligible form exists.
+  if (result.status !== 'unavailable') {
+    setLeadingText(element, result.script);
+    // Lang follows the displayed form: a direct Simplified selection is
+    // zh-Hans; everything else (Traditional/path-default, or a fallback to the
+    // path-default Traditional form) is zh-Hant. Comparing the script text is
+    // unreliable for characters identical in both scripts (交通, 銀行, …).
+    element.lang =
+      preference === 'simplified' && result.isFallback === false
+        ? 'zh-Hans'
+        : 'zh-Hant';
+  }
+
+  // The annotation is a headword-only affordance.
+  if (!element.hasAttribute('data-script-annotation-host')) return;
 
   const showAnnotation =
     result.status === 'unavailable' || result.isFallback === true;
@@ -134,7 +164,8 @@ interface ActiveBinding {
 let active: ActiveBinding | null = null;
 
 /**
- * Apply the global script preference to every kanji-bridge headword.
+ * Apply the global script preference to every kanji-bridge field (headword
+ * texts and example texts).
  *
  * Behavior contract (#256/#235):
  * - Reads ONLY the validated root dataset
@@ -144,13 +175,13 @@ let active: ActiveBinding | null = null;
  *   control propagates external refreshes through the document event).
  * - Preference changes preserve the `?relation=` filter/URL, source order,
  *   scroll position, and focus; no storage writes happen beyond the global
- *   preference owner, and example forms stay unchanged.
+ *   preference owner.
  * - Re-initialization tears down the previous binding, so document listeners
  *   are never duplicated.
  *
  * @param root  the element whose dataset mirrors the frozen preference
  *   (defaults to `document.documentElement`).
- * @param scope  the subtree to scan for headwords (defaults to the whole
+ * @param scope  the subtree to scan for fields (defaults to the whole
  *   document).
  * @returns a cleanup that removes this binding's document listener.
  */
@@ -163,9 +194,9 @@ export function initKanjiBridgeScriptPreference(
   function apply(): void {
     const preference = readRootPreference(root);
     for (const field of Array.from(
-      scope.querySelectorAll<HTMLElement>(HEADWORD_SELECTOR),
+      scope.querySelectorAll<HTMLElement>(FIELD_SELECTOR),
     )) {
-      applyHeadword(field, preference);
+      applyField(field, preference);
     }
   }
 
