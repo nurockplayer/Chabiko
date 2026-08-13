@@ -89,6 +89,25 @@ jobs:
       - name: Verify production learner journey snapshots
         run: pnpm test:visual
 
+  accessibility:
+    name: Accessibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run axe and keyboard-flow accessibility suite
+        run: pnpm test:a11y
+
   content:
     name: Content validation
     runs-on: ubuntu-24.04

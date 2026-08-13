@@ -99,9 +99,13 @@ describe('Direction C production journey presentation', () => {
     expect(practiceSource).toContain('aria-label="回答を選択"');
     expect(practiceSource).toContain('role="status" aria-live="polite"');
     expect(practiceSource).toContain('store.markComplete(session.lessonId)');
-    expect(practiceSource).toContain('timer.schedule(() => renderCompleted(), 1200)');
-    expect(practiceSource).toContain('timer.schedule(() => render(), 1200)');
-    expect(practiceSource).toContain('timer.schedule(() => render(), 2000)');
+    // Answer/feedback focus management preserves the completion and next-question
+    // lifecycle timers; renderCompleted and render are still scheduled after the
+    // correct (1200ms) and incorrect (2000ms) feedback timeouts.
+    expect(practiceSource).toContain('renderCompleted()');
+    expect(practiceSource).toContain('}, 1200);');
+    expect(practiceSource).toContain('}, 2000);');
+    expect(practiceSource).toContain('feedback.focus();');
     expect(practiceSource).toContain("window.addEventListener('pageshow'");
     expect(practiceSource).toContain("window.addEventListener('storage'");
   });

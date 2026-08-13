@@ -98,9 +98,10 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
       "import { loadLearningPaths } from '../../content/loadLearningPaths'",
     );
     expect(routeSource.match(/loadLearningPaths\(\)/g)).toHaveLength(1);
-    // No direct data file access, no progress or readiness integration.
+    // No direct data-file reads; the route consumes the loader and the fixed
+    // readiness data contract only. Progress/readiness come from the client.
     expect(routeSource).not.toMatch(
-      /readFileSync|data\/learning-paths\.json|localStorage|progress|readiness|fetch\(/,
+      /readFileSync|data\/learning-paths\.json|fetch\(/,
     );
     // Deterministic order: Taiwan travel first, then HSK, then kanji bridge.
     const ids = document.learningPaths.map((path) => path.id);
@@ -183,8 +184,6 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     expect(routeSource).not.toContain('scriptPreference');
     expect(routeSource).not.toContain('path-default');
     expect(routeSource).not.toContain('localStorage');
-    // The route carries no client script block at all.
-    expect(routeSource).not.toContain('<script>');
   });
 
   it('language attributes: page is Japanese-first with no content script markers', () => {
@@ -281,6 +280,67 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     ].map((match) => match[1]);
     expect(renderedIds).toEqual(document.learningPaths.map((path) => path.id));
     expect(renderedIds).toHaveLength(3);
+  });
+});
+
+describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
+  it('renders the four frozen targets in repository order with Japanese labels', () => {
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    const targetIds = [
+      ...readinessBlock.matchAll(/data-readiness-target="([^"]+)"/g),
+    ].map((m) => m[1]);
+    expect(targetIds).toEqual([
+      'navigate-arrival',
+      'order-and-pay',
+      'stay-and-ask',
+      'recover-and-get-help',
+    ]);
+    // The labels come from the fixed readiness data contract.
+    expect(readinessBlock).toContain('到着して動ける');
+    expect(readinessBlock).toContain('注文して支払う');
+    expect(readinessBlock).toContain('宿泊して尋ねる');
+    expect(readinessBlock).toContain('聞き直して助けを求める');
+    expect(readinessBlock).toContain('未開始');
+    // No fake ready/in-progress state in the SSR snapshot.
+    expect(readinessBlock).not.toContain('準備OK');
+  });
+
+  it('renders fixed denominators and the unavailable-evidence note truthfully', () => {
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    // The four fixed denominators from data/travel-quest-readiness.json.
+    expect(readinessBlock).toContain('0 / 3');
+    expect(readinessBlock).toContain('0 / 5');
+    expect(readinessBlock).toContain('0 / 2');
+    // Phrase/roleplay-only targets show the unavailable note.
+    expect(readinessBlock).toContain('data-readiness-note');
+    expect(readinessBlock).toContain('利用できない項目');
+  });
+
+  it('links only to real learner destinations', () => {
+    const hrefs = [
+      ...builtRouteHtml.matchAll(/href="\/([^"]+)"/g),
+    ].map((m) => m[1]);
+    // Exact destinations of available paths plus the home link.
+    expect(hrefs).toContain('lessons/');
+    expect(hrefs).toContain('vocabulary/hsk/');
+    // The unavailable kanji-bridge destination never appears as a link.
+    expect(hrefs).not.toContain('vocabulary/kanji-bridge/');
+  });
+
+  it('emits the frozen member payload and initializes the client controller', () => {
+    expect(routeSource).toContain('paths-progress-data');
+    expect(routeSource).toContain('initPathsReadiness');
+    expect(routeSource).not.toContain('localStorage');
+    // The payload references the loader contract, never the raw data file.
+    expect(routeSource).not.toMatch(/data\/learning-paths\.json/);
   });
 });
 
