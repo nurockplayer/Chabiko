@@ -136,7 +136,7 @@ jobs:
           enable-cache: true
 
       - name: Run content validators
-        run: pnpm validate:content
+        run: bash scripts/validate-content.sh
 
   visual:
     name: Visual regression
