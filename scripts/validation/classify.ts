@@ -232,6 +232,10 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/vocabulary-progress.test.ts', 'tests/vocabulary-session.test.ts'],
   },
   {
+    match: (b) => b.includes('vocabularyquiz'),
+    testGlobs: ['tests/vocabulary-quiz-*.test.ts'],
+  },
+  {
     match: (b) => b.includes('pathsprogress') || b.includes('pathsreadiness'),
     testGlobs: ['tests/paths-progress.test.ts', 'tests/paths-readiness-lifecycle.test.ts'],
   },

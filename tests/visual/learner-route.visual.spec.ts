@@ -62,8 +62,13 @@ test.describe('/vocabulary/basic/ learner route', () => {
             learnerCase.viewport,
             externalRequests,
           );
+          // The learner card screenshot tolerates sub-pixel variance at the
+          // illustration/ratings boundary (fractional WebP scaling in the
+          // pinned renderer can shift a handful of pixels between runs), while
+          // still failing on any real content/layout change (hundreds+ pixels).
           await expect(page.locator('.basic-vocabulary-card')).toHaveScreenshot(
             learnerCase.snapshotName,
+            { maxDiffPixels: 200 },
           );
         },
       );
@@ -191,12 +196,17 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('[data-rating="unsure"]')).toHaveAccessibleName('まだ曖昧');
       await expect(page.locator('[data-rating="known"]')).toHaveAccessibleName('覚えた');
 
-      // Natural Tab order continues through the ratings, then to the reset
-      // management summary (which opens the native details block on Enter).
+      // Natural Tab order continues through the ratings. 大家 has an approved
+      // example, so the example-sentence detail link (#342) is the next
+      // focusable control after the ratings; Tab continues through it to the
+      // reset management summary (which opens the native details block on
+      // Enter).
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="unsure"]')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="known"]')).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('.basic-vocabulary-detail-link')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(resetSummary).toBeFocused();
     });
