@@ -1,0 +1,9 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:4321",
+      "localStorage": [{ "name": "chabiko_theme", "value": "dark" }]
+    }
+  ]
+}

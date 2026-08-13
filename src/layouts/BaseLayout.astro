@@ -238,6 +238,31 @@ const canonical = url.href;
       button {
         font: inherit;
       }
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        z-index: 100;
+        background: var(--c-surface);
+        color: var(--c-text);
+        padding: 0.5rem 0.75rem;
+        border: 2px solid var(--color-focus);
+      }
+      .skip-link:focus {
+        position: fixed;
+        left: var(--space-md);
+        top: var(--space-md);
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+        white-space: normal;
+      }
       :focus-visible {
         outline: 2px solid var(--color-focus);
         outline-offset: 3px;
@@ -282,9 +307,10 @@ const canonical = url.href;
     </style>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">メインコンテンツへスキップ</a>
     <div class="wrapper">
       <slot name="header" />
-      <main class="main-content">
+      <main class="main-content" id="main-content" tabindex="-1">
         <slot />
       </main>
     </div>
