@@ -750,7 +750,7 @@
       "similarityType": "false-friend",
       "toneNote": "dà 第四声、zhàng 第四声、fū 第一声。",
       "painPointTags": ["kanji-false-friend"],
-      "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男（a strong man）。「大丈夫ですか？」の意味で使うと「立派な男ですか」になる。人の状態を気遣う質問は「你還好嗎？（nǐ hái hǎo ma）」「你沒事吧？（nǐ méishì ba）」、「問題ない」は「沒問題（méiwèntí）」、許可「〜してもいい？」は「可以嗎？（kěyǐ ma）」。なお「沒關係（méiguānxi）」は「大丈夫だよ・気にしないで」という慰めで、質問の答えには使わない。",
+      "caution": "日本語の「大丈夫（だいじょうぶ）」＝ 大丈夫（OK・問題ない）。中国語の「大丈夫」＝ 立派な男（a strong man）。「大丈夫ですか？」の意味で使うと「立派な男ですか」になる。人の状態を気遣う質問は「你還好嗎？（nǐ hái hǎo ma）」「你沒事吧？（nǐ méishì ba）」、「問題ない」は「沒問題（méiwèntí）」、許可「〜してもいい？」は「可以嗎？（kěyǐ ma）」。なお「沒關係（méiguānxi）」は「大丈夫だよ・気にしないで」という慰めで、体調・事故後の安否を尋ねる質問の答えには使わない。ただし「晚一點沒關係嗎？（少し遅れても大丈夫ですか？）」のような許容・気遣いの問いには自然に答えられる。",
       "examples": [
         {"traditional": "他是個大丈夫", "traditionalStatus": "generated", "simplified": "他是个大丈夫", "simplifiedStatus": "generated", "pinyin": "tā shì gè dàzhàngfū", "japanese": "彼は立派な男だ"}
       ],

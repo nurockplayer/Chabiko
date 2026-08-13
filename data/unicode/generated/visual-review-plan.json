@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "candidateManifestPath": "data/unicode/generated/visual-candidates.json",
-  "candidateManifestSha256": "bb404409b439031cf7b9cfa62de3774bae9dd8d007e9d493bbcf0e1b70fa5606",
+  "candidateManifestSha256": "4756eb9795ff9dcd7b61d1ea1a1b827e1f366595269e14236b1640ca7d555b4d",
   "ordering": [
     "distance",
     "leftScalar",

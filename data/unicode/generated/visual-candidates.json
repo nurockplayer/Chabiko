@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "input": {
     "scalarInventoryPath": "data/unicode/generated/scalar-inventory.json",
-    "scalarInventorySha256": "bf9f118b118636e9017c66ac8115e23123953a63498174a6519708a74fd9c9eb",
+    "scalarInventorySha256": "ebee2495750b1dbda6b6205a6ea6e6f409f86e8975759979e29337df9bd76070",
     "scalarCount": 1700
   },
   "renderingEnvironment": {
@@ -3131,6 +3131,18 @@
       "scalar": 24944,
       "derivativeSha256": "c00d5c630a0356c493423253910fa27ba720659e5b0b60853078e680887d1fe8",
       "perceptualHash64": "003b331a1a494700"
+    },
+    {
+      "id": "u6545",
+      "scalar": 25925,
+      "derivativeSha256": "3d71160014c906f713f3cd075e2e0476b53ba8ca1b7024c37786066e3f72dd11",
+      "perceptualHash64": "0024272a56565900"
+    },
+    {
+      "id": "u665a",
+      "scalar": 26202,
+      "derivativeSha256": "520a2f2b852c5978c04075210c538b4d95037e68e5053c21cffaf6f8adc5d545",
+      "perceptualHash64": "002e531747255b00"
     },
     {
       "id": "u72b6",
@@ -7483,12 +7495,6 @@
       "perceptualHash64": "00170f0e2b173300"
     },
     {
-      "id": "u6545",
-      "scalar": 25925,
-      "derivativeSha256": "3d71160014c906f713f3cd075e2e0476b53ba8ca1b7024c37786066e3f72dd11",
-      "perceptualHash64": "0024272a56565900"
-    },
-    {
       "id": "u5386",
       "scalar": 21382,
       "derivativeSha256": "62791376ea6c68eeb652257c24ad5dc623e8776a192fae92769f06b41532bbd8",
@@ -8795,12 +8801,6 @@
       "scalar": 21513,
       "derivativeSha256": "7bdbd6ca641dad72df4cd1a530f83174da068b79f61f3c81759f0be015367eaa",
       "perceptualHash64": "00080b0e06222600"
-    },
-    {
-      "id": "u665a",
-      "scalar": 26202,
-      "derivativeSha256": "520a2f2b852c5978c04075210c538b4d95037e68e5053c21cffaf6f8adc5d545",
-      "perceptualHash64": "002e531747255b00"
     },
     {
       "id": "u8e48",
