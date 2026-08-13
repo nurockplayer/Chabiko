@@ -46,7 +46,7 @@ DIFFICULTY_ORDER = {"star-1": 0, "star-2": 1}
 # ─── Exact header mappings ───────────────────────────────────────────────────
 
 REQUIRED_HEADERS = {"单词", "拼音", "日语翻译", "难易度"}
-IGNORED_HEADERS = {"造词/造句", "日文字", "备注"}
+IGNORED_HEADERS = {"日文字", "备注"}
 ALL_KNOWN_HEADERS = REQUIRED_HEADERS | IGNORED_HEADERS
 
 HEADER_TO_CANONICAL = {
@@ -54,6 +54,7 @@ HEADER_TO_CANONICAL = {
     "拼音": "pinyin",
     "日语翻译": "japanese",
     "难易度": "difficulty_check",
+    "造词/造句": "example",
 }
 
 
@@ -169,7 +170,7 @@ def resolve_teacher_headers(header_row, sheet_name=""):
         if not text:
             continue
 
-        if text in REQUIRED_HEADERS:
+        if text in HEADER_TO_CANONICAL:
             canonical = HEADER_TO_CANONICAL[text]
             if canonical in canonical_mapping:
                 prev_pos = canonical_mapping[canonical]
@@ -240,6 +241,7 @@ def validate_teacher_record(record, classification, seen_ids, seen_identities):
     pinyin = record.get("pinyin", "").strip()
     japanese = record.get("japanese", "").strip()
     diff_check = record.get("difficulty_check", "").strip()
+    example = record.get("example", "").strip()
     sheet = record.get("_sourceSheet", "")
     row = record.get("_sourceRow", 0)
     formula_fields = record.get("_formula_fields", [])
@@ -294,6 +296,11 @@ def validate_teacher_record(record, classification, seen_ids, seen_identities):
             "sourceRow": row,
         },
     }
+    # Teacher-authored example sentence (#340): preserved verbatim, only
+    # normalized. An empty cell is a supported missing-example state, so the
+    # field is omitted rather than generated.
+    if example:
+        vocab["example"] = example
 
     return vocab, None
 
@@ -823,7 +830,7 @@ def _test_exact_headers():
 
 
 def _test_ignored_headers():
-    """Verify ignored headers (造词/造句, 日文字, 备注) are tracked."""
+    """Verify 造词/造句 maps to the example field and 日文字/备注 are ignored."""
     import tempfile as _tf
     with _tf.TemporaryDirectory() as _td:
         _wb = Workbook()
@@ -832,7 +839,7 @@ def _test_ignored_headers():
         _ws.append(["单词", "拼音", "日语翻译", "难易度", "造词/造句", "日文字", "备注"])
         _header = [cell.value for cell in _ws[1]]
         _mapping, _ignored, _unknown = resolve_teacher_headers(_header)
-        assert "造词/造句" in _ignored
+        assert "example" in _mapping
         assert "日文字" in _ignored
         assert "备注" in _ignored
         assert _unknown == []
@@ -1014,6 +1021,30 @@ def _test_output_record_shape():
         assert _cur["sourceSheet"] == "名词1"
         assert _cur["sourceRow"] == 2
         assert "illustrationRef" not in _entry
+
+
+def _test_example_import():
+    """Verify the teacher-authored 造词/造句 column is imported verbatim and an
+    empty cell is a supported missing-example state (field omitted)."""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as _td:
+        _path = os.path.join(_td, "example.xlsx")
+        _wb = Workbook()
+        _ws = _wb.active
+        _ws.title = "名词1"
+        _ws.append(["单词", "拼音", "日语翻译", "难易度", "造词/造句"])
+        _ws.append(["爱", "ài", "愛する", "☆", "我爱你"])
+        _ws.append(["猫", "māo", "猫", "☆", ""])
+        _wb.save(_path)
+        _out = os.path.join(_td, "out")
+        _m = import_xlsx(_path, _out)
+        assert _m["accepted"] == 2
+        _batch_path = os.path.join(_out, _m["batches"][0]["filename"])
+        with open(_batch_path, "r", encoding="utf-8") as _f:
+            _batch = json.load(_f)
+        _by_simplified = {e["simplified"]: e for e in _batch["vocabulary"]}
+        assert _by_simplified["爱"]["example"] == "我爱你"
+        assert "example" not in _by_simplified["猫"]
 
 
 def _test_deterministic_global_sorting():
@@ -1215,8 +1246,9 @@ def _test_empty_output_dir_ok():
 
 
 def _test_only_ignored_columns_row():
-    """Verify a row with content only in ignored/unknown columns is a
-    candidate and rejected for missing required fields (not silently skipped)."""
+    """Verify a row with content only in the example column and ignored/unknown
+    columns is a candidate and rejected for missing required fields (not
+    silently skipped)."""
     import tempfile as _tf
     with _tf.TemporaryDirectory() as _td:
         _wb = Workbook()
@@ -1244,7 +1276,7 @@ def _test_only_ignored_columns_row():
 
 
 def _test_ignored_column_formula():
-    """Verify formula in an ignored column is not copied and does not
+    """Verify formula in the example column is not copied and does not
     trigger required-formula rejection."""
     import tempfile as _tf
     with _tf.TemporaryDirectory() as _td:
@@ -1310,7 +1342,7 @@ def run_tests():
         tests_p1 = [
             ("Sheet classification", _test_sheet_classification),
             ("Exact headers", _test_exact_headers),
-            ("Ignored headers", _test_ignored_headers),
+            ("Header mapping (example + ignored)", _test_ignored_headers),
             ("Empty/partial rows", _test_empty_partial_rows),
             ("Required formula rejection", _test_required_formula_rejection),
             ("Unknown column reporting", _test_unknown_column_reporting),
@@ -1330,6 +1362,7 @@ def run_tests():
             ("Illustration ID", _test_illustration_id),
             ("Duplicate rejection", _test_duplicate_rejection),
             ("Output record shape", _test_output_record_shape),
+            ("Example import", _test_example_import),
             ("Deterministic global sorting", _test_deterministic_global_sorting),
         ]
         for _label, _test_fn in tests_p2:
@@ -1346,8 +1379,8 @@ def run_tests():
             ("Output mutation safety", _test_output_mutation_safety),
             ("Non-empty output dir fails", _test_nonempty_output_dir_fails),
             ("Empty output dir ok", _test_empty_output_dir_ok),
-            ("Only ignored columns row", _test_only_ignored_columns_row),
-            ("Ignored column formula", _test_ignored_column_formula),
+            ("Only example/ignored columns row", _test_only_ignored_columns_row),
+            ("Example column formula", _test_ignored_column_formula),
         ]
         for _label, _test_fn in tests_p3:
             print(f"  {_label} ... ", end="")

@@ -69,7 +69,7 @@ SHEET_META = {
     "动词2": {"partOfSpeech": "verb"},
 }
 SHEET_ORDER = tuple(SHEET_META)
-HEADERS = ("单词", "拼音", "日语翻译", "难易度")
+HEADERS = ("单词", "拼音", "日语翻译", "难易度", "造词/造句")
 
 # These phrases cannot safely be resolved to a single concept without adding
 # text, context, or an invented interpretation. The list is intentionally
@@ -198,7 +198,7 @@ def load_workbook_rows(workbook_path: Path) -> list[dict[str, Any]]:
             word = normalize(worksheet.cell(row_number, header_columns["单词"]).value)
             if not word:
                 continue
-            rows.append({
+            row_dict = {
                 "key": f"{sheet_name}:{row_number}",
                 "sourceSheet": sheet_name,
                 "sourceRow": row_number,
@@ -207,7 +207,14 @@ def load_workbook_rows(workbook_path: Path) -> list[dict[str, Any]]:
                 "japanese": normalize(worksheet.cell(row_number, header_columns["日语翻译"]).value),
                 "difficulty": normalize(worksheet.cell(row_number, header_columns["难易度"]).value),
                 "partOfSpeech": SHEET_META[sheet_name]["partOfSpeech"],
-            })
+            }
+            # Teacher-authored example sentence (#340): preserved verbatim, only
+            # normalized. An empty cell is a supported missing-example state, so
+            # the field is omitted rather than generated.
+            example = normalize(worksheet.cell(row_number, header_columns["造词/造句"]).value)
+            if example:
+                row_dict["example"] = example
+            rows.append(row_dict)
     if len(rows) != 1865:
         raise ValueError(f"Expected 1,865 workbook candidate rows, found {len(rows)}")
     return rows
