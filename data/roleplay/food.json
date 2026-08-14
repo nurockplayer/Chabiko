@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-food-001",
+      "scenario": "food",
+      "titleJa": "お店で注文する",
+      "goalJa": "お店でドリンクを一杯注文し、氷の量や辛さを調整し、テイクアウトを頼める",
+      "guidanceJa": "お店でドリンクを一杯注文し、氷を少なめに調整し、「不要辣」で辛さの好みを伝え、テイクアウトを頼む練習です。数量（一杯）を伝えて注文し、氷の量と辛さを好みに合わせて調整します。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-005", "lesson-006"],
+      "phraseRefs": ["phrase-001", "phrase-food-002", "phrase-food-003", "phrase-food-005"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "我要一杯珍珠奶茶。",
+          "traditionalStatus": "authored",
+          "simplified": "我要一杯珍珠奶茶。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ yào yī bēi zhēnzhū nǎichá",
+          "japanese": "タピオカミルクティーを一杯ください。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，要冰的還是熱的？",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo, yào bīng de háishì rè de?",
+          "japanese": "はい、冷たいのと温かいの、どちらにしますか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以少冰嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以少冰吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "kěyǐ shǎo bīng ma?",
+          "japanese": "氷を少なめにしてもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "可以，少冰。要不要辣？",
+          "traditionalStatus": "authored",
+          "pinyin": "kěyǐ, shǎo bīng. yào bù yào là?",
+          "japanese": "はい、氷少なめですね。辛さはいかがしますか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "不要辣，謝謝。可以外帶嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "不要辣，谢谢。可以外带吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "bù yào là, xièxie. kěyǐ wàidài ma?",
+          "japanese": "辛くしないでください。テイクアウトできますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，不要辣，幫你外帶包好。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo, bù yào là, bāng nǐ wàidài bāo hǎo",
+          "japanese": "はい、辛くせずに、テイクアウト用に包んでおきますね。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original Taiwan travel roleplay food content; learner lines mirror committed phrases; no third-party text copied"
+      }
+    }
+  ]
+}
