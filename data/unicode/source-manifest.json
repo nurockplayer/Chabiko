@@ -112,7 +112,66 @@
     {
       "id": "roleplay-transport-v1",
       "path": "data/roleplay/transport.json",
-      "sha256": "acaedab8aa3a2fc10db5a9ba5b456898df40e5ec61e2000a57587398def3254e",
+      "sha256": "bef6b450edd9f15b61e725ba414c98efe4ff6614b17e8ce521c7cb8a689ebc42",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" }
+      ]
+    },
+    {
+      "id": "roleplay-food-v1",
+      "path": "data/roleplay/food.json",
+      "sha256": "b60fb6f95efabed271a515c61882a3ae4ce72c01819f387181d632787e2396e6",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" }
+      ]
+    },
+
+    {
+      "id": "roleplay-shopping-v1",
+      "path": "data/roleplay/shopping.json",
+      "sha256": "fa6255acd53e5370572893ed3686cef55675d6bac624b7740f9e71e43e8b9f7d",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" }
+      ]
+    },
+
+    {
+      "id": "roleplay-hotel-v1",
+      "path": "data/roleplay/hotel.json",
+      "sha256": "4a1737714b3649b3ac673ebe066272acf6496824f0157d5489ff5cb64103909a",
+      "format": "json",
+      "textFields": [
+        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "goalJa", "language": "ja" },
+        { "field": "guidanceJa", "language": "ja" },
+        { "field": "titleJa", "language": "ja" }
+      ]
+    },
+
+    {
+      "id": "roleplay-emergency-v1",
+      "path": "data/roleplay/emergency.json",
+      "sha256": "3d20ebdc79f1b7a74db873b67cf8fb7de9ed46ffabdae0d718e1c5bfdd4b0c7e",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
