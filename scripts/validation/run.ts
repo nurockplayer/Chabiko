@@ -14,7 +14,8 @@
 // tier (a local override); without it the classifier decides from the diff.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, globSync, writeFileSync } from 'node:fs';
+import { existsSync, globSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   CLASS_LABEL,
@@ -72,6 +73,30 @@ function splitLines(output: string): string[] {
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
+}
+
+/**
+ * Repo-relative paths of sources allowlisted in `data/unicode/source-manifest.json`
+ * (`sources[].path`). Injected into classifyFiles so a change to any allowlisted
+ * source escalates to T2 (full Vitest runs the #260 contract / stale-artifact
+ * checks). Read with readFileSync + JSON.parse — NOT a JSON import attribute —
+ * because the CI classify job runs this file under plain Node type-stripping,
+ * where import attributes are unsupported. A missing manifest (e.g. the
+ * throwaway temp-repo CLI self-tests) degrades to an empty set; a malformed
+ * manifest is a hard error (fail closed) so a source change can never silently
+ * skip the canonical gate.
+ */
+function readUnicodeSourcePaths(): Set<string> {
+  const manifestPath = join(repoRoot, 'data/unicode/source-manifest.json');
+  if (!existsSync(manifestPath)) return new Set();
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+    sources?: Array<{ path?: unknown }>;
+  };
+  const paths = new Set<string>();
+  for (const source of manifest.sources ?? []) {
+    if (typeof source?.path === 'string' && source.path.length > 0) paths.add(source.path);
+  }
+  return paths;
 }
 
 interface ParsedArgs {
@@ -235,7 +260,9 @@ function emitGithubOutput(plan: Classification & { effectiveTier: Tier }): void 
 function main(): number {
   const args = parseArgs(process.argv.slice(2));
   const files = args.files ?? gitChangedFiles(args.base);
-  const classification = classifyFiles(files);
+  const classification = classifyFiles(files, {
+    unicodeSourcePaths: readUnicodeSourcePaths(),
+  });
   const plan = buildPlan(classification, args.tier, args.forceMain);
 
   process.stderr.write(`${plan.summary}\n`);
