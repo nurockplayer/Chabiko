@@ -2,7 +2,12 @@
 import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
 import LessonPractice from '../../components/LessonPractice.astro';
+import {
+  lessonPhrasebookDestination,
+  loadProductionPhrasebookScenarios,
+} from '../../content/lessonPhrasebook';
 import { loadAllRenderableLessons } from '../../content/loadLessons';
+import type { PhrasebookScenario } from '../../content/loadPhrasebook';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { Lesson } from '../../types/lesson';
 
@@ -13,6 +18,11 @@ interface NavLesson {
 
 export const getStaticPaths = (() => {
   const lessons = loadAllRenderableLessons();
+  // Production-eligible phrasebook scenarios (#239): computed once at build time
+  // from the same eligible surface as /phrasebook/ (loadEligiblePhrasebook +
+  // groupPhrasebookByScenario), so a lesson links ONLY to a scenario with real
+  // learner-visible content — never to a draft/pending-only scenario.
+  const productionPhrasebookScenarios = loadProductionPhrasebookScenarios();
   return lessons.map((lesson, index) => ({
     params: { id: lesson.id },
     props: {
@@ -21,16 +31,21 @@ export const getStaticPaths = (() => {
       lessonCount: lessons.length,
       prevLesson: index > 0 ? ({ id: lessons[index - 1].id, titleJa: lessons[index - 1].titleJa } satisfies NavLesson) : null,
       nextLesson: index < lessons.length - 1 ? ({ id: lessons[index + 1].id, titleJa: lessons[index + 1].titleJa } satisfies NavLesson) : null,
+      phrasebookScenario: lessonPhrasebookDestination(
+        lesson.travelScenario,
+        productionPhrasebookScenarios,
+      ),
     },
   }));
 }) satisfies GetStaticPaths;
 
-const { lesson, lessonNumber, lessonCount, prevLesson, nextLesson } = Astro.props as {
+const { lesson, lessonNumber, lessonCount, prevLesson, nextLesson, phrasebookScenario } = Astro.props as {
   lesson?: Lesson;
   lessonNumber?: number;
   lessonCount?: number;
   prevLesson?: NavLesson | null;
   nextLesson?: NavLesson | null;
+  phrasebookScenario?: PhrasebookScenario | null;
 };
 const hasText = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -196,6 +211,18 @@ const exampleScriptAttrs = (example: {
             <h2 id="task-heading">旅先でやってみよう</h2>
             <p>{lesson.travelTask}</p>
           </section>
+
+          {phrasebookScenario && (
+            <section class="related-phrasebook" aria-label="関連フレーズ">
+              <a
+                class="related-phrasebook__link"
+                data-phrasebook-link
+                href={`/phrasebook/?scenario=${phrasebookScenario}`}
+              >
+                関連フレーズを見る
+              </a>
+            </section>
+          )}
 
           <nav class="lesson-nav" aria-label="レッスンナビゲーション">
             {prevLesson && (
@@ -551,6 +578,30 @@ const exampleScriptAttrs = (example: {
   }
   .travel-task h2 {
     color: var(--color-status-current);
+  }
+  .related-phrasebook {
+    margin-top: var(--space-2xl);
+    padding: var(--space-lg);
+    border: 1px solid var(--c-border);
+    border-top: 4px solid var(--c-primary);
+    background: var(--c-surface);
+  }
+  .related-phrasebook__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-primary);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-primary);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+  .related-phrasebook__link:hover {
+    background: var(--c-primary-light);
+    text-decoration: none;
   }
   .lesson-nav {
     display: flex;

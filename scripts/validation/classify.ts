@@ -296,6 +296,10 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/phrasebook-*.test.ts'],
   },
   {
+    match: (b) => b.includes('lessonphrasebook'),
+    testGlobs: ['tests/lesson-phrasebook-link.test.ts'],
+  },
+  {
     match: (b) => b.includes('hsk') || b.includes('flashcard'),
     testGlobs: ['tests/flashcard-session-lifecycle.test.ts', 'tests/hsk-flashcard.test.ts'],
   },
