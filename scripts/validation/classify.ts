@@ -334,6 +334,21 @@ export function domainTestGlobsFor(file: string): string[] {
 // Top-level classification.
 // ---------------------------------------------------------------------------
 
+export interface ClassifyOptions {
+  /**
+   * Repo-relative paths of sources allowlisted in the active
+   * `data/unicode/source-manifest.json` (`sources[].path`). A change touching
+   * any of these must run full Vitest (T2) so the canonical Unicode contract /
+   * stale-artifact checks (`tests/unicode-contract.test.ts`,
+   * `tests/unicode-visual-candidates.test.ts`) always run. The set is injected
+   * at the CLI boundary (`scripts/validation/run.ts`), keeping this module pure
+   * (no filesystem/git I/O) and the mapping unit-testable. An empty/missing set
+   * (e.g. temp-repo CLI self-tests) leaves the base tier untouched; the manifest
+   * path itself and `data/unicode/generated/*` still map to `build-ci` → T3.
+   */
+  unicodeSourcePaths?: ReadonlySet<string>;
+}
+
 export const CLASS_LABEL: Record<RiskClass, string> = {
   docs: 'docs/static',
   content: 'content/data',
@@ -347,7 +362,8 @@ export const CLASS_LABEL: Record<RiskClass, string> = {
   unknown: 'unknown',
 };
 
-export function classifyFiles(files: string[]): Classification {
+export function classifyFiles(files: string[], options: ClassifyOptions = {}): Classification {
+  const unicodeSourcePaths = options.unicodeSourcePaths ?? new Set<string>();
   const riskClasses = new Set<RiskClass>();
   const reasons: string[] = [];
   let trustworthy = true;
@@ -383,6 +399,23 @@ export function classifyFiles(files: string[]): Classification {
   if (unmappedDomain) {
     if (TIER_ORDER[tier] < TIER_ORDER.t2) tier = 't2';
     reasons.push('unmapped domain source → escalate to T2 (full Vitest)');
+  }
+
+  // #359: a changed path allowlisted in data/unicode/source-manifest.json must
+  // run full Vitest so the canonical Unicode contract / stale-artifact checks
+  // (tests/unicode-contract.test.ts, tests/unicode-visual-candidates.test.ts)
+  // always run — a manifest source can otherwise merge as plain `content` (t1)
+  // with a stale checksum (the #354/#358 regression). The manifest itself and
+  // its generated artifacts already map to `build-ci` → T3; an allowlisted
+  // source floors the change at T2 (full Vitest + build), the smallest tier that
+  // satisfies the contract. The protected set is injected by run.ts so this
+  // module stays pure (no filesystem/git I/O).
+  const manifestSources = files.filter((file) => unicodeSourcePaths.has(normalize(file)));
+  if (manifestSources.length > 0 && TIER_ORDER[tier] < TIER_ORDER.t2) {
+    tier = 't2';
+    reasons.push(
+      `${manifestSources.join(', ')}: allowlisted Unicode source → T2 (full Vitest runs the #260 contract checks)`,
+    );
   }
 
   const affectedContent = riskClasses.has('content') && !riskClasses.has('build-ci');
