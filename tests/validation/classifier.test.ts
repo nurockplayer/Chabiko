@@ -166,6 +166,67 @@ describe('#347: learner-visible UI changes escalate to the full gate', () => {
   });
 });
 
+describe('#359: manifest-allowlisted Unicode sources escalate to full Vitest', () => {
+  // Future-proofing: derive the protected set from the real active manifest so
+  // a source newly added to data/unicode/source-manifest.json is covered
+  // without another hardcoded path list here (or in the classifier).
+  const manifestPath = fileURLToPath(
+    new URL('../../data/unicode/source-manifest.json', import.meta.url),
+  );
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+    sources: Array<{ path: string }>;
+  };
+  const unicodeSourcePaths = new Set(manifest.sources.map((source) => source.path));
+
+  it('derives a non-empty protected set from the real manifest', () => {
+    expect(unicodeSourcePaths.size).toBeGreaterThan(0);
+    expect(unicodeSourcePaths).toContain('data/roleplay/transport.json');
+    expect(unicodeSourcePaths).toContain('data/examples/valid/phrasebook.json');
+    // learning-paths.json is itself an allowlisted manifest source, so it is
+    // protected too (not a valid negative-case example).
+    expect(unicodeSourcePaths).toContain('data/learning-paths.json');
+  });
+
+  it('a roleplay path present in the manifest does NOT classify as t1 (repro #354/#358)', () => {
+    const classification = classifyFiles(['data/roleplay/transport.json'], { unicodeSourcePaths });
+    expect(classification.tier).not.toBe('t1');
+    expect(classification.tier).toBe('t2');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+  });
+
+  it('another allowlisted source (phrasebook) triggers the same escalation', () => {
+    const classification = classifyFiles(['data/examples/valid/phrasebook.json'], {
+      unicodeSourcePaths,
+    });
+    expect(classification.tier).toBe('t2');
+    expect(classification.runFullVitest).toBe(true);
+  });
+
+  it('a manifest-path change itself stays escalated (build-ci → t3)', () => {
+    const classification = classifyFiles(['data/unicode/source-manifest.json'], {
+      unicodeSourcePaths,
+    });
+    expect(classification.tier).toBe('t3');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+  });
+
+  it('keeps the pure module manifest-agnostic without an injected set', () => {
+    // The module contract is "pure — no filesystem/git I/O". Escalation must
+    // come from the caller injecting the manifest-derived set; a bare call keeps
+    // the base tier so existing callers/tests stay unaffected.
+    const classification = classifyFiles(['data/roleplay/transport.json']);
+    expect(classification.tier).toBe('t1');
+  });
+
+  it('does not escalate a non-allowlisted data path solely because it is JSON/data', () => {
+    const classification = classifyFiles(['data/foo.json'], { unicodeSourcePaths });
+    expect(classification.tier).toBe('t1');
+    expect(classification.runFullVitest).toBe(false);
+  });
+});
+
 describe('#347: the documented classify CLI gates visual/a11y from real git state', () => {
   // P1 self-test: CI runs `node scripts/validation/run.ts classify --base
   // origin/main --emit-github-output` and gates the visual/a11y jobs on the
@@ -291,6 +352,49 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       const emitted = readFileSync(outputPath, 'utf8');
       expect(emitted).toContain('run_visual=true');
       expect(emitted).toContain('run_a11y=true');
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('#359: a manifest-allowlisted source change escalates to t2 (run_full_vitest=true)', () => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    // The temp repo creates its own manifest so run.ts reads it from cwd.
+    commitFile(
+      repo,
+      'data/unicode/source-manifest.json',
+      `${JSON.stringify(
+        { sources: [{ id: 'transport-v1', path: 'data/roleplay/transport.json' }] },
+        null,
+        2,
+      )}\n`,
+      'add manifest',
+    );
+    writeFile(repo, 'data/roleplay/transport.json', '{}\n');
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t2');
+      expect(stdout).toContain('run_full_vitest=true');
+      const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('run_full_vitest=true');
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('#359: a data change with no manifest in the temp repo stays t1 (missing manifest is graceful)', () => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    writeFile(repo, 'data/roleplay/transport.json', '{}\n');
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t1');
+      expect(stdout).toContain('run_full_vitest=false');
     } finally {
       rmSync(outputPath, { force: true });
     }
