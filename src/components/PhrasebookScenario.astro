@@ -1,0 +1,344 @@
+---
+import type {
+  PhrasebookDialog,
+  PhrasebookPhrase,
+  PhrasebookReviewStatus,
+  PhrasebookScenario,
+  PhrasebookSpeaker,
+} from '../content/loadPhrasebook';
+
+interface Props {
+  scenario: PhrasebookScenario;
+  phrases: readonly PhrasebookPhrase[];
+  dialog: PhrasebookDialog | null;
+}
+
+const { scenario, phrases, dialog } = Astro.props;
+
+const SCENARIO_LABELS: Record<PhrasebookScenario, string> = {
+  airport: '空港',
+  transport: '交通',
+  food: '食事',
+  shopping: '買い物',
+  hotel: 'ホテル',
+  emergency: '緊急時',
+};
+
+const REVIEW_STATUS_LABELS: Record<PhrasebookReviewStatus, string> = {
+  draft: '未レビュー',
+  reviewed: 'レビュー済み',
+  published: '公開済み',
+};
+
+const SPEAKER_LABELS: Record<PhrasebookSpeaker, string> = {
+  learner: 'あなた',
+  partner: '相手',
+};
+
+/** The actual phrases rendered in this scenario, keyed by id. */
+const phraseById = new Map<string, PhrasebookPhrase>(
+  phrases.map((phrase) => [phrase.id, phrase]),
+);
+
+/** relatedPhraseIds resolved to the real phrases shown on this page. The
+ *  loader fails closed on missing/cross-scenario references, so every id
+ *  resolves; the guard keeps the render robust for a filtered subset. */
+const relatedPhrases = (dialog?.relatedPhraseIds ?? [])
+  .map((id) => phraseById.get(id))
+  .filter((phrase): phrase is PhrasebookPhrase => phrase !== undefined);
+
+/** Truthful provenance label: source tag when a source record exists, always
+ *  the review status. Never fabricates a source that is absent. */
+function provenanceLabel(
+  reviewStatus: PhrasebookReviewStatus,
+  sourceType: string | undefined,
+): string {
+  const review = REVIEW_STATUS_LABELS[reviewStatus];
+  if (sourceType === undefined) return review;
+  const sourceLabel = sourceType === 'generated' ? 'AI生成・未検証' : '学習用データ';
+  return `${sourceLabel}（${review}）`;
+}
+
+/** Dialog provenance (all dialogs carry a source, but stay truthful without). */
+const dialogProvenance =
+  dialog === null
+    ? ''
+    : provenanceLabel(dialog.reviewStatus, dialog.source?.type);
+
+/** Static SSR fallback annotation, shown only for a form that is not
+ *  authored/verified (the frozen corpus is entirely authored/verified, so this
+ *  renders nothing today; the script-preference client owns the dynamic one). */
+function staticFallback(status: string): boolean {
+  return status !== 'authored' && status !== 'verified';
+}
+---
+
+<section
+  class="phrasebook-scenario"
+  data-phrasebook-scenario
+  data-scenario={scenario}
+>
+  <h2 class="phrasebook-scenario__heading">{SCENARIO_LABELS[scenario]}</h2>
+
+  <ol class="phrasebook-phrase-list">
+    {
+      phrases.map((phrase) => (
+        <li class="phrasebook-phrase" data-phrasebook-entry>
+          <h3
+            class="phrasebook-phrase__headword"
+            lang="zh-Hant"
+            data-script-path-default={phrase.traditional}
+            data-script-path-default-status={phrase.traditionalStatus}
+            data-script-traditional={phrase.traditional}
+            data-script-traditional-status={phrase.traditionalStatus}
+            data-script-simplified={phrase.simplified}
+            data-script-simplified-status={phrase.simplifiedStatus}
+            data-script-annotation-host
+          >
+            {phrase.traditional}
+            {
+              staticFallback(phrase.traditionalStatus) && (
+                <span class="script-fallback" lang="ja">この表記は未収録のため、コース標準を表示しています。</span>
+              )
+            }
+          </h3>
+          <p class="phrasebook-phrase__pinyin" lang="zh-Latn">{phrase.pinyin}</p>
+          <dl class="phrasebook-phrase__meta">
+            <div class="phrasebook-phrase__meta-row">
+              <dt lang="ja">意味</dt>
+              <dd lang="ja">{phrase.japanese}</dd>
+            </div>
+          </dl>
+          <p class="phrasebook-phrase__usage" lang="ja">
+            <span class="phrasebook-phrase__note-label">使い方：</span>
+            {phrase.usageNotesJa}
+          </p>
+          <p class="phrasebook-phrase__provenance" lang="ja">
+            {provenanceLabel(phrase.reviewStatus, phrase.source?.type)}
+          </p>
+        </li>
+      ))
+    }
+  </ol>
+
+  {
+    dialog && (
+      <div class="phrasebook-dialog" data-phrasebook-dialog>
+        <h3 class="phrasebook-dialog__heading">会話</h3>
+        <ol class="phrasebook-dialog__turns">
+          {
+            dialog.turns.map((turn, turnIndex) => (
+              <li
+                class="phrasebook-dialog__turn"
+                data-phrasebook-dialog-turn
+                data-speaker={turn.speaker}
+              >
+                <p class="phrasebook-dialog__speaker" lang="ja">
+                  {SPEAKER_LABELS[turn.speaker]}（{turnIndex + 1}）
+                </p>
+                <p
+                  class="phrasebook-dialog__line"
+                  lang="zh-Hant"
+                  data-script-path-default={turn.traditional}
+                  data-script-path-default-status={turn.traditionalStatus}
+                  data-script-traditional={turn.traditional}
+                  data-script-traditional-status={turn.traditionalStatus}
+                  data-script-simplified={turn.simplified}
+                  data-script-simplified-status={turn.simplifiedStatus}
+                  data-script-annotation-host
+                >
+                  {turn.traditional}
+                  {
+                    staticFallback(turn.traditionalStatus) && (
+                      <span class="script-fallback" lang="ja">この表記は未収録のため、コース標準を表示しています。</span>
+                    )
+                  }
+                </p>
+                <p class="phrasebook-dialog__pinyin" lang="zh-Latn">{turn.pinyin}</p>
+                <p class="phrasebook-dialog__japanese" lang="ja">{turn.japanese}</p>
+              </li>
+            ))
+          }
+        </ol>
+
+        {
+          relatedPhrases.length > 0 && (
+            <p class="phrasebook-dialog__references" lang="ja">
+              <span class="phrasebook-dialog__references-label">関連フレーズ：</span>
+              {
+                relatedPhrases.map((phrase, index) => (
+                  <span
+                    class="phrasebook-dialog__reference"
+                    lang="zh-Hant"
+                  >{phrase.traditional}{index < relatedPhrases.length - 1 ? '、' : ''}</span>
+                ))
+              }
+            </p>
+          )
+        }
+
+        <p class="phrasebook-dialog__provenance" lang="ja">
+          {dialogProvenance}
+        </p>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .phrasebook-scenario {
+    width: 100%;
+    min-width: 0;
+  }
+  .phrasebook-scenario__heading {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    margin: 0 0 var(--space-md);
+    padding-bottom: var(--space-xs);
+    border-bottom: 2px solid var(--c-accent);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-phrase-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    margin: 0 0 var(--space-xl);
+    padding: 0;
+    min-width: 0;
+  }
+  .phrasebook-phrase {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    overflow-wrap: anywhere;
+    word-break: normal;
+    list-style: none;
+  }
+  .phrasebook-phrase__headword {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin: 0 0 var(--space-xs);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-phrase__pinyin {
+    margin: 0 0 var(--space-md);
+    font-size: 0.875rem;
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-phrase__meta {
+    margin: 0 0 var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .phrasebook-phrase__meta-row {
+    display: flex;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+  .phrasebook-phrase__meta-row dt {
+    flex: 0 0 auto;
+    min-width: 2.5rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+  }
+  .phrasebook-phrase__meta-row dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-phrase__usage {
+    margin: 0 0 var(--space-sm);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-phrase__note-label {
+    font-weight: 700;
+  }
+  .phrasebook-phrase__provenance {
+    margin: var(--space-sm) 0 0;
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+    overflow-wrap: anywhere;
+  }
+  .script-fallback {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__heading {
+    font-size: 1.125rem;
+    line-height: 1.3;
+    margin: 0 0 var(--space-md);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__turns {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    min-width: 0;
+  }
+  .phrasebook-dialog__turn {
+    min-width: 0;
+    list-style: none;
+  }
+  .phrasebook-dialog__speaker {
+    margin: 0 0 var(--space-xs);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__line {
+    margin: 0 0 var(--space-xs);
+    font-size: 1.125rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__pinyin,
+  .phrasebook-dialog__japanese {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__japanese {
+    margin-top: var(--space-xs);
+  }
+  .phrasebook-dialog__references {
+    margin: 0 0 var(--space-sm);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__references-label {
+    font-weight: 700;
+  }
+  .phrasebook-dialog__reference {
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-dialog__provenance {
+    margin: var(--space-sm) 0 0;
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+    overflow-wrap: anywhere;
+  }
+</style>
