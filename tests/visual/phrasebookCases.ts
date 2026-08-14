@@ -1,9 +1,11 @@
-/** Deterministic /phrasebook/ visual cases (Issue #236). The phrasebook
- *  surface has NO production-eligibility gate and NO pending state: every case
- *  captures the full first-release surface (all 30 phrases, all 6 dialogs) as a
- *  viewport-sized top-of-page screenshot across the Issue #205 viewport set.
- *  The scenario filter is URL-only, so the default unfiltered capture is the
- *  deterministic baseline for every viewport. */
+/** Deterministic /phrasebook/ visual cases (Issue #236, fail-closed rework per
+ *  the #349 kanji-bridge precedent). The learner surface renders ONLY the
+ *  production-eligible records (currently 6 reviewed phrases: airport 5 +
+ *  food 1) grouped by scenario plus a truthful pending notice for the rest
+ *  (24 phrases + 6 dialogs under review). Every case captures that eligible +
+ *  pending surface as a viewport-sized top-of-page screenshot across the Issue
+ *  #205 viewport set. The scenario filter is URL-only, so the default
+ *  unfiltered capture is the deterministic baseline for every viewport. */
 export interface PhrasebookVisualCase {
   /** URL query applied to the route ('' = default unfiltered surface). */
   search: string;

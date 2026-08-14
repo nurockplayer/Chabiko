@@ -1,13 +1,20 @@
 /**
- * Phrasebook loader + route contract (Issue #236).
+ * Phrasebook loader + route contract (Issue #236, fail-closed rework per the
+ * #349 kanji-bridge precedent).
  *
- * The deterministic loader loads exactly 30 phrases and 6 dialogs, validates
+ * LAYER 1 — corpus validation (unchanged invariant): the deterministic loader
+ * `loadPhrasebook()` loads exactly 30 phrases and 6 dialogs, validates
  * controlled scenario membership, form/review statuses, dialog turn structure,
  * and `relatedPhraseIds` (fail-closed on missing/cross-scenario references),
- * and deep-freezes its result. Unlike kanji-bridge there is NO production
- * gate: every phrase/dialog form is authored/verified, so the learner route at
- * `/phrasebook/` server-renders all 30 phrases + 6 dialogs in the controlled
- * scenario order with each record's reviewStatus/provenance shown truthfully.
+ * and deep-freezes its result.
+ *
+ * LAYER 2 — learner-facing production eligibility (fail-closed): the learner
+ * route at `/phrasebook/` renders ONLY records whose record-level `reviewStatus`
+ * is `reviewed`/`published` AND whose script forms are independently
+ * authored/verified (see `isPhrasebookProductionEligible` /
+ * `isPhrasebookDialogProductionEligible` / `loadEligiblePhrasebook`). The rest
+ * (24 draft phrases + 6 draft dialogs) render as a truthful pending state and
+ * never leak draft text into learner-facing HTML.
  *
  * The fresh build writes to a unique temporary directory (never the shared
  * dist/). Vitest serializes this file with the other Astro build suites because
@@ -27,6 +34,9 @@ import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   groupPhrasebookByScenario,
+  isPhrasebookDialogProductionEligible,
+  isPhrasebookProductionEligible,
+  loadEligiblePhrasebook,
   loadPhrasebook,
   PHRASEBOOK_DIALOG_COUNT,
   PHRASEBOOK_PHRASE_COUNT,
@@ -102,6 +112,26 @@ const EXPECTED_SCENARIO_PHRASE_IDS: Record<string, string[]> = {
     'phrase-emergency-005',
   ],
 };
+
+/** The reviewed, learner-eligible phrase ids in source order (verified facts). */
+const ELIGIBLE_PHRASE_IDS = [
+  'phrase-001',
+  'phrase-airport-001',
+  'phrase-airport-002',
+  'phrase-airport-003',
+  'phrase-airport-004',
+  'phrase-airport-005',
+];
+
+/** Draft phrase/dialog text that must never reach learner-facing HTML. */
+const DRAFT_PHRASE_TEXTS = [
+  '不要辣，謝謝。',
+  '我要去台北車站。',
+  '這個多少錢？',
+  '我有預約。',
+  '請幫幫我。',
+  '可以外帶嗎？',
+];
 
 // ─── Temp fixture helpers (only this suite's files) ───────────────────────────
 
@@ -372,9 +402,144 @@ describe('loadPhrasebook — fail-closed branches', () => {
   });
 });
 
-// ─── Route: SSR surface (fresh build, no production gate) ─────────────────────
+// ─── Production-eligibility gate (content-review contract) ────────────────────
 
-describe('/phrasebook/ — SSR route surface (Issue #236)', () => {
+describe('phrasebook production-eligibility gate (content-review contract)', () => {
+  it('marks exactly the 6 reviewed phrases eligible and all 6 dialogs ineligible', () => {
+    const data = loadPhrasebook();
+    const eligiblePhrases = data.phrases.filter(isPhrasebookProductionEligible);
+    expect(eligiblePhrases.map((phrase) => phrase.id)).toEqual(
+      ELIGIBLE_PHRASE_IDS,
+    );
+    expect(data.dialogs.every((dialog) => !isPhrasebookDialogProductionEligible(dialog))).toBe(true);
+
+    const eligible = loadEligiblePhrasebook();
+    expect(eligible.phrases.map((phrase) => phrase.id)).toEqual(
+      ELIGIBLE_PHRASE_IDS,
+    );
+    expect(eligible.dialogs).toHaveLength(0);
+  });
+
+  it('groups the eligible subset in controlled scenario order (airport 5, food 1)', () => {
+    const groups = groupPhrasebookByScenario(loadEligiblePhrasebook()).filter(
+      (group) => group.phrases.length > 0,
+    );
+    expect(groups.map((group) => group.scenario)).toEqual(['airport', 'food']);
+    expect(groups[0].phrases.map((phrase) => phrase.id)).toEqual([
+      'phrase-airport-001',
+      'phrase-airport-002',
+      'phrase-airport-003',
+      'phrase-airport-004',
+      'phrase-airport-005',
+    ]);
+    expect(groups[1].phrases.map((phrase) => phrase.id)).toEqual(['phrase-001']);
+  });
+
+  it('promotes a draft record to eligible once reviewed, in source order', () => {
+    const doc = cloneDocument(basePhrasebookDocument());
+    doc.phrasebook.find((record) => record.id === 'phrase-food-002')!.reviewStatus =
+      'reviewed';
+    const eligible = loadEligiblePhrasebook(writeTemp('phrasebook', doc));
+    expect(eligible.phrases.map((phrase) => phrase.id)).toEqual([
+      'phrase-001',
+      'phrase-airport-001',
+      'phrase-airport-002',
+      'phrase-airport-003',
+      'phrase-airport-004',
+      'phrase-airport-005',
+      'phrase-food-002',
+    ]);
+    expect(eligible.phrases.every(isPhrasebookProductionEligible)).toBe(true);
+  });
+
+  it('requires reviewed/published AND an authored/verified traditional form', () => {
+    // Reviewed but still generated traditional form → ineligible.
+    const doc = cloneDocument(basePhrasebookDocument());
+    doc.phrasebook.find((record) => record.id === 'phrase-001')!.traditionalStatus =
+      'generated';
+    expect(
+      loadEligiblePhrasebook(writeTemp('phrasebook', doc)).phrases.map((phrase) => phrase.id),
+    ).not.toContain('phrase-001');
+
+    // Verified traditional form but still draft → ineligible.
+    const doc2 = cloneDocument(basePhrasebookDocument());
+    doc2.phrasebook.find((record) => record.id === 'phrase-food-002')!.traditionalStatus =
+      'verified';
+    expect(
+      loadEligiblePhrasebook(writeTemp('phrasebook', doc2)).phrases.map((phrase) => phrase.id),
+    ).not.toContain('phrase-food-002');
+  });
+
+  it('excludes a reviewed phrase whose Simplified form is still generated (per-form gate)', () => {
+    const doc = cloneDocument(basePhrasebookDocument());
+    doc.phrasebook.find((record) => record.id === 'phrase-001')!.simplifiedStatus =
+      'generated';
+    const eligible = loadEligiblePhrasebook(writeTemp('phrasebook', doc));
+    expect(eligible.phrases.map((phrase) => phrase.id)).not.toContain('phrase-001');
+    expect(eligible.phrases).toHaveLength(5);
+  });
+
+  it('keeps a dialog eligible only when reviewed AND every present turn form is authored/verified', () => {
+    const base = cloneDocument(baseDialogDocument());
+
+    // Promote every dialog to reviewed: all present turn forms are already
+    // authored/verified, so all 6 become eligible in source order.
+    const reviewed = cloneDocument(base);
+    for (const dialog of reviewed.phrasebookDialogs) {
+      dialog.reviewStatus = 'reviewed';
+    }
+    expect(
+      loadEligiblePhrasebook(undefined, writeTemp('phrasebookDialogs', reviewed)).dialogs.map(
+        (dialog) => dialog.id,
+      ),
+    ).toEqual([
+      'dialog-transport-001',
+      'dialog-airport-001',
+      'dialog-food-001',
+      'dialog-shopping-001',
+      'dialog-hotel-001',
+      'dialog-emergency-001',
+    ]);
+
+    // A reviewed dialog with one generated traditional turn form → ineligible.
+    const generatedTurn = cloneDocument(base);
+    for (const dialog of generatedTurn.phrasebookDialogs) {
+      dialog.reviewStatus = 'reviewed';
+    }
+    (
+      generatedTurn.phrasebookDialogs.find(
+        (dialog) => dialog.id === 'dialog-airport-001',
+      )!.turns as { traditionalStatus: string }[]
+    )[0].traditionalStatus = 'generated';
+    const eligible = loadEligiblePhrasebook(
+      undefined,
+      writeTemp('phrasebookDialogs', generatedTurn),
+    );
+    expect(eligible.dialogs.map((dialog) => dialog.id)).not.toContain(
+      'dialog-airport-001',
+    );
+    expect(eligible.dialogs).toHaveLength(5);
+  });
+
+  it('keeps a reviewed dialog eligible when a turn legitimately has no Simplified form', () => {
+    // dialog-transport-001 turn[1] has no Simplified form; once reviewed it is
+    // eligible because every PRESENT form is authored/verified.
+    const doc = cloneDocument(baseDialogDocument());
+    for (const dialog of doc.phrasebookDialogs) {
+      dialog.reviewStatus = 'reviewed';
+    }
+    const dialogs = loadEligiblePhrasebook(
+      undefined,
+      writeTemp('phrasebookDialogs', doc),
+    ).dialogs;
+    expect(dialogs.find((dialog) => dialog.id === 'dialog-transport-001')).toBeDefined();
+    expect(dialogs.every(isPhrasebookDialogProductionEligible)).toBe(true);
+  });
+});
+
+// ─── Route: SSR surface (fresh build, fail-closed) ────────────────────────────
+
+describe('/phrasebook/ — SSR route surface (Issue #236, fail-closed)', () => {
   beforeAll(() => {
     execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
       cwd: REPO_ROOT,
@@ -395,59 +560,71 @@ describe('/phrasebook/ — SSR route surface (Issue #236)', () => {
     expect(existsSync(BUILT_ROUTE)).toBe(true);
     expect(routeSource).toContain('<h1>台湾旅行フレーズ集</h1>');
     expect(builtHtml).toContain('台湾旅行フレーズ集');
-    // The route loads through the loader (multiline import in source), never
-    // reading the data file directly.
+    // The route loads through the full loader (for truthful pending counts) and
+    // the eligible loader (for content), never reading the data files directly.
     expect(routeSource).toContain("from '../../content/loadPhrasebook'");
     expect(routeSource).toContain('groupPhrasebookByScenario');
+    expect(routeSource).toContain('loadEligiblePhrasebook');
     expect(routeSource).not.toMatch(
       /readFileSync|data\/examples\/valid\/phrasebook/,
     );
   });
 
-  it('server-renders all 30 phrases and all 6 dialogs (no pending state, no gate)', () => {
+  it('renders exactly 6 eligible entries (airport 5 + food 1) with no dialogs and a pending notice', () => {
     const entryCount = builtHtml.match(/data-phrasebook-entry/g)?.length ?? 0;
     const dialogCount = builtHtml.match(/data-phrasebook-dialog(?!-turn)/g)?.length ?? 0;
     const turnCount = builtHtml.match(/data-phrasebook-dialog-turn/g)?.length ?? 0;
-    expect(entryCount).toBe(30);
-    expect(dialogCount).toBe(6);
-    expect(turnCount).toBe(36);
-    // Unlike kanji-bridge, the phrasebook surface has NO pending state.
-    expect(builtHtml).not.toMatch(/data-phrasebook-pending/);
-    expect(builtHtml).not.toContain('現在、内容の確認・レビューを進めています');
-    // Known authored/verified phrase text is rendered.
+    expect(entryCount).toBe(6);
+    expect(dialogCount).toBe(0);
+    expect(turnCount).toBe(0);
+    // Eligible reviewed phrase text is rendered.
     expect(builtHtml).toContain('我是來台灣旅遊的。');
+    expect(builtHtml).toContain('我要一杯珍珠奶茶');
   });
 
-  it('renders scenario sections in the controlled order (airport … emergency)', () => {
+  it('shows a truthful pending/under-review notice for the rest with real counts', () => {
+    // The pending notice states the review in progress and the exact remaining
+    // counts (24 phrases + 6 dialogs) derived from the loader.
+    expect(builtHtml).toContain('data-phrasebook-pending');
+    expect(builtHtml).toContain('このコンテンツは現在、内容の確認・レビューを進めています');
+    expect(builtHtml).toContain('残り24件のフレーズと6件の会話');
+    expect(routeSource).toMatch(
+      /class="phrasebook-pending"[\s\S]*?role="status"[\s\S]*?data-phrasebook-pending/,
+    );
+  });
+
+  it('leaks no draft phrase or dialog text into learner-facing HTML', () => {
+    for (const draftText of DRAFT_PHRASE_TEXTS) {
+      expect(builtHtml).not.toContain(draftText);
+    }
+    // A dialog-only draft line (dialog-airport-001 turn) must not appear.
+    expect(builtHtml).not.toContain('你來台灣做什麼？');
+    // No draft review-status label may reach the learner surface.
+    expect(builtHtml).not.toContain('未レビュー');
+    // No dialog affordance renders while all dialogs are pending.
+    expect(builtHtml).not.toContain('関連フレーズ：');
+    expect(builtHtml).not.toContain('data-phrasebook-dialog-turn');
+  });
+
+  it('renders only the eligible scenario sections in controlled order (airport, food)', () => {
     const scenarioTags = [
       ...builtHtml.matchAll(/data-scenario="([^"]+)"/g),
     ].map((match) => match[1]);
-    expect(scenarioTags).toEqual([...PHRASEBOOK_SCENARIOS]);
+    expect(scenarioTags).toEqual(['airport', 'food']);
 
-    // The scenario headings appear in the same controlled order. The built
-    // HTML carries a scoped-style data-astro-cid attribute on the heading, so
-    // capture the label text through the attribute to assert order by label.
     const headingRe =
-      /phrasebook-scenario__heading"[^>]*>(空港|交通|食事|買い物|ホテル|緊急時)<\/h2>/g;
+      /phrasebook-scenario__heading"[^>]*>(空港|食事)<\/h2>/g;
     const headingLabels = [...builtHtml.matchAll(headingRe)].map(
       (match) => match[1],
     );
-    expect(headingLabels).toEqual(['空港', '交通', '食事', '買い物', 'ホテル', '緊急時']);
+    expect(headingLabels).toEqual(['空港', '食事']);
   });
 
-  it('renders truthful provenance/status labels for reviewed and draft records', () => {
-    // Reviewed records show the reviewed provenance (phrase-airport-001 has a
-    // source and is reviewed; phrase-001 too).
+  it('renders truthful reviewed provenance and never a draft label', () => {
+    // Every eligible record is reviewed with a source record → the truthful
+    // reviewed provenance renders; draft records render nothing.
     expect(builtHtml).toContain('学習用データ（レビュー済み）');
-    // Draft records show the draft review label.
-    expect(builtHtml).toContain('学習用データ（未レビュー）');
-  });
-
-  it('renders dialog turns with related-phrase references resolved on-page', () => {
-    // Related-phrase references render the actual referenced phrase text.
-    expect(builtHtml).toContain('関連フレーズ：');
-    // dialog-airport-001 references phrase-airport-004 (請問機場捷運在哪裡？).
-    expect(builtHtml).toContain('請問機場捷運在哪裡？');
+    expect(builtHtml).not.toContain('学習用データ（未レビュー）');
   });
 
   it('includes the Header in the header slot with the global script-preference select', () => {
@@ -470,6 +647,8 @@ describe('/phrasebook/ — SSR route surface (Issue #236)', () => {
     expect(routeSource).toMatch(/data-scenario-count[\s\S]*?role="status"/);
     expect(routeSource).toContain('data-phrasebook-no-match');
     expect(routeSource).toContain('該当する場面がありません。');
+    // The SSR default count reflects the 6 eligible entries.
+    expect(builtHtml).toContain('全6件');
   });
 
   it('initializes the interactive clients when the scenario list is present', () => {
@@ -479,16 +658,18 @@ describe('/phrasebook/ — SSR route surface (Issue #236)', () => {
     expect(routeSource).toContain('initPhrasebookScenarioFilter()');
     expect(routeSource).toContain('initPhrasebookScriptPreference()');
     expect(filterClientSource).toContain('location.search');
+    expect(filterClientSource).toContain('[data-phrasebook-entry]');
     expect(scriptClientSource).toContain('SCRIPT_PREFERENCE_EVENT');
   });
 
-  it('carries per-field script provenance and lang on headwords and dialog turns', () => {
-    // 30 phrase headwords + 36 dialog turns (related references are plain text).
-    // The exact attribute name is matched (`=` suffix) so the
+  it('carries per-field script provenance and lang on eligible headwords only', () => {
+    // 6 eligible phrase headwords carry the script-provenance host contract
+    // (no dialog turns render while all dialogs are pending). The exact
+    // attribute name is matched (`=` suffix) so the
     // data-script-path-default-status attribute is not counted.
     const entryCount =
       builtHtml.match(/data-script-path-default="/g)?.length ?? 0;
-    expect(entryCount).toBe(66);
+    expect(entryCount).toBe(6);
     expect(componentSource).toContain('data-script-annotation-host');
     expect(componentSource).toContain('data-script-simplified');
     expect(componentSource).toContain('data-script-simplified-status');

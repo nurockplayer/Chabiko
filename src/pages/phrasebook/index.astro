@@ -3,16 +3,30 @@ import Header from '../../components/Header.astro';
 import PhrasebookScenario from '../../components/PhrasebookScenario.astro';
 import {
   groupPhrasebookByScenario,
+  loadEligiblePhrasebook,
   loadPhrasebook,
 } from '../../content/loadPhrasebook';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// First-release phrasebook surface (#236): there is NO production-eligibility
-// gate and NO pending state. Every phrase/dialog script form in the frozen
-// corpus is authored/verified, so the route server-renders all 30 phrases and
-// all 6 dialogs in the controlled scenario order, with each record's
-// reviewStatus/provenance shown truthfully as a status label.
-const scenarioGroups = groupPhrasebookByScenario(loadPhrasebook());
+// Fail-closed first-release phrasebook surface (#236, #349 kanji-bridge
+// precedent): the route shows learners ONLY records whose record-level
+// reviewStatus is reviewed/published AND whose script forms are independently
+// authored/verified. The full loader still deterministically validates the
+// COMPLETE canonical corpus (exactly 30 phrases + 6 dialogs, controlled
+// scenario order, same-scenario references) as the authoring/validation
+// contract — unchanged. The learner surface renders the eligible subset and a
+// truthful pending/under-review state for the rest (never leaking draft text).
+const full = loadPhrasebook();
+const eligible = loadEligiblePhrasebook();
+const pendingPhraseCount = full.phrases.length - eligible.phrases.length;
+const pendingDialogCount = full.dialogs.length - eligible.dialogs.length;
+const eligibleEntryCount = eligible.phrases.length;
+// Only scenarios with eligible content render; transport/shopping/hotel/
+// emergency currently have none, so the route leaves them to the no-match
+// state of the scenario filter.
+const scenarioGroups = groupPhrasebookByScenario(eligible).filter(
+  (group) => group.phrases.length > 0 || group.dialog !== null,
+);
 ---
 
 <BaseLayout
@@ -28,6 +42,21 @@ const scenarioGroups = groupPhrasebookByScenario(loadPhrasebook());
     <p class="phrasebook-page__subtitle" lang="ja">
       旅行で使える中国語フレーズと会話を場面ごとに確認できます。基本は繁体字で表示します。
     </p>
+
+    {
+      pendingPhraseCount + pendingDialogCount > 0 && (
+        <div
+          class="phrasebook-pending"
+          lang="ja"
+          role="status"
+          data-phrasebook-pending
+        >
+          <p>
+            このコンテンツは現在、内容の確認・レビューを進めています。レビュー済みのフレーズ{eligibleEntryCount}件を確認できます。残り{pendingPhraseCount}件のフレーズと{pendingDialogCount}件の会話は、レビューが完了し公開の準備が整い次第、ここで確認できるようになります。
+          </p>
+        </div>
+      )
+    }
 
     <div class="phrasebook-toolbar" data-phrasebook-toolbar>
       <label class="phrasebook-toolbar__label" for="phrasebook-scenario-filter">
@@ -53,7 +82,7 @@ const scenarioGroups = groupPhrasebookByScenario(loadPhrasebook());
         class="phrasebook-toolbar__count"
         data-scenario-count
         role="status"
-      >全{scenarioGroups.length}件</p>
+      >全{eligibleEntryCount}件</p>
       <p class="phrasebook-toolbar__no-match" data-phrasebook-no-match hidden>
         該当する場面がありません。
       </p>
@@ -77,8 +106,8 @@ const scenarioGroups = groupPhrasebookByScenario(loadPhrasebook());
   import { initPhrasebookScenarioFilter } from '../../client/phrasebookScenarioFilter';
   import { initPhrasebookScriptPreference } from '../../client/phrasebookScriptPreference';
 
-  // The full surface is always present (no pending state), but only bind the
-  // interactive clients when the scenario list is rendered.
+  // The eligible surface is present, so bind the interactive clients to the
+  // rendered scenario list (the pending state alone binds nothing).
   if (document.querySelector('[data-phrasebook-list]')) {
     initPhrasebookScenarioFilter();
     initPhrasebookScriptPreference();
@@ -103,6 +132,18 @@ const scenarioGroups = groupPhrasebookByScenario(loadPhrasebook());
     margin: 0 0 var(--space-xl);
     color: var(--c-text-secondary);
     overflow-wrap: anywhere;
+  }
+
+  .phrasebook-pending {
+    margin: 0 0 var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-pending p {
+    margin: 0;
   }
 
   .phrasebook-toolbar {

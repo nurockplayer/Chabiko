@@ -51,8 +51,12 @@ let active: ActiveBinding | null = null;
  *   refresh re-applies the filter) and writes the query only via
  *   `history.replaceState` on a learner selection. Never reads or writes
  *   localStorage/sessionStorage and never touches the network.
- * - Missing/unknown/empty/repeated values show all scenario groups in
- *   controlled order; a controlled value filters to that scenario's section.
+ * - The surface is fail-closed: only scenarios with eligible learner-visible
+ *   content render. Missing/unknown/empty/repeated values show every rendered
+ *   scenario group in controlled order; a controlled value filters to that
+ *   scenario's section. The count always reflects ELIGIBLE phrase entries (a
+ *   scenario with no eligible content contributes 0 and shows the no-match
+ *   state), never a count that implies completeness.
  * - The native reset link navigates to the base route, removing the query.
  * - Re-initialization tears down the previous binding, so change listeners are
  *   never duplicated.
@@ -75,16 +79,21 @@ export function initPhrasebookScenarioFilter(
     '[data-phrasebook-no-match]',
   );
 
+  /** Eligible phrase entries inside one scenario group. */
+  function entriesIn(group: HTMLElement): number {
+    return group.querySelectorAll('[data-phrasebook-entry]').length;
+  }
+
   function applyFilter(filter: PhrasebookFilterValue): void {
     let visibleCount = 0;
     for (const group of groups) {
       const matches = filter === 'all' || group.dataset.scenario === filter;
       group.hidden = !matches;
-      if (matches) visibleCount += 1;
+      if (matches) visibleCount += entriesIn(group);
     }
     if (countElement !== null) {
       countElement.textContent =
-        filter === 'all' ? `全${groups.length}件` : `${visibleCount}件`;
+        filter === 'all' ? `全${visibleCount}件` : `${visibleCount}件`;
     }
     if (noMatchElement !== null) {
       noMatchElement.hidden = visibleCount > 0;

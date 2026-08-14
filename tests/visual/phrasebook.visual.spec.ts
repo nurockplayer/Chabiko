@@ -113,19 +113,19 @@ async function assertCaptureContract(
   expect([...externalRequests]).toEqual([]);
 }
 
-test.describe('/phrasebook/ visual baselines (full first-release surface)', () => {
+test.describe('/phrasebook/ visual baselines (eligible surface + pending notice)', () => {
   for (const visualCase of PHRASEBOOK_VISUAL_CASES) {
     test(`${visualCase.snapshotName}`, async ({ page }) => {
       await page.setViewportSize(visualCase.viewport);
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       const externalRequests = await openPhrasebook(page, visualCase.search);
 
-      // The complete first-release surface renders: all 30 phrases, all 6
-      // dialogs, all 36 turns — no pending state and no eligibility gate.
-      await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(30);
-      await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(6);
-      await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(36);
-      await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(0);
+      // The fail-closed surface renders: 6 eligible entries, no dialogs, and
+      // the truthful pending notice for the rest.
+      await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(6);
+      await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(0);
+      await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(0);
+      await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(1);
 
       await assertCaptureContract(page, visualCase.viewport, externalRequests);
       await expect(page).toHaveScreenshot(visualCase.snapshotName, {
@@ -146,20 +146,22 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     );
 
   for (const viewport of VIEWPORTS) {
-    test(`toolbar + first scenario fully inside the ${viewport.width}px viewport`, async ({
+    test(`pending notice + toolbar + first scenario inside the ${viewport.width}px viewport`, async ({
       page,
     }) => {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       const externalRequests = await openPhrasebook(page, '');
 
-      // The header, the filter toolbar, and the first scenario's heading are
-      // all horizontally contained (no horizontal overflow at any Issue #205
-      // viewport), including the native select and the count status line. The
-      // whole scenario section is intentionally taller than the viewport, so a
-      // single short heading is the horizontal-containment probe.
+      // The header, the pending notice, the filter toolbar, and the first
+      // scenario's heading are all horizontally contained (no horizontal
+      // overflow at any Issue #205 viewport), including the native select and
+      // the count status line. The whole scenario section is intentionally
+      // taller than the viewport, so a single short heading is the
+      // horizontal-containment probe.
       await assertElementsWithinViewport(page, [
         'header',
+        '[data-phrasebook-pending]',
         '[data-phrasebook-toolbar]',
         '[data-phrasebook-scenario][data-scenario="airport"] .phrasebook-scenario__heading',
       ]);
@@ -173,7 +175,7 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     });
   }
 
-  test('console: no errors for the full phrasebook surface', async ({
+  test('console: no errors for the eligible phrasebook surface', async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -185,7 +187,7 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
 
     await openPhrasebook(page, '');
-    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(30);
+    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(6);
     expect(errors).toEqual([]);
   });
 });

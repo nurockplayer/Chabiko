@@ -1,21 +1,22 @@
 // @vitest-environment happy-dom
 
 /**
- * Phrasebook script-preference client (Issue #236, absorbs #257).
+ * Phrasebook script-preference client (Issue #236, absorbs #257; fail-closed
+ * rework per the #349 kanji-bridge precedent).
  *
- * The phrasebook surface mirrors the kanji-bridge script contract: every phrase
- * headword AND every dialog turn line carries `data-script-*` provenance and is
- * an annotation host. The client reads ONLY the root dataset +
- * `SCRIPT_PREFERENCE_EVENT`, applies `selectScript` per field, sets the matching
- * `lang`, and manages the exact #251 fallback annotation — never storage, URL,
- * focus, scroll, or the scenario filter.
+ * The phrasebook surface mirrors the kanji-bridge script contract: every
+ * learner-visible phrase headword carries `data-script-*` provenance and is an
+ * annotation host. The surface is fail-closed — only production-eligible
+ * records render (currently 6 reviewed phrases: airport 5 + food 1), so the
+ * client only ever sees eligible fields. The client reads ONLY the root dataset
+ * + `SCRIPT_PREFERENCE_EVENT`, applies `selectScript` per field, sets the
+ * matching `lang`, and manages the exact #251 fallback annotation — never
+ * storage, URL, focus, scroll, or the scenario filter.
  *
- * The frozen corpus is entirely `authored` (Traditional) / `verified`
- * (Simplified), so under every preference the directly-selectable form renders
- * with the correct `lang` and no annotation, EXCEPT the one dialog turn that
- * lacks a Simplified form: under 簡体字 it keeps its path-default Traditional
- * text with `lang="zh-Hant"` and shows the exact fallback annotation once.
- * Synthetic fixtures exercise the generated/unavailable fallback branches.
+ * Every eligible field is `authored` (Traditional) / `verified` (Simplified),
+ * so under every preference the directly-selectable form renders with the
+ * correct `lang` and no annotation. Synthetic fixtures exercise the
+ * generated/unavailable fallback branches.
  */
 
 import { readFileSync } from 'node:fs';
@@ -26,29 +27,36 @@ import { initPhrasebookScriptPreference } from '../src/client/phrasebookScriptPr
 import { SCRIPT_PREFERENCE_EVENT } from '../src/client/scriptPreferenceControl';
 import { selectScript, type ScriptStatus } from '../src/domain/scriptSelection';
 import type { ScriptPreference } from '../src/lib/scriptPreference';
-import { groupPhrasebookByScenario, loadPhrasebook } from '../src/content/loadPhrasebook';
+import {
+  groupPhrasebookByScenario,
+  loadEligiblePhrasebook,
+  PHRASEBOOK_SCENARIOS,
+} from '../src/content/loadPhrasebook';
 
 const CLIENT_SOURCE = readFileSync(
   resolve(__dirname, '..', 'src/client/phrasebookScriptPreference.ts'),
   'utf8',
 );
 
-// ─── Real corpus fields (SSR contract: path-default IS the Traditional form) ──
+// ─── Eligible real-corpus fields (SSR contract: path-default IS the
+// ─── Traditional form). Only production-eligible records are learner-facing. ──
 
 interface FieldFixture {
   id: string;
-  kind: 'headword' | 'turn';
+  kind: 'headword';
   traditional: string;
   traditionalStatus: ScriptStatus;
   simplified?: string;
   simplifiedStatus?: ScriptStatus;
 }
 
-const GROUPS = groupPhrasebookByScenario(loadPhrasebook());
+const ELIGIBLE_GROUPS = groupPhrasebookByScenario(loadEligiblePhrasebook()).filter(
+  (group) => group.phrases.length > 0,
+);
 
-/** Every script field in source order: 30 phrase headwords then 36 dialog turns. */
+/** Every learner-visible script field in source order (6 eligible headwords). */
 const ALL_FIELDS: FieldFixture[] = [];
-for (const group of GROUPS) {
+for (const group of ELIGIBLE_GROUPS) {
   for (const phrase of group.phrases) {
     ALL_FIELDS.push({
       id: phrase.id,
@@ -58,18 +66,6 @@ for (const group of GROUPS) {
       simplified: phrase.simplified,
       simplifiedStatus: phrase.simplifiedStatus,
     });
-  }
-  if (group.dialog !== null) {
-    for (const [turnIndex, turn] of group.dialog.turns.entries()) {
-      ALL_FIELDS.push({
-        id: `${group.dialog.id}#turn${turnIndex}`,
-        kind: 'turn',
-        traditional: turn.traditional,
-        traditionalStatus: turn.traditionalStatus,
-        simplified: turn.simplified,
-        simplifiedStatus: turn.simplifiedStatus,
-      });
-    }
   }
 }
 
@@ -106,39 +102,31 @@ function syntheticMarkup(overrides: Omit<FieldFixture, 'kind'>): string {
   return fieldMarkup({ ...overrides, kind: 'headword' });
 }
 
-/** The full /phrasebook/ surface: scenario filter + six scenario groups, each
- *  with its phrase headwords, dialog turns, and related-phrase references. */
-function buildFullPage(): HTMLElement {
+/** The /phrasebook/ eligible surface: scenario filter + the scenario groups
+ *  that have eligible content, each with its eligible phrase headwords (no
+ *  dialogs render while all dialogs are pending). */
+function buildEligiblePage(): HTMLElement {
   const root = document.createElement('section');
   root.innerHTML =
     '<select id="phrasebook-scenario-filter" data-scenario-filter>' +
     '<option value="all">すべて</option>' +
-    GROUPS.map((group) => `<option value="${group.scenario}">${group.scenario}</option>`).join('') +
+    PHRASEBOOK_SCENARIOS.map(
+      (scenario) => `<option value="${scenario}">${scenario}</option>`,
+    ).join('') +
     '</select>' +
-    '<p data-scenario-count>全6件</p>' +
+    `<p data-scenario-count>全${ALL_FIELDS.length}件</p>` +
     '<p data-phrasebook-no-match hidden>該当する場面がありません。</p>' +
-    GROUPS.map((group) => {
-      const dialogMarkup =
-        group.dialog === null
-          ? ''
-          : group.dialog.turns
-              .map((_, turnIndex) => {
-                const field = ALL_FIELDS.find(
-                  (f) => f.id === `${group.dialog!.id}#turn${turnIndex}`,
-                )!;
-                return (
-                  fieldMarkup(field) +
-                  `<p data-phrasebook-reference>${field.traditional}</p>`
-                );
-              })
-              .join('');
-      return (
+    ELIGIBLE_GROUPS.map(
+      (group) =>
         `<section data-phrasebook-scenario data-scenario="${group.scenario}">` +
-        group.phrases.map((phrase) => fieldMarkup(ALL_FIELDS.find((f) => f.id === phrase.id)!)).join('') +
-        dialogMarkup +
-        '</section>'
-      );
-    }).join('');
+        group.phrases
+          .map((phrase) => {
+            const field = ALL_FIELDS.find((f) => f.id === phrase.id)!;
+            return `<article data-phrasebook-entry>${fieldMarkup(field)}</article>`;
+          })
+          .join('') +
+        '</section>',
+    ).join('');
   return root;
 }
 
@@ -209,30 +197,32 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
-// ─── Every field under every preference (real corpus) ──────────────────────────
+// ─── Every eligible field under every preference (real corpus) ────────────────
 
-describe('phrasebook script preference — every scenario and dialog line', () => {
-  it('covers all 66 script fields (30 headwords + 36 dialog turns)', () => {
-    expect(ALL_FIELDS).toHaveLength(66);
-    const root = buildFullPage();
+describe('phrasebook script preference — every eligible headword', () => {
+  it('covers all 6 eligible script fields (6 headwords, no dialog turns)', () => {
+    expect(ALL_FIELDS).toHaveLength(6);
+    expect(ALL_FIELDS.filter((field) => field.kind === 'headword')).toHaveLength(6);
+    const root = buildEligiblePage();
     document.body.append(root);
     init(root);
     expect(
       root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
-    ).toHaveLength(66);
+    ).toHaveLength(6);
   });
 
   it.each(PREFERENCES)(
-    'applies selectScript + matching lang + annotation to all 66 fields under %s',
+    'applies selectScript + matching lang + annotation to all 6 fields under %s',
     (preference) => {
       setPreference(preference);
-      const root = buildFullPage();
+      const root = buildEligiblePage();
       document.body.append(root);
       init(root);
 
       const fields = Array.from(
         root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
       );
+      expect(fields).toHaveLength(6);
       for (const [index, el] of fields.entries()) {
         const field = ALL_FIELDS[index];
         const r = expected(field, preference);
@@ -257,35 +247,21 @@ describe('phrasebook script preference — every scenario and dialog line', () =
     },
   );
 
-  it('falls back to path-default Traditional + the exact annotation on the one turn lacking Simplified, under 簡体字', () => {
+  it('renders no fallback annotation under 簡体字 because every eligible form is verified', () => {
     setPreference('simplified');
-    const root = buildFullPage();
+    const root = buildEligiblePage();
     document.body.append(root);
     init(root);
 
-    const annotations = fallbackAnnotations(root);
-    expect(annotations).toHaveLength(1);
-
-    const expectedIds = ALL_FIELDS.filter((field) =>
-      wantsAnnotation(field, 'simplified'),
-    ).map((field) => field.id);
-    expect(expectedIds).toHaveLength(1);
-
-    const host = annotations[0].closest('[data-script-annotation-host]');
-    expect((host as HTMLElement)?.getAttribute('data-field-id')).toBe(
-      expectedIds[0],
-    );
-    for (const annotation of annotations) {
-      expect(annotation.lang).toBe('ja');
-      expect(annotation.textContent).toBe(
-        'この表記は未収録のため、コース標準を表示しています。',
-      );
-    }
+    // All 6 eligible phrases carry authored Traditional + verified Simplified,
+    // so no field ever needs the #251 fallback annotation.
+    expect(fallbackAnnotations(root)).toHaveLength(0);
+    expect(ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified'))).toHaveLength(0);
   });
 
   it('applies the persisted root preference at init without reading storage (direct refresh)', () => {
     setPreference('simplified');
-    const root = buildFullPage();
+    const root = buildEligiblePage();
     document.body.append(root);
     const getSpy = vi.spyOn(window.localStorage, 'getItem');
 
@@ -294,40 +270,14 @@ describe('phrasebook script preference — every scenario and dialog line', () =
     const fields = Array.from(
       root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
     );
-    expect(fields).toHaveLength(66);
-    expect(fields.some((el) => el.lang === 'zh-Hans')).toBe(true);
+    expect(fields).toHaveLength(6);
+    expect(fields.every((el) => el.lang === 'zh-Hans')).toBe(true);
     expect(getSpy).not.toHaveBeenCalled();
-  });
-
-  it('never duplicates the annotation across repeated preference changes', () => {
-    setPreference('simplified');
-    const root = buildFullPage();
-    document.body.append(root);
-    init(root);
-
-    // End the sequence on 簡体字: only the one turn lacking Simplified wants an
-    // annotation, and repeated changes must never duplicate it.
-    for (const preference of ['traditional', 'simplified', 'path-default', 'simplified'] as ScriptPreference[]) {
-      changePreference(preference);
-    }
-
-    // Exactly one annotation per field that needs it, never duplicates.
-    const fields = Array.from(
-      root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
-    );
-    expect(fallbackAnnotations(root)).toHaveLength(
-      ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified')).length,
-    );
-    fields.forEach((el, index) => {
-      expect(el.querySelectorAll('.script-fallback')).toHaveLength(
-        wantsAnnotation(ALL_FIELDS[index], 'simplified') ? 1 : 0,
-      );
-    });
   });
 
   it('falls back to path-default behavior for an invalid root dataset value', () => {
     setPreference('garbage' as ScriptPreference);
-    const root = buildFullPage();
+    const root = buildEligiblePage();
     document.body.append(root);
     init(root);
 
@@ -436,8 +386,8 @@ describe('phrasebook script preference — generated / unavailable fallback', ()
 // ─── Preservation + isolation ──────────────────────────────────────────────────
 
 describe('phrasebook script preference — preserves surrounding state', () => {
-  it('does not touch the scenario filter/URL, count, order, or references', () => {
-    const root = buildFullPage();
+  it('does not touch the scenario filter/URL, count, order, or the eligible set', () => {
+    const root = buildEligiblePage();
     document.body.append(root);
     const filterCleanup = initPhrasebookScenarioFilter(root);
     init(root);
@@ -450,12 +400,14 @@ describe('phrasebook script preference — preserves surrounding state', () => {
 
     const urlBefore = window.location.search;
     const countBefore = root.querySelector('[data-scenario-count]')?.textContent;
-    const visibleBefore = Array.from(
-      root.querySelectorAll<HTMLElement>('[data-phrasebook-scenario]'),
-    ).filter((group) => !group.hidden).length;
-    const referencesBefore = Array.from(
-      root.querySelectorAll<HTMLElement>('[data-phrasebook-reference]'),
-    ).map((el) => el.textContent);
+    const visibleEntries = (): number =>
+      Array.from(
+        root.querySelectorAll<HTMLElement>('[data-phrasebook-entry]'),
+      ).filter((entry) => {
+        const group = entry.closest('[data-phrasebook-scenario]') as HTMLElement | null;
+        return group !== null && !group.hidden;
+      }).length;
+    const entriesBefore = visibleEntries();
     const orderBefore = Array.from(
       root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
     ).map((el) => el.getAttribute('data-script-path-default'));
@@ -467,17 +419,9 @@ describe('phrasebook script preference — preserves surrounding state', () => {
     expect(root.querySelector('[data-scenario-count]')?.textContent).toBe(
       countBefore,
     );
-    expect(visibleBefore).toBe(1);
-    expect(
-      Array.from(
-        root.querySelectorAll<HTMLElement>('[data-phrasebook-scenario]'),
-      ).filter((group) => !group.hidden).length,
-    ).toBe(1);
-    expect(
-      Array.from(
-        root.querySelectorAll<HTMLElement>('[data-phrasebook-reference]'),
-      ).map((el) => el.textContent),
-    ).toEqual(referencesBefore);
+    // food keeps exactly its 1 eligible entry visible through preference churn.
+    expect(entriesBefore).toBe(1);
+    expect(visibleEntries()).toBe(1);
     expect(
       Array.from(
         root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
@@ -496,7 +440,7 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
     expect(CLIENT_SOURCE).not.toMatch(/\.focus\(|\.blur\(|scrollTo|scrollIntoView/);
     expect(CLIENT_SOURCE).not.toMatch(/replaceState/);
 
-    const root = buildFullPage();
+    const root = buildEligiblePage();
     document.body.append(root);
     const writeSpy = vi.spyOn(window.localStorage, 'setItem');
     const removeSpy = vi.spyOn(window.localStorage, 'removeItem');
@@ -510,7 +454,7 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
 
   it('re-initialization tears down the previous binding (no duplicated listeners)', () => {
     const eventSpy = vi.spyOn(document, 'addEventListener');
-    const root = buildFullPage();
+    const root = buildEligiblePage();
     document.body.append(root);
 
     init(root);
@@ -526,25 +470,50 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
 
     // A single event must not double-apply.
     changePreference('simplified');
-    expect(fallbackAnnotations(root)).toHaveLength(
-      ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified')).length,
-    );
+    expect(fallbackAnnotations(root)).toHaveLength(0);
+  });
+
+  it('never duplicates the annotation across repeated preference changes', () => {
+    setPreference('simplified');
+    const root = document.createElement('section');
+    root.innerHTML = syntheticMarkup({
+      id: 'synthetic-generated-simplified',
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'generated',
+    });
+    document.body.append(root);
+    init(root);
+    expect(fallbackAnnotations(root)).toHaveLength(1);
+
+    // End the sequence on 簡体字: the one field that wants an annotation must
+    // never accumulate duplicates across repeated preference changes.
+    for (const preference of ['traditional', 'simplified', 'path-default', 'simplified'] as ScriptPreference[]) {
+      changePreference(preference);
+    }
+    expect(fallbackAnnotations(root)).toHaveLength(1);
   });
 
   it('cleanup removes the document listener', () => {
     setPreference('simplified');
-    const root = buildFullPage();
+    const root = document.createElement('section');
+    root.innerHTML = syntheticMarkup({
+      id: 'synthetic-generated-simplified',
+      traditional: '電話',
+      traditionalStatus: 'verified',
+      simplified: '电话',
+      simplifiedStatus: 'generated',
+    });
     document.body.append(root);
     init(root);
-    expect(fallbackAnnotations(root)).toHaveLength(
-      ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified')).length,
-    );
+    expect(fallbackAnnotations(root)).toHaveLength(1);
 
     lastCleanup?.();
     lastCleanup = null;
 
-    // Remove every annotation, then dispatch: the listener is gone, so the
-    // annotations are NOT re-added.
+    // Remove the annotation, then dispatch: the listener is gone, so the
+    // annotation is NOT re-added.
     for (const annotation of fallbackAnnotations(root)) annotation.remove();
     expect(fallbackAnnotations(root)).toHaveLength(0);
 

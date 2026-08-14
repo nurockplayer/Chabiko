@@ -66,18 +66,26 @@ const dialogProvenance =
     : provenanceLabel(dialog.reviewStatus, dialog.source?.type);
 
 /** Static SSR fallback annotation, shown only for a form that is not
- *  authored/verified (the frozen corpus is entirely authored/verified, so this
- *  renders nothing today; the script-preference client owns the dynamic one). */
+ *  authored/verified (the eligible surface renders only authored/verified
+ *  forms, so this renders nothing today; the script-preference client owns the
+ *  dynamic one). */
 function staticFallback(status: string): boolean {
   return status !== 'authored' && status !== 'verified';
 }
+
+// A scenario with no eligible content (the route filters these out) renders
+// nothing rather than an empty section — the fail-closed surface never implies
+// content exists where it does not.
+const hasContent = phrases.length > 0 || dialog !== null;
 ---
 
-<section
-  class="phrasebook-scenario"
-  data-phrasebook-scenario
-  data-scenario={scenario}
->
+{
+  hasContent && (
+    <section
+      class="phrasebook-scenario"
+      data-phrasebook-scenario
+      data-scenario={scenario}
+    >
   <h2 class="phrasebook-scenario__heading">{SCENARIO_LABELS[scenario]}</h2>
 
   <ol class="phrasebook-phrase-list">
@@ -183,7 +191,9 @@ function staticFallback(status: string): boolean {
       </div>
     )
   }
-</section>
+    </section>
+  )
+}
 
 <style>
   .phrasebook-scenario {

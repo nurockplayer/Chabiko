@@ -414,6 +414,71 @@ export function loadPhrasebook(
 }
 
 /**
+ * Production-eligibility gate for one phrasebook phrase (content-review
+ * contract per the #236 owner decision / #349 kanji-bridge precedent):
+ * a phrase may be shown to learners only when a human reviewer has approved
+ * its record (`reviewed`/`published`) AND its path-default (Traditional)
+ * script form is authored or verified AND, when a Simplified form is present,
+ * that form is authored or verified too. `generated`-only forms and `draft`
+ * review status are never learner-facing; they may exist in the corpus as
+ * authoring/review material awaiting the review-promotion workflow.
+ */
+export function isPhrasebookProductionEligible(
+  phrase: PhrasebookPhrase,
+): boolean {
+  return (
+    (phrase.reviewStatus === 'reviewed' || phrase.reviewStatus === 'published') &&
+    (phrase.traditionalStatus === 'authored' ||
+      phrase.traditionalStatus === 'verified') &&
+    (phrase.simplified === undefined ||
+      phrase.simplifiedStatus === 'authored' ||
+      phrase.simplifiedStatus === 'verified')
+  );
+}
+
+/**
+ * Production-eligibility gate for one phrasebook dialog (content-review
+ * contract per the #236 owner decision / #349 precedent). Script forms are
+ * per-turn: every PRESENT form of every turn must be authored or verified.
+ * `generated`-only forms and `draft` review status are never learner-facing.
+ */
+export function isPhrasebookDialogProductionEligible(
+  dialog: PhrasebookDialog,
+): boolean {
+  if (dialog.reviewStatus !== 'reviewed' && dialog.reviewStatus !== 'published') {
+    return false;
+  }
+  return dialog.turns.every(
+    (turn) =>
+      (turn.traditionalStatus === 'authored' ||
+        turn.traditionalStatus === 'verified') &&
+      (turn.simplified === undefined ||
+        turn.simplifiedStatus === 'authored' ||
+        turn.simplifiedStatus === 'verified'),
+  );
+}
+
+/**
+ * The deterministic, source-order-preserving eligible subset for the learner
+ * route at `/phrasebook/`. Fails closed: records that are not human-reviewed
+ * or whose script forms are not independently authored/verified stay out of
+ * the learner surface (the route renders a truthful pending state for them).
+ * The full {@link loadPhrasebook} validation contract (exact 30 phrases + 6
+ * dialogs, controlled scenario ordering, same-scenario references, deep
+ * freeze) is unchanged — this only filters its result.
+ */
+export function loadEligiblePhrasebook(
+  phraseFilePath?: string,
+  dialogFilePath?: string,
+): PhrasebookData {
+  const data = loadPhrasebook(phraseFilePath, dialogFilePath);
+  return {
+    phrases: data.phrases.filter(isPhrasebookProductionEligible),
+    dialogs: data.dialogs.filter(isPhrasebookDialogProductionEligible),
+  };
+}
+
+/**
  * Group the loaded corpus into the six controlled scenarios in
  * {@link PHRASEBOOK_SCENARIOS} order, preserving relative source order of
  * phrases within each scenario. Each scenario carries its dialog (or `null`).
