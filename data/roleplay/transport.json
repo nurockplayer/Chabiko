@@ -45,6 +45,68 @@
         }
       ],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "roleplay-transport-001",
+      "scenario": "transport",
+      "titleJa": "切符を買って台北駅へ",
+      "goalJa": "行き先を伝え、切符の枚数を頼み、降りる駅を確認できる",
+      "guidanceJa": "行き先を駅員に伝え、切符を買い、降りる駅を確認する練習です。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-004"],
+      "phraseRefs": ["phrase-002", "phrase-transport-002", "phrase-transport-003", "phrase-transport-004"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "我要去台北車站。",
+          "traditionalStatus": "authored",
+          "simplified": "我要去台北车站。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ yào qù Táiběi chēzhàn",
+          "japanese": "台北駅に行きたいです。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，前面就有捷運站，坐捷運很方便。到了以後，去售票口買票就可以了。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, qiánmiàn jiù yǒu jiéyùnzhàn, zuò jiéyùn hěn fāngbiàn. dào le yǐhòu, qù shòupiàokǒu mǎi piào jiù kěyǐ le",
+          "japanese": "はい、この先にMRTの駅がありますよ。MRTなら便利です。駅に着いたら、切符売り場で切符を買ってください。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我要買兩張票。",
+          "traditionalStatus": "authored",
+          "simplified": "我要买两张票。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ yào mǎi liǎng zhāng piào",
+          "japanese": "切符を2枚買いたいです。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，兩張票。謝謝。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, liǎng zhāng piào. xièxie",
+          "japanese": "はい、2枚ですね。ありがとうございます。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "請問在哪裡下車？",
+          "traditionalStatus": "authored",
+          "simplified": "请问在哪里下车？",
+          "simplifiedStatus": "verified",
+          "pinyin": "qǐngwèn zài nǎlǐ xiàchē?",
+          "japanese": "すみません、どこで降りればいいですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "在台北車站站下車，出站以後跟著指標走就到了。",
+          "traditionalStatus": "authored",
+          "pinyin": "zài Táiběi chēzhàn xiàchē, chū zhàn yǐhòu gēnzhe zhǐbiāo zǒu jiù dào le",
+          "japanese": "台北駅で降りてください。駅を出たら、案内板に従って進むと着きますよ。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan transport roleplay content; no third-party text copied"}
     }
   ]
 }
