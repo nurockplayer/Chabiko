@@ -61,7 +61,7 @@
     {
       "id": "phrasebook-v1",
       "path": "data/examples/valid/phrasebook.json",
-      "sha256": "eddc18c4e441ccf1cf0f6b3a627c2fec3876fa9c0caa395fd553ee264abeb1bd",
+      "sha256": "59939e1e142d15a976deba8cc79da2a874187d8429e1ff743fd97f9a5651ed4d",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
