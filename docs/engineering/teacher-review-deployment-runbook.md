@@ -140,6 +140,8 @@ Cloudflare dashboard → **Workers & Pages → chabiko → Settings → Bindings
 - `/teacher-review/api/export` 只有在 **36/36 current-version records 都有真人 decision** 時才可匯出；未完成時 API fail-closed 回 409，UI 不顯示可點擊的 export link。
 - 完成只代表 review entry complete，不等於 PASS。任一 `needs_changes` 仍產出 `needs-changes` artifact 並列出 blocked content。
 - export 是 repository-standard artifact **bundle**：同一位指定真人 reviewer 的每個 §5 role 各有一個獨立 artifact section，以符合 `content-review-workflow.md`「一人可擔任多角色，但每個 role findings 必須分別記錄」的契約。
+- **Review date 由最後一筆 current-version valid human decision 的日期推導**，與 export time 無關；stale decisions 不參與；重複 export 不會改變 Review date；未完成 entry 不會借用 export 時間戳偽裝成 review date。Artifact 另記錄 `Artifact generated at`（產生時間，非 review date）。
+- teacher 端 evidence：payload 會明確顯示 source 缺失（「出典情報なし」）、pain-point tags（「注意ポイント」）與繁／簡體各自的 script provenance；這些都是讓對應 human reviewer role 能真正判斷的 human-readable evidence，不做 silent omission。
 - export 不會寫 GitHub、content、`reviewStatus` 或 provenance。
 
 ## 7. 本地驗證

@@ -65,16 +65,15 @@ function statusLabel(status: FormStatus | undefined): string | null {
 }
 
 function sourceContext(source: ReviewSourceInput | undefined): string[] {
-  if (!source) return [];
-  const items: string[] = [];
-  if (source.note?.trim()) {
-    items.push(`出典メモ: ${source.note.trim()}`);
-  } else {
-    // Preserve the fact that source context exists without exposing the raw
-    // source-type enum to the teacher-facing payload.
-    items.push('出典情報あり（詳細はリポジトリ側で管理）');
+  // Missing source evidence must be explicit, never a silent omission: the
+  // human-source-reviewer needs to know a record carries no source record.
+  if (!source) {
+    return ['出典情報なし（要確認）'];
   }
-  return items;
+  if (source.note?.trim()) {
+    return [`出典メモ: ${source.note.trim()}`];
+  }
+  return ['出典情報あり（詳細はリポジトリ側で管理）'];
 }
 
 function turnToTeacher(turn: TurnReviewContent): TeacherFacingTurn {
@@ -87,9 +86,47 @@ function turnToTeacher(turn: TurnReviewContent): TeacherFacingTurn {
   };
 }
 
-function provenanceContext(statuses: readonly (FormStatus | undefined)[]): string[] {
-  const labels = [...new Set(statuses.map(statusLabel).filter((value): value is string => value !== null))];
-  return labels.length > 0 ? [`表記の確認情報: ${labels.join('・')}`] : [];
+/** Per-form provenance for a phrase: the teacher must see which label maps to
+ * Traditional vs Simplified, not a merged enum list. */
+function phraseProvenanceContext(
+  traditionalStatus: FormStatus | undefined,
+  simplifiedStatus: FormStatus | undefined,
+): string[] {
+  const items: string[] = [];
+  if (traditionalStatus) {
+    items.push(`繁体字の表記: ${statusLabel(traditionalStatus)}`);
+  }
+  if (simplifiedStatus) {
+    items.push(`簡体字の表記: ${statusLabel(simplifiedStatus)}`);
+  }
+  return items;
+}
+
+/** Conversation-level provenance: exposes whether any turn still carries a
+ * `generated` (review-pending) form, so the script-verifier can judge the
+ * whole exchange rather than an anonymized union. */
+function turnsProvenanceContext(
+  turns: readonly TurnReviewContent[],
+): string[] {
+  const generatedCount = turns.filter(
+    (turn) =>
+      turn.traditionalStatus === 'generated' ||
+      turn.simplifiedStatus === 'generated',
+  ).length;
+  if (generatedCount > 0) {
+    return [
+      `表記の確認情報: ${generatedCount} 発言に自動生成後の確認対象（generated）が含まれます`,
+    ];
+  }
+  return ['表記の確認情報: 全発言の表記が人が作成・確認済みです'];
+}
+
+/** Pain-point tags are review-relevant teaching metadata; present them
+ * explicitly so the human-teaching-reviewer can judge the teaching-accuracy
+ * scope (no silent omission). */
+function painPointContext(tags: readonly string[] | undefined): string[] {
+  if (!tags || tags.length === 0) return [];
+  return [`注意ポイント: ${tags.join('・')}`];
 }
 
 export function toTeacherFacingReviewContent(
@@ -104,10 +141,11 @@ export function toTeacherFacingReviewContent(
       japanese: content.japanese,
       usageNotesJa: content.usageNotesJa,
       reviewContext: [
-        ...provenanceContext([
+        ...phraseProvenanceContext(
           content.traditionalStatus,
           content.simplifiedStatus,
-        ]),
+        ),
+        ...painPointContext(content.painPointTags),
         ...sourceContext(content.source),
       ],
     };
@@ -118,12 +156,7 @@ export function toTeacherFacingReviewContent(
     return {
       turns: content.turns.map(turnToTeacher),
       reviewContext: [
-        ...provenanceContext(
-          content.turns.flatMap((turn) => [
-            turn.traditionalStatus,
-            turn.simplifiedStatus,
-          ]),
-        ),
+        ...turnsProvenanceContext(content.turns),
         ...sourceContext(content.source),
       ],
     };
@@ -136,12 +169,7 @@ export function toTeacherFacingReviewContent(
     guidanceJa: content.guidanceJa,
     lines: content.lines.map(turnToTeacher),
     reviewContext: [
-      ...provenanceContext(
-        content.lines.flatMap((turn) => [
-          turn.traditionalStatus,
-          turn.simplifiedStatus,
-        ]),
-      ),
+      ...turnsProvenanceContext(content.lines),
       ...sourceContext(content.source),
     ],
   };

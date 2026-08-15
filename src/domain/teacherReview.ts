@@ -634,9 +634,29 @@ export function summarizeReviewArtifact(
   };
 }
 
+/** Latest updatedAt date among all current-version valid human decisions.
+ * Stale decisions (fingerprint mismatch) and decisions from other campaigns
+ * never contribute. Returns null when no decision is valid — the artifact must
+ * then never claim a human review completion date. */
+function reviewCompletionDate(
+  decisions: readonly DecisionRecord[],
+  records: readonly CampaignRecord[],
+): string | null {
+  let latest: string | null = null;
+  for (const record of records) {
+    const valid = decisions.find((d) => isDecisionValidForRecord(d, record));
+    if (!valid) continue;
+    if (latest === null || valid.updatedAt > latest) latest = valid.updatedAt;
+  }
+  return latest === null ? null : latest.slice(0, 10);
+}
+
 /** Build the repository-standard human-review artifact (markdown). Follows the
  * required fields of docs/content/content-review-workflow.md §3.1/§3.3 and
- * never equates entry completion with PASS. */
+ * never equates entry completion with PASS. The Review date is derived from
+ * the current-version valid human decisions (the latest decision's date), NOT
+ * from the export time — re-exporting later must not change it, and an
+ * incomplete entry must never borrow the export timestamp. */
 export function buildReviewArtifact(params: ReviewArtifactParams): string {
   const summary = summarizeReviewArtifact(params);
   const byRecord = new Map<string, DecisionRecord>();
@@ -644,6 +664,8 @@ export function buildReviewArtifact(params: ReviewArtifactParams): string {
     const valid = params.decisions.find((d) => isDecisionValidForRecord(d, record));
     if (valid) byRecord.set(record.id, valid);
   }
+
+  const reviewDate = reviewCompletionDate(params.decisions, params.records);
 
   const distinctReviewers = [
     ...new Map(
@@ -696,7 +718,8 @@ export function buildReviewArtifact(params: ReviewArtifactParams): string {
     `**Campaign:** ${params.campaignId}`,
     `**Reviewer identity:** ${distinctReviewers || 'No decisions recorded yet.'}`,
     `**Reviewer role:** ${params.reviewerRole}`,
-    `**Review date:** ${params.generatedAt.slice(0, 10)}`,
+    `**Review date:** ${reviewDate ?? '（未完成 — 尚無完成的人類 review 日期）'}`,
+    `**Artifact generated at:** ${params.generatedAt}`,
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** per-record semantic fingerprints (see below)`,
     `**Overall review outcome:** ${outcomeLabel[summary.overallOutcome]}`,

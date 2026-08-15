@@ -32,6 +32,7 @@ function makeDecision(
   record: CampaignRecord,
   outcome: DecisionRecord['outcome'],
   note = '',
+  overrides: Partial<DecisionRecord> = {},
 ): DecisionRecord {
   return {
     campaignId: 'issue-360-launch-v1',
@@ -44,6 +45,7 @@ function makeDecision(
     reviewerName: 'Teacher Reviewer',
     reviewerRole: TEACHER_REVIEW_ROLE,
     updatedAt: '2026-08-15T00:00:00.000Z',
+    ...overrides,
   };
 }
 
@@ -157,5 +159,69 @@ describe('buildReviewArtifact', () => {
     // The exporter is irrelevant; the artifact carries the reviewer who decided.
     expect(artifact).toContain('Teacher Reviewer <teacher@example.com>');
     expect(artifact).toContain(`**Review entry:** Incomplete`);
+  });
+});
+
+describe('Review date (Issue #363 Finding 2)', () => {
+  it('derives the review date from the latest valid human decision, not the export time', async () => {
+    const records = await loadRecords();
+    const decisions = records.map((record, index) =>
+      makeDecision(record, 'accepted', '', {
+        updatedAt: `2026-08-${String(10 + (index % 5)).padStart(2, '0')}T12:00:00.000Z`,
+      }),
+    );
+    // Export is performed several days later; the date must still be the
+    // review completion date (the latest decision), not the export timestamp.
+    const artifact = buildReviewArtifact(
+      params(records, decisions, '2026-09-01T08:00:00.000Z'),
+    );
+    expect(artifact).toContain('**Review date:** 2026-08-14');
+    expect(artifact).toContain('**Artifact generated at:** 2026-09-01T08:00:00.000Z');
+  });
+
+  it('is stable across repeated exports (export time never changes it)', async () => {
+    const records = await loadRecords();
+    const decisions = records.map((record) =>
+      makeDecision(record, 'accepted', '', { updatedAt: '2026-08-20T09:30:00.000Z' }),
+    );
+    const first = buildReviewArtifact(params(records, decisions, '2026-08-21T10:00:00.000Z'));
+    const later = buildReviewArtifact(params(records, decisions, '2026-08-25T10:00:00.000Z'));
+    const dateOf = (artifact: string) =>
+      artifact.match(/\*\*Review date:\*\* ([^\n]+)/)?.[1];
+    expect(dateOf(first)).toBe('2026-08-20');
+    expect(dateOf(later)).toBe('2026-08-20');
+  });
+
+  it('does not borrow the export timestamp as a human review date when incomplete', async () => {
+    const records = await loadRecords();
+
+    // No human decisions at all → no human review date exists.
+    const empty = buildReviewArtifact(
+      params(records, [], '2026-08-30T10:00:00.000Z'),
+    );
+    expect(empty).toContain('**Review date:** （未完成 — 尚無完成的人類 review 日期）');
+    expect(empty).not.toContain('**Review date:** 2026-08-30');
+
+    // Partial entry → the date is the latest valid decision date, never the
+    // export timestamp.
+    const partial = buildReviewArtifact(
+      params(records, [makeDecision(records[0], 'accepted')], '2026-08-30T10:00:00.000Z'),
+    );
+    expect(partial).toContain('**Review date:** 2026-08-15');
+    expect(partial).not.toContain('**Review date:** 2026-08-30');
+  });
+
+  it('excludes stale decisions when deriving the review date', async () => {
+    const records = await loadRecords();
+    const fresh = records.map((record, index) =>
+      index === 0
+        ? makeDecision(record, 'accepted', '', { updatedAt: '2026-08-10T00:00:00.000Z' })
+        : makeDecision(record, 'accepted', '', { updatedAt: '2026-08-18T00:00:00.000Z' }),
+    );
+    // A stale decision dated later must not move the completion date.
+    const stale = { ...fresh[0], fingerprint: 'old-fingerprint', updatedAt: '2026-08-25T00:00:00.000Z' };
+    const artifact = buildReviewArtifact(params(records, [stale, ...fresh.slice(1)]));
+    expect(artifact).toContain('**Review date:** 2026-08-18');
+    expect(artifact).not.toContain('**Review date:** 2026-08-25');
   });
 });
