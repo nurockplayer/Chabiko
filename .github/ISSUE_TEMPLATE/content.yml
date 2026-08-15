@@ -5,6 +5,14 @@ labels:
   - type:content
 body:
   - type: textarea
+    id: japanese-summary
+    attributes:
+      label: Optional Japanese summary
+      description: Optional team-facing summary. The English technical fields below remain canonical.
+      placeholder: "日本語での短い要約（任意）"
+    validations:
+      required: false
+  - type: textarea
     id: goal
     attributes:
       label: Goal and completion conditions
