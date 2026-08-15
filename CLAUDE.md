@@ -2,97 +2,99 @@
 
 @~/.claude/CLAUDE.md
 
-本檔只定義 Claude Code 專屬行為。
+This file defines Claude Code-specific behavior only.
 
-所有 repo 共用的開發、scope、git、package manager、供應鏈安全、測試與回報規則，以根目錄 `AGENTS.md` 為唯一 source of truth。不得在本檔重複維護同一套規則。
+All repository-wide development, scope, Git, package-manager, supply-chain safety, validation, and reporting rules are defined canonically in root `AGENTS.md`. Do not duplicate those rules here.
 
-規則衝突時，優先順序如下：
+When rules conflict, use this precedence:
 
-1. 使用者本次明確指示
-2. 當前 GitHub issue body
+1. The user's explicit instruction for the current task
+2. The current GitHub issue body
 3. `AGENTS.md`
-4. 本檔
+4. This file
 
-## 語言
+## Language
 
-* 分析、進度回報與最終回報使用台灣正體中文。
-* 學習內容、例句、UI copy、語法說明及面向日本學習者的文案可以使用日文。
-* 目標語中文依產品路徑使用繁體或簡體。
+- Repository technical artifacts follow the English-first policy in `AGENTS.md` and `docs/engineering/repository-language-policy.md`.
+- Agent conversation, progress updates, and final chat responses may follow an explicit user's language preference; this does not change the language of committed technical artifacts.
+- Learner-facing content, examples, UI copy, grammar explanations, and other text for Japanese learners may use Japanese.
+- Target-language Chinese follows the product path's Traditional/Simplified contract.
 
-## 實作前
+## Before Implementation
 
-開始修改前必須：
+Before making changes:
 
-1. 讀取根目錄 `AGENTS.md`。
-2. 讀取當前 GitHub issue body。
-3. 確認 issue scope、acceptance criteria、依賴及允許修改範圍。
-4. 只讀取完成本次任務所需的相關程式碼、schema、validator、fixture、測試與 source of truth。
-5. 檢查工作區狀態，避免覆蓋或混入其他變更。
-6. 遵循 `AGENTS.md` 的「實作前檢查」清單（安全機制 writer 盤點、跨檔契約同步、文件化命令測試、cleanup 假設）。
-7. 判斷是否為 `AGENTS.md` 定義的 cross-cutting 變更；若是，先完成 Impact Map 再實作。
+1. Read root `AGENTS.md`.
+2. Read the current GitHub issue body.
+3. Confirm issue scope, acceptance criteria, dependencies, and allowed modification surface.
+4. Read only the code, schemas, validators, fixtures, tests, and source-of-truth material required for the task.
+5. Check working-tree state so unrelated changes are not overwritten or mixed in.
+6. Follow the `Pre-Implementation Checks` in `AGENTS.md` (safety-mechanism writers, cross-file contract synchronization, documented-command tests, cleanup assumptions).
+7. Determine whether the issue is a cross-cutting change under `AGENTS.md`; if so, complete an Impact Map before implementation.
 
-不得依賴本文件中的 implementation snapshot。當前狀態以 `main` 上的實際程式碼、測試及 GitHub issue／PR 為準。
+Do not rely on an implementation snapshot in this file. Current `main` code/tests and the current GitHub issue/PR are authoritative for live state.
 
-## 實作原則
+## Implementation Principles
 
-* 一次只處理當前 issue 明確要求的內容。
-* 優先採用最小、直接、可驗證的修改。
-* 不得順手重構、擴大 scope 或自動處理 non-blocking finding。
-* 發現 scope 外問題時，只在最終回報中簡短列為 deferred finding。
-* 不得相信 PR body、舊摘要或其他 agent 對完成狀態的宣稱，必須自行驗證。
-* 驗證層級由根目錄 `AGENTS.md` 的「驗證階梯」決定（`scripts/validation/classify.ts`），以 `pnpm validate`／`validate:affected`／`validate:integration`／`validate:full` 執行，不得自行挑測試。
+- Handle only what the current issue explicitly requires.
+- Prefer the smallest direct and verifiable change.
+- Do not opportunistically refactor, expand scope, or auto-fix non-blocking findings.
+- Report out-of-scope problems only as concise deferred findings when necessary.
+- Do not trust a PR body, old summary, or another agent's claim that work is complete; verify it independently.
+- Validation level is determined by the `Risk-Based Validation Ladder` in root `AGENTS.md` (`scripts/validation/classify.ts`) and executed through `pnpm validate`, `validate:affected`, `validate:integration`, or `validate:full`. Do not manually select a lower suite.
 
-## Subagent
+## Subagents
 
-* 普通讀檔、搜尋、實作或 routine 判斷不得啟動 subagent。
-* 同一時間不得啟動用途重疊的 subagent。
-* subagent 任務必須清楚、狹窄且有明確停止條件。
-* subagent 不得再派生其他 agent。
-* 不得讓 background agent 執行 broad repository audit。
+- Do not start a subagent for ordinary file reads, searches, implementation, or routine judgment.
+- Do not run overlapping-purpose subagents concurrently.
+- A subagent task must be narrow, explicit, and have a clear stop condition.
+- A subagent must not spawn another agent.
+- Do not assign broad repository audits to background agents.
 
-`arbiter` 只用於已明確定義的困難技術決策，不得用於一般實作、routine review 或 repository 探索。
+`arbiter` is only for a clearly defined difficult technical decision. Do not use it for routine implementation, routine review, or repository exploration.
 
 ## Model Routing
 
-Sol 是稀缺的 reasoning resource，不是高難度 ticket 的預設全程 implementer。Flash／Pro／Sol 的 role 分工、`Sol-assisted` 與 `Sol-led reasoning` 的語意及 escalation 條件，以 `AGENTS.md` 的「Model Routing / Sol Budget Gate」為唯一 canonical policy，本檔不得重複維護分歧規則。
+Sol is a scarce reasoning resource, not the default end-to-end implementer for difficult tickets. The canonical Flash/Pro/Sol role split, `Sol-assisted` / `Sol-led reasoning` meanings, and escalation conditions are defined only in `AGENTS.md` under `Model Routing / Sol Budget Gate`. Do not maintain a divergent copy here.
+
+If a current issue explicitly declares Sol unavailable and provides an alternative routing contract, follow that newer issue contract rather than stopping on an obsolete Sol reference.
 
 ## Reviewer Gate
 
-Implementation 與必要的本地驗證完成後，才可啟動獨立 `reviewer`。
+Start an independent `reviewer` only after implementation and the required local validation are complete.
 
-* 每個 implementation cycle 最多只能有一個 reviewer。
-* 一般 bounded cycle：reviewer 只審查當前 issue、acceptance criteria 與本次 staged diff。
-* reviewer 不得修改檔案、建立工作項目、派生 agent 或展開 broad repository audit。
-* non-blocking finding 只回報，不得阻止交付或自動觸發額外調查。
-* blocking finding 只做最小修正，執行受影響驗證後再審。
-* 一般 bounded cycle 的 re-review 只檢查修正後差異與先前 blocker，不重新全面探索 repository。
-* cross-cutting 變更的 final integration review（依 `AGENTS.md` 的「Cross-cutting 變更 Gate」判斷）改為完整 surface 審查：review 當前 issue、Impact Map、完整 PR diff 與相關 contract surface，並依適用性檢查 writers、consumers、stale assumptions、canonical workflow、cleanup、rights／provenance、generated output 與 negative drift 行為。此例外只適用於 cross-cutting 的 final integration review，不把 routine review 變成 broad repository audit。
-* cross-cutting 變更在 blocker 修正後的 final merge-readiness pass 仍須在最新 head 上確認完整 surface，而非只看最新 patch。
-* reviewer 明確回覆 `No blocking findings.` 後，review loop 立即停止。
+- Each implementation cycle may have at most one reviewer.
+- For an ordinary bounded cycle, the reviewer checks the current issue, acceptance criteria, and the current staged diff only.
+- A reviewer must not edit files, create work items, spawn agents, or perform a broad repository audit.
+- A non-blocking finding is reported only; it must not block delivery or automatically trigger more investigation.
+- A blocking finding receives the smallest correction, followed by affected validation and re-review.
+- Ordinary bounded-cycle re-review checks the corrected diff and prior blockers instead of re-exploring the whole repository.
+- A cross-cutting final integration review, as classified by the `Cross-Cutting Change Gate` in `AGENTS.md`, is a complete-surface review: current issue, Impact Map, full PR diff, and applicable contract surfaces including writers, consumers, stale assumptions, canonical workflows, cleanup, rights/provenance, generated output, and negative-drift behavior. This exception applies only to cross-cutting final integration review and does not turn routine review into a broad repository audit.
+- After blocking fixes in a cross-cutting change, the final merge-readiness pass must still verify the complete surface on the latest head, not only the latest patch.
+- When the reviewer explicitly returns `No blocking findings.`, stop the review loop.
 
-只有在 reviewer 回覆 `No blocking findings.`，且必要驗證通過後，才可依使用者指示 commit、push 或建立 PR。
+Only after the reviewer returns `No blocking findings.` and required validation passes may commit/push/PR/merge actions proceed when the user has authorized those actions.
 
-除非使用者明確要求，否則不得 commit、push、建立 PR、merge，或修改 GitHub issue 與 review thread。
+Unless the user explicitly asks, do not commit, push, open a PR, merge, or modify a GitHub issue/review thread.
 
-本段只定義 Claude Code 專屬的 review 執行規則。PR 的 merge eligibility、risk tiers、throughput limits、CodeRabbit advisory 語意、exact-head review、unresolved blocking-thread 檢查與 merge gate，以根目錄 `AGENTS.md` 的「Review 與 Merge 政策（並行 sub-agent 吞吐量感知）」為唯一 canonical policy，本檔不得重複維護分歧規則。implementing agent 不得作為自身 work 的唯一 reviewer。
+This section defines Claude Code-specific review execution only. PR merge eligibility, risk tiers, throughput limits, CodeRabbit advisory semantics, exact-head review, unresolved blocking-thread checks, and the merge gate are defined canonically in root `AGENTS.md` under `Review and Merge Policy (Concurrent Sub-Agent Throughput Aware)`. The implementing agent must not be the sole reviewer of its own work.
 
 ## Graphify
 
-`graphify` 只用於程式碼導航與理解。
+Use `graphify` only for code navigation and understanding.
 
-除非當前 issue 明確要求更新 knowledge graph，否則不得：
+Unless the current issue explicitly requires a knowledge-graph update, do not:
 
-* 執行 `graphify update .`
-* 修改或提交 `graphify-out/`
-* 因一般 code 或 content change 產生 graph metadata churn
+- run `graphify update .`;
+- modify or commit `graphify-out/`;
+- create graph-metadata churn for ordinary code or content changes.
 
-## 完成回報
+## Completion Report
 
-只回報：
+Report only:
 
-* 關鍵修改
-* 實際執行的驗證與結果
-* reviewer 最終結果
-* 尚未解決的 blocking 問題
-* 必要的 deferred non-blocking finding
-
+- key changes;
+- validation actually executed and results;
+- final reviewer result;
+- unresolved blocking issues;
+- any necessary deferred non-blocking finding.
