@@ -4,8 +4,9 @@
  * Returns the current #360 launch review target (sanitized for the teacher),
  * the current-version decisions, the authenticated reviewer identity, and
  * progress. Fails closed on campaign drift. The payload never exposes raw
- * fingerprints, SHAs, `reviewStatus`, or engineering-only schema; stale
- * decisions (fingerprint mismatch) are never surfaced.
+ * fingerprints, SHAs, `reviewStatus`, provenance enums, internal refs, or
+ * engineering-only schema; stale decisions (fingerprint mismatch) are never
+ * surfaced.
  */
 
 import { resolveCampaignOr500 } from './resolve-campaign';
@@ -14,11 +15,8 @@ import {
   isDecisionValidForRecord,
   type DecisionRecord,
 } from '../../../src/domain/teacherReview';
-import {
-  TEACHER_REVIEW_ROLE,
-  TEACHER_REVIEW_SCOPES,
-  isEligibleReviewer,
-} from './campaign-config';
+import { toTeacherFacingReviewContent } from '../../../src/domain/teacherReviewPublic';
+import { isEligibleReviewer } from './campaign-config';
 import { createD1TeacherReviewStore } from './d1-store';
 import { json } from './http';
 import type { TeacherReviewPagesFunction } from './types';
@@ -46,8 +44,6 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
   return json({
     campaign: {
       id: resolution.campaignId,
-      reviewerRole: TEACHER_REVIEW_ROLE,
-      scopes: [...TEACHER_REVIEW_SCOPES],
     },
     reviewer: {
       email: reviewer.email,
@@ -60,7 +56,7 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
         id: record.id,
         type: record.type,
         scenario: record.scenario,
-        content: record.content,
+        content: toTeacherFacingReviewContent(record),
         decision: decision
           ? {
               outcome: decision.outcome,
