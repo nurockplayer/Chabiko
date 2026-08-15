@@ -1,4 +1,7 @@
 ---
+import Header from '../../../components/Header.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import TrackNav from '../../../components/TrackNav.astro';
 import BasicVocabularyAccount from '../../../components/vocabulary/BasicVocabularyAccount.astro';
 import BasicVocabularySession from '../../../components/vocabulary/BasicVocabularySession.astro';
 import { buildLearnerSessionPayload, serializeLearnerSessionPayload } from '../../../content/learnerSessionPayload';
@@ -12,8 +15,27 @@ if (payload.totalCount === 0) {
 }
 ---
 
-<BaseLayout title="イラストで学ぶ基礎中国語">
+<BaseLayout title="イラストで学ぶ基礎中国語" themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
   <div class="basic-vocabulary-page">
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '先生厳選単語', href: '/vocabulary/basic/' },
+        { label: '学ぶ' },
+      ]}
+    />
+    <TrackNav
+      label="先生厳選単語"
+      items={[
+        { label: '学ぶ', href: '/vocabulary/basic/', current: true },
+        { label: '単語一覧', href: '/vocabulary/basic/words/' },
+        { label: 'テスト', href: '/vocabulary/basic/quiz/' },
+      ]}
+    />
     <h1>イラストで学ぶ基礎中国語</h1>
     <p class="basic-vocabulary-page__catalog-link-row">
       <a class="basic-vocabulary-page__catalog-link" href="/vocabulary/basic/words/">単語一覧を見る</a>

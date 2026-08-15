@@ -3,7 +3,7 @@
   "title": "Chabiko Design Token Contract",
   "description": "Production semantic tokens from BaseLayout.astro — PR #165, commit 04759286 on main",
   "source": "src/layouts/BaseLayout.astro:50-130",
-  "verifiedAt": "2026-07-29",
+  "verifiedAt": "2026-08-15",
   "tokens": {
     "color": {
       "page": {
@@ -359,9 +359,9 @@
     "spacing": {
       "radius": {
         "css": "--radius",
-        "value": "0",
-        "role": "card / container border radius (zero = no rounding)",
-        "note": "Direction C uses no border-radius on cards and general containers. Circular exceptions (border-radius: 50%) apply to: brand-mark, station/route-station/pending dots, lesson-marker, practice-choice__indicator, feedback-icon, practice-complete-icon.",
+        "value": "4px",
+        "role": "card / container border radius (shared micro-radius)",
+        "note": "#365/#366 micro-radius migration: general containers, controls, buttons, and cards use a 4px micro-radius in both the shared baseline and the theme-enabled scopes. True semantic circles (border-radius: 50%) apply to: brand-mark, station/route-station/pending dots, lesson-marker, practice-choice__indicator, feedback-icon, practice-complete-icon. The catalog status pill (border-radius: 999px) is a semantically justified pill for a single status label.",
         "pointer": "#/tokens/spacing/radius"
       },
       "xs": {
@@ -410,11 +410,11 @@
   "themeMechanism": {
     "storageKey": "chabiko_theme",
     "type": "light | dark",
-    "scope": "production home and lesson routes only",
+    "scope": "production learner routes: Dashboard (/), lessons, 台湾旅行 paths, 先生厳選単語 (study/catalog/detail/quiz), HSK, phrasebook, tone/word-order practice, kanji-bridge. Error/auth/internal-preview routes stay opt-out.",
     "detection": "inline <script> in BaseLayout.astro reads localStorage first, falls back to prefers-color-scheme",
     "activation": "data-theme-enabled=\"true\" on <html>, data-theme=\"light|dark\"",
     "cssSelector": ":root[data-theme-enabled='true'][data-theme='dark']",
-    "optIn": "themeEnabled prop on BaseLayout.astro; default false",
+    "optIn": "themeEnabled prop on BaseLayout.astro; default false, enabled consistently on all learner routes (#366)",
     "source": [
       "src/layouts/BaseLayout.astro:32-49 (inline detection)",
       "src/lib/theme.ts:1-15 (resolveTheme, getNextTheme, THEME_STORAGE_KEY)",

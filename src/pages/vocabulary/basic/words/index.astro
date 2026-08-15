@@ -1,4 +1,7 @@
 ---
+import Header from '../../../../components/Header.astro';
+import Breadcrumb from '../../../../components/Breadcrumb.astro';
+import TrackNav from '../../../../components/TrackNav.astro';
 import BasicVocabularyAccount from '../../../../components/vocabulary/BasicVocabularyAccount.astro';
 import BasicVocabularyCatalog from '../../../../components/vocabulary/BasicVocabularyCatalog.astro';
 import { loadBasicVocabularyCatalog } from '../../../../content/basicVocabularyCatalog';
@@ -17,13 +20,39 @@ if (catalog.length === 0) {
 const catalogJson = JSON.stringify(catalog).replace(/</g, '\\u003c');
 ---
 
-<BaseLayout title="単語一覧">
-  <h1>単語一覧</h1>
-  <BasicVocabularyAccount />
-  <BasicVocabularyCatalog items={catalog} itemsJson={catalogJson} />
+<BaseLayout title="単語一覧" themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
+  <div class="basic-vocabulary-catalog-page">
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '先生厳選単語', href: '/vocabulary/basic/' },
+        { label: '単語一覧' },
+      ]}
+    />
+    <TrackNav
+      label="先生厳選単語"
+      items={[
+        { label: '学ぶ', href: '/vocabulary/basic/' },
+        { label: '単語一覧', href: '/vocabulary/basic/words/', current: true },
+        { label: 'テスト', href: '/vocabulary/basic/quiz/' },
+      ]}
+    />
+    <h1>単語一覧</h1>
+    <BasicVocabularyAccount />
+    <BasicVocabularyCatalog items={catalog} itemsJson={catalogJson} />
+  </div>
 </BaseLayout>
 
 <style>
+  .basic-vocabulary-catalog-page {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+  }
+
   h1 {
     margin: 0 0 var(--space-xl);
     font-size: clamp(1.5rem, 6vw, 2rem);

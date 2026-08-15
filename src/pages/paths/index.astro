@@ -48,9 +48,9 @@ const pathsPayload = JSON.stringify({
 }).replace(/</g, '\\u003c');
 ---
 
-<BaseLayout title="学習ルート" description="Chabiko の学習ルート一覧です。">
+<BaseLayout title="学習ルート" description="Chabiko の学習ルート一覧です。" themeEnabled>
   <Fragment slot="header">
-    <Header />
+    <Header themeEnabled />
   </Fragment>
 
   <div class="paths-root" data-paths-root>
@@ -190,6 +190,10 @@ const pathsPayload = JSON.stringify({
 
   .paths-root {
     min-width: 0;
+    /* Bound to the prior effective content width so the theme-enabled wider
+     * shell (--max-w: 80rem) does not stretch the path/readiness cards. */
+    max-width: 44rem;
+    margin: 0 auto;
   }
   .readiness-section {
     min-width: 0;

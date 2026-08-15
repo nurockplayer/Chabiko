@@ -321,7 +321,7 @@ describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235, fail-clos
   });
 
   it('includes the Header in the header slot with the global script-preference select', () => {
-    expect(routeSource).toContain('<Header />');
+    expect(routeSource).toContain('<Header themeEnabled />');
     expect(routeSource).toContain('slot="header"');
     expect(builtHtml).toContain('id="script-preference-select"');
     // The #252 control renders the frozen コース標準 option label.

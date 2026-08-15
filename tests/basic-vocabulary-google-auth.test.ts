@@ -165,7 +165,9 @@ describe('route placement', () => {
     expect(route.match(/<BasicVocabularyAccount/g)).toHaveLength(1);
 
     const h1End = route.indexOf('</h1>');
-    const linkStart = route.indexOf('href="/vocabulary/basic/words/"');
+    const linkStart = route.indexOf(
+      'href="/vocabulary/basic/words/">単語一覧を見る',
+    );
     const accountStart = route.indexOf('<BasicVocabularyAccount');
     const sessionStart = route.indexOf('<BasicVocabularySession');
     expect(h1End).toBeGreaterThan(0);

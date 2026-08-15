@@ -25,9 +25,21 @@ describe('basic vocabulary navigation', () => {
       expect(matches).toHaveLength(1);
     });
 
-    it('does not duplicate the home/catalog destination in the study route', () => {
-      const hrefs = studyRouteSource.match(/href="\/vocabulary\/basic\/words\/"/g);
-      expect(hrefs).toHaveLength(1);
+    it('keeps one catalog CTA plus the track-local sibling nav without re-adding the home entry', () => {
+      // Exactly one 単語一覧を見る CTA. The #366 track-local wayfinding contract
+      // additionally exposes the real sibling modes 学ぶ/単語一覧/テスト via the
+      // shared TrackNav component; its 単語一覧 item is the one other catalog
+      // destination (distinct copy, one occurrence).
+      const ctaMatches =
+        studyRouteSource.match(
+          /<a\b[^>]*href="\/vocabulary\/basic\/words\/"[^>]*>単語一覧を見る<\/a>/g,
+        ) ?? [];
+      expect(ctaMatches).toHaveLength(1);
+      const navItems =
+        studyRouteSource.match(
+          /\{ label: '単語一覧', href: '\/vocabulary\/basic\/words\/' \}/g,
+        ) ?? [];
+      expect(navItems).toHaveLength(1);
       // The study route must not re-add the homepage entry or a second study CTA.
       expect(studyRouteSource).not.toContain('basic-vocabulary-entry');
       expect(studyRouteSource).not.toContain('単語学習を始める');
@@ -35,14 +47,14 @@ describe('basic vocabulary navigation', () => {
 
     it('is a native anchor outside the BasicVocabularySession client-owned markup', () => {
       const linkStart = studyRouteSource.indexOf(
-        'href="/vocabulary/basic/words/"',
+        'href="/vocabulary/basic/words/">単語一覧を見る',
       );
       const sessionStart = studyRouteSource.indexOf(
         '<BasicVocabularySession',
       );
       expect(linkStart).toBeGreaterThan(0);
       expect(sessionStart).toBeGreaterThan(0);
-      // The link must be before the session component's opening tag, so it is
+      // The CTA must be before the session component's opening tag, so it is
       // server-rendered and stays visible during active/completed session states.
       expect(linkStart).toBeLessThan(sessionStart);
     });
@@ -51,7 +63,7 @@ describe('basic vocabulary navigation', () => {
       const h1Start = studyRouteSource.indexOf('<h1>');
       const h1End = studyRouteSource.indexOf('</h1>');
       const linkStart = studyRouteSource.indexOf(
-        'href="/vocabulary/basic/words/"',
+        'href="/vocabulary/basic/words/">単語一覧を見る',
       );
       const sessionStart = studyRouteSource.indexOf(
         '<BasicVocabularySession',
@@ -135,8 +147,13 @@ describe('basic vocabulary navigation', () => {
     it('adds no duplicate catalog link, script, storage access, or session action to the route', () => {
       expect(studyRouteSource).not.toContain('<script');
       expect(studyRouteSource).not.toMatch(/localStorage|sessionStorage|chabiko_/);
-      // No second words link anywhere in the route.
-      expect(studyRouteSource.match(/\/vocabulary\/basic\/words\//g)).toHaveLength(1);
+      // Only one catalog CTA; the only other catalog destination is the
+      // track-local sibling nav (学ぶ/単語一覧/テスト).
+      expect(
+        studyRouteSource.match(
+          /href="\/vocabulary\/basic\/words\/"[^>]*>単語一覧を見る/g,
+        ),
+      ).toHaveLength(1);
       // No unrelated session re-render or completion logic added.
       expect(studyRouteSource).not.toContain('sessionStorage');
       expect(studyRouteSource).not.toContain('getElementById');

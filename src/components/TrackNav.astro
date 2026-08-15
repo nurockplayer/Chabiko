@@ -1,0 +1,92 @@
+---
+/**
+ * Track-local navigation (#366 contextual-wayfinding contract).
+ *
+ * Exposes the real sibling modes inside one learning track (for example the
+ * 先生厳選単語 modes 学ぶ / 単語一覧 / テスト). The current mode renders as a
+ * non-link `<span aria-current="page">` with a bold weight, so the current
+ * location is identifiable without colour alone and is not a focusable link;
+ * sibling modes are native anchors with >=44px targets. Long Japanese labels
+ * wrap safely.
+ *
+ * Pages with no real sibling destination should omit local navigation entirely.
+ */
+export interface TrackNavItem {
+  label: string;
+  href: string;
+  /** True for the current mode (rendered as the current indicator). */
+  current?: boolean;
+}
+
+export interface Props {
+  items: TrackNavItem[];
+  /** Accessible name for the track-local navigation landmark. */
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<nav class="track-nav" aria-label={label}>
+  <ul class="track-nav__list">
+    {items.map((item) => (
+      <li class="track-nav__item">
+        {item.current === true ? (
+          <span class="track-nav__current" aria-current="page">
+            {item.label}
+          </span>
+        ) : (
+          <a class="track-nav__link" href={item.href}>
+            {item.label}
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .track-nav {
+    margin: 0 0 var(--space-lg);
+    min-width: 0;
+  }
+  .track-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+  .track-nav__item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .track-nav__link,
+  .track-nav__current {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: var(--space-sm);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+  }
+  .track-nav__link {
+    color: var(--c-primary);
+    background: var(--c-surface);
+    font-weight: 600;
+  }
+  .track-nav__link:hover {
+    background: var(--c-primary-light);
+    text-decoration: none;
+  }
+  /* Current mode: bold + aria-current + surface-neutral background, so it is
+   * identifiable without colour alone. */
+  .track-nav__current {
+    color: var(--c-text);
+    background: var(--c-slot-bg);
+    font-weight: 700;
+  }
+</style>
