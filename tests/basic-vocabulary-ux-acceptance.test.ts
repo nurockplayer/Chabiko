@@ -700,6 +700,11 @@ describe('a11y, language, and responsive containment (Issue #281)', () => {
     expect(templateRegion).not.toContain('data-action="rate"');
     expect(templateRegion).not.toContain('data-action="continue"');
     expect(templateRegion).not.toContain('data-action="replay"');
+    // Recall-first reveal (#356): the SSR opening card never renders the
+    // illustration — the image is reveal-only, so it is absent from the server
+    // markup and added client-side together with the answer.
+    expect(templateRegion).not.toContain('basic-vocabulary-illustration');
+    expect(templateRegion).not.toMatch(/<img\b/);
   });
 
   it('contains responsive containment declarations with no nowrap on long text', async () => {

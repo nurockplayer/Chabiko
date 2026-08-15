@@ -57,6 +57,20 @@ test.describe('/vocabulary/basic/ learner route', () => {
 
           await page.locator('[data-action="reveal"]').click();
           await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
+          // The illustration is answer feedback (#356): it appears with the
+          // answer on reveal, so wait for the revealed WebP to finish loading
+          // before capturing, so the shot is never a partially-loaded image.
+          await expect
+            .poll(async () =>
+              page
+                .locator('[data-card] img')
+                .evaluate((img) => {
+                  const htmlImage = img as HTMLImageElement;
+                  return htmlImage.complete && htmlImage.naturalWidth > 0;
+                })
+                .catch(() => false),
+            )
+            .toBe(true);
           await assertLearnerRouteCaptureContract(
             page,
             learnerCase.viewport,
@@ -86,21 +100,23 @@ test.describe('/vocabulary/basic/ learner route', () => {
         );
         await assertLearnerRouteCaptureContract(page, viewport, externalRequests);
 
-        // Before reveal: card, image, simplified, reveal, and the reset
-        // management block all contained.
+        // Before reveal (#356): no illustration — the recall front (card,
+        // simplified, reveal) and the reset management block are contained.
+        await expect(page.locator('[data-card] img')).toHaveCount(0);
         await assertElementsWithinViewport(page, [
           '[data-card]',
-          '[data-card] img',
           '.basic-vocabulary-simplified',
           '[data-action="reveal"]',
           '.basic-vocabulary-reset',
         ]);
 
-        // After reveal: ratings contained, no horizontal overflow.
+        // After reveal: illustration, answer, and ratings contained.
         await page.locator('[data-action="reveal"]').click();
         await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
+        await expect(page.locator('[data-card] img')).toHaveCount(1);
         await assertElementsWithinViewport(page, [
           '[data-card]',
+          '[data-card] img',
           '.basic-vocabulary-answer',
           '.basic-vocabulary-ratings',
           '[data-rating="again"]',
@@ -140,16 +156,18 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       await openLearnerRoute(page, learnedIds(COMPLETE_FIELD_LEARNED_COUNT));
 
-      // 大家 card front: deployed image + simplified.
+      // 大家 card front (#356): recall-first — the illustration is hidden
+      // before reveal, then shown together with the answer.
       await expect(page.locator('.basic-vocabulary-simplified')).toHaveText('大家');
-      const imageSrc = await page
-        .locator('[data-card] img')
-        .getAttribute('src');
-      expect(imageSrc).toBe(completeRow.image.assetPath);
+      await expect(page.locator('[data-card] img')).toHaveCount(0);
 
       await page.locator('[data-action="reveal"]').click();
       const answer = page.locator('.basic-vocabulary-answer');
       await expect(answer).toBeVisible();
+      const imageSrc = await page
+        .locator('[data-card] img')
+        .getAttribute('src');
+      expect(imageSrc).toBe(completeRow.image.assetPath);
       await expect(answer.locator('.basic-vocabulary-pinyin')).toHaveText(
         completeRow.pinyin ?? '',
       );
