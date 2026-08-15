@@ -354,7 +354,10 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     }
 
     const fragment = document.createDocumentFragment();
-    if (entry.illustration) {
+    // Recall-first reveal (#356): the illustration is answer feedback, shown
+    // together with the answer in the same transition when 「答えを見る」 is
+    // pressed — never a pre-reveal hint on the unanswered card.
+    if (entry.illustration && state.answerRevealed) {
       const image = document.createElement('img');
       image.className = 'basic-vocabulary-illustration';
       image.src = entry.illustration.assetPath;

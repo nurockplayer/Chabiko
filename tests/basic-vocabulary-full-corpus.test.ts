@@ -131,7 +131,10 @@ describe('full production corpus integration', () => {
     expect(simplified?.textContent).toBe(
       manifest.rows.find((r) => r.learnerId === firstNonPrefixId)!.simplified,
     );
-    // The reached item carries its deployed image.
+    // Recall-first (#356): the illustration is hidden until 「答えを見る」, then
+    // the reached item carries its deployed image alongside the answer.
+    expect(root.querySelector('img')).toBeNull();
+    (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
     expect(root.querySelector('img')).not.toBeNull();
   });
 
@@ -175,7 +178,10 @@ describe('full production corpus integration', () => {
     expect(simplified?.textContent).toBe(
       manifest.rows.find((r) => r.learnerId === leadingId)!.simplified,
     );
-    // The reached item carries its deployed image.
+    // Recall-first (#356): the illustration is hidden until 「答えを見る」, then
+    // the leading 21+ item carries its deployed image alongside the answer.
+    expect(root.querySelector('img')).toBeNull();
+    (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
     expect(root.querySelector('img')).not.toBeNull();
   });
 
@@ -254,15 +260,11 @@ describe('full production corpus integration', () => {
       expect(r).toBeDefined();
       expect(r.assetPath).toBe(item.illustration.assetPath);
     }
+    // The SSR opening card is the recall front only (#356): simplified, no
+    // illustration — the image is revealed client-side with the answer.
     expect(payload.first).toEqual({
       learnerId: synthetic[0].learnerId,
       simplified: synthetic[0].simplified,
-      illustration: {
-        assetPath: synthetic[0].illustration.assetPath,
-        width: synthetic[0].illustration.width,
-        height: synthetic[0].illustration.height,
-        altJa: synthetic[0].illustration.altJa,
-      },
     });
 
     // The client renders that derived total, not 1,582.
