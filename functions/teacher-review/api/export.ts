@@ -1,22 +1,21 @@
 /**
  * GET /teacher-review/api/export
  *
- * Returns the repository-standard #360 human-review artifact (markdown) built
- * from all current records, the current-version decisions, and the configured
- * scope set. Follows docs/content/content-review-workflow.md §3.1/§3.3 and
- * never equates review entry completion with PASS: any `needs_changes` record
- * keeps the overall outcome `needs-changes` and is listed as blocked content.
- * Reviewer identity comes from the persisted decisions (validated Access
- * identity), never from the exporter.
+ * Exports repository-standard #360 human-review evidence only after every
+ * current-version record has an explicit human decision. The designated
+ * reviewer may act in multiple repository-defined roles, but the workflow
+ * requires each role's findings to be recorded separately, so the export is a
+ * bundle of role-scoped artifact sections rather than one over-broad approval.
  */
 
 import { resolveCampaignOr500 } from './resolve-campaign';
-import { buildReviewArtifact } from '../../../src/domain/teacherReview';
 import {
-  TEACHER_REVIEW_ROLE,
-  TEACHER_REVIEW_SCOPES,
-} from './campaign-config';
+  buildReviewArtifact,
+  computeReviewProgress,
+} from '../../../src/domain/teacherReview';
+import { TEACHER_REVIEW_ROLE_SCOPE_GROUPS } from './campaign-config';
 import { createD1TeacherReviewStore } from './d1-store';
+import { json } from './http';
 import type { TeacherReviewPagesFunction } from './types';
 
 export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
@@ -30,14 +29,37 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
     resolution.records.map((record) => record.id),
   );
 
-  const artifact = buildReviewArtifact({
-    campaignId: resolution.campaignId,
-    scopes: TEACHER_REVIEW_SCOPES,
-    reviewerRole: TEACHER_REVIEW_ROLE,
-    records: resolution.records,
-    decisions,
-    generatedAt: new Date().toISOString(),
-  });
+  const progress = computeReviewProgress(resolution.records, decisions);
+  if (progress.unreviewed > 0) {
+    return json(
+      {
+        error:
+          'Review entry is incomplete. Export is available only after every current-version record has a human decision.',
+        unreviewed: progress.unreviewed,
+      },
+      409,
+    );
+  }
+
+  const generatedAt = new Date().toISOString();
+  const sections = TEACHER_REVIEW_ROLE_SCOPE_GROUPS.map((group) =>
+    buildReviewArtifact({
+      campaignId: resolution.campaignId,
+      scopes: group.scopes,
+      reviewerRole: group.role,
+      records: resolution.records,
+      decisions,
+      generatedAt,
+    }),
+  );
+
+  const artifact = [
+    '# #360 Human Review Artifact Bundle',
+    '',
+    'The same designated human reviewer performed this atomic campaign review under the explicit repository-defined roles below. Each role is recorded separately as required by the content review workflow.',
+    '',
+    ...sections,
+  ].join('\n');
 
   return new Response(artifact, {
     headers: {
