@@ -33,6 +33,13 @@ pnpm typecheck    # Astro type checking
 pnpm test         # Vitest
 ```
 
+## Technical Language
+
+English is the canonical language for repository technical artifacts. See
+[`docs/engineering/repository-language-policy.md`](docs/engineering/repository-language-policy.md).
+Learner-facing Japanese/Chinese, localization, and language-learning data remain in the
+languages required by product behavior.
+
 ## Planning
 
 GSD planning artifacts live in `.planning/`:
@@ -161,4 +168,3 @@ docker compose run --rm app uv run python scripts/validate-content-schema.py --c
 - Dependencies (`node_modules`, `.venv`) are stored in Docker named volumes, not written to the host working tree.
 - To clean up all volumes: `docker compose down -v`
 - The same tooling rules apply inside Docker: **pnpm** for JavaScript, **uv** for Python.
-
