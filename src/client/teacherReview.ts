@@ -4,12 +4,7 @@
  * Renders the bounded one-record-at-a-time review UX into the static shell at
  * `/teacher-review/`. All record data comes from the same-origin Access-
  * protected API (`/teacher-review/api/*`); localStorage is never the source of
- * truth. The client drives the pure state machine in
- * `src/domain/teacherReviewUi.ts`; every decision is persisted server-side
- * before the UI advances, and `Needs changes` cannot be submitted without a
- * non-empty note.
- *
- * All dynamic values are HTML-escaped before rendering into the DOM.
+ * truth. Every decision is persisted server-side before the UI advances.
  */
 
 import type {
@@ -30,20 +25,20 @@ import {
   toggleNeedsChangesOnly,
 } from '../domain/teacherReviewUi';
 import type {
-  ReviewContent,
   ReviewOutcome,
   TeacherReviewScenario,
 } from '../domain/teacherReview';
-
-// ---------------------------------------------------------------------------
-// API payload types (the server never sends fingerprints or reviewStatus).
-// ---------------------------------------------------------------------------
+import type {
+  TeacherFacingDialogContent,
+  TeacherFacingPhraseContent,
+  TeacherFacingReviewContent,
+  TeacherFacingRoleplayContent,
+  TeacherFacingTurn,
+} from '../domain/teacherReviewPublic';
 
 export interface RecordsPayload {
   campaign: {
     id: string;
-    reviewerRole: string;
-    scopes: string[];
   };
   reviewer: {
     email: string;
@@ -54,7 +49,7 @@ export interface RecordsPayload {
     id: string;
     type: ReviewUiRecord['type'];
     scenario: TeacherReviewScenario;
-    content: ReviewContent;
+    content: TeacherFacingReviewContent;
     decision: {
       outcome: ReviewOutcome;
       note: string;
@@ -69,14 +64,6 @@ export interface RecordsPayload {
     needsChanges: number;
     unreviewed: number;
   };
-}
-
-interface ConversationTurn {
-  speaker: 'learner' | 'partner';
-  traditional: string;
-  simplified?: string;
-  pinyin: string;
-  japanese: string;
 }
 
 const SCENARIO_LABELS: Record<TeacherReviewScenario, string> = {
@@ -103,13 +90,7 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-// ---------------------------------------------------------------------------
-// Rendering helpers
-// ---------------------------------------------------------------------------
-
-function renderTurn(turn: ConversationTurn): string {
-  // Controlled speaker class: force runtime values into the known set so a
-  // crafted speaker value can never break out of the class attribute.
+function renderTurn(turn: TeacherFacingTurn): string {
   const speakerClass = turn.speaker === 'learner' ? 'learner' : 'partner';
   return [
     `<li class="tr-turn tr-turn--${speakerClass}">`,
@@ -126,17 +107,25 @@ function renderTurn(turn: ConversationTurn): string {
   ].join('');
 }
 
-function renderConversation(turns: readonly ConversationTurn[]): string {
+function renderConversation(turns: readonly TeacherFacingTurn[]): string {
   return `<ol class="tr-conversation">${turns.map(renderTurn).join('')}</ol>`;
 }
 
+function renderReviewContext(items: readonly string[]): string {
+  if (items.length === 0) return '';
+  return [
+    '<aside class="tr-review-context" aria-label="確認のための補足情報">',
+    '<h3>確認のための補足情報</h3>',
+    '<ul>',
+    ...items.map((item) => `<li>${escapeHtml(item)}</li>`),
+    '</ul>',
+    '</aside>',
+  ].join('');
+}
+
 function renderContent(record: ReviewUiRecord): string {
-  const content = record.content;
   if (record.type === 'phrase') {
-    const phrase = content as { traditional: string; simplified?: string; pinyin: string; japanese: string; usageNotesJa: string; traditionalStatus: string; simplifiedStatus?: string; painPointTags?: string[] };
-    const provenance = `繁体字: ${escapeHtml(phrase.traditionalStatus)}${
-      phrase.simplifiedStatus ? ` ・ 簡体字: ${escapeHtml(phrase.simplifiedStatus)}` : ''
-    }`;
+    const phrase = record.content as TeacherFacingPhraseContent;
     return [
       `<p class="tr-phrase__traditional" lang="zh-Hant">${escapeHtml(phrase.traditional)}</p>`,
       phrase.simplified
@@ -145,29 +134,25 @@ function renderContent(record: ReviewUiRecord): string {
       `<p class="tr-phrase__pinyin">${escapeHtml(phrase.pinyin)}</p>`,
       `<p class="tr-phrase__japanese" lang="ja">${escapeHtml(phrase.japanese)}</p>`,
       `<p class="tr-phrase__usage" lang="ja">${escapeHtml(phrase.usageNotesJa)}</p>`,
-      phrase.painPointTags && phrase.painPointTags.length > 0
-        ? `<ul class="tr-phrase__tags">${phrase.painPointTags
-            .map((tag) => `<li>${escapeHtml(tag)}</li>`)
-            .join('')}</ul>`
-        : '',
-      `<p class="tr-provenance">${provenance}</p>`,
+      renderReviewContext(phrase.reviewContext),
     ].join('');
   }
+
   if (record.type === 'dialog') {
-    const dialog = content as { turns: readonly ConversationTurn[] };
-    return renderConversation(dialog.turns);
+    const dialog = record.content as TeacherFacingDialogContent;
+    return [
+      renderConversation(dialog.turns),
+      renderReviewContext(dialog.reviewContext),
+    ].join('');
   }
-  const roleplay = content as {
-    titleJa: string;
-    goalJa: string;
-    guidanceJa: string;
-    lines: readonly ConversationTurn[];
-  };
+
+  const roleplay = record.content as TeacherFacingRoleplayContent;
   return [
     `<p class="tr-roleplay__title" lang="ja">${escapeHtml(roleplay.titleJa)}</p>`,
     `<p class="tr-roleplay__goal" lang="ja">${escapeHtml(roleplay.goalJa)}</p>`,
     `<p class="tr-roleplay__guidance" lang="ja">${escapeHtml(roleplay.guidanceJa)}</p>`,
     renderConversation(roleplay.lines),
+    renderReviewContext(roleplay.reviewContext),
   ].join('');
 }
 
@@ -182,10 +167,6 @@ function statusLabel(view: RecordViewState | undefined): string {
   if (!view || view.outcome === null) return '未レビュー';
   return view.outcome === 'accepted' ? '承認済み' : '修正が必要';
 }
-
-// ---------------------------------------------------------------------------
-// Client controller
-// ---------------------------------------------------------------------------
 
 export interface TeacherReviewController {
   getState(): ReviewUiState | null;
@@ -211,7 +192,6 @@ export function initTeacherReview(
 ): TeacherReviewController | null {
   const rootElement = document.querySelector<HTMLElement>('[data-teacher-review-root]');
   if (!rootElement) return null;
-  // Explicit non-null local so the render/bind closures see a non-null element.
   const root: HTMLElement = rootElement;
 
   const fetchImpl = options.fetchImpl ?? fetch;
@@ -238,6 +218,7 @@ export function initTeacherReview(
           : '');
       return;
     }
+
     const snap = snapshot(state);
     const current = snap.current;
     const recordLabel = current
@@ -270,6 +251,11 @@ export function initTeacherReview(
       ),
     ].join('');
 
+    const exportControl =
+      snap.progress.unreviewed === 0
+        ? `<a class="tr-export" data-tr-export href="${escapeHtml(urls.exportUrl)}">レビュー成果物をエクスポート</a>`
+        : '<span class="tr-export" data-tr-export aria-disabled="true">全件レビュー後に成果物をエクスポートできます</span>';
+
     root.innerHTML = [
       '<section class="tr-head">',
       '<h1>教師レビュー</h1>',
@@ -282,7 +268,7 @@ export function initTeacherReview(
           : ''
       }</p>`,
       `<p class="tr-progress" data-tr-progress role="status">${snap.progress.decided} / ${snap.progress.total} 件レビュー済み（承認 ${snap.progress.accepted}・修正 ${snap.progress.needsChanges}・未レビュー ${snap.progress.unreviewed}）</p>`,
-      `<a class="tr-export" data-tr-export href="${escapeHtml(urls.exportUrl)}">レビュー成果物をエクスポート</a>`,
+      exportControl,
       '</section>',
 
       '<section class="tr-toolbar" aria-label="絞り込みと移動">',
@@ -304,7 +290,7 @@ export function initTeacherReview(
       '<section class="tr-record" data-tr-record aria-label="レビュー対象" tabindex="-1">',
       current
         ? [
-            `<h2 class="tr-record__heading" data-tr-record-heading>${escapeHtml(recordLabel)}</h2>`,
+            `<h2 class="tr-record__heading" data-tr-record-heading tabindex="-1">${escapeHtml(recordLabel)}</h2>`,
             `<p class="tr-record__id" data-tr-record-id>${escapeHtml(current.id)}</p>`,
             decisionBadge(state.views.get(current.id)),
             `<div class="tr-record__content" data-tr-content>${renderContent(current)}</div>`,
@@ -340,8 +326,7 @@ export function initTeacherReview(
   }
 
   function focusRecord(): void {
-    const heading = root.querySelector<HTMLElement>('[data-tr-record-heading]');
-    heading?.focus();
+    root.querySelector<HTMLElement>('[data-tr-record-heading]')?.focus();
   }
 
   function bindEvents(): void {
@@ -448,6 +433,7 @@ export function initTeacherReview(
       }
       return;
     }
+
     const saved = body.decision;
     if (!saved) return;
     state = applyConfirmedDecision(
@@ -474,17 +460,17 @@ export function initTeacherReview(
       showError('レビュー対象の取得に失敗しました。ネットワークを確認してください。');
       return;
     }
+
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
       if (response.status === 401 || response.status === 403) {
-        // Friendly teacher-facing message; the server's technical detail (e.g.
-        // "Missing Cloudflare Access JWT.") is not surfaced to the UI.
         showError('アクセス認証が必要です。Cloudflare Access での認証を確認してください。');
       } else {
         showError(body?.error ?? `レビュー対象の読み込みに失敗しました（HTTP ${response.status}）。`);
       }
       return;
     }
+
     const data = (await response.json()) as RecordsPayload;
     payload = data;
     state = createReviewUiState(
