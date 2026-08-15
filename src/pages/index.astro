@@ -235,6 +235,14 @@ const initialContinuation = deriveContinuation(
 </script>
 
 <style>
+  /* BaseLayout's global `*` reset is scoped to BaseLayout's own elements and
+   * does not reach this page's rendered content, so restore border-box sizing
+   * and zero list defaults here (the pre-Dashboard home had the same need). */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
   .dashboard {
     width: min(100%, 44rem);
     margin: 0 auto;
@@ -347,10 +355,19 @@ const initialContinuation = deriveContinuation(
   /* ── Course tracks ── */
   .track-list {
     list-style: none;
+    margin: 0;
+    padding: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-md);
   }
   .track-list-item {
+    min-width: 0;
+  }
+  .track-card__description,
+  .track-card__meta,
+  .track-card__summary,
+  .track-card__status {
     min-width: 0;
   }
   .track-card {
