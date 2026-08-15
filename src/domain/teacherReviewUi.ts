@@ -14,11 +14,11 @@
 
 import type {
   CampaignRecord,
-  ReviewContent,
   ReviewOutcome,
   ReviewRecordType,
   TeacherReviewScenario,
 } from './teacherReview';
+import type { TeacherFacingReviewContent } from './teacherReviewPublic';
 
 export type ScenarioFilter = 'all' | TeacherReviewScenario;
 
@@ -27,7 +27,7 @@ export interface ReviewUiRecord {
   id: string;
   type: ReviewRecordType;
   scenario: TeacherReviewScenario;
-  content: ReviewContent;
+  content: TeacherFacingReviewContent;
 }
 
 export interface RecordViewState {
