@@ -25,6 +25,11 @@ const totalMembers = path.members.length;
       data-path-availability="available"
     >
       <span class="learning-path-card__body">
+        {emphasized && (
+          <span class="learning-path-card__badge" data-path-primary-badge>
+            メインルート
+          </span>
+        )}
         <span class="learning-path-card__label">{path.labelJa}</span>
         <span class="learning-path-card__description">{path.descriptionJa}</span>
         <span class="learning-path-card__meta">
@@ -83,6 +88,22 @@ const totalMembers = path.members.length;
     gap: var(--space-sm);
     min-width: 0;
     flex: 1 1 auto;
+  }
+  /* First-class track marker: only the repository-primary (Taiwan-travel)
+   * path renders this badge, so the primary track is identifiable without
+   * colour alone and without promoting any auxiliary/future path. */
+  .learning-path-card__badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 20px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius);
+    background: var(--c-primary);
+    color: var(--color-on-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
   }
   .learning-path-card__label {
     font-size: 1.125rem;
