@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import LearningPathCard from '../../components/LearningPathCard.astro';
 import { loadLearningPaths } from '../../content/loadLearningPaths';
 import { evaluateTravelQuestReadiness } from '../../domain/travelQuestReadiness';
@@ -54,8 +55,13 @@ const pathsPayload = JSON.stringify({
   </Fragment>
 
   <div class="paths-root" data-paths-root>
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '学習ルート' },
+      ]}
+    />
     <section class="paths-page" aria-labelledby="paths-heading">
-      <p class="paths-kicker">学習ルート</p>
       <h1 id="paths-heading" class="paths-heading">ルートを選んで中国語を学ぼう</h1>
       <p class="paths-lead">目的に合ったルートを選んでください。</p>
 
@@ -101,9 +107,6 @@ const pathsPayload = JSON.stringify({
                 <div class="readiness-item__meta">
                   <span class="readiness-item__count" data-readiness-count>
                     {result.numerator} / {result.denominator}
-                  </span>
-                  <span class="readiness-item__percent" data-readiness-percent>
-                    {result.percentage}%
                   </span>
                 </div>
                 <p
@@ -154,13 +157,6 @@ const pathsPayload = JSON.stringify({
 <style>
   .paths-page {
     min-width: 0;
-  }
-  .paths-kicker {
-    color: var(--c-primary);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-xs);
   }
   h1.paths-heading {
     font-size: clamp(1.5rem, 7vw, 2rem);
