@@ -20,18 +20,10 @@ const sessionSize = Math.min(10, ids.length);
   <p class="basic-vocabulary-total" data-total>全{totalCount}語</p>
   <p class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</p>
   <p class="basic-vocabulary-progress" data-progress aria-live="polite">今回 0 / {sessionSize}語</p>
+  <!-- Recall-first reveal (#356): the opening card is the front word only.
+       The illustration is answer feedback, rendered client-side together with
+       the answer when 「答えを見る」 is pressed — never a pre-reveal hint. -->
   <div class="basic-vocabulary-card" data-card>
-    {
-      first?.illustration && (
-        <img
-          class="basic-vocabulary-illustration"
-          src={first.illustration.assetPath}
-          width={first.illustration.width}
-          height={first.illustration.height}
-          alt={first.illustration.altJa}
-        />
-      )
-    }
     {first && <p class="basic-vocabulary-simplified" lang="zh-Hans">{first.simplified}</p>}
     <button class="basic-vocabulary-action basic-vocabulary-reveal" data-action="reveal" type="button">
       答えを見る

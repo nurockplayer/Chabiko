@@ -116,17 +116,11 @@ export async function openLearnerRoute(
   await expect(card).toBeVisible();
   await expect(simplified).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
-  await expect
-    .poll(async () =>
-      page
-        .locator('img')
-        .evaluate((img) => {
-          const htmlImage = img as HTMLImageElement;
-          return htmlImage.complete && htmlImage.naturalWidth > 0;
-        })
-        .catch(() => false),
-    )
-    .toBe(true);
+  // Recall-first reveal (#356): the illustration is hidden until 「答えを見る」,
+  // so the helper no longer waits for an image at load. Instead it waits for
+  // client hydration via the reveal control that the session auto-focuses on
+  // load; the revealed image load is awaited at capture time by the spec.
+  await expect(page.locator('[data-action="reveal"]')).toBeFocused();
 
   return { externalRequests, card, total, progress, simplified };
 }
