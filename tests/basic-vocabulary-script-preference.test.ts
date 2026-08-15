@@ -309,10 +309,14 @@ describe('basic vocabulary script preference', () => {
       expect(root.querySelector('.basic-vocabulary-script-fallback')).toBeNull();
     });
 
-    it('keeps the image, dimensions, and alt unchanged across preference changes', () => {
+    it('keeps the revealed image, dimensions, and alt unchanged across preference changes', () => {
       setPreference('traditional');
       const root = rootWith();
       initBasicVocabularySession(root);
+
+      // Recall-first (#356): the illustration is reveal-only, so reveal before
+      // snapshotting the image.
+      reveal(root);
 
       const imageBefore = root.querySelector('img');
       expect(imageBefore).not.toBeNull();

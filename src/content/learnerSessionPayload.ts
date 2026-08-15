@@ -1,10 +1,12 @@
 import type { ProductionLearnerItem } from '../types/learnerCorpus';
 import { loadProductionLearnerCorpus } from './loadProductionLearnerCorpus';
 
-/** Learner-facing illustration render data. The image is the card front and is
- * visible before reveal, so its metadata is non-secret; pinyin/japanese/
- * traditional are deliberately excluded so the serialized payload never leaks
- * hidden answers into initial HTML. */
+/** Learner-facing illustration render data. The image is answer feedback shown
+ * only after 「答えを見る」 (#356), never a pre-reveal hint, so its metadata is
+ * non-secret: the asset URL / dimensions / alt text alone cannot reveal the
+ * answer (pinyin / japanese / traditional) that the learner must recall.
+ * pinyin/japanese/traditional are deliberately excluded so the serialized
+ * payload never leaks hidden answers into initial HTML. */
 export interface LearnerRenderIllustration {
   readonly assetPath: string;
   readonly width: number;
@@ -15,18 +17,19 @@ export interface LearnerRenderIllustration {
 /** Serializable session payload built once at build time from the canonical
  * #202 production learner corpus. `ids` is the full manifest-ordered opaque
  * learner ID list (the same opaque-ID/data contract the route already used);
- * `render` maps each learnerId to the image metadata needed to draw the card
- * front. Answers live in the client bundle (manifest import), never here. */
+ * `render` maps each learnerId to the image metadata the client needs to draw
+ * the revealed illustration. Answers live in the client bundle (manifest
+ * import), never here. */
 export interface LearnerSessionPayload {
   readonly totalCount: number;
   readonly ids: readonly string[];
   readonly render: Readonly<Record<string, LearnerRenderIllustration>>;
   /** First corpus item for the server-rendered opening card (front only:
-   * image + simplified; no answer fields). */
+   * simplified; the image is added client-side together with the answer on
+   * reveal, and answer fields are never serialized). */
   readonly first: {
     readonly learnerId: string;
     readonly simplified: string;
-    readonly illustration: LearnerRenderIllustration;
   } | null;
 }
 
@@ -67,11 +70,7 @@ export function buildLearnerSessionPayloadFromItems(
   }
   const firstItem = items[0];
   const first = firstItem
-    ? {
-        learnerId: firstItem.learnerId,
-        simplified: firstItem.simplified,
-        illustration: render[firstItem.learnerId],
-      }
+    ? { learnerId: firstItem.learnerId, simplified: firstItem.simplified }
     : null;
   return { totalCount: ids.length, ids, render, first };
 }

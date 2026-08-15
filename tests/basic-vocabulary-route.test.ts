@@ -36,15 +36,22 @@ describe('basic vocabulary route', () => {
     expect(loaded.some((item) => item.learnerId === 'teacher-star-1-8b957a100bd4')).toBe(false);
   });
 
-  it('renders every corpus item in the bounded session with its deployed illustration, then completes', () => {
-    // A session of size 10 selects exactly 10 corpus items; every selected item
-    // must render its deployed illustration and advance to completion.
+  it('reveals every corpus item in the bounded session with its deployed illustration, then completes', () => {
+    // A session of size 10 selects exactly 10 corpus items; recall-first
+    // (#356) hides the illustration until 「答えを見る」, and after reveal every
+    // selected item renders its deployed illustration and advances to
+    // completion.
     const items = loadProductionLearnerCorpus({ assetTracked: alwaysTracked }).slice(0, 10);
     const root = createRoot(items.map((item) => item.learnerId));
     initBasicVocabularySession(root);
+    // The opening card is the recall front only — no image before reveal.
+    expect(root.querySelector('img')).toBeNull();
     const seenIllustrations: Array<{ src: string | null; width: number; height: number; alt: string }> = [];
 
     for (let index = 0; index < items.length; index++) {
+      // Each new card hides the illustration until its reveal.
+      expect(root.querySelector('img')).toBeNull();
+      (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
       const image = root.querySelector('img');
       expect(image).not.toBeNull();
       seenIllustrations.push({
@@ -53,7 +60,6 @@ describe('basic vocabulary route', () => {
         height: image?.height ?? 0,
         alt: image?.alt ?? '',
       });
-      (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
       (root.querySelector('[data-rating="known"]') as HTMLButtonElement).click();
     }
 
