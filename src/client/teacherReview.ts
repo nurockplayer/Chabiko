@@ -108,8 +108,11 @@ function escapeHtml(value: string): string {
 // ---------------------------------------------------------------------------
 
 function renderTurn(turn: ConversationTurn): string {
+  // Controlled speaker class: force runtime values into the known set so a
+  // crafted speaker value can never break out of the class attribute.
+  const speakerClass = turn.speaker === 'learner' ? 'learner' : 'partner';
   return [
-    `<li class="tr-turn tr-turn--${turn.speaker}">`,
+    `<li class="tr-turn tr-turn--${speakerClass}">`,
     `<span class="tr-turn__speaker">${
       turn.speaker === 'learner' ? '学習者' : '相手'
     }</span>`,

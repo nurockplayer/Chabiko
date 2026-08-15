@@ -264,4 +264,43 @@ describe('initTeacherReview', () => {
     expect(document.querySelector('.tr-turn--learner')).not.toBeNull();
     expect(document.querySelector('.tr-turn--partner')).not.toBeNull();
   });
+
+  it('never lets a crafted speaker value break out of the class attribute', async () => {
+    setupDom();
+    const payload = makePayload({
+      records: [
+        {
+          id: 'dialog-transport-001',
+          type: 'dialog',
+          scenario: 'transport',
+          content: {
+            turns: [
+              {
+                // A hostile runtime value must render as a controlled class.
+                speaker: 'x" onmouseover="alert(1)',
+                traditional: '測試',
+                pinyin: 'cèshì',
+                japanese: 'テスト',
+                traditionalStatus: 'authored',
+              },
+            ],
+            relatedPhraseIds: ['phrase-002'],
+          } as unknown as ReviewContent,
+          decision: null,
+        },
+      ],
+      progress: { total: 1, decided: 0, accepted: 0, needsChanges: 0, unreviewed: 1 },
+    });
+    const { fn } = mockFetch(payload);
+    initTeacherReview({ fetchImpl: fn });
+    await flush();
+
+    const turn = document.querySelector<HTMLElement>('.tr-turn');
+    expect(turn).not.toBeNull();
+    // The class list must contain only the controlled class; the hostile value
+    // must NOT inject an onmouseover attribute.
+    expect(turn?.className).toBe('tr-turn tr-turn--partner');
+    expect(turn?.hasAttribute('onmouseover')).toBe(false);
+    expect(document.querySelector('script[src]')).toBeNull();
+  });
 });

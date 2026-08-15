@@ -572,6 +572,8 @@ export interface ReviewArtifactSummary {
   overallOutcome: ReviewOutcome | 'incomplete';
   reviewEntryComplete: boolean;
   blockedRecordIds: string[];
+  /** Records with no current valid decision (unreviewed or stale). */
+  unreviewedCount: number;
   unresolvedNotes: string[];
 }
 
@@ -591,6 +593,10 @@ export function summarizeReviewArtifact(
 
   const reviewEntryComplete =
     byRecord.size === params.records.length && params.records.length > 0;
+
+  const unreviewedCount = params.records.filter(
+    (record) => !byRecord.has(record.id),
+  ).length;
 
   const blockedRecordIds = params.records
     .filter((record) => {
@@ -623,6 +629,7 @@ export function summarizeReviewArtifact(
     overallOutcome,
     reviewEntryComplete,
     blockedRecordIds,
+    unreviewedCount,
     unresolvedNotes,
   };
 }
@@ -669,7 +676,7 @@ export function buildReviewArtifact(params: ReviewArtifactParams): string {
       : 'None.';
   const reviewEntryStatus = summary.reviewEntryComplete
     ? 'Complete (every current-version record has a valid decision).'
-    : `Incomplete (${summary.blockedRecordIds.length} record(s) have no current valid decision). This is NOT a PASS.`;
+    : `Incomplete (${summary.unreviewedCount} record(s) have no current valid decision). This is NOT a PASS.`;
 
   const scopeRows = params.scopes
     .map((scope) => {
