@@ -77,15 +77,15 @@ Therefore browser evidence must be produced before arbiter review and included i
 
 ## 6. Review and merge rule
 
-Final independent review may be performed by ChatGPT or Codex when the current issue contract permits that reviewer. A reviewer that independently verifies all of the following may complete the final merge gate within its authorized workflow:
+Final independent review may be performed by ChatGPT or Codex. When ChatGPT personally verifies all of the following:
 
 - the latest reviewed head has not moved;
 - latest CI succeeded;
 - the full diff and changed-file scope match the issue;
 - review findings and threads have been handled;
-- no blocking finding remains.
+- no blocking finding remains;
 
-This playbook does not override a more specific current issue that names a required reviewer or concurrency gate.
+ChatGPT may merge directly without an additional abstract controller gate. A more specific current issue or repository merge policy may still impose additional requirements such as a named reviewer, risk-tier signals, or a concurrency hold.
 
 ## 7. Worked example
 
