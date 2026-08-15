@@ -6,7 +6,11 @@ import { initBasicVocabularySession } from '../src/client/basicVocabularySession
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
 } from '../src/domain/basicVocabularyProgress';
-import { createSessionRoot, SESSION_IDS } from './helpers/basicVocabularyTestData';
+import {
+  createSessionRoot,
+  renderPayloadFor,
+  SESSION_IDS,
+} from './helpers/basicVocabularyTestData';
 
 // Three real image-bearing vocabulary items selected from the production
 // manifest (the original batch-01 fixture's text-only 小姐/女士 row is excluded
@@ -454,5 +458,58 @@ describe('basic vocabulary session lifecycle', () => {
 
     // Size attribute signals the intended cap
     expect(root.dataset.basicVocabularySessionSize).toBe('10');
+  });
+
+  describe('recall-first reveal (Issue #356)', () => {
+    it('hides the vocabulary illustration before the answer is revealed', () => {
+      const root = rootWith();
+      initBasicVocabularySession(root);
+
+      // The unanswered card is the recall front only: simplified + reveal.
+      expect(root.querySelector('.basic-vocabulary-illustration')).toBeNull();
+      expect(root.querySelector('img')).toBeNull();
+      expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
+      expect(root.querySelector('[data-action="reveal"]')).not.toBeNull();
+    });
+
+    it('reveals the answer and the illustration together in the same transition', () => {
+      const root = rootWith();
+      initBasicVocabularySession(root);
+
+      reveal(root);
+      const image = root.querySelector('.basic-vocabulary-illustration');
+      expect(image).not.toBeNull();
+      expect(image?.getAttribute('src')).toBeTruthy();
+      // Answer fields appear in the same render as the illustration.
+      expect(root.textContent).toContain(ITEM_A_PINYIN);
+      expect(root.textContent).toContain(ITEM_A_JAPANESE);
+
+      // Post-reveal controls still work: rating advances to the next item and
+      // hides the image again until that item is revealed.
+      rate(root, 'known');
+      expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_B_SIMPLIFIED);
+      expect(root.querySelector('.basic-vocabulary-illustration')).toBeNull();
+    });
+
+    it('renders vocabulary entries without an illustration correctly before and after reveal', () => {
+      // Drop the active item's render metadata so the entry has no image.
+      const root = rootWith();
+      const payload = renderPayloadFor([...REAL_IDS]);
+      delete payload.render[REAL_IDS[0]];
+      const dataEl = root.querySelector('#basic-vocabulary-data')!;
+      dataEl.textContent = JSON.stringify(payload);
+      initBasicVocabularySession(root);
+
+      // Before reveal: recall front, no image.
+      expect(root.querySelector('[data-card]')?.textContent).toContain(ITEM_A_SIMPLIFIED);
+      expect(root.querySelector('img')).toBeNull();
+
+      reveal(root);
+      // Answer reveals and ratings appear, but no image element is rendered.
+      expect(root.textContent).toContain(ITEM_A_PINYIN);
+      expect(root.querySelector('[data-rating="known"]')).not.toBeNull();
+      expect(root.querySelector('.basic-vocabulary-illustration')).toBeNull();
+      expect(root.querySelector('img')).toBeNull();
+    });
   });
 });
