@@ -18,25 +18,51 @@ import {
   type DecisionRecord,
 } from '../../../src/domain/teacherReview';
 
-/** The workflow role under which the v1 atomic decision is recorded. */
-export const TEACHER_REVIEW_ROLE = 'human-language-reviewer';
-
 /**
- * The #360 review scope types covered by the atomic v1 decision. The decision
- * is intentionally atomic: if any required teacher-reviewed dimension needs
- * correction, the reviewer chooses `Needs changes`. Scope types follow
- * docs/content/content-review-workflow.md §6.
+ * The designated teacher performs the fixed #360 review under these explicit
+ * repository-defined human roles. A single person may act in multiple roles,
+ * but content-review-workflow.md requires each role's findings to be recorded
+ * separately. Export therefore emits one repository-standard artifact section
+ * per role group rather than attributing every scope to one generic role.
+ *
+ * `review-status` and `scope-compliance` are intentionally absent: those are
+ * maintainer/mechanical publication concerns and are not silently approved by
+ * the teacher portal.
+ *
+ * This mapping is frozen for campaign `issue-360-launch-v1`. If the role/scope
+ * contract changes, create a new campaign id rather than reinterpreting stored
+ * human decisions under a different authority model.
  */
-export const TEACHER_REVIEW_SCOPES = [
-  'learner-facing-strings',
-  'script-provenance',
-  'teaching-accuracy',
-  'regional-accuracy',
-  'source-license',
-  'pronunciation-guidance',
-  'review-status',
-  'scope-compliance',
+export const TEACHER_REVIEW_ROLE_SCOPE_GROUPS = [
+  {
+    role: 'human-language-reviewer',
+    scopes: ['learner-facing-strings'],
+  },
+  {
+    role: 'human-script-verifier',
+    scopes: ['script-provenance'],
+  },
+  {
+    role: 'human-teaching-reviewer',
+    scopes: ['teaching-accuracy', 'pronunciation-guidance'],
+  },
+  {
+    role: 'human-regional-reviewer',
+    scopes: ['regional-accuracy'],
+  },
+  {
+    role: 'human-source-reviewer',
+    scopes: ['source-license'],
+  },
 ] as const;
+
+/** Primary persisted role for the decision row; the complete frozen role/scope
+ * mapping is recorded by the exported artifact bundle above. */
+export const TEACHER_REVIEW_ROLE = TEACHER_REVIEW_ROLE_SCOPE_GROUPS[0].role;
+
+export const TEACHER_REVIEW_SCOPES = TEACHER_REVIEW_ROLE_SCOPE_GROUPS.flatMap(
+  (group) => [...group.scopes],
+);
 
 /**
  * The designated #360 reviewer email(s). Bound to the deployment; the Cloudflare
