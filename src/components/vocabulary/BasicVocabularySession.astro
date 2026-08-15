@@ -210,6 +210,11 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-traditional {
+    /* Reveal hierarchy (#369): the traditional form is the supplementary
+     * comparison, visually demoted from the reading/meaning unit above it. */
+    margin-top: var(--space-sm);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--c-border);
     color: var(--c-text-secondary);
     font-size: 0.9375rem;
   }
@@ -327,7 +332,7 @@ const sessionSize = Math.min(10, ids.length);
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
     column-gap: clamp(0.75rem, 3vw, 1.5rem);
-    row-gap: var(--space-2xs);
+    row-gap: var(--space-xs);
     width: 100%;
     max-width: 24rem;
     margin: 0;
@@ -379,6 +384,15 @@ const sessionSize = Math.min(10, ids.length);
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  @media (max-width: 480px) {
+    .basic-vocabulary-illustration {
+      /* Mobile ergonomics (#369): the reveal illustration is answer feedback,
+       * not the card anchor — cap it lower on phones so the word, the answer,
+       * and the rating controls stay reachable without excess scroll. */
+      max-height: min(30vh, 240px);
+    }
   }
 
   @media (max-width: 359px) {
