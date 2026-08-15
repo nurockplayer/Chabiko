@@ -1,29 +1,29 @@
-# Account-Sync 部署與 Rollback Runbook
+# Account-Sync Deployment and Rollback Runbook
 
-本 runbook 描述 account-sync 上線後，Chabiko 的靜態部署、Supabase／Google 設定、Cloudflare Pages 建置與 guest-only rollback 流程。對應 Issue #294 的 Deployment/rollback 驗收域（Domain 9）。
+This runbook describes Chabiko's static deployment, Supabase/Google configuration, Cloudflare Pages build, and guest-only rollback after account-sync is enabled. It corresponds to Issue #294 Deployment/Rollback acceptance (Domain 9).
 
-來源：Issue #293 的 account-sync 實作與 Issue #294 的 release acceptance。本檔只保存可重用的部署與 rollback 流程，不重複記載 domain 的 runtime 行為。
+Source: the account-sync implementation from Issue #293 and release acceptance from Issue #294. This document preserves the reusable deployment/rollback workflow and does not restate domain runtime behavior.
 
-## 1. Astro 維持 static-first
+## 1. Astro remains static-first
 
-Chabiko 維持 ADR-0001（static-first v1）決策。`astro.config.mjs` 保持 `output: 'static'`，沒有 SSR adapter、沒有 server endpoint。
+Chabiko preserves the ADR-0001 static-first decision. `astro.config.mjs` remains `output: 'static'`; there is no SSR adapter and no server endpoint.
 
-- build 指令：`pnpm build`（`astro build`）。
-- 產出目錄：`dist/`（`.gitignore` 已忽略）。
-- 部署平台：Cloudflare Pages（`site` 為 `https://chabiko.pages.dev`）。
-- 選用 account-sync 後，static 架構不變：Supabase 只是瀏覽器端的第三方服務，不引入 serverless function 或 build 時資料抓取。
+- Build command: `pnpm build` (`astro build`).
+- Output directory: `dist/` (`.gitignore` ignores it).
+- Deployment platform: Cloudflare Pages (`site` is `https://chabiko.pages.dev`).
+- Enabling optional account sync does not change the static architecture. Supabase is a browser-side third-party service and does not introduce a serverless function or build-time data fetch.
 
-## 2. 必須能建置的 route
+## 2. Routes that must build successfully
 
-Release acceptance 要求下列三條 route 在靜態建置後確實存在（對應的 build 測試見 `tests/build/teacher-preview-build.test.ts`）：
+Release acceptance requires these three routes to exist after a static build. The corresponding build assertions are in `tests/build/teacher-preview-build.test.ts`:
 
-| Route | 產出檔 | 關鍵 marker |
+| Route | Output file | Key marker |
 | --- | --- | --- |
-| Auth callback | `dist/auth/callback/index.html` | `data-supabase-auth-callback`、`data-supabase-auth-callback-status`（`aria-live="polite"`、`robots=noindex,nofollow`） |
-| 基礎詞彙首頁 | `dist/vocabulary/basic/index.html` | `data-basic-vocabulary-account`、`data-basic-vocabulary-session`、`id="basic-vocabulary-data"` |
-| 基礎詞彙單字表 | `dist/vocabulary/basic/words/index.html` | `data-basic-vocabulary-catalog` |
+| Auth callback | `dist/auth/callback/index.html` | `data-supabase-auth-callback`, `data-supabase-auth-callback-status` (`aria-live="polite"`, `robots=noindex,nofollow`) |
+| Basic-vocabulary home | `dist/vocabulary/basic/index.html` | `data-basic-vocabulary-account`, `data-basic-vocabulary-session`, `id="basic-vocabulary-data"` |
+| Basic-vocabulary catalog | `dist/vocabulary/basic/words/index.html` | `data-basic-vocabulary-catalog` |
 
-驗證方式：
+Validation:
 
 ```sh
 pnpm build
@@ -32,20 +32,22 @@ test -f dist/vocabulary/basic/index.html
 test -f dist/vocabulary/basic/words/index.html
 ```
 
-即使環境完全沒有 Supabase 變數，`pnpm build` 也必須成功（guest-only 模式，Domain 1）。CI（`.github/workflows/ci.yml`）在無 Supabase 環境下執行正式 `pnpm build`，並直接斷言上述三個 `dist/` route artifacts；任何讓 build 依賴 Supabase 或改壞 Pages 預設輸出目錄的變動都會失敗。
+`pnpm build` must succeed even when no Supabase environment variable is configured. That is the guest-only mode required by Domain 1. CI (`.github/workflows/ci.yml`) runs the production `pnpm build` without Supabase configuration and directly asserts these three `dist/` route artifacts. Any change that makes the build depend on Supabase or breaks the Pages output directory must fail.
 
-## 3. 建置輸出的機密性保證
+## 3. Secret-hygiene guarantee for build output
 
-account-sync 的 auth、sync 與 privacy 驗收（Domain 2、7）依賴「client bundle 只內嵌公開值」的保證。規則：
+Account-sync auth/sync/privacy acceptance (Domains 2 and 7) depends on the guarantee that the client bundle embeds public values only.
 
-- 只允許透過 `PUBLIC_` 前綴把變數內嵌進 client bundle：`PUBLIC_SUPABASE_URL`、`PUBLIC_SUPABASE_PUBLISHABLE_KEY`。
-- `.env.example` 只暴露這兩個公開變數的空值。
-- `src/env.d.ts` 只宣告這兩個變數；`readSupabasePublicConfig()` 在 URL 非合法絕對 http(s) URL、或 publishable key 為空白時回傳 `null`（key 只需非空字串，不要求是 URL；只有 URL 需為絕對 http(s)）。
-- 任何非 `PUBLIC_` 的 secret（service role key、JWT secret、Google client secret、anon key）都必須只存在於環境變數中，且不得在 build 時被任何途徑帶進 `dist/`。
+Rules:
 
-## 4. 機密性 build 掃描
+- Only `PUBLIC_`-prefixed values may be embedded in the client bundle: `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- `.env.example` exposes only empty placeholders for those two public values.
+- `src/env.d.ts` declares only those two values. `readSupabasePublicConfig()` returns `null` when the URL is not a valid absolute HTTP(S) URL or the publishable key is blank. The key only needs to be a non-empty string; only the URL must be an absolute HTTP(S) URL.
+- Any non-`PUBLIC_` secret, including service-role key, JWT secret, Google client secret, and anon JWT key, remains environment-only and must never reach `dist/` through the build.
 
-發佈前或 CI 之後，用 decoy secret 跑一次「production-shaped」build 並掃描輸出，確認沒有任何 secret 漏入靜態檔案：
+## 4. Secret-hygiene build scan
+
+Before release or after CI, run a production-shaped build with decoy secrets and scan the output to prove secrets are not embedded in static files:
 
 ```sh
 PUBLIC_SUPABASE_URL='https://acceptance-test-project.supabase.co' \
@@ -57,64 +59,65 @@ SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.acceptance-anon-decoy' \
 pnpm build --outDir dist/scan-verify
 ```
 
-預期結果：
+Expected result:
 
-- `https://acceptance-test-project.supabase.co` 與 `sb_publishable_acceptance_public_key_0001` 會出現在輸出（公開值，原本就該內嵌）。
-- 四個 decoy secret 的值都不得出現在輸出。
-- 輸出不得出現 `eyJ`（JWT header 特徵）、`sb_secret_` 字首、或 `SERVICE_ROLE_KEY`／`GOOGLE_CLIENT_SECRET`／`SUPABASE_SECRET_KEY`／`JWT_SECRET`／`SUPABASE_ANON_KEY` 等 env name 字面。
+- `https://acceptance-test-project.supabase.co` and `sb_publishable_acceptance_public_key_0001` may appear because they are intentionally public values.
+- None of the four decoy-secret values may appear.
+- Output must not contain the `eyJ` JWT-header signature, the `sb_secret_` prefix, or environment-name literals such as `SERVICE_ROLE_KEY`, `GOOGLE_CLIENT_SECRET`, `SUPABASE_SECRET_KEY`, `JWT_SECRET`, or `SUPABASE_ANON_KEY`.
 
-此掃描已自動化於 `tests/build/teacher-preview-build.test.ts` 的 `Deployment — static account-sync routes and secret hygiene` describe，隨 `pnpm test` 執行。
+This scan is automated in the `Deployment — static account-sync routes and secret hygiene` describe block in `tests/build/teacher-preview-build.test.ts` and runs with `pnpm test`.
 
-## 5. Credential-free 設定 runbook
+## 5. Credential-free configuration runbook
 
 ### 5.1 Supabase
 
-- 不需要在 client 或 build 側設定任何 secret。瀏覽器只使用公開的 Project URL 與 publishable key。
-- 資料庫 schema 與 RLS 由 migration 管理：`supabase/migrations/`（basic-vocabulary progress 與 stale-generation policy 兩個 migration）。
-- migration 全部使用 security invoker RPC（owner 身分推導的 reset generation），沒有 security definer、沒有 service role 路徑。RLS 強制、owner 權限、anon／其他 user 拒絕，由 `tests/supabase-basic-vocabulary-schema.test.ts`（live database）驗證。
-- 需要發布 migration 到 Supabase 專案時（一般由具備資料庫權限的維護者執行）：
+The browser/build side needs no secret. The browser uses only the public Project URL and publishable key.
+
+- Database schema and RLS are managed by migrations under `supabase/migrations/` (basic-vocabulary progress and stale-generation policy migrations).
+- The migrations use security-invoker RPC for reset generation derived from owner identity. There is no security-definer or service-role path. Forced RLS, owner permissions, and anon/other-user rejection are verified by `tests/supabase-basic-vocabulary-schema.test.ts` against a live database.
+- To publish migrations to a Supabase project, a maintainer with database access normally runs:
 
 ```sh
 supabase link --project-ref <PROJECT_REF>
 supabase db push
 ```
 
-- 不要在 Cloudflare Pages 或 client 端放置 `service_role`、`anon`（JWT）或任何 secret。`anon` key 在 Supabase 專案中仍有用途，但 Chabiko 的 client 不需要；只配置公開的 publishable key。
+Do not put `service_role`, anon JWT keys, or any secret in Cloudflare Pages or in the client. Supabase projects may still expose an anon key for other purposes, but Chabiko's client does not need it; configure only the public publishable key.
 
-### 5.2 Google OAuth（Supabase Auth Provider）
+### 5.2 Google OAuth through Supabase Auth
 
-Google PKCE 流程由 Supabase Auth 的 `[auth.external.google]` provider 提供。本地 `supabase/config.toml` 沒有啟用任何 Google provider block（`google` 只在 provider 清單註解中出現）；正式專案的 Google OAuth credentials 在 Supabase dashboard 設定，不外推到 client。
+The Google PKCE flow is provided by Supabase Auth's `[auth.external.google]` provider. Local `supabase/config.toml` does not enable a Google provider block (`google` appears only in the provider-list comments). Production Google OAuth credentials are configured in the Supabase dashboard and are never pushed into the Chabiko client.
 
-正式專案啟用時，在 Supabase dashboard 的 Authentication → Providers 設定：
+For production provider setup in Supabase Authentication → Providers:
 
-- 建立 Google OAuth 2.0 client（Cloud Console），授權 callback 為 Supabase 專案的 `https://<PROJECT_REF>.supabase.co/auth/v1/callback`。
-- 在 Supabase 填入 Client ID 與 Client secret（secret 只存在 Supabase 後端，不進 Chabiko repo、不進 Pages）。
-- 上述 Google Cloud callback 是 **Google → Supabase provider**，不是 Chabiko 的 app redirect。
+- Create a Google OAuth 2.0 client in Google Cloud Console. The authorized callback is Supabase's provider callback: `https://<PROJECT_REF>.supabase.co/auth/v1/callback`.
+- Enter the Client ID and Client secret in Supabase. The secret stays on the Supabase backend and never enters the Chabiko repository or Pages configuration.
+- That Google Cloud callback is **Google → Supabase provider**, not Chabiko's application redirect.
 
-另外在 Supabase dashboard 的 Authentication → URL Configuration 設定 **Supabase → Chabiko app**：
+Separately configure **Supabase → Chabiko application** in Supabase Authentication → URL Configuration:
 
-- Site URL：`https://chabiko.pages.dev/`。
-- Redirect URLs 加入 exact production URL：`https://chabiko.pages.dev/auth/callback/`。client 傳給 Supabase 的 `redirectTo` 必須匹配這份 allowlist，否則 PKCE 回程不保證回到 Chabiko callback。
-- production 不得使用 `*`／`**` 寬 wildcard。Preview deployment 預設維持 guest-only；只有需要登入驗收時，才暫時加入該次 preview origin 的 exact `<PREVIEW_ORIGIN>/auth/callback/`，完成後移除。
-- Local Google Auth 預設不啟用；若維護者明確需要本機登入驗收，只加入當次實際 origin 的 exact URL（例如 `http://localhost:4321/auth/callback/`），不得加入全路徑 wildcard，驗收後移除。
+- Site URL: `https://chabiko.pages.dev/`.
+- Redirect URLs include the exact production URL `https://chabiko.pages.dev/auth/callback/`. The client's `redirectTo` must match this allowlist or the PKCE return is not guaranteed to reach the Chabiko callback.
+- Production must not use broad `*` or `**` wildcards. Preview deployments stay guest-only by default. Only when login acceptance is explicitly needed, temporarily add that preview origin's exact `<PREVIEW_ORIGIN>/auth/callback/` and remove it afterward.
+- Local Google Auth is disabled by default. If a maintainer explicitly needs local login acceptance, add only the exact origin used for that run, for example `http://localhost:4321/auth/callback/`; do not add a whole-path wildcard, and remove it after acceptance.
 
-Supabase 完成 exchange 後會導回 Chabiko 的 auth callback route；Chabiko 再只允許 app 內 allowlist 的學習回傳路徑（`/vocabulary/basic/`、`/vocabulary/basic/words/`）。這三層 allowlist（Google provider callback、Supabase app Redirect URLs、Chabiko app 內回傳路徑）不得混用。
+After Supabase completes the exchange it returns to Chabiko's auth-callback route. Chabiko then permits only application-internal return paths from its allowlist: `/vocabulary/basic/` and `/vocabulary/basic/words/`. Do not conflate the three allowlists: Google provider callback, Supabase application Redirect URLs, and Chabiko's application return paths.
 
 ### 5.3 Cloudflare Pages
 
-- 建置指令：`pnpm build`。
-- 輸出目錄：`dist`。
-- 只需要設定兩個公開環境變數（若要有帳號功能）：
+- Build command: `pnpm build`.
+- Output directory: `dist`.
+- Only two public environment variables are needed when account functionality is enabled:
 
-```
+```text
 PUBLIC_SUPABASE_URL = https://<PROJECT_REF>.supabase.co
 PUBLIC_SUPABASE_PUBLISHABLE_KEY = <publishable key>
 ```
 
-- **不得**在 Pages 設定 `SUPABASE_SERVICE_ROLE_KEY`、`SUPABASE_JWT_SECRET`、`GOOGLE_CLIENT_SECRET` 或其他 secret 變數。Pages 的變數若帶 `PUBLIC_` 前綴會內嵌進 client bundle，非 `PUBLIC_` 前綴雖不會被 Astro 內嵌，但為了最小攻擊面，任何 secret 都不應出現在 Pages 的變數清單。
-- 完全不安裝這兩個變數時，Pages 仍可建置並提供 guest-only 體驗（見 §7 rollback）。
+- Do **not** configure `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`, `GOOGLE_CLIENT_SECRET`, or other secrets in Pages. Variables with a `PUBLIC_` prefix are embedded into the client bundle by design. Non-`PUBLIC_` values are not embedded by Astro, but secrets still must not be present in the Pages variable list in order to minimize attack surface.
+- When neither public variable is configured, Pages must still build and provide the guest-only experience described in the rollback section.
 
-## 6. 正式發布前的驗證清單
+## 6. Pre-release validation checklist
 
 ```sh
 supabase start
@@ -123,39 +126,40 @@ supabase db lint --local --level warning --fail-on warning
 supabase db advisors --local --type all --level info --fail-on warn
 pnpm lint
 pnpm typecheck
-CHABIKO_REQUIRE_LIVE_SUPABASE=1 pnpm test  # stack/CLI 缺失時 fail closed，不得靜默 skip live suites
+CHABIKO_REQUIRE_LIVE_SUPABASE=1 pnpm test  # fail closed if stack/CLI is unavailable; live suites must not silently skip
 pnpm build
-pnpm test:visual   # 需要可用的瀏覽器環境
+pnpm test:visual   # requires the browser environment
+
 git diff --check
 ```
 
-`CHABIKO_REQUIRE_LIVE_SUPABASE=1` 是 release gate：若 Supabase CLI、Docker 或 local stack 不可用，兩個 live suites 會在 collection 時直接失敗；一般無 DB 的日常／GitHub test 仍可維持明示 skip。
+`CHABIKO_REQUIRE_LIVE_SUPABASE=1` is a release gate. If Supabase CLI, Docker, or the local stack is unavailable, both live suites fail during collection. Ordinary GitHub/daily tests without a database may still use their explicit skip behavior.
 
-另外手動確認：
+Also verify manually:
 
-- callback route 在無登入狀態下 200 且不顯示任何 token。
-- Supabase Authentication → URL Configuration 的 Redirect URLs 含 exact `https://chabiko.pages.dev/auth/callback/`，且 production 無寬 wildcard。
-- Google 登入後，回傳路徑只在 allowlist 內；錯的回傳路徑被安全處理（無 raw error）。
-- 多裝置同步與 reset 的既有 acceptance 測試通過。
+- the callback route returns 200 while logged out and displays no token;
+- Supabase Authentication → URL Configuration contains exact `https://chabiko.pages.dev/auth/callback/` and production has no broad wildcard;
+- after Google login, the application return path remains inside the allowlist and an invalid return path is handled safely without displaying a raw error;
+- existing multi-device synchronization and reset acceptance tests pass.
 
-## 7. Rollback：回到 guest-only
+## 7. Rollback to guest-only
 
-account-sync 的設計是「local-first、optional account」：guest 學習進度存在本地 legacy key（`chabiko:basic-vocabulary-progress:v1`），帳號進度存在 user-scoped key（`chabiko:basic-vocabulary-progress:user:{userId}:v1`）。因此 rollback 不需要刪除任何人的進度。
+Account sync is local-first and optional. Guest progress uses the legacy key `chabiko:basic-vocabulary-progress:v1`; signed-in progress uses the user-scoped key `chabiko:basic-vocabulary-progress:user:{userId}:v1`. Therefore rollback does not require deleting any learner's progress.
 
-### 7.1 靜態站 rollback（Cloudflare Pages）
+### 7.1 Static-site rollback on Cloudflare Pages
 
-1. 若已有先前成功建置且驗證為 guest-only 的 production deployment：進入 Pages 專案的 **Deployments → All deployments**，在目標 deployment 的 `…` 選單選 **Rollback to this deployment** 並確認。只有成功的 production deployment 可用；Preview deployment 不能作為 rollback target。
-2. 在 Pages production 環境移除 `PUBLIC_SUPABASE_URL` 與 `PUBLIC_SUPABASE_PUBLISHABLE_KEY`，確保後續 build 也維持 guest-only。這不會改寫已建置 artifact；步驟 1 的 rollback target 本身必須已是 guest-only。
-3. 若沒有可用的 guest-only production deployment：先移除上述兩個 production 變數，再從已驗證的 `main` commit 觸發一次全新的 production build（或透過正常 PR revert 到已驗證 guest-only commit 後部署）。不得把 Pages 的 production branch 設定當成 commit selector。
-4. 確認 `/auth/callback`、`/vocabulary/basic`、`/vocabulary/basic/words` 仍可載入，且 client 回退為 guest-only（不顯示登入 UI、不嘗試連 Supabase）。
-5. 驗證：`readSupabasePublicConfig()` 在缺少任一變數時回傳 `null`，`getSupabaseBrowserClient()` 回傳 `null`，頁面以 legacy guest key 正常運作。
+1. If a previously successful production deployment is known to be guest-only, open Pages → **Deployments → All deployments**, use the target deployment's `…` menu, select **Rollback to this deployment**, and confirm. Only a successful production deployment is eligible; a Preview deployment cannot be a rollback target.
+2. Remove `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` from the Pages production environment so future builds also remain guest-only. This does not rewrite an already-built artifact; the rollback target from step 1 must itself already be guest-only.
+3. If no guest-only production deployment is available, remove those two production variables first and trigger a fresh production build from a validated `main` commit, or use the normal PR workflow to revert to a validated guest-only commit and deploy it. Do not use the Pages production-branch setting as a commit selector.
+4. Confirm `/auth/callback`, `/vocabulary/basic`, and `/vocabulary/basic/words` still load and the client falls back to guest-only behavior: no login UI and no Supabase connection attempt.
+5. Verify `readSupabasePublicConfig()` returns `null` when either variable is missing, `getSupabaseBrowserClient()` returns `null`, and the learner experience continues using the legacy guest key.
 
-### 7.2 進度保存保證
+### 7.2 Progress preservation guarantee
 
-- 使用者的 guest 進度與帳號進度分離儲存；rollback 到 guest-only 後，同一瀏覽器仍可讀取 legacy guest key 的進度。
-- 已登入使用者的 user-scoped 進度仍留在瀏覽器 local storage 與 Supabase；若日後重新啟用帳號功能，同一 Supabase user 會回到自己的進度（user ID 由 Supabase auth identity 單一來源決定，見 `src/domain/basicVocabularyProgressScope.ts`）。
-- 不進行任何破壞性資料操作（不清空 local storage、不刪 Supabase rows）。
+- Guest and account progress use separate storage scopes. After guest-only rollback, the same browser can still read progress from the legacy guest key.
+- Signed-in users' user-scoped progress remains in browser local storage and Supabase. If account functionality is re-enabled later, the same Supabase user returns to their own progress. Supabase auth identity is the sole source of the user ID, as defined by `src/domain/basicVocabularyProgressScope.ts`.
+- Perform no destructive data operation: do not clear local storage and do not delete Supabase rows.
 
-### 7.3 變更範圍
+### 7.3 Change boundary
 
-rollback 時不需要動到 migration、schema 或 RLS。只要前端 build 與 Pages 變數回退，即可恢復 guest-only 行為；正式環境不會執行任何 migration 回滾。
+Rollback does not require reverting migrations, schema, or RLS. Reverting the frontend build and Pages public variables is sufficient to restore guest-only behavior; production performs no migration rollback.
