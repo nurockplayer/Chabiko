@@ -19,6 +19,19 @@ const basicVocabularySource = readSource(
 const basicVocabularyPageSource = readSource(
   '../src/pages/vocabulary/basic/index.astro',
 );
+const basicVocabularyWordsSource = readSource(
+  '../src/pages/vocabulary/basic/words/index.astro',
+);
+const basicVocabularyQuizSource = readSource(
+  '../src/pages/vocabulary/basic/quiz/index.astro',
+);
+const pathsSource = readSource('../src/pages/paths/index.astro');
+const phrasebookSource = readSource('../src/pages/phrasebook/index.astro');
+const toneSource = readSource('../src/pages/practice/tones/index.astro');
+const wordOrderSource = readSource('../src/pages/practice/word-order/index.astro');
+const kanjiBridgeSource = readSource(
+  '../src/pages/vocabulary/kanji-bridge/index.astro',
+);
 const basicPreviewDevSource = readSource(
   '../src/pages/dev/vocabulary/basic-preview/index.astro',
 );
@@ -55,16 +68,32 @@ describe('Direction C production journey presentation', () => {
     expect(headerSource).not.toContain('chabiko_completed_lessons');
   });
 
-  it('limits the theme integration to the production learning journey', () => {
+  it('makes the theme integration available to every learner route without a second mechanism', () => {
     expect(baseLayoutSource).toContain("data-theme-enabled={themeEnabled ? 'true' : undefined}");
     expect(baseLayoutSource).toContain(
       ":root[data-theme-enabled='true'][data-theme='dark']",
     );
+    // The single BaseLayout theme mechanism is opt-in via the same themeEnabled
+    // prop on every learner route: Dashboard, lessons, and all tracks/auxiliary
+    // learner surfaces share the one pre-paint/storage bootstrap.
     expect(homeSource).toContain('<BaseLayout title="ホーム" themeEnabled>');
     expect(homeSource).toContain('<Header themeEnabled />');
     expect(lessonSource).toContain('themeEnabled>');
     expect(lessonSource).toContain('<Header themeEnabled />');
-    expect(hskSource).not.toContain('themeEnabled');
+    for (const source of [
+      hskSource,
+      basicVocabularyPageSource,
+      basicVocabularyWordsSource,
+      basicVocabularyQuizSource,
+      pathsSource,
+      phrasebookSource,
+      toneSource,
+      wordOrderSource,
+      kanjiBridgeSource,
+    ]) {
+      expect(source).toContain('themeEnabled');
+    }
+    // Non-learner surfaces (404, auth, dev previews, teacher portal) stay opt-out.
     expect(notFoundSource).not.toContain('themeEnabled');
   });
 
@@ -136,20 +165,31 @@ describe('Direction C token scoping', () => {
     expect(baseline).toContain('--c-surface: #ffffff');
     expect(baseline).toContain('--c-text: #1a1a1a');
     expect(baseline).toContain('--c-accent: #2563eb');
-    expect(baseline).toContain('--radius: 8px');
+    expect(baseline).toContain('--radius: 4px');
     expect(baseline).toContain('--max-w: 48rem');
     expect(baseline).not.toContain('color-scheme');
   });
 
-  it('limits theme opt-in to home and lesson routes', () => {
+  it('opt-ins the theme on learner routes and keeps non-learner surfaces out', () => {
     expect(homeSource).toContain('<BaseLayout title="ホーム" themeEnabled>');
     expect(homeSource).toContain('<Header themeEnabled />');
     expect(lessonSource).toContain('themeEnabled>');
     expect(lessonSource).toContain('<Header themeEnabled />');
     for (const source of [
       hskSource,
-      notFoundSource,
       basicVocabularyPageSource,
+      basicVocabularyWordsSource,
+      basicVocabularyQuizSource,
+      pathsSource,
+      phrasebookSource,
+      toneSource,
+      wordOrderSource,
+      kanjiBridgeSource,
+    ]) {
+      expect(source).toContain('themeEnabled');
+    }
+    for (const source of [
+      notFoundSource,
       basicPreviewDevSource,
       teacherPreviewDevSource,
     ]) {
@@ -168,7 +208,7 @@ describe('Direction C token scoping', () => {
   it('owns Direction C light tokens only in the light theme-enabled scope', () => {
     expect(light).toContain('--color-page: #f4f1ec');
     expect(light).toContain('--color-accent: #d48c2b');
-    expect(light).toContain('--radius: 0');
+    expect(light).toContain('--radius: 4px');
     expect(light).toContain('--max-w: 80rem');
     expect(light).toContain('color-scheme: light');
     expect(dark).not.toContain('--color-page: #f4f1ec');

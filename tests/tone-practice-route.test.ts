@@ -248,7 +248,7 @@ describe('tone route wiring', () => {
 describe('tone route page structure', () => {
   it('page source renders a route shell with title, subtitle, and back link', () => {
     const source = readAstroSource('src/pages/practice/tones/index.astro');
-    expect(source).toMatch(/<BaseLayout title="声調練習">/);
+    expect(source).toMatch(/<BaseLayout title="声調練習" themeEnabled>/);
     expect(source).toMatch(/声調の形を見て、正しい声調を選びましょう/);
     expect(source).toMatch(/ホームに戻る/);
   });

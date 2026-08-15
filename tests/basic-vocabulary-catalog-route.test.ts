@@ -27,7 +27,7 @@ describe('basic vocabulary catalog route', () => {
     const route = await readFile('src/pages/vocabulary/basic/words/index.astro', 'utf8');
     const component = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    expect(route).toContain('<BaseLayout title="単語一覧">');
+    expect(route).toContain('<BaseLayout title="単語一覧" themeEnabled>');
     expect(route).toContain('<h1>単語一覧</h1>');
 
     const backLinkIndex = component.indexOf('href="/vocabulary/basic/"');

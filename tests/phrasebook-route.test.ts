@@ -628,7 +628,7 @@ describe('/phrasebook/ — SSR route surface (Issue #236, fail-closed)', () => {
   });
 
   it('includes the Header in the header slot with the global script-preference select', () => {
-    expect(routeSource).toContain('<Header />');
+    expect(routeSource).toContain('<Header themeEnabled />');
     expect(routeSource).toContain('slot="header"');
     expect(builtHtml).toContain('id="script-preference-select"');
     expect(builtHtml).toContain('コース標準');

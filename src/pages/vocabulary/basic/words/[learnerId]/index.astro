@@ -1,5 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import Header from '../../../../../components/Header.astro';
+import Breadcrumb from '../../../../../components/Breadcrumb.astro';
 import BasicVocabularyDetail from '../../../../../components/vocabulary/BasicVocabularyDetail.astro';
 import {
   toBasicVocabularyDetailItem,
@@ -22,8 +24,20 @@ export const getStaticPaths = (() => {
 const { item } = Astro.props as { item: BasicVocabularyDetailItem };
 ---
 
-<BaseLayout title={item.simplified}>
+<BaseLayout title={item.simplified} themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
   <div class="basic-vocabulary-detail-page">
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '先生厳選単語', href: '/vocabulary/basic/' },
+        { label: '単語一覧', href: '/vocabulary/basic/words/' },
+        { label: item.simplified },
+      ]}
+    />
     <BasicVocabularyDetail item={item} />
   </div>
 </BaseLayout>
