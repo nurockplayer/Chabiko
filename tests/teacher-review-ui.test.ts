@@ -18,6 +18,7 @@ import {
   toggleNeedsChangesOnly,
   type ReviewUiRecord,
 } from '../src/domain/teacherReviewUi';
+import { toTeacherFacingReviewContent } from '../src/domain/teacherReviewPublic';
 import { resolveCurrentCampaign } from '../src/content/loadTeacherReviewCampaign';
 
 async function loadUiRecords(): Promise<ReviewUiRecord[]> {
@@ -26,7 +27,7 @@ async function loadUiRecords(): Promise<ReviewUiRecord[]> {
     id: record.id,
     type: record.type,
     scenario: record.scenario,
-    content: record.content,
+    content: toTeacherFacingReviewContent(record),
   }));
 }
 
@@ -41,17 +42,15 @@ describe('teacher-review UI state', () => {
     expect(snap.visibleCount).toBe(36);
   });
 
-  it('navigates next/previous within the filtered list and wraps boundaries', async () => {
+  it('navigates next/previous within the filtered list and clamps boundaries', async () => {
     const records = await loadUiRecords();
     let state = createReviewUiState(records, records.map(() => null));
     state = navigateNext(state);
     expect(snapshot(state).current?.id).toBe(records[1].id);
     state = navigatePrevious(state);
     expect(snapshot(state).current?.id).toBe(records[0].id);
-    // Clamp at the start.
     state = navigatePrevious(state);
     expect(snapshot(state).current?.id).toBe(records[0].id);
-    // Clamp at the end.
     state = createReviewUiState(records, records.map(() => null));
     for (let i = 0; i < records.length + 5; i += 1) state = navigateNext(state);
     expect(snapshot(state).current?.id).toBe(records[records.length - 1].id);
@@ -61,7 +60,7 @@ describe('teacher-review UI state', () => {
     const records = await loadUiRecords();
     const foodRecords = records.filter((record) => record.scenario === 'food');
     let state = createReviewUiState(records, records.map(() => null));
-    state = navigateNext(state); // move to index 1
+    state = navigateNext(state);
     state = setScenarioFilter(state, 'food');
     const snap = snapshot(state);
     expect(snap.scenarioFilter).toBe('food');
