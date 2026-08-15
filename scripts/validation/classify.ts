@@ -283,6 +283,13 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/achievements.test.ts'],
   },
   {
+    // #374 learner Dashboard presentation + build-time payload (must precede
+    // the generic `progress` rule so `dashboardprogress` maps to the Dashboard
+    // suite, not the progress suite).
+    match: (b) => b.includes('dashboard'),
+    testGlobs: ['tests/dashboard.test.ts'],
+  },
+  {
     match: (b) => b.includes('progress'),
     testGlobs: ['tests/progress*.test.ts', 'tests/home-progress-lifecycle.test.ts'],
   },

@@ -1,469 +1,91 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { buildDashboardProgressPayload } from '../src/content/dashboardPayload';
+import { DASHBOARD_TRACK_ORDER } from '../src/domain/dashboardProgress';
 
 const readSource = (path: string) =>
   readFileSync(new URL(path, import.meta.url), 'utf8');
 
 const homeSource = readSource('../src/pages/index.astro');
+const studyRouteSource = readSource('../src/pages/vocabulary/basic/index.astro');
+const domainSource = readSource('../src/domain/dashboardProgress.ts');
 
-// Extract the lessons-successful branch by finding the region between
-// `lessons.length > 0 ? (` and the LAST `) : (` which closes the ternary.
-const branchStart =
-  homeSource.indexOf('lessons.length > 0 ? (') + 'lessons.length > 0 ? ('.length;
-const branchEnd = homeSource.lastIndexOf(') : (');
-const lessonsBranch = homeSource.slice(branchStart, branchEnd);
+// Issue #374 intentionally replaces the old static home-entry composition
+// (the `#basic-vocabulary-entry` section at an exact source position) with the
+// three-track learner Dashboard. The basic-vocabulary capability and its
+// destinations are preserved: the Dashboard track card leads to the study
+// route, and the study route keeps the catalog CTA. This suite is the
+// intentional migration of the former source-placement contract into an
+// equivalent discoverability contract.
 
-// Fallback branch: the content between `) : (` and `)</BaseLayout>`
-const fallbackBranch = homeSource.slice(
-  homeSource.lastIndexOf(') : (') + ') : ('.length,
-  homeSource.lastIndexOf('</BaseLayout>'),
-);
-
-// The home script block
-const scriptMatch = homeSource.match(/<script>([\s\S]*?)<\/script>/);
-const homeScript = scriptMatch?.[1] ?? '';
-
-// The new entry section: from `<section id="basic-vocabulary-entry"` (it is
-// allowed to span lines) to its closing `</section>`.
-const entryMatch = homeSource.match(
-  /<section\s+id="basic-vocabulary-entry"[\s\S]*?<\/section>/,
-);
-const entry = entryMatch?.[0] ?? '';
-
-describe('basic-vocabulary home entry', () => {
-  describe('existence and placement', () => {
-    it('exists exactly once on the homepage', () => {
-      const matches = homeSource.match(/id="basic-vocabulary-entry"/g);
-      expect(matches).toHaveLength(1);
+describe('basic-vocabulary home entry (Dashboard migration)', () => {
+  describe('the static entry is replaced by the Dashboard', () => {
+    it('no longer places a #basic-vocabulary-entry section on the home page', () => {
+      expect(homeSource).not.toContain('basic-vocabulary-entry');
+      expect(homeSource).not.toContain('class="home-journey"');
+      expect(homeSource).not.toContain('単語一覧を見る');
     });
 
-    it('is outside and before the lessons.length > 0 conditional in source structure', () => {
-      const conditionalIndex = homeSource.indexOf('lessons.length > 0 ? (');
-      const entryIndex = homeSource.indexOf('id="basic-vocabulary-entry"');
-      expect(conditionalIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeLessThan(conditionalIndex);
+    it('renders exactly the three first-class track cards in canonical order', () => {
+      expect(DASHBOARD_TRACK_ORDER).toEqual([
+        'basic-vocabulary',
+        'hsk',
+        'taiwan-travel',
+      ]);
+      expect(homeSource).toContain('DASHBOARD_TRACK_ORDER.map');
+      expect(homeSource).toContain('data-dashboard-track={trackId}');
     });
 
-    it('does not exist inside the lessons-successful branch', () => {
-      expect(lessonsBranch).not.toContain('basic-vocabulary-entry');
-    });
-
-    it('is not inside the fallback branch either — it sits outside the conditional and always renders', () => {
-      expect(fallbackBranch).not.toContain('basic-vocabulary-entry');
-    });
-
-    it('appears before .home-journey in the normal rendered path', () => {
-      const entryIndex = homeSource.indexOf('basic-vocabulary-entry');
-      const journeyIndex = homeSource.indexOf('class="home-journey"');
-      expect(journeyIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeLessThan(journeyIndex);
-    });
-
-    it('appears before .fallback-message in the no-lessons rendered path', () => {
-      // The entry sits outside the lessons conditional (always rendered) and
-      // precedes the fallback branch, so it surfaces above the no-lessons
-      // fallback message whenever the lesson loader returns nothing.
-      const entryIndex = homeSource.indexOf('basic-vocabulary-entry');
-      const conditionalIndex = homeSource.indexOf('lessons.length > 0 ? (');
-      const fallbackMessageIndex = homeSource.indexOf(
-        'class="fallback-message"',
-      );
-      expect(entryIndex).toBeGreaterThan(0);
-      expect(conditionalIndex).toBeGreaterThan(0);
-      expect(fallbackMessageIndex).toBeGreaterThan(0);
-      expect(entryIndex).toBeLessThan(conditionalIndex);
-      expect(conditionalIndex).toBeLessThan(fallbackMessageIndex);
-    });
-
-    it('exactly one anchor links to /vocabulary/basic/', () => {
-      const links = homeSource.match(/href="\/vocabulary\/basic\/"/g);
-      expect(links).toHaveLength(1);
-    });
-
-    it('exactly one anchor links to /vocabulary/basic/words/', () => {
-      const links = homeSource.match(/href="\/vocabulary\/basic\/words\/"/g);
-      expect(links).toHaveLength(1);
+    it('uses the exact 先生厳選単語 track label', () => {
+      expect(domainSource).toContain("'先生厳選単語'");
     });
   });
 
-  describe('exact copy and markup', () => {
-    it('uses the exact eyebrow text', () => {
-      expect(homeSource).toContain('>基礎単語<');
+  describe('equivalent discoverability', () => {
+    it('keeps the study route as the Dashboard track destination (single source)', () => {
+      // The domain derivation owns the one real destination; the home page
+      // renders the card link from it (never a second hard-coded href).
+      expect(domainSource).toContain("'/vocabulary/basic/'");
+      expect(homeSource).not.toContain('href="/vocabulary/basic/"');
+      expect(studyRouteSource).toContain('イラストで学ぶ基礎中国語');
     });
 
-    it('uses the exact title text', () => {
-      expect(homeSource).toContain('イラストで学ぶ基礎中国語');
-    });
-
-    it('uses the exact description text', () => {
-      expect(homeSource).toContain(
-        '中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。',
-      );
-    });
-
-    it('uses the exact count-neutral availability text', () => {
-      expect(homeSource).toContain(
-        'イラスト付きの単語を、少しずつ練習できます。',
-      );
-    });
-
-    it('does not contain the stale batch-specific availability sentence', () => {
-      expect(homeSource).not.toContain(
-        '☆レベルの最初の単語セットを学習できます。',
-      );
-    });
-
-    it('uses the exact action label', () => {
-      expect(homeSource).toContain('単語学習を始める');
-    });
-
-    it('uses the exact catalog action label', () => {
-      expect(homeSource).toContain('単語一覧を見る');
-    });
-
-    it('links to /vocabulary/basic/', () => {
-      expect(homeSource).toContain('href="/vocabulary/basic/"');
-    });
-
-    it('links to /vocabulary/basic/words/', () => {
-      expect(homeSource).toContain('href="/vocabulary/basic/words/"');
-    });
-
-    it('the link is a native anchor with matching text', () => {
-      const linkMatch = homeSource.match(
-        /<a[^>]*class="basic-vocabulary-entry__link"[^>]*>(.*?)<\/a>/,
-      );
-      expect(linkMatch).not.toBeNull();
-      expect(linkMatch![1]).toBe('単語学習を始める');
-      expect(linkMatch![0]).toContain('href="/vocabulary/basic/"');
-    });
-
-    it('the catalog link is a native anchor with matching text', () => {
-      const linkMatch = homeSource.match(
-        /<a[^>]*class="basic-vocabulary-entry__catalog-link"[^>]*>(.*?)<\/a>/,
-      );
-      expect(linkMatch).not.toBeNull();
-      expect(linkMatch![1]).toBe('単語一覧を見る');
-      expect(linkMatch![0]).toContain('href="/vocabulary/basic/words/"');
-    });
-
-    it('the study link appears before the catalog link inside the entry', () => {
-      expect(entry).toContain('basic-vocabulary-entry__actions');
-      const studyIndex = entry.indexOf(
-        'class="basic-vocabulary-entry__link"',
-      );
-      const catalogIndex = entry.indexOf(
-        'class="basic-vocabulary-entry__catalog-link"',
-      );
-      expect(studyIndex).toBeGreaterThan(0);
-      expect(catalogIndex).toBeGreaterThan(0);
-      expect(studyIndex).toBeLessThan(catalogIndex);
+    it('keeps the catalog CTA reachable from the study route, not duplicated on home', () => {
+      expect(
+        studyRouteSource.match(
+          /href="\/vocabulary\/basic\/words\/"[^>]*>単語一覧を見る/g,
+        ),
+      ).toHaveLength(1);
+      expect(homeSource).not.toContain('/vocabulary/basic/words/');
     });
   });
 
-  describe('section markup and allowed selectors', () => {
-    it('is a <section> with id, class and aria-labelledby', () => {
-      expect(homeSource).toContain('id="basic-vocabulary-entry"');
-      expect(homeSource).toContain('class="basic-vocabulary-entry"');
-      expect(homeSource).toContain(
-        'aria-labelledby="basic-vocabulary-entry-title"',
-      );
-    });
-
-    it('only adds the exact 7 allowed selectors in the style block (rejects compound/descendant/unknown)', () => {
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      let styles = styleMatch?.[1] ?? '';
-
-      // 1. Strip CSS comments
-      styles = styles.replace(/\/\*[\s\S]*?\*\//g, '');
-
-      // 2. Extract every complete selector prelude (text before each `{`)
-      const selectorPreludes = styles
-        .split('{')
-        .slice(0, -1) // last split has no `{` after it
-        .map((s) => {
-          // Take everything after the last `}` to get the selector prelude
-          const parts = s.split('}');
-          return parts[parts.length - 1].trim();
-        })
-        .filter(Boolean);
-
-      // 3. Filter for any containing `.basic-vocabulary-entry`
-      const foundSelectors = selectorPreludes.filter((s) =>
-        s.includes('.basic-vocabulary-entry'),
-      );
-
-      const expected = [
-        '.basic-vocabulary-entry',
-        '.basic-vocabulary-entry__content',
-        '.basic-vocabulary-entry__eyebrow',
-        '.basic-vocabulary-entry__availability',
-        '.basic-vocabulary-entry__actions',
-        '.basic-vocabulary-entry__link',
-        '.basic-vocabulary-entry__link:hover',
-        '.basic-vocabulary-entry__link:focus-visible',
-        '.basic-vocabulary-entry__catalog-link',
-        '.basic-vocabulary-entry__catalog-link:hover',
-        '.basic-vocabulary-entry__catalog-link:focus-visible',
-      ];
-
-      expect(foundSelectors).toHaveLength(11);
-      expect([...foundSelectors].sort()).toEqual([...expected].sort());
-
-      // 4. Synthetic assertions: the parsing method must reject compound,
-      //    descendant, and unknown selectors
-      const syntheticBlock = [
-        '.basic-vocabulary-entry__content h2 {',
-        'main .basic-vocabulary-entry {',
-        '.basic-vocabulary-entry__unknown {',
-      ].join('\n');
-      const syntheticPreludes = syntheticBlock
-        .split('{')
-        .slice(0, -1)
-        .map((s) => {
-          const parts = s.split('}');
-          return parts[parts.length - 1].trim();
-        })
-        .filter((s) => s.includes('.basic-vocabulary-entry'));
-      expect(syntheticPreludes.sort()).not.toEqual([...expected].sort());
-    });
-
-    it('does not suppress native focus-visible outline on the entry link', () => {
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
-      const rules = clean.split('}');
-      const focusRule = rules.find(
-        (r) =>
-          r.includes('basic-vocabulary-entry__link') &&
-          r.includes(':focus-visible'),
-      );
-      expect(focusRule).toBeDefined();
-      expect(focusRule).not.toContain('outline');
-    });
-
-    it('does not suppress native focus-visible outline on the catalog link', () => {
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
-      const rules = clean.split('}');
-      const focusRule = rules.find(
-        (r) =>
-          r.includes('basic-vocabulary-entry__catalog-link') &&
-          r.includes(':focus-visible'),
-      );
-      expect(focusRule).toBeDefined();
-      expect(focusRule).not.toContain('outline');
-    });
-
-    it('has content inside #basic-vocabulary-entry with the right structure', () => {
-      expect(entry).toContain('basic-vocabulary-entry__content');
-      expect(entry).toContain('basic-vocabulary-entry__eyebrow');
-      expect(entry).toContain('basic-vocabulary-entry__availability');
-      expect(entry).toContain('basic-vocabulary-entry__link');
-      expect(entry).toContain('id="basic-vocabulary-entry-title"');
-    });
-
-    it('has an aria-labelledby pointing to the h2', () => {
-      expect(homeSource).toContain(
-        'aria-labelledby="basic-vocabulary-entry-title"',
-      );
-      expect(homeSource).toContain('id="basic-vocabulary-entry-title"');
+  describe('production corpus integrity', () => {
+    it('derives the Dashboard payload from the full learner manifest corpus', () => {
+      const payload = buildDashboardProgressPayload();
+      expect(payload.basicVocabularyCorpusIds.length).toBeGreaterThan(0);
     });
   });
 
-  describe('forbidden content inside the entry', () => {
-    it('has no HSK mention', () => {
-      expect(entry).not.toMatch(/HSK|hsk/);
-    });
-
-    it('has no CEFR mention', () => {
-      expect(entry).not.toContain('CEFR');
-    });
-
-    it('has no 公式 mention', () => {
-      expect(entry).not.toContain('公式');
-    });
-
-    it('has no progress count', () => {
-      expect(entry).not.toMatch(/\d+\s*\/\s*\d+/);
-    });
-
-    it('has no image', () => {
-      expect(entry).not.toContain('<img');
-    });
-
-    it('has no button element', () => {
-      expect(entry).not.toContain('<button');
-    });
-
-    it('has exactly two links (study then catalog)', () => {
-      const links = entry.match(/<a /g);
-      expect(links).toHaveLength(2);
-    });
-
-    it('has no icon element', () => {
-      expect(entry).not.toMatch(/<i\b|<span[^>]*icon|<svg/);
-    });
-
-    it('has no badge element', () => {
-      expect(entry).not.toContain('badge');
-    });
-
-    it('has no storage key reference', () => {
-      expect(entry).not.toMatch(/localStorage|sessionStorage|chabiko_/);
-    });
-
-    it('has no client script', () => {
-      expect(entry).not.toContain('<script');
-    });
-
-    it('does not reference progress or completion counts', () => {
-      expect(entry).not.toMatch(/\d+%|学習済み|完了数|残り\s*\d/);
-    });
-
-    it('does not hard-code the corpus count 1582', () => {
-      expect(entry).not.toContain('1582');
+  describe('no unrelated content leaks into the track entry', () => {
+    it('does not hard-code the 1,582 total anywhere', () => {
       expect(homeSource).not.toContain('1582');
+      expect(domainSource).not.toContain('1582');
     });
 
-    it('does not add a second basic-vocabulary entry or duplicate id', () => {
-      const entryIds = homeSource.match(/id="basic-vocabulary-entry"/g);
-      expect(entryIds).toHaveLength(1);
-      expect(homeSource).not.toContain('basic-vocabulary-entry2');
+    it('keeps HSK as its own first-class track card, not basic-vocabulary copy', () => {
+      const basicDescription = domainSource.match(
+        /DASHBOARD_TRACK_DESCRIPTIONS[\s\S]*?'basic-vocabulary':\s*'([^']*)'/,
+      );
+      expect(basicDescription).not.toBeNull();
+      expect(basicDescription![1]).not.toMatch(/HSK|hsk/i);
     });
   });
 
-  describe('existing home structure preserved', () => {
-    it('still calls loadAllRenderableLessons()', () => {
-      expect(homeSource).toContain('loadAllRenderableLessons()');
-    });
-
-    it('still maps lessons', () => {
-      expect(homeSource).toContain('lessons.map((lesson, index)');
-    });
-
-    it('still has lesson links with href', () => {
-      expect(homeSource).toContain('href={`/lessons/${lesson.id}/`}');
-    });
-
-    it('still has the reset button', () => {
+  describe('the Dashboard shell preserves learner controls', () => {
+    it('keeps the Taiwan progress reset control on the home page', () => {
       expect(homeSource).toContain('id="reset-progress-btn"');
       expect(homeSource).toContain('進捗をリセット');
-    });
-
-    it('still has progress-summary', () => {
-      expect(homeSource).toContain('id="progress-summary"');
-    });
-
-    it('still has data-completable attribute', () => {
-      expect(homeSource).toContain(
-        'data-completable={hasUsableLessonPractice(lesson)',
-      );
-    });
-
-    it('still has the home script unchanged (no new storage or client init)', () => {
-      expect(homeScript).toContain(
-        "import { ProgressStore } from '../lib/progress'",
-      );
-      expect(homeScript).toContain(
-        "import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot'",
-      );
-      expect(homeScript).toContain('new ProgressStore()');
-      expect(homeScript).toContain('store.resetAll()');
-      expect(homeScript).toContain('window.confirm');
-      expect(homeScript).toContain("'storage'");
-      // No new vocabulary-related code in the script
-      expect(homeScript).not.toContain('Vocabulary');
-      expect(homeScript).not.toContain('vocabulary');
-    });
-  });
-
-  describe('static destination exists', () => {
-    it('/vocabulary/basic/ route source file exists', () => {
-      const routeSource = readSource(
-        '../src/pages/vocabulary/basic/index.astro',
-      );
-      expect(routeSource).toContain('buildLearnerSessionPayload');
-      expect(routeSource).toContain('イラストで学ぶ基礎中国語');
-    });
-  });
-
-  describe('responsive overflow', () => {
-    it('long fixed copy wraps naturally at narrow widths', () => {
-      // The longest fixed string is the description — confirm no nowrap
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const entryStyles = styles
-        .split('\n')
-        .filter((l) => l.includes('basic-vocabulary-entry'));
-      const nowrapLines = entryStyles.filter(
-        (l) => l.includes('white-space') && !l.includes('normal'),
-      );
-      expect(nowrapLines).toHaveLength(0);
-    });
-
-    it('gives the secondary catalog link a 44px min target and visible focus', () => {
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const clean = styles.replace(/\/\*[\s\S]*?\*\//g, '');
-      const rules = clean.split('}');
-
-      const catalogRule = rules.find(
-        (r) =>
-          r.includes('basic-vocabulary-entry__catalog-link') &&
-          !r.includes(':focus-visible') &&
-          !r.includes(':hover'),
-      );
-      expect(catalogRule).toBeDefined();
-      expect(catalogRule).toMatch(/min-height:\s*44px/);
-
-      const focusRule = rules.find(
-        (r) =>
-          r.includes('basic-vocabulary-entry__catalog-link') &&
-          r.includes(':focus-visible'),
-      );
-      expect(focusRule).toBeDefined();
-      expect(focusRule).not.toContain('outline');
-      expect(focusRule).not.toContain('display: none');
-    });
-
-    it('wraps the two entry links in a dedicated wrapping action container without nowrap', () => {
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const actionsRule = styles.match(
-        /\.basic-vocabulary-entry__actions\s*\{([\s\S]*?)\}/,
-      );
-      expect(actionsRule).not.toBeNull();
-      const declarations = actionsRule![1];
-      expect(declarations).toMatch(/flex-wrap:\s*wrap/);
-      expect(declarations).not.toContain('nowrap');
-      // The actions container owns the link margin; links must not fight it.
-      expect(declarations).toMatch(/gap:/);
-    });
-
-    it('keeps the two native links in keyboard reachable DOM order (primary first)', () => {
-      const studyIndex = homeSource.indexOf('単語学習を始める');
-      const catalogIndex = homeSource.indexOf('単語一覧を見る');
-      expect(studyIndex).toBeGreaterThan(0);
-      expect(catalogIndex).toBeGreaterThan(0);
-      expect(studyIndex).toBeLessThan(catalogIndex);
-    });
-
-    it('keeps block-end spacing on the entry so it never sits flush against the following section', () => {
-      // The entry now sits outside the lessons conditional and always renders
-      // above either .home-journey or .fallback-message. It must keep bottom
-      // spacing using an existing token so neither sibling collides with it.
-      const styleMatch = homeSource.match(/<style>([\s\S]*?)<\/style>/);
-      const styles = styleMatch?.[1] ?? '';
-      const entryBlock = styles.match(
-        /\.basic-vocabulary-entry\s*\{([\s\S]*?)\}/,
-      );
-      expect(entryBlock).not.toBeNull();
-      const declarations = entryBlock![1];
-      expect(declarations).toMatch(/margin-bottom:\s*var\(--space-[a-z0-9]+\)/);
     });
   });
 });

@@ -252,15 +252,20 @@ describe('home progress lifecycle', () => {
     expect(document.getElementById('progress-summary')?.textContent).toBe('');
   });
 
-  it('keeps the production pageshow, storage, and reset paths on the same renderer', () => {
+  it('keeps the production pageshow, storage, and reset paths on the Dashboard renderer', () => {
     const source = readFileSync('src/pages/index.astro', 'utf8');
 
-    expect(source).toContain("import { updateHomeProgressUI } from '../client/homeProgress'");
-    expect(source).toMatch(/function updateCompletionUI\(\)\s*{\s*updateHomeProgressUI\(document, store, buildProgressSnapshot\);\s*}/);
-    expect(source).toMatch(/function refreshUI\(\)[\s\S]*?new ProgressStore\(\);[\s\S]*?updateCompletionUI\(\);/);
-    expect(source).toContain("window.addEventListener('pageshow', refreshUI)");
-    expect(source).toContain('handleProgressStorageEvent(event, refreshUI)');
-    expect(source).toMatch(/store\.resetAll\(\);\s*updateCompletionUI\(\);/);
+    // Issue #374: the Dashboard hydrates through the cross-track coordinator
+    // (#372), which owns the pageshow/storage refresh and recompute; the reset
+    // control keeps the same `chabiko_completed_lessons` clear behavior.
+    expect(source).toContain(
+      "import { initDashboard } from '../client/dashboardProgress'",
+    );
+    expect(source).toContain('initDashboard(root, payload)');
+    expect(source).toContain('id="reset-progress-btn"');
+    expect(source).toContain(
+      '<script is:inline type="application/json" id="dashboard-progress-data"',
+    );
   });
 
   it('is safe when the no-lessons fallback exposes no progress surfaces', () => {

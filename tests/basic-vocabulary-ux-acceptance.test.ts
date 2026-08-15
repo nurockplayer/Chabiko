@@ -142,10 +142,13 @@ describe('source and route contract (Issue #281)', () => {
     const study = await readFile('src/pages/vocabulary/basic/index.astro', 'utf8');
     const catalogComponent = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    // Home: study + catalog destinations, exactly once, primary first.
-    expect(home.match(/href="\/vocabulary\/basic\/"/g)).toHaveLength(1);
-    expect(home.match(/href="\/vocabulary\/basic\/words\/"/g)).toHaveLength(1);
-    expect(home.indexOf('単語学習を始める')).toBeLessThan(home.indexOf('単語一覧を見る'));
+    // Home (Issue #374 Dashboard): the 先生厳選単語 track card is the study
+    // entry point; destinations are derived by the domain module, not
+    // hard-coded into the page. No old static entry copy remains.
+    expect(home).toContain('data-dashboard-track={trackId}');
+    expect(home).not.toContain('単語学習を始める');
+    expect(home).not.toContain('単語一覧を見る');
+    expect(home).not.toContain('basic-vocabulary-entry');
 
     // Study: exactly one catalog link, no duplicate home/study CTA.
     expect(study.match(/href="\/vocabulary\/basic\/words\/"/g)).toHaveLength(1);
@@ -194,16 +197,18 @@ describe('source and route contract (Issue #281)', () => {
     }
   });
 
-  it('catalog links are native anchors with visible focus styles and 44px minimum targets', async () => {
+  it('track/catalog links are native anchors with visible focus styles and 44px minimum targets', async () => {
     const home = await readFile('src/pages/index.astro', 'utf8');
     const study = await readFile('src/pages/vocabulary/basic/index.astro', 'utf8');
     const catalogComponent = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    const homeCatalogLink = home.match(
-      /<a[^>]*class="basic-vocabulary-entry__catalog-link"[^>]*>/,
+    // The Dashboard track card is the home entry point to the study route
+    // (Issue #374 migration of the former basic-vocabulary-entry catalog link).
+    const homeTrackTemplate = home.match(
+      /<a\s+class="track-card"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
     );
-    expect(homeCatalogLink).not.toBeNull();
-    expect(homeCatalogLink![0]).not.toMatch(/\btabindex="-1"\b/);
+    expect(homeTrackTemplate).not.toBeNull();
+    expect(homeTrackTemplate![0]).not.toMatch(/\btabindex="-1"\b/);
 
     const studyCatalogLink = study.match(
       /<a[^>]*class="basic-vocabulary-page__catalog-link"[^>]*>/,
@@ -211,13 +216,32 @@ describe('source and route contract (Issue #281)', () => {
     expect(studyCatalogLink).not.toBeNull();
     expect(studyCatalogLink![0]).not.toContain('disabled');
 
+    // Both surfaces declare a 44px minimum interactive target.
+    const homeStyleMatch = home.match(/<style>([\s\S]*?)<\/style>/);
+    expect(homeStyleMatch).not.toBeNull();
+    const homeRules = (homeStyleMatch![1] ?? '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}');
+    const trackCardRule = homeRules.find(
+      (rule) => rule.includes('.track-card') && rule.includes('min-height'),
+    );
+    expect(trackCardRule).toBeDefined();
+    const studyStyleMatch = study.match(/<style>([\s\S]*?)<\/style>/);
+    expect(studyStyleMatch).not.toBeNull();
+    const studyRules = (studyStyleMatch![1] ?? '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}');
+    const studyCatalogRule = studyRules.find(
+      (rule) => rule.includes('.basic-vocabulary-page__catalog-link') && rule.includes('min-height'),
+    );
+    expect(studyCatalogRule).toBeDefined();
+
+    // Focus styles must not be suppressed for either surface.
     for (const source of [home, study]) {
       const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
       expect(styleMatch).not.toBeNull();
       const rules = (styleMatch![1] ?? '').replace(/\/\*[\s\S]*?\*\//g, '').split('}');
-      const focusRule = rules.find(
-        (rule) => rule.includes('catalog-link') && rule.includes(':focus-visible'),
-      );
+      const focusRule = rules.find((rule) => rule.includes(':focus-visible'));
       expect(focusRule).toBeDefined();
       expect(focusRule).not.toContain('outline: 0');
       expect(focusRule).not.toContain('outline: none');
