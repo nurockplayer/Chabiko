@@ -339,3 +339,36 @@ describe('word-order practice responsive containment', () => {
     // genuine layout evidence. Happy DOM does not perform layout.
   });
 });
+
+// ─── #370 theme-safe state styling in the Astro stylesheet ──────────────────
+
+describe('word-order practice theme-safe state styling', () => {
+  it('drives answer/selected/focus/retry states from shared theme tokens', () => {
+    const source = readFileSync('src/components/WordOrderPractice.astro', 'utf8');
+    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    expect(styleMatch).not.toBeNull();
+    const css = styleMatch![1];
+
+    // Placed (answer-well) chunks use the shared soft-accent + primary pattern
+    // so the assembly stays readable in both themes (never white-on-accent).
+    expect(css).toMatch(
+      /\.word-order-chunk--answer\s*\{[\s\S]*?background:\s*var\(--c-accent-light\)[\s\S]*?color:\s*var\(--c-primary\)/,
+    );
+    // Placed chunks stay fully visible after submit (distinct from dimmed pool
+    // chunks), preserving the removable/selected affordance.
+    expect(css).toMatch(
+      /\.word-order-chunk--answer:disabled\s*\{[\s\S]*?opacity:\s*1[\s\S]*?background:\s*var\(--c-accent-light\)/,
+    );
+    // Focus rings follow the shared #366 focus token, not the accent colour.
+    expect(css).toMatch(
+      /\.word-order-chunk:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/,
+    );
+    expect(css).toMatch(
+      /\.word-order-action:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/,
+    );
+    // Retry uses the theme error token instead of a hard-coded hex.
+    expect(css).toMatch(
+      /\.word-order-action--retry\s*\{[\s\S]*?border-color:\s*var\(--c-error\)[\s\S]*?color:\s*var\(--c-error\)/,
+    );
+  });
+});

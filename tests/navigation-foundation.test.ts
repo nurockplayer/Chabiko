@@ -25,6 +25,7 @@ const detailRouteSource = readSource(
 );
 const hskSource = readSource('../src/pages/vocabulary/hsk/1/index.astro');
 const toneSource = readSource('../src/pages/practice/tones/index.astro');
+const wordOrderSource = readSource('../src/pages/practice/word-order/index.astro');
 const phrasebookSource = readSource('../src/pages/phrasebook/index.astro');
 
 describe('breadcrumb contract', () => {
@@ -126,9 +127,20 @@ describe('先生厳選単語 track wiring (real sibling modes)', () => {
 });
 
 describe('pages without real sibling destinations omit local nav', () => {
-  it('HSK, tone practice, and phrasebook omit the breadcrumb and track nav', () => {
-    for (const source of [hskSource, toneSource, phrasebookSource]) {
+  it('HSK and phrasebook omit the breadcrumb and track nav', () => {
+    for (const source of [hskSource, phrasebookSource]) {
       expect(source).not.toContain('Breadcrumb');
+      expect(source).not.toContain('TrackNav');
+    }
+  });
+
+  it('tone and word-order practice keep a home breadcrumb but no track nav (auxiliary surfaces)', () => {
+    // #370: auxiliary practice routes get a contextual home trail (replacing
+    // the bare back link) while staying out of the first-class track system —
+    // no TrackNav, no sibling-mode promotion.
+    for (const source of [toneSource, wordOrderSource]) {
+      expect(source).toContain('Breadcrumb');
+      expect(source).toContain("{ label: 'ホーム', href: '/' }");
       expect(source).not.toContain('TrackNav');
     }
   });
