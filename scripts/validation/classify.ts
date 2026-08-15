@@ -278,6 +278,11 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/cross-track-progress.test.ts'],
   },
   {
+    // #373 deterministic milestone achievements over the cross-track snapshot.
+    match: (b) => b.includes('achievement'),
+    testGlobs: ['tests/achievements.test.ts'],
+  },
+  {
     match: (b) => b.includes('progress'),
     testGlobs: ['tests/progress*.test.ts', 'tests/home-progress-lifecycle.test.ts'],
   },
