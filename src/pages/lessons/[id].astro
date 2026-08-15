@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import LessonPractice from '../../components/LessonPractice.astro';
 import {
   lessonPhrasebookDestination,
@@ -103,7 +104,15 @@ const exampleScriptAttrs = (example: {
 
   {
     lesson ? (
-      <div class="lesson-journey">
+      <>
+        <Breadcrumb
+          crumbs={[
+            { label: 'ホーム', href: '/' },
+            { label: '台湾旅行', href: '/#taiwan-travel-path' },
+            { label: `第${lessonNumber}課` },
+          ]}
+        />
+        <div class="lesson-journey">
         <aside class="lesson-route" aria-labelledby="lesson-route-heading">
           <a class="back-link" href="/">← 台湾旅行パスに戻る</a>
           <h2 id="lesson-route-heading" class="route-heading">台湾旅行で使える中国語</h2>
@@ -227,21 +236,34 @@ const exampleScriptAttrs = (example: {
           <nav class="lesson-nav" aria-label="レッスンナビゲーション">
             {prevLesson && (
               <a class="nav-link nav-prev" href={`/lessons/${prevLesson.id}/`}>
-                <span aria-hidden="true">←</span> {prevLesson.titleJa}
+                <span class="nav-direction">前のレッスン</span>
+                <span class="nav-title">
+                  <span class="nav-arrow" aria-hidden="true">←</span>
+                  <span class="nav-title-text">{prevLesson.titleJa}</span>
+                </span>
               </a>
             )}
             {nextLesson ? (
               <a class="nav-link nav-next" href={`/lessons/${nextLesson.id}/`}>
-                {nextLesson.titleJa} <span aria-hidden="true">→</span>
+                <span class="nav-direction">次のレッスン</span>
+                <span class="nav-title">
+                  <span class="nav-title-text">{nextLesson.titleJa}</span>
+                  <span class="nav-arrow" aria-hidden="true">→</span>
+                </span>
               </a>
             ) : (
               <a class="nav-link nav-complete" href="/">
-                台湾旅行パスを完了 <span aria-hidden="true">→</span> 一覧に戻る
+                <span class="nav-direction">台湾旅行パスを完了</span>
+                <span class="nav-title">
+                  <span class="nav-title-text">一覧に戻る</span>
+                  <span class="nav-arrow" aria-hidden="true">→</span>
+                </span>
               </a>
             )}
           </nav>
         </article>
-      </div>
+        </div>
+      </>
     ) : (
       <article class="fallback-message">
         <h1>レッスンを読み込めませんでした</h1>
@@ -413,6 +435,7 @@ const exampleScriptAttrs = (example: {
     min-height: 24px;
     margin-top: var(--space-sm);
     padding: 0 var(--space-sm);
+    border-radius: var(--radius);
     font-size: 0.75rem;
   }
   .completion-badge:empty {
@@ -447,6 +470,7 @@ const exampleScriptAttrs = (example: {
     margin-bottom: var(--space-2xl);
     padding: var(--space-md) var(--space-lg);
     border-left: 4px solid var(--c-accent);
+    border-radius: var(--radius);
     background: var(--c-accent-light);
   }
   .can-do-section h2 {
@@ -471,6 +495,7 @@ const exampleScriptAttrs = (example: {
   .core-card {
     background: var(--c-surface);
     border-top: 4px solid var(--c-primary);
+    border-radius: var(--radius);
     padding: var(--space-xl) var(--space-lg);
   }
   .core-sentence {
@@ -536,6 +561,7 @@ const exampleScriptAttrs = (example: {
   .bridge-section {
     padding: var(--space-lg);
     border-top: 4px solid var(--c-primary);
+    border-radius: var(--radius);
     background: var(--c-surface);
   }
   .bridge-list strong {
@@ -574,6 +600,7 @@ const exampleScriptAttrs = (example: {
   .travel-task {
     padding: var(--space-lg);
     border-left: 4px solid var(--c-accent);
+    border-radius: var(--radius);
     background: var(--c-accent-light);
   }
   .travel-task h2 {
@@ -584,6 +611,7 @@ const exampleScriptAttrs = (example: {
     padding: var(--space-lg);
     border: 1px solid var(--c-border);
     border-top: 4px solid var(--c-primary);
+    border-radius: var(--radius);
     background: var(--c-surface);
   }
   .related-phrasebook__link {
@@ -615,14 +643,15 @@ const exampleScriptAttrs = (example: {
   }
   .nav-link {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
     min-height: 52px;
     flex: 1 1 100%;
     padding: var(--space-sm) var(--space-md);
     border: 1px solid var(--c-border);
+    border-radius: var(--radius);
     background: var(--c-surface);
-    font-weight: 600;
-    font-size: 0.875rem;
     text-decoration: none;
     color: var(--c-text);
     transition: background 0.15s ease, transform 0.15s ease;
@@ -633,18 +662,41 @@ const exampleScriptAttrs = (example: {
     transform: translateY(-1px);
   }
   .nav-prev {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
   .nav-next {
-    justify-content: flex-end;
+    align-items: flex-end;
   }
   .nav-complete {
     color: var(--c-primary);
     border-color: var(--c-primary);
   }
+  .nav-direction {
+    color: var(--c-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .nav-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .nav-title-text {
+    overflow-wrap: anywhere;
+  }
+  .nav-arrow {
+    flex: 0 0 auto;
+    color: var(--c-primary);
+  }
   .fallback-message {
     background: var(--c-surface);
     border: 1px solid var(--c-border);
+    border-radius: var(--radius);
     padding: var(--space-xl);
     text-align: center;
   }
