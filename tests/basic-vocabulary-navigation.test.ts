@@ -160,15 +160,14 @@ describe('basic vocabulary navigation', () => {
     });
   });
 
-  describe('home entry consistency', () => {
-    it('home still exposes the exact two destinations and primary-first order', () => {
-      expect(homeSource.match(/href="\/vocabulary\/basic\/"/g)).toHaveLength(1);
-      expect(homeSource.match(/href="\/vocabulary\/basic\/words\/"/g)).toHaveLength(1);
-      const studyIndex = homeSource.indexOf('単語学習を始める');
-      const catalogIndex = homeSource.indexOf('単語一覧を見る');
-      expect(studyIndex).toBeGreaterThan(0);
-      expect(catalogIndex).toBeGreaterThan(0);
-      expect(studyIndex).toBeLessThan(catalogIndex);
+  describe('home entry consistency (Dashboard migration)', () => {
+    it('home no longer carries the static study/catalog entry copy', () => {
+      // Issue #374 moved the home entry into the three-track Dashboard; the
+      // learner-facing study/catalog action labels now live on the study route
+      // (asserted above) and in the shared Dashboard derivation.
+      expect(homeSource).not.toContain('basic-vocabulary-entry');
+      expect(homeSource).not.toContain('単語学習を始める');
+      expect(homeSource).not.toContain('単語一覧を見る');
     });
   });
 });

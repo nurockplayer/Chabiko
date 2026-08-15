@@ -430,26 +430,20 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
 });
 
 describe('home — one compact link to /paths/', () => {
-  it('adds exactly one compact link to /paths/ before the vocabulary entry', () => {
+  it('adds exactly one compact link to /paths/ on the Dashboard', () => {
     expect(homeSource.match(/href="\/paths\/"/g)).toHaveLength(1);
-    const linkIndex = homeSource.indexOf('href="/paths/"');
-    // Placed before the vocabulary entry section, in the shared header area.
-    expect(linkIndex).toBeGreaterThan(0);
-    expect(linkIndex).toBeLessThan(
-      homeSource.indexOf('id="basic-vocabulary-entry"'),
-    );
     // The home page still has exactly its one pre-existing script block.
     expect(homeSource.match(/<script>/g)).toHaveLength(1);
   });
 
   it('keeps the home link keyboard-focusable with a visible focus style', () => {
     const homeStyles = extractStyles(homeSource);
-    const linkRule = homeStyles.match(/\.goal-paths-link a\s*\{([^}]*)\}/);
+    const linkRule = homeStyles.match(/\.dashboard-paths-link\s*\{([^}]*)\}/);
     expect(linkRule).not.toBeNull();
     expect(linkRule![1]).toMatch(/min-height:\s*44px/);
     expect(linkRule![1]).toMatch(/font-size:\s*0\.875rem/);
     const focusRule = homeStyles.match(
-      /\.goal-paths-link a:focus-visible\s*\{([^}]*)\}/,
+      /\.dashboard-paths-link:focus-visible\s*\{([^}]*)\}/,
     );
     expect(focusRule).not.toBeNull();
     expect(focusRule![1]).toMatch(/border-color:\s*var\(--color-focus\)/);

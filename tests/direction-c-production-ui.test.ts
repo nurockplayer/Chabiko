@@ -76,7 +76,7 @@ describe('Direction C production journey presentation', () => {
     // The single BaseLayout theme mechanism is opt-in via the same themeEnabled
     // prop on every learner route: Dashboard, lessons, and all tracks/auxiliary
     // learner surfaces share the one pre-paint/storage bootstrap.
-    expect(homeSource).toContain('<BaseLayout title="ホーム" themeEnabled>');
+    expect(homeSource).toMatch(/<BaseLayout title="ホーム"[\s\S]*themeEnabled>/);
     expect(homeSource).toContain('<Header themeEnabled />');
     expect(lessonSource).toContain('themeEnabled>');
     expect(lessonSource).toContain('<Header themeEnabled />');
@@ -97,12 +97,17 @@ describe('Direction C production journey presentation', () => {
     expect(notFoundSource).not.toContain('themeEnabled');
   });
 
-  it('keeps the production home loader, lesson order mapping, and destinations', () => {
-    expect(homeSource).toContain('loadAllRenderableLessons()');
-    expect(homeSource).toContain('lessons.map((lesson, index)');
-    expect(homeSource).toContain('href={`/lessons/${lesson.id}/`}');
-    expect(homeSource).toContain('data-lesson-id={lesson.id}');
-    expect(homeSource).toContain('data-completable={hasUsableLessonPractice(lesson)');
+  it('keeps the production home loader and destination wiring on the Dashboard', () => {
+    // Issue #374: the home page builds the three-track Dashboard payload from
+    // the same production sources and derives lesson destinations from the
+    // completable-lesson list (no hard-coded lesson-list markup).
+    expect(homeSource).toContain('buildDashboardProgressPayload()');
+    expect(homeSource).toContain('DASHBOARD_TRACK_ORDER.map');
+    expect(homeSource).not.toContain('lessons.map((lesson, index)');
+    expect(homeSource).not.toContain('data-lesson-id={lesson.id}');
+    expect(homeSource).not.toContain(
+      'data-completable={hasUsableLessonPractice(lesson)',
+    );
   });
 
   it('keeps static lesson paths and production navigation destinations', () => {
@@ -171,7 +176,7 @@ describe('Direction C token scoping', () => {
   });
 
   it('opt-ins the theme on learner routes and keeps non-learner surfaces out', () => {
-    expect(homeSource).toContain('<BaseLayout title="ホーム" themeEnabled>');
+    expect(homeSource).toMatch(/<BaseLayout title="ホーム"[\s\S]*themeEnabled>/);
     expect(homeSource).toContain('<Header themeEnabled />');
     expect(lessonSource).toContain('themeEnabled>');
     expect(lessonSource).toContain('<Header themeEnabled />');

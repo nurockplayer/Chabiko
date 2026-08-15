@@ -84,12 +84,13 @@ for (const theme of A11Y_THEMES) {
       // during keyboard interaction; retry/completion steps advance explicitly.
       await freezeClock(page);
 
-      // Skip straight to main content, then Tab to the first lesson card.
+      // Skip straight to main content, then Tab to the 台湾旅行 first-class
+      // track card — the Dashboard's keyboard path to the current/first lesson.
       await page.keyboard.press('Tab'); // skip link
       await page.keyboard.press('Enter');
-      const firstLesson = page.locator('.lesson-list-link').first();
-      await tabUntil(page, firstLesson, 20, 'first lesson link');
-      await expectVisibleFocus(page, 'first lesson link');
+      const taiwanTrack = page.locator('[data-dashboard-track="taiwan-travel"]');
+      await tabUntil(page, taiwanTrack, 20, 'taiwan-travel track card');
+      await expectVisibleFocus(page, 'taiwan-travel track card');
       await page.keyboard.press('Enter');
 
       // Landed on the lesson page; the practice choices are present.

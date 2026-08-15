@@ -1,147 +1,509 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
-import GoalPathSlot from '../components/GoalPathSlot.astro';
-import { loadAllRenderableLessons, hasUsableLessonPractice } from '../content/loadLessons';
+import { ACHIEVEMENT_CATALOG } from '../domain/achievements';
+import {
+  buildBasicVocabularyTrackSummary,
+  buildCrossTrackProgressSnapshot,
+  buildHskTrackSummary,
+  buildTaiwanTravelTrackSummary,
+} from '../domain/crossTrackProgress';
+import {
+  buildDashboardProgressPayload,
+  serializeDashboardProgressPayload,
+} from '../content/dashboardPayload';
+import {
+  DASHBOARD_TRACK_DESCRIPTIONS,
+  DASHBOARD_TRACK_LABELS,
+  DASHBOARD_TRACK_ORDER,
+  deriveContinuation,
+  trackCardStatusKey,
+  trackCardStatusLabel,
+  trackDestinationHref,
+  trackSummaryText,
+} from '../domain/dashboardProgress';
 
-const lessons = loadAllRenderableLessons();
+// Build-time reference payload for the #372 coordinator: the exact production
+// corpora (basic-vocabulary learner ids, HSK levels, Taiwan completable
+// lessons + display metadata) it may count against. The client injects this
+// into the cross-track coordinator exactly like the /paths/ route payload.
+const payload = buildDashboardProgressPayload();
+const payloadJson = serializeDashboardProgressPayload(payload);
+
+// Initial SSR snapshot: no progress signals (storage is client-only), so every
+// track renders its fixed denominator at zero — the truthful state a fresh
+// learner sees. The client re-derives the snapshot from real storage via the
+// same pure functions, so SSR and hydrated markup are identical.
+const initialSnapshot = buildCrossTrackProgressSnapshot({
+  basicVocabulary: buildBasicVocabularyTrackSummary({
+    progress: {},
+    corpusIds: new Set(payload.basicVocabularyCorpusIds),
+    scope: { kind: 'guest' },
+  }),
+  hsk: buildHskTrackSummary({ progress: {}, levels: payload.hskLevels }),
+  taiwanTravel: buildTaiwanTravelTrackSummary({
+    completedLessonIds: new Set(),
+    completableLessonIds: payload.taiwanCompletableLessonIds,
+  }),
+});
+const initialContinuation = deriveContinuation(
+  initialSnapshot,
+  payload,
+  new Set(),
+);
 ---
 
-<BaseLayout title="ホーム" themeEnabled>
+<BaseLayout title="ホーム" description="Chabiko の学習ダッシュボードです。" themeEnabled>
   <Fragment slot="header">
     <Header themeEnabled />
   </Fragment>
 
-  <p class="goal-paths-link">
-    <a href="/paths/">学習ルート一覧</a>
-  </p>
+  <div class="dashboard" data-dashboard-root>
+    <p class="dashboard-kicker">ダッシュボード</p>
+    <h1 id="dashboard-heading" class="dashboard-heading">今日の学習</h1>
+    <p class="dashboard-lead">次に学ぶことを選んで、今日も続けましょう。</p>
 
-  <section
-    id="basic-vocabulary-entry"
-    class="basic-vocabulary-entry"
-    aria-labelledby="basic-vocabulary-entry-title"
-  >
-    <div class="basic-vocabulary-entry__content">
-      <p class="basic-vocabulary-entry__eyebrow">基礎単語</p>
-      <h2 id="basic-vocabulary-entry-title">イラストで学ぶ基礎中国語</h2>
-      <p>中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。</p>
-      <p class="basic-vocabulary-entry__availability">イラスト付きの単語を、少しずつ練習できます。</p>
-      <div class="basic-vocabulary-entry__actions">
-        <a class="basic-vocabulary-entry__link" href="/vocabulary/basic/">単語学習を始める</a>
-        <a class="basic-vocabulary-entry__catalog-link" href="/vocabulary/basic/words/">単語一覧を見る</a>
+    <section class="continuation-section" id="continuation" aria-labelledby="continuation-heading">
+      <p class="section-kicker">次のアクション</p>
+      <h2 id="continuation-heading" class="section-heading">続きを学ぶ</h2>
+      <a
+        class="continuation-card"
+        data-dashboard-continuation
+        href={initialContinuation.href ?? undefined}
+        hidden={initialContinuation.href === null}
+      >
+        <span class="continuation-card__kicker" data-continuation-kicker>
+          {initialContinuation.trackId
+            ? DASHBOARD_TRACK_LABELS[initialContinuation.trackId]
+            : ''}
+        </span>
+        <span class="continuation-card__title" data-continuation-title>
+          {initialContinuation.title}
+        </span>
+        <span
+          class="continuation-card__sentence"
+          lang="zh-Hant"
+          data-continuation-sentence
+          hidden={initialContinuation.sentence === null}
+        >{initialContinuation.sentence}</span>
+        <span
+          class="continuation-card__pinyin"
+          lang="zh-Latn"
+          data-continuation-pinyin
+          hidden={initialContinuation.pinyin === null}
+        >{initialContinuation.pinyin}</span>
+        <span class="continuation-card__action" data-continuation-action>
+          {initialContinuation.actionLabel} →
+        </span>
+      </a>
+      <div
+        class="continuation-card continuation-card--empty"
+        data-dashboard-continuation-empty
+        hidden={initialContinuation.href !== null}
+      >
+        <span class="continuation-card__title" data-continuation-empty-title>
+          {initialContinuation.title}
+        </span>
       </div>
-    </div>
-  </section>
+    </section>
 
-  {lessons.length > 0 ? (
-    <div class="home-journey">
-      <GoalPathSlot />
-      <div class="home-content">
-        <section class="path-section" id="taiwan-travel-path" aria-labelledby="path-heading">
-          <header class="path-header">
-            <p class="path-kicker">台湾旅行ルート</p>
-            <h1 id="path-heading" class="path-heading">台湾旅行で使える中国語</h1>
-            <p class="path-description">全{lessons.length}レッスン。指差し・値段・場所の順に覚えよう。</p>
-          </header>
-          <ol class="lesson-list">
-            {lessons.map((lesson, index) => {
-              const example = lesson.examples?.[0] ?? null;
-              return (
-                <li
-                  class="lesson-list-item"
-                  data-route-lesson={lesson.id}
-                  data-route-title={lesson.titleJa}
-                  data-route-example={lesson.coreSentence}
+    <section class="courses-section" id="courses" aria-labelledby="courses-heading">
+      <p class="section-kicker">学習コース</p>
+      <h2 id="courses-heading" class="section-heading">学習コース</h2>
+      <ol class="track-list">
+        {DASHBOARD_TRACK_ORDER.map((trackId) => {
+          const label = DASHBOARD_TRACK_LABELS[trackId];
+          const description = DASHBOARD_TRACK_DESCRIPTIONS[trackId];
+          const href = trackDestinationHref(
+            trackId,
+            initialSnapshot,
+            payload,
+            new Set(),
+          );
+          const statusKey = trackCardStatusKey(trackId, initialSnapshot, payload);
+          const statusText = trackCardStatusLabel(trackId, initialSnapshot, payload);
+          const summaryText = trackSummaryText(trackId, initialSnapshot, payload);
+          return (
+            <li class="track-list-item">
+              {href !== null ? (
+                <a
+                  class="track-card"
+                  data-dashboard-track={trackId}
+                  href={href}
                 >
-                  <span class="route-line" aria-hidden="true"></span>
-                  <a class="lesson-list-link" href={`/lessons/${lesson.id}/`}>
-                    <span class="lesson-marker" aria-hidden="true">
-                      <span class="lesson-marker-core"></span>
+                  <span class="track-card__label">{label}</span>
+                  <span class="track-card__description">{description}</span>
+                  <span class="track-card__meta">
+                    <span class="track-card__summary" data-track-summary>
+                      {summaryText}
                     </span>
-                    <span class="lesson-info">
-                      <span class="lesson-number">レッスン {index + 1}</span>
-                      <span class="lesson-title">{lesson.titleJa}</span>
-                      <span class="lesson-can-do">{lesson.canDoJa}</span>
-                      {example && (
-                        <>
-                          <span class="lesson-example" lang="zh-Hant">{example.traditional}</span>
-                          {example.pinyin && (
-                            <span class="lesson-pinyin" lang="zh-Latn">{example.pinyin}</span>
-                          )}
-                        </>
-                      )}
-                      <span
-                        class="lesson-completion-status"
-                        data-lesson-id={lesson.id}
-                        data-completable={hasUsableLessonPractice(lesson) ? 'true' : 'false'}
-                      ></span>
+                    <span
+                      class="track-card__status"
+                      data-track-status
+                      data-status={statusKey}
+                    >{statusText}</span>
+                  </span>
+                  <span class="track-card__arrow" aria-hidden="true">→</span>
+                </a>
+              ) : (
+                <div
+                  class="track-card track-card--unavailable"
+                  data-dashboard-track={trackId}
+                >
+                  <span class="track-card__label">{label}</span>
+                  <span class="track-card__description">{description}</span>
+                  <span class="track-card__meta">
+                    <span class="track-card__summary" data-track-summary>
+                      {summaryText}
                     </span>
-                    <span class="lesson-arrow" aria-hidden="true">→</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
-        </section>
-        <div class="progress-footer">
-          <span id="progress-summary" class="progress-summary" aria-live="polite"></span>
-          <button id="reset-progress-btn" class="reset-btn">進捗をリセット</button>
-        </div>
-      </div>
+                    <span
+                      class="track-card__status"
+                      data-track-status
+                      data-status={statusKey}
+                    >{statusText}</span>
+                  </span>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+
+    <section class="achievements-section" id="achievements" aria-labelledby="achievements-heading">
+      <p class="section-kicker">マイルストーン</p>
+      <h2 id="achievements-heading" class="section-heading">実績</h2>
+      <ol class="achievement-list" data-achievement-list>
+        {ACHIEVEMENT_CATALOG.map((achievement) => (
+          <li
+            class="achievement-item"
+            data-achievement={achievement.id}
+            hidden
+          >
+            <span class="achievement-item__title">{achievement.title}</span>
+            <span class="achievement-item__description">
+              {achievement.description}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p class="achievement-empty" data-achievement-empty>
+        まだ実績がありません。学習を始めると、ここにマイルストーンが表示されます。
+      </p>
+    </section>
+
+    <div class="dashboard-footer">
+      <a class="dashboard-paths-link" href="/paths/">学習ルート一覧</a>
+      <button id="reset-progress-btn" class="reset-btn" type="button">
+        進捗をリセット
+      </button>
     </div>
-  ) : (
-    <>
-      <article class="fallback-message">
-        <h1>レッスンを読み込めませんでした</h1>
-        <p>現在レッスンコンテンツが利用できません。しばらく経ってから再度アクセスしてください。</p>
-      </article>
-      <GoalPathSlot />
-    </>
-  )}
+  </div>
+
+  <script is:inline type="application/json" id="dashboard-progress-data" set:html={payloadJson}></script>
 </BaseLayout>
 
 <script>
-  import { updateHomeProgressUI } from '../client/homeProgress';
-  import { ProgressStore } from '../lib/progress';
-  import { buildProgressSnapshot, handleProgressStorageEvent } from '../lib/progressSnapshot';
+  import { initDashboard } from '../client/dashboardProgress';
+  import type { DashboardProgressPayload } from '../domain/dashboardProgress';
 
-  let store = new ProgressStore();
-
-  function updateCompletionUI() {
-    updateHomeProgressUI(document, store, buildProgressSnapshot);
-  }
-
-  function refreshUI() {
-    store = new ProgressStore();
-    updateCompletionUI();
-  }
-
-  updateCompletionUI();
-
-  // Refresh on pageshow (browser back/forward navigation) — re-read localStorage
-  window.addEventListener('pageshow', refreshUI);
-
-  // Refresh when another tab writes to the Chabiko progress key
-  window.addEventListener('storage', (event) => {
-    handleProgressStorageEvent(event, refreshUI);
-  });
-
-  const resetBtn = document.getElementById('reset-progress-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      if (window.confirm('学習進捗をすべてリセットしますか？この操作は元に戻せません。')) {
-        store.resetAll();
-        updateCompletionUI();
+  const root = document.querySelector<HTMLElement>('[data-dashboard-root]');
+  if (root) {
+    const script = document.getElementById('dashboard-progress-data');
+    let payload: DashboardProgressPayload | null = null;
+    if (script?.textContent) {
+      try {
+        const parsed = JSON.parse(script.textContent) as unknown;
+        if (
+          parsed !== null &&
+          typeof parsed === 'object' &&
+          Array.isArray(
+            (parsed as { basicVocabularyCorpusIds?: unknown })
+              .basicVocabularyCorpusIds,
+          )
+        ) {
+          payload = parsed as DashboardProgressPayload;
+        }
+      } catch {
+        // Malformed payload: leave the SSR fresh state intact.
       }
-    });
+    }
+    if (payload) {
+      initDashboard(root, payload);
+    }
   }
 </script>
 
 <style>
-  .goal-paths-link {
+  /* BaseLayout's global `*` reset is scoped to BaseLayout's own elements and
+   * does not reach this page's rendered content, so restore border-box sizing
+   * and zero list defaults here (the pre-Dashboard home had the same need). */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  .dashboard {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+    display: grid;
+    gap: var(--space-2xl);
+  }
+  .dashboard-kicker {
+    color: var(--c-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+  }
+  .dashboard-heading {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+    line-height: 1.3;
+    font-weight: 700;
     margin-bottom: var(--space-sm);
   }
-  .goal-paths-link a {
+  .dashboard-lead {
+    max-width: 44rem;
+    font-size: 0.875rem;
+    color: var(--c-text-secondary);
+  }
+
+  .continuation-section,
+  .courses-section,
+  .achievements-section {
+    min-width: 0;
+  }
+  .section-kicker {
+    color: var(--c-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+  }
+  .section-heading {
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+  }
+
+  /* ── Continuation ── */
+  .continuation-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    min-height: 44px;
+    padding: var(--space-lg);
+    background: var(--c-primary-light);
+    border: 2px solid var(--c-primary);
+    border-radius: var(--radius);
+    color: var(--c-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .continuation-card:hover {
+    text-decoration: none;
+    box-shadow: 0 0 0 3px var(--c-accent-light);
+  }
+  .continuation-card:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .continuation-card__kicker {
+    color: var(--c-primary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .continuation-card__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .continuation-card__sentence {
+    font-family: var(--font-zh);
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+  .continuation-card__pinyin {
+    font-family: var(--font-pinyin);
+    font-size: 0.8125rem;
+    color: var(--c-text-muted);
+    letter-spacing: 0.03em;
+  }
+  .continuation-card__action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--c-primary);
+    color: var(--color-on-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .continuation-card--empty {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
+  .continuation-card--empty .continuation-card__title {
+    font-size: 0.9375rem;
+  }
+
+  /* ── Course tracks ── */
+  .track-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-md);
+  }
+  .track-list-item {
+    min-width: 0;
+  }
+  .track-card__description,
+  .track-card__meta,
+  .track-card__summary,
+  .track-card__status {
+    min-width: 0;
+  }
+  .track-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-top: 4px solid var(--c-primary);
+    border-radius: var(--radius);
+    color: var(--c-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .track-card:hover {
+    text-decoration: none;
+    background: var(--c-primary-light);
+  }
+  .track-card:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .track-card--unavailable {
+    border-top-color: var(--c-border);
+    color: var(--c-text-muted);
+  }
+  .track-card__label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+  .track-card--unavailable .track-card__label {
+    color: var(--c-text-muted);
+  }
+  .track-card__description {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--c-text-secondary);
+  }
+  .track-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    width: 100%;
+    margin-top: var(--space-xs);
+  }
+  .track-card__summary {
+    font-size: 0.8125rem;
+    color: var(--c-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .track-card__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 var(--space-sm);
+    background: var(--c-primary-light);
+    color: var(--c-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  .track-card__status[data-status='in-progress'] {
+    background: var(--c-accent-light);
+    color: var(--color-status-current);
+  }
+  .track-card__status[data-status='completed'] {
+    background: var(--c-success-bg);
+    color: var(--color-status-success);
+  }
+  .track-card__status[data-status='preparing'] {
+    background: var(--c-slot-bg);
+    color: var(--c-text-muted);
+  }
+  .track-card__arrow {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    color: var(--c-primary);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Achievements ── */
+  .achievement-list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-sm);
+  }
+  .achievement-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-left: 4px solid var(--c-success);
+    border-radius: var(--radius);
+  }
+  .achievement-item__title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+  .achievement-item__description {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--c-text-secondary);
+  }
+  .achievement-empty {
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px dashed var(--c-border);
+    border-radius: var(--radius);
+    font-size: 0.8125rem;
+    color: var(--c-text-secondary);
+  }
+
+  /* ── Footer ── */
+  .dashboard-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--c-border);
+  }
+  .dashboard-paths-link {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -152,56 +514,15 @@ const lessons = loadAllRenderableLessons();
     text-underline-offset: 0.2em;
     border: 2px solid transparent;
   }
-  .goal-paths-link a:hover {
+  .dashboard-paths-link:hover {
     text-decoration: underline;
   }
-  .goal-paths-link a:focus-visible {
+  .dashboard-paths-link:focus-visible {
     border-color: var(--color-focus);
     box-shadow: 0 0 0 3px var(--c-accent-light);
   }
-  .home-journey {
-    display: grid;
-    gap: var(--space-xl);
-  }
-  .home-content {
-    min-width: 0;
-  }
-  .lesson-completion-status {
-    display: inline-flex;
-    align-items: center;
-    align-self: flex-start;
-    min-height: 24px;
-    margin-top: var(--space-xs);
-    padding: 0 var(--space-sm);
-    background: var(--c-primary-light);
-    color: var(--c-text-secondary);
-    font-size: 0.6875rem;
-    font-weight: 700;
-  }
-  .lesson-completion-status--done {
-    color: var(--color-status-success);
-    background: var(--c-success-bg);
-  }
-  .lesson-completion-status--current {
-    color: var(--color-status-current);
-    background: var(--c-accent-light);
-  }
-  .progress-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--c-border);
-  }
-  .progress-summary {
-    font-size: 0.8125rem;
-    color: var(--c-text-secondary);
-  }
   .reset-btn {
     min-height: 44px;
-    flex: 0 0 auto;
     padding: var(--space-sm) var(--space-md);
     font-size: 0.75rem;
     border: 1px solid var(--c-border);
@@ -213,268 +534,24 @@ const lessons = loadAllRenderableLessons();
     border-color: var(--c-error);
     color: var(--c-error);
   }
-  .basic-vocabulary-entry {
-    margin-top: var(--space-2xl);
-    margin-bottom: var(--space-xl);
-    padding: var(--space-lg);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
+  .reset-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
-  .basic-vocabulary-entry__content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-  .basic-vocabulary-entry__eyebrow {
-    color: var(--c-primary);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-xs);
-  }
-  .basic-vocabulary-entry__availability {
-    font-size: 0.8125rem;
-    margin-top: var(--space-xs);
-  }
-  .basic-vocabulary-entry__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-sm);
-  }
-  .basic-vocabulary-entry__link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: var(--space-sm) var(--space-lg);
-    background: var(--c-primary);
-    color: var(--color-on-primary);
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-decoration: none;
-    border: 2px solid transparent;
-  }
-  .basic-vocabulary-entry__link:hover {
-    background: var(--c-primary);
-    color: var(--color-on-primary);
-    text-decoration: underline;
-  }
-  .basic-vocabulary-entry__link:focus-visible {
-    border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
-  }
-  .basic-vocabulary-entry__catalog-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: var(--space-sm) var(--space-lg);
-    background: transparent;
-    color: var(--c-primary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-    border: 2px solid transparent;
-  }
-  .basic-vocabulary-entry__catalog-link:hover {
-    background: var(--c-primary-light);
-    color: var(--c-primary);
-    text-decoration: underline;
-  }
-  .basic-vocabulary-entry__catalog-link:focus-visible {
-    border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
-  }
-  .fallback-message {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    padding: var(--space-xl);
-    text-align: center;
-  }
-  .fallback-message h1 {
-    font-size: 1.25rem;
-    margin-bottom: var(--space-sm);
-  }
-  .fallback-message p {
-    color: var(--c-text-secondary);
-  }
-  .path-section {
-    min-width: 0;
-  }
-  .path-header {
-    margin-bottom: var(--space-xl);
-  }
-  .path-kicker {
-    color: var(--c-primary);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-xs);
-  }
-  h1.path-heading {
-    font-size: clamp(1.5rem, 7vw, 2rem);
-    line-height: 1.3;
-    font-weight: 700;
-    margin-bottom: var(--space-sm);
-  }
-  .path-description {
-    max-width: 44rem;
-    font-size: 0.875rem;
-    color: var(--c-text-secondary);
-  }
-  .lesson-list {
-    list-style: none;
-    display: grid;
-  }
-  .lesson-list-item {
-    position: relative;
-    padding-left: 36px;
-  }
-  .route-line {
-    position: absolute;
-    top: 28px;
-    bottom: -28px;
-    left: 15px;
-    width: 2px;
-    background: var(--c-route-line);
-  }
-  .lesson-list-item:last-child .route-line {
-    bottom: 50%;
-  }
-  .lesson-list-link {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    background: var(--c-surface);
-    border-top: 4px solid var(--c-primary);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
-    text-decoration: none;
-    color: var(--c-text);
-    min-height: 152px;
-    transition: background 0.15s ease, transform 0.15s ease;
-  }
-  .lesson-list-link:hover {
-    background: var(--c-primary-light);
-    transform: translateY(-1px);
-    text-decoration: none;
-  }
-  .lesson-marker {
-    position: absolute;
-    left: -30px;
-    top: 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    background: var(--c-surface);
-    border: 2px solid var(--c-route-line);
-    border-radius: 50%;
-    z-index: 1;
-  }
-  .lesson-list-item--current .lesson-marker {
-    background: var(--c-primary);
-    border-color: var(--c-primary);
-    box-shadow: 0 0 0 4px var(--c-accent-light);
-  }
-  .lesson-list-item--current .lesson-marker-core {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--c-accent);
-  }
-  .lesson-list-item--done .lesson-marker {
-    background: var(--c-success);
-    border-color: var(--c-success);
-  }
-  .lesson-list-item--done .lesson-marker-core::before {
-    content: '✓';
-    display: block;
-    color: var(--color-on-status);
-    font-size: 0.625rem;
-    line-height: 1;
-    font-weight: 800;
-  }
-  .lesson-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    flex: 1;
-  }
-  .lesson-number {
-    color: var(--c-primary);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-  .lesson-title {
-    font-weight: 700;
-    font-size: 1rem;
-  }
-  .lesson-can-do {
-    font-size: 0.8125rem;
-    color: var(--c-text-secondary);
-  }
-  .lesson-example {
-    font-family: var(--font-zh);
-    font-size: 1.125rem;
-    color: var(--c-text);
-    font-weight: 700;
-    margin-top: var(--space-xs);
-    overflow-wrap: anywhere;
-  }
-  .lesson-pinyin {
-    font-family: var(--font-pinyin);
-    font-size: 0.75rem;
-    color: var(--c-text-muted);
-    letter-spacing: 0.03em;
-  }
-  .lesson-arrow {
-    align-self: center;
-    font-size: 1.25rem;
-    color: var(--c-primary);
-    flex-shrink: 0;
+
+  @media (width >= 768px) {
+    .track-list {
+      gap: var(--space-lg);
+    }
   }
   @media (width <= 374px) {
-    .lesson-list-item {
-      padding-left: 30px;
-    }
-    .lesson-list-link {
+    .continuation-card,
+    .track-card {
       padding: var(--space-md);
-      gap: var(--space-sm);
     }
-    .lesson-marker {
-      left: -24px;
-    }
-    .progress-footer {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-  }
-  @media (width >= 768px) {
-    .lesson-list-link {
-      padding: var(--space-lg);
-    }
-  }
-  @media (width >= 1024px) {
-    .home-journey {
-      grid-template-columns: 300px minmax(0, 720px);
-      gap: var(--space-xl);
-      align-items: start;
-    }
-    .home-content {
-      padding-left: 0;
-    }
-    .lesson-list-link {
-      min-height: 0;
-      margin-bottom: 0.75rem;
-      padding: 0.75rem var(--space-lg);
+    .track-card__arrow {
+      position: static;
+      align-self: flex-end;
     }
   }
 </style>
