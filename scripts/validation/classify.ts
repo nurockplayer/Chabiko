@@ -272,6 +272,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     ],
   },
   {
+    // #372 read-only cross-track progress model (must precede the generic
+    // `progress` rule so its own test file is selected).
+    match: (b) => b.includes('crosstrackprogress'),
+    testGlobs: ['tests/cross-track-progress.test.ts'],
+  },
+  {
     match: (b) => b.includes('progress'),
     testGlobs: ['tests/progress*.test.ts', 'tests/home-progress-lifecycle.test.ts'],
   },
