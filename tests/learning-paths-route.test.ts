@@ -283,6 +283,65 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
   });
 });
 
+describe('/paths/ — wayfinding refinement (Issue #367)', () => {
+  it('applies the shared breadcrumb/context contract: ホーム › 学習ルート', () => {
+    expect(routeSource).toContain('Breadcrumb');
+    expect(routeSource).toContain("{ label: 'ホーム', href: '/' }");
+    expect(routeSource).toContain("{ label: '学習ルート' }");
+    // The built page renders the labelled landmark with the current crumb.
+    expect(builtRouteHtml).toContain('<nav class="breadcrumb"');
+    expect(builtRouteHtml).toMatch(/<a class="breadcrumb__link" href="\/"/);
+    expect(builtRouteHtml).toMatch(
+      /<span class="breadcrumb__current" aria-current="page"/,
+    );
+    expect(builtRouteHtml).toContain('ホーム');
+    expect(builtRouteHtml).toContain('学習ルート');
+  });
+
+  it('marks only the primary Taiwan-travel card as the first-class track', () => {
+    const fragment = builtRouteFragment();
+    // The badge renders exactly once, inside the Taiwan-travel card, before HSK.
+    expect(fragment.match(/data-path-primary-badge/g)).toHaveLength(1);
+    const taiwanStart = fragment.indexOf('data-path-id="taiwan-travel"');
+    const hskStart = fragment.indexOf('data-path-id="hsk-vocabulary"');
+    const badgeIndex = fragment.indexOf('data-path-primary-badge');
+    expect(badgeIndex).toBeGreaterThan(taiwanStart);
+    expect(badgeIndex).toBeLessThan(hskStart);
+    expect(fragment).toContain('メインルート');
+    // The badge is gated by the emphasized (primary) prop in the component.
+    expect(componentSource).toContain('{emphasized && (');
+    // Available-but-secondary HSK never gains the badge.
+    const hskBlock = fragment.slice(
+      hskStart,
+      fragment.indexOf('data-path-id="kanji-bridge"'),
+    );
+    expect(hskBlock).not.toContain('data-path-primary-badge');
+    // The unavailable kanji-bridge card stays inert and badge-free.
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    expect(kanjiBlock).not.toContain('data-path-primary-badge');
+    expect(kanjiBlock).not.toMatch(
+      /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
+    );
+  });
+
+  it('drops the redundant percent summary from readiness items', () => {
+    // The status + fixed-denominator count already convey progress; the percent
+    // display duplicated the same fact and is removed from the surface.
+    expect(routeSource).not.toContain('data-readiness-percent');
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    expect(readinessBlock).not.toContain('data-readiness-percent');
+    // The fixed denominators, states, and unavailable-evidence note remain.
+    expect(readinessBlock).toContain('0 / 3');
+    expect(readinessBlock).toContain('0 / 5');
+    expect(readinessBlock).toContain('data-readiness-note');
+    expect(readinessBlock).toContain('利用できない項目');
+  });
+});
+
 describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
   it('renders the four frozen targets in repository order with Japanese labels', () => {
     const readinessBlock = builtRouteHtml.slice(
