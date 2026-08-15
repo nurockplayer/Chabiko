@@ -419,13 +419,54 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
 
   it('keeps unavailable paths out of interactive markup in the component', () => {
     // The unavailable branch renders a plain div with no href or handler.
+    // Scoped to the branch itself: the sibling track-config quiz link (#376)
+    // is a separate feature that only renders when the caller supplies a quiz
+    // entry for the track (the unavailable kanji-bridge path never does).
+    const unavailableStart = componentSource.indexOf(
+      'learning-path-card--unavailable',
+    );
+    const quizStart = componentSource.indexOf('quiz &&');
     const unavailableBranch = componentSource.slice(
-      componentSource.indexOf('learning-path-card--unavailable'),
+      unavailableStart,
+      quizStart === -1 ? undefined : quizStart,
     );
     expect(unavailableBranch).not.toContain('href=');
     expect(unavailableBranch).not.toMatch(
       /onclick|onClick|tabindex|role="link"/,
     );
+  });
+});
+
+describe('/paths/ — Taiwan Travel 総合テスト entry (Issue #376)', () => {
+  it('renders the single track-config quiz entry for the Taiwan Travel path only', () => {
+    const fragment = builtRouteFragment();
+    // The quiz destination comes from the navigation-config domain module
+    // (taiwanTravelQuizEntryForTrack), never hardcoded in the page.
+    expect(fragment).toContain('href="/paths/taiwan-travel/quiz/"');
+    expect(fragment).toContain('総合テスト');
+    expect(fragment.match(/data-path-quiz/g)).toHaveLength(1);
+    const taiwanBlock = fragment.slice(
+      fragment.indexOf('data-path-id="taiwan-travel"'),
+      fragment.indexOf('data-path-id="hsk-vocabulary"'),
+    );
+    expect(taiwanBlock).toContain('data-path-quiz');
+    const hskBlock = fragment.slice(
+      fragment.indexOf('data-path-id="hsk-vocabulary"'),
+      fragment.indexOf('data-path-id="kanji-bridge"'),
+    );
+    expect(hskBlock).not.toContain('data-path-quiz');
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    expect(kanjiBlock).not.toContain('data-path-quiz');
+    // The quiz entry is a real anchor, keyboard-focusable and not inert.
+    expect(fragment).toMatch(/<a[^>]*class="learning-path-card__quiz"[^>]*href="\/paths\/taiwan-travel\/quiz\/"[^>]*>/);
+  });
+
+  it('keeps the quiz route out of a new global navigation tier', () => {
+    // The entry lives only inside the Taiwan Travel path card context; the
+    // route source stays id-free (the loader and the nav-config module are the
+    // single sources of truth).
+    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary|taiwan-travel/);
+    expect(routeSource).not.toContain('paths/taiwan-travel/quiz');
   });
 });
 

@@ -4,6 +4,7 @@ import Header from '../../components/Header.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import LearningPathCard from '../../components/LearningPathCard.astro';
 import { loadLearningPaths } from '../../content/loadLearningPaths';
+import { taiwanTravelQuizEntryForTrack } from '../../domain/taiwanTravelQuizNavigation';
 import { evaluateTravelQuestReadiness } from '../../domain/travelQuestReadiness';
 import {
   basicVocabularyRelevantIds,
@@ -66,11 +67,14 @@ const pathsPayload = JSON.stringify({
       <p class="paths-lead">目的に合ったルートを選んでください。</p>
 
       <ol class="paths-list">
-        {learningPaths.map((path, index) => (
-          <li class="paths-list-item" data-path-id={path.id}>
-            <LearningPathCard path={path} emphasized={index === 0} />
-          </li>
-        ))}
+        {learningPaths.map((path, index) => {
+          const quiz = taiwanTravelQuizEntryForTrack(path.id);
+          return (
+            <li class="paths-list-item" data-path-id={path.id}>
+              <LearningPathCard path={path} emphasized={index === 0} quiz={quiz} />
+            </li>
+          );
+        })}
       </ol>
     </section>
 

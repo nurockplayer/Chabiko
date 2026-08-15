@@ -264,6 +264,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/travel-quest-readiness.test.ts'],
   },
   {
+    // #376 Taiwan Travel comprehensive test: selection/scoring domain, build-time
+    // payload, and the isolated result store/evidence adapter.
+    match: (b) => b.includes('taiwantravelassessment') || b.includes('taiwantravelquiz'),
+    testGlobs: ['tests/taiwan-travel-assessment-*.test.ts'],
+  },
+  {
     match: (b) => b.includes('practice'),
     testGlobs: [
       'tests/practice*.test.ts',
