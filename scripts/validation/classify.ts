@@ -316,6 +316,11 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/unicode*.test.ts'],
   },
   {
+    // #363 teacher-review domain (resolver, UI state, campaign loader).
+    match: (b) => b.includes('teacherreview'),
+    testGlobs: ['tests/teacher-review-*.test.ts'],
+  },
+  {
     match: (b) => b.includes('theme'),
     testGlobs: ['tests/theme-preference.test.ts'],
   },
