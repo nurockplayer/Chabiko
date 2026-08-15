@@ -74,7 +74,7 @@ Maintenance-critical active technical material must be English now. For Issue #3
 - `docs/design/figma-handoff.md`;
 - this policy and its inventory.
 
-Already-English active technical sources, such as the ADRs, visual-regression QA guide, content-review workflow, approved design direction, design brief, design-direction review, UI audit, implementation map, and active strategy contracts, require no translation.
+Already-English active technical sources, such as the ADRs, visual-regression QA guide, content-review workflow, approved design direction, design brief, design-direction review, UI audit, implementation map, content model, roleplay/audio contracts, dual-script strategy, pain-point taxonomy, and active strategy contracts, require no translation.
 
 ### Touch to migrate
 
@@ -97,7 +97,8 @@ Product/persona research and other documents whose primary purpose is product or
 | Other active design technical sources | `approved-direction.md`, `design-brief.md`, `direction-review.md`, `ui-audit.md`, and `implementation-map.json` are already English | Preserve |
 | ADRs | Active ADRs are English | Preserve |
 | QA | `docs/qa/visual-regression.md` is English | Preserve |
-| Content review workflow | Active workflow is English and contains learner-language examples as needed | Preserve |
+| Active content contracts/review | `content-model-draft.md`, `content-review-workflow.md`, `dual-script-and-regional-variant-strategy.md`, `japanese-native-pain-point-taxonomy.md`, `roleplay-card-contract.md`, and teacher-audio contract technical framing is already English | Preserve learner-language values and examples |
+| Completed AI-authoring workflow | `docs/content/ai-assisted-authoring-workflow.md` is mixed Traditional Chinese/English, identifies itself as a Draft for #119, and #119 is completed/closed; current active human-review policy is available in English | Inventory explicitly and apply touch-to-migrate if the completed workflow is materially revised; do not bulk-rewrite the 27KB completed artifact in #301 |
 | Active strategy contracts | Sampled active strategy/readiness technical contracts are English and contain Japanese learner labels where product behavior requires them | Preserve |
 | GitHub issue templates | Technical fields are English | Add optional Japanese-summary field; English remains canonical |
 | PR template | Mostly English with mixed Traditional-Chinese instructions/section references | Migrate technical instructions to English and add optional Japanese summary |
@@ -117,7 +118,7 @@ Maintainers, coding agents, reviewers, CI/release operators, UI implementers, an
 
 ### Legacy paths
 
-`.planning/**`, product/research documents not serving as maintenance-critical engineering authority, historical research/draft notes, closed GitHub history, and immutable evidence remain unchanged unless a future scoped change touches them. They must not override newer active English sources under the repository source-of-truth precedence.
+`.planning/**`, product/research documents not serving as maintenance-critical engineering authority, the completed #119 AI-authoring draft, historical research/draft notes, closed GitHub history, and immutable evidence remain unchanged unless a future scoped change touches them. They must not override newer active English sources under the repository source-of-truth precedence.
 
 ### Canonical workflow
 
@@ -147,4 +148,4 @@ The Issue #301 pull request must verify:
 - repository templates allow an optional Japanese summary while keeping English technical details canonical;
 - no learner-facing/localization/language-learning data was translated or removed;
 - no route, API, schema, persisted key, external identifier, dependency, or runtime file changed;
-- remaining non-English material is preserved product/research/evidence content or explicitly governed by touch-to-migrate rather than the sole maintenance-critical technical source.
+- remaining non-English material is inventoried as preserved product/research/evidence/completed-workflow content or explicitly governed by touch-to-migrate rather than the sole maintenance-critical technical source.
