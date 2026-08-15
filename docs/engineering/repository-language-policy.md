@@ -68,15 +68,21 @@ Maintenance-critical active technical material must be English now. For Issue #3
 - `docs/engineering/cross-cutting-change-playbook.md`;
 - `docs/engineering/frontend-interaction-evidence-playbook.md`;
 - `docs/engineering/teacher-review-deployment-runbook.md`;
+- `docs/design/component-contract.md`;
+- `docs/design/design-contract.md`;
+- `docs/design/responsive-contract.md`;
+- `docs/design/figma-handoff.md`;
 - this policy and its inventory.
 
-Already-English active technical sources, such as the ADRs, visual-regression QA guide, and content-review workflow, require no translation.
+Already-English active technical sources, such as the ADRs, visual-regression QA guide, content-review workflow, approved design direction, design brief, design-direction review, UI audit, implementation map, and active strategy contracts, require no translation.
 
 ### Touch to migrate
 
 Legacy planning, historical research, superseded implementation notes, and other non-maintenance-critical technical material do not require repository-wide churn. When such a file is next materially edited, migrate its technical prose to English in the same bounded change unless the file is preserved historical evidence.
 
 Historical commits, closed issues, closed pull requests, and immutable review evidence are never rewritten solely for language consistency.
+
+Product/persona research and other documents whose primary purpose is product or learner research rather than maintenance-critical engineering are also not bulk-translated by this issue. When they are materially revised later, their technical framing may migrate to English while exact research quotations, learner-language evidence, and product-language text remain preserved as required.
 
 ## Issue #301 inventory and Impact Map
 
@@ -87,12 +93,17 @@ Historical commits, closed issues, closed pull requests, and immutable review ev
 | Root agent policies | `AGENTS.md` and `CLAUDE.md` were predominantly Traditional Chinese | Translate active technical rules to English and add this policy |
 | Repository README | Already English | Add the canonical language-policy pointer; otherwise preserve content |
 | Engineering playbooks/runbooks | Four active files were predominantly Traditional Chinese | Translate the active maintenance guidance to English without changing commands/contracts |
+| Production design maintenance contracts | `docs/design/component-contract.md`, `design-contract.md`, `responsive-contract.md`, and `figma-handoff.md` were predominantly Traditional Chinese or mixed | Translate active component/design/responsive/handoff technical prose to English while preserving exact Japanese learner-facing strings and identifiers |
+| Other active design technical sources | `approved-direction.md`, `design-brief.md`, `direction-review.md`, `ui-audit.md`, and `implementation-map.json` are already English | Preserve |
 | ADRs | Active ADRs are English | Preserve |
 | QA | `docs/qa/visual-regression.md` is English | Preserve |
 | Content review workflow | Active workflow is English and contains learner-language examples as needed | Preserve |
+| Active strategy contracts | Sampled active strategy/readiness technical contracts are English and contain Japanese learner labels where product behavior requires them | Preserve |
 | GitHub issue templates | Technical fields are English | Add optional Japanese-summary field; English remains canonical |
 | PR template | Mostly English with mixed Traditional-Chinese instructions/section references | Migrate technical instructions to English and add optional Japanese summary |
+| Product/persona research | `docs/product/japanese-learner-personas-and-jtbd.md` is mixed/Traditional Chinese product research, not the sole source of maintenance-critical engineering information | Preserve in #301 and apply touch-to-migrate when materially revised; do not bulk-translate product research |
 | `.planning/**` and historical strategy/research material | Mixed age and authority; much is legacy planning rather than current maintenance guidance | Touch-to-migrate; do not bulk-rewrite |
+| Immutable browser/review evidence | May contain historical non-English annotations or learner-language evidence | Preserve as evidence; do not rewrite solely for language consistency |
 | Learner/localization/content/fixtures/data | Japanese/Chinese are product behavior or learning evidence | Preserve exactly unless a content issue explicitly changes them |
 | Runtime contracts | Language-independent identifiers may contain established names | No rename or reinterpretation |
 
@@ -102,11 +113,11 @@ Human maintainers, issue/PR authors, coding agents, reviewers, documentation upd
 
 ### Consumers
 
-Maintainers, coding agents, reviewers, CI/release operators, and contributors consume the active policies, templates, and runbooks.
+Maintainers, coding agents, reviewers, CI/release operators, UI implementers, and contributors consume the active policies, templates, design contracts, and runbooks.
 
 ### Legacy paths
 
-`.planning/**`, historical research/draft notes, closed GitHub history, and immutable evidence remain unchanged unless a future scoped change touches them. They must not override newer active English sources under the repository source-of-truth precedence.
+`.planning/**`, product/research documents not serving as maintenance-critical engineering authority, historical research/draft notes, closed GitHub history, and immutable evidence remain unchanged unless a future scoped change touches them. They must not override newer active English sources under the repository source-of-truth precedence.
 
 ### Canonical workflow
 
@@ -136,4 +147,4 @@ The Issue #301 pull request must verify:
 - repository templates allow an optional Japanese summary while keeping English technical details canonical;
 - no learner-facing/localization/language-learning data was translated or removed;
 - no route, API, schema, persisted key, external identifier, dependency, or runtime file changed;
-- remaining non-English technical material is either preserved product/evidence content or explicitly governed by touch-to-migrate.
+- remaining non-English material is preserved product/research/evidence content or explicitly governed by touch-to-migrate rather than the sole maintenance-critical technical source.
