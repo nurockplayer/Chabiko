@@ -446,16 +446,16 @@ describe('Deployment — static account-sync routes and secret hygiene (fresh bu
     expect(runbook).toContain(
       'https://<PROJECT_REF>.supabase.co/auth/v1/callback',
     );
-    expect(runbook).toContain('Site URL：`https://chabiko.pages.dev/`');
+    expect(runbook).toContain('Site URL: `https://chabiko.pages.dev/`');
     expect(runbook).toContain(
-      'Redirect URLs 加入 exact production URL：`https://chabiko.pages.dev/auth/callback/`',
+      'Redirect URLs include the exact production URL `https://chabiko.pages.dev/auth/callback/`',
     );
-    expect(runbook).toContain('production 不得使用 `*`／`**` 寬 wildcard');
-    expect(runbook).toContain('這三層 allowlist');
+    expect(runbook).toContain('Production must not use broad `*` or `**` wildcards');
+    expect(runbook).toContain('Do not conflate the three allowlists');
     expect(runbook).toContain('supabase start');
     expect(runbook).toContain('CHABIKO_REQUIRE_LIVE_SUPABASE=1 pnpm test');
     expect(runbook).toContain('Rollback to this deployment');
-    expect(runbook).toContain('Preview deployment 不能作為 rollback target');
+    expect(runbook).toContain('a Preview deployment cannot be a rollback target');
     expect(runbook).not.toContain('production branch 指回');
   });
 });
