@@ -86,6 +86,7 @@ const serialized = JSON.stringify({
     margin: 0;
     font-size: 1.0625rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
   }
 
   .word-order-answer-well {
@@ -131,15 +132,15 @@ const serialized = JSON.stringify({
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    overflow-wrap: anywhere;
   }
 
   .word-order-chunk:hover:not(:disabled) {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
+    background: var(--c-slot-bg);
   }
 
   .word-order-chunk:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 3px;
   }
 
@@ -150,15 +151,15 @@ const serialized = JSON.stringify({
 
   .word-order-chunk--answer {
     border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    background: var(--c-accent-light);
+    color: var(--c-primary);
   }
 
   .word-order-chunk--answer:disabled {
     opacity: 1;
-    background: var(--c-accent);
+    background: var(--c-accent-light);
     border-color: var(--c-accent);
-    color: #fff;
+    color: var(--c-primary);
   }
 
   .word-order-feedback {
@@ -170,6 +171,7 @@ const serialized = JSON.stringify({
 
   .word-order-feedback__line {
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   .word-order-feedback--correct {
@@ -223,6 +225,7 @@ const serialized = JSON.stringify({
     font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
+    overflow-wrap: anywhere;
   }
 
   .word-order-action:hover:not(:disabled) {
@@ -230,7 +233,7 @@ const serialized = JSON.stringify({
   }
 
   .word-order-action:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 3px;
   }
 
@@ -254,8 +257,8 @@ const serialized = JSON.stringify({
   }
 
   .word-order-action--retry {
-    border-color: #991b1b;
-    color: #991b1b;
+    border-color: var(--c-error);
+    color: var(--c-error);
   }
 
   .word-order-action--retry:hover:not(:disabled) {

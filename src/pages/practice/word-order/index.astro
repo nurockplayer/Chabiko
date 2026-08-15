@@ -1,5 +1,6 @@
 ---
 import Header from '../../../components/Header.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
 import WordOrderPractice from '../../../components/WordOrderPractice.astro';
 import { loadWordOrderPractice } from '../../../content/loadWordOrderPractice';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
@@ -13,7 +14,12 @@ const items = loadWordOrderPractice();
   </Fragment>
 
   <div class="word-order-page">
-    <a class="back-link" href="/">← ホームに戻る</a>
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '語順練習' },
+      ]}
+    />
     <h1 class="page-title">語順練習</h1>
     <p class="page-subtitle">チャンクを選んで、正しい中国語の語順に並べ替えましょう。</p>
 
@@ -33,20 +39,19 @@ const items = loadWordOrderPractice();
   .word-order-page {
     max-width: 40rem;
     margin: 0 auto;
-  }
-  .back-link {
-    display: inline-block;
-    margin-bottom: var(--space-lg);
-    font-weight: 600;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .page-title {
-    font-size: 1.25rem;
-    margin-bottom: var(--space-xs);
+    margin: 0 0 var(--space-md);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    overflow-wrap: anywhere;
   }
   .page-subtitle {
-    font-size: 0.85rem;
+    margin: 0 0 var(--space-xl);
     color: var(--c-text-secondary);
-    margin-bottom: var(--space-xl);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
   }
   .empty-fallback {
     background: var(--c-surface);
@@ -55,5 +60,6 @@ const items = loadWordOrderPractice();
     padding: var(--space-xl);
     text-align: center;
     color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
   }
 </style>

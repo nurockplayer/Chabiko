@@ -89,6 +89,7 @@ const serialized = JSON.stringify({
     margin: 0;
     font-size: 1.0625rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
   }
 
   .tone-contour {
@@ -118,6 +119,7 @@ const serialized = JSON.stringify({
     margin: 0;
     color: var(--c-text-secondary);
     font-size: 0.8125rem;
+    overflow-wrap: anywhere;
   }
 
   .tone-interference {
@@ -127,6 +129,7 @@ const serialized = JSON.stringify({
     padding: var(--space-sm) var(--space-md);
     color: var(--c-text-secondary);
     font-size: 0.8125rem;
+    overflow-wrap: anywhere;
   }
 
   .tone-choices {
@@ -148,27 +151,33 @@ const serialized = JSON.stringify({
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    overflow-wrap: anywhere;
   }
 
   .tone-choice:hover:not(:disabled) {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
+    background: var(--c-slot-bg);
   }
 
   .tone-choice:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 3px;
   }
 
   .tone-choice[aria-pressed='true'] {
     border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    background: var(--c-accent-light);
+    color: var(--c-primary);
   }
 
   .tone-choice:disabled {
     cursor: default;
     opacity: 0.6;
+  }
+
+  /* The chosen answer stays fully visible after submit while the other
+   * choices dim, so the selected state survives the feedback transition. */
+  .tone-choice:disabled[aria-pressed='true'] {
+    opacity: 1;
   }
 
   .tone-feedback {
@@ -180,6 +189,7 @@ const serialized = JSON.stringify({
 
   .tone-feedback__line {
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   .tone-feedback--correct {
@@ -233,6 +243,7 @@ const serialized = JSON.stringify({
     font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
+    overflow-wrap: anywhere;
   }
 
   .tone-action:hover:not(:disabled) {
@@ -240,7 +251,7 @@ const serialized = JSON.stringify({
   }
 
   .tone-action:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 3px;
   }
 
@@ -264,8 +275,8 @@ const serialized = JSON.stringify({
   }
 
   .tone-action--retry {
-    border-color: #991b1b;
-    color: #991b1b;
+    border-color: var(--c-error);
+    color: var(--c-error);
   }
 
   .tone-action--retry:hover:not(:disabled) {
