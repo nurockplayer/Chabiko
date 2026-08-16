@@ -1,8 +1,14 @@
+## Optional Japanese Summary
+
+Optional team-facing summary. The English technical details below are canonical.
+
+-
+
 ## Source of Truth
 
 Closes #<issue-number>
 
-> 此行為獨立行、非 checkbox。必須填寫完整引用（含 `Closes` 與 issue number），不得只寫裸 issue number。沒有對應 issue 時先建立 issue。
+> Keep the line above standalone and outside any checkbox. Fill the complete closing reference, including `Closes` and the issue number; do not use only a bare issue number. If no corresponding issue exists, create the issue first.
 
 - Planning doc:
 
@@ -49,7 +55,7 @@ Closes #<issue-number>
 
 ## Review and Merge Policy Compliance
 
-Per AGENTS.md「Review 與 Merge 政策（並行 sub-agent 吞吐量感知）」— the canonical review and merge policy.
+Per `AGENTS.md` **Review and Merge Policy (Concurrent Sub-Agent Throughput Aware)**, the canonical review and merge policy.
 
 ### Risk tier
 
@@ -116,4 +122,3 @@ Named responsibility: {{NAME}}
 ## Verification
 
 -
-

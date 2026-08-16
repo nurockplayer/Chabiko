@@ -1,52 +1,52 @@
-# Teacher-Review Portal 部署與 Rollback Runbook
+# Teacher-Review Portal Deployment and Rollback Runbook
 
-本 runbook 描述 `/teacher-review` 教師審查入口（Issue #363）的部署、Cloudflare Access 與 D1 設定、pre-production 驗證，以及 rollback。對應 #363 的 Deployment/runbook 驗收域。
+This runbook describes deployment, Cloudflare Access and D1 configuration, pre-production verification, and rollback for the `/teacher-review` teacher-review entry point from Issue #363. It corresponds to the Deployment/Runbook acceptance surface for the #360 human-review thin slice.
 
-來源：Issue #363（#360 人類審查 thin slice）。本檔只保存可重用的部署與 rollback 流程，不重複記載 domain 的 runtime 行為。
+Source: Issue #363 (#360 human-review thin slice). This document preserves the reusable deployment/rollback workflow and does not restate domain runtime behavior.
 
-## 1. 架構不變保證
+## 1. Architecture remains unchanged
 
-- Chabiko 維持 ADR-0001 static-first：`astro.config.mjs` 保持 `output: 'static'`，沒有 SSR adapter，沒有 Astro server endpoint。
-- `/teacher-review` 是靜態 Astro 頁面 shell；所有審查資料由瀏覽器在 runtime 透過 **同源** Pages Functions API（`/teacher-review/api/*`）取得。
-- 唯一的 serverless 邊界是 Cloudflare Pages Functions（`functions/teacher-review/api/*`），不引入獨立 Worker／service／framework。
-- 學習者 route（`/`、`/phrasebook/`、`/vocabulary/basic/` 等）與 Supabase 行為完全不變。
+- Chabiko preserves ADR-0001 static-first: `astro.config.mjs` remains `output: 'static'`, with no SSR adapter and no Astro server endpoint.
+- `/teacher-review` is a static Astro page shell. Review data is fetched at runtime by the browser through the **same-origin** Pages Functions API at `/teacher-review/api/*`.
+- The only serverless boundary is Cloudflare Pages Functions under `functions/teacher-review/api/*`. Do not add a separate Worker, service, or framework.
+- Learner routes such as `/`, `/phrasebook/`, and `/vocabulary/basic/`, plus existing Supabase behavior, remain unchanged.
 
-## 2. 新增的 repository surface
+## 2. Repository surfaces introduced by the portal
 
-| 路徑 | 用途 |
+| Path | Purpose |
 | --- | --- |
-| `src/pages/teacher-review/index.astro` | 靜態 shell（`robots=noindex,nofollow`，無學習者導覽） |
-| `src/client/teacherReview.ts` | 審查 UX client（一次一筆、過濾、Accept／Needs changes、summary、完成後 export） |
-| `src/domain/teacherReview.ts` | 純 domain：resolver（24+6+6 fail-closed）、semantic fingerprint、decision validation、artifact builder |
-| `src/domain/teacherReviewPublic.ts` | 將 canonical review record 投影成教師可讀 payload；移除 raw provenance enum、內部 refs 與 engineering metadata |
-| `src/domain/teacherReviewUi.ts` | 純 UI state machine |
-| `src/content/loadTeacherReviewCampaign.ts` | 共享 loader（Astro、Functions、tests 共用同一份 content） |
-| `functions/teacher-review/api/*` | Pages Functions：Access JWT middleware、records、decisions、export |
-| `d1/migrations/0001_teacher_review_decisions.sql` | D1 schema（decision per `(campaign_id, record_id)`） |
-| `functions/tsconfig.json` | Pages Functions 的獨立 typecheck project |
-| `docs/engineering/teacher-review-deployment-runbook.md` | 本檔 |
+| `src/pages/teacher-review/index.astro` | Static shell (`robots=noindex,nofollow`, no learner navigation) |
+| `src/client/teacherReview.ts` | Review UX client: one record at a time, filters, Accept/Needs changes, summary, export after completion |
+| `src/domain/teacherReview.ts` | Pure domain: resolver (24+6+6 fail-closed), semantic fingerprint, decision validation, artifact builder |
+| `src/domain/teacherReviewPublic.ts` | Projects canonical review records into teacher-readable payloads and removes raw provenance enums, internal refs, and engineering metadata |
+| `src/domain/teacherReviewUi.ts` | Pure UI state machine |
+| `src/content/loadTeacherReviewCampaign.ts` | Shared loader used by Astro, Functions, and tests |
+| `functions/teacher-review/api/*` | Pages Functions: Access JWT middleware, records, decisions, export |
+| `d1/migrations/0001_teacher_review_decisions.sql` | D1 schema: one decision per `(campaign_id, record_id)` |
+| `functions/tsconfig.json` | Independent typecheck project for Pages Functions |
+| `docs/engineering/teacher-review-deployment-runbook.md` | This file |
 
-> 刻意**不**在 repo 放 `wrangler.toml`：production 的 Pages 部署由 dashboard 設定（build 指令、輸出目錄、bindings、變數），避免 repo 內的 `wrangler.toml` 干擾既有 Pages 部署。D1 設定與 local tooling 完全由本 runbook 的指令指定。
+The repository intentionally has **no `wrangler.toml`** for this surface. Production Pages deployment is configured through the dashboard (build command, output directory, bindings, variables) so a repository `wrangler.toml` cannot interfere with the existing Pages deployment. D1 and local tooling are configured explicitly by the commands in this runbook.
 
-## 3. D1 設定
+## 3. D1 configuration
 
-### 3.1 建立資料庫並套用 migration
+### 3.1 Create the database and apply the migration
 
-**正式環境（Cloudflare dashboard）：**
+**Production through the Cloudflare dashboard:**
 
-1. Dashboard → **D1** → **Create database** → 名稱 `teacher-review`。
-2. Dashboard → **D1 → teacher-review → Console**，執行 `d1/migrations/0001_teacher_review_decisions.sql` 的內容。
+1. Dashboard → **D1** → **Create database** → name it `teacher-review`.
+2. Dashboard → **D1 → teacher-review → Console**, then execute the contents of `d1/migrations/0001_teacher_review_decisions.sql`.
 
-**或使用 wrangler CLI（需先安裝 wrangler 與填入 database id）：**
+**Or through Wrangler CLI, after Wrangler is installed and the database ID is known:**
 
 ```sh
-pnpm exec wrangler d1 create teacher-review        # 回傳 database_id
+pnpm exec wrangler d1 create teacher-review        # returns database_id
 pnpm exec wrangler d1 execute teacher-review \
   --database-id=<database_id> --remote \
   --file=d1/migrations/0001_teacher_review_decisions.sql
 ```
 
-**本地（可選）：**
+**Local, optional:**
 
 ```sh
 pnpm exec wrangler d1 execute teacher-review --database-id=<database_id> \
@@ -55,73 +55,73 @@ pnpm exec wrangler d1 execute teacher-review --database-id=<database_id> \
 
 ### 3.2 Pages binding
 
-Cloudflare dashboard → **Workers & Pages → chabiko → Settings → Bindings → Add → D1 database bindings**：
+Cloudflare dashboard → **Workers & Pages → chabiko → Settings → Bindings → Add → D1 database bindings**:
 
-- **Variable name（binding）：** `TEACHER_REVIEW_DB`
-- **D1 database：** `teacher-review`
-- 儲存後 **redeploy** 才生效。
+- **Variable name (binding):** `TEACHER_REVIEW_DB`
+- **D1 database:** `teacher-review`
+- Save and **redeploy** before expecting the binding to exist at runtime.
 
-### 3.3 Schema 合約
+### 3.3 Schema contract
 
-`teacher_review_decisions`：每個 `(campaign_id, record_id)` 只有一筆 current decision。欄位：
+`teacher_review_decisions` stores one current decision for each `(campaign_id, record_id)`.
 
-- `fingerprint` — 被審查內容的 semantic fingerprint（決定綁定的精確版本）。
-- `outcome` — `accepted | needs_changes`（CHECK 約束）。
-- `note` — `needs_changes` 必填；`accepted` 可選。
-- `reviewer_identity` / `reviewer_email` / `reviewer_name` — 來自驗證過的 Access JWT，絕非瀏覽器欄位。
-- `reviewer_role` — bounded campaign config 記錄的 primary role；完整 role → scope authority 由 §5 的 frozen mapping 定義並在 export 中逐 role 記錄。
-- `updated_at` — ISO 8601。
+- `fingerprint` — semantic fingerprint of the reviewed content, binding the decision to the exact version.
+- `outcome` — `accepted | needs_changes`, enforced by CHECK.
+- `note` — required for `needs_changes`; optional for `accepted`.
+- `reviewer_identity`, `reviewer_email`, `reviewer_name` — derived from the validated Access JWT, never from browser-supplied fields.
+- `reviewer_role` — primary role from bounded campaign configuration. The complete role → scope authority mapping is frozen in section 5 and exported per role.
+- `updated_at` — ISO 8601.
 
-沒有 audit history、沒有 CMS 表、沒有 generic CRUD。只有**人類決定**會被寫入。
+There is no audit-history table, CMS table, or generic CRUD surface. Only **human decisions** are written.
 
-## 4. Cloudflare Access 設定（path-only 保護）
+## 4. Cloudflare Access configuration: path-only protection
 
-目標：**只**保護 `https://chabiko.pages.dev/teacher-review` 及其所有後代路徑，**不**保護公開學習者網站（`/`、`/phrasebook/` 等）。
+Goal: protect **only** `https://chabiko.pages.dev/teacher-review` and all descendants. Do **not** protect the public learner site such as `/` or `/phrasebook/`.
 
-### 4.1 建立 path-scoped Access application
+### 4.1 Create the path-scoped Access application
 
-1. Zero Trust → **Access → Applications** → **Add an application → Self-hosted**。
-2. **Application domain：** 設定為 `chabiko.pages.dev/teacher-review`（**裸 path，不要加 `/*`**）。
-   - 官方 Application paths 規則：path 欄位的 `/*` **不**涵蓋 parent path。設定裸 path `chabiko.pages.dev/teacher-review` 會涵蓋該精確 path，且其後代路徑（如 `/teacher-review/api/*`）依 policy inheritance 繼承保護。
-   - 保護範圍僅止於 `/teacher-review*`；同源的 `/`、`/phrasebook/` 等 sibling path 不受保護。
-3. **Policy：** 只 allow **明確命名的 reviewer 與 maintainer email**。Email One-time PIN（OTP）即可，教師不需要另外的帳號。
-   - Identity provider：在 Access → Settings → Authentication 啟用 **One-time PIN**（email OTP）。
-4. 記下 **AUD tag**（Zero Trust → Access → Applications → 該 application → Overview → AUD tag），填入 Pages production 變數 `TEACHER_REVIEW_ACCESS_AUD`。AUD 除非刪除重建 application，否則不變。
-5. 記下 **team domain**（形如 `https://<team>.cloudflareaccess.com`），填入 `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN`。
+1. Zero Trust → **Access → Applications** → **Add an application → Self-hosted**.
+2. **Application domain:** set `chabiko.pages.dev/teacher-review` using the **bare path, not `/*`**.
+   - Under the documented Application paths behavior, a `/*` path does **not** cover the parent path itself. The bare path `chabiko.pages.dev/teacher-review` covers that exact path, while descendants such as `/teacher-review/api/*` inherit protection through policy inheritance.
+   - The protection boundary stops at `/teacher-review*`; sibling learner routes such as `/` and `/phrasebook/` remain public.
+3. **Policy:** allow only explicitly named reviewer and maintainer email addresses. Email One-time PIN (OTP) is sufficient; the teacher does not need another account.
+   - Identity provider: enable **One-time PIN** in Access → Settings → Authentication.
+4. Copy the **AUD tag** from Zero Trust → Access → Applications → the application → Overview into the Pages production variable `TEACHER_REVIEW_ACCESS_AUD`. The AUD is stable unless the application is deleted and recreated.
+5. Copy the **team domain**, for example `https://<team>.cloudflareaccess.com`, into `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN`.
 
-### 4.2 重要：`*.pages.dev` 主網域的已知限制
+### 4.2 Known limitation on the main `*.pages.dev` domain
 
-官方 Known issues（Pages）：「Enable Access on your `*.pages.dev` domain」段落在設定時會**預設只保護 preview deployments**（`*.<site>.pages.dev`），不保護主 `chabiko.pages.dev`。若要保護主網域，需編輯該 Access application 的 **Overview → Subdomain** 欄位（刪除 wildcard `*`），或改用本 runbook §4.1 的 self-hosted path-scoped application。
+Cloudflare Pages Known issues documents that **Enable Access on your `*.pages.dev` domain** may initially protect only preview deployments (`*.<site>.pages.dev`) rather than the primary `chabiko.pages.dev` domain. To protect the primary domain, edit that Access application's **Overview → Subdomain** and remove the wildcard `*`, or use the self-hosted path-scoped application from section 4.1.
 
-**pre-production 必做驗證（fail-closed）：**
+**Required pre-production fail-closed verification:**
 
-- [ ] 未登入時，訪問 `https://chabiko.pages.dev/teacher-review` 會被導向 Access 登入。
-- [ ] 未登入時，`https://chabiko.pages.dev/teacher-review/api/records` 回傳 401（Access 邊界）或 JSON 401（Functions JWT 邊界）——兩者任一 fail-closed 即可。
-- [ ] **未登入時，`https://chabiko.pages.dev/`、`/phrasebook/`、`/vocabulary/basic/` 等公開學習者頁面仍可正常訪問，不被 Access 擋住。**
-- [ ] 登入後，`/teacher-review` 與 `/teacher-review/api/*` 可訪問。
+- [ ] Logged out: `https://chabiko.pages.dev/teacher-review` redirects to Access login.
+- [ ] Logged out: `https://chabiko.pages.dev/teacher-review/api/records` returns either a 401 at the Access boundary or JSON 401 from the Functions JWT boundary. Either fail-closed boundary is acceptable.
+- [ ] **Logged out: public learner pages such as `https://chabiko.pages.dev/`, `/phrasebook/`, and `/vocabulary/basic/` remain accessible and are not blocked by Access.**
+- [ ] Logged in: `/teacher-review` and `/teacher-review/api/*` are accessible.
 
-若 path-only 保護無法達成（例如：`pages.dev` 上無法建立 path-scoped application、或保護範圍擴及整個公開站），**STOP 並回報 BLOCKED**。不得改為保護整個學習者網站、不得新增 review subdomain、不得發明 application-level auth 當 workaround。
+If path-only protection cannot be achieved, for example because `pages.dev` cannot support the path-scoped application or the configuration protects the whole public site, **STOP and report BLOCKED**. Do not protect the whole learner site, do not add a review subdomain, and do not invent application-level authentication as a workaround.
 
-### 4.3 變數設定（Cloudflare dashboard，非 git）
+### 4.3 Variables: Cloudflare dashboard, not Git
 
-在 Pages production 環境設定下列變數：
+Set these in the Pages production environment:
 
-| Variable | 值 |
+| Variable | Value |
 | --- | --- |
 | `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN` | `https://<team>.cloudflareaccess.com` |
 | `TEACHER_REVIEW_ACCESS_AUD` | Access application AUD tag |
 
-本地開發時放在 `.dev.vars`（gitignored）；**不得 commit 真實值**。
+For local development, place them in `.dev.vars` (gitignored). **Never commit real values.**
 
-### 4.4 伺服器端 JWT 驗證（雙層防禦）
+### 4.4 Server-side JWT validation: defense in depth
 
-- Cloudflare Access 在邊界保護 `/teacher-review` 與 `/teacher-review/api/*`。
-- 此外，`functions/teacher-review/api/_middleware.ts` 對每個 `/teacher-review/api/*` 請求驗證 `Cf-Access-Jwt-Assertion` header 的 RS256 JWT（iss、aud、exp、nbf、iat、JWKS kid 比對），只從驗證過的 JWT 取 reviewer identity。即使邊界 Access 設定錯誤，API 也會 fail closed（JSON 401）。
-- **只有**在 campaign config（`functions/teacher-review/api/campaign-config.ts`）中明確設定的 reviewer email 可以寫 decision；其餘 Access 身份可 inspect／export，但寫入會回傳 403。
+- Cloudflare Access protects `/teacher-review` and `/teacher-review/api/*` at the edge.
+- In addition, `functions/teacher-review/api/_middleware.ts` validates the `Cf-Access-Jwt-Assertion` header on every `/teacher-review/api/*` request as an RS256 JWT: issuer, audience, expiration, not-before, issued-at, and JWKS `kid`. Reviewer identity comes only from the validated JWT. Even if edge Access is misconfigured, the API fails closed with JSON 401.
+- **Only** reviewer email addresses explicitly configured in `functions/teacher-review/api/campaign-config.ts` may write a decision. Other Access-authenticated identities may inspect/export but receive 403 on decision writes.
 
-## 5. 預設 campaign 設定與 reviewer authority
+## 5. Default campaign configuration and reviewer authority
 
-`functions/teacher-review/api/campaign-config.ts` 是 bounded deployment/campaign configuration（不是 user management／RBAC）。`issue-360-launch-v1` 的 atomic Accept/Needs changes 決定固定代表同一位指定真人 reviewer 依 repository workflow 同時執行下列角色；export 會**逐 role 分開記錄 findings**，不把所有 authority 偽裝成單一 `human-language-reviewer`：
+`functions/teacher-review/api/campaign-config.ts` is bounded deployment/campaign configuration, not user-management or RBAC infrastructure. For `issue-360-launch-v1`, an atomic Accept/Needs changes decision represents the same designated human reviewer acting under the repository workflow in the roles below. Export records findings **separately for every role** instead of pretending all authority belongs to `human-language-reviewer`.
 
 | Reviewer role | Approval scope |
 | --- | --- |
@@ -131,20 +131,20 @@ Cloudflare dashboard → **Workers & Pages → chabiko → Settings → Bindings
 | `human-regional-reviewer` | `regional-accuracy` |
 | `human-source-reviewer` | `source-license` |
 
-`review-status` 與 `scope-compliance` **不由教師 portal 宣告 accepted**；它們留給 #360 的 maintainer/mechanical publication phase。若未來改變 role/scope authority，必須建立新的 campaign id，不能把既有 D1 人類決定重新解讀成不同權限。
+`review-status` and `scope-compliance` are **not** declared accepted by the teacher portal. Those remain part of #360's maintainer/mechanical publication phase. If role/scope authority changes later, create a new campaign ID. Do not reinterpret existing D1 human decisions under different authority.
 
-`TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` 在**正式上線前必須**換成真正的 #360 指定 reviewer email。Access 可另 allow maintainer 檢視/匯出，但未列入 eligible reviewer 的身份不能寫 decision。
+Before production launch, `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` **must** be replaced with the real reviewer email designated for #360. Access may separately allow a maintainer to inspect/export, but an identity not present in the eligible-reviewer list cannot write decisions.
 
 ## 6. Artifact export
 
-- `/teacher-review/api/export` 只有在 **36/36 current-version records 都有真人 decision** 時才可匯出；未完成時 API fail-closed 回 409，UI 不顯示可點擊的 export link。
-- 完成只代表 review entry complete，不等於 PASS。任一 `needs_changes` 仍產出 `needs-changes` artifact 並列出 blocked content。
-- export 是 repository-standard artifact **bundle**：同一位指定真人 reviewer 的每個 §5 role 各有一個獨立 artifact section，以符合 `content-review-workflow.md`「一人可擔任多角色，但每個 role findings 必須分別記錄」的契約。
-- **Review date 由最後一筆 current-version valid human decision 的日期推導**，與 export time 無關；stale decisions 不參與；重複 export 不會改變 Review date；未完成 entry 不會借用 export 時間戳偽裝成 review date。Artifact 另記錄 `Artifact generated at`（產生時間，非 review date）。
-- teacher 端 evidence：payload 會明確顯示 source 缺失（「出典情報なし」）、pain-point tags（「注意ポイント」）與繁／簡體各自的 script provenance；這些都是讓對應 human reviewer role 能真正判斷的 human-readable evidence，不做 silent omission。
-- export 不會寫 GitHub、content、`reviewStatus` 或 provenance。
+- `/teacher-review/api/export` is available only after **36/36 current-version records have a human decision**. Before completion, the API fails closed with 409 and the UI does not expose a clickable export link.
+- Completion means all review entries are decided; it does not mean PASS. If any decision is `needs_changes`, export still produces a `needs-changes` artifact and lists blocked content.
+- Export is a repository-standard artifact **bundle**. The same designated human reviewer's findings are emitted in separate artifact sections for each role in section 5, satisfying the `content-review-workflow.md` requirement that one person may act in multiple roles but findings for each role remain separately recorded.
+- **Review date is derived from the date of the final valid current-version human decision**, not export time. Stale decisions do not count. Repeated exports do not change Review date. An incomplete review may not borrow export time and pretend it is the review date. The artifact separately records `Artifact generated at` for generation time.
+- Teacher-facing evidence preserves required learner-language strings. The payload explicitly exposes missing-source text `出典情報なし`, pain-point text `注意ポイント`, and the script provenance for Traditional and Simplified forms. These are human-readable evidence for the corresponding reviewer roles and must not be silently omitted.
+- Export never writes GitHub state, content records, `reviewStatus`, or provenance.
 
-## 7. 本地驗證
+## 7. Local validation
 
 ```sh
 pnpm install --frozen-lockfile
@@ -156,7 +156,7 @@ pnpm validate:content
 git diff --check
 ```
 
-本地跑 Pages Functions（需 `.dev.vars` 設定 Access 變數，並用 `--d1` 指定本地 D1 binding）：
+To run Pages Functions locally, configure Access variables in `.dev.vars` and provide the local D1 binding through `--d1`:
 
 ```sh
 pnpm build
@@ -167,17 +167,17 @@ pnpm exec wrangler pages dev dist --d1 TEACHER_REVIEW_DB=<database_id>
 
 ## 8. Rollback
 
-### 8.1 回到無審查入口
+### 8.1 Return to a site without the review entry point
 
-1. Cloudflare Pages → **Deployments → All deployments**，選擇先前已驗證的 production deployment → **Rollback to this deployment**。
-2. 若要完全移除審查入口：在後續 PR 中移除 `src/pages/teacher-review/`、`functions/teacher-review/`、`src/domain/teacherReview*`、`src/content/loadTeacherReviewCampaign.ts` 與相關測試。
-3. D1 資料可保留（`teacher_review_decisions` 是 human decisions 的記錄，不影響學習者行為）；若需清除，在 D1 主控台執行 `DELETE FROM teacher_review_decisions;`。
+1. Cloudflare Pages → **Deployments → All deployments** → select a previously validated production deployment → **Rollback to this deployment**.
+2. To remove the review entry point from the repository completely, use a later scoped PR to remove `src/pages/teacher-review/`, `functions/teacher-review/`, `src/domain/teacherReview*`, `src/content/loadTeacherReviewCampaign.ts`, and their coupled tests.
+3. D1 data may remain. `teacher_review_decisions` is a human-decision record and does not affect learner behavior. If an explicit deletion is required, run `DELETE FROM teacher_review_decisions;` from the D1 console.
 
-### 8.2 回到無 Access 保護
+### 8.2 Return to no Access protection
 
-若需解除 `/teacher-review` 的 Access 保護：在 Zero Trust → Access → Applications 刪除或停用該 application，並移除 Pages 的 `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN`／`TEACHER_REVIEW_ACCESS_AUD` 變數（否則 Functions 會以未設定錯誤 fail closed）。
+To remove `/teacher-review` Access protection, delete or disable the application in Zero Trust → Access → Applications and remove the Pages variables `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN` and `TEACHER_REVIEW_ACCESS_AUD`. If the variables are removed while Functions remain configured to require them, Functions fail closed on missing configuration.
 
-## 9. Pre-production 檢查清單
+## 9. Pre-production checklist
 
 ```sh
 pnpm lint
@@ -188,10 +188,10 @@ pnpm validate:content
 git diff --check
 ```
 
-外加手動（§4.2 的 Access path 驗證、D1 migration 已套用、AUD/team domain 變數已設定、reviewer email 已設定）。
+Also complete the manual checks from section 4.2, apply the D1 migration, configure AUD/team-domain variables, and configure the real reviewer email.
 
-## 10. #360 與 #250 關係（重要）
+## 10. Relationship to #360 and #250
 
-- **#363 完成不等於 #360 完成**：#360 需要真人審查，並以本入口產出的 repository-standard artifact（`/teacher-review/api/export`）作為 #360 的機械出版依據。
-- **#363 不 unblock #250**：#250 仍被 #360 擋住。
-- 本入口**從不**寫入 GitHub、內容檔、`reviewStatus` 或 provenance；審查完成後的機械出版（status 提升、#260/#262 canonical Unicode sync、PR/CI）由 #360 之後的既有流程執行。
+- **Completing #363 does not complete #360.** #360 requires actual human review, using the repository-standard artifact produced by `/teacher-review/api/export` as the basis for mechanical publication.
+- **#363 does not unblock #250.** #250 remains blocked by #360.
+- The portal **never** writes GitHub state, content files, `reviewStatus`, or provenance. Mechanical publication after review, including status promotion, the #260/#262 canonical Unicode sync, PR/CI, remains part of the existing #360 flow.
