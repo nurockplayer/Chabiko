@@ -1,9 +1,11 @@
 {
   "id": "https://chabiko.dev/docs/design/token-contract.json",
-  "title": "Chabiko Design Token Contract",
-  "description": "Production semantic tokens from BaseLayout.astro — PR #165, commit 04759286 on main",
-  "source": "src/layouts/BaseLayout.astro:50-130",
-  "verifiedAt": "2026-08-15",
+  "title": "Chabiko Design Token Contract — current production",
+  "status": "current-production",
+  "frozenTarget": "./reference-family-389.md",
+  "description": "Current production semantic tokens from BaseLayout.astro (theme-enabled light/dark values recorded below; the theme-disabled :root base fallback uses --color-page #fafafa, --color-surface #ffffff, --c-text #1a1a1a, --c-text-secondary #666, --c-primary #2563eb, --c-accent #2563eb, --radius 4px, --max-w 48rem). Issue #389 freezes a replacement visual target (Direction A1 Editorial Calm) in reference-family-389.md; that target is NOT yet deployed. Do not treat this file's values as the future visual direction.",
+  "source": "src/layouts/BaseLayout.astro:84-209",
+  "verifiedAt": "2026-08-17",
   "tokens": {
     "color": {
       "page": {

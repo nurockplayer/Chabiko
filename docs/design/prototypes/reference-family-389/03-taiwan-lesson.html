@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chabiko Reference Family · 03 台湾旅行 Lesson</title>
+<!--
+  Chabiko Reference Family · Issue #389 · Direction A1 Editorial Calm
+  頁 03/03：台湾旅行 · レッスン（値段を聞いてみよう / lesson-002）
+  本檔案是 reference prototype：token 值為探索用，尚未 freeze。
+  mobile（390px）為基準，desktop（>=1024px）以同一 HTML 呈現。
+  「続きから」の続き先として Home と対になる lesson 表面。
+  核心表現は Home の featured と同じ coral 頂線で family に結び付ける。
+-->
+<style>
+  /* ══ Shared grammar · reference tokens (NOT frozen) ════════ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --paper: #FAF8F4;
+    --paper-deep: #F4F0E9;
+    --ink: #272522;
+    --ink-secondary: #5E5A53;
+    --ink-muted: #736C66;
+    --hairline: #E6E1D8;
+    --hairline-strong: #D6D0C5;
+    --jade: #536B62;
+    --jade-ink: #3E554D;
+    --jade-soft: #E7ECE8;
+    --coral: #E87961;
+    --coral-deep: #B84C38;
+    --coral-soft: #F6E6E1;
+    --radius-chip: 6px;
+    --radius-control: 8px;
+    --radius-content: 10px;
+    --radius-card: 12px;
+    --radius-hero: 16px;
+    --font-serif-ja: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-serif-zh: "Songti TC", "Songti SC", "Hiragino Mincho ProN", serif;
+    --font-sans: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-7: 28px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+  }
+
+  body {
+    background: #23211E;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .app {
+    width: 390px;
+    min-height: 844px;
+    margin: 0 auto;
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ══ Device status bar ══════════════════════════════════════ */
+  .statusbar {
+    height: 44px; padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.01em; color: var(--ink);
+  }
+  .statusbar .sb-right { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .statusbar .sb-battery {
+    width: 22px; height: 11px; border: 1.2px solid var(--ink);
+    border-radius: 3px; position: relative; opacity: .85;
+  }
+  .statusbar .sb-battery::after {
+    content: ''; position: absolute; inset: 1.5px 2px auto auto;
+    width: 2px; height: 4px; background: var(--ink); border-radius: 1px;
+  }
+
+  /* ══ Header · 與 Home 一致 ══════════════════════════════════ */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px 12px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .brand { display: flex; align-items: baseline; gap: 7px; }
+  .brand-mark {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--coral);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700; font-family: var(--font-serif-ja);
+    align-self: center;
+  }
+  .brand-name { font-family: var(--font-serif-ja); font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
+  .brand-kana { font-size: 10px; color: var(--ink-muted); letter-spacing: .12em; }
+  .header-actions { display: flex; align-items: center; gap: 14px; }
+  .script-toggle { font-size: 11px; color: var(--ink-secondary); letter-spacing: .08em; }
+  .script-toggle b { color: var(--jade-ink); font-weight: 700; }
+  .theme-toggle { font-size: 16px; color: var(--ink-secondary); border: none; background: none; cursor: pointer; }
+
+  /* ══ Main ═══════════════════════════════════════════════════ */
+  .main { padding: 0 28px 40px; }
+
+  /* ══ Breadcrumb · demoted ═══════════════════════════════════ */
+  .breadcrumb {
+    margin: 18px 0 0;
+    font-size: 11px; letter-spacing: .06em; color: var(--ink-muted);
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  }
+  .breadcrumb a { color: var(--ink-muted); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .crumb-current { color: var(--ink-secondary); font-weight: 600; }
+  .breadcrumb .crumb-sep { color: var(--hairline-strong); }
+
+  /* ══ Track-local nav ════════════════════════════════════════ */
+  .track-nav {
+    margin-top: 14px;
+    display: flex; gap: 24px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .track-nav a {
+    position: relative;
+    padding: 8px 0 10px;
+    font-size: 13px; font-weight: 600; color: var(--ink-muted);
+    text-decoration: none; letter-spacing: .02em;
+  }
+  .track-nav a.is-active { color: var(--jade-ink); font-weight: 700; }
+  .track-nav a.is-active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--jade);
+  }
+  .track-nav a:hover { color: var(--ink-secondary); }
+
+  /* ══ Lesson intro ═══════════════════════════════════════════ */
+  .lesson-intro { margin-top: 24px; }
+  .lesson-label {
+    font-size: 11px; font-weight: 700; color: var(--coral-deep);
+    letter-spacing: .14em;
+  }
+  h1.lesson-title {
+    margin-top: 8px;
+    font-family: var(--font-serif-ja);
+    font-size: 30px; font-weight: 700; line-height: 1.3; color: var(--ink);
+    letter-spacing: .01em;
+  }
+  .lesson-hook {
+    margin-top: 10px;
+    font-size: 13px; line-height: 1.8; color: var(--ink-secondary);
+  }
+
+  /* ══ Section scaffolding ════════════════════════════════════ */
+  .lesson-section { margin-top: 40px; }
+  .lesson-section h2 {
+    font-family: var(--font-serif-ja);
+    font-size: 16px; font-weight: 700; color: var(--ink);
+    letter-spacing: .01em;
+    margin-bottom: 14px;
+  }
+
+  /* ══ Core expression · featured grammar（Home と同系）══════ */
+  .core {
+    border-top: 2px solid var(--coral);
+    padding-top: 20px;
+  }
+  .core-kicker {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 11px; letter-spacing: .16em; color: var(--jade-ink);
+    font-weight: 700;
+  }
+  .core-kicker .sub { color: var(--ink-muted); font-weight: 500; letter-spacing: .08em; }
+  .core-sentence {
+    margin-top: 16px;
+    font-family: var(--font-serif-zh);
+    font-size: 46px; font-weight: 700; line-height: 1.25; color: var(--ink);
+    letter-spacing: .02em; overflow-wrap: anywhere;
+  }
+  .core-pinyin {
+    margin-top: 6px;
+    font-size: 14px; color: var(--ink-muted); letter-spacing: .04em;
+  }
+  .core-meaning {
+    margin-top: 14px;
+    font-size: 14px; font-weight: 600; color: var(--ink-secondary);
+  }
+
+  /* ══ Can-do · soft surface ══════════════════════════════════ */
+  .can-do {
+    background: var(--paper-deep);
+    border-radius: var(--radius-content);
+    padding: 18px 20px;
+  }
+  .can-do h2 {
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+    font-size: 11px; font-weight: 700; color: var(--jade-ink);
+    letter-spacing: .12em;
+  }
+  .can-do p {
+    font-size: 13.5px; line-height: 1.8; color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ══ Chunk rows ═════════════════════════════════════════════ */
+  .chunk-list { border-top: 1px solid var(--hairline); }
+  .chunk-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .chunk-word {
+    flex: 0 0 auto;
+    font-family: var(--font-serif-zh);
+    font-size: 21px; font-weight: 700; color: var(--ink);
+    letter-spacing: .02em;
+    min-width: 72px;
+  }
+  .chunk-body { flex: 1; min-width: 0; }
+  .chunk-meaning { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .chunk-note { margin-top: 3px; font-size: 11.5px; line-height: 1.7; color: var(--ink-muted); }
+
+  /* ══ Sound focus ════════════════════════════════════════════ */
+  .sound-list { border-top: 1px solid var(--hairline); }
+  .sound-row {
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .sound-item {
+    flex: 0 0 auto;
+    font-size: 13px; font-weight: 700; color: var(--jade-ink);
+    letter-spacing: .02em;
+  }
+  .sound-note { font-size: 12px; line-height: 1.7; color: var(--ink-secondary); }
+
+  /* ══ Example rows ═══════════════════════════════════════════ */
+  .example-list { border-top: 1px solid var(--hairline); }
+  .example-row {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .example-zh {
+    font-family: var(--font-serif-zh);
+    font-size: 22px; font-weight: 700; color: var(--ink);
+    letter-spacing: .02em; line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .example-pinyin {
+    margin-top: 3px;
+    font-size: 12.5px; color: var(--ink-muted); letter-spacing: .03em;
+  }
+  .example-ja {
+    margin-top: 5px;
+    font-size: 13px; color: var(--ink-secondary);
+  }
+
+  /* ══ Travel task · restrained Taiwan warmth ═════════════════ */
+  .travel-task {
+    background: var(--coral-soft);
+    border-radius: var(--radius-content);
+    padding: 18px 20px;
+  }
+  .travel-task h2 {
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+    font-size: 11px; font-weight: 700; color: var(--coral-deep);
+    letter-spacing: .12em;
+  }
+  .travel-task p {
+    font-size: 13.5px; line-height: 1.8; color: var(--ink);
+  }
+
+  /* ══ Lesson nav ═════════════════════════════════════════════ */
+  .lesson-nav {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; gap: 16px;
+  }
+  .nav-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 44px;
+    font-size: 12.5px; font-weight: 700; color: var(--jade-ink);
+    text-decoration: none; letter-spacing: .01em;
+  }
+  .nav-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .nav-prev { justify-content: flex-start; }
+  .nav-next { justify-content: flex-end; margin-left: auto; text-align: right; }
+  .nav-link .nav-arrow { color: var(--ink-muted); font-size: 13px; }
+  .nav-link small { display: block; font-size: 10px; font-weight: 600; color: var(--ink-muted); letter-spacing: .04em; margin-bottom: 2px; }
+
+  /* ══ Desktop representative (>=1024px) ═════════════════════ */
+  @media (width >= 1024px) {
+    body { background: var(--paper); }
+    .statusbar { display: none; }
+    .app { width: 100%; min-height: 100dvh; margin: 0; overflow: visible; }
+    .main { max-width: 760px; margin: 0 auto; padding: 40px 48px 72px; }
+    .breadcrumb { margin-top: 24px; }
+    .lesson-intro { margin-top: 32px; }
+    h1.lesson-title { font-size: 32px; }
+    .core-sentence { font-size: 50px; }
+    .lesson-section { margin-top: 48px; }
+    .can-do, .travel-task { padding: 20px 24px; }
+  }
+
+  /* ══ Narrow mobile (<=374px) ═══════════════════════════════ */
+  @media (width <= 374px) {
+    .app { width: 100%; }
+    .statusbar { padding: 0 20px; }
+    .header { padding: 10px 20px 12px; }
+    .main { padding: 0 20px 32px; }
+    h1.lesson-title { font-size: 28px; }
+    .core-sentence { font-size: 40px; }
+    .chunk-word { font-size: 19px; min-width: 60px; }
+    .nav-link { font-size: 12px; }
+  }
+
+  /* ══ Dark mode · same editorial hierarchy（token 未 freeze）══ */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1E1C19;
+      --paper-deep: #2A2723;
+      --ink: #EFE9E0;
+      --ink-secondary: #C6BFB4;
+      --ink-muted: #A29A8E;
+      --hairline: #3A352D;
+      --hairline-strong: #4C463D;
+      --jade: #7FA093;
+      --jade-ink: #A5C0B5;
+      --jade-soft: #27302B;
+      --coral: #F09380;
+      --coral-deep: #EB8D74;
+      --coral-soft: #352621;
+    }
+    body { background: #14120F; }
+  }
+  @media (width >= 1024px) and (prefers-color-scheme: dark) {
+    body { background: var(--paper); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-right">5G&nbsp;&nbsp;◌&nbsp;&nbsp;<span class="sb-battery"></span></span>
+  </div>
+
+  <header class="header">
+    <div class="brand">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">Chabiko</span>
+      <span class="brand-kana">チャビコ</span>
+    </div>
+    <div class="header-actions">
+      <span class="script-toggle">漢字表記 <b>繁</b>｜<b>簡</b></span>
+      <button class="theme-toggle" aria-label="ダークテーマに切り替える">◐</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Breadcrumb · demoted -->
+    <nav class="breadcrumb" aria-label="現在位置">
+      <a href="#">ホーム</a>
+      <span class="crumb-sep">›</span>
+      <a href="#">台湾旅行</a>
+      <span class="crumb-sep">›</span>
+      <span class="crumb-current">第2課</span>
+    </nav>
+
+    <!-- Track-local navigation -->
+    <nav class="track-nav" aria-label="台湾旅行のモード">
+      <a href="#" class="is-active" aria-current="page">レッスン</a>
+      <a href="#">総合テスト</a>
+    </nav>
+
+    <!-- Lesson intro -->
+    <header class="lesson-intro">
+      <p class="lesson-label">台湾旅行の中国語</p>
+      <h1 class="lesson-title">値段を聞いてみよう</h1>
+      <p class="lesson-hook">夜市で気になるあの料理、いくらかな？</p>
+    </header>
+
+    <!-- Core expression -->
+    <section class="lesson-section" aria-labelledby="core-heading">
+      <div class="core">
+        <p class="core-kicker"><span id="core-heading">今日のコア表現</span><span class="sub">レッスン2</span></p>
+        <p class="core-sentence" lang="zh-Hant">這個多少錢？</p>
+        <p class="core-pinyin" lang="zh-Latn">zhège duōshǎo qián?</p>
+        <p class="core-meaning">これはいくらですか？</p>
+      </div>
+    </section>
+
+    <!-- Can-do -->
+    <section class="lesson-section" aria-labelledby="cando-heading">
+      <div class="can-do">
+        <h2 id="cando-heading">できるようになること</h2>
+        <p>値段を尋ね、値札やレジ表示で金額を確認できる</p>
+      </div>
+    </section>
+
+    <!-- Chunks -->
+    <section class="lesson-section" aria-labelledby="chunks-heading">
+      <h2 id="chunks-heading">フレーズを分けてみよう</h2>
+      <div class="chunk-list">
+        <div class="chunk-row">
+          <p class="chunk-word" lang="zh-Hant">這個</p>
+          <div class="chunk-body">
+            <p class="chunk-meaning">これ</p>
+            <p class="chunk-note">レッスン1 で出てきた「這個」と同じ。</p>
+          </div>
+        </div>
+        <div class="chunk-row">
+          <p class="chunk-word" lang="zh-Hant">多少</p>
+          <div class="chunk-body">
+            <p class="chunk-meaning">どれくらい</p>
+            <p class="chunk-note">数量を尋ねる定型の疑問詞。日本語の「いくら」に相当。</p>
+          </div>
+        </div>
+        <div class="chunk-row">
+          <p class="chunk-word" lang="zh-Hant">錢</p>
+          <div class="chunk-body">
+            <p class="chunk-meaning">お金</p>
+            <p class="chunk-note">台湾では「元」が通貨の単位。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sound focus -->
+    <section class="lesson-section" aria-labelledby="sound-heading">
+      <h2 id="sound-heading">音のポイント</h2>
+      <div class="sound-list">
+        <div class="sound-row">
+          <p class="sound-item" lang="zh-Latn">多 duō</p>
+          <p class="sound-note">第一声。高く平らに。「ドゥオ」と伸ばす。</p>
+        </div>
+        <div class="sound-row">
+          <p class="sound-item" lang="zh-Latn">少 shǎo</p>
+          <p class="sound-note">第三声。先に下げてから上げる。sh はそり舌音。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Examples -->
+    <section class="lesson-section" aria-labelledby="examples-heading">
+      <h2 id="examples-heading">例文</h2>
+      <div class="example-list">
+        <div class="example-row">
+          <p class="example-zh" lang="zh-Hant">這個多少錢？</p>
+          <p class="example-pinyin" lang="zh-Latn">zhège duōshǎo qián?</p>
+          <p class="example-ja">これはいくらですか？</p>
+        </div>
+        <div class="example-row">
+          <p class="example-zh" lang="zh-Hant">那個多少錢？</p>
+          <p class="example-pinyin" lang="zh-Latn">nàge duōshǎo qián?</p>
+          <p class="example-ja">それはいくらですか？</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Travel task -->
+    <section class="lesson-section" aria-labelledby="task-heading">
+      <div class="travel-task">
+        <h2 id="task-heading">旅先でやってみよう</h2>
+        <p>夜市や屋台で気になる品物を指差して「這個多少錢？」と聞いてみよう。相手の指の数やレジ表示で金額を確認しよう。</p>
+      </div>
+    </section>
+
+    <!-- Lesson nav -->
+    <nav class="lesson-nav" aria-label="レッスンナビゲーション">
+      <a class="nav-link nav-prev" href="#">
+        <span class="nav-arrow">←</span>
+        <span><small>レッスン1</small>夜市で注文してみよう</span>
+      </a>
+      <a class="nav-link nav-next" href="#">
+        <span><small>レッスン3</small>場所を尋ねてみよう</span>
+        <span class="nav-arrow">→</span>
+      </a>
+    </nav>
+
+  </main>
+</div>
+</body>
+</html>

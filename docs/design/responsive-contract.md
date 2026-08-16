@@ -2,6 +2,13 @@
 
 Merged production responsive-behavior rules from PR #165, based on committed browser evidence and tests.
 
+> **Status: current-production contract.** Describes the Direction C responsive
+> behavior implemented in production. The frozen Issue #389 visual target (A1
+> Editorial Calm) preserves the responsive/containment/accessibility hard
+> requirements and adds narrow-mobile and desktop-representative rules in
+> `reference-family-389.md` §10; production propagation is tracked in
+> `implementation-map.json`.
+
 ## Evidence sources
 
 All rules are based on browser validation recorded in `docs/design/evidence/issue-162/README.md`.

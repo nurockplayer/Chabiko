@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chabiko Reference Family · 01 Home</title>
+<!--
+  Chabiko Reference Family · Issue #389 · Direction A1 Editorial Calm
+  頁 01/03：Home（今日の学習）
+  本檔案是 reference prototype：token 值為探索用，尚未 freeze。
+  mobile（390px）為基準，desktop（>=1024px）以同一 HTML 呈現。
+-->
+<style>
+  /* ══ Shared grammar · reference tokens (NOT frozen) ════════ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* surface */
+    --paper: #FAF8F4;
+    --paper-deep: #F4F0E9;
+    --ink: #272522;
+    --ink-secondary: #5E5A53;
+    --ink-muted: #736C66;
+    --hairline: #E6E1D8;
+    --hairline-strong: #D6D0C5;
+    /* brand */
+    --jade: #536B62;
+    --jade-ink: #3E554D;
+    --jade-soft: #E7ECE8;
+    --coral: #E87961;
+    --coral-deep: #B84C38;
+    --coral-soft: #F6E6E1;
+    /* radius · semantic scale (not frozen) */
+    --radius-chip: 6px;
+    --radius-control: 8px;
+    --radius-content: 10px;
+    --radius-card: 12px;
+    --radius-hero: 16px;
+    /* type */
+    --font-serif-ja: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-serif-zh: "Songti TC", "Songti SC", "Hiragino Mincho ProN", serif;
+    --font-sans: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    /* spacing · 8px family rhythm */
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-7: 28px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+  }
+
+  /* ══ Studio backdrop (mobile frame) ════════════════════════ */
+  body {
+    background: #23211E;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: 390px;
+    min-height: 844px;
+    margin: 0 auto;
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ══ Device status bar ══════════════════════════════════════ */
+  .statusbar {
+    height: 44px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+  .statusbar .sb-right { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .statusbar .sb-battery {
+    width: 22px; height: 11px; border: 1.2px solid var(--ink);
+    border-radius: 3px; position: relative; opacity: .85;
+  }
+  .statusbar .sb-battery::after {
+    content: ''; position: absolute; inset: 1.5px 2px auto auto;
+    width: 2px; height: 4px; background: var(--ink); border-radius: 1px;
+  }
+
+  /* ══ Header · lightweight brand row ═════════════════════════ */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 28px 12px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .brand { display: flex; align-items: baseline; gap: 7px; }
+  .brand-mark {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--coral);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700; font-family: var(--font-serif-ja);
+    align-self: center;
+  }
+  .brand-name { font-family: var(--font-serif-ja); font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
+  .brand-kana { font-size: 10px; color: var(--ink-muted); letter-spacing: .12em; }
+  .header-actions { display: flex; align-items: center; gap: 14px; }
+  .script-toggle { font-size: 11px; color: var(--ink-secondary); letter-spacing: .08em; }
+  .script-toggle b { color: var(--jade-ink); font-weight: 700; }
+  .theme-toggle { font-size: 16px; color: var(--ink-secondary); border: none; background: none; cursor: pointer; }
+
+  /* ══ Main column ════════════════════════════════════════════ */
+  .main { padding: 0 28px 40px; }
+
+  /* ══ Editorial date line ════════════════════════════════════ */
+  .issue-line {
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 6px;
+    font-size: 10.5px; letter-spacing: .14em; color: var(--ink-muted);
+  }
+  .issue-line .rule { flex: 1; height: 1px; background: var(--hairline); }
+  .issue-line .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--coral); flex: 0 0 auto; }
+
+  h1.page-title {
+    font-family: var(--font-serif-ja);
+    font-size: 33px; font-weight: 700; line-height: 1.25; color: var(--ink);
+    letter-spacing: .01em;
+  }
+  .page-lead {
+    margin-top: 8px;
+    font-size: 13px; line-height: 1.8; color: var(--ink-secondary);
+  }
+
+  /* ══ Continuation · featured spread ═════════════════════════ */
+  .featured {
+    margin-top: 34px;
+    border-top: 2px solid var(--coral);
+    padding-top: 20px;
+  }
+  .featured-kicker {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 11px; letter-spacing: .16em; color: var(--jade-ink);
+    font-weight: 700;
+  }
+  .featured-kicker .sub { color: var(--ink-muted); font-weight: 500; letter-spacing: .08em; }
+  .featured-sentence {
+    margin-top: 18px;
+    font-family: var(--font-serif-zh);
+    font-size: 46px; font-weight: 700; line-height: 1.25; color: var(--ink);
+    letter-spacing: .02em;
+  }
+  .featured-pinyin {
+    margin-top: 6px;
+    font-size: 14px; color: var(--ink-muted); letter-spacing: .04em;
+  }
+  .featured-title {
+    margin-top: 20px;
+    font-family: var(--font-serif-ja);
+    font-size: 21px; font-weight: 700; color: var(--ink);
+  }
+  .featured-note {
+    margin-top: 6px;
+    font-size: 12px; line-height: 1.8; color: var(--ink-secondary);
+  }
+  .featured-action {
+    margin-top: 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13.5px; font-weight: 700; color: var(--coral-deep);
+    letter-spacing: .02em; text-decoration: none;
+  }
+  .featured-action:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .featured-action .arr { font-size: 15px; }
+
+  /* ══ Section header · typographic ═══════════════════════════ */
+  .section { margin-top: 44px; }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .section-head h2 {
+    font-family: var(--font-serif-ja);
+    font-size: 19px; font-weight: 700; color: var(--ink);
+    letter-spacing: .01em;
+  }
+  .section-head .en {
+    font-size: 10px; letter-spacing: .22em; color: var(--ink-muted);
+  }
+
+  /* ══ Track index · typographic rows ═════════════════════════ */
+  .track-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--hairline);
+    text-decoration: none;
+  }
+  .track-row:hover .track-name { text-decoration: underline; text-underline-offset: 4px; }
+  .track-index {
+    font-family: var(--font-serif-ja);
+    font-size: 12px; color: var(--coral-deep); font-weight: 700;
+    padding-top: 3px; letter-spacing: .06em; flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .track-body { flex: 1; min-width: 0; }
+  .track-name {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    letter-spacing: .01em;
+  }
+  .track-desc {
+    margin-top: 4px;
+    font-size: 12px; line-height: 1.75; color: var(--ink-secondary);
+  }
+  .track-meta {
+    margin-top: 8px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11.5px; color: var(--ink-muted); font-variant-numeric: tabular-nums;
+  }
+  .track-meta .progress b { color: var(--ink-secondary); font-weight: 600; }
+  .status-text { font-weight: 700; }
+  .status-text--learning { color: var(--jade-ink); }
+  .status-text--pending { color: var(--ink-muted); }
+  .track-arrow { color: var(--ink-muted); font-size: 14px; padding-top: 2px; }
+
+  /* ══ Milestones ═════════════════════════════════════════════ */
+  .ach-list { margin-top: 4px; }
+  .ach-item {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .ach-item:last-child { border-bottom: none; }
+  .ach-check { color: var(--jade); font-size: 12px; font-weight: 700; flex: 0 0 auto; }
+  .ach-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .ach-desc { margin-top: 2px; font-size: 11px; line-height: 1.7; color: var(--ink-muted); }
+
+  .paths-link {
+    margin-top: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 700; color: var(--jade-ink);
+    text-decoration: none;
+  }
+  .paths-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* ══ Footer ═════════════════════════════════════════════════ */
+  .footer {
+    margin-top: 36px; padding: 18px 0 28px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .reset-btn {
+    border: none; background: none; cursor: pointer;
+    font-family: inherit;
+    font-size: 11px; color: var(--ink-muted); letter-spacing: .02em;
+    padding: 8px 0;
+  }
+  .copy-note { font-size: 10.5px; color: var(--ink-muted); letter-spacing: .04em; }
+
+  /* ══ Desktop representative (>=1024px) ═════════════════════ */
+  @media (width >= 1024px) {
+    body { background: var(--paper); }
+    .statusbar { display: none; }
+    .app {
+      width: 100%; min-height: 100dvh; margin: 0; overflow: visible;
+    }
+    .main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 48px 72px;
+    }
+    .issue-line { margin-top: 28px; }
+    .featured { margin-top: 44px; }
+    .section { margin-top: 56px; }
+    .section-head h2 { font-size: 20px; }
+    .track-row { padding: 22px 0; }
+  }
+
+  /* ══ Narrow mobile (<=374px) ═══════════════════════════════ */
+  @media (width <= 374px) {
+    .app { width: 100%; }
+    .statusbar { padding: 0 20px; }
+    .header { padding: 10px 20px 12px; }
+    .main { padding: 0 20px 32px; }
+    h1.page-title { font-size: 30px; }
+    .featured-sentence { font-size: 40px; }
+    .featured-title { font-size: 20px; }
+    .section-head h2 { font-size: 18px; }
+    .track-desc { font-size: 11.5px; }
+  }
+
+  /* ══ Dark mode · same editorial hierarchy（token 未 freeze）══ */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1E1C19;
+      --paper-deep: #2A2723;
+      --ink: #EFE9E0;
+      --ink-secondary: #C6BFB4;
+      --ink-muted: #A29A8E;
+      --hairline: #3A352D;
+      --hairline-strong: #4C463D;
+      --jade: #7FA093;
+      --jade-ink: #A5C0B5;
+      --jade-soft: #27302B;
+      --coral: #F09380;
+      --coral-deep: #EB8D74;
+      --coral-soft: #352621;
+    }
+    body { background: #14120F; }
+  }
+  @media (width >= 1024px) and (prefers-color-scheme: dark) {
+    body { background: var(--paper); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-right">5G&nbsp;&nbsp;◌&nbsp;&nbsp;<span class="sb-battery"></span></span>
+  </div>
+
+  <header class="header">
+    <div class="brand">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">Chabiko</span>
+      <span class="brand-kana">チャビコ</span>
+    </div>
+    <div class="header-actions">
+      <span class="script-toggle">漢字表記 <b>繁</b>｜<b>簡</b></span>
+      <button class="theme-toggle" aria-label="ダークテーマに切り替える">◐</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <div class="issue-line">
+      <span>8月17日 月曜日</span>
+      <span class="dot"></span>
+      <span>台湾旅行コース</span>
+      <span class="rule"></span>
+    </div>
+
+    <h1 class="page-title">今日の学習</h1>
+    <p class="page-lead">次に学ぶことを選んで、今日も続けましょう。</p>
+
+    <!-- Continuation · featured spread -->
+    <section class="featured">
+      <p class="featured-kicker"><span>続きから</span><span class="sub">レッスン2</span></p>
+      <p class="featured-sentence" lang="zh-Hant">這個多少錢？</p>
+      <p class="featured-pinyin" lang="zh-Latn">zhège duōshǎo qián?</p>
+      <h2 class="featured-title">値段を聞いてみよう</h2>
+      <p class="featured-note">値段を尋ね、値札やレジ表示で金額を確認できる</p>
+      <a class="featured-action" href="#">レッスンを続ける <span class="arr">→</span></a>
+    </section>
+
+    <!-- Courses · typographic index -->
+    <section class="section">
+      <div class="section-head">
+        <h2>学んでいるコース</h2>
+        <span class="en">COURSES</span>
+      </div>
+
+      <a class="track-row" href="#">
+        <span class="track-index">01</span>
+        <span class="track-body">
+          <span class="track-name">先生厳選単語</span>
+          <span class="track-desc">中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。</span>
+          <span class="track-meta"><span class="progress"><b>0</b> / 20 語</span><span class="status-text">未開始</span></span>
+        </span>
+        <span class="track-arrow">→</span>
+      </a>
+
+      <a class="track-row" href="#">
+        <span class="track-index">02</span>
+        <span class="track-body">
+          <span class="track-name">HSK</span>
+          <span class="track-desc">HSK 1級の単語をフラッシュカードで学びます。</span>
+          <span class="track-meta"><span class="progress">-</span><span class="status-text status-text--pending">準備中</span></span>
+        </span>
+        <span class="track-arrow">→</span>
+      </a>
+
+      <a class="track-row" href="#">
+        <span class="track-index">03</span>
+        <span class="track-body">
+          <span class="track-name">台湾旅行</span>
+          <span class="track-desc">台湾旅行で使える中国語を、レッスンで順番に学びます。</span>
+          <span class="track-meta"><span class="progress"><b>1</b> / 10 レッスン完了</span><span class="status-text status-text--learning">学習中</span></span>
+        </span>
+        <span class="track-arrow">→</span>
+      </a>
+    </section>
+
+    <!-- Milestones -->
+    <section class="section">
+      <div class="section-head">
+        <h2>これまでの学習</h2>
+        <span class="en">MILESTONES</span>
+      </div>
+      <div class="ach-list">
+        <div class="ach-item">
+          <span class="ach-check">✓</span>
+          <span>
+            <span class="ach-title">最初の学習マイルストーン</span>
+            <span class="ach-desc">1 つ以上の学習アクティビティを完了しました。</span>
+          </span>
+        </div>
+        <div class="ach-item">
+          <span class="ach-check">✓</span>
+          <span>
+            <span class="ach-title">台湾旅行レッスンを始めた</span>
+            <span class="ach-desc">台湾旅行レッスンを 1 つ完了しました。</span>
+          </span>
+        </div>
+      </div>
+      <a class="paths-link" href="#">学習ルート一覧 <span>→</span></a>
+    </section>
+
+    <div class="footer">
+      <span class="copy-note">Chabiko ・ チャビコ</span>
+      <button class="reset-btn">進捗をリセット</button>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
