@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Chabiko Reference Family · 並列比較</title>
+<!--
+  Chabiko Reference Family · Issue #389 · Direction A1 Editorial Calm
+  三頁（Home / 先生厳選単語 / 台湾旅行）を同一 viewport で並べる。
+  light / dark の両モード。画像は docs/design/evidence/issue-389/ の fullPage PNG。
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1E1B18;
+    font-family: "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    color: #EDE7DE;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { padding: 32px 24px 64px; }
+  .page-title {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 22px; font-weight: 700; letter-spacing: .02em;
+  }
+  .page-sub {
+    margin-top: 6px;
+    font-size: 12.5px; color: #A79E93; letter-spacing: .04em;
+  }
+  .block { margin-top: 44px; }
+  .block-title {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .block-title h2 { font-size: 14px; font-weight: 700; letter-spacing: .08em; color: #EDE7DE; }
+  .block-title span { font-size: 11px; letter-spacing: .14em; color: #8A8177; }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+  .col .label {
+    margin-bottom: 10px;
+    font-size: 13px; font-weight: 700; letter-spacing: .04em; color: #EDE7DE;
+  }
+  .col .label span { color: #A79E93; font-weight: 500; margin-left: 6px; font-size: 11px; }
+  .frame {
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid #3A342E;
+    box-shadow: 0 12px 34px rgba(0,0,0,.4);
+    background: #F6F3EE;
+  }
+  .frame--dark { background: #23211E; }
+  .frame img { display: block; width: 100%; height: auto; }
+  .frame--mobile { height: 600px; border-radius: 18px; }
+  .frame--mobile img { object-fit: cover; object-position: top; height: 100%; }
+  .frame--desktop { height: 440px; }
+  .frame--desktop img { object-fit: cover; object-position: top; height: 100%; }
+  .open-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px; color: #B9B0A3; text-decoration: none;
+    letter-spacing: .04em;
+  }
+  .open-link:hover { text-decoration: underline; }
+  .note {
+    margin-top: 44px; padding-top: 20px; border-top: 1px solid #38322C;
+    font-size: 11px; line-height: 2; color: #8A8177;
+  }
+  .note strong { color: #B9B0A3; font-weight: 700; }
+  @media (width <= 900px) {
+    .row { grid-template-columns: 1fr; }
+    .frame--mobile { height: 640px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1 class="page-title">Chabiko Reference Family · A1 Editorial Calm</h1>
+  <p class="page-sub">同一の visual language を三頁が共有する。Issue #389 · 390px mobile / 1440px desktop / 320px 検証 / dark mode</p>
+
+  <!-- Mobile · Light -->
+  <section class="block">
+    <div class="block-title">
+      <h2>MOBILE · LIGHT · 390px</h2>
+      <span>fullPage キャプチャ</span>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="label">01 · Home<span>今日の学習</span></div>
+        <div class="frame frame--mobile"><img src="../../evidence/issue-389/home-mobile-light.png" alt="Home mobile light"></div>
+        <a class="open-link" href="01-home.html">01-home.html を開く →</a>
+      </div>
+      <div class="col">
+        <div class="label">02 · 先生厳選単語<span>Study · revealed</span></div>
+        <div class="frame frame--mobile"><img src="../../evidence/issue-389/vocabulary-study-mobile-light.png" alt="先生厳選単語 mobile light"></div>
+        <a class="open-link" href="02-teacher-vocab-study.html">02-teacher-vocab-study.html を開く →</a>
+      </div>
+      <div class="col">
+        <div class="label">03 · 台湾旅行<span>Lesson</span></div>
+        <div class="frame frame--mobile"><img src="../../evidence/issue-389/lesson-mobile-light.png" alt="台湾旅行 mobile light"></div>
+        <a class="open-link" href="03-taiwan-lesson.html">03-taiwan-lesson.html を開く →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile · Dark -->
+  <section class="block">
+    <div class="block-title">
+      <h2>MOBILE · DARK · 390px</h2>
+      <span>同一 HTML・prefers-color-scheme: dark で token 切替</span>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="label">01 · Home</div>
+        <div class="frame frame--dark frame--mobile"><img src="../../evidence/issue-389/home-mobile-dark.png" alt="Home mobile dark"></div>
+      </div>
+      <div class="col">
+        <div class="label">02 · 先生厳選単語</div>
+        <div class="frame frame--dark frame--mobile"><img src="../../evidence/issue-389/vocabulary-study-mobile-dark.png" alt="先生厳選単語 mobile dark"></div>
+      </div>
+      <div class="col">
+        <div class="label">03 · 台湾旅行</div>
+        <div class="frame frame--dark frame--mobile"><img src="../../evidence/issue-389/lesson-mobile-dark.png" alt="台湾旅行 mobile dark"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Desktop · Light -->
+  <section class="block">
+    <div class="block-title">
+      <h2>DESKTOP · LIGHT · 1440px</h2>
+      <span>同一 HTML の >=1024px レイアウト</span>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="label">01 · Home</div>
+        <div class="frame frame--desktop"><img src="../../evidence/issue-389/home-desktop-light.png" alt="Home desktop light"></div>
+      </div>
+      <div class="col">
+        <div class="label">02 · 先生厳選単語</div>
+        <div class="frame frame--desktop"><img src="../../evidence/issue-389/vocabulary-study-desktop-light.png" alt="先生厳選単語 desktop light"></div>
+      </div>
+      <div class="col">
+        <div class="label">03 · 台湾旅行</div>
+        <div class="frame frame--desktop"><img src="../../evidence/issue-389/lesson-desktop-light.png" alt="台湾旅行 desktop light"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Desktop · Dark -->
+  <section class="block">
+    <div class="block-title">
+      <h2>DESKTOP · DARK · 1440px</h2>
+      <span>同一 editorial hierarchy、UI を再発明しない</span>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="label">01 · Home</div>
+        <div class="frame frame--dark frame--desktop"><img src="../../evidence/issue-389/home-desktop-dark.png" alt="Home desktop dark"></div>
+      </div>
+      <div class="col">
+        <div class="label">02 · 先生厳選単語</div>
+        <div class="frame frame--dark frame--desktop"><img src="../../evidence/issue-389/vocabulary-study-desktop-dark.png" alt="先生厳選単語 desktop dark"></div>
+      </div>
+      <div class="col">
+        <div class="label">03 · 台湾旅行</div>
+        <div class="frame frame--dark frame--desktop"><img src="../../evidence/issue-389/lesson-desktop-dark.png" alt="台湾旅行 desktop dark"></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">
+    <strong>320px 検証</strong>：三頁とも <code>scrollWidth == clientWidth == 320</code>（水平 overflow なし）。
+    中文 46px は 320px で 40px に縮小、padding は 28px → 20px。<br>
+    <strong>先生厳選単語 revealed-state</strong>：production contract（答えを見る前は画像なし・簡体字のみ → reveal 後に答えと画像）を
+    保持。画像は supporting（mobile 180px / desktop 220px 幅）で、中文（52px）より下に配置。<br>
+    <strong>Artwork finding</strong>：現行 illustration は教材插圖パック由来（黒背景・平塗り）。freeze 前に扱いを決定。詳細は <a style="color:#B9B0A3" href="grammar.md">grammar.md</a>。
+  </p>
+
+</div>
+</body>
+</html>

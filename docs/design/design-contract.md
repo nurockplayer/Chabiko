@@ -2,6 +2,14 @@
 
 Direction C design contract for the production implementation merged in PR #165 (commit `04759286`).
 
+> **Status: current-production contract.** This document describes the visual
+> language implemented in production (Direction C). It remains accurate as a
+> record of what production currently renders. As of Issue #389, the canonical
+> learner-facing visual **target** is Direction A1 Editorial Calm, frozen in
+> `reference-family-389.md`; production propagation is a follow-on wave tracked
+> in `implementation-map.json`. Do not treat this contract as the future visual
+> direction.
+
 ## Selected visual direction
 
 **Direction C (City Exploration)**, selected in PR #161.

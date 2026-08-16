@@ -10,10 +10,16 @@ not available
 
 As of the PR #165 merge, Direction C design decisions are recorded by these repository sources:
 
-- `docs/design/approved-direction.md` — Direction C selection decision (#161)
+- `docs/design/approved-direction.md` — Direction C selection decision (#161; superseded as visual target by #389)
 - `docs/design/direction-review.md` — direction-review details
 - `docs/design/prototypes/direction-c-city-exploration.html` — Direction C prototype HTML
 - `docs/design/prototypes/direction-c-city-exploration.md` — Direction C prototype notes
+
+The frozen target visual direction (Issue #389) is recorded by:
+
+- `docs/design/reference-family-389.md` — frozen A1 Editorial Calm visual contract
+- `docs/design/prototypes/reference-family-389/` — reference family prototypes
+- `docs/design/evidence/issue-389/` — reference family screenshots
 
 Repository production code and committed browser evidence are the authoritative sources for the implemented design:
 

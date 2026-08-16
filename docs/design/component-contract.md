@@ -2,6 +2,13 @@
 
 Merged production component boundaries, state responsibilities, and forbidden responsibilities from PR #165.
 
+> **Status: current-production contract.** Describes the Direction C components
+> implemented in production. The frozen Issue #389 visual target (A1 Editorial
+> Calm) does not change these component boundaries or state responsibilities;
+> it changes presentation tokens and styling. See
+> `reference-family-389.md` for the frozen target and `implementation-map.json`
+> for propagation tracking.
+
 Source validation: `tests/direction-c-production-ui.test.ts:1-95` and `tests/lesson-practice-ui.test.ts:1-71`.
 
 ## Current component and page boundaries
