@@ -41,15 +41,15 @@ const teacherPreviewDevSource = readSource(
 
 describe('Direction C production journey presentation', () => {
   it('uses coherent light and dark semantic tokens with the city-wayfinding shell', () => {
-    expect(baseLayoutSource).toContain('--color-page: #f4f1ec');
-    expect(baseLayoutSource).toContain('--color-primary: #1a2744');
-    expect(baseLayoutSource).toContain('--color-accent: #d48c2b');
+    expect(baseLayoutSource).toContain('--paper: #FAF8F4');
+    expect(baseLayoutSource).toContain('--jade: #536B62');
+    expect(baseLayoutSource).toContain('--coral: #E87961');
     expect(baseLayoutSource).toContain(
       ":root[data-theme-enabled='true'][data-theme='dark']",
     );
-    expect(baseLayoutSource).toContain('--color-page: #11141c');
-    expect(baseLayoutSource).toContain('--color-success-soft: #17322f');
-    expect(baseLayoutSource).toContain('--color-error-soft: #3a2222');
+    expect(baseLayoutSource).toContain('--paper: #1E1C19');
+    expect(baseLayoutSource).toContain('--jade-soft: #27302B');
+    expect(baseLayoutSource).toContain('--coral-soft: #352621');
     expect(baseLayoutSource).toContain('@media (prefers-reduced-motion: reduce)');
     expect(headerSource).toContain('class="brand-mark"');
     expect(goalPathSource).toContain('class="route-timeline"');
@@ -166,10 +166,11 @@ describe('Direction C token scoping', () => {
   const dark = rootBlock(":root[data-theme-enabled='true'][data-theme='dark']");
 
   it('keeps a shared token baseline for routes that do not opt into theming', () => {
-    expect(baseline).toContain('--c-bg: #fafafa');
-    expect(baseline).toContain('--c-surface: #ffffff');
-    expect(baseline).toContain('--c-text: #1a1a1a');
-    expect(baseline).toContain('--c-accent: #2563eb');
+    expect(baseline).toContain('--paper: #FAF8F4');
+    expect(baseline).toContain('--c-bg: var(--color-page)');
+    expect(baseline).toContain('--color-surface: #ffffff');
+    expect(baseline).toContain('--c-text: var(--color-text)');
+    expect(baseline).toContain('--c-accent: var(--color-accent)');
     expect(baseline).toContain('--radius: 4px');
     expect(baseline).toContain('--max-w: 48rem');
     expect(baseline).not.toContain('color-scheme');
@@ -203,26 +204,26 @@ describe('Direction C token scoping', () => {
   });
 
   it('keeps Direction C-only values out of the shared baseline', () => {
-    expect(baseline).not.toContain('--color-page: #f4f1ec');
+    expect(baseline).not.toContain('--paper: #1E1C19');
     expect(baseline).not.toContain('--radius: 0');
     expect(baseline).not.toContain('--max-w: 80rem');
     expect(baseline).not.toContain('#d48c2b');
     expect(baseline).not.toContain('#1a2744');
   });
 
-  it('owns Direction C light tokens only in the light theme-enabled scope', () => {
-    expect(light).toContain('--color-page: #f4f1ec');
-    expect(light).toContain('--color-accent: #d48c2b');
+  it('owns A1 light tokens only in the light theme-enabled scope', () => {
+    expect(light).toContain('--paper: #FAF8F4');
+    expect(light).toContain('--coral: #E87961');
     expect(light).toContain('--radius: 4px');
     expect(light).toContain('--max-w: 80rem');
     expect(light).toContain('color-scheme: light');
-    expect(dark).not.toContain('--color-page: #f4f1ec');
+    expect(dark).not.toContain('--paper: #FAF8F4');
   });
 
-  it('owns Direction C dark tokens only in the dark theme-enabled scope', () => {
-    expect(dark).toContain('--color-page: #11141c');
+  it('owns A1 dark tokens only in the dark theme-enabled scope', () => {
+    expect(dark).toContain('--paper: #1E1C19');
     expect(dark).toContain('color-scheme: dark');
-    expect(light).not.toContain('--color-page: #11141c');
+    expect(light).not.toContain('--paper: #1E1C19');
   });
 
   it('resolves --c-accent-hover without introducing an unauthorized color', () => {
@@ -240,8 +241,8 @@ describe('Direction C token scoping', () => {
     const baselineDef = hoverDef(baseline);
     const lightDef = hoverDef(light);
     const darkDef = hoverDef(dark);
-    // Shared baseline may keep the pre-existing frozen value.
-    expect(baselineDef).toBe('#1d4ed8');
+    // Shared baseline aliases the accent token; no standalone colour value.
+    expect(baselineDef).toBe('var(--c-accent)');
     // Theme-enabled scopes must alias an existing token, not invent a colour.
     for (const def of [lightDef, darkDef]) {
       expect(def).toBeTruthy();

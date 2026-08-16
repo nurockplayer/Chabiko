@@ -49,14 +49,17 @@ const { crumbs, label = 'パンくず' } = Astro.props;
 
 <style>
   .breadcrumb {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
     min-width: 0;
   }
   .breadcrumb__list {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -71,21 +74,25 @@ const { crumbs, label = 'パンくず' } = Astro.props;
   /* Decorative separator between non-first items; not announced by AT. */
   .breadcrumb__item + .breadcrumb__item::before {
     content: '›';
-    margin-inline: var(--space-xs);
-    color: var(--c-text-muted);
+    margin-inline: var(--sp-1);
+    color: var(--hairline-strong);
     line-height: 1;
   }
   .breadcrumb__link {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    color: var(--c-primary);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
   }
   .breadcrumb__current {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    color: var(--c-text);
-    font-weight: 700;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-secondary);
+    font-weight: 600;
   }
 </style>
