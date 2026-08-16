@@ -1,14 +1,24 @@
 ---
 import type { LearningPathRecord } from '../types/learningPath';
 
+/** A track-level comprehensive-test entry rendered beside the path card (#376).
+ *  Supplied by the caller from track→route navigation config, never authored in
+ *  the path record. */
+export interface LearningPathQuizEntry {
+  labelJa: string;
+  href: string;
+}
+
 export interface Props {
   path: LearningPathRecord;
   /** Marks the visually primary path (repository-controlled, currently the
    *  Taiwan-travel path). */
   emphasized?: boolean;
+  /** Optional assessment entry shown as a sibling link (data-gated). */
+  quiz?: LearningPathQuizEntry | null;
 }
 
-const { path, emphasized = false } = Astro.props;
+const { path, emphasized = false, quiz = null } = Astro.props;
 
 const scriptLabel = path.script === 'simplified' ? '簡体字' : '繁体字';
 const available = path.availability === 'available';
@@ -64,6 +74,19 @@ const totalMembers = path.members.length;
         )}
       </span>
     </div>
+  )
+}
+
+{
+  quiz && (
+    <a
+      class="learning-path-card__quiz"
+      href={quiz.href}
+      data-path-quiz
+    >
+      <span class="learning-path-card__quiz-label">{quiz.labelJa}</span>
+      <span class="learning-path-card__quiz-arrow" aria-hidden="true">→</span>
+    </a>
   )
 }
 
@@ -178,5 +201,36 @@ const totalMembers = path.members.length;
   .learning-path-card--unavailable .learning-path-card__status {
     background: var(--c-primary-light);
     color: var(--c-text-secondary);
+  }
+
+  /* Track-level assessment entry (#376): a truthful sibling link rendered
+   * only when the caller supplies a quiz entry for this track, so no path
+   * card ever fabricates an assessment link. */
+  .learning-path-card__quiz {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--c-primary);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .learning-path-card__quiz:hover {
+    background: var(--c-primary-light);
+    text-decoration: none;
+  }
+  .learning-path-card__quiz:focus-visible {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px var(--c-accent-light);
+  }
+  .learning-path-card__quiz-arrow {
+    flex: 0 0 auto;
+    color: var(--c-primary);
   }
 </style>

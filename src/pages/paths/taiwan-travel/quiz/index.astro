@@ -1,0 +1,66 @@
+---
+import Header from '../../../../components/Header.astro';
+import Breadcrumb from '../../../../components/Breadcrumb.astro';
+import TrackNav from '../../../../components/TrackNav.astro';
+import TaiwanTravelQuiz from '../../../../components/TaiwanTravelQuiz.astro';
+import {
+  buildTaiwanTravelAssessmentPayload,
+  serializeTaiwanTravelAssessmentPayload,
+} from '../../../../content/taiwanTravelAssessmentPayload';
+import { TAIWAN_TRAVEL_ASSESSMENT_ROUTE } from '../../../../domain/taiwanTravelQuizNavigation';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+// buildTaiwanTravelAssessmentPayload fails closed: it throws at build time when
+// the production source no longer contains lesson-001…lesson-010 each with a
+// usable review prompt, so the assessment can never ship with invented content.
+const payload = buildTaiwanTravelAssessmentPayload();
+const payloadJson = serializeTaiwanTravelAssessmentPayload(payload);
+---
+
+<BaseLayout title="総合テスト" description="台湾旅行のレッスンをまとめた総合テストです。" themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
+  <div class="taiwan-travel-quiz-page">
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '台湾旅行', href: '/#taiwan-travel-path' },
+        { label: '総合テスト' },
+      ]}
+    />
+    <TrackNav
+      label="台湾旅行"
+      items={[
+        { label: 'レッスン', href: '/lessons/lesson-001/' },
+        { label: '総合テスト', href: TAIWAN_TRAVEL_ASSESSMENT_ROUTE, current: true },
+      ]}
+    />
+    <h1>総合テスト</h1>
+    <p class="taiwan-travel-quiz-page__lead">
+      台湾旅行のレッスン（1〜10）から出題される10問の総合テストです。各レッスンの内容を思い出しながら答えてください。
+    </p>
+    <TaiwanTravelQuiz payload={payload} payloadJson={payloadJson} />
+  </div>
+</BaseLayout>
+
+<style>
+  .taiwan-travel-quiz-page {
+    width: min(100%, 44rem);
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  h1 {
+    margin: 0 0 var(--space-md);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .taiwan-travel-quiz-page__lead {
+    margin: 0 0 var(--space-xl);
+    color: var(--c-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+</style>
