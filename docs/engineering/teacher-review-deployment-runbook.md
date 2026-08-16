@@ -110,18 +110,21 @@ Set these in the Pages production environment:
 | --- | --- |
 | `TEACHER_REVIEW_ACCESS_TEAM_DOMAIN` | `https://<team>.cloudflareaccess.com` |
 | `TEACHER_REVIEW_ACCESS_AUD` | Access application AUD tag |
+| `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` | Comma-separated eligible reviewer addresses, e.g. `teacher@example.com, reviewer2@example.com` |
 
-For local development, place them in `.dev.vars` (gitignored). **Never commit real values.**
+`TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` is read at runtime by the Pages Functions and is never committed to Git. Entries are trimmed and lowercased; duplicates collapse. A missing, empty, or malformed allowlist fails closed: no identity can write a decision (decision writes return 500) and the records endpoint reports `isEligibleReviewer: false`.
+
+For local development, place these variables in `.dev.vars` (gitignored). **Never commit real values.**
 
 ### 4.4 Server-side JWT validation: defense in depth
 
 - Cloudflare Access protects `/teacher-review` and `/teacher-review/api/*` at the edge.
 - In addition, `functions/teacher-review/api/_middleware.ts` validates the `Cf-Access-Jwt-Assertion` header on every `/teacher-review/api/*` request as an RS256 JWT: issuer, audience, expiration, not-before, issued-at, and JWKS `kid`. Reviewer identity comes only from the validated JWT. Even if edge Access is misconfigured, the API fails closed with JSON 401.
-- **Only** reviewer email addresses explicitly configured in `functions/teacher-review/api/campaign-config.ts` may write a decision. Other Access-authenticated identities may inspect/export but receive 403 on decision writes.
+- **Only** reviewer email addresses configured in the Pages production variable `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` may write a decision. Other Access-authenticated identities may inspect/export but receive 403 on decision writes. A missing, empty, or malformed allowlist fails closed with 500 on decision writes and never widens access.
 
 ## 5. Default campaign configuration and reviewer authority
 
-`functions/teacher-review/api/campaign-config.ts` is bounded deployment/campaign configuration, not user-management or RBAC infrastructure. For `issue-360-launch-v1`, an atomic Accept/Needs changes decision represents the same designated human reviewer acting under the repository workflow in the roles below. Export records findings **separately for every role** instead of pretending all authority belongs to `human-language-reviewer`.
+`functions/teacher-review/api/campaign-config.ts` is bounded deployment/campaign configuration, not user-management or RBAC infrastructure. The role → scope mapping below stays in source; the eligible-reviewer allowlist itself is supplied at deployment time through `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` (section 4.3). For `issue-360-launch-v1`, an atomic Accept/Needs changes decision represents the same designated human reviewer acting under the repository workflow in the roles below. Export records findings **separately for every role** instead of pretending all authority belongs to `human-language-reviewer`.
 
 | Reviewer role | Approval scope |
 | --- | --- |
@@ -133,7 +136,7 @@ For local development, place them in `.dev.vars` (gitignored). **Never commit re
 
 `review-status` and `scope-compliance` are **not** declared accepted by the teacher portal. Those remain part of #360's maintainer/mechanical publication phase. If role/scope authority changes later, create a new campaign ID. Do not reinterpret existing D1 human decisions under different authority.
 
-Before production launch, `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` **must** be replaced with the real reviewer email designated for #360. Access may separately allow a maintainer to inspect/export, but an identity not present in the eligible-reviewer list cannot write decisions.
+Before production launch, set the Pages production variable `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` to the real reviewer email(s) designated for #360 (comma-separated). Access may separately allow a maintainer to inspect/export, but an identity not present in the eligible-reviewer allowlist cannot write decisions. The allowlist is deployment configuration: no reviewer identity is committed to the repository.
 
 ## 6. Artifact export
 
@@ -156,12 +159,13 @@ pnpm validate:content
 git diff --check
 ```
 
-To run Pages Functions locally, configure Access variables in `.dev.vars` and provide the local D1 binding through `--d1`:
+To run Pages Functions locally, configure the Access variables and the eligible-reviewer allowlist in `.dev.vars` and provide the local D1 binding through `--d1`:
 
 ```sh
 pnpm build
 TEACHER_REVIEW_ACCESS_TEAM_DOMAIN=https://<team>.cloudflareaccess.com \
 TEACHER_REVIEW_ACCESS_AUD=<aud> \
+TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS=<comma-separated-reviewer-emails> \
 pnpm exec wrangler pages dev dist --d1 TEACHER_REVIEW_DB=<database_id>
 ```
 
@@ -188,7 +192,7 @@ pnpm validate:content
 git diff --check
 ```
 
-Also complete the manual checks from section 4.2, apply the D1 migration, configure AUD/team-domain variables, and configure the real reviewer email.
+Also complete the manual checks from section 4.2, apply the D1 migration, configure the AUD/team-domain variables, and set the `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS` allowlist variable (section 4.3).
 
 ## 10. Relationship to #360 and #250
 
