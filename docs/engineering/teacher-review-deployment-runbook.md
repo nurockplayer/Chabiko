@@ -163,10 +163,10 @@ To run Pages Functions locally, configure the Access variables and the eligible-
 
 ```sh
 pnpm build
-TEACHER_REVIEW_ACCESS_TEAM_DOMAIN=https://<team>.cloudflareaccess.com \
-TEACHER_REVIEW_ACCESS_AUD=<aud> \
-TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS=<comma-separated-reviewer-emails> \
-pnpm exec wrangler pages dev dist --d1 TEACHER_REVIEW_DB=<database_id>
+TEACHER_REVIEW_ACCESS_TEAM_DOMAIN='https://<team>.cloudflareaccess.com' \
+TEACHER_REVIEW_ACCESS_AUD='<aud>' \
+TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS='<comma-separated-reviewer-emails>' \
+pnpm exec wrangler pages dev dist --d1 TEACHER_REVIEW_DB='<database_id>'
 ```
 
 ## 8. Rollback
