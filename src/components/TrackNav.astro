@@ -47,13 +47,14 @@ const { items, label } = Astro.props;
 
 <style>
   .track-nav {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
+    border-bottom: 1px solid var(--hairline);
     min-width: 0;
   }
   .track-nav__list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: 0 var(--sp-2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -69,24 +70,33 @@ const { items, label } = Astro.props;
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding-inline: var(--space-sm);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    padding-inline: var(--sp-3);
+    position: relative;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
   }
   .track-nav__link {
-    color: var(--c-primary);
-    background: var(--c-surface);
+    color: var(--ink-secondary);
     font-weight: 600;
   }
   .track-nav__link:hover {
-    background: var(--c-primary-light);
+    color: var(--ink);
     text-decoration: none;
   }
-  /* Current mode: bold + aria-current + surface-neutral background, so it is
-   * identifiable without colour alone. */
+  /* Current mode: bold + aria-current + 2px jade underline. The hairline row
+   * plus the active underline reads as a native in-track switcher, not a
+   * global tab bar; identifiability does not rely on colour alone. */
   .track-nav__current {
-    color: var(--c-text);
-    background: var(--c-slot-bg);
+    color: var(--ink);
     font-weight: 700;
+  }
+  .track-nav__current::after {
+    content: '';
+    position: absolute;
+    left: var(--sp-3);
+    right: var(--sp-3);
+    bottom: 0;
+    height: 2px;
+    background: var(--jade);
   }
 </style>

@@ -39,7 +39,7 @@ describe('breadcrumb contract', () => {
     expect(breadcrumbSource).toContain(
       '<span class="breadcrumb__current" aria-current={isLast ? \'page\' : undefined}>',
     );
-    expect(breadcrumbSource).toContain('font-weight: 700');
+    expect(breadcrumbSource).toContain('font-weight: 600');
     // The current crumb is not a link: it is not focusable.
     expect(breadcrumbSource).toMatch(/span class="breadcrumb__current"/);
   });
@@ -50,10 +50,10 @@ describe('breadcrumb contract', () => {
     expect(breadcrumbSource).toContain('overflow-wrap: anywhere');
   });
 
-  it('keeps 44px minimum targets and is theme-safe', () => {
+  it('keeps 44px minimum targets and the A1 demoted typography', () => {
     expect(breadcrumbSource).toMatch(/\.breadcrumb__link\s*\{[\s\S]*?min-height:\s*44px/);
-    expect(breadcrumbSource).toContain('var(--c-primary)');
-    expect(breadcrumbSource).toContain('var(--c-text-muted)');
+    expect(breadcrumbSource).toContain('var(--ink-secondary)');
+    expect(breadcrumbSource).toContain('var(--ink-muted)');
   });
 
   it('does not add an extra h1 to the page', () => {
@@ -77,15 +77,15 @@ describe('track-local navigation contract', () => {
     expect(trackNavSource).toMatch(/<a class="track-nav__link" href=\{item\.href\}>/);
   });
 
-  it('keeps 44px targets, safe wrapping, and theme tokens', () => {
+  it('keeps 44px targets, safe wrapping, and the A1 hairline + jade underline pattern', () => {
     expect(trackNavSource).toMatch(
       /\.track-nav__link,\s*\.track-nav__current\s*\{[\s\S]*?min-height:\s*44px/,
     );
     expect(trackNavSource).toContain('flex-wrap: wrap');
     expect(trackNavSource).toContain('overflow-wrap: anywhere');
-    expect(trackNavSource).toContain('border-radius: var(--radius)');
-    expect(trackNavSource).toContain('var(--c-border)');
-    expect(trackNavSource).toContain('var(--c-slot-bg)');
+    expect(trackNavSource).toContain('border-bottom: 1px solid var(--hairline)');
+    expect(trackNavSource).toContain('background: var(--jade)');
+    expect(trackNavSource).toContain('.track-nav__current::after');
   });
 
   it('does not add an extra h1 to the page', () => {
