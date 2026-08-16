@@ -17,7 +17,9 @@ import {
 } from '../functions/teacher-review/api/access-jwt';
 import {
   isEligibleReviewer,
+  readEligibleReviewerAllowlist,
   reviewerIdentityOf,
+  TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR,
 } from '../functions/teacher-review/api/campaign-config';
 
 const TEAM_DOMAIN = 'https://team-test.cloudflareaccess.com';
@@ -183,9 +185,61 @@ describe('reviewer eligibility mapping', () => {
     expect(identity.reviewerEmail).toBe('teacher@example.com');
   });
 
-  it('treats only explicitly configured emails as eligible reviewers', () => {
-    // The v1 config is deployment-bounded; a non-configured identity is NOT an
-    // eligible reviewer even when it passed Access (maintainer inspection only).
-    expect(isEligibleReviewer('')).toBe(false);
+  it('rejects an empty identity email even when the allowlist is populated', () => {
+    expect(isEligibleReviewer('', ['teacher@example.com'])).toBe(false);
+  });
+
+  it('matches only explicitly configured emails, case/whitespace normalized', () => {
+    const allowlist = ['teacher@example.com'];
+    expect(isEligibleReviewer('Teacher@Example.com', allowlist)).toBe(true);
+    expect(isEligibleReviewer('  teacher@example.com  ', allowlist)).toBe(true);
+    expect(isEligibleReviewer('other@example.com', allowlist)).toBe(false);
+  });
+});
+
+describe('eligible reviewer allowlist parsing (Issue #390)', () => {
+  const allowlistOf = (raw: string) =>
+    readEligibleReviewerAllowlist({ TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: raw });
+
+  it('parses one or more comma-separated emails, trimming and lowercasing', () => {
+    const result = allowlistOf('  Teacher@Example.com , reviewer2@example.com ');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.emails).toEqual(['teacher@example.com', 'reviewer2@example.com']);
+    }
+  });
+
+  it('deduplicates repeated and case-variant entries', () => {
+    const result = allowlistOf('teacher@example.com, Teacher@Example.com');
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.emails).toEqual(['teacher@example.com']);
+  });
+
+  it('fails closed when the allowlist variable is missing', () => {
+    const result = readEligibleReviewerAllowlist({});
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toMatch(/not configured/);
+      expect(result.reason).toContain(TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR);
+    }
+  });
+
+  it('fails closed on an empty or whitespace-only allowlist', () => {
+    expect(allowlistOf('').ok).toBe(false);
+    expect(allowlistOf('   ').ok).toBe(false);
+  });
+
+  it('fails closed on an empty entry between commas', () => {
+    const result = allowlistOf('teacher@example.com,,reviewer2@example.com');
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/empty entry/);
+  });
+
+  it('fails closed on malformed email values', () => {
+    for (const bad of ['not-an-email', 'a@b', 'a b@c.com', 'a@@b.com', 'a@b,c@d']) {
+      const result = allowlistOf(bad);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toMatch(/malformed email/);
+    }
   });
 });

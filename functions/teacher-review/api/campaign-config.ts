@@ -4,8 +4,9 @@
  * This is deployment/campaign configuration, NOT user management or RBAC.
  * The designated reviewer identity/role mapping and the atomic v1 scope set
  * live here so the Pages Functions and the artifact builder agree on one
- * contract. The Access team domain and application AUD tag are environment
- * variables (Cloudflare dashboard settings), not source code.
+ * contract. The Access team domain, application AUD tag, and the eligible
+ * reviewer email allowlist are all environment variables (Cloudflare dashboard
+ * settings), not source code.
  *
  * The Access application allow policy restricts who can reach the route at the
  * edge; this config additionally encodes that only explicitly configured
@@ -65,22 +66,79 @@ export const TEACHER_REVIEW_SCOPES = TEACHER_REVIEW_ROLE_SCOPE_GROUPS.flatMap(
 );
 
 /**
- * The designated #360 reviewer email(s). Bound to the deployment; the Cloudflare
- * Access application must allow exactly these (plus any maintainers who may
- * inspect/export). Writes are refused for identities not listed here.
+ * Eligible reviewer allowlist (Issue #390).
+ *
+ * The eligible reviewer addresses are supplied entirely at deployment time
+ * through the Pages production variable `TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS`
+ * (comma-separated), never committed to the repository. Missing, empty, or
+ * malformed configuration fails closed: no identity may write a decision, and
+ * an Access-authenticated maintainer is never silently treated as an eligible
+ * teacher reviewer. The Cloudflare Access edge policy and this API-side
+ * allowlist remain independent defense-in-depth layers.
  */
-export const TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS = [
-  // Deployment-configured: replace with the real designated reviewer email
-  // before production use (documented in the runbook).
-  'reviewer@example.com',
-] as const;
+export const TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR =
+  'TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS';
 
-export function isEligibleReviewer(email: string): boolean {
+export interface ReviewerAllowlistEnv {
+  TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS?: string;
+}
+
+/** Conservative deterministic email shape: one `@`, no whitespace, dotted domain. */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export type ReviewAllowlistResult =
+  | { ok: true; emails: readonly string[] }
+  | { ok: false; reason: string };
+
+/** Parse the deployment allowlist into normalized (trimmed, lowercased) emails.
+ * Empty entries, duplicate/case variants collapse deterministically, and any
+ * empty or malformed entry rejects the whole configuration so it can never
+ * widen access. */
+export function readEligibleReviewerAllowlist(
+  env: ReviewerAllowlistEnv,
+): ReviewAllowlistResult {
+  const raw = env.TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS;
+  if (raw === undefined) {
+    return {
+      ok: false,
+      reason: `${TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR} is not configured.`,
+    };
+  }
+  if (raw.trim().length === 0) {
+    return {
+      ok: false,
+      reason: `${TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR} is empty.`,
+    };
+  }
+  const emails: string[] = [];
+  for (const token of raw.split(',')) {
+    const email = token.trim().toLowerCase();
+    if (email.length === 0) {
+      return {
+        ok: false,
+        reason: `${TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR} contains an empty entry.`,
+      };
+    }
+    if (!EMAIL_PATTERN.test(email)) {
+      return {
+        ok: false,
+        reason: `${TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS_VAR} contains a malformed email: '${email}'.`,
+      };
+    }
+    emails.push(email);
+  }
+  return { ok: true, emails: [...new Set(emails)] };
+}
+
+/** Fail-closed eligibility check against a parsed allowlist. Normalization
+ * (trim + lowercase) is identical to the allowlist reader. */
+export function isEligibleReviewer(
+  email: string,
+  allowlist: readonly string[],
+): boolean {
   const normalized = email.trim().toLowerCase();
   if (normalized.length === 0) return false;
-  return (TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS as readonly string[]).some(
-    (configured) => configured.trim().toLowerCase() === normalized,
-  );
+  return allowlist.includes(normalized);
 }
 
 export interface AccessEnv {

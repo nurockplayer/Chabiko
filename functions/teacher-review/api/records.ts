@@ -16,7 +16,7 @@ import {
   type DecisionRecord,
 } from '../../../src/domain/teacherReview';
 import { toTeacherFacingReviewContent } from '../../../src/domain/teacherReviewPublic';
-import { isEligibleReviewer } from './campaign-config';
+import { isEligibleReviewer, readEligibleReviewerAllowlist } from './campaign-config';
 import { createD1TeacherReviewStore } from './d1-store';
 import { json } from './http';
 import type { TeacherReviewPagesFunction } from './types';
@@ -40,6 +40,9 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
     }
   }
 
+  // The eligibility flag mirrors the decision-write gate and fails closed: an
+  // unparseable/missing allowlist is never reported as eligible.
+  const allowlist = readEligibleReviewerAllowlist(context.env);
   const reviewer = context.data.reviewer;
   return json({
     campaign: {
@@ -48,7 +51,8 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
     reviewer: {
       email: reviewer.email,
       name: reviewer.name,
-      isEligibleReviewer: isEligibleReviewer(reviewer.email),
+      isEligibleReviewer:
+        allowlist.ok && isEligibleReviewer(reviewer.email, allowlist.emails),
     },
     records: resolution.records.map((record) => {
       const decision = validByRecord.get(record.id);

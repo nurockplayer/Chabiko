@@ -10,6 +10,8 @@ export interface TeacherReviewEnv {
   TEACHER_REVIEW_ACCESS_TEAM_DOMAIN?: string;
   /** Access application AUD tag for the /teacher-review application. */
   TEACHER_REVIEW_ACCESS_AUD?: string;
+  /** Comma-separated eligible reviewer email allowlist (deployment-time). */
+  TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS?: string;
   /** D1 database binding. */
   TEACHER_REVIEW_DB: D1Database;
 }

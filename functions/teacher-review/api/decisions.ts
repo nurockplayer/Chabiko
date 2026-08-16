@@ -13,7 +13,7 @@ import {
   validateDecisionInput,
   type DecisionRecord,
 } from '../../../src/domain/teacherReview';
-import { isEligibleReviewer, reviewerIdentityOf } from './campaign-config';
+import { isEligibleReviewer, readEligibleReviewerAllowlist, reviewerIdentityOf } from './campaign-config';
 import { createD1TeacherReviewStore } from './d1-store';
 import { json } from './http';
 import type { TeacherReviewPagesFunction } from './types';
@@ -24,7 +24,17 @@ export const onRequestPost: TeacherReviewPagesFunction = async (context) => {
   const resolution = resolved.resolution;
 
   const reviewer = context.data.reviewer;
-  if (!isEligibleReviewer(reviewer.email)) {
+
+  const allowlist = readEligibleReviewerAllowlist(context.env);
+  if (!allowlist.ok) {
+    return json(
+      {
+        error: `Eligible reviewer configuration error: ${allowlist.reason}`,
+      },
+      500,
+    );
+  }
+  if (!isEligibleReviewer(reviewer.email, allowlist.emails)) {
     return json(
       {
         error:
