@@ -169,7 +169,7 @@ describe('taiwan travel assessment route — containment and focus contract', ()
 
   it('keeps every interactive control a native focusable target with a visible focus style', async () => {
     const { component } = await readSource();
-    expect(component).toContain('outline: 3px solid var(--c-accent);');
+    expect(component).toContain('outline: 3px solid var(--jade);');
     expect(component).toMatch(
       /\.taiwan-travel-quiz-option:focus-visible,\s*\.taiwan-travel-quiz-action:focus-visible/,
     );

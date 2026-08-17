@@ -95,20 +95,20 @@ const totalMembers = path.members.length;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--space-md);
+    gap: var(--sp-4);
     width: 100%;
     min-width: 0;
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-lg);
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    padding: var(--sp-5);
     text-decoration: none;
     overflow-wrap: anywhere;
   }
   .learning-path-card__body {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     min-width: 0;
     flex: 1 1 auto;
   }
@@ -120,87 +120,89 @@ const totalMembers = path.members.length;
     align-items: center;
     align-self: flex-start;
     min-height: 20px;
-    padding: 0 var(--space-sm);
-    border-radius: var(--radius);
-    background: var(--c-primary);
+    padding: 0 var(--sp-2);
+    border-radius: var(--radius-chip);
+    background: var(--jade);
     color: var(--color-on-primary);
-    font-size: 0.6875rem;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.03em;
   }
   .learning-path-card__label {
-    font-size: 1.125rem;
+    font-family: var(--font-serif-ja);
+    font-size: 18px;
     font-weight: 700;
-    color: var(--c-text);
+    color: var(--ink);
   }
   .learning-path-card__description {
-    font-size: 0.875rem;
+    font-size: 13px;
     line-height: 1.7;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
   }
   .learning-path-card__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
   .learning-path-card__script {
-    color: var(--c-text-secondary);
-    font-size: 0.75rem;
+    color: var(--ink-secondary);
+    font-size: 12px;
   }
   .learning-path-card__status {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
-    padding: 0 var(--space-sm);
-    font-size: 0.6875rem;
+    padding: 0 var(--sp-2);
+    border-radius: var(--radius-chip);
+    font-size: 11px;
     font-weight: 700;
   }
   .learning-path-card__progress {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-variant-numeric: tabular-nums;
   }
   .learning-path-card__arrow {
     flex: 0 0 auto;
     align-self: center;
     font-size: 1.25rem;
-    color: var(--c-primary);
+    color: var(--coral);
   }
   .learning-path-card--available .learning-path-card__status {
-    background: var(--c-success-bg);
-    color: var(--color-status-success);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
   }
   .learning-path-card--available:hover {
-    background: var(--c-primary-light);
+    background: var(--paper-deep);
   }
   .learning-path-card--available:hover .learning-path-card__label {
-    color: var(--c-primary);
+    color: var(--jade-ink);
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: 4px;
   }
   .learning-path-card--available:focus-visible {
-    border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
+    border-color: var(--jade);
+    box-shadow: 0 0 0 3px var(--jade-soft);
   }
   .learning-path-card--primary {
-    border-color: var(--c-primary);
-    box-shadow: 0 0 0 1px var(--c-primary);
+    border-color: var(--jade);
+    box-shadow: 0 0 0 1px var(--jade);
   }
   .learning-path-card--unavailable {
-    color: var(--c-text-muted);
+    color: var(--ink-muted);
     cursor: default;
   }
   .learning-path-card--unavailable .learning-path-card__label {
-    color: var(--c-text-muted);
+    color: var(--ink-muted);
   }
   .learning-path-card--unavailable .learning-path-card__status {
-    background: var(--c-primary-light);
-    color: var(--c-text-secondary);
+    background: var(--paper-deep);
+    color: var(--ink-secondary);
   }
 
   /* Track-level assessment entry (#376): a truthful sibling link rendered
@@ -209,28 +211,29 @@ const totalMembers = path.members.length;
   .learning-path-card__quiz {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     min-height: 44px;
-    margin-top: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-primary);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-primary);
-    font-size: 0.875rem;
+    margin-top: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--coral);
+    border-radius: var(--radius-control);
+    background: var(--coral-soft);
+    color: var(--ink);
+    font-size: 13px;
     font-weight: 700;
     text-decoration: none;
   }
   .learning-path-card__quiz:hover {
-    background: var(--c-primary-light);
-    text-decoration: none;
+    background: var(--coral-soft);
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
   .learning-path-card__quiz:focus-visible {
-    border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
+    border-color: var(--coral);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
   .learning-path-card__quiz-arrow {
     flex: 0 0 auto;
-    color: var(--c-primary);
+    color: var(--coral);
   }
 </style>
