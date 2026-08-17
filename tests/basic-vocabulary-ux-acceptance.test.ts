@@ -202,10 +202,10 @@ describe('source and route contract (Issue #281)', () => {
     const study = await readFile('src/pages/vocabulary/basic/index.astro', 'utf8');
     const catalogComponent = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    // The Dashboard track card is the home entry point to the study route
+    // The Dashboard track row is the home entry point to the study route
     // (Issue #374 migration of the former basic-vocabulary-entry catalog link).
     const homeTrackTemplate = home.match(
-      /<a\s+class="track-card"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
+      /<a\s+class="track-row"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
     );
     expect(homeTrackTemplate).not.toBeNull();
     expect(homeTrackTemplate![0]).not.toMatch(/\btabindex="-1"\b/);
@@ -222,10 +222,10 @@ describe('source and route contract (Issue #281)', () => {
     const homeRules = (homeStyleMatch![1] ?? '')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .split('}');
-    const trackCardRule = homeRules.find(
-      (rule) => rule.includes('.track-card') && rule.includes('min-height'),
+    const trackRowRule = homeRules.find(
+      (rule) => rule.includes('.track-row') && rule.includes('min-height'),
     );
-    expect(trackCardRule).toBeDefined();
+    expect(trackRowRule).toBeDefined();
     const studyStyleMatch = study.match(/<style>([\s\S]*?)<\/style>/);
     expect(studyStyleMatch).not.toBeNull();
     const studyRules = (studyStyleMatch![1] ?? '')
