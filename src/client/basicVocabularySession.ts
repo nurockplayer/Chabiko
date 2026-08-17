@@ -354,17 +354,14 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     }
 
     const fragment = document.createDocumentFragment();
-    // Recall-first reveal (#356): the illustration is answer feedback, shown
-    // together with the answer in the same transition when 「答えを見る」 is
-    // pressed — never a pre-reveal hint on the unanswered card.
-    if (entry.illustration && state.answerRevealed) {
-      const image = document.createElement('img');
-      image.className = 'basic-vocabulary-illustration';
-      image.src = entry.illustration.assetPath;
-      image.width = entry.illustration.width;
-      image.height = entry.illustration.height;
-      image.alt = entry.illustration.altJa;
-      fragment.append(image);
+
+    // Reveal-state caption (frozen §13, A1 Editorial Calm): a quiet jade label
+    // at the top of the card, shown only once the answer is revealed.
+    if (state.answerRevealed) {
+      const stateLabel = document.createElement('p');
+      stateLabel.className = 'basic-vocabulary-state';
+      stateLabel.textContent = '答えを表示済み';
+      fragment.append(stateLabel);
     }
 
     const front = visibleFrontScript(entry, scriptPreference);
@@ -413,12 +410,25 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
         fragment.append(answer);
       }
 
+      // Recall-first reveal (#356): the illustration is answer feedback, shown
+      // together with the answer in the same transition when 「答えを見る」 is
+      // pressed — never a pre-reveal hint on the unanswered card.
+      if (entry.illustration && state.answerRevealed) {
+        const image = document.createElement('img');
+        image.className = 'basic-vocabulary-illustration';
+        image.src = entry.illustration.assetPath;
+        image.width = entry.illustration.width;
+        image.height = entry.illustration.height;
+        image.alt = entry.illustration.altJa;
+        fragment.append(image);
+      }
+
       const ratings = document.createElement('div');
       ratings.className = 'basic-vocabulary-ratings';
       for (const [rating, label] of [
-        ['again', 'もう一度'],
-        ['unsure', 'まだ曖昧'],
-        ['known', '覚えた'],
+        ['again', 'また'],
+        ['unsure', 'むずかしい'],
+        ['known', 'できた'],
       ] as const) {
         const ratingButton = button(document, 'basic-vocabulary-rating', label, 'rate');
         ratingButton.dataset.rating = rating;

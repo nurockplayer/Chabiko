@@ -210,9 +210,9 @@ test.describe('/vocabulary/basic/ learner route', () => {
       // The reveal handler moves focus to the again rating.
       const again = page.locator('[data-rating="again"]');
       await expect(again).toBeFocused();
-      await expect(again).toHaveAccessibleName('もう一度');
-      await expect(page.locator('[data-rating="unsure"]')).toHaveAccessibleName('まだ曖昧');
-      await expect(page.locator('[data-rating="known"]')).toHaveAccessibleName('覚えた');
+      await expect(again).toHaveAccessibleName('また');
+      await expect(page.locator('[data-rating="unsure"]')).toHaveAccessibleName('むずかしい');
+      await expect(page.locator('[data-rating="known"]')).toHaveAccessibleName('できた');
 
       // Natural Tab order continues through the ratings. 大家 has an approved
       // example, so the example-sentence detail link (#342) is the next
