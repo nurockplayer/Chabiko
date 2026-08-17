@@ -54,8 +54,8 @@ describe('reveal hierarchy CSS (Issue #369)', () => {
     const rule = sessionCss.match(
       /\.basic-vocabulary-traditional\s*\{([\s\S]*?)\n {2}\}/,
     )![1];
-    expect(rule).toContain('border-top: 1px solid var(--c-border)');
-    expect(rule).toContain('var(--c-text-secondary)');
+    expect(rule).toContain('border-top: 1px solid var(--hairline)');
+    expect(rule).toContain('var(--ink-muted)');
   });
 
   it('keeps long reveal text wrapping and never forces a single-line nowrap', () => {

@@ -122,10 +122,10 @@ describe('basic vocabulary session lifecycle', () => {
     expect(root.textContent).toContain('答えを見る');
 
     reveal(root);
-    // Rating labels: もう一度, まだ曖昧, 覚えた
-    expect(root.textContent).toContain('もう一度');
-    expect(root.textContent).toContain('まだ曖昧');
-    expect(root.textContent).toContain('覚えた');
+    // Rating labels: また, むずかしい, できた (frozen A1 #389 labels)
+    expect(root.textContent).toContain('また');
+    expect(root.textContent).toContain('むずかしい');
+    expect(root.textContent).toContain('できた');
 
     // Complete all items
     for (let i = 0; i < REAL_IDS.length; i++) {
@@ -190,9 +190,9 @@ describe('basic vocabulary session lifecycle', () => {
       /\.basic-vocabulary-completion\s*\{[^}]*min-height/,
     );
 
-    // .basic-vocabulary-illustration
+    // .basic-vocabulary-illustration (capped answer feedback, #369)
     expect(css).toMatch(
-      /\.basic-vocabulary-illustration\s*\{[^}]*max-width:\s*100%[^}]*max-height:\s*min\(42vh,\s*420px\)[^}]*object-fit:\s*contain/,
+      /\.basic-vocabulary-illustration\s*\{[^}]*max-width:\s*180px[^}]*max-height:\s*min\(42vh,\s*420px\)[^}]*object-fit:\s*contain/,
     );
 
     // .basic-vocabulary-ratings
@@ -209,10 +209,10 @@ describe('basic vocabulary session lifecycle', () => {
     // Primary and secondary completion actions are visually distinguishable,
     // both at least 44 px high (2.75rem).
     expect(css).toMatch(
-      /\.basic-vocabulary-reveal,\s*\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--c-accent\)/,
+      /\.basic-vocabulary-reveal,\s*\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral\)/,
     );
     expect(css).toMatch(
-      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--c-surface\)/,
+      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--paper\)/,
     );
     expect(css).toMatch(
       /\.basic-vocabulary-action,\s*\.basic-vocabulary-rating\s*\{[^}]*min-height:\s*2\.75rem/,
