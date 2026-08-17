@@ -199,20 +199,25 @@ const hasContent = phrases.length > 0 || dialog !== null;
   .phrasebook-scenario {
     width: 100%;
     min-width: 0;
+    margin-bottom: var(--sp-12);
+  }
+  .phrasebook-scenario:last-child {
+    margin-bottom: 0;
   }
   .phrasebook-scenario__heading {
-    font-size: 1.25rem;
+    font-family: var(--font-serif-ja);
+    font-size: 19px;
     line-height: 1.3;
-    margin: 0 0 var(--space-md);
-    padding-bottom: var(--space-xs);
-    border-bottom: 2px solid var(--c-accent);
+    font-weight: 700;
+    margin: 0 0 var(--sp-4);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--hairline-strong);
     overflow-wrap: anywhere;
   }
   .phrasebook-phrase-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
-    margin: 0 0 var(--space-xl);
+    margin: 0 0 var(--sp-8);
     padding: 0;
     min-width: 0;
   }
@@ -220,42 +225,45 @@ const hasContent = phrases.length > 0 || dialog !== null;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-lg);
+    padding: var(--sp-5) 0;
+    border-bottom: 1px solid var(--hairline);
     overflow-wrap: anywhere;
     word-break: normal;
     list-style: none;
   }
+  .phrasebook-phrase:last-child {
+    border-bottom: none;
+  }
   .phrasebook-phrase__headword {
-    font-size: 1.5rem;
+    font-family: var(--font-serif-zh);
+    font-size: 24px;
     line-height: 1.3;
-    margin: 0 0 var(--space-xs);
+    font-weight: 700;
+    margin: 0 0 var(--sp-2);
     overflow-wrap: anywhere;
   }
   .phrasebook-phrase__pinyin {
-    margin: 0 0 var(--space-md);
-    font-size: 0.875rem;
-    color: var(--c-text-secondary);
+    margin: 0 0 var(--sp-4);
+    font-size: 13px;
+    color: var(--ink-muted);
     overflow-wrap: anywhere;
   }
   .phrasebook-phrase__meta {
-    margin: 0 0 var(--space-sm);
+    margin: 0 0 var(--sp-3);
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
   .phrasebook-phrase__meta-row {
     display: flex;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     min-width: 0;
   }
   .phrasebook-phrase__meta-row dt {
     flex: 0 0 auto;
     min-width: 2.5rem;
     font-weight: 700;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
   }
   .phrasebook-phrase__meta-row dd {
     margin: 0;
@@ -263,47 +271,48 @@ const hasContent = phrases.length > 0 || dialog !== null;
     overflow-wrap: anywhere;
   }
   .phrasebook-phrase__usage {
-    margin: 0 0 var(--space-sm);
-    font-size: 0.875rem;
+    margin: 0 0 var(--sp-3);
+    font-size: 13.5px;
+    line-height: 1.8;
     overflow-wrap: anywhere;
   }
   .phrasebook-phrase__note-label {
     font-weight: 700;
   }
   .phrasebook-phrase__provenance {
-    margin: var(--space-sm) 0 0;
-    font-size: 0.75rem;
-    color: var(--c-text-muted);
+    margin: var(--sp-2) 0 0;
+    font-size: 11.5px;
+    color: var(--ink-muted);
     overflow-wrap: anywhere;
   }
   .script-fallback {
     display: inline-block;
-    font-size: 0.75rem;
-    color: var(--c-text-secondary);
+    font-size: 11.5px;
+    color: var(--ink-secondary);
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-xl);
+    background: var(--paper-deep);
+    border-radius: var(--radius-content);
+    padding: var(--sp-5);
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__heading {
-    font-size: 1.125rem;
-    line-height: 1.3;
-    margin: 0 0 var(--space-md);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--jade-ink);
+    margin: 0 0 var(--sp-4);
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__turns {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
-    margin: 0 0 var(--space-md);
+    gap: var(--sp-6);
+    margin: 0 0 var(--sp-4);
     padding: 0;
     min-width: 0;
   }
@@ -312,31 +321,35 @@ const hasContent = phrases.length > 0 || dialog !== null;
     list-style: none;
   }
   .phrasebook-dialog__speaker {
-    margin: 0 0 var(--space-xs);
-    font-size: 0.75rem;
+    margin: 0 0 var(--sp-2);
+    font-size: 11px;
     font-weight: 700;
-    color: var(--c-text-secondary);
+    letter-spacing: 0.08em;
+    color: var(--ink-secondary);
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__line {
-    margin: 0 0 var(--space-xs);
-    font-size: 1.125rem;
+    margin: 0 0 var(--sp-2);
+    font-family: var(--font-serif-zh);
+    font-size: 18px;
     font-weight: 600;
     overflow-wrap: anywhere;
   }
-  .phrasebook-dialog__pinyin,
-  .phrasebook-dialog__japanese {
+  .phrasebook-dialog__pinyin {
     margin: 0;
-    font-size: 0.875rem;
-    color: var(--c-text-secondary);
+    font-size: 13px;
+    color: var(--ink-muted);
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__japanese {
-    margin-top: var(--space-xs);
+    margin: var(--sp-1) 0 0;
+    font-size: 13px;
+    color: var(--ink-secondary);
+    overflow-wrap: anywhere;
   }
   .phrasebook-dialog__references {
-    margin: 0 0 var(--space-sm);
-    font-size: 0.875rem;
+    margin: 0 0 var(--sp-3);
+    font-size: 13.5px;
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__references-label {
@@ -346,9 +359,9 @@ const hasContent = phrases.length > 0 || dialog !== null;
     overflow-wrap: anywhere;
   }
   .phrasebook-dialog__provenance {
-    margin: var(--space-sm) 0 0;
-    font-size: 0.75rem;
-    color: var(--c-text-muted);
+    margin: var(--sp-2) 0 0;
+    font-size: 11.5px;
+    color: var(--ink-muted);
     overflow-wrap: anywhere;
   }
 </style>
