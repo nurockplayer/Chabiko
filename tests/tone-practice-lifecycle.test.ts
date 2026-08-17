@@ -366,32 +366,28 @@ describe('tone practice responsive containment', () => {
 // ─── #370 theme-safe state styling in the Astro stylesheet ──────────────────
 
 describe('tone practice theme-safe state styling', () => {
-  it('drives selected/focus/retry states from shared theme tokens', () => {
+  it('drives selected/retry states from shared A1 tokens and defers focus to the shared theme rule', () => {
     const source = readFileSync('src/components/TonePractice.astro', 'utf8');
     const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
-    // Selected choice uses the shared soft-accent + primary pattern so the
-    // selection stays readable in both themes (never white-on-accent).
+    // Selected choice uses the shared A1 jade learning-state soft surface + ink
+    // so the selection stays readable in both themes (never white-on-accent).
     expect(css).toMatch(
-      /\.tone-choice\[aria-pressed='true'\]\s*\{[\s\S]*?background:\s*var\(--c-accent-light\)[\s\S]*?color:\s*var\(--c-primary\)/,
+      /\.tone-choice\[aria-pressed='true'\]\s*\{[\s\S]*?background:\s*var\(--jade-soft\)[\s\S]*?color:\s*var\(--jade-ink\)/,
     );
     // The chosen answer stays fully visible after submit while other choices
     // dim, so the selected state survives the feedback transition.
     expect(css).toMatch(
       /\.tone-choice:disabled\[aria-pressed='true'\]\s*\{[\s\S]*?opacity:\s*1/,
     );
-    // Focus rings follow the shared #366 focus token, not the accent colour.
+    // Focus rings follow the shared BaseLayout :focus-visible theme rule (the
+    // #366 focus token), never a hard-coded or per-component accent colour.
+    expect(css).not.toMatch(/:focus-visible\s*\{/);
+    // Retry uses the A1 coral attention family instead of a hard-coded hex.
     expect(css).toMatch(
-      /\.tone-choice:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/,
-    );
-    expect(css).toMatch(
-      /\.tone-action:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/,
-    );
-    // Retry uses the theme error token instead of a hard-coded hex.
-    expect(css).toMatch(
-      /\.tone-action--retry\s*\{[\s\S]*?border-color:\s*var\(--c-error\)[\s\S]*?color:\s*var\(--c-error\)/,
+      /\.tone-action--retry\s*\{[\s\S]*?border-color:\s*var\(--coral-deep\)[\s\S]*?color:\s*var\(--coral-deep\)/,
     );
   });
 });

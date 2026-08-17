@@ -66,18 +66,18 @@ const serialized = JSON.stringify({
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--sp-4);
   }
 
   .word-order-header {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
   }
 
   .word-order-progress {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-variant-numeric: tabular-nums;
   }
@@ -93,15 +93,15 @@ const serialized = JSON.stringify({
     box-sizing: border-box;
     width: 100%;
     min-height: 7rem;
-    border: 1px dashed var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-slot-bg);
-    padding: var(--space-md);
+    border: 1px dashed var(--hairline-strong);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
+    padding: var(--sp-4);
   }
 
   .word-order-answer-empty {
     margin: 0;
-    color: var(--c-text-muted);
+    color: var(--ink-muted);
     font-size: 0.8125rem;
     text-align: center;
   }
@@ -109,26 +109,26 @@ const serialized = JSON.stringify({
   .word-order-answer {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     min-height: 2.75rem;
   }
 
   .word-order-pool {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
 
   .word-order-chunk {
     box-sizing: border-box;
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
-    font: inherit;
-    font-size: 1.0625rem;
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-serif-zh);
+    font-size: 1.25rem;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
@@ -136,12 +136,8 @@ const serialized = JSON.stringify({
   }
 
   .word-order-chunk:hover:not(:disabled) {
-    background: var(--c-slot-bg);
-  }
-
-  .word-order-chunk:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 3px;
+    background: var(--paper-deep);
+    border-color: var(--jade);
   }
 
   .word-order-chunk:disabled {
@@ -150,23 +146,23 @@ const serialized = JSON.stringify({
   }
 
   .word-order-chunk--answer {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
-    color: var(--c-primary);
+    border-color: var(--jade);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
   }
 
   .word-order-chunk--answer:disabled {
     opacity: 1;
-    background: var(--c-accent-light);
-    border-color: var(--c-accent);
-    color: var(--c-primary);
+    background: var(--jade-soft);
+    border-color: var(--jade);
+    color: var(--jade-ink);
   }
 
   .word-order-feedback {
     min-height: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
   }
 
   .word-order-feedback__line {
@@ -175,14 +171,14 @@ const serialized = JSON.stringify({
   }
 
   .word-order-feedback--correct {
-    color: var(--c-success);
+    color: var(--jade-ink);
     font-weight: 700;
   }
 
   .word-order-feedback--incorrect {
-    border-left: 4px solid var(--c-error);
-    background: var(--c-error-bg);
-    padding: var(--space-sm) var(--space-md);
+    border-left: 4px solid var(--coral);
+    background: var(--coral-soft);
+    padding: var(--sp-2) var(--sp-4);
   }
 
   .word-order-feedback--incorrect .word-order-feedback__line:first-child {
@@ -195,13 +191,13 @@ const serialized = JSON.stringify({
 
   .word-order-feedback--complete {
     text-align: center;
-    padding: var(--space-lg) var(--space-md);
-    background: var(--c-primary-light);
+    padding: var(--sp-6) var(--sp-4);
+    background: var(--jade-soft);
   }
 
   .word-order-complete-text {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.9375rem;
     font-weight: 600;
   }
@@ -209,18 +205,18 @@ const serialized = JSON.stringify({
   .word-order-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
 
   .word-order-action {
     box-sizing: border-box;
     flex: 1 1 auto;
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 700;
@@ -229,12 +225,7 @@ const serialized = JSON.stringify({
   }
 
   .word-order-action:hover:not(:disabled) {
-    background: var(--c-slot-bg);
-  }
-
-  .word-order-action:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 3px;
+    background: var(--paper-deep);
   }
 
   .word-order-action:disabled {
@@ -245,43 +236,43 @@ const serialized = JSON.stringify({
   .word-order-action--submit,
   .word-order-action--next,
   .word-order-action--restart {
-    border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    border-color: var(--jade);
+    background: var(--jade);
+    color: var(--paper);
   }
 
   .word-order-action--submit:hover:not(:disabled),
   .word-order-action--next:hover:not(:disabled),
   .word-order-action--restart:hover:not(:disabled) {
-    background: var(--c-accent-hover);
+    background: var(--jade-ink);
+    border-color: var(--jade-ink);
   }
 
   .word-order-action--retry {
-    border-color: var(--c-error);
-    color: var(--c-error);
+    border-color: var(--coral-deep);
+    color: var(--coral-deep);
   }
 
   .word-order-action--retry:hover:not(:disabled) {
-    background: var(--c-error-bg);
+    background: var(--coral-soft);
   }
 
   .word-order-empty {
     text-align: center;
-    padding: var(--space-xl);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    color: var(--c-text-secondary);
+    padding: var(--sp-8);
+    background: var(--paper-deep);
+    border-radius: var(--radius-content);
+    color: var(--ink-secondary);
   }
 
   @media (width <= 374px) {
     .word-order-chunk {
-      padding-inline: var(--space-sm);
-      font-size: 1rem;
+      padding-inline: var(--sp-2);
+      font-size: 1.1875rem;
     }
 
     .word-order-action {
-      padding-inline: var(--space-sm);
+      padding-inline: var(--sp-2);
       font-size: 0.875rem;
     }
   }
