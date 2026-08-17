@@ -50,17 +50,20 @@ if (payload.totalCount === 0) {
 
 <style>
   .basic-vocabulary-page {
-    width: min(100%, 44rem);
+    width: min(100%, 45rem);
     margin: 0 auto;
   }
 
   h1 {
-    margin: 0 0 var(--space-xl);
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    margin: 0 0 var(--sp-8);
+    font-family: var(--font-serif-ja);
+    color: var(--ink);
+    font-size: 1.75rem;
+    font-weight: 700;
   }
 
   .basic-vocabulary-page__catalog-link-row {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .basic-vocabulary-page__catalog-link {
@@ -68,9 +71,9 @@ if (payload.totalCount === 0) {
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--sp-2) var(--sp-6);
     background: transparent;
-    color: var(--c-primary);
+    color: var(--jade-ink);
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: underline;
@@ -78,17 +81,17 @@ if (payload.totalCount === 0) {
     border: 2px solid transparent;
   }
   .basic-vocabulary-page__catalog-link:hover {
-    background: var(--c-primary-light);
-    color: var(--c-primary);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
     text-decoration: underline;
   }
   .basic-vocabulary-page__catalog-link:focus-visible {
     border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
 
   .basic-vocabulary-page__quiz-link-row {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .basic-vocabulary-page__quiz-link {
@@ -96,9 +99,9 @@ if (payload.totalCount === 0) {
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--sp-2) var(--sp-6);
     background: transparent;
-    color: var(--c-primary);
+    color: var(--jade-ink);
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: underline;
@@ -106,12 +109,12 @@ if (payload.totalCount === 0) {
     border: 2px solid transparent;
   }
   .basic-vocabulary-page__quiz-link:hover {
-    background: var(--c-primary-light);
-    color: var(--c-primary);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
     text-decoration: underline;
   }
   .basic-vocabulary-page__quiz-link:focus-visible {
     border-color: var(--color-focus);
-    box-shadow: 0 0 0 3px var(--c-accent-light);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
 </style>

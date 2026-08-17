@@ -48,28 +48,35 @@ const total = lessonIds.length;
   }
 
   .taiwan-travel-quiz-back {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .taiwan-travel-quiz-back a {
     display: inline-block;
     min-height: 2.75rem;
-    padding: var(--space-sm) 0;
-    font-weight: 600;
+    padding: var(--sp-2) 0;
+    color: var(--jade-ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .taiwan-travel-quiz-back a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 
   .taiwan-travel-quiz-total {
-    margin: 0 0 var(--space-xs);
-    color: var(--c-text-secondary);
-    font-size: 0.8125rem;
+    margin: 0 0 var(--sp-2);
+    color: var(--ink-muted);
+    font-size: 12.5px;
     text-align: right;
   }
 
   .taiwan-travel-quiz-progress,
   .taiwan-travel-quiz-score {
-    margin: 0 0 var(--space-sm);
-    color: var(--c-text-secondary);
-    font-size: 0.875rem;
+    margin: 0 0 var(--sp-2);
+    color: var(--ink-secondary);
+    font-size: 13px;
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
@@ -83,9 +90,9 @@ const total = lessonIds.length;
     align-items: center;
     justify-content: center;
     gap: clamp(0.75rem, 3vw, 1.25rem);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
     padding: clamp(1rem, 5vw, 2rem);
     text-align: center;
   }
@@ -93,16 +100,16 @@ const total = lessonIds.length;
   .taiwan-travel-quiz-prompt {
     max-width: 100%;
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1.125rem, 5vw, 1.5rem);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
   .taiwan-travel-quiz-options {
     display: grid;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     width: min(100%, 22rem);
   }
 
@@ -110,10 +117,10 @@ const total = lessonIds.length;
   .taiwan-travel-quiz-action {
     box-sizing: border-box;
     min-height: 2.75rem;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
     cursor: pointer;
     font: inherit;
     font-weight: 600;
@@ -121,84 +128,84 @@ const total = lessonIds.length;
 
   .taiwan-travel-quiz-option {
     width: 100%;
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--sp-2) var(--sp-3);
     overflow-wrap: anywhere;
   }
 
   .taiwan-travel-quiz-option:hover:not(:disabled) {
-    background: var(--c-slot-bg);
+    background: var(--paper-deep);
   }
 
   .taiwan-travel-quiz-option:focus-visible,
   .taiwan-travel-quiz-action:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--jade);
     outline-offset: 3px;
   }
 
   .taiwan-travel-quiz-option[aria-pressed='true'] {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
-    color: var(--c-primary);
+    border-color: var(--jade);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
   }
 
   .taiwan-travel-quiz-option[data-correct='true'] {
-    border-color: #166534;
-    background: #dcfce7;
-    color: #166534;
+    border-color: var(--jade);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
   }
 
   .taiwan-travel-quiz-option[data-wrong='true'] {
-    border-color: #991b1b;
-    background: #fee2e2;
-    color: #991b1b;
+    border-color: var(--color-error);
+    background: var(--color-error-soft);
+    color: var(--color-error);
   }
 
   .taiwan-travel-quiz-option:disabled {
     cursor: default;
-    opacity: 0.75;
+    opacity: 1;
   }
 
   .taiwan-travel-quiz-action {
     width: min(100%, 22rem);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--sp-2) var(--sp-3);
   }
 
   .taiwan-travel-quiz-submit,
   .taiwan-travel-quiz-next {
-    border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    border-color: var(--coral);
+    background: var(--coral);
+    color: var(--color-on-primary);
   }
 
   .taiwan-travel-quiz-submit:hover:not(:disabled),
   .taiwan-travel-quiz-next:hover {
-    background: var(--c-accent-hover);
+    background: var(--coral-deep);
+    border-color: var(--coral-deep);
   }
 
   .taiwan-travel-quiz-submit:disabled {
     cursor: default;
-    opacity: 0.55;
-    background: var(--c-slot-bg);
-    border-color: var(--c-border);
-    color: var(--c-text-muted);
+    background: var(--paper-deep);
+    border-color: var(--hairline);
+    color: var(--ink-muted);
   }
 
   .taiwan-travel-quiz-restart {
-    background: var(--c-surface);
-    color: var(--c-accent);
-    border-color: var(--c-accent);
+    background: var(--paper);
+    color: var(--jade-ink);
+    border-color: var(--jade);
   }
 
   .taiwan-travel-quiz-feedback {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1rem, 4.5vw, 1.2rem);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .taiwan-travel-quiz-answer {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: clamp(0.9375rem, 4vw, 1.0625rem);
     overflow-wrap: anywhere;
   }
@@ -209,28 +216,29 @@ const total = lessonIds.length;
 
   .taiwan-travel-quiz-completion-title {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
+    font-family: var(--font-serif-ja);
     font-size: clamp(1.25rem, 6vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .taiwan-travel-quiz-completion-score {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1.125rem, 5vw, 1.375rem);
     font-variant-numeric: tabular-nums;
   }
 
   .taiwan-travel-quiz-completion-best {
     margin: 0;
-    color: var(--c-text-secondary);
-    font-size: 0.9375rem;
+    color: var(--ink-secondary);
+    font-size: 14px;
     font-variant-numeric: tabular-nums;
   }
 
   .taiwan-travel-quiz-unavailable {
     margin: 0;
-    color: var(--c-text-secondary);
-    font-size: 0.9375rem;
+    color: var(--ink-secondary);
+    font-size: 14px;
   }
 </style>

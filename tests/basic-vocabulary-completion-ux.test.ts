@@ -396,10 +396,10 @@ describe('basic vocabulary completion UX (Issue #277)', () => {
       /\.basic-vocabulary-action,\s*\.basic-vocabulary-rating\s*\{[^}]*min-height:\s*2\.75rem/,
     );
     expect(css).toMatch(
-      /\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--c-accent\)/,
+      /\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral\)/,
     );
     expect(css).toMatch(
-      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--c-surface\)/,
+      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--paper\)/,
     );
 
     // Mobile containment: no clipping/overflow for long titles, ratings, and the

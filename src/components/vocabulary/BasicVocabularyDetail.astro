@@ -60,13 +60,13 @@ const POS_JA: Record<string, string> = {
 
 <style>
   .basic-vocabulary-detail-back {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .basic-vocabulary-detail-back a {
     display: inline-block;
     min-height: 2.75rem;
-    padding: var(--space-sm) 0;
+    padding: var(--sp-2) 0;
     font-weight: 600;
   }
 
@@ -76,17 +76,18 @@ const POS_JA: Record<string, string> = {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-sm);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
+    gap: var(--sp-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
     padding: clamp(1rem, 5vw, 2rem);
   }
 
   .basic-vocabulary-detail-simplified {
     max-width: 100%;
     margin: 0;
-    color: var(--c-text);
+    font-family: var(--font-serif-zh);
+    color: var(--ink);
     font-size: clamp(2rem, 12vw, 3.5rem);
     font-weight: 700;
     line-height: 1.15;
@@ -95,7 +96,7 @@ const POS_JA: Record<string, string> = {
 
   .basic-vocabulary-detail-pinyin {
     margin: 0;
-    color: var(--c-accent);
+    color: var(--ink-muted);
     font-size: clamp(1.125rem, 5vw, 1.35rem);
     font-weight: 700;
     overflow-wrap: anywhere;
@@ -103,7 +104,7 @@ const POS_JA: Record<string, string> = {
 
   .basic-vocabulary-detail-japanese {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1rem, 4.5vw, 1.2rem);
     font-weight: 600;
     overflow-wrap: anywhere;
@@ -112,28 +113,28 @@ const POS_JA: Record<string, string> = {
   .basic-vocabulary-detail-traditional,
   .basic-vocabulary-detail-pos {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.9375rem;
     overflow-wrap: anywhere;
   }
 
   .basic-vocabulary-detail-example {
     width: 100%;
-    margin-top: var(--space-md);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--c-border);
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--hairline);
   }
 
   .basic-vocabulary-detail-example-title {
-    margin: 0 0 var(--space-xs);
-    color: var(--c-text-secondary);
+    margin: 0 0 var(--sp-1);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-weight: 600;
   }
 
   .basic-vocabulary-detail-example-sentence {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1.125rem, 5vw, 1.35rem);
     line-height: 1.5;
     overflow-wrap: anywhere;
@@ -142,16 +143,16 @@ const POS_JA: Record<string, string> = {
   .basic-vocabulary-detail-unavailable,
   .basic-vocabulary-detail-state-text {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-muted);
     font-size: 0.9375rem;
   }
 
   .basic-vocabulary-detail-state {
     box-sizing: border-box;
     width: 100%;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    padding: var(--space-lg);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
+    padding: var(--sp-6);
   }
 </style>
