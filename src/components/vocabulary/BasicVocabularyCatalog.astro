@@ -119,22 +119,22 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   }
 
   .basic-vocabulary-catalog-back {
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .basic-vocabulary-catalog-back a {
     display: inline-block;
     min-height: 2.75rem;
-    padding: var(--space-sm) 0;
+    padding: var(--sp-2) 0;
     font-weight: 600;
   }
 
   .basic-vocabulary-catalog-controls {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-md);
+    gap: var(--sp-4);
     width: 100%;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--sp-6);
   }
 
   @media (min-width: 640px) {
@@ -145,11 +145,11 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
 
   .basic-vocabulary-catalog-field {
     display: grid;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
   }
 
   .basic-vocabulary-catalog-field label {
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-weight: 600;
   }
@@ -159,12 +159,12 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
     width: 100%;
     box-sizing: border-box;
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--sp-2) var(--sp-4);
     font: inherit;
-    color: var(--c-text);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
   }
 
   .basic-vocabulary-catalog-field select {
@@ -173,13 +173,13 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
 
   .basic-vocabulary-catalog-field input:focus-visible,
   .basic-vocabulary-catalog-field select:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
 
   .basic-vocabulary-catalog-summary {
-    margin: 0 0 var(--space-md);
-    color: var(--c-text-secondary);
+    margin: 0 0 var(--sp-4);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -188,10 +188,10 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   .basic-vocabulary-catalog-results {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-md);
+    gap: var(--sp-4);
     width: 100%;
     padding: 0;
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
     list-style: none;
   }
 
@@ -211,12 +211,12 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--sp-4);
     min-width: 0;
-    padding: var(--space-md);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    padding: var(--sp-4);
+    background: var(--paper-deep);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
   }
 
   .basic-vocabulary-catalog-illustration {
@@ -237,13 +237,13 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
 
   .basic-vocabulary-catalog-body {
     display: grid;
-    gap: var(--space-2xs);
+    gap: var(--sp-1);
     min-width: 0;
   }
 
   .basic-vocabulary-catalog-simplified {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: 1.25rem;
     font-weight: 700;
     line-height: 1.3;
@@ -258,81 +258,82 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   }
 
   .basic-vocabulary-catalog-traditional {
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.9375rem;
   }
 
   .basic-vocabulary-catalog-pinyin {
-    color: var(--c-accent);
+    color: var(--ink-muted);
     font-size: 0.9375rem;
     font-weight: 600;
   }
 
   .basic-vocabulary-catalog-japanese {
-    color: var(--c-text);
+    color: var(--ink);
     font-size: 0.875rem;
   }
 
   .basic-vocabulary-catalog-badge {
     justify-self: start;
-    padding: 0 var(--space-sm);
+    padding: 0 var(--sp-2);
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.6;
     /* Semantically justified pill (#366): a fully-rounded chip for a single
      * short status label (新規/学習中/習得済み), not an arbitrary container. */
     border-radius: 999px;
-    color: var(--c-text-secondary);
-    background: var(--c-slot-bg);
+    color: var(--ink-secondary);
+    background: var(--hairline);
   }
 
   .basic-vocabulary-catalog-badge[data-status="learning"] {
-    color: #92400e;
-    background: #fef3c7;
+    color: var(--jade-ink);
+    background: var(--jade-soft);
   }
 
   .basic-vocabulary-catalog-badge[data-status="learned"] {
-    color: #166534;
-    background: #dcfce7;
+    color: var(--jade-ink);
+    background: var(--paper-deep);
+    border: 1px solid var(--jade-ink);
   }
 
   .basic-vocabulary-catalog-badge[data-status="new"] {
-    color: var(--c-text-secondary);
-    background: var(--c-slot-bg);
+    color: var(--ink-secondary);
+    background: var(--hairline);
   }
 
   .basic-vocabulary-catalog-pagination {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-md);
+    gap: var(--sp-4);
   }
 
   .basic-vocabulary-catalog-pagination button {
     min-height: 2.75rem;
     min-width: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--sp-2) var(--sp-4);
     font: inherit;
     font-weight: 600;
-    color: var(--c-text);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
     cursor: pointer;
   }
 
   .basic-vocabulary-catalog-pagination button:hover:not(:disabled) {
-    background: var(--c-slot-bg);
+    background: var(--jade-soft);
   }
 
   .basic-vocabulary-catalog-pagination button:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
 
   .basic-vocabulary-catalog-pagination button:disabled {
     cursor: default;
-    color: var(--c-text-muted);
+    color: var(--ink-muted);
     opacity: 0.55;
   }
 
