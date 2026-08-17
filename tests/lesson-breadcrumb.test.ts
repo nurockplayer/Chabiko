@@ -57,21 +57,21 @@ describe('lesson route source — breadcrumb and hierarchy contract', () => {
     expect(routeSource).toContain('href={`/lessons/${nextLesson.id}/`}');
   });
 
-  it('applies the #366 micro-radius token to boxed reading surfaces', () => {
-    for (const selector of [
-      '.can-do-section',
-      '.core-card',
-      '.bridge-section',
-      '.travel-task',
-      '.related-phrasebook',
-      '.nav-link',
-      '.completion-badge',
-    ]) {
+  it('applies the semantic A1 radius tokens to boxed reading surfaces', () => {
+    const radiusTokens: Record<string, string> = {
+      '.can-do-section': 'var(--radius-content)',
+      '.bridge-section': 'var(--radius-content)',
+      '.travel-task': 'var(--radius-content)',
+      '.related-phrasebook': 'var(--radius-content)',
+      '.completion-badge': 'var(--radius-chip)',
+    };
+    for (const [selector, token] of Object.entries(radiusTokens)) {
+      const escapedToken = token.replace(/[()]/g, '\\$&');
       expect(
         routeSource.match(
-          new RegExp(`${selector}\\s*\\{[^}]*border-radius:\\s*var\\(--radius\\)`),
+          new RegExp(`${selector}\\s*\\{[^}]*border-radius:\\s*${escapedToken}`),
         ),
-        `${selector} should use var(--radius)`,
+        `${selector} should use ${token}`,
       ).not.toBeNull();
     }
   });

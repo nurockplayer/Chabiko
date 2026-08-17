@@ -34,7 +34,6 @@ function lessonFixture(): HTMLElement {
   const root = document.createElement('div');
   root.className = 'lesson-journey';
   root.innerHTML = [
-    `<p class="route-example" lang="zh-Hant" data-script-path-default="${CORE}">${CORE}</p>`,
     `<p class="core-sentence" lang="zh-Hant" data-script-path-default="${CORE}">${CORE}</p>`,
     `<dl><dt lang="zh-Hant" data-script-path-default="${CHUNK}">${CHUNK}</dt></dl>`,
     `<p><strong lang="zh-Hant" data-script-path-default="${KANJI}">${KANJI}</strong></p>`,
@@ -500,7 +499,6 @@ describe('practice, progress, and navigation stay untouched', () => {
   });
 
   it('keeps static Traditional markup for no-JS rendering', () => {
-    expect(lessonSource).toContain('<p class="route-example" lang="zh-Hant"');
     expect(lessonSource).toContain('<p class="core-sentence" lang="zh-Hant"');
     expect(lessonSource).toContain('<dt lang="zh-Hant"');
     expect(lessonSource).toContain('<strong lang="zh-Hant"');

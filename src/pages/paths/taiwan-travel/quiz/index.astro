@@ -53,14 +53,19 @@ const payloadJson = serializeTaiwanTravelAssessmentPayload(payload);
   }
 
   h1 {
-    margin: 0 0 var(--space-md);
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    margin: 0 0 var(--sp-6);
+    font-family: var(--font-serif-ja);
+    font-size: clamp(1.75rem, 6vw, 2.125rem);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
   }
 
   .taiwan-travel-quiz-page__lead {
-    margin: 0 0 var(--space-xl);
-    color: var(--c-text-secondary);
-    font-size: 0.9375rem;
-    line-height: 1.7;
+    margin: 0 0 var(--sp-10);
+    color: var(--ink-secondary);
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
   }
 </style>
