@@ -228,7 +228,6 @@ describe('Direction C token scoping', () => {
 
   it('resolves --c-accent-hover without introducing an unauthorized color', () => {
     const shipped = [
-      flashcardSource,
       basicVocabularySource,
       notFoundSource,
     ];
@@ -251,5 +250,24 @@ describe('Direction C token scoping', () => {
     }
     expect(baseLayoutSource).not.toContain('#b97724');
     expect(baseLayoutSource).not.toContain('#d8993a');
+  });
+
+  it('migrates the HSK flashcard surface to A1 tokens and serif type', () => {
+    // Flashcard front uses the frozen A1 serif-zh typography: 52px, with the
+    // narrow-mobile 44px safeguard at <=374px.
+    expect(flashcardSource).toContain('font-family: var(--font-serif-zh)');
+    expect(flashcardSource).toContain('font-size: 52px');
+    expect(flashcardSource).toMatch(/@media \(width <= 374px\)[\s\S]*font-size: 44px/);
+    // Genuine object card radius plus the A1 control radius for actions/setup.
+    expect(flashcardSource).toContain('border-radius: var(--radius-card)');
+    expect(flashcardSource).toContain('border-radius: var(--radius-control)');
+    // The migrated surface no longer depends on the legacy alias.
+    expect(flashcardSource).not.toContain('var(--c-accent-hover)');
+    expect(flashcardSource).not.toContain('var(--c-accent)');
+    expect(flashcardSource).not.toContain('var(--space-');
+    expect(flashcardSource).not.toContain('var(--radius)');
+    // HSK page title uses the A1 Japanese editorial serif heading token.
+    expect(hskSource).toContain('font-family: var(--font-serif-ja)');
+    expect(hskSource).toContain('font-size: 28px');
   });
 });
