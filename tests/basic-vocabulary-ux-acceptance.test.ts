@@ -252,6 +252,23 @@ describe('source and route contract (Issue #281)', () => {
     expect(catalogComponent).toContain('.basic-vocabulary-catalog-field input:focus-visible');
     expect(catalogComponent).toContain('.basic-vocabulary-catalog-field select:focus-visible');
   });
+
+  it('A1 audit F3: vocab and HSK back links carry the jade A1 link color', async () => {
+    const sources = [
+      ['src/components/vocabulary/BasicVocabularyCatalog.astro', '.basic-vocabulary-catalog-back a'],
+      ['src/components/vocabulary/BasicVocabularyQuiz.astro', '.basic-vocabulary-quiz-back a'],
+      ['src/components/vocabulary/BasicVocabularyDetail.astro', '.basic-vocabulary-detail-back a'],
+      ['src/pages/vocabulary/hsk/1/index.astro', '.back-link'],
+    ] as const;
+
+    for (const [path, selector] of sources) {
+      const source = await readFile(path, 'utf8');
+      const selectorIndex = source.indexOf(selector);
+      expect(selectorIndex).toBeGreaterThan(-1);
+      const rule = source.slice(selectorIndex, source.indexOf('}', selectorIndex));
+      expect(rule).toContain('color: var(--jade-ink)');
+    }
+  });
 });
 
 // ─── Production total reconciliation ─────────────────────────────────────────
