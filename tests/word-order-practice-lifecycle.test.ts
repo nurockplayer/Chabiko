@@ -325,7 +325,7 @@ describe('no storage / random / network / timer', () => {
 describe('word-order practice responsive containment', () => {
   it('declares wrap/flex containment for chunk regions and actions', () => {
     const source = readFileSync('src/components/WordOrderPractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
@@ -345,7 +345,7 @@ describe('word-order practice responsive containment', () => {
 describe('word-order practice theme-safe state styling', () => {
   it('drives answer/selected/retry states from shared A1 tokens and defers focus to the shared theme rule', () => {
     const source = readFileSync('src/components/WordOrderPractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
