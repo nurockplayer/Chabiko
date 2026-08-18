@@ -159,6 +159,12 @@ const pathsPayload = JSON.stringify({
 </script>
 
 <style>
+  /* BaseLayout's global `*` reset is scoped to BaseLayout's own elements and
+   * does not reach this page's rendered content, so restore border-box sizing
+   * here (Issue #406: content-box cards overflowed the route at narrow widths). */
+  * {
+    box-sizing: border-box;
+  }
   .paths-root {
     min-width: 0;
     /* Bound to the prior effective content width so the theme-enabled wider
