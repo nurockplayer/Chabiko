@@ -342,7 +342,7 @@ describe('no storage / network / audio / speech / canvas / timer', () => {
 describe('tone practice responsive containment', () => {
   it('declares grid/flex containment that cannot overflow at narrow widths', () => {
     const source = readFileSync('src/components/TonePractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
@@ -368,7 +368,7 @@ describe('tone practice responsive containment', () => {
 describe('tone practice theme-safe state styling', () => {
   it('drives selected/retry states from shared A1 tokens and defers focus to the shared theme rule', () => {
     const source = readFileSync('src/components/TonePractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
