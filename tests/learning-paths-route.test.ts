@@ -237,7 +237,12 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     }
     // Cards and page are contained by their containers at every width.
     expect(componentStyles).toMatch(
-      /\.learning-path-card\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*overflow-wrap:\s*anywhere/,
+      /\.learning-path-card\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*box-sizing:\s*border-box[^}]*overflow-wrap:\s*anywhere/,
+    );
+    // The route restores border-box sizing in its effective scope (BaseLayout's
+    // global reset does not reach page-rendered content; Issue #406).
+    expect(pageStyles).toMatch(
+      /^\s*(?:\/\*[\s\S]*?\*\/)?\s*\*\s*\{[^}]*box-sizing:\s*border-box/,
     );
     expect(componentStyles).toMatch(
       /\.learning-path-card__body\s*\{[^}]*min-width:\s*0[^}]*flex:\s*1\s*1\s*auto/,
