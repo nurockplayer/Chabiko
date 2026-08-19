@@ -242,12 +242,10 @@ describe('Direction C token scoping', () => {
     const darkDef = hoverDef(dark);
     // Shared baseline aliases the accent token; no standalone colour value.
     expect(baselineDef).toBe('var(--c-accent)');
-    // Theme-enabled scopes must alias an existing token, not invent a colour.
-    for (const def of [lightDef, darkDef]) {
-      expect(def).toBeTruthy();
-      expect(def).not.toMatch(/^#[0-9a-f]{3,6}$/i);
-      expect(def).toMatch(/var\(--c-accent\)|var\(--color-accent\)/);
-    }
+    // Theme-enabled scopes alias existing A1 tokens: light uses the accessible
+    // deep coral hover while dark keeps its already-accessible coral accent.
+    expect(lightDef).toBe('var(--coral-deep)');
+    expect(darkDef).toBe('var(--color-accent)');
     expect(baseLayoutSource).not.toContain('#b97724');
     expect(baseLayoutSource).not.toContain('#d8993a');
   });

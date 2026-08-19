@@ -396,7 +396,7 @@ describe('basic vocabulary completion UX (Issue #277)', () => {
       /\.basic-vocabulary-action,\s*\.basic-vocabulary-rating\s*\{[^}]*min-height:\s*2\.75rem/,
     );
     expect(css).toMatch(
-      /\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral\)/,
+      /\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral-deep\)/,
     );
     expect(css).toMatch(
       /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--paper\)/,
