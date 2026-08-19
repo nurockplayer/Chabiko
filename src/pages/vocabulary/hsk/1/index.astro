@@ -19,7 +19,7 @@ const entries = loadHskLevelEntries(1);
 
     {
       entries.length > 0 ? (
-        <FlashcardSession entries={entries} />
+        <FlashcardSession entries={entries} answerSource="/data/hsk/1.json" />
       ) : (
         <div class="empty-fallback" role="alert">
           <p>現在利用できる HSK 1 単語がありません。データが準備できるまでお待ちください。</p>
