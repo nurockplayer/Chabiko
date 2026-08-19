@@ -30,6 +30,105 @@ export interface SessionData {
   entries: SessionEntry[];
 }
 
+export interface RemoteSessionData {
+  ids: string[];
+  answerSource: string;
+}
+
+interface AnswerPayload {
+  version: 1;
+  entries: SessionEntry[];
+}
+
+const LOAD_ERROR_MESSAGE =
+  '単語データを読み込めませんでした。ページを再読み込みしてください。';
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function parseAnswerPayload(payload: unknown, expectedIds: string[]): AnswerPayload | null {
+  if (!payload || typeof payload !== 'object') return null;
+
+  const candidate = payload as Record<string, unknown>;
+  if (candidate.version !== 1 || !Array.isArray(candidate.entries)) return null;
+  if (candidate.entries.length !== expectedIds.length) return null;
+
+  const seen = new Set<string>();
+  const entries: SessionEntry[] = [];
+
+  for (let index = 0; index < candidate.entries.length; index += 1) {
+    const rawEntry = candidate.entries[index];
+    if (!rawEntry || typeof rawEntry !== 'object') return null;
+
+    const entry = rawEntry as Record<string, unknown>;
+    if (
+      !isNonEmptyString(entry.id) ||
+      entry.id !== expectedIds[index] ||
+      seen.has(entry.id) ||
+      !isNonEmptyString(entry.simplified) ||
+      !isNonEmptyString(entry.pinyin) ||
+      !isNonEmptyString(entry.japanese) ||
+      (entry.traditional !== undefined && !isNonEmptyString(entry.traditional))
+    ) {
+      return null;
+    }
+
+    seen.add(entry.id);
+    entries.push({
+      id: entry.id,
+      simplified: entry.simplified,
+      pinyin: entry.pinyin,
+      japanese: entry.japanese,
+      traditional: entry.traditional as string | undefined,
+    });
+  }
+
+  return { version: 1, entries };
+}
+
+export async function mountRemoteFlashcardSession(data: RemoteSessionData): Promise<void> {
+  const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
+  const startButton = document.getElementById('btn-start') as HTMLButtonElement | null;
+  const errorMessage = document.getElementById('session-load-error') as HTMLElement | null;
+  if (!root || !startButton || !errorMessage) return;
+
+  try {
+    if (
+      !Array.isArray(data.ids) ||
+      data.ids.length === 0 ||
+      data.ids.some((id) => !isNonEmptyString(id)) ||
+      new Set(data.ids).size !== data.ids.length ||
+      !isNonEmptyString(data.answerSource)
+    ) {
+      throw new Error('Invalid HSK session bootstrap data');
+    }
+
+    const answerUrl = new URL(data.answerSource, window.location.origin);
+    if (answerUrl.origin !== window.location.origin) {
+      throw new Error('HSK answer source must be same-origin');
+    }
+
+    const response = await fetch(answerUrl, {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error(`HSK answer request failed: ${response.status}`);
+
+    const payload = parseAnswerPayload(await response.json(), data.ids);
+    if (!payload) throw new Error('Invalid HSK answer payload');
+
+    mountFlashcardSession({ ids: data.ids, entries: payload.entries });
+    startButton.disabled = false;
+    startButton.removeAttribute('aria-busy');
+  } catch {
+    startButton.disabled = true;
+    startButton.removeAttribute('aria-busy');
+    errorMessage.textContent = LOAD_ERROR_MESSAGE;
+    errorMessage.hidden = false;
+  }
+}
+
 export function mountFlashcardSession(data: SessionData): void {
   const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
   if (!root) return;
@@ -201,35 +300,38 @@ export function mountFlashcardSession(data: SessionData): void {
     if (!entry) return;
 
     if (direction === 'ja-to-zh') {
-      // Front = Japanese, back = Simplified + pinyin + Traditional
       frontEl.textContent = entry.japanese;
       frontEl.lang = 'ja';
-      pinyinEl.textContent = entry.pinyin;
-      japaneseEl.textContent = entry.simplified;
     } else {
-      // Front = Simplified, back = pinyin + Japanese + Traditional
       frontEl.textContent = entry.simplified;
       frontEl.lang = 'zh-Hans';
-      pinyinEl.textContent = entry.pinyin;
-      japaneseEl.textContent = entry.japanese;
     }
+    pinyinEl.textContent = '';
+    japaneseEl.textContent = '';
+    traditionalEl.textContent = '';
+    traditionalEl.style.display = 'none';
+    showProgressHint();
+  }
 
+  function renderAnswer(entry: SessionEntry) {
+    pinyinEl.textContent = entry.pinyin;
+    japaneseEl.textContent = direction === 'ja-to-zh' ? entry.simplified : entry.japanese;
     if (entry.traditional) {
       traditionalEl.textContent = entry.traditional;
       traditionalEl.style.display = '';
-    } else {
-      traditionalEl.textContent = '';
-      traditionalEl.style.display = 'none';
     }
-    showProgressHint();
   }
 
   // ── Actions ───────────────────────────────────────────────────────────
   function revealAnswer() {
-    if (!state) return;
+    const activeId = state?.status === 'active' ? state.activeItemId : null;
+    if (!state || !activeId) return;
+    const entry = getEntry(activeId);
+    if (!entry) return;
     const result = applyVocabularySessionAction(state, { kind: 'reveal' });
     if (result.kind === 'accepted') {
       state = result.state;
+      renderAnswer(entry);
       backEl.classList.remove('hidden');
       btnReveal.classList.add('hidden');
       ratingActions.classList.remove('hidden');

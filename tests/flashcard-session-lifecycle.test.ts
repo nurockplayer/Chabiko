@@ -141,14 +141,33 @@ describe('FlashcardSession DOM lifecycle', () => {
 
     // Start session first
     el.startBtn.click();
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.japanese.textContent).toBe('');
     el.revealBtn.click();
 
     // Back visible, reveal hidden, ratings visible
     expect(el.back.classList.contains('hidden')).toBe(false);
     expect(el.revealBtn.classList.contains('hidden')).toBe(true);
     expect(el.ratingActions.classList.contains('hidden')).toBe(false);
-    expect(el.pinyin.textContent).toBeTruthy();
-    expect(el.japanese.textContent).toBeTruthy();
+    expect(el.pinyin.textContent).toBe('nǐ hǎo');
+    expect(el.japanese.textContent).toBe('こんにちは');
+  });
+
+  it('keeps reverse-direction answers empty until reveal', () => {
+    mountFlashcardSession(SAMPLE_ENTRIES);
+    const el = getCardElements(root);
+
+    (root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement).click();
+    el.startBtn.click();
+
+    expect(el.front.textContent).toBe('こんにちは');
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.japanese.textContent).toBe('');
+
+    el.revealBtn.click();
+    expect(el.pinyin.textContent).toBe('nǐ hǎo');
+    expect(el.japanese.textContent).toBe('你好');
+    expect(root.querySelector('[data-traditional]')?.textContent).toBe('你好');
   });
 
   it('completes session and shows completion view', () => {

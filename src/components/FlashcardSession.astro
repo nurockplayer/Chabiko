@@ -3,15 +3,14 @@ import type { HskRenderableEntry } from '../content/loadHskVocabulary';
 
 export interface Props {
   entries: HskRenderableEntry[];
+  answerSource: string;
 }
 
-const { entries } = Astro.props;
+const { entries, answerSource } = Astro.props;
 
 const json = JSON.stringify({
   ids: entries.map((e) => e.id),
-  entries: entries.map(({ id, simplified, pinyin, japanese, traditional }) => ({
-    id, simplified, pinyin, japanese, traditional,
-  })),
+  answerSource,
 });
 ---
 
@@ -41,9 +40,11 @@ const json = JSON.stringify({
           </div>
         </div>
         <p id="setup-count" class="setup-count"></p>
-        <button id="btn-start" class="flashcard-btn flashcard-btn--reveal" type="button">
+        <button id="btn-start" class="flashcard-btn flashcard-btn--reveal" type="button"
+                disabled aria-busy="true">
           スタート
         </button>
+        <p id="session-load-error" class="session-load-error" role="status" hidden></p>
       </div>
 
       <!-- Active session area – hidden during setup -->
@@ -101,15 +102,15 @@ const json = JSON.stringify({
 </div>
 
 <script>
-  import { mountFlashcardSession } from '../client/flashcardSession';
-  import type { SessionData } from '../client/flashcardSession';
+  import { mountRemoteFlashcardSession } from '../client/flashcardSession';
+  import type { RemoteSessionData } from '../client/flashcardSession';
 
   (function () {
     const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
     if (!root) return;
     const raw = root.getAttribute('data-session');
     if (!raw) return;
-    mountFlashcardSession(JSON.parse(raw) as SessionData);
+    void mountRemoteFlashcardSession(JSON.parse(raw) as RemoteSessionData);
   })();
 </script>
 
@@ -174,6 +175,11 @@ const json = JSON.stringify({
   .setup-count {
     font-size: 0.8rem;
     color: var(--ink-secondary);
+    margin: 0;
+  }
+  .session-load-error {
+    color: var(--coral-deep);
+    font-size: 0.8rem;
     margin: 0;
   }
 
