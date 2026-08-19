@@ -41,7 +41,7 @@ export const A11Y_CASES: readonly A11yCase[] = A11Y_THEMES.flatMap(
 export const A11Y_SURFACE_SCAN_TARGET: Readonly<Record<A11ySurface, string | undefined>> = {
   home: undefined,
   'lesson-reading':
-    '.lesson-intro, .can-do-section, .core-section, .reading-section, .bridge-section',
+    '.lesson-intro, .can-do-section, .core-section, .reading-section, .bridge-section, .travel-task',
   'practice-unanswered': '.lesson-practice',
   'practice-correct': '.lesson-practice',
   'practice-incorrect': '.lesson-practice',

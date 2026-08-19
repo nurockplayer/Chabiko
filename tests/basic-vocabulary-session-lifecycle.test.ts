@@ -209,10 +209,10 @@ describe('basic vocabulary session lifecycle', () => {
     // Primary and secondary completion actions are visually distinguishable,
     // both at least 44 px high (2.75rem).
     expect(css).toMatch(
-      /\.basic-vocabulary-reveal,\s*\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral\)/,
+      /\.basic-vocabulary-reveal,\s*\.basic-vocabulary-continue\s*\{[^}]*background:\s*var\(--coral-deep\)/,
     );
     expect(css).toMatch(
-      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--paper\)/,
+      /\.basic-vocabulary-replay\s*\{[^}]*background:\s*var\(--paper\)[^}]*color:\s*var\(--ink-secondary\)[^}]*border-color:\s*var\(--hairline-strong\)/,
     );
     expect(css).toMatch(
       /\.basic-vocabulary-action,\s*\.basic-vocabulary-rating\s*\{[^}]*min-height:\s*2\.75rem/,
