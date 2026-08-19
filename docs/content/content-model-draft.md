@@ -322,6 +322,65 @@ executable validation rules.
 - `reviewStatus` (draft / reviewed / published)
 - `source` (optional; truthful source required for `reviewed` / `published`)
 
+## Reusable Learning Content Graph
+
+The repository keeps collection files as the canonical content writers and
+derives a read-only graph for composition across learning paths. The graph
+contract is implemented by `src/types/learningContent.ts` and
+`src/content/loadLearningContentGraph.ts`; it is an index, not a second content
+registry or a generated content file.
+
+### Stable references
+
+Every relationship uses a collection-qualified `ContentRef`:
+
+```ts
+{
+  collection: "lessons" | "vocabulary" | "hskVocabulary" | "phrases" | "roleplayCards",
+  type: "lesson" | "vocabulary" | "phrase" | "roleplay",
+  id: string,
+}
+```
+
+The collection discriminator is required even when two collections share the
+same content kind. For example, a generic vocabulary record and an HSK
+vocabulary record may use the same ID without colliding; their references must
+use `collection: "vocabulary"` and `collection: "hskVocabulary"`
+respectively.
+
+The settled `data/learning-paths.json` contract remains `{ type, id }`. The
+graph loader qualifies those legacy path members at the derived boundary using
+the canonical path source (`hsk-vocabulary` uses `hskVocabulary`; the existing
+Taiwan path uses `vocabulary`). New cross-collection path membership belongs in
+a separately scoped path-contract change.
+
+The current path member types are `lesson`, `vocabulary`, and `phrase`.
+Roleplay cards remain reusable scenario objects that reference existing lessons
+and phrasebook entries through `lessonRefs` and `phraseRefs`.
+
+### Derived relationships
+
+- `learning-paths.json` remains the only writer of ordered path membership.
+- A record may appear in multiple path views while the graph stores one
+  canonical object for its typed ID.
+- `lesson.relatedVocabulary` and `phrasebook.relatedVocabulary` resolve to
+  vocabulary objects; stale or duplicate references fail closed.
+- Roleplay lesson and phrase references resolve to the existing same-scenario
+  records validated by the roleplay contract.
+- Graph indexing preserves `reviewStatus`, per-form script status, source, and
+  provenance. It never promotes content, filters a review state into approval,
+  performs script conversion, or changes path availability.
+
+The current pilot validates the HSK and Taiwan Travel path views and a
+synthetic shared-vocabulary reference. It does not move an HSK workbook record
+into the Taiwan path: production reuse of that source remains blocked until the
+HSK rights/allowed-use gate in Issue #81 is satisfied.
+
+The executable validation boundary is `pnpm validate:content`, which checks the
+collection schemas and cross-collection references. Missing, malformed, stale,
+or duplicate graph inputs are errors; no migration or cleanup command is
+required for this derived layer.
+
 ## Resource
 
 - `id`
@@ -537,4 +596,3 @@ The validator recognizes the following top-level collection keys:
 - `resources`
 - `illustrations`
 - `roleplayCards`
-

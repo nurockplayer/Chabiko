@@ -49,6 +49,18 @@ describe('risk classifier selects the intended minimum tier', () => {
   });
 });
 
+describe('shared learning-content graph coverage', () => {
+  it('selects the graph contract suite for every graph input surface', () => {
+    const expected = 'tests/learning-content-graph.test.ts';
+    expect(domainTestGlobsFor('src/content/loadLearningContentGraph.ts')).toContain(expected);
+    expect(domainTestGlobsFor('src/content/loadPhrasebook.ts')).toContain(expected);
+    expect(domainTestGlobsFor('src/content/loadVocabulary.ts')).toContain(expected);
+    expect(domainTestGlobsFor('src/content/loadRoleplayCards.ts')).toContain(expected);
+    expect(domainTestGlobsFor('src/types/learningContent.ts')).toContain(expected);
+    expect(domainTestGlobsFor('src/types/learningPath.ts')).toContain(expected);
+  });
+});
+
 describe('tier selects the minimum tier as the max across changed files', () => {
   it('escalates to the highest tier among a mixed change set', () => {
     const classification = classifyFiles([

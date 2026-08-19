@@ -1733,6 +1733,24 @@ def validate_bundle(data: dict, path: str = "root") -> list[str]:
             card_records, f"{path}.roleplayCards", lesson_records, phrasebook_records
         ))
 
+    # Cross-reference: reusable content records → vocabulary.
+    # Lessons, sentences, phrasebook entries, and practice items share the
+    # same typed vocabulary relationship. Resolve against the bundle's
+    # vocabulary collection when present, otherwise against the committed
+    # canonical vocabulary collection used by the existing loaders.
+    vocabulary_records = data.get("vocabulary")
+    if not isinstance(vocabulary_records, list):
+        with open(_VOCABULARY_REFERENCE_PATH, encoding="utf-8") as f:
+            vocabulary_records = json.load(f).get("vocabulary", [])
+    for collection_key in ("lessons", "sentences", "phrasebook", "practice"):
+        records = data.get(collection_key, [])
+        if isinstance(records, list) and records:
+            errors.extend(_check_related_vocabulary_references(
+                records,
+                f"{path}.{collection_key}",
+                vocabulary_records,
+            ))
+
     # Cross-reference: teacher vocabulary ↔ illustrations
     teacher_vocab = data.get("teacher_vocabulary", data.get("vocabulary", []))
     illustrations = data.get("illustrations", [])
@@ -1803,6 +1821,51 @@ def _check_resource_duplicate_ids(resources: list, path: str) -> list[str]:
 
 
 # ─── Helper: Unicode normalization ────────────────────────────────────────
+
+def _check_related_vocabulary_references(
+    records: list,
+    path: str,
+    vocabulary: list,
+) -> list[str]:
+    """Resolve reusable ``relatedVocabulary`` IDs against vocabulary records.
+
+    The field is shared by lesson, sentence, phrasebook, and practice
+    collections. Schema validation reports a non-list field type; this helper
+    owns element validity, duplicate detection, and stale-reference errors.
+    """
+    errors: list[str] = []
+    vocabulary_ids = {
+        item.get("id")
+        for item in vocabulary
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    for i, record in enumerate(records):
+        if not isinstance(record, dict):
+            continue
+        related = record.get("relatedVocabulary")
+        if related is None or not isinstance(related, list):
+            continue
+        record_path = f"{path}[{i}]"
+        seen: set[str] = set()
+        for j, reference in enumerate(related):
+            ref_path = f"{record_path}.relatedVocabulary[{j}]"
+            if not isinstance(reference, str) or reference.strip() == "":
+                errors.append(
+                    f"{ref_path}: vocabulary reference must be a non-empty string"
+                )
+                continue
+            if reference in seen:
+                errors.append(
+                    f"{ref_path}: duplicate vocabulary id '{reference}'"
+                )
+                continue
+            seen.add(reference)
+            if reference not in vocabulary_ids:
+                errors.append(
+                    f"{ref_path}: stale vocabulary id '{reference}' "
+                    f"(no vocabulary record with that id exists)"
+                )
+    return errors
 
 def _check_phrasebook_dialog_references(dialogs: list, path: str, phrasebook: list) -> list[str]:
     """
@@ -2973,6 +3036,10 @@ def run_tests():
 
         # ─── Lesson ───
         test_lesson_valid,
+        test_related_vocabulary_reference_valid,
+        test_related_vocabulary_stale_reference_rejected,
+        test_related_vocabulary_duplicate_reference_rejected,
+        test_related_vocabulary_non_string_reference_rejected,
         test_lesson_missing_required,
         test_lesson_missing_chunks,
         test_lesson_missing_kanji_bridge,
@@ -3526,6 +3593,42 @@ def _minimal_lesson(**overrides):
 def test_lesson_valid():
     errs = validate_single(_minimal_lesson(), "lesson")
     _assert_no_errors(errs, "lesson_valid")
+
+
+def test_related_vocabulary_reference_valid():
+    data = {
+        "vocabulary": [_minimal_vocab()],
+        "lessons": [_minimal_lesson(relatedVocabulary=["voc-001"])],
+    }
+    errs = validate_bundle(data)
+    _assert_no_errors(errs, "related_vocabulary_valid")
+
+
+def test_related_vocabulary_stale_reference_rejected():
+    data = {
+        "vocabulary": [_minimal_vocab()],
+        "lessons": [_minimal_lesson(relatedVocabulary=["voc-missing"])],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "stale vocabulary id 'voc-missing'", "related_vocabulary_stale")
+
+
+def test_related_vocabulary_duplicate_reference_rejected():
+    data = {
+        "vocabulary": [_minimal_vocab()],
+        "lessons": [_minimal_lesson(relatedVocabulary=["voc-001", "voc-001"])],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "duplicate vocabulary id 'voc-001'", "related_vocabulary_duplicate")
+
+
+def test_related_vocabulary_non_string_reference_rejected():
+    data = {
+        "vocabulary": [_minimal_vocab()],
+        "lessons": [_minimal_lesson(relatedVocabulary=[123])],
+    }
+    errs = validate_bundle(data)
+    _assert_has_error(errs, "vocabulary reference must be a non-empty string", "related_vocabulary_type")
 
 
 def test_lesson_missing_chunks():
@@ -7618,6 +7721,11 @@ _PHRASEBOOK_REFERENCE_PATH = os.path.join(
 # a card fixture may reference the existing lesson records.
 _LESSON_REFERENCE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "data", "examples", "valid", "lessons.json"
+)
+
+# Canonical vocabulary reference set for reusable relatedVocabulary links.
+_VOCABULARY_REFERENCE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "examples", "valid", "vocabulary.json"
 )
 
 
