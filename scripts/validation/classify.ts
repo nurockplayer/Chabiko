@@ -362,6 +362,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/teacher-review-*.test.ts'],
   },
   {
+    // Golden-content review scope: the packet loader is a domain boundary and
+    // its focused suite owns the manifest, fingerprint, and fail-closed refs.
+    match: (b) => b === 'loadgoldensetreviewscope.ts',
+    testGlobs: ['tests/golden-set-review-scope.test.ts'],
+  },
+  {
     match: (b) => b.includes('theme'),
     testGlobs: ['tests/theme-preference.test.ts'],
   },
