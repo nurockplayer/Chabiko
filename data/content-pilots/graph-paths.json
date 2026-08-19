@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "paths": [
+    {
+      "id": "pilot-taiwan-travel-golden",
+      "members": [
+        {"collection": "lessons", "type": "lesson", "id": "pilot-tw-airport-gate-001"},
+        {"collection": "lessons", "type": "lesson", "id": "pilot-tw-transport-mrt-001"},
+        {"collection": "lessons", "type": "lesson", "id": "pilot-tw-food-no-spicy-001"},
+        {"collection": "lessons", "type": "lesson", "id": "pilot-tw-hotel-reservation-001"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-001-qing"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-003-nali"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-004-zai"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-005-men"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-006-dao"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-007-zhan"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-008-chi"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-009-la"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-011-yuding"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-012-mingzi"}
+      ]
+    },
+    {
+      "id": "pilot-hsk-golden",
+      "members": [
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-001-qing"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-002-wen"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-003-nali"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-004-zai"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-005-men"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-006-dao"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-007-zhan"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-008-chi"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-009-la"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-010-yi"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-011-yuding"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-012-mingzi"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-013-wo"},
+        {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-014-you"}
+      ]
+    }
+  ]
+}
