@@ -1,13 +1,18 @@
 import type {
   ContentRef,
+  LearningContentCollection,
+  LearningContentCollectionFor,
   LearningContentGraph,
   LearningContentGraphSources,
   LearningContentKind,
   LearningContentObject,
   LearningContentRecord,
   LearningContentRelation,
+  LearningContentPath,
   LearningPathContentKind,
 } from '../types/learningContent';
+import type { LearningPathMemberRef, LearningPathRecord } from '../types/learningPath';
+import { PHRASEBOOK_SCENARIOS } from '../types/phrasebook';
 import { loadHskVocabulary } from './loadHskVocabulary';
 import { loadLearningPaths } from './loadLearningPaths';
 import { loadLessons } from './loadLessons';
@@ -21,6 +26,23 @@ type DraftObject = {
   pathIds: string[];
 };
 
+const COLLECTION_BY_KIND: Record<LearningContentKind, LearningContentCollection> = {
+  lesson: 'lessons',
+  vocabulary: 'vocabulary',
+  phrase: 'phrases',
+  roleplay: 'roleplayCards',
+};
+
+const COLLECTION_KIND_MATCH: Record<LearningContentCollection, LearningContentKind> = {
+  lessons: 'lesson',
+  vocabulary: 'vocabulary',
+  hskVocabulary: 'vocabulary',
+  phrases: 'phrase',
+  roleplayCards: 'roleplay',
+};
+
+const ROLEPLAY_SCENARIO_SET = new Set<string>(PHRASEBOOK_SCENARIOS);
+
 const PATH_MEMBER_KINDS = new Set<LearningPathContentKind>([
   'lesson',
   'vocabulary',
@@ -32,20 +54,83 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function refKey(ref: ContentRef): string {
-  return `${ref.type}:${ref.id}`;
+  return `${ref.collection}:${ref.type}:${ref.id}`;
 }
 
 function normalizeRef<K extends LearningContentKind>(
+  collection: LearningContentCollectionFor<K>,
   type: K,
   id: string,
 ): ContentRef<K> {
-  return Object.freeze({ type, id });
+  return Object.freeze({ collection, type, id });
+}
+
+function normalizeExistingRef(ref: ContentRef): ContentRef {
+  return normalizeRef(ref.collection, ref.type, ref.id);
 }
 
 function isContentRef(value: unknown): value is ContentRef {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Record<string, unknown>;
-  return isNonEmptyString(candidate.type) && isNonEmptyString(candidate.id);
+  if (!isNonEmptyString(candidate.collection)) return false;
+  if (!isNonEmptyString(candidate.type) || !isNonEmptyString(candidate.id)) {
+    return false;
+  }
+  return COLLECTION_KIND_MATCH[candidate.collection as LearningContentCollection] === candidate.type;
+}
+
+function collectionForKind<K extends LearningContentKind>(
+  kind: K,
+): LearningContentCollectionFor<K> {
+  return COLLECTION_BY_KIND[kind] as LearningContentCollectionFor<K>;
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    deepFreeze((value as Record<string, unknown>)[key]);
+  }
+  return Object.freeze(value);
+}
+
+function snapshotRecord<T extends LearningContentRecord>(record: T): T {
+  return deepFreeze(structuredClone(record));
+}
+
+/**
+ * Preserve the settled learning-path JSON contract while qualifying its
+ * references at the derived graph boundary. HSK path members resolve against
+ * the HSK collection; the existing Taiwan path resolves vocabulary members
+ * against the general vocabulary collection.
+ */
+function qualifyPathMember(
+  path: LearningPathRecord,
+  member: LearningPathMemberRef,
+): ContentRef<LearningPathContentKind> {
+  const collection =
+    member.type === 'lesson'
+      ? 'lessons'
+      : member.type === 'phrase'
+        ? 'phrases'
+        : path.availabilityReason === 'hsk'
+          ? 'hskVocabulary'
+          : 'vocabulary';
+  return Object.freeze({
+    collection,
+    type: member.type,
+    id: member.id,
+  }) as ContentRef<LearningPathContentKind>;
+}
+
+function qualifyLearningPaths(
+  paths: readonly LearningPathRecord[],
+): readonly LearningContentPath[] {
+  return paths.map((path) => ({
+    id: path.id,
+    members: path.members.map((member) => qualifyPathMember(path, member)),
+  }));
 }
 
 function assertRecordId(
@@ -79,12 +164,13 @@ export function buildLearningContentGraph(
 
   function addCollection(
     kind: LearningContentKind,
+    collection: LearningContentCollectionFor<typeof kind>,
     records: readonly LearningContentRecord[],
     sourceLabel: string,
   ): void {
     for (const [index, record] of records.entries()) {
       assertRecordId(kind, record, sourceLabel, index);
-      const ref = normalizeRef(kind, record.id);
+      const ref = normalizeRef(collection, kind, record.id);
       const key = refKey(ref);
       if (byKey.has(key)) {
         throw new Error(`duplicate content ref '${key}' from ${sourceLabel}`);
@@ -99,11 +185,11 @@ export function buildLearningContentGraph(
     }
   }
 
-  addCollection('lesson', sources.lessons, 'lessons');
-  addCollection('vocabulary', sources.vocabulary, 'vocabulary');
-  addCollection('vocabulary', sources.hskVocabulary, 'hskVocabulary');
-  addCollection('phrase', sources.phrases, 'phrases');
-  addCollection('roleplay', sources.roleplayCards, 'roleplayCards');
+  addCollection('lesson', 'lessons', sources.lessons, 'lessons');
+  addCollection('vocabulary', 'vocabulary', sources.vocabulary, 'vocabulary');
+  addCollection('vocabulary', 'hskVocabulary', sources.hskVocabulary, 'hskVocabulary');
+  addCollection('phrase', 'phrases', sources.phrases, 'phrases');
+  addCollection('roleplay', 'roleplayCards', sources.roleplayCards, 'roleplayCards');
 
   const pathIds: string[] = [];
   const pathContentById = new Map<string, readonly LearningContentObject[]>();
@@ -128,10 +214,7 @@ export function buildLearningContentGraph(
           `path '${path.id}' member[${memberIndex}] has unsupported content ref`,
         );
       }
-      const normalized = normalizeRef(
-        member.type as LearningPathContentKind,
-        member.id,
-      );
+      const normalized = normalizeExistingRef(member) as ContentRef<LearningPathContentKind>;
       const key = refKey(normalized);
       if (memberKeys.has(key)) {
         throw new Error(`path '${path.id}' duplicates member '${key}'`);
@@ -167,7 +250,11 @@ export function buildLearningContentGraph(
         `${relationName} from '${fromKind}:${fromId}' has an invalid target id`,
       );
     }
-    const targetRef = normalizeRef(targetKind, targetId);
+    const targetRef = normalizeRef(
+      collectionForKind(targetKind),
+      targetKind,
+      targetId,
+    );
     if (!byKey.has(refKey(targetRef))) {
       throw new Error(
         `${relationName} from '${fromKind}:${fromId}' has stale target '${refKey(targetRef)}'`,
@@ -180,10 +267,16 @@ export function buildLearningContentGraph(
     fromId: string,
     targetKind: 'lesson' | 'phrase',
     targetId: string,
-    expectedScenario: unknown,
+    expectedScenario: string,
   ): void {
-    if (!isNonEmptyString(expectedScenario)) return;
-    const target = byKey.get(refKey(normalizeRef(targetKind, targetId)));
+    if (!ROLEPLAY_SCENARIO_SET.has(expectedScenario)) {
+      throw new Error(
+        `roleplay:${fromId} has an invalid scenario '${expectedScenario}'`,
+      );
+    }
+    const target = byKey.get(
+      refKey(normalizeRef(collectionForKind(targetKind), targetKind, targetId)),
+    );
     if (!target) return;
     const targetRecord = target.record as unknown as Record<string, unknown>;
     const targetScenario =
@@ -226,14 +319,14 @@ export function buildLearningContentGraph(
         if (kind === 'lesson') {
           relations.push({
             type: 'lesson-vocabulary',
-            from: normalizeRef('lesson', record.id),
-            to: normalizeRef('vocabulary', vocabularyId),
+            from: normalizeRef('lessons', 'lesson', record.id),
+            to: normalizeRef('vocabulary', 'vocabulary', vocabularyId),
           });
         } else {
           relations.push({
             type: 'phrase-vocabulary',
-            from: normalizeRef('phrase', record.id),
-            to: normalizeRef('vocabulary', vocabularyId),
+            from: normalizeRef('phrases', 'phrase', record.id),
+            to: normalizeRef('vocabulary', 'vocabulary', vocabularyId),
           });
         }
       }
@@ -245,7 +338,11 @@ export function buildLearningContentGraph(
 
   for (const [index, card] of sources.roleplayCards.entries()) {
     assertRecordId('roleplay', card, 'roleplayCards', index);
-    const roleplayRef = normalizeRef('roleplay', card.id);
+    const scenario = card.scenario as unknown;
+    if (!isNonEmptyString(scenario) || !ROLEPLAY_SCENARIO_SET.has(scenario)) {
+      throw new Error(`roleplay:${card.id} has an invalid scenario '${String(scenario)}'`);
+    }
+    const roleplayRef = normalizeRef('roleplayCards', 'roleplay', card.id);
     const lessonRefs = card.lessonRefs ?? [];
     const phraseRefs = card.phraseRefs;
     if (!Array.isArray(lessonRefs) || !Array.isArray(phraseRefs)) {
@@ -264,12 +361,12 @@ export function buildLearningContentGraph(
         card.id,
         'lesson',
         lessonId,
-        card.scenario,
+        scenario,
       );
       relations.push({
         type: 'roleplay-lesson',
         from: roleplayRef,
-        to: normalizeRef('lesson', lessonId),
+        to: normalizeRef('lessons', 'lesson', lessonId),
       });
     }
 
@@ -285,12 +382,12 @@ export function buildLearningContentGraph(
         card.id,
         'phrase',
         phraseId,
-        card.scenario,
+        scenario,
       );
       relations.push({
         type: 'roleplay-phrase',
         from: roleplayRef,
-        to: normalizeRef('phrase', phraseId),
+        to: normalizeRef('phrases', 'phrase', phraseId),
       });
     }
   }
@@ -299,7 +396,7 @@ export function buildLearningContentGraph(
     drafts.map((draft) =>
       Object.freeze({
         ref: draft.ref,
-        record: draft.record,
+        record: snapshotRecord(draft.record),
         pathIds: Object.freeze([...draft.pathIds]),
       }),
     ),
@@ -336,12 +433,13 @@ export function buildLearningContentGraph(
 
 /** Load the graph from the current canonical content collections. */
 export function loadLearningContentGraph(): LearningContentGraph {
+  const paths = loadLearningPaths().learningPaths;
   return buildLearningContentGraph({
     lessons: loadLessons().lessons,
     vocabulary: loadVocabulary().vocabulary,
     hskVocabulary: loadHskVocabulary().vocabulary,
     phrases: loadPhrasebook().phrases,
     roleplayCards: loadRoleplayCards(),
-    paths: loadLearningPaths().learningPaths,
+    paths: qualifyLearningPaths(paths),
   });
 }

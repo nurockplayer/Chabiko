@@ -335,8 +335,24 @@ registry or a generated content file.
 Every relationship uses a collection-qualified `ContentRef`:
 
 ```ts
-{ type: "lesson" | "vocabulary" | "phrase" | "roleplay", id: string }
+{
+  collection: "lessons" | "vocabulary" | "hskVocabulary" | "phrases" | "roleplayCards",
+  type: "lesson" | "vocabulary" | "phrase" | "roleplay",
+  id: string,
+}
 ```
+
+The collection discriminator is required even when two collections share the
+same content kind. For example, a generic vocabulary record and an HSK
+vocabulary record may use the same ID without colliding; their references must
+use `collection: "vocabulary"` and `collection: "hskVocabulary"`
+respectively.
+
+The settled `data/learning-paths.json` contract remains `{ type, id }`. The
+graph loader qualifies those legacy path members at the derived boundary using
+the canonical path source (`hsk-vocabulary` uses `hskVocabulary`; the existing
+Taiwan path uses `vocabulary`). New cross-collection path membership belongs in
+a separately scoped path-contract change.
 
 The current path member types are `lesson`, `vocabulary`, and `phrase`.
 Roleplay cards remain reusable scenario objects that reference existing lessons

@@ -7,10 +7,7 @@
  * exact route that must exist for an available path.
  */
 
-import type {
-  ContentRef,
-  LearningPathContentKind,
-} from './learningContent';
+import type { LearningPathContentKind } from './learningContent';
 
 /** Path default display script. Taiwan travel and kanji bridge are
  *  Traditional-first; HSK is Simplified-first. */
@@ -37,7 +34,10 @@ export type LearningPathMemberType = LearningPathContentKind;
  * that owns the referenced ID; the loader resolves every reference against
  * the current production data for that collection.
  */
-export type LearningPathMemberRef = ContentRef<LearningPathMemberType>;
+export interface LearningPathMemberRef {
+  readonly type: LearningPathMemberType;
+  readonly id: string;
+}
 
 /**
  * HSK availability descriptor for the `hsk-vocabulary` path. Availability is

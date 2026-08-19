@@ -16,11 +16,27 @@ import type {
   LegacyVocabulary,
 } from '../src/types/vocabulary';
 
+type ContentCollection =
+  | 'lessons'
+  | 'vocabulary'
+  | 'hskVocabulary'
+  | 'phrases'
+  | 'roleplayCards';
+
 function ref<T extends ContentRef['type']>(
   type: T,
   id: string,
+  collection?: ContentCollection,
 ): ContentRef<T> {
-  return { type, id };
+  const defaultCollection =
+    type === 'lesson'
+      ? 'lessons'
+      : type === 'phrase'
+        ? 'phrases'
+        : type === 'roleplay'
+          ? 'roleplayCards'
+          : 'vocabulary';
+  return { collection: collection ?? defaultCollection, type, id } as ContentRef<T>;
 }
 
 function path(
@@ -90,7 +106,7 @@ function roleplay(
   id: string,
   lessonRefs: string[] = [],
   phraseRefs: string[] = ['phrase-1'],
-  scenario?: string,
+  scenario: string = 'transport',
 ): RoleplayCardRecord {
   return {
     id,
@@ -114,6 +130,14 @@ function sources(
   };
 }
 
+function qualifiedRef<T extends ContentRef['type']>(
+  collection: ContentCollection,
+  type: T,
+  id: string,
+): ContentRef<T> {
+  return { collection, type, id } as unknown as ContentRef<T>;
+}
+
 describe('learning content graph', () => {
   it('indexes the current HSK and Taiwan Travel pilot collections', () => {
     const graph = loadLearningContentGraph();
@@ -125,7 +149,7 @@ describe('learning content graph', () => {
     ]);
     expect(graph.getPathContent('taiwan-travel')).toHaveLength(14);
     expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(5);
-    expect(graph.resolve(ref('vocabulary', 'hsk-002'))?.record.reviewStatus).toBe(
+    expect(graph.resolve(ref('vocabulary', 'hsk-002', 'hskVocabulary'))?.record.reviewStatus).toBe(
       'reviewed',
     );
     const phraseRecord = graph.resolve(ref('phrase', 'phrase-001'))
@@ -149,13 +173,13 @@ describe('learning content graph', () => {
       sources({
         hskVocabulary: [shared],
         paths: [
-          path('taiwan-travel', [ref('vocabulary', shared.id)]),
-          path('hsk-vocabulary', [ref('vocabulary', shared.id)]),
+          path('taiwan-travel', [ref('vocabulary', shared.id, 'hskVocabulary')]),
+          path('hsk-vocabulary', [ref('vocabulary', shared.id, 'hskVocabulary')]),
         ],
       }),
     );
 
-    const object = graph.resolve(ref('vocabulary', shared.id));
+    const object = graph.resolve(ref('vocabulary', shared.id, 'hskVocabulary'));
     expect(object?.pathIds).toEqual(['taiwan-travel', 'hsk-vocabulary']);
     expect(graph.getPathContent('taiwan-travel')[0]).toBe(object);
     expect(graph.getPathContent('hsk-vocabulary')[0]).toBe(object);
@@ -179,11 +203,10 @@ describe('learning content graph', () => {
     expect(() =>
       buildLearningContentGraph(
         sources({
-          vocabulary: [vocabulary('duplicate-001')],
-          hskVocabulary: [hskVocabulary('duplicate-001')],
+          vocabulary: [vocabulary('duplicate-001'), vocabulary('duplicate-001')],
         }),
       ),
-    ).toThrow(/duplicate content ref 'vocabulary:duplicate-001'/);
+    ).toThrow(/duplicate content ref 'vocabulary:vocabulary:duplicate-001'/);
 
     expect(() =>
       buildLearningContentGraph(
@@ -192,7 +215,7 @@ describe('learning content graph', () => {
           paths: [path('taiwan-travel', [ref('vocabulary', 'missing-001')])],
         }),
       ),
-    ).toThrow(/path 'taiwan-travel' has stale member 'vocabulary:missing-001'/);
+    ).toThrow(/path 'taiwan-travel' has stale member 'vocabulary:vocabulary:missing-001'/);
 
     expect(() =>
       buildLearningContentGraph(
@@ -200,7 +223,7 @@ describe('learning content graph', () => {
           lessons: [lesson('lesson-1', ['missing-001'])],
         }),
       ),
-    ).toThrow(/lesson-vocabulary relation.*stale target 'vocabulary:missing-001'/);
+    ).toThrow(/lesson-vocabulary relation.*stale target 'vocabulary:vocabulary:missing-001'/);
   });
 
   it('validates roleplay relationships against canonical lesson and phrase objects', () => {
@@ -241,5 +264,62 @@ describe('learning content graph', () => {
         }),
       ),
     ).toThrow(/roleplay-phrase relation.*cross-scenario/);
+  });
+
+  it('keeps generic and HSK vocabulary with the same ID independently resolvable', () => {
+    const sharedId = 'shared-vocabulary-001';
+    const graph = buildLearningContentGraph(
+      sources({
+        vocabulary: [vocabulary(sharedId)],
+        hskVocabulary: [hskVocabulary(sharedId)],
+        paths: [
+          path('taiwan-travel', [
+            qualifiedRef('vocabulary', 'vocabulary', sharedId),
+          ]),
+          path('hsk-vocabulary', [
+            qualifiedRef('hskVocabulary', 'vocabulary', sharedId),
+          ]),
+        ],
+      }),
+    );
+
+    const generic = graph.resolve(
+      qualifiedRef('vocabulary', 'vocabulary', sharedId),
+    );
+    const hsk = graph.resolve(
+      qualifiedRef('hskVocabulary', 'vocabulary', sharedId),
+    );
+
+    expect(generic).toBeDefined();
+    expect(hsk).toBeDefined();
+    expect(generic).not.toBe(hsk);
+    expect(generic?.pathIds).toEqual(['taiwan-travel']);
+    expect(hsk?.pathIds).toEqual(['hsk-vocabulary']);
+  });
+
+  it('fails closed when a roleplay scenario is not controlled', () => {
+    expect(() =>
+      buildLearningContentGraph(
+        sources({
+          phrases: [phrase('phrase-1', undefined, 'transport')],
+          roleplayCards: [
+            roleplay('roleplay-1', [], ['phrase-1'], 'weather'),
+          ],
+        }),
+      ),
+    ).toThrow(/roleplay:roleplay-1 has an invalid scenario/);
+  });
+
+  it('exposes immutable record snapshots instead of canonical source objects', () => {
+    const canonical = vocabulary('immutable-vocabulary-001');
+    const graph = buildLearningContentGraph(
+      sources({ vocabulary: [canonical] }),
+    );
+    const exposed = graph.resolve(ref('vocabulary', canonical.id))?.record;
+
+    expect(exposed).toBeDefined();
+    expect(exposed).not.toBe(canonical);
+    expect(Object.isFrozen(exposed)).toBe(true);
+    expect(canonical.reviewStatus).toBe('draft');
   });
 });

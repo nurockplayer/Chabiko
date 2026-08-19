@@ -15,8 +15,27 @@ export type LearningContentKind = 'lesson' | 'vocabulary' | 'phrase' | 'roleplay
 
 export type LearningPathContentKind = Exclude<LearningContentKind, 'roleplay'>;
 
+/** Canonical collection that owns a learning-content record. */
+export type LearningContentCollection =
+  | 'lessons'
+  | 'vocabulary'
+  | 'hskVocabulary'
+  | 'phrases'
+  | 'roleplayCards';
+
+/** Collection discriminator associated with each graph content kind. */
+export type LearningContentCollectionFor<K extends LearningContentKind> =
+  K extends 'lesson'
+    ? 'lessons'
+    : K extends 'vocabulary'
+      ? 'vocabulary' | 'hskVocabulary'
+      : K extends 'phrase'
+        ? 'phrases'
+        : 'roleplayCards';
+
 /** A stable, collection-qualified content reference. */
 export interface ContentRef<K extends LearningContentKind = LearningContentKind> {
+  readonly collection: LearningContentCollectionFor<K>;
   readonly type: K;
   readonly id: string;
 }
