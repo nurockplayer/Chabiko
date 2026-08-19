@@ -46,6 +46,15 @@ outcome, unresolved issues, and blocked content for a human reviewer. The
 repository currently records `pending-human-review`, `decisionCount: 0`, and
 `promotionAllowed: false`.
 
+The human artifact follows the canonical content-review workflow outcome
+labels `accepted`, `rejected`, or `needs-changes`. Those labels are not yet
+stored as teacher-review decisions. If a future writer is explicitly added,
+`accepted` maps to the #360-compatible `accepted` value and `needs-changes`
+maps to `needs_changes`; `rejected` remains a blocking non-promotion outcome
+and is never written as an accepted decision. This keeps the artifact format
+and the #360 decision namespace distinct and prevents an unsupported outcome
+from being submitted to the existing API.
+
 ## Review dimensions
 
 | Dimension | Required role(s) | Records |

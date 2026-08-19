@@ -137,10 +137,11 @@ describe('golden-set teacher-review scope', () => {
     expect(rendered).toContain('**Review date:** {{YYYY-MM-DD}}');
     expect(rendered).toContain(`**Review version:** ${packet.reviewVersion}`);
     expect(rendered).toContain('**Overall review outcome:** pending-human-review');
+    expect(rendered).toContain('needs-changes maps to needs_changes');
     expect(rendered).toContain('## Unresolved Issues');
     expect(rendered).toContain('## Blocked Content');
     expect(rendered).toContain('base campaign unchanged');
-    expect(rendered).toContain('never fabricates or writes human decisions');
+    expect(rendered).toContain('never written as an accepted decision');
     for (const record of packet.records) {
       expect(rendered).toContain(record.ref.id);
       expect(rendered).toContain(record.fingerprint);
