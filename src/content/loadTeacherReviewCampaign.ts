@@ -14,12 +14,7 @@ import {
 } from '../domain/teacherReview';
 import phrasebookData from '../../data/examples/valid/phrasebook.json';
 import dialogsData from '../../data/examples/valid/phrasebook-dialogs.json';
-import roleplayAirportData from '../../data/roleplay/airport.json';
-import roleplayTransportData from '../../data/roleplay/transport.json';
-import roleplayFoodData from '../../data/roleplay/food.json';
-import roleplayShoppingData from '../../data/roleplay/shopping.json';
-import roleplayHotelData from '../../data/roleplay/hotel.json';
-import roleplayEmergencyData from '../../data/roleplay/emergency.json';
+import { loadRoleplayCards } from './loadRoleplayCards';
 
 /** SHA-256 hex digest via the Web Crypto API (available in Workers and in
  * Node 18+ / vitest). Deterministic across environments. */
@@ -43,24 +38,12 @@ function collectionOf<T>(data: unknown, key: string): T[] {
   return value as T[];
 }
 
-function castRoleplayCards(data: unknown): TeacherReviewInputs['roleplayCards'] {
-  const cards = collectionOf<unknown>(data, 'roleplayCards');
-  return cards as TeacherReviewInputs['roleplayCards'];
-}
-
 /** Load the parsed content files into the domain input shape. */
 export function loadTeacherReviewInputs(): TeacherReviewInputs {
   return {
     phrases: collectionOf<unknown>(phrasebookData, 'phrasebook') as TeacherReviewInputs['phrases'],
     dialogs: collectionOf<unknown>(dialogsData, 'phrasebookDialogs') as TeacherReviewInputs['dialogs'],
-    roleplayCards: [
-      ...castRoleplayCards(roleplayAirportData),
-      ...castRoleplayCards(roleplayTransportData),
-      ...castRoleplayCards(roleplayFoodData),
-      ...castRoleplayCards(roleplayShoppingData),
-      ...castRoleplayCards(roleplayHotelData),
-      ...castRoleplayCards(roleplayEmergencyData),
-    ],
+    roleplayCards: loadRoleplayCards() as TeacherReviewInputs['roleplayCards'],
   };
 }
 

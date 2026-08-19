@@ -320,6 +320,19 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/phrasebook-*.test.ts'],
   },
   {
+    // Shared content graph foundation: the graph, vocabulary adapter, and
+    // roleplay adapter are covered by the graph contract plus the existing
+    // teacher-review preservation suite.
+    match: (b) =>
+      b.includes('learningcontentgraph') ||
+      b.includes('loadvocabulary') ||
+      b.includes('loadroleplaycards'),
+    testGlobs: [
+      'tests/learning-content-graph.test.ts',
+      'tests/teacher-review-*.test.ts',
+    ],
+  },
+  {
     match: (b) => b.includes('lessonphrasebook'),
     testGlobs: ['tests/lesson-phrasebook-link.test.ts'],
   },

@@ -1,5 +1,32 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import {
+  PHRASEBOOK_SCENARIOS,
+  type PhrasebookData,
+  type PhrasebookDialog,
+  type PhrasebookDialogTurn,
+  type PhrasebookFormStatus,
+  type PhrasebookPhrase,
+  type PhrasebookReviewStatus,
+  type PhrasebookScenario,
+  type PhrasebookScenarioGroup,
+  type PhrasebookSource,
+  type PhrasebookSpeaker,
+} from '../types/phrasebook';
+
+export { PHRASEBOOK_SCENARIOS };
+export type {
+  PhrasebookData,
+  PhrasebookDialog,
+  PhrasebookDialogTurn,
+  PhrasebookFormStatus,
+  PhrasebookPhrase,
+  PhrasebookReviewStatus,
+  PhrasebookScenario,
+  PhrasebookScenarioGroup,
+  PhrasebookSource,
+  PhrasebookSpeaker,
+} from '../types/phrasebook';
 
 const DEFAULT_PHRASEBOOK_PATH = 'data/examples/valid/phrasebook.json';
 const DEFAULT_DIALOG_PATH = 'data/examples/valid/phrasebook-dialogs.json';
@@ -7,89 +34,6 @@ const DEFAULT_DIALOG_PATH = 'data/examples/valid/phrasebook-dialogs.json';
 /** The frozen first-release phrasebook size: exactly 30 phrases and 6 dialogs. */
 export const PHRASEBOOK_PHRASE_COUNT = 30;
 export const PHRASEBOOK_DIALOG_COUNT = 6;
-
-/**
- * Controlled scenario order (#236). The source files are NOT authored in this
- * order (phrase-001/002 come first in phrasebook.json), so the loader/surface
- * must present scenarios in exactly this order while preserving the relative
- * source order of phrases/dialogs within each scenario.
- */
-export const PHRASEBOOK_SCENARIOS = [
-  'airport',
-  'transport',
-  'food',
-  'shopping',
-  'hotel',
-  'emergency',
-] as const;
-
-export type PhrasebookScenario = (typeof PHRASEBOOK_SCENARIOS)[number];
-
-/** Per-form provenance. */
-export type PhrasebookFormStatus = 'authored' | 'verified' | 'generated';
-
-export type PhrasebookReviewStatus = 'draft' | 'reviewed' | 'published';
-
-export type PhrasebookSpeaker = 'learner' | 'partner';
-
-export interface PhrasebookSource {
-  type: string;
-  note?: string;
-}
-
-/**
- * The learner-surface shape for one phrasebook phrase. Maps only the fields the
- * surface consumes; nothing is fabricated or converted. `simplified` is
- * optional exactly as the content model defines it (available where both forms
- * exist), and `source` is optional (a draft record may carry no source yet).
- */
-export interface PhrasebookPhrase {
-  id: string;
-  scenario: PhrasebookScenario;
-  traditional: string;
-  traditionalStatus: PhrasebookFormStatus;
-  simplified?: string;
-  simplifiedStatus?: PhrasebookFormStatus;
-  pinyin: string;
-  japanese: string;
-  usageNotesJa: string;
-  painPointTags?: string[];
-  reviewStatus: PhrasebookReviewStatus;
-  source?: PhrasebookSource;
-}
-
-/** One conversation turn inside a phrasebook dialog. */
-export interface PhrasebookDialogTurn {
-  speaker: PhrasebookSpeaker;
-  traditional: string;
-  traditionalStatus: PhrasebookFormStatus;
-  simplified?: string;
-  simplifiedStatus?: PhrasebookFormStatus;
-  pinyin: string;
-  japanese: string;
-}
-
-/** The learner-surface shape for one phrasebook dialog. */
-export interface PhrasebookDialog {
-  id: string;
-  scenario: PhrasebookScenario;
-  turns: readonly PhrasebookDialogTurn[];
-  relatedPhraseIds: readonly string[];
-  reviewStatus: PhrasebookReviewStatus;
-  source?: PhrasebookSource;
-}
-
-export interface PhrasebookData {
-  phrases: readonly PhrasebookPhrase[];
-  dialogs: readonly PhrasebookDialog[];
-}
-
-/** One controlled scenario rendered by the surface, in controlled order. */
-export interface PhrasebookScenarioGroup {
-  scenario: PhrasebookScenario;
-  phrases: readonly PhrasebookPhrase[];
-  dialog: PhrasebookDialog | null;
-}
 
 const PHRASE_REQUIRED_FIELDS = [
   'traditional',
@@ -114,6 +58,29 @@ function deepFreeze<T>(value: T): T {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function parseRelatedVocabulary(
+  value: unknown,
+  prefix: string,
+): string[] | undefined {
+  if (value === undefined) return undefined;
+  assert(Array.isArray(value), `${prefix} has invalid relatedVocabulary`);
+  const seen = new Set<string>();
+  const references: string[] = [];
+  for (const reference of value) {
+    assert(
+      isNonEmptyString(reference),
+      `${prefix} has an invalid relatedVocabulary reference`,
+    );
+    assert(
+      !seen.has(reference),
+      `${prefix} has a duplicate relatedVocabulary reference '${reference}'`,
+    );
+    seen.add(reference);
+    references.push(reference);
+  }
+  return references;
 }
 
 function assert(condition: boolean, message: string): asserts condition {
@@ -227,6 +194,10 @@ function parsePhrases(records: unknown[]): PhrasebookPhrase[] {
     }
 
     const reviewStatus = requireReviewStatus(item, 'reviewStatus', prefix);
+    const relatedVocabulary = parseRelatedVocabulary(
+      item.relatedVocabulary,
+      prefix,
+    );
 
     if (item.painPointTags !== undefined) {
       assert(
@@ -250,6 +221,7 @@ function parsePhrases(records: unknown[]): PhrasebookPhrase[] {
       ...(item.painPointTags !== undefined
         ? { painPointTags: item.painPointTags as string[] }
         : {}),
+      ...(relatedVocabulary !== undefined ? { relatedVocabulary } : {}),
       reviewStatus,
       ...(item.source !== undefined ? { source: parseSource(item.source, prefix) } : {}),
     });
@@ -389,7 +361,8 @@ function parseDialogs(
  * returns independent references.
  *
  * The loader performs no runtime script conversion and never fabricates or
- * converts content: it maps only the surface's consumed fields verbatim.
+ * converts content: it maps the surface fields and typed relationship fields
+ * verbatim.
  *
  * @param phraseFilePath  optional override for the phrase collection
  *   (defaults to `data/examples/valid/phrasebook.json`).
