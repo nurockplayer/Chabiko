@@ -1,0 +1,396 @@
+{
+  "vocabulary": [
+    {
+      "id": "pilot-hsk-001-qing",
+      "simplified": "请",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "qǐng",
+      "japanese": "お願いします／どうぞ。質問の前置きにも使う",
+      "category": "courtesy",
+      "toneNote": "第三声。低くしてから少し上げる。",
+      "caution": "ここでは権利安全な合成パイロット語彙。公式HSK語彙への所属は主張しない。",
+      "examples": [
+        {
+          "traditional": "請問，登機門在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "请问，登机门在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "qǐngwèn, dēngjīmén zài nǎlǐ?",
+          "japanese": "すみません、搭乗口はどこですか？"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; not imported from or derived from a restricted HSK source."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-002-wen",
+      "simplified": "问",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "wèn",
+      "japanese": "尋ねる、質問する",
+      "category": "communication",
+      "toneNote": "第四声。短く下げる。",
+      "caution": "日本語の「問」と字形が近くても、日本語音読みを中国語の発音にしない。",
+      "examples": [
+        {
+          "traditional": "我想問一個問題。",
+          "traditionalStatus": "generated",
+          "simplified": "我想问一个问题。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ xiǎng wèn yí ge wèntí.",
+          "japanese": "一つ質問したいです。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no official source membership asserted."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-003-nali",
+      "simplified": "哪里",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "nǎlǐ",
+      "japanese": "どこ",
+      "category": "question",
+      "toneNote": "nǎ と lǐ はどちらも第三声。まずゆっくり区切る。",
+      "caution": "台湾旅行の合成例では繁体字の「哪裡」を別の学習対象として示す。ここでは繁体字を補完していない。",
+      "examples": [
+        {
+          "traditional": "洗手間在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "洗手间在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "xǐshǒujiān zài nǎlǐ?",
+          "japanese": "お手洗いはどこですか？"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; Traditional form intentionally withheld pending separate review."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-004-zai",
+      "simplified": "在",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "zài",
+      "japanese": "〜にある／いる、〜で",
+      "category": "location",
+      "toneNote": "第四声。短く落とす。",
+      "caution": "位置を示す基本語。日本語の「在」の熟語知識は発音の根拠にならない。",
+      "examples": [
+        {
+          "traditional": "捷運站在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "捷运站在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "jiéyùn zhàn zài nǎlǐ?",
+          "japanese": "MRTの駅はどこですか？"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no restricted source used."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-005-men",
+      "simplified": "门",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "mén",
+      "japanese": "門、ゲート",
+      "category": "place",
+      "toneNote": "第二声。上がる音。",
+      "caution": "繁体字「門」は台湾の案内表示で別字形として現れる。合成レコードでは変換していない。",
+      "examples": [
+        {
+          "traditional": "登機門在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "登机门在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "dēngjīmén zài nǎlǐ?",
+          "japanese": "搭乗口はどこですか？"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; not an official HSK source row."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-006-dao",
+      "simplified": "到",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "dào",
+      "japanese": "到着する、〜まで／〜へ",
+      "category": "movement",
+      "toneNote": "第四声。短く落とす。",
+      "caution": "目的地をつなぐ使い方では、後ろに場所を置く。",
+      "examples": [
+        {
+          "traditional": "我要到台北車站。",
+          "traditionalStatus": "generated",
+          "simplified": "我要到台北车站。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yào dào Táiběi Chēzhàn.",
+          "japanese": "台北駅まで行きたいです。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no official membership asserted."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-007-zhan",
+      "simplified": "站",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "zhàn",
+      "japanese": "駅、停留所",
+      "category": "transport",
+      "toneNote": "第四声。zh は舌先を少しそらせる。",
+      "caution": "「駅」の意味で使うときは、前の交通語と一緒に覚える。",
+      "examples": [
+        {
+          "traditional": "台北車站在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "台北车站在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "Táiběi Chēzhàn zài nǎlǐ?",
+          "japanese": "台北駅はどこですか？"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; Taiwan place-name usage awaits human review."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-008-chi",
+      "simplified": "吃",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "chī",
+      "japanese": "食べる",
+      "category": "food",
+      "toneNote": "第一声。高く平らに。",
+      "caution": "食事制限の説明では、この単語だけで安全が保証されない。必要な場合は別の確認方法を使う。",
+      "examples": [
+        {
+          "traditional": "我不吃辣。",
+          "traditionalStatus": "generated",
+          "simplified": "我不吃辣。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ bù chī là.",
+          "japanese": "私は辛いものを食べません。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no medical or safety claim is made."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-009-la",
+      "simplified": "辣",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "là",
+      "japanese": "辛い、辛さ",
+      "category": "food",
+      "toneNote": "第四声。短く落とす。",
+      "caution": "辛さの希望を伝える語。アレルギーや宗教上の制限の説明とは分けて扱う。",
+      "examples": [
+        {
+          "traditional": "請不要加辣。",
+          "traditionalStatus": "generated",
+          "simplified": "请不要加辣。",
+          "simplifiedStatus": "generated",
+          "pinyin": "qǐng bú yào jiā là.",
+          "japanese": "辛さを加えないでください。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; no restricted source used."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 2,
+        "sourceLevelLabel": "synthetic pilot level 2; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-010-yi",
+      "simplified": "一",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "yī",
+      "japanese": "一つ、一人分",
+      "category": "measure-word",
+      "toneNote": "基本形は第一声。後ろの音に応じた声調変化は別途練習する。",
+      "caution": "「一」だけで数え方は決まらない。料理では量詞と一緒に使う。",
+      "examples": [
+        {
+          "traditional": "一份這個。",
+          "traditionalStatus": "generated",
+          "simplified": "一份这个。",
+          "simplifiedStatus": "generated",
+          "pinyin": "yí fèn zhège.",
+          "japanese": "これを一人分。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no official membership asserted."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-011-yuding",
+      "simplified": "预订",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "yùdìng",
+      "japanese": "予約する、予約",
+      "category": "hotel",
+      "toneNote": "yù と dìng はどちらも第四声。二つの落ちる音を分ける。",
+      "caution": "ホテルの予約確認では、名前・日付・予約画面も併用する。",
+      "examples": [
+        {
+          "traditional": "我有預訂。",
+          "traditionalStatus": "generated",
+          "simplified": "我有预订。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yǒu yùdìng.",
+          "japanese": "予約があります。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; not derived from a hotel or HSK source."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 2,
+        "sourceLevelLabel": "synthetic pilot level 2; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-012-mingzi",
+      "simplified": "名字",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "míngzi",
+      "japanese": "名前",
+      "category": "identity",
+      "toneNote": "名 míng は第二声。字 zi は軽く添える。",
+      "caution": "人名の読みは日本語から推測せず、予約画面や身分証の表記で確認する。",
+      "examples": [
+        {
+          "traditional": "名字是佐藤。",
+          "traditionalStatus": "generated",
+          "simplified": "名字是佐藤。",
+          "simplifiedStatus": "generated",
+          "pinyin": "míngzi shì Zuǒténg.",
+          "japanese": "名前は佐藤です。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no official membership asserted."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 2,
+        "sourceLevelLabel": "synthetic pilot level 2; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-013-wo",
+      "simplified": "我",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "wǒ",
+      "japanese": "私、私たち",
+      "category": "pronoun",
+      "toneNote": "第三声。低くしてから少し上げる。",
+      "caution": "文脈で単数・複数が決まることがある。日本語の「私」と機械的に一対一対応させない。",
+      "examples": [
+        {
+          "traditional": "我有預訂。",
+          "traditionalStatus": "generated",
+          "simplified": "我有预订。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yǒu yùdìng.",
+          "japanese": "私には予約があります。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Rights-safe synthetic golden record; no restricted source used."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    },
+    {
+      "id": "pilot-hsk-014-you",
+      "simplified": "有",
+      "simplifiedStatus": "authored",
+      "traditionalStatus": "unavailable",
+      "pinyin": "yǒu",
+      "japanese": "ある、持っている",
+      "category": "existence",
+      "toneNote": "第三声。低くしてから少し上げる。",
+      "caution": "所有・存在を表す語。予約確認では後ろの名詞と一緒に意味を取る。",
+      "examples": [
+        {
+          "traditional": "我有預訂。",
+          "traditionalStatus": "generated",
+          "simplified": "我有预订。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yǒu yùdìng.",
+          "japanese": "予約があります。"
+        }
+      ],
+      "source": {"type": "synthetic-pilot", "note": "Independently authored synthetic travel-learning record; no official membership asserted."},
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 1,
+        "sourceLevelLabel": "synthetic pilot level 1; not an official HSK membership claim"
+      }
+    }
+  ]
+}

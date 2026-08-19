@@ -130,6 +130,10 @@ function isBuildCi(file: string): boolean {
   // changes rather than authored content.
   if (file.includes('/generated/')) return true;
   if (file.startsWith('data/unicode/')) return true;
+  // Golden pilot source is coupled to a checked-in human-review packet. Any
+  // edit must rerun the packet's graph, fingerprint, and fail-closed reference
+  // tests rather than passing as ordinary T1 content only.
+  if (file.startsWith('data/content-pilots/')) return true;
   return false;
 }
 
@@ -360,6 +364,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     // #363 teacher-review domain (resolver, UI state, campaign loader).
     match: (b) => b.includes('teacherreview'),
     testGlobs: ['tests/teacher-review-*.test.ts'],
+  },
+  {
+    // Golden-content review scope: the packet loader is a domain boundary and
+    // its focused suite owns the manifest, fingerprint, and fail-closed refs.
+    match: (b) => b === 'loadgoldensetreviewscope.ts',
+    testGlobs: ['tests/golden-set-review-scope.test.ts'],
   },
   {
     match: (b) => b.includes('theme'),
