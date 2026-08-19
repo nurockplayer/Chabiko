@@ -172,6 +172,18 @@ describe('golden-set teacher-review scope', () => {
     );
   });
 
+  it('fails closed on malformed manifest references', async () => {
+    const malformed = loadManifest();
+    malformed.records = [
+      { ...malformed.records[0], type: 'vocabulary' },
+      ...malformed.records.slice(1),
+    ];
+
+    await expect(buildGoldenSetReviewPacket(malformed)).rejects.toThrow(
+      /record 'pilot-tw-airport-gate-001' has a collection\/type mismatch/,
+    );
+  });
+
   it('binds graph/path membership changes to a new review version', async () => {
     const manifest = loadManifest();
     const graphPathBundle = JSON.parse(

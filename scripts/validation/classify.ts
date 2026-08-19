@@ -130,6 +130,10 @@ function isBuildCi(file: string): boolean {
   // changes rather than authored content.
   if (file.includes('/generated/')) return true;
   if (file.startsWith('data/unicode/')) return true;
+  // Golden pilot source is coupled to a checked-in human-review packet. Any
+  // edit must rerun the packet's graph, fingerprint, and fail-closed reference
+  // tests rather than passing as ordinary T1 content only.
+  if (file.startsWith('data/content-pilots/')) return true;
   return false;
 }
 

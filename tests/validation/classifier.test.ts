@@ -41,6 +41,7 @@ describe('risk classifier selects the intended minimum tier', () => {
     [['scripts/validate-content-schema.py'], 't3', 'build-ci'],
     [['.github/workflows/ci.yml'], 't3', 'build-ci'],
     [['data/unicode/generated/visual-candidates.json'], 't3', 'build-ci'],
+    [['data/content-pilots/taiwan-travel-golden/lessons.json'], 't3', 'build-ci'],
     [['weird/unknown.xyz'], 't3', 'unknown'],
   ] as const)('%s → %s (%s)', (files, tier, riskClass) => {
     const classification = classifyFiles([...files]);
@@ -125,6 +126,18 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runAffectedVitest).toBe(false);
     expect(classification.runVisual).toBe(false);
     expect(classification.runA11y).toBe(false);
+  });
+
+  it('golden pilot source changes run the full gate for packet drift protection', () => {
+    const classification = classifyFiles([
+      'data/content-pilots/taiwan-travel-golden/lessons.json',
+    ]);
+    expect(classification.tier).toBe('t3');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+    expect(classification.runContent).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
   });
 
   it('a tests-only change runs the changed tests but not visual/a11y/build', () => {
