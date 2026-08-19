@@ -264,6 +264,12 @@ describe('Direction C token scoping', () => {
     expect(flashcardSource).not.toContain('var(--c-accent)');
     expect(flashcardSource).not.toContain('var(--space-');
     expect(flashcardSource).not.toContain('var(--radius)');
+    expect(flashcardSource).toMatch(
+      /\.flashcard-btn--reveal\s*\{[^}]*background:\s*var\(--coral-deep\)[^}]*color:\s*var\(--color-on-primary\)/,
+    );
+    expect(flashcardSource).toMatch(
+      /\.flashcard-btn--restart\s*\{[^}]*background:\s*var\(--coral-deep\)[^}]*color:\s*var\(--color-on-primary\)/,
+    );
     // HSK page title uses the A1 Japanese editorial serif heading token.
     expect(hskSource).toContain('font-family: var(--font-serif-ja)');
     expect(hskSource).toContain('font-size: 28px');
