@@ -254,10 +254,11 @@ const json = JSON.stringify({
     outline: 3px solid var(--color-focus); outline-offset: 3px;
   }
   .flashcard-btn--reveal {
-    background: var(--coral); color: var(--ink); border-color: var(--coral);
+    background: var(--coral-deep); color: var(--color-on-primary); border-color: var(--coral-deep);
   }
   .flashcard-btn--reveal:hover:not(:disabled) {
     background: var(--coral-deep); border-color: var(--coral-deep);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
   .flashcard-btn--reveal.hidden { display: none !important; }
   .flashcard-btn--again {
@@ -274,10 +275,11 @@ const json = JSON.stringify({
   .flashcard-btn--known:hover:not(:disabled) { background: var(--jade-soft); }
   .flashcard-btn--restart {
     margin-top: var(--sp-4);
-    background: var(--coral); color: var(--ink); border-color: var(--coral);
+    background: var(--coral-deep); color: var(--color-on-primary); border-color: var(--coral-deep);
   }
   .flashcard-btn--restart:hover:not(:disabled) {
     background: var(--coral-deep); border-color: var(--coral-deep);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
 
   /* ── Completion ───────────────────────────────────────────────────────── */
