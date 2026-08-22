@@ -4,6 +4,7 @@ export interface Props {
 }
 
 const { themeEnabled = false } = Astro.props;
+const isHome = Astro.url.pathname === '/';
 ---
 
 <header class="site-header">
@@ -14,7 +15,11 @@ const { themeEnabled = false } = Astro.props;
       <span class="logo-sub">チャビコ</span>
     </a>
     <nav class="nav-primary" aria-label="メインナビゲーション">
-      <a href="/" class="nav-link">ホーム</a>
+      <a
+        href="/"
+        class="nav-link"
+        aria-current={isHome ? 'page' : undefined}
+      >ホーム</a>
     </nav>
     {
       themeEnabled && (
@@ -114,7 +119,8 @@ const { themeEnabled = false } = Astro.props;
   .brand:focus-visible,
   .nav-link:focus-visible,
   .theme-toggle:focus-visible {
-    outline-color: var(--c-accent);
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
   }
   .brand-mark {
     width: 20px;
@@ -155,6 +161,20 @@ const { themeEnabled = false } = Astro.props;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-bottom: 2px solid var(--hairline-strong);
+    text-decoration: none;
+  }
+  .nav-link[aria-current='page'] {
+    border-bottom-color: var(--coral);
+    color: var(--coral-deep);
+    font-weight: 700;
+  }
+  .nav-link:hover {
+    border-bottom-color: var(--jade);
+    color: var(--ink);
+  }
+  .nav-link:active {
+    background: var(--paper-deep);
   }
   .theme-toggle {
     display: inline-flex;
@@ -164,15 +184,20 @@ const { themeEnabled = false } = Astro.props;
     min-width: 44px;
     min-height: 44px;
     padding: 0 var(--sp-2);
-    border: none;
-    background: transparent;
-    color: var(--ink-secondary);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper-deep);
+    color: var(--ink);
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
   }
   .theme-toggle:hover {
-    color: var(--ink);
+    border-color: var(--coral);
+    background: var(--coral-soft);
+  }
+  .theme-toggle:active {
+    background: var(--paper);
   }
   .theme-toggle__mark {
     color: var(--coral);
@@ -209,6 +234,9 @@ const { themeEnabled = false } = Astro.props;
   }
   .script-preference-select:hover {
     border-color: var(--jade);
+  }
+  .script-preference-select:active {
+    background: var(--paper);
   }
   .script-preference-select:focus-visible {
     outline: 2px solid var(--c-accent);
