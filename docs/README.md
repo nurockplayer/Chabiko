@@ -31,6 +31,7 @@ Examples:
 - `design/design-contract.md` — historical Direction C production implementation snapshot.
 - `design/component-contract.md` — historical PR #165 Direction C component/DOM responsibility snapshot; current component behavior comes from merged code and live issue-owned contracts.
 - `design/responsive-contract.md` — historical PR #165 responsive evidence/implementation snapshot; current responsive requirements come from merged code and explicitly adopted A1/live contracts.
+- `design/figma-handoff.md` — historical PR #165 handoff record; no current Figma link or Figma-derived execution authority exists unless a live issue explicitly adopts a new scoped artifact.
 - `design/direction-review.md`, earlier design evidence, and closed-issue implementation records.
 
 Do not delete historical evidence merely because it is superseded.
