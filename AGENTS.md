@@ -26,19 +26,21 @@ Product core:
 
 ## Source of Truth
 
-Before implementation, read the current GitHub issue body, then read only the source-of-truth material directly relevant to the current scope.
+Before implementation, read the current GitHub issue body, then read only the source-of-truth material directly relevant to the current scope. See `docs/README.md` for the documentation status map and `.planning/README.md` for the historical-planning boundary.
 
 Conflict precedence:
 
 1. The user's explicit instruction for the current task
 2. The current GitHub issue body
-3. Merged phase context that is still active
-4. `.planning/REQUIREMENTS.md` — v1 acceptance requirements
-5. `.planning/ROADMAP.md` — phase boundaries and issue mapping
-6. `.planning/PROJECT.md` — product positioning, core value, constraints, and decisions
-7. Strategy, draft, or research documents
+3. Active canonical contracts or accepted decisions explicitly referenced by the current issue
+4. Current merged code, schemas, validators, and tests as implementation reality when no higher-priority source defines the disputed behavior
+5. Merged phase context explicitly kept active by the current issue
+6. Historical `.planning/` material only when the current issue explicitly references a requirement or phase context from it
+7. Strategy, draft, research, exploratory prototype, and other non-adopted documents
 
-Do not read all planning documents merely to confirm a simple task.
+`.planning/` is a historical planning archive, not a live project-state ledger. Its checklists, roadmap status, stack notes, dates, and `.planning/STATE.md` must not be used to infer current completion, blockers, production readiness, or next work. Preserve that material for provenance rather than rewriting it to mirror live GitHub state.
+
+Do not read all planning documents merely to confirm a simple task. Do not create a second roadmap or project-state document when a live GitHub tracking issue already owns status.
 
 If documents conflict in a way that affects correctness, stop expanding implementation and report the conflict. Unless the user explicitly asks, do not independently update a source of truth or create an issue.
 
