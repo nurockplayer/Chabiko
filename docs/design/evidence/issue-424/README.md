@@ -32,10 +32,16 @@ at rest, while passive editorial content remains flat.
 ## Unavailable-row fixture provenance
 
 The production dataset currently exposes all three courses, so the unavailable
-capture was built once with only the HSK payload made empty. This exercised the
-same production SSR branch that renders an unavailable course as a non-link;
-the source was restored before the final normal production build. It is not a
-new runtime mode or committed content change.
+capture was rebuilt from `217ac5de` with only the HSK Dashboard payload made
+empty. This exercised the same production SSR branch that renders an
+unavailable course as a non-link; the temporary `dashboardPayload.ts` mutation
+was restored before the final normal `pnpm build`. It is not a new runtime mode
+or committed content change.
+
+`manifest.json` records the capture method, runtime assertions, image
+dimensions, source commit, and SHA-256 checksum. The current capture is
+`home-unavailable-light-390.png` with SHA-256
+`a5ecbe7fe609309dd5f17fbb629e957780e28d5e4102e4eaa379fce7fe40e406`.
 
 ## Observed browser assertions
 
