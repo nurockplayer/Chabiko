@@ -22,13 +22,15 @@ Current merged code, schemas, validators, and tests are the implementation reali
 
 ### Historical / superseded
 
-Historical documents remain useful for provenance and rationale but are not current execution authority unless a live issue explicitly reactivates them.
+Historical documents remain useful for provenance and rationale but are not current execution authority unless a live issue explicitly reactivates a specific historical rule.
 
 Examples:
 
 - `.planning/` — original project planning snapshots and phase records. See `../.planning/README.md`.
 - `design/approved-direction.md` — historical Direction C selection record, superseded by A1 as visual direction.
 - `design/design-contract.md` — historical Direction C production implementation snapshot.
+- `design/component-contract.md` — historical PR #165 Direction C component/DOM responsibility snapshot; current component behavior comes from merged code and live issue-owned contracts.
+- `design/responsive-contract.md` — historical PR #165 responsive evidence/implementation snapshot; current responsive requirements come from merged code and explicitly adopted A1/live contracts.
 - `design/direction-review.md`, earlier design evidence, and closed-issue implementation records.
 
 Do not delete historical evidence merely because it is superseded.
