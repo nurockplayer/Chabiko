@@ -1,25 +1,47 @@
 # Chabiko | チャビコ
 
-Chabiko is a website for Japanese speakers learning Mandarin Chinese for Taiwan travel.
-The goal is to take a complete beginner from "I know kanji, but not Mandarin" to practical
-phrases, recognition, and confidence for a trip to Taiwan.
+Chabiko is a Japanese-first Mandarin Chinese learning website. Its learner goal is to take a complete beginner from “I know kanji, but not Mandarin” toward practical recognition and simple Chinese they can use while traveling in Taiwan.
 
 ## Product Direction
 
-- Fun, short lessons that are easy to continue reading.
-- Traditional Chinese first, because the travel target is Taiwan.
-- Japanese explanations, kana support, pinyin, and natural Japanese comparisons.
-- A dedicated collection of Mandarin words whose written form and Japanese on-yomi feel close.
-- Travel-first scenarios: airport, transport, convenience stores, restaurants, hotels, and emergencies.
-- Curated links to outside resources without copying third-party copyrighted content.
+- Short learning sessions that are easy to continue.
+- Exactly three first-class learner tracks in the current product architecture: `先生厳選単語`, `HSK`, and `台湾旅行`.
+- Chinese is dual-script. Taiwan Travel is Traditional-first; HSK, school-study, and general Mandarin surfaces may default to Simplified when their owning content/route contract says so.
+- Product UI and explanations remain Japanese-first.
+- Use Japanese explanations, pinyin, and carefully scoped kanji/reading comparisons to lower the entry barrier without inventing linguistic relationships.
+- Travel-first scenarios include airport, transport, food, shopping/payment, hotels, and emergencies.
+- Curated external resources remain subject to repository rights/provenance gates; do not copy third-party content merely because a source is publicly reachable.
 
 ## Production
 
 - **URL:** [https://chabiko.pages.dev](https://chabiko.pages.dev)
-- Deployed via [Cloudflare Pages](https://pages.cloudflare.com/) — connected to the `main` branch of the `nurockplayer/Chabiko` GitHub repository.
+- Deployed via [Cloudflare Pages](https://pages.cloudflare.com/) from the `main` branch of `nurockplayer/Chabiko`.
 - Build command: `pnpm install --frozen-lockfile && pnpm build`
 - Build output directory: `dist`
-- Environment variables: `NODE_VERSION=24.18.0`, `PNPM_VERSION=10.33.0`, `SKIP_DEPENDENCY_INSTALL=1`
+- Current deployment variables include `NODE_VERSION=24.18.0`, `PNPM_VERSION=10.33.0`, and `SKIP_DEPENDENCY_INSTALL=1`.
+
+## Repository Authority
+
+Start implementation from the current GitHub issue and [`AGENTS.md`](AGENTS.md). The repository documentation status map is [`docs/README.md`](docs/README.md).
+
+The `.planning/` tree is historical planning evidence, not a current project-state ledger. See [`.planning/README.md`](.planning/README.md). Do not use old roadmap/phase text to override a live issue, current merged implementation, or an explicitly adopted active contract.
+
+English is the canonical language for repository technical artifacts. See [`docs/engineering/repository-language-policy.md`](docs/engineering/repository-language-policy.md). Learner-facing Japanese/Chinese, localization, and language-learning data remain in the languages required by product behavior.
+
+## Current Development Baseline
+
+This is an implemented, deployed product rather than a greenfield scaffold. The current stack and repository behavior are the baseline unless the owning issue explicitly changes them:
+
+- Astro
+- TypeScript
+- pnpm
+- Vitest
+- Playwright-based visual/accessibility gates
+- structured content files and deterministic validation tooling
+- uv + Python 3.14+ content validators
+- localStorage-based v1 learner progress/preferences where defined by the owning feature contract
+
+Do not reselect the framework or rebuild the scaffold for ordinary feature work.
 
 ## Local Development
 
@@ -29,57 +51,28 @@ pnpm dev          # http://localhost:3000
 pnpm build        # production build → dist/
 pnpm preview      # preview the production build
 pnpm lint         # ESLint
-pnpm typecheck    # Astro type checking
+pnpm typecheck    # Astro/TypeScript checking
 pnpm test         # Vitest
 ```
 
-## Technical Language
-
-English is the canonical language for repository technical artifacts. See
-[`docs/engineering/repository-language-policy.md`](docs/engineering/repository-language-policy.md).
-Learner-facing Japanese/Chinese, localization, and language-learning data remain in the
-languages required by product behavior.
-
-## Planning
-
-GSD planning artifacts live in `.planning/`:
-
-- `.planning/PROJECT.md` — project context and decisions
-- `.planning/REQUIREMENTS.md` — v1 requirements
-- `.planning/ROADMAP.md` — phased roadmap
-- `.planning/research/` — domain and resource research
-- `.planning/phases/01-foundation-content-model/01-CONTEXT.md` — Phase 1 implementation context
-
-## Development Defaults
-
-This is a greenfield web project. When implementation starts:
-
-- Prefer `pnpm`.
-- Prefer a static-first web stack unless requirements force server state.
-- Keep content data structured and reviewable.
-- Do not import third-party word lists, audio, images, or lesson text unless license and attribution are verified.
+Use the validation command required by the current issue/risk classifier. Cross-cutting or release-sensitive work may require `pnpm validate:full`, visual, accessibility, content, rights, or provenance gates in addition to the basic commands above.
 
 ## Content Validation
 
 Content validators use **uv** (Python 3.14+). Run them from the repo root:
 
 ```bash
-# Run all validator self-tests
+# Run validator self-tests
 uv run python scripts/validate-pain-points.py
 uv run python scripts/validate-script-status.py
 uv run python scripts/validate-content-schema.py
 
-# Validate a content file against the pain-point taxonomy
+# Validate a specific content file
 uv run python scripts/validate-pain-points.py --check <file>
-
-# Validate a content file for script provenance fields
 uv run python scripts/validate-script-status.py --check <file>
-
-# Validate a content file against the full content schema
-# (covers Lesson, Vocabulary, Sentence, Phrasebook, Practice, Resource)
 uv run python scripts/validate-content-schema.py --check <file>
 
-# Validate all seed examples
+# Validate representative canonical examples
 uv run python scripts/validate-content-schema.py --check data/examples/valid/lessons.json
 uv run python scripts/validate-content-schema.py --check data/examples/valid/vocabulary.json
 uv run python scripts/validate-content-schema.py --check data/examples/valid/sentences.json
@@ -91,8 +84,7 @@ uv run python scripts/validate-content-schema.py --check data/examples/valid/res
 uv run python scripts/validate-content-schema.py --check data/resources/candidate-resources.json
 ```
 
-No additional dependencies are required — the validators are zero-dependency Python 3.14+.
-The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is managed by `uv` only.
+The Python validation environment is managed by the repository `pyproject.toml` / `uv.lock`. Follow the owning issue and current scripts rather than copying historical command lists when they diverge.
 
 ## Candidate Reference Sources
 
@@ -104,67 +96,22 @@ The project setup (`pyproject.toml`, `uv.lock`) lives in the repo root and is ma
 - [KanjiVG](https://kanjivg.tagaini.net/)
 - [Unicode Unihan](https://www.unicode.org/charts/unihan.html)
 
-All external resources are candidates until licensing and attribution are documented in the repo.
+These links are candidate/reference sources only. Learner-facing publication still follows the repository's explicit source, license, attribution, provenance, and human-review gates.
 
 ## Docker Local Development
 
-A minimal Docker-based environment is available for consistent local development.
-
-### Setup
+A Docker-based environment remains available for consistent local tooling where needed.
 
 ```bash
 docker compose build
-```
 
-### Verify tooling is available
-
-Use these commands to verify the Docker image has the expected tooling:
-
-```bash
 docker compose run --rm app node --version
 docker compose run --rm app pnpm --version
 docker compose run --rm app uv --version
-```
 
-### pnpm commands (deferred)
-
-The Docker image provides **pnpm** for JavaScript tooling, but `pnpm install` / `pnpm dev` / `pnpm build`
-require a `package.json` to be present. These commands become usable once the JS app scaffold is added:
-
-```bash
-# Install JS dependencies (requires package.json)
 docker compose run --rm app pnpm install
-
-# Start dev server (requires package.json)
 docker compose run --rm --service-ports app pnpm dev
-
-# Build for production (requires package.json)
 docker compose run --rm app pnpm build
 ```
 
-> The dev port (`3000`) is mapped in `docker-compose.yml` so `--service-ports` exposes it to the host (default: http://localhost:3000). Adjust the port after the app framework is chosen.
->
-> A `command: pnpm dev` is intentionally omitted — the image has no `package.json` yet, so a baked-in dev command would make `docker compose up` fail until the app scaffold is added.
-
-### uv-based content validators
-
-The Docker image provides **uv** for Python content validation. These work immediately:
-
-```bash
-docker compose run --rm app uv run python scripts/validate-pain-points.py
-docker compose run --rm app uv run python scripts/validate-script-status.py
-docker compose run --rm app uv run python scripts/validate-content-schema.py
-
-# Validate seed examples via Docker
-docker compose run --rm app uv run python scripts/validate-content-schema.py --check data/examples/valid/lessons.json
-
-# Validate candidate resource registry via Docker
-docker compose run --rm app uv run python scripts/validate-content-schema.py --check data/resources/candidate-resources.json
-```
-
-### Notes
-
-- The `app` service mounts the repo root so source changes are reflected immediately.
-- Dependencies (`node_modules`, `.venv`) are stored in Docker named volumes, not written to the host working tree.
-- To clean up all volumes: `docker compose down -v`
-- The same tooling rules apply inside Docker: **pnpm** for JavaScript, **uv** for Python.
+The `app` service mounts the repository root; dependency volumes stay outside the host working tree. Use `docker compose down -v` only when intentionally removing Docker volumes. Browser/visual test execution may use repository-specific pinned container commands defined by the current test tooling; do not substitute an ad-hoc renderer when exact screenshot evidence is required.
