@@ -6,19 +6,19 @@ This directory contains active contracts, implementation guidance, research, and
 
 ### Canonical / active contract
 
-Use these when a current GitHub issue references them or when they define the shipped contract for their domain.
+`AGENTS.md` is the always-active repository execution policy. Domain contracts below become higher-priority execution authority only when the current GitHub issue explicitly references or adopts them, matching the precedence in `AGENTS.md`.
 
-- `../AGENTS.md` — repository execution, validation, review, and source-of-truth policy.
-- `design/reference-family-389.md` — frozen A1 Editorial Calm learner-facing visual contract.
-- `design/token-contract.json` — deployed A1 token/theme compatibility contract and migration status.
-- `content/content-review-workflow.md` — content review and promotion workflow.
+- `../AGENTS.md` — always-active repository execution, validation, review, and source-of-truth policy.
+- `design/reference-family-389.md` — A1 Editorial Calm learner-facing visual contract; authoritative for work that explicitly adopts/references the A1 contract.
+- `design/token-contract.json` — deployed A1 token/theme compatibility contract and migration status; authoritative when the current issue references that token/theme contract.
+- `content/content-review-workflow.md` — content review and promotion workflow; authoritative for issues that invoke the review/promotion workflow.
 - Domain contracts/specifications explicitly named by the current GitHub issue.
 
-The current GitHub issue may name additional canonical material. Follow its scope rather than reading every document in the repository.
+This index classifies documentation; it does not itself elevate a domain document above the precedence in `AGENTS.md`. Follow the current issue's scope rather than reading every document in the repository.
 
 ### Current implementation evidence
 
-Current merged code, schemas, validators, and tests are the implementation reality when a higher-priority issue or contract does not define the disputed behavior. They do not override an explicit product or safety decision.
+Current merged code, schemas, validators, and tests are the implementation reality when a higher-priority issue or explicitly activated contract does not define the disputed behavior. They do not override an explicit product or safety decision.
 
 ### Historical / superseded
 
