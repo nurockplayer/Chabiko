@@ -3,9 +3,9 @@
   "title": "Chabiko Design Token Contract — A1 foundation deployed",
   "status": "a1-foundation-deployed",
   "frozenTarget": "./reference-family-389.md",
-  "description": "Issue #393 (Session 1) has deployed the frozen A1 Editorial Calm foundation: semantic tokens, base text defaults, Header, Breadcrumb, and TrackNav in BaseLayout.astro. New surface code must use the A1 semantic tokens below. Legacy aliases (--color-*, --c-*, --font-ja|zh|pinyin, --radius, --space-*) are retained as a documented transitional compatibility layer for not-yet-migrated surfaces and are role-mapped to A1 values; they are removed surface by surface in #394–#397.",
+  "description": "Issue #393 deployed the frozen A1 Editorial Calm foundation: semantic tokens, base text defaults, Header, Breadcrumb, and TrackNav in BaseLayout.astro. #394–#397 subsequently propagated A1 across Home, 先生厳選単語, 台湾旅行, and shipped auxiliary learner surfaces; #405–#408 resolved the first cross-surface audit findings. New surface code must use the A1 semantic tokens below. Legacy aliases (--color-*, --c-*, --font-ja|zh|pinyin, --radius, --space-*) remain only as a documented compatibility layer for legacy selectors; they are not a parallel design system. Full HSK integration remains separately tracked by #377/#375 behind the truthful HSK release gate.",
   "source": "src/layouts/BaseLayout.astro token blocks (baseline :root, :root[data-theme-enabled='true'], :root[data-theme-enabled='true'][data-theme='dark'])",
-  "verifiedAt": "2026-08-17",
+  "verifiedAt": "2026-08-22",
   "tokens": {
     "a1": {
       "description": "Frozen A1 Editorial Calm semantic tokens (reference-family-389.md §§1–5). Use these in new surface code.",
@@ -51,7 +51,7 @@
       }
     },
     "legacyCompatibility": {
-      "description": "Transitional aliases role-mapped to A1 values (Issue #393). Kept so not-yet-migrated surface scoped styles keep functioning with the A1 visual language; removed surface by surface in #394–#397. Do not use in new surface code.",
+      "description": "Transitional aliases role-mapped to A1 values (Issue #393). They remain only to keep legacy selectors functioning while the repository converges; completed #394–#397 surfaces use A1 as their visual contract. Do not use these aliases in new surface code and do not interpret them as a second design system.",
       "colorAliases": {
         "--color-page / --c-bg": "var(--paper)",
         "--color-surface / --c-surface": "#ffffff (light) / var(--paper-deep) (dark)",
@@ -85,7 +85,7 @@
         "--radius": "4px — legacy micro-radius (#365/#366), superseded by the A1 semantic radius scale; retained transitional value only, not the final semantic radius system"
       },
       "spacingAliases": {
-        "--space-xs / --space-sm / --space-md / --space-lg / --space-xl / --space-2xl / --space-3xl": "legacy rem values retained for not-yet-migrated surfaces; new work uses --sp-*",
+        "--space-xs / --space-sm / --space-md / --space-lg / --space-xl / --space-2xl / --space-3xl": "legacy rem values retained for compatibility only; new work uses --sp-*",
         "--max-w": "48rem (baseline) / 80rem (theme-enabled); per-surface max widths (Home 880 / Study 720 / Lesson 760) are surface-owned"
       }
     }
@@ -128,13 +128,25 @@
   },
   "migrationState": {
     "session1": "Issue #393 — A1 foundation deployed: semantic tokens, base text defaults, Header (A1 brand row), Breadcrumb (demoted), TrackNav (hairline + jade underline). Legacy aliases retained as documented transitional layer.",
-    "notYetMigrated": [
+    "completedSurfaces": [
       "Home (#394)",
       "先生厳選単語 (#395)",
       "台湾旅行 (#396)",
-      "auxiliary / phrasebook / kanji-bridge / tone / word-order (#397)",
-      "HSK hub (#377)"
+      "auxiliary / phrasebook / kanji-bridge / tone / word-order (#397)"
     ],
-    "rule": "New surface code must use A1 semantic tokens. Legacy aliases are frozen transitional, not a parallel design system; they are removed as each surface migrates."
+    "auditFixes": [
+      "dynamic tone/word-order controls (#405)",
+      "paths narrow-width containment (#406)",
+      "vocabulary/HSK back-link color (#407)",
+      "HSK flashcard palette/radius/typography (#408)"
+    ],
+    "notYetMigrated": [
+      "full HSK hub/level integration (#377)"
+    ],
+    "downstream": [
+      "HSK scored tests (#375)",
+      "final cross-surface convergence audit (#398)"
+    ],
+    "rule": "New surface code must use A1 semantic tokens. Legacy aliases are compatibility-only, not a parallel design system. Do not mark the open HSK lane complete until its truthful release dependencies and #377/#375 gates are satisfied."
   }
 }
