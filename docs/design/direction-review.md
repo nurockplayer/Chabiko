@@ -1,11 +1,11 @@
 # Direction Review: Prototype Score and Selection
 
-> **Historical record.** This document records the Issue #60 direction evaluation
-> that selected Direction C. It remains an immutable review record. As of Issue
-> #389 the canonical learner-facing visual **target** is Direction A1 Editorial
-> Calm (frozen in `reference-family-389.md`); Direction C is superseded as the
-> visual target but its production contract in `design-contract.md` remains
-> accurate for current production.
+> **Historical Direction C / Issue #60 record.** This document records the
+> evaluation that selected Direction C and remains an immutable review record.
+> The canonical learner-facing visual target is A1 Editorial Calm, frozen in
+> `reference-family-389.md`; its core production propagation is complete, and
+> remaining work is owned by live GitHub Issues. Direction C is not the current
+> production contract.
 
 > Part of Issue #60. Independent evaluation of three visual prototype directions
 > for Chabiko's learner-facing UI redesign.

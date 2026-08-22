@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "id": "https://chabiko.dev/docs/design/implementation-map.json",
   "title": "Chabiko Implementation Map",
-  "description": "Post-PR-#165 remaining work map — no dependency on #62–#69. Issue #389 (visual-direction freeze, Direction A1 Editorial Calm) is frozen in reference-family-389.md; production propagation is a follow-on wave tracked below.",
-  "lastUpdated": "2026-08-17",
+  "description": "Historical post-PR-#165 implementation map reconciled to current production on 2026-08-22. Core A1 Editorial Calm propagation is deployed through #393-#397 and the #405-#408 audit fixes. Remaining HSK release/integration and final convergence are owned by live GitHub issues; live issue state outranks historical entries in this map.",
+  "lastUpdated": "2026-08-22",
   "baseline": {
     "commit": "04759286dab434a186cc2730eb3b6c5b62cd386f",
     "pr": "#165 — [MVP UI recovery] Apply Direction C to the production learning journey",
@@ -70,17 +70,17 @@
       "#68": {
         "title": "Production lesson reading/navigation integration",
         "resolution": "superseded by PR #165",
-        "reason": "Fully delivered in src/pages/lessons/[id].astro"
+        "reason": "Fully delivered in production lesson routes"
       },
       "#69": {
         "title": "Production practice/feedback/retry/completion integration",
         "resolution": "superseded by PR #165",
-        "reason": "Fully delivered in LessonPractice.astro integrated with lesson route"
+        "reason": "Fully delivered in LessonPractice.astro integrated with lesson routes"
       }
     }
   },
   "offLimits": {
-    "description": "Issues explicitly excluded from this contract. Do not start or modify.",
+    "description": "Historical PR-#165 exclusions. Do not treat this list as current work authority unless a live issue explicitly references it.",
     "issues": [
       "#54",
       "#70",
@@ -93,70 +93,43 @@
       {
         "id": "script-toggle-implementation",
         "title": "Implement script toggle (繁體/簡體 content switching)",
-        "status": "planned",
-        "files": [
-          "src/components/Header.astro",
-          "src/components/GoalPathSlot.astro",
-          "src/components/LessonPractice.astro",
-          "src/lib/practice.ts",
-          "src/types/lesson.ts",
-          "src/content/loadLessons.ts",
-          "data/examples/valid/lessons.json",
-          "scripts/validate-content-schema.py",
-          "src/pages/index.astro",
-          "src/pages/lessons/[id].astro"
+        "status": "superseded-by-live-issues",
+        "description": "The global script-preference foundation and most learner integrations were implemented under #22 and #251/#252 plus surface-specific issues. Remaining integrations are tracked by live issues such as #266 and #250; this historical file does not define their execution state.",
+        "files": [],
+        "tests": [],
+        "dependencies": [
+          "#22"
         ],
-        "tests": [
-          "tests/direction-c-production-ui.test.ts (extend)",
-          "tests/practice.test.ts (extend)",
-          "tests/lesson-practice-ui.test.ts (extend)",
-          "tests/script-toggle.test.ts (planned new file)",
-          "scripts/validate-content-schema.py (self-tests and --check validation)"
-        ],
-        "dependencies": [],
-        "commands": {
-          "dev": "pnpm dev",
-          "test": "pnpm test",
-          "lint": "pnpm lint",
-          "build": "pnpm build"
-        },
-        "startCondition": "Product owner activates script toggle feature",
-        "stopCondition": "Toggle switches all learner-facing Chinese content between Traditional (zh-Hant) and Simplified (zh-Hans) characters, including: examples.traditional/examples.simplified, coreSentence, chunks[].chunk, kanjiBridgeNotes[].kanji, reviewPrompts.promptJa, answerJa, distractorsJa, and any Chinese text rendered on the home page, GoalPathSlot, lesson page, and practice questions/choices/feedback. Displayed text, lang attribute, question generation, correct answers, distractors, rendered practice choices, renderer output, and persisted preference stay in sync. The implementing issue must define the paired data representation for all fields that do not yet carry both Traditional and Simplified values; this contract does not prescribe the final schema API.",
-        "benefit": "Single-script learners can read content in their preferred script without separate routes."
+        "commands": {},
+        "startCondition": "Superseded: use the current owning GitHub issue.",
+        "stopCondition": "Superseded: completion is defined by the current owning GitHub issue.",
+        "benefit": "Historical record of the original cross-surface script-toggle plan."
       },
       {
         "id": "hsks-path-integration",
         "title": "Integrate HSK path into production journey",
-        "status": "planned",
-        "files": [
-          "src/pages/vocabulary/hsk/1/index.astro",
-          "src/components/GoalPathSlot.astro",
-          "src/pages/index.astro"
+        "status": "superseded-by-live-issues",
+        "description": "The original GoalPathSlot-era HSK plan is superseded by the current three-track architecture and HSK release graph. Use #73/#81 and downstream #377/#375 for current scope and blockers.",
+        "files": [],
+        "tests": [],
+        "dependencies": [
+          "#73",
+          "#377",
+          "#375"
         ],
-        "tests": [
-          "tests/direction-c-production-ui.test.ts (extend)"
-        ],
-        "dependencies": [],
-        "commands": {
-          "dev": "pnpm dev",
-          "test": "pnpm test",
-          "lint": "pnpm lint",
-          "build": "pnpm build"
-        },
-        "startCondition": "HSK content is production-ready",
-        "stopCondition": "HSK path appears alongside Taiwan Travel path in GoalPathSlot; HSK lesson pages use same BaseLayout + Header with themeEnabled",
-        "benefit": "Second learning path visible to learners; validates the route sidebar pattern for multiple paths"
+        "commands": {},
+        "startCondition": "Superseded: use the current HSK release/integration issues.",
+        "stopCondition": "Superseded: completion is defined by the current HSK release/integration issues.",
+        "benefit": "Historical record of the pre-three-track HSK integration plan."
       },
       {
         "id": "issue-389-visual-propagation",
         "title": "Propagate the frozen Issue #389 visual system (A1 Editorial Calm) into production learner surfaces",
-        "status": "planned",
-        "description": "The Issue #389 reference family and semantic visual tokens are frozen in docs/design/reference-family-389.md (target, not yet deployed). Propagate the frozen system through bounded surface-owned issues rather than one site-wide PR. Do not bundle this into the freeze itself.",
+        "status": "core-propagation-complete-final-convergence-open",
+        "description": "A1 Editorial Calm is deployed in production. Shared foundation #393, Home #394, teacher vocabulary #395, Taiwan Travel #396, auxiliary surfaces #397, and audit fixes #405-#408 are complete. Full HSK release/integration remains governed by #73/#81/#377 and downstream #375; #398 remains the final cross-surface convergence controller.",
         "files": [
           "src/layouts/BaseLayout.astro",
           "src/components/Header.astro",
-          "src/components/GoalPathSlot.astro",
-          "src/components/LessonPractice.astro",
           "src/pages/index.astro",
           "src/pages/lessons/[id].astro",
           "src/pages/vocabulary/basic/*",
@@ -164,20 +137,25 @@
           "docs/design/token-contract.json"
         ],
         "tests": [
-          "tests/direction-c-production-ui.test.ts (extend or replace as direction changes)",
-          "tests/lesson-practice-ui.test.ts",
-          "tests/theme-preference.test.ts"
+          "tests/direction-c-production-ui.test.ts",
+          "tests/navigation-foundation.test.ts",
+          "tests/visual/*",
+          "tests/a11y/*"
         ],
-        "dependencies": [],
+        "dependencies": [
+          "#377",
+          "#375",
+          "#398"
+        ],
         "commands": {
-          "dev": "pnpm dev",
           "test": "pnpm test",
           "lint": "pnpm lint",
-          "build": "pnpm build"
+          "build": "pnpm build",
+          "full": "pnpm validate:full"
         },
-        "startCondition": "Issue #389 freeze is accepted; bounded surface-owned propagation issues are created",
-        "stopCondition": "Production learner surfaces consume the frozen A1 Editorial Calm tokens and rules; token-contract.json is updated to reflect deployed frozen values; #365 final cross-surface visual audit passes both engineering and visual-direction gates",
-        "benefit": "Production matches the frozen Japanese editorial × Taiwan warmth direction instead of the current boxed 4px/LMS-like grammar"
+        "startCondition": "Satisfied: #389 was frozen and production propagation was implemented.",
+        "stopCondition": "Core A1 propagation is complete. Final umbrella closure follows the live completion conditions in #365/#398, including the remaining HSK integration path.",
+        "benefit": "Production now uses the A1 Japanese editorial × Taiwan warmth direction; remaining work is limited to live issue-owned convergence rather than a new site-wide propagation wave."
       }
     ],
     "noDependencyCycles": true,

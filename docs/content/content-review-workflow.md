@@ -421,7 +421,7 @@ Before re-review after a change:
 Every content proposal should include:
 
 - **Scope statement**: What content is being proposed and what is explicitly out of scope.
-- **Source of truth reference**: Which issue, planning document, or reference material governs this content.
+- **Source of truth reference**: The current GitHub issue, and any active canonical contract it explicitly references or adopts, govern this content. Planning, historical, or reference material governs only when that issue explicitly adopts or reactivates it; otherwise record it as evidence or context.
 - **Content records**: Structured data in the correct schema format.
 - **Provenance information**: For each script form, note whether it is `authored`, `verified`, or `generated`.
 - **Review metadata**: Any known review requirements (language review, regional review, license review).

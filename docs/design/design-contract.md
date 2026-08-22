@@ -1,14 +1,15 @@
-# Chabiko — Production UI Design Contract
+# Chabiko — Historical Production UI Design Contract (Direction C)
 
 Direction C design contract for the production implementation merged in PR #165 (commit `04759286`).
 
-> **Status: current-production contract.** This document describes the visual
-> language implemented in production (Direction C). It remains accurate as a
-> record of what production currently renders. As of Issue #389, the canonical
-> learner-facing visual **target** is Direction A1 Editorial Calm, frozen in
-> `reference-family-389.md`; production propagation is a follow-on wave tracked
-> in `implementation-map.json`. Do not treat this contract as the future visual
-> direction.
+> **Status: HISTORICAL PRODUCTION BASELINE.** This document preserves the visual
+> language that Direction C introduced into production and the evidence used to
+> validate it at that time. It is no longer the current learner-facing visual
+> contract. Issue #389 froze Direction A1 Editorial Calm in
+> `reference-family-389.md`, and #393/#394–#397 subsequently propagated A1 to
+> the shared foundation and non-HSK learner surfaces. Current token and migration
+> state is recorded in `token-contract.json`. Keep this document for provenance;
+> do not use its Direction C values as the target for new learner-facing work.
 
 ## Selected visual direction
 
