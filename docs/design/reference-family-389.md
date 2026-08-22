@@ -181,6 +181,23 @@ Do not scatter arbitrary radii or swing to 20–32px generic AI-card rounding.
   `--coral-soft` for the travel task; `--jade-soft` for jade-support blocks.
 - No nested card-on-card layouts.
 
+### Interaction-affordance clarification (Issue #424)
+
+Editorial restraint must not erase interaction affordance. The hierarchy is
+semantic, not a reason to make a real action read like passive copy:
+
+- A page has one local primary action when needed: a clearly filled control
+  using the existing accent and `--radius-control`.
+- Secondary actions may use an outlined or soft bounded control with a complete
+  hit area.
+- An available interactive row/object link may use a restrained 1px boundary,
+  `--paper`/`--paper-deep` surface, semantic radius, and a persistent trailing
+  affordance. This is interaction clarity, not a competing card hierarchy.
+- Passive headings, descriptions, labels, and metadata stay flat editorial
+  content; they do not acquire action framing merely for visual symmetry.
+- An unavailable state must be unmistakably non-interactive: no link target,
+  no pointer/hover treatment, and no trailing action affordance.
+
 ## 7. Coral / jade semantics (frozen)
 
 - **jade = learning state / brand.** Active, complete, can-do, status labels,

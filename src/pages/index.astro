@@ -101,7 +101,7 @@ const initialContinuation = deriveContinuation(
         <h3 class="featured-title" data-continuation-title>
           {initialContinuation.title}
         </h3>
-        <span class="featured-action">
+        <span class="featured-action featured-action--primary">
           <span data-continuation-action>{initialContinuation.actionLabel}</span>
           <span class="arr" aria-hidden="true">→</span>
         </span>
@@ -141,7 +141,7 @@ const initialContinuation = deriveContinuation(
             <li class="track-list-item">
               {href !== null ? (
                 <a
-                  class="track-row"
+                  class="track-row track-row--available"
                   data-dashboard-track={trackId}
                   href={href}
                 >
@@ -335,6 +335,10 @@ const initialContinuation = deriveContinuation(
   .featured:hover {
     text-decoration: none;
   }
+  .featured:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 6px;
+  }
   .featured-kicker {
     display: flex;
     align-items: baseline;
@@ -378,14 +382,25 @@ const initialContinuation = deriveContinuation(
     gap: var(--sp-2);
     min-height: 44px;
     margin-top: var(--sp-5);
+    padding: var(--sp-2) var(--sp-4);
     font-size: 13.5px;
     font-weight: 700;
-    color: var(--coral-deep);
     letter-spacing: 0.02em;
   }
-  .featured-action:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+  .featured-action--primary {
+    border: 1px solid var(--coral-deep);
+    border-radius: var(--radius-control);
+    background: var(--coral-deep);
+    color: var(--color-on-primary);
+  }
+  .featured:hover .featured-action--primary {
+    border-color: var(--coral-deep);
+    background: var(--coral-deep);
+    box-shadow: 0 0 0 2px var(--coral-soft);
+  }
+  .featured:active .featured-action--primary {
+    background: var(--coral-deep);
+    box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.18);
   }
   .featured-action .arr {
     font-size: 15px;
@@ -410,17 +425,34 @@ const initialContinuation = deriveContinuation(
     align-items: flex-start;
     gap: var(--sp-4);
     min-height: 44px;
-    padding: var(--sp-4) 0;
-    border-bottom: 1px solid var(--hairline);
     color: var(--ink);
     text-decoration: none;
   }
-  .track-row:hover {
+  .track-row--available {
+    padding: var(--sp-4);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-content);
+    background: var(--paper);
+  }
+  .track-row--available:hover {
+    border-color: var(--jade);
+    background: var(--paper);
     text-decoration: none;
   }
-  .track-row:hover .track-name {
+  .track-row--available:hover .track-name {
     text-decoration: underline;
     text-underline-offset: 4px;
+  }
+  .track-row--available:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .track-row--available:active {
+    border-color: var(--jade);
+    background: var(--paper);
+  }
+  .track-row--available:active .track-arrow {
+    background: var(--jade-soft);
   }
   .track-index {
     font-family: var(--font-serif-ja);
@@ -472,13 +504,23 @@ const initialContinuation = deriveContinuation(
     color: var(--jade-ink);
   }
   .track-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
     color: var(--ink-muted);
     font-size: 14px;
-    padding-top: 2px;
     flex: 0 0 auto;
   }
-  .track-row--unavailable:hover .track-name {
-    text-decoration: none;
+  .track-row--unavailable {
+    padding: var(--sp-4) 0;
+    border-bottom: 1px solid var(--hairline);
+    cursor: default;
   }
   .track-row--unavailable .track-name {
     color: var(--ink-secondary);
@@ -537,19 +579,27 @@ const initialContinuation = deriveContinuation(
     gap: var(--sp-2);
     min-height: 44px;
     margin-top: var(--sp-4);
-    padding-inline: var(--sp-1);
-    color: var(--jade-ink);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--jade);
+    border-radius: var(--radius-control);
+    background: var(--jade-soft);
+    color: var(--ink);
     font-size: 0.875rem;
     font-weight: 700;
     text-decoration: none;
-    border: 2px solid transparent;
   }
   .dashboard-paths-link:hover {
+    border-color: var(--jade-ink);
+    background: var(--paper-deep);
     text-decoration: underline;
     text-underline-offset: 4px;
   }
   .dashboard-paths-link:focus-visible {
-    border-color: var(--jade);
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .dashboard-paths-link:active {
+    background: var(--paper);
   }
 
   /* ── Footer · quiet ── */
@@ -569,9 +619,10 @@ const initialContinuation = deriveContinuation(
   }
   .reset-btn {
     min-height: 44px;
-    padding: var(--sp-2) 0;
-    border: none;
-    background: none;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
     font-family: inherit;
     font-size: 11px;
     color: var(--ink-muted);
@@ -579,7 +630,16 @@ const initialContinuation = deriveContinuation(
     cursor: pointer;
   }
   .reset-btn:hover {
+    border-color: var(--coral-deep);
+    background: var(--paper);
     color: var(--coral-deep);
+  }
+  .reset-btn:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .reset-btn:active {
+    background: var(--paper-deep);
   }
 
   @media (width >= 1024px) {
@@ -589,8 +649,11 @@ const initialContinuation = deriveContinuation(
     .section-head h2 {
       font-size: 20px;
     }
-    .track-row {
-      padding: var(--sp-6) 0;
+    .track-row--available {
+      padding: var(--sp-5);
+    }
+    .track-row--unavailable {
+      padding: var(--sp-5) 0;
     }
   }
   @media (width <= 374px) {

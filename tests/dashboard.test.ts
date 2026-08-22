@@ -621,6 +621,46 @@ describe('dashboard home page (index.astro)', () => {
     expect(homeSource).toContain('lang="zh-Latn"');
   });
 
+  it('keeps primary, secondary, interactive-row, and passive Home states distinct at rest', () => {
+    // A regression that removes the persistent filled continuation control
+    // would make the most important next step read like editorial copy again.
+    expect(homeSource).toContain(
+      'class="featured-action featured-action--primary"',
+    );
+    expect(homeSource).toMatch(
+      /\.featured-action\s*\{[^}]*min-height:\s*44px/,
+    );
+    expect(homeSource).toMatch(
+      /\.featured-action--primary\s*\{[^}]*border:\s*1px solid var\(--coral-deep\)[^}]*border-radius:\s*var\(--radius-control\)[^}]*background:\s*var\(--coral-deep\)[^}]*color:\s*var\(--color-on-primary\)/,
+    );
+    expect(homeSource).toContain('.featured:focus-visible');
+    expect(homeSource).toContain('.featured:active .featured-action--primary');
+
+    // Available course entries remain whole native anchors, but their resting
+    // object boundary and trailing affordance must never collapse into the
+    // flat unavailable-row treatment.
+    expect(homeSource).toContain('class="track-row track-row--available"');
+    expect(homeSource).toMatch(
+      /\.track-row--available\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-content\)[^}]*background:\s*var\(--paper\)/,
+    );
+    expect(homeSource).toMatch(
+      /\.track-arrow\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-control\)/,
+    );
+    expect(homeSource).toContain('.track-row--available:focus-visible');
+    expect(homeSource).toContain('.track-row--available:active');
+    expect(homeSource).toMatch(
+      /\.track-row--unavailable\s*\{[^}]*cursor:\s*default/,
+    );
+
+    // The Home route list is the secondary action. Headings stay flat
+    // editorial content rather than acquiring the same boundary treatment.
+    expect(homeSource).toMatch(
+      /\.dashboard-paths-link\s*\{[^}]*border:\s*1px solid var\(--jade\)[^}]*border-radius:\s*var\(--radius-control\)[^}]*background:\s*var\(--jade-soft\)/,
+    );
+    expect(homeSource).not.toMatch(/\.section-head\s*\{[^}]*background:/);
+    expect(homeSource).not.toMatch(/\.section-head\s*\{[^}]*border-radius:/);
+  });
+
   it('does not hard-code storage keys or progress totals into the page', () => {
     expect(homeSource).not.toContain('chabiko_completed_lessons');
     expect(homeSource).not.toContain('1582');
