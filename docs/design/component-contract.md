@@ -1,17 +1,22 @@
 # Chabiko — Production Component Contract
 
+> **Status: HISTORICAL — Direction C / PR #165 implementation snapshot.**
+> This file preserves component boundaries and implementation details as they
+> existed around PR #165. It is **not** the current learner-facing component
+> contract and must not override current merged code or the A1 contracts merely
+> because a future issue links to it. Terms such as “current”, “production”, or
+> “must” below describe the historical snapshot unless the current GitHub issue
+> explicitly reactivates a named section. Several details are now superseded,
+> including the GoalPathSlot-era Home and the old script-toggle placeholder.
+> For current work, start from the live issue, current merged implementation,
+> and any active contract that issue explicitly adopts. See `docs/README.md`,
+> `reference-family-389.md`, and live tracking issues.
+
 Merged production component boundaries, state responsibilities, and forbidden responsibilities from PR #165.
 
-> **Status: current-production contract.** Describes the Direction C components
-> implemented in production. The frozen Issue #389 visual target (A1 Editorial
-> Calm) does not change these component boundaries or state responsibilities;
-> it changes presentation tokens and styling. See
-> `reference-family-389.md` for the frozen target and `implementation-map.json`
-> for propagation tracking.
+Source validation at that historical baseline: `tests/direction-c-production-ui.test.ts:1-95` and `tests/lesson-practice-ui.test.ts:1-71`.
 
-Source validation: `tests/direction-c-production-ui.test.ts:1-95` and `tests/lesson-practice-ui.test.ts:1-71`.
-
-## Current component and page boundaries
+## Historical component and page boundaries
 
 ### BaseLayout (`src/layouts/BaseLayout.astro`)
 
