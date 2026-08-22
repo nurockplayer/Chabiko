@@ -394,8 +394,9 @@ const initialContinuation = deriveContinuation(
     color: var(--color-on-primary);
   }
   .featured:hover .featured-action--primary {
-    border-color: var(--coral);
-    background: var(--coral);
+    border-color: var(--coral-deep);
+    background: var(--coral-deep);
+    box-shadow: 0 0 0 2px var(--coral-soft);
   }
   .featured:active .featured-action--primary {
     background: var(--coral-deep);
@@ -520,7 +521,6 @@ const initialContinuation = deriveContinuation(
     padding: var(--sp-4) 0;
     border-bottom: 1px solid var(--hairline);
     cursor: default;
-    opacity: 0.78;
   }
   .track-row--unavailable .track-name {
     color: var(--ink-secondary);
@@ -631,7 +631,7 @@ const initialContinuation = deriveContinuation(
   }
   .reset-btn:hover {
     border-color: var(--coral-deep);
-    background: var(--coral-soft);
+    background: var(--paper);
     color: var(--coral-deep);
   }
   .reset-btn:focus-visible {
