@@ -492,8 +492,8 @@ describe('home — one compact link to /paths/', () => {
       /\.dashboard-paths-link:focus-visible\s*\{([^}]*)\}/,
     );
     expect(focusRule).not.toBeNull();
-    expect(focusRule![1]).toMatch(/border-color:\s*var\(--jade\)/);
-    expect(focusRule![1]).not.toContain('outline');
+    expect(focusRule![1]).toMatch(/outline:\s*3px solid var\(--color-focus\)/);
+    expect(focusRule![1]).toMatch(/outline-offset:\s*3px/);
     expect(focusRule![1]).not.toContain('display: none');
   });
 });

@@ -205,7 +205,7 @@ describe('source and route contract (Issue #281)', () => {
     // The Dashboard track row is the home entry point to the study route
     // (Issue #374 migration of the former basic-vocabulary-entry catalog link).
     const homeTrackTemplate = home.match(
-      /<a\s+class="track-row"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
+      /<a\s+class="track-row track-row--available"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
     );
     expect(homeTrackTemplate).not.toBeNull();
     expect(homeTrackTemplate![0]).not.toMatch(/\btabindex="-1"\b/);
