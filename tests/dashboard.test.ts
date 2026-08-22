@@ -641,7 +641,7 @@ describe('dashboard home page (index.astro)', () => {
     // flat unavailable-row treatment.
     expect(homeSource).toContain('class="track-row track-row--available"');
     expect(homeSource).toMatch(
-      /\.track-row--available\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-content\)[^}]*background:\s*var\(--paper-deep\)/,
+      /\.track-row--available\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-content\)[^}]*background:\s*var\(--paper\)/,
     );
     expect(homeSource).toMatch(
       /\.track-arrow\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-control\)/,
