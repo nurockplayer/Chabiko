@@ -1,15 +1,17 @@
 # Chabiko Frozen Reference Family — Direction A1 Editorial Calm (Issue #389)
 
-> **Status: FROZEN-TARGET.** This document is the canonical visual contract for
-> Chabiko's learner-facing UI. It freezes the approved A1 Editorial Calm
-> reference family (Home / 先生厳選単語 Study / 台湾旅行 Lesson) reviewed under
-> Issue #389.
+> **Status: FROZEN CURRENT CONTRACT.** This document is the canonical visual
+> contract for Chabiko's learner-facing UI. It freezes the approved A1 Editorial
+> Calm reference family (Home / 先生厳選単語 Study / 台湾旅行 Lesson) reviewed
+> under Issue #389.
 >
-> The values here are the **target the production UI must migrate to**; they are
-> **not yet deployed**. Current production tokens remain those recorded in
-> `token-contract.json` and `src/layouts/BaseLayout.astro`. Propagation to
-> production is a follow-on wave of bounded surface-owned issues (see
-> `implementation-map.json`), not part of this freeze.
+> The frozen values are now deployed through the shared A1 foundation (#393)
+> and the completed Home / 先生厳選単語 / 台湾旅行 / auxiliary propagation wave
+> (#394–#397), including the first cross-surface audit fixes (#405–#408).
+> `token-contract.json` records the deployed token/compatibility state. The HSK
+> product lane still has its own truthful release/integration gates (#81 → #267
+> → #377 → #375), so this status must not be read as declaring those open HSK
+> issues complete.
 >
 > Art direction: **Japanese editorial learning × Taiwan travel warmth** —
 > Japanese editorial/study-notebook calm with a restrained Taiwan travel
@@ -20,9 +22,9 @@
 
 - This document **supersedes `docs/design/approved-direction.md` (Direction C:
   Taiwan City Exploration) as the canonical learner-facing visual direction**.
-- Direction C's production contract in `docs/design/design-contract.md` remains
-  valid as a record of the current production implementation and must not be
-  deleted; it is superseded only as the visual *target*.
+- Direction C's former production contract in `docs/design/design-contract.md`
+  remains valid as historical implementation evidence and must not be deleted;
+  it is no longer the current learner-facing production contract.
 - The old universal `4px` micro-radius aesthetic lock (Issue #365/#366) is
   superseded by the semantic radius scale in §5 below.
 - Production behavior, IA, and architecture invariants from #365/#371 are
@@ -297,16 +299,23 @@ with a thin-line warm-paper-style set, or go text-first without illustration.
 
 ## 15. Relationship to current production
 
-| Aspect | Current production (`src/layouts/BaseLayout.astro` + `token-contract.json`) | Frozen target (this document) |
-| --- | --- | --- |
-| Radius | `--radius: 4px` universal | Semantic 6/8/10/12/16 + 50% |
-| Primary brand | navy `#1a2744` / blue `#2563eb` | jade `#536B62` |
-| Accent | amber `#d48c2b` | coral `#E87961` |
-| Page | `#f4f1ec` / `#11141c` | paper `#FAF8F4` / `#1E1C19` |
-| Chinese type | sans (PingFang/Noto Sans TC) | serif `--font-serif-zh` |
-| Editorial heading | sans, `clamp()` | serif-ja Mincho family |
-| Card grammar | repeated bordered cards + 4px/strong top lines | card only for genuine objects |
+A1 is no longer an undeployed prototype target. The shared semantic token,
+typography, shell, Header, breadcrumb, and TrackNav foundation shipped in #393.
+Home, 先生厳選単語, 台湾旅行, and the shipped auxiliary learner surfaces were
+then propagated through #394–#397. The first complete visual audit identified
+four bounded implementation findings, all resolved by #405–#408.
 
-Propagation is a follow-on wave of bounded surface-owned issues; see
-`implementation-map.json`. Do not claim production has adopted these values
-until a propagation PR lands.
+The remaining distinction is product-lane completion, not a competing visual
+direction:
+
+- **Current contract:** the A1 values and rules in this document.
+- **Deployed non-HSK surfaces:** #393 and #394–#397, with #405–#408 audit fixes.
+- **HSK:** may consume the shared A1 foundation, but full HSK release, visual
+  integration, and scored tests remain truthfully gated by #81 → #267 → #377
+  → #375. Do not mark those open issues complete from this document.
+- **Legacy aliases:** may remain only as the compatibility layer documented in
+  `token-contract.json`; they are not a second design system and must not be
+  used to resurrect Direction C as the target.
+
+Final cross-surface convergence remains tracked by #398 after the HSK lane is
+production-complete.
