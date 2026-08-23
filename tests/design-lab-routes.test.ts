@@ -93,6 +93,27 @@ describe('design lab fixture', () => {
     expect(() => buildDesignLabFixtureFromSources(invalidExample)).toThrow();
   });
 
+  test.each([
+    ['traditional', ''],
+    ['simplified', ''],
+    ['traditionalStatus', 'invalid-status'],
+    ['simplifiedStatus', 'invalid-status'],
+    ['pinyin', ''],
+    ['japanese', ''],
+    ['kana', ''],
+    ['category', ''],
+    ['reviewStatus', 'invalid-status'],
+  ] as const)('rejects malformed required vocabulary field %s', (field, value) => {
+    const invalidSource = fixtureSources();
+    const vocabularyDocument = invalidSource.vocabularyDocument as {
+      vocabulary: Array<Record<string, unknown>>;
+    };
+    const vocabulary = vocabularyDocument.vocabulary.find((entry) => entry.id === 'voc-002')!;
+    vocabulary[field] = value;
+
+    expect(() => buildDesignLabFixtureFromSources(invalidSource)).toThrow();
+  });
+
   test('rejects malformed travel readiness documents, targets, and evidence', () => {
     const invalidDocument = fixtureSources();
     (invalidDocument.readinessDocument as { schemaVersion: unknown }).schemaVersion = 2;
