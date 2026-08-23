@@ -168,4 +168,38 @@ describe('design lab controller', () => {
     expect(feedback?.getAttribute('role')).toBe('status');
     expect(feedback?.textContent).toBe('正解です');
   });
+
+  test('retains the current cleanup after a stale cleanup runs', () => {
+    const root = createDesignLabRoot();
+    const staleCleanup = initDesignLabPrototype(root);
+    initDesignLabPrototype(root);
+    staleCleanup();
+
+    const homeNavigation = root.querySelector<HTMLElement>(
+      '[data-lab-nav][data-lab-target="home"]',
+    )!;
+    const setAttribute = vi.spyOn(homeNavigation, 'setAttribute');
+    initDesignLabPrototype(root);
+    setAttribute.mockClear();
+
+    homeNavigation.click();
+
+    const selectedUpdates = setAttribute.mock.calls.filter(
+      ([name]) => name === 'aria-selected',
+    );
+    expect(selectedUpdates).toHaveLength(1);
+  });
+
+  test('does not treat the undocumented data-correct alias as a correct answer', () => {
+    const root = createDesignLabRoot();
+    const aliasChoice = root.querySelectorAll<HTMLElement>('[data-lab-quiz-choice]')[1];
+    aliasChoice.dataset.correct = 'true';
+
+    initDesignLabPrototype(root);
+    aliasChoice.click();
+
+    expect(root.querySelector('[data-lab-quiz-feedback]')?.textContent).toBe(
+      'もう一度試してみましょう',
+    );
+  });
 });

@@ -101,8 +101,7 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
   }
   for (const choice of quizChoices) {
     const onClick = (): void => {
-      const correct =
-        choice.dataset.labCorrect === 'true' || choice.dataset.correct === 'true';
+      const correct = choice.dataset.labCorrect === 'true';
       for (const option of quizChoices) {
         option.setAttribute('aria-pressed', String(option === choice));
       }
@@ -116,7 +115,7 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
 
   const cleanup = (): void => {
     for (const remove of removers) remove();
-    cleanups.delete(root);
+    if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };
   cleanups.set(root, cleanup);
   return cleanup;
