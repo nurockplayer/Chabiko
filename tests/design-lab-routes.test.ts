@@ -1263,6 +1263,15 @@ describe('design lab comparison and evidence capture', () => {
       expect(lateFailureResult.output).toContain('test failpoint after-original-backup');
       expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforeLateFailure);
 
+      const beforePublishedFailure = await snapshotFileBytes(evidenceDirectory);
+      const publishedFailureResult = await runCapture({
+        DESIGN_LAB_CAPTURE_TEST_FAILPOINT: 'after-candidate-publish',
+      });
+
+      expect(publishedFailureResult.code, publishedFailureResult.output).toBe(1);
+      expect(publishedFailureResult.output).toContain('test failpoint after-candidate-publish');
+      expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforePublishedFailure);
+
       forceComparisonFrameScroll = true;
       const beforeScrolledFailure = await snapshotFileBytes(evidenceDirectory);
       const scrolledResult = await runCapture();
