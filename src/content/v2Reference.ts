@@ -70,6 +70,11 @@ export interface V2ReferenceContent extends V2ReferenceMetadata {
     meaning: string;
     notesJa?: string;
   }>;
+  kanjiBridgeNotes: Array<{
+    kanji: string;
+    jpReading: string;
+    noteJa: string;
+  }>;
   soundFocus: Array<{
     item: string;
     noteJa: string;
@@ -92,6 +97,7 @@ export interface V2ReferenceBootstrap {
     canDoJa: string;
     learnerOutcomeJa: string;
     lessonChunks: V2ReferenceContent['lessonChunks'];
+    kanjiBridgeNotes: V2ReferenceContent['kanjiBridgeNotes'];
     soundFocus: V2ReferenceContent['soundFocus'];
     scene: V2ReferenceMetadata['scene'];
     audio: V2ReferenceMetadata['audio'];
@@ -319,6 +325,11 @@ export function loadV2ReferenceContent(
       meaning,
       ...(isNonEmptyString(notesJa) ? { notesJa } : {}),
     })),
+    kanjiBridgeNotes: lesson.kanjiBridgeNotes.map(({ kanji, jpReading, noteJa }) => ({
+      kanji,
+      jpReading,
+      noteJa,
+    })),
     soundFocus: lesson.soundFocus.map(({ item, noteJa }) => ({ item, noteJa })),
   };
 }
@@ -344,6 +355,7 @@ export function buildV2ReferenceBootstrap(
       canDoJa: content.canDoJa,
       learnerOutcomeJa: content.learnerOutcomeJa,
       lessonChunks: content.lessonChunks,
+      kanjiBridgeNotes: content.kanjiBridgeNotes,
       soundFocus: content.soundFocus,
       scene: content.scene,
       audio: content.audio,

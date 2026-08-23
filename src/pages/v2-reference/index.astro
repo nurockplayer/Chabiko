@@ -614,7 +614,56 @@ const bootstrapJson = JSON.stringify(bootstrap).replace(/</g, '\\u003c');
   }
 
   .v2-support-row dd {
+    display: grid;
+    gap: 3px;
     margin: 0;
+  }
+
+  .v2-support-note {
+    color: #50626a;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .v2-kanji-bridge {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #dbe2df;
+  }
+
+  .v2-kanji-bridge h2 {
+    margin: 0 0 5px;
+    color: var(--v2-ink);
+    font-size: 12px;
+  }
+
+  .v2-kanji-bridge-item {
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  .v2-kanji-bridge-item p {
+    margin: 0;
+  }
+
+  .v2-kanji-bridge-term {
+    display: grid;
+    align-content: start;
+    gap: 1px;
+  }
+
+  .v2-kanji-bridge-term strong {
+    color: var(--v2-blue-deep);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    font-size: 19px;
+  }
+
+  .v2-kanji-bridge-term span {
+    color: #5d6b70;
+    font-size: 9px;
+    white-space: nowrap;
   }
 
   .v2-sound-note {

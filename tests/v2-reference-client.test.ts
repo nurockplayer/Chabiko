@@ -42,8 +42,19 @@ const BOOTSTRAP: V2ReferenceBootstrap = {
     canDoJa: '台湾の夜市で簡単に食べ物を注文できる',
     learnerOutcomeJa: '指差し注文と基本表現「我要〜」が使える',
     lessonChunks: [
-      { chunk: '我要', meaning: '私は〜が欲しい' },
+      {
+        chunk: '我要',
+        meaning: '私は〜が欲しい',
+        notesJa: '日本語の「欲しい」と違い、中国語では「要」が意思を表す',
+      },
       { chunk: '這個', meaning: 'これ' },
+    ],
+    kanjiBridgeNotes: [
+      {
+        kanji: '要',
+        jpReading: 'よう',
+        noteJa: '日本語の「要る」に近いが、中国語では欲求・意思を表す',
+      },
     ],
     soundFocus: [
       { item: '要 yào', noteJa: '第四声。短く急降下。' },
@@ -141,6 +152,14 @@ describe('V2 reference client flow', () => {
     expect(getRoot().dataset.v2Stage).toBe('learning');
     expect(getRoot().querySelector('[aria-label="メインナビゲーション"]')).toBeNull();
     expect(getRoot().querySelector('details')).not.toBeNull();
+    const progressiveSupport = getRoot().querySelectorAll('details')[1];
+    expect(progressiveSupport?.textContent).toContain('日本語からつなぐ');
+    expect(progressiveSupport?.textContent).toContain(
+      '日本語の「欲しい」と違い、中国語では「要」が意思を表す',
+    );
+    expect(progressiveSupport?.textContent).toContain(
+      '日本語の「要る」に近いが、中国語では欲求・意思を表す',
+    );
 
     click('[data-action="play-audio"]');
     await vi.waitFor(() => expect(speak).toHaveBeenCalledWith('我要這個', 'zh-TW'));

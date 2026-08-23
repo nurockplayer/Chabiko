@@ -42,6 +42,14 @@ describe('V2 reference content', () => {
     expect(content.pinyin).toBe('wǒ yào zhège');
     expect(content.meaningJa).toBe('これをください');
     expect(content.canDoJa).toBe('台湾の夜市で簡単に食べ物を注文できる');
+    expect(content.lessonChunks[0]?.notesJa).toContain('中国語では「要」が意思を表す');
+    expect(content.kanjiBridgeNotes).toEqual([
+      {
+        kanji: '要',
+        jpReading: 'よう',
+        noteJa: '日本語の「要る（いる）」に近いが、中国語では欲求・意思を表す',
+      },
+    ]);
     expect(content.retrieval.answerOrder).toEqual([
       'v2-a91',
       'v2-b07',
@@ -71,6 +79,7 @@ describe('V2 reference content', () => {
     // The Japanese intent is the retrieval prompt; the hidden answer is the
     // canonical ordered Chinese phrase and its pronunciation support.
     expect(retrievalJson).toContain(content.meaningJa);
+    expect(bootstrap.learning.kanjiBridgeNotes).toEqual(content.kanjiBridgeNotes);
   });
 
   it('keeps the full answer in the on-demand reveal payload', () => {

@@ -200,6 +200,18 @@ test('keyboard-operable repair flow keeps the answer hidden until reveal', async
   await expect(page.getByRole('navigation', { name: 'メインナビゲーション' })).toHaveCount(0);
   await expectNoBlockingAxeViolations(page);
 
+  const progressiveSupport = page.locator('.v2-support-disclosure').nth(1);
+  const progressiveSupportSummary = progressiveSupport.locator('summary');
+  await progressiveSupportSummary.focus();
+  await page.keyboard.press('Enter');
+  await expect(progressiveSupport).toHaveAttribute('open', '');
+  await expect(progressiveSupport).toContainText('日本語からつなぐ');
+  await expect(progressiveSupport).toContainText(
+    '日本語の「欲しい」と違い、中国語では「要」が意思を表す',
+  );
+  await expectViewportContainment(page);
+  await page.keyboard.press('Enter');
+
   await page.locator('[data-action="start-retrieval"]').click();
   await expectStage(page, 'retrieval');
   await expect(page.locator('[data-screen-heading]')).toBeFocused();

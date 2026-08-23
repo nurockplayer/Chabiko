@@ -122,7 +122,23 @@ function renderLearning(bootstrap: V2ReferenceBootstrap): string {
       (chunk) => `
         <div class="v2-support-row">
           <dt lang="zh-Hant">${escapeHtml(chunk.chunk)}</dt>
-          <dd>${escapeHtml(chunk.meaning)}</dd>
+          <dd>
+            <span>${escapeHtml(chunk.meaning)}</span>
+            ${chunk.notesJa ? `<span class="v2-support-note">${escapeHtml(chunk.notesJa)}</span>` : ''}
+          </dd>
+        </div>
+      `,
+    )
+    .join('');
+  const bridgeRows = bootstrap.learning.kanjiBridgeNotes
+    .map(
+      (note) => `
+        <div class="v2-kanji-bridge-item">
+          <p class="v2-kanji-bridge-term">
+            <strong lang="zh-Hant">${escapeHtml(note.kanji)}</strong>
+            <span>日本語：${escapeHtml(note.jpReading)}</span>
+          </p>
+          <p>${escapeHtml(note.noteJa)}</p>
         </div>
       `,
     )
@@ -130,7 +146,7 @@ function renderLearning(bootstrap: V2ReferenceBootstrap): string {
   const soundRows = bootstrap.learning.soundFocus
     .map(
       (focus) => `
-        <p><strong>${escapeHtml(focus.item)}</strong>${escapeHtml(focus.noteJa)}</p>
+        <p><strong>${escapeHtml(focus.item)}</strong><span>${escapeHtml(focus.noteJa)}</span></p>
       `,
     )
     .join('');
@@ -159,9 +175,13 @@ function renderLearning(bootstrap: V2ReferenceBootstrap): string {
             </div>
           </details>
           <details class="v2-support-disclosure">
-            <summary>ことばと音を分ける</summary>
+            <summary>ことば・漢字・音を分ける</summary>
             <div class="v2-support-body">
               <dl class="v2-support-list">${chunkRows}</dl>
+              <div class="v2-kanji-bridge">
+                <h2>日本語からつなぐ</h2>
+                ${bridgeRows}
+              </div>
               <div class="v2-sound-note">${soundRows}</div>
             </div>
           </details>
