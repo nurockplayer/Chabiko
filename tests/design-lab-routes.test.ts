@@ -879,6 +879,17 @@ describe('design lab grammar routes', () => {
     expect(definitionRules).not.toContain('overflow-wrap: anywhere');
   });
 
+  test('Airbnb travel evidence stays flat inside the tactile itinerary card', () => {
+    const source = readFileSync('src/components/design-lab/AirbnbPrototype.astro', 'utf8');
+    const listRule = source.match(/\.airbnb-target-card ul\s*\{(?<body>[^}]*)\}/)?.groups?.body ?? '';
+    const rowRule = source.match(/\.airbnb-target-card li\s*\{(?<body>[^}]*)\}/)?.groups?.body ?? '';
+
+    expect(listRule).toContain('gap: 0');
+    expect(rowRule).toContain('border-top: 1px solid');
+    expect(rowRule).toContain('background: transparent');
+    expect(rowRule).not.toContain('border-radius');
+  });
+
   test.each([
     ['airbnb', 'src/components/design-lab/AirbnbPrototype.astro', '.airbnb-target-card summary'],
     ['notion', 'src/components/design-lab/NotionPrototype.astro', '.document-disclosure summary'],

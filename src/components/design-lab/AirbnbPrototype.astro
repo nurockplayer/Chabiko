@@ -1117,16 +1117,27 @@ const { fixture } = Astro.props;
 
   .airbnb-target-card ul {
     display: grid;
-    gap: 10px;
-    padding-top: 8px;
+    gap: 0;
+    padding-top: 4px;
   }
 
   .airbnb-target-card li {
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: var(--airbnb-panel);
+    position: relative;
+    padding: 13px 4px 13px 22px;
+    border-top: 1px solid rgb(37 36 38 / 11%);
+    background: transparent;
     font-size: 0.78rem;
     line-height: 1.5;
+  }
+
+  .airbnb-target-card li::before {
+    position: absolute;
+    top: 12px;
+    left: 3px;
+    color: var(--airbnb-accent-dark);
+    content: "›";
+    font-size: 1rem;
+    font-weight: 800;
   }
 
   .airbnb-travel__night-market {
