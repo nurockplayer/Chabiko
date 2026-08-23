@@ -10,9 +10,11 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import * as designLabCapture from '../scripts/capture-design-lab';
 import {
   CAPTURE_MANIFEST,
+  CAPTURE_METADATA_FILENAME,
   COMPARISON_VIEWPORT,
   EVIDENCE_DIRECTORY,
   INDIVIDUAL_VIEWPORT,
+  validateCapturePublication,
   validateLocalBaseUrl,
 } from '../scripts/capture-design-lab';
 import { initDesignLabPrototype } from '../src/client/designLabPrototype';
@@ -27,6 +29,27 @@ import vocabularyData from '../data/examples/valid/vocabulary.json';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+async function snapshotFileBytes(directory: string): Promise<Record<string, string>> {
+  const snapshot: Record<string, string> = {};
+
+  async function walk(currentDirectory: string, prefix = ''): Promise<void> {
+    const entries = await readdir(currentDirectory, { withFileTypes: true });
+    entries.sort((left, right) => left.name.localeCompare(right.name));
+    for (const entry of entries) {
+      const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+      const absolutePath = join(currentDirectory, entry.name);
+      if (entry.isDirectory()) {
+        await walk(absolutePath, relativePath);
+      } else {
+        snapshot[relativePath] = (await readFile(absolutePath)).toString('base64');
+      }
+    }
+  }
+
+  await walk(directory);
+  return snapshot;
 }
 
 function fixtureSources(): {
@@ -627,7 +650,6 @@ describe('design lab comparison and evidence capture', () => {
 
     const source = readFileSync('scripts/capture-design-lab.ts', 'utf8');
     expect(source).toContain('fullPage: false');
-    expect(source).not.toMatch(/\b(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)\b/);
   });
 
   test('exports the canonical rendered validation contract and required widths', () => {
@@ -644,7 +666,7 @@ describe('design lab comparison and evidence capture', () => {
     expect(() => validateLocalBaseUrl('https://127.0.0.1:4321')).toThrow(/loopback HTTP/);
   });
 
-  test('canonical capture command writes only its manifest and preserves dirty evidence', async () => {
+  test('canonical capture publishes a metadata-closed snapshot and rolls back a late swap failure', async () => {
     const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
     const grammars = ['apple', 'airbnb', 'notion', 'linear', 'duolingo'] as const;
     let comparisonToolbarDrift = false;
@@ -836,7 +858,8 @@ describe('design lab comparison and evidence capture', () => {
     });
     const temporaryRoot = await mkdtemp(join(tmpdir(), 'chabiko-design-lab-capture-'));
     const evidenceDirectory = join(temporaryRoot, EVIDENCE_DIRECTORY);
-    const sentinel = join(evidenceDirectory, 'developer-note.txt');
+    const sentinel = join(evidenceDirectory, 'developer-notes', 'keep.txt');
+    const canonicalReadme = readFileSync(join(EVIDENCE_DIRECTORY, 'README.md'));
 
     try {
       await new Promise<void>((ready, reject) => {
@@ -846,23 +869,27 @@ describe('design lab comparison and evidence capture', () => {
       const address = server.address();
       if (!address || typeof address === 'string') throw new Error('Test server did not expose a port');
       await mkdir(evidenceDirectory, { recursive: true });
-      await writeFile(sentinel, 'preserve me');
+      await writeFile(join(evidenceDirectory, 'README.md'), canonicalReadme);
 
-      const runCapture = () => new Promise<{ code: number | null; output: string }>((done, reject) => {
-        const child = spawn(process.execPath, [resolve('scripts/capture-design-lab.ts')], {
-          cwd: temporaryRoot,
-          env: {
-            ...process.env,
-            DESIGN_LAB_BASE_URL: `http://127.0.0.1:${address.port}`,
-          },
-          stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        let output = '';
-        child.stdout.on('data', (chunk: Buffer) => { output += chunk.toString(); });
-        child.stderr.on('data', (chunk: Buffer) => { output += chunk.toString(); });
-        child.once('error', reject);
-        child.once('close', (code) => done({ code, output }));
-      });
+      const runCapture = (extraEnvironment: Record<string, string> = {}) => (
+        new Promise<{ code: number | null; output: string }>((done, reject) => {
+          const child = spawn(process.execPath, [resolve('scripts/capture-design-lab.ts')], {
+            cwd: temporaryRoot,
+            env: {
+              ...process.env,
+              NODE_ENV: 'test',
+              DESIGN_LAB_BASE_URL: `http://127.0.0.1:${address.port}`,
+              ...extraEnvironment,
+            },
+            stdio: ['ignore', 'pipe', 'pipe'],
+          });
+          let output = '';
+          child.stdout.on('data', (chunk: Buffer) => { output += chunk.toString(); });
+          child.stderr.on('data', (chunk: Buffer) => { output += chunk.toString(); });
+          child.once('error', reject);
+          child.once('close', (code) => done({ code, output }));
+        })
+      );
 
       const result = await runCapture();
 
@@ -871,30 +898,79 @@ describe('design lab comparison and evidence capture', () => {
       expect(result.output).toContain('120 responsive states');
       expect(result.output).toContain('20 axe scans');
       expect(result.output).toContain('captured 24 Design Lab evidence files without browser errors');
-      expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
       const pngFiles = (await readdir(evidenceDirectory)).filter((file) => file.endsWith('.png')).sort();
       expect(pngFiles).toEqual(CAPTURE_MANIFEST.map(({ filename }) => filename).sort());
-      const firstCapture = new Map(await Promise.all(pngFiles.map(async (filename) => [
+      const firstCapture = new Map(await Promise.all([
+        ...pngFiles,
+        'README.md',
+        CAPTURE_METADATA_FILENAME,
+      ].map(async (filename) => [
         filename,
         await readFile(join(evidenceDirectory, filename)),
       ] as const)));
+      const metadata = await validateCapturePublication(evidenceDirectory);
+
+      expect(metadata.schemaVersion).toBe(1);
+      expect(metadata.validation).toEqual({
+        interactionScenarios: 5,
+        responsiveStates: 120,
+        axeScans: 20,
+        focusVisibleChecks: 20,
+        reducedMotionChecks: 20,
+      });
+      expect(metadata.entries).toHaveLength(24);
+      expect(metadata.entries[0]).toMatchObject({
+        filename: 'apple-home.png',
+        kind: 'individual',
+        grammar: 'apple',
+        view: 'home',
+        width: 390,
+        height: 844,
+      });
+      expect(metadata.entries[0].sha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(metadata.manifestDigest).toMatch(/^[a-f0-9]{64}$/);
+
+      await mkdir(join(evidenceDirectory, 'developer-notes'), { recursive: true });
+      await writeFile(sentinel, 'preserve me');
 
       const repeatedResult = await runCapture();
 
       expect(repeatedResult.code, repeatedResult.output).toBe(0);
       expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
-      for (const filename of pngFiles) {
+      for (const filename of [...pngFiles, 'README.md', CAPTURE_METADATA_FILENAME]) {
         expect(await readFile(join(evidenceDirectory, filename)), filename).toEqual(firstCapture.get(filename));
       }
 
+      const beforeLateFailure = await snapshotFileBytes(evidenceDirectory);
+      const lateFailureResult = await runCapture({
+        DESIGN_LAB_CAPTURE_TEST_FAILPOINT: 'after-original-backup',
+      });
+
+      expect(lateFailureResult.code, lateFailureResult.output).toBe(1);
+      expect(lateFailureResult.output).toContain('test failpoint after-original-backup');
+      expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforeLateFailure);
+
       comparisonToolbarDrift = true;
+      const beforeRenderedFailure = await snapshotFileBytes(evidenceDirectory);
       const driftedResult = await runCapture();
 
       expect(driftedResult.code, driftedResult.output).toBe(1);
       expect(driftedResult.output).toContain('comparison toolbar controls smaller than 44px');
+      expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforeRenderedFailure);
+
+      const metadataPath = join(evidenceDirectory, CAPTURE_METADATA_FILENAME);
+      const driftedMetadata = JSON.parse(await readFile(metadataPath, 'utf8')) as {
+        entries: Array<{ sha256: string }>;
+      };
+      driftedMetadata.entries[0].sha256 = '0'.repeat(64);
+      await writeFile(metadataPath, `${JSON.stringify(driftedMetadata, null, 2)}\n`);
+
+      await expect(validateCapturePublication(evidenceDirectory)).rejects.toThrow(
+        /apple-home\.png digest does not match capture metadata/,
+      );
     } finally {
       await new Promise<void>((done) => server.close(() => done()));
       await rm(temporaryRoot, { recursive: true, force: true });
     }
-  }, 45_000);
+  }, 90_000);
 });

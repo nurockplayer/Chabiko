@@ -23,13 +23,15 @@ and HTTPS origins are rejected:
 DESIGN_LAB_BASE_URL=http://127.0.0.1:4328 node scripts/capture-design-lab.ts
 ```
 
-The command first validates the rendered routes, then overwrites only the 24
-filenames listed below. It does not delete or prune this directory, and it
-blocks requests outside the selected local origin. Chromium uses fixed locale,
-timezone, color scheme, scale, reduced-motion, and font-rasterization settings.
-Animations, transitions, and carets are disabled only for capture; hover,
-active, and focus production styles remain available. Each file is written
-only after two consecutive screenshots of its rendered frame are byte-identical.
+The command first validates the rendered routes, then builds all owned evidence
+in a task-owned staging directory. It publishes the candidate only after every
+PNG, `capture.json`, and the generated README block agree. Publication uses a
+directory swap with rollback; non-manifest files already in this directory are
+copied byte-for-byte into the candidate. Chromium uses fixed locale, timezone,
+color scheme, scale, reduced-motion, and font-rasterization settings. Animations,
+transitions, and carets are disabled only for capture; hover, active, and focus
+production styles remain available. Each file is staged only after two
+consecutive screenshots of its rendered frame are byte-identical.
 
 ## Viewports and checks
 
@@ -55,18 +57,20 @@ only after two consecutive screenshots of its rendered frame are byte-identical.
   rating, and incorrect/correct lesson status feedback.
 - Every route waits for DOM content, fonts, and active-view images. Console and
   page errors fail the command, as do requests outside the selected origin.
-- The 2026-08-24 final run passed 5 interaction scenarios, 120 responsive
-  states, 20 axe scans, 20 focus-visible checks, and 20 reduced-motion checks,
-  then produced all 24 files with no browser findings. Airbnb Home retains its
-  photo-led itinerary orientation and fully contained 390 x 844 continuation
-  control.
 
-## Grayscale structural guard
+## Generated capture results
 
-Home and Lesson individual screenshots are converted in memory to grayscale
-8 x 8 luminance signatures. Pairwise mean absolute luminance distance must be
-at least `0.035`. The final run measured Home `0.1021` and Lesson `0.1044`, both
-for the closest Notion/Duolingo pair.
+The capture command rewrites this complete block from `capture.json`; the file
+contains no capture timestamp so byte-identical repeated runs stay deterministic.
+
+<!-- design-lab-capture:generated:start -->
+<!-- Generated from capture.json by scripts/capture-design-lab.ts. Do not edit this block. -->
+
+- Manifest entries: 24
+- Manifest digest: `7f246fc1d850f2bfa177140918f5952aae90c42b0de9470f4a0e901806188da7`
+- Rendered validation: 5 interaction scenarios, 120 responsive states, 20 axe scans, 20 focus-visible checks, and 20 reduced-motion checks
+- Closest grayscale distance, Home: `0.1021` (notion/duolingo)
+- Closest grayscale distance, Lesson: `0.1044` (notion/duolingo)
 
 | Grammar | Home signature | Lesson signature |
 | --- | --- | --- |
@@ -75,9 +79,12 @@ for the closest Notion/Duolingo pair.
 | Notion | `ddddddddeeeedeaefffffffffffffffffffffffffffffffffff8efffffffffff` | `ddddddddeeeedeaeffffffffffffffffffffffffffffffffffffffff2f226fff` |
 | Linear | `22222222111111111eeeee111111111111111111151111111111111111111111` | `2222222211111111e11b11111111111111111111111111111111111141111111` |
 | Duolingo | `fffffffff2229f2ffffffffffffffffffd98effff8ffffffffffffffffffffff` | `ffffffffffffafffffffffffdeeeeeeefffffffffebfd99fffffffffffffffff` |
+<!-- design-lab-capture:generated:end -->
 
-This guard detects accidental structural convergence; it does not replace
-manual inspection of the individual and comparison captures.
+The grayscale guard uses 8 x 8 luminance signatures for Home and Lesson.
+Pairwise mean absolute luminance distance must be at least `0.035`. It detects
+accidental structural convergence but does not replace manual inspection of the
+individual and comparison captures.
 
 ## Fixed manifest
 

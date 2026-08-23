@@ -1,5 +1,15 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import {
+  access,
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rename,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import { chromium, type Frame, type Locator, type Page } from '@playwright/test';
@@ -14,7 +24,11 @@ type View = (typeof VIEWS)[number];
 export const INDIVIDUAL_VIEWPORT = { width: 390, height: 844 } as const;
 export const COMPARISON_VIEWPORT = { width: 2000, height: 934 } as const;
 export const EVIDENCE_DIRECTORY = 'docs/design/evidence/design-lab';
+export const CAPTURE_METADATA_FILENAME = 'capture.json';
 export const MINIMUM_GRAYSCALE_DISTANCE = 0.035;
+const README_FILENAME = 'README.md';
+const README_GENERATED_START = '<!-- design-lab-capture:generated:start -->';
+const README_GENERATED_END = '<!-- design-lab-capture:generated:end -->';
 const DETERMINISTIC_CHROMIUM_ARGS = [
   '--disable-font-subpixel-positioning',
   '--disable-lcd-text',
@@ -73,8 +87,410 @@ export type CaptureSummary = {
   distances: Record<'home' | 'lesson', { distance: number; pair: [Grammar, Grammar] }>;
 };
 
+export type CaptureMetadataEntry = CaptureManifestEntry & {
+  width: number;
+  height: number;
+  sha256: string;
+  checks: {
+    renderedContract: 'passed';
+    browserDiagnostics: 'clean';
+    stableFrame: 'byte-identical';
+  };
+};
+
+export type CaptureMetadata = {
+  schemaVersion: 1;
+  contract: {
+    individualViewport: { width: number; height: number };
+    comparisonViewport: { width: number; height: number };
+    minimumGrayscaleDistance: number;
+  };
+  validation: RenderedValidationSummary;
+  entries: CaptureMetadataEntry[];
+  grayscale: CaptureSummary;
+  manifestDigest: string;
+};
+
 function ensure(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function ensureExactKeys(
+  value: Record<string, unknown>,
+  expectedKeys: readonly string[],
+  label: string,
+): void {
+  const actual = Object.keys(value).sort();
+  const expected = [...expectedKeys].sort();
+  ensure(
+    JSON.stringify(actual) === JSON.stringify(expected),
+    `${label} keys are ${actual.join(', ') || 'missing'}, expected ${expected.join(', ')}`,
+  );
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+function sha256(value: Buffer | string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function readPngDimensions(bytes: Buffer, filename: string): { width: number; height: number } {
+  const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  ensure(
+    bytes.length >= 24
+      && bytes.subarray(0, pngSignature.length).equals(pngSignature)
+      && bytes.toString('ascii', 12, 16) === 'IHDR',
+    `${filename} is not a valid PNG with an IHDR header`,
+  );
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
+
+function expectedDimensions(entry: CaptureManifestEntry): { width: number; height: number } {
+  return entry.kind === 'individual' ? INDIVIDUAL_VIEWPORT : COMPARISON_VIEWPORT;
+}
+
+function calculateManifestDigest(entries: readonly CaptureMetadataEntry[]): string {
+  return sha256(entries.map((entry) => (
+    `${entry.filename}\0${entry.sha256}\0${entry.width}x${entry.height}\n`
+  )).join(''));
+}
+
+function expectedRenderedValidationSummary(): RenderedValidationSummary {
+  const states = GRAMMARS.length * VIEWS.length;
+  return {
+    interactionScenarios: GRAMMARS.length,
+    responsiveStates: states * REQUIRED_WIDTHS.length,
+    axeScans: states,
+    focusVisibleChecks: states,
+    reducedMotionChecks: states,
+  };
+}
+
+function renderGeneratedReadmeBlock(metadata: CaptureMetadata): string {
+  const validation = metadata.validation;
+  const signatures = GRAMMARS.map((grammar) => (
+    `| ${grammar[0].toUpperCase()}${grammar.slice(1)} | `
+      + `\`${metadata.grayscale.signatures[grammar].home}\` | `
+      + `\`${metadata.grayscale.signatures[grammar].lesson}\` |`
+  )).join('\n');
+
+  return `${README_GENERATED_START}
+<!-- Generated from capture.json by scripts/capture-design-lab.ts. Do not edit this block. -->
+
+- Manifest entries: ${metadata.entries.length}
+- Manifest digest: \`${metadata.manifestDigest}\`
+- Rendered validation: ${validation.interactionScenarios} interaction scenarios, `
+    + `${validation.responsiveStates} responsive states, ${validation.axeScans} axe scans, `
+    + `${validation.focusVisibleChecks} focus-visible checks, and `
+    + `${validation.reducedMotionChecks} reduced-motion checks
+- Closest grayscale distance, Home: `
+    + `\`${metadata.grayscale.distances.home.distance.toFixed(4)}\` `
+    + `(${metadata.grayscale.distances.home.pair.join('/')})
+- Closest grayscale distance, Lesson: `
+    + `\`${metadata.grayscale.distances.lesson.distance.toFixed(4)}\` `
+    + `(${metadata.grayscale.distances.lesson.pair.join('/')})
+
+| Grammar | Home signature | Lesson signature |
+| --- | --- | --- |
+${signatures}
+${README_GENERATED_END}`;
+}
+
+function replaceGeneratedReadmeBlock(readme: string, generatedBlock: string): string {
+  const start = readme.indexOf(README_GENERATED_START);
+  const end = readme.indexOf(README_GENERATED_END);
+  ensure(start >= 0 && end > start, 'Design Lab evidence README is missing its generated block markers');
+  ensure(
+    start === readme.lastIndexOf(README_GENERATED_START)
+      && end === readme.lastIndexOf(README_GENERATED_END),
+    'Design Lab evidence README must contain exactly one generated block',
+  );
+  return `${readme.slice(0, start)}${generatedBlock}${readme.slice(end + README_GENERATED_END.length)}`;
+}
+
+async function buildCaptureMetadata(
+  directory: string,
+  validation: RenderedValidationSummary,
+  grayscale: CaptureSummary,
+): Promise<CaptureMetadata> {
+  const entries = await Promise.all(CAPTURE_MANIFEST.map(async (entry): Promise<CaptureMetadataEntry> => {
+    const bytes = await readFile(join(directory, entry.filename));
+    const dimensions = readPngDimensions(bytes, entry.filename);
+    const expected = expectedDimensions(entry);
+    ensure(
+      dimensions.width === expected.width && dimensions.height === expected.height,
+      `${entry.filename} dimensions are ${dimensions.width}x${dimensions.height}, expected ${expected.width}x${expected.height}`,
+    );
+    return {
+      ...entry,
+      ...dimensions,
+      sha256: sha256(bytes),
+      checks: {
+        renderedContract: 'passed',
+        browserDiagnostics: 'clean',
+        stableFrame: 'byte-identical',
+      },
+    };
+  }));
+  return {
+    schemaVersion: 1,
+    contract: {
+      individualViewport: { ...INDIVIDUAL_VIEWPORT },
+      comparisonViewport: { ...COMPARISON_VIEWPORT },
+      minimumGrayscaleDistance: MINIMUM_GRAYSCALE_DISTANCE,
+    },
+    validation,
+    entries,
+    grayscale,
+    manifestDigest: calculateManifestDigest(entries),
+  };
+}
+
+function validateDistance(
+  value: unknown,
+  label: string,
+): asserts value is { distance: number; pair: [Grammar, Grammar] } {
+  ensure(isRecord(value), `${label} grayscale distance metadata is invalid`);
+  ensureExactKeys(value, ['distance', 'pair'], `${label} grayscale distance metadata`);
+  ensure(
+    typeof value.distance === 'number'
+      && Number.isFinite(value.distance)
+      && value.distance >= MINIMUM_GRAYSCALE_DISTANCE,
+    `${label} grayscale structural distance is below ${MINIMUM_GRAYSCALE_DISTANCE}`,
+  );
+  ensure(
+    Array.isArray(value.pair)
+      && value.pair.length === 2
+      && value.pair.every((grammar) => GRAMMARS.includes(grammar as Grammar))
+      && value.pair[0] !== value.pair[1],
+    `${label} grayscale closest pair is invalid`,
+  );
+}
+
+export async function validateCapturePublication(directory: string): Promise<CaptureMetadata> {
+  const metadataPath = join(directory, CAPTURE_METADATA_FILENAME);
+  const metadataSource = await readFile(metadataPath, 'utf8');
+  const parsed: unknown = JSON.parse(metadataSource);
+  ensure(isRecord(parsed), 'Design Lab capture metadata must be an object');
+  ensureExactKeys(
+    parsed,
+    ['schemaVersion', 'contract', 'validation', 'entries', 'grayscale', 'manifestDigest'],
+    'Design Lab capture metadata',
+  );
+  ensure(parsed.schemaVersion === 1, 'Design Lab capture metadata schemaVersion must be 1');
+
+  ensure(isRecord(parsed.contract), 'Design Lab capture contract metadata is invalid');
+  ensureExactKeys(
+    parsed.contract,
+    ['individualViewport', 'comparisonViewport', 'minimumGrayscaleDistance'],
+    'Design Lab capture contract metadata',
+  );
+  ensure(
+    JSON.stringify(parsed.contract) === JSON.stringify({
+      individualViewport: INDIVIDUAL_VIEWPORT,
+      comparisonViewport: COMPARISON_VIEWPORT,
+      minimumGrayscaleDistance: MINIMUM_GRAYSCALE_DISTANCE,
+    }),
+    'Design Lab capture contract metadata does not match the canonical capture contract',
+  );
+
+  ensure(isRecord(parsed.validation), 'Design Lab rendered validation metadata is invalid');
+  const expectedValidation = expectedRenderedValidationSummary();
+  ensureExactKeys(parsed.validation, Object.keys(expectedValidation), 'Design Lab rendered validation metadata');
+  ensure(
+    JSON.stringify(parsed.validation) === JSON.stringify(expectedValidation),
+    'Design Lab rendered validation metadata does not match the canonical validation sweep',
+  );
+
+  ensure(Array.isArray(parsed.entries), 'Design Lab capture metadata entries must be an array');
+  ensure(
+    parsed.entries.length === CAPTURE_MANIFEST.length,
+    `Design Lab capture metadata has ${parsed.entries.length} entries, expected ${CAPTURE_MANIFEST.length}`,
+  );
+  const entries: CaptureMetadataEntry[] = [];
+  for (const [index, manifestEntry] of CAPTURE_MANIFEST.entries()) {
+    const entry = parsed.entries[index];
+    ensure(isRecord(entry), `Design Lab capture metadata entry ${index + 1} is invalid`);
+    const expectedEntryKeys = manifestEntry.kind === 'individual'
+      ? ['kind', 'grammar', 'view', 'filename', 'width', 'height', 'sha256', 'checks']
+      : ['kind', 'view', 'filename', 'width', 'height', 'sha256', 'checks'];
+    ensureExactKeys(entry, expectedEntryKeys, `Design Lab capture metadata entry ${index + 1}`);
+    for (const [key, value] of Object.entries(manifestEntry)) {
+      ensure(entry[key] === value, `Design Lab capture metadata entry ${index + 1} has an invalid ${key}`);
+    }
+    const expected = expectedDimensions(manifestEntry);
+    ensure(
+      entry.width === expected.width && entry.height === expected.height,
+      `${manifestEntry.filename} metadata dimensions do not match the capture contract`,
+    );
+    ensure(
+      typeof entry.sha256 === 'string' && /^[a-f0-9]{64}$/.test(entry.sha256),
+      `${manifestEntry.filename} capture metadata digest is invalid`,
+    );
+    ensure(isRecord(entry.checks), `${manifestEntry.filename} checks metadata is invalid`);
+    ensureExactKeys(
+      entry.checks,
+      ['renderedContract', 'browserDiagnostics', 'stableFrame'],
+      `${manifestEntry.filename} checks metadata`,
+    );
+    ensure(
+      entry.checks.renderedContract === 'passed'
+        && entry.checks.browserDiagnostics === 'clean'
+        && entry.checks.stableFrame === 'byte-identical',
+      `${manifestEntry.filename} did not record all required capture checks`,
+    );
+    const bytes = await readFile(join(directory, manifestEntry.filename));
+    const dimensions = readPngDimensions(bytes, manifestEntry.filename);
+    ensure(
+      dimensions.width === entry.width && dimensions.height === entry.height,
+      `${manifestEntry.filename} dimensions do not match capture metadata`,
+    );
+    ensure(
+      sha256(bytes) === entry.sha256,
+      `${manifestEntry.filename} digest does not match capture metadata`,
+    );
+    entries.push(entry as CaptureMetadataEntry);
+  }
+
+  ensure(isRecord(parsed.grayscale), 'Design Lab grayscale metadata is invalid');
+  ensureExactKeys(parsed.grayscale, ['signatures', 'distances'], 'Design Lab grayscale metadata');
+  ensure(isRecord(parsed.grayscale.signatures), 'Design Lab grayscale signature metadata is invalid');
+  ensureExactKeys(parsed.grayscale.signatures, GRAMMARS, 'Design Lab grayscale signature metadata');
+  for (const grammar of GRAMMARS) {
+    const signatures = parsed.grayscale.signatures[grammar];
+    ensure(isRecord(signatures), `${grammar} grayscale signatures are invalid`);
+    ensureExactKeys(signatures, ['home', 'lesson'], `${grammar} grayscale signatures`);
+    for (const view of ['home', 'lesson'] as const) {
+      ensure(
+        typeof signatures[view] === 'string' && /^[a-f0-9]{64}$/.test(signatures[view]),
+        `${grammar} ${view} grayscale signature is invalid`,
+      );
+    }
+  }
+  ensure(isRecord(parsed.grayscale.distances), 'Design Lab grayscale distance metadata is invalid');
+  ensureExactKeys(parsed.grayscale.distances, ['home', 'lesson'], 'Design Lab grayscale distance metadata');
+  validateDistance(parsed.grayscale.distances.home, 'home');
+  validateDistance(parsed.grayscale.distances.lesson, 'lesson');
+
+  ensure(
+    typeof parsed.manifestDigest === 'string' && /^[a-f0-9]{64}$/.test(parsed.manifestDigest),
+    'Design Lab capture manifest digest is invalid',
+  );
+  ensure(
+    calculateManifestDigest(entries) === parsed.manifestDigest,
+    'Design Lab capture manifest digest does not match its ordered entries',
+  );
+
+  const metadata = parsed as CaptureMetadata;
+  ensure(
+    metadataSource === `${JSON.stringify(metadata, null, 2)}\n`,
+    'Design Lab capture metadata is not in its deterministic canonical form',
+  );
+  const readme = await readFile(join(directory, README_FILENAME), 'utf8');
+  const expectedBlock = renderGeneratedReadmeBlock(metadata);
+  const blockStart = readme.indexOf(README_GENERATED_START);
+  const blockEnd = readme.indexOf(README_GENERATED_END);
+  ensure(blockStart >= 0 && blockEnd > blockStart, 'Design Lab evidence README is missing its generated block');
+  ensure(
+    blockStart === readme.lastIndexOf(README_GENERATED_START)
+      && blockEnd === readme.lastIndexOf(README_GENERATED_END),
+    'Design Lab evidence README must contain exactly one generated block',
+  );
+  const actualBlock = readme.slice(blockStart, blockEnd + README_GENERATED_END.length);
+  ensure(actualBlock === expectedBlock, 'Design Lab evidence README generated block does not match capture metadata');
+  return metadata;
+}
+
+function triggerCaptureTestFailpoint(name: string): void {
+  const requested = process.env.DESIGN_LAB_CAPTURE_TEST_FAILPOINT;
+  if (!requested) return;
+  ensure(process.env.NODE_ENV === 'test', 'Design Lab capture test failpoints require NODE_ENV=test');
+  if (requested === name) throw new Error(`Design Lab capture test failpoint ${name}`);
+}
+
+type CaptureTransaction = {
+  root: string;
+  candidate: string;
+};
+
+async function createCaptureTransaction(outputDirectory: string): Promise<CaptureTransaction> {
+  const outputParent = dirname(outputDirectory);
+  await mkdir(outputParent, { recursive: true });
+  const root = await mkdtemp(join(outputParent, '.design-lab-capture-stage-'));
+  const candidate = join(root, 'candidate');
+  try {
+    if (await pathExists(outputDirectory)) {
+      await cp(outputDirectory, candidate, { recursive: true });
+    } else {
+      await mkdir(candidate, { recursive: true });
+    }
+    for (const { filename } of CAPTURE_MANIFEST) {
+      await rm(join(candidate, filename), { force: true });
+    }
+    await rm(join(candidate, CAPTURE_METADATA_FILENAME), { force: true });
+    return { root, candidate };
+  } catch (error) {
+    await rm(root, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+async function publishCaptureTransaction(
+  transaction: CaptureTransaction,
+  outputDirectory: string,
+): Promise<void> {
+  const backup = join(transaction.root, 'backup');
+  const failedCandidate = join(transaction.root, 'failed-candidate');
+  const hadOriginal = await pathExists(outputDirectory);
+  let originalMoved = false;
+  let candidatePublished = false;
+  let rollbackComplete = false;
+
+  try {
+    if (hadOriginal) {
+      await rename(outputDirectory, backup);
+      originalMoved = true;
+    }
+    triggerCaptureTestFailpoint('after-original-backup');
+    await rename(transaction.candidate, outputDirectory);
+    candidatePublished = true;
+    triggerCaptureTestFailpoint('after-candidate-publish');
+  } catch (publicationError) {
+    try {
+      if (candidatePublished) await rename(outputDirectory, failedCandidate);
+      if (originalMoved) await rename(backup, outputDirectory);
+      rollbackComplete = true;
+    } catch (rollbackError) {
+      throw new AggregateError(
+        [publicationError, rollbackError],
+        `Design Lab evidence publication rollback failed; recovery files remain at ${transaction.root}`,
+      );
+    } finally {
+      if (rollbackComplete) await rm(transaction.root, { recursive: true, force: true });
+    }
+    throw publicationError;
+  }
+
+  try {
+    await rm(transaction.root, { recursive: true, force: true });
+  } catch (cleanupError) {
+    console.warn(
+      `Design Lab evidence was published, but transaction cleanup failed at ${transaction.root}: `
+        + `${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+    );
+  }
 }
 
 async function configureAuditedPage(page: Page, baseUrl: URL): Promise<PageDiagnostics> {
@@ -800,8 +1216,7 @@ async function captureComparison(
   await captureStableScreenshot(page, outputPath, `comparison-${entry.view}`);
 }
 
-async function captureEvidence(baseUrl: URL): Promise<CaptureSummary> {
-  const outputDirectory = resolve(EVIDENCE_DIRECTORY);
+async function captureEvidence(baseUrl: URL, outputDirectory: string): Promise<CaptureSummary> {
   await mkdir(outputDirectory, { recursive: true });
   const browser = await chromium.launch({ headless: true, args: [...DETERMINISTIC_CHROMIUM_ARGS] });
   const context = await browser.newContext({
@@ -881,7 +1296,33 @@ export async function captureDesignLab(): Promise<void> {
       + `${validation.focusVisibleChecks} focus-visible checks, `
       + `${validation.reducedMotionChecks} reduced-motion checks`,
   );
-  const capture = await captureEvidence(baseUrl);
+  const outputDirectory = resolve(EVIDENCE_DIRECTORY);
+  const transaction = await createCaptureTransaction(outputDirectory);
+  let publicationStarted = false;
+  let capture: CaptureSummary;
+  let metadata: CaptureMetadata;
+  try {
+    capture = await captureEvidence(baseUrl, transaction.candidate);
+    metadata = await buildCaptureMetadata(transaction.candidate, validation, capture);
+    await writeFile(
+      join(transaction.candidate, CAPTURE_METADATA_FILENAME),
+      `${JSON.stringify(metadata, null, 2)}\n`,
+    );
+    const readmePath = join(transaction.candidate, README_FILENAME);
+    const readme = await readFile(readmePath, 'utf8');
+    await writeFile(
+      readmePath,
+      replaceGeneratedReadmeBlock(readme, renderGeneratedReadmeBlock(metadata)),
+    );
+    await validateCapturePublication(transaction.candidate);
+    triggerCaptureTestFailpoint('after-candidate-validation');
+    publicationStarted = true;
+    await publishCaptureTransaction(transaction, outputDirectory);
+  } finally {
+    if (!publicationStarted && await pathExists(transaction.root)) {
+      await rm(transaction.root, { recursive: true, force: true });
+    }
+  }
   console.log(
     `grayscale structural distance: home ${capture.distances.home.distance.toFixed(4)} `
       + `(${capture.distances.home.pair.join('/')}), lesson ${capture.distances.lesson.distance.toFixed(4)} `
@@ -893,6 +1334,7 @@ export async function captureDesignLab(): Promise<void> {
         + `lesson=${capture.signatures[grammar].lesson}`,
     );
   }
+  console.log(`capture manifest digest: ${metadata.manifestDigest}`);
   console.log(`captured ${CAPTURE_MANIFEST.length} Design Lab evidence files without browser errors`);
 }
 
