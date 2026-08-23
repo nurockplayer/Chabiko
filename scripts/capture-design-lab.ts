@@ -13,6 +13,15 @@ export const INDIVIDUAL_VIEWPORT = { width: 390, height: 844 } as const;
 export const COMPARISON_VIEWPORT = { width: 2000, height: 934 } as const;
 export const EVIDENCE_DIRECTORY = 'docs/design/evidence/design-lab';
 
+export function validateLocalBaseUrl(value: string): URL {
+  const baseUrl = new URL(value);
+  const loopbackHosts = new Set(['127.0.0.1', 'localhost', '[::1]']);
+  if (baseUrl.protocol !== 'http:' || !loopbackHosts.has(baseUrl.hostname)) {
+    throw new Error('DESIGN_LAB_BASE_URL must use a loopback HTTP origin');
+  }
+  return baseUrl;
+}
+
 export type CaptureManifestEntry =
   | { kind: 'individual'; grammar: Grammar; view: View; filename: string }
   | { kind: 'comparison'; view: View; filename: string };
@@ -186,7 +195,9 @@ async function captureComparison(
 }
 
 export async function captureDesignLab(): Promise<void> {
-  const baseUrl = new URL(process.env.DESIGN_LAB_BASE_URL ?? 'http://127.0.0.1:4321');
+  const baseUrl = validateLocalBaseUrl(
+    process.env.DESIGN_LAB_BASE_URL ?? 'http://127.0.0.1:4321',
+  );
   const outputDirectory = resolve(EVIDENCE_DIRECTORY);
   await mkdir(outputDirectory, { recursive: true });
 

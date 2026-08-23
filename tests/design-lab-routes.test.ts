@@ -1,12 +1,18 @@
 // @vitest-environment happy-dom
 
+import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   CAPTURE_MANIFEST,
   COMPARISON_VIEWPORT,
   EVIDENCE_DIRECTORY,
   INDIVIDUAL_VIEWPORT,
+  validateLocalBaseUrl,
 } from '../scripts/capture-design-lab';
 import { initDesignLabPrototype } from '../src/client/designLabPrototype';
 import {
@@ -467,4 +473,88 @@ describe('design lab comparison and evidence capture', () => {
     expect(source).toContain('fullPage: false');
     expect(source).not.toMatch(/\b(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)\b/);
   });
+
+  test('capture base URL accepts only a loopback HTTP server', () => {
+    expect(validateLocalBaseUrl('http://127.0.0.1:4321').origin).toBe('http://127.0.0.1:4321');
+    expect(validateLocalBaseUrl('http://localhost:4321').origin).toBe('http://localhost:4321');
+    expect(() => validateLocalBaseUrl('https://example.com')).toThrow(/loopback HTTP/);
+    expect(() => validateLocalBaseUrl('https://127.0.0.1:4321')).toThrow(/loopback HTTP/);
+  });
+
+  test('canonical capture command writes only its manifest and preserves dirty evidence', async () => {
+    const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
+    const grammars = ['apple', 'airbnb', 'notion', 'linear', 'duolingo'] as const;
+    const server = createServer((request, response) => {
+      const url = new URL(request.url ?? '/', 'http://127.0.0.1');
+      const requestedView = url.searchParams.get('view');
+      const view = views.includes(requestedView as (typeof views)[number]) ? requestedView : 'home';
+      response.setHeader('content-type', 'text/html; charset=utf-8');
+
+      if (url.pathname === '/design-lab/' || url.pathname === '/design-lab') {
+        response.end(`<!doctype html><html><head><style>
+          * { box-sizing: border-box; }
+          html, body { margin: 0; width: 100%; overflow-x: hidden; }
+          .row { display: flex; gap: 8px; }
+          section { width: 390px; }
+          iframe { display: block; width: 390px; height: 844px; border: 0; }
+        </style></head><body>
+          <main data-design-lab-comparison data-active-view="${view}">
+            <div class="row">${grammars.map((grammar) => `
+              <section><iframe data-comparison-frame="${grammar}" src="/design-lab/${grammar}/?view=${view}" width="390" height="844"></iframe></section>
+            `).join('')}</div>
+          </main>
+        </body></html>`);
+        return;
+      }
+
+      response.end(`<!doctype html><html><head><style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; width: 100%; overflow-x: hidden; }
+      </style></head><body>
+        <main data-design-lab>
+          ${views.map((candidate) => `<span data-lab-nav data-lab-target="${candidate}" aria-selected="${candidate === view}"></span>`).join('')}
+          ${views.map((candidate) => `<section data-lab-view="${candidate}"${candidate === view ? '' : ' hidden'}>${candidate}</section>`).join('')}
+        </main>
+      </body></html>`);
+    });
+    const temporaryRoot = await mkdtemp(join(tmpdir(), 'chabiko-design-lab-capture-'));
+    const evidenceDirectory = join(temporaryRoot, EVIDENCE_DIRECTORY);
+    const sentinel = join(evidenceDirectory, 'developer-note.txt');
+
+    try {
+      await new Promise<void>((ready, reject) => {
+        server.once('error', reject);
+        server.listen(0, '127.0.0.1', () => ready());
+      });
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Test server did not expose a port');
+      await mkdir(evidenceDirectory, { recursive: true });
+      await writeFile(sentinel, 'preserve me');
+
+      const result = await new Promise<{ code: number | null; output: string }>((done, reject) => {
+        const child = spawn(process.execPath, [resolve('scripts/capture-design-lab.ts')], {
+          cwd: temporaryRoot,
+          env: {
+            ...process.env,
+            DESIGN_LAB_BASE_URL: `http://127.0.0.1:${address.port}`,
+          },
+          stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        let output = '';
+        child.stdout.on('data', (chunk: Buffer) => { output += chunk.toString(); });
+        child.stderr.on('data', (chunk: Buffer) => { output += chunk.toString(); });
+        child.once('error', reject);
+        child.once('close', (code) => done({ code, output }));
+      });
+
+      expect(result.code, result.output).toBe(0);
+      expect(result.output).toContain('captured 24 Design Lab evidence files without browser errors');
+      expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
+      const pngFiles = (await readdir(evidenceDirectory)).filter((file) => file.endsWith('.png')).sort();
+      expect(pngFiles).toEqual(CAPTURE_MANIFEST.map(({ filename }) => filename).sort());
+    } finally {
+      await new Promise<void>((done) => server.close(() => done()));
+      await rm(temporaryRoot, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

@@ -15,8 +15,9 @@ pnpm preview --host 127.0.0.1 --port 4321
 node scripts/capture-design-lab.ts
 ```
 
-The capture defaults to `http://127.0.0.1:4321`. A task-owned server on another
-port can be selected without changing the manifest:
+The capture defaults to `http://127.0.0.1:4321`. A task-owned loopback HTTP
+server on another port can be selected without changing the manifest. External
+and HTTPS origins are rejected:
 
 ```bash
 DESIGN_LAB_BASE_URL=http://127.0.0.1:4328 node scripts/capture-design-lab.ts
