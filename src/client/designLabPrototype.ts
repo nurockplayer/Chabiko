@@ -27,7 +27,9 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
   const views = [...root.querySelectorAll<HTMLElement>('[data-lab-view]')];
-  const navigation = [...root.querySelectorAll<HTMLElement>('[data-lab-nav]')];
+  const navigation = [...root.querySelectorAll<HTMLElement>('[data-lab-nav]')].filter(
+    (item) => item.closest('[data-design-lab]') === root,
+  );
   const removers: Array<() => void> = [];
 
   function applyView(requested: DesignLabView): void {
@@ -42,20 +44,49 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
       activeAssigned = activeAssigned || isVisible;
     }
     for (const item of navigation) {
+      const isActive = item.dataset.labTarget === active;
       item.setAttribute(
         'aria-selected',
-        String(item.dataset.labTarget === active),
+        String(isActive),
       );
+      item.tabIndex = isActive ? 0 : -1;
     }
   }
 
-  for (const item of navigation) {
+  for (const [index, item] of navigation.entries()) {
     const onClick = (): void => {
       const target = item.dataset.labTarget ?? null;
       if (isDesignLabView(target)) applyView(target);
     };
+    const onKeyDown = (event: KeyboardEvent): void => {
+      let targetIndex: number;
+      switch (event.key) {
+        case 'ArrowRight':
+          targetIndex = (index + 1) % navigation.length;
+          break;
+        case 'ArrowLeft':
+          targetIndex = (index - 1 + navigation.length) % navigation.length;
+          break;
+        case 'Home':
+          targetIndex = 0;
+          break;
+        case 'End':
+          targetIndex = navigation.length - 1;
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+      const targetItem = navigation[targetIndex];
+      targetItem.focus();
+      const target = targetItem.dataset.labTarget ?? null;
+      if (isDesignLabView(target)) applyView(target);
+    };
     item.addEventListener('click', onClick);
+    item.addEventListener('keydown', onKeyDown);
     removers.push(() => item.removeEventListener('click', onClick));
+    removers.push(() => item.removeEventListener('keydown', onKeyDown));
   }
 
   for (const reveal of root.querySelectorAll<HTMLElement>('[data-lab-reveal]')) {

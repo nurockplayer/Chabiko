@@ -160,6 +160,90 @@ describe('design lab layout isolation', () => {
 });
 
 describe('design lab controller', () => {
+  test('uses roving focus to activate tab views while preserving native keys', () => {
+    window.history.replaceState({}, '', '/design-lab/apple/?view=vocabulary');
+    const root = createDesignLabRoot();
+
+    initDesignLabPrototype(root);
+
+    const navigation = [
+      ...root.querySelectorAll<HTMLButtonElement>('[data-lab-nav]'),
+    ];
+    const [home, vocabulary, lesson, travel] = navigation;
+    expect(navigation.map((item) => item.tabIndex)).toEqual([-1, 0, -1, -1]);
+
+    const press = (item: HTMLButtonElement, key: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      item.dispatchEvent(event);
+      return event;
+    };
+
+    expect(press(vocabulary, 'ArrowRight').defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(lesson);
+    expect(lesson.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector<HTMLElement>('[data-lab-view="lesson"]')?.hidden).toBe(false);
+    expect(navigation.map((item) => item.tabIndex)).toEqual([-1, -1, 0, -1]);
+
+    press(lesson, 'End');
+    expect(document.activeElement).toBe(travel);
+    press(travel, 'ArrowRight');
+    expect(document.activeElement).toBe(home);
+    press(home, 'ArrowLeft');
+    expect(document.activeElement).toBe(travel);
+    press(travel, 'Home');
+    expect(document.activeElement).toBe(home);
+    expect(home.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector<HTMLElement>('[data-lab-view="home"]')?.hidden).toBe(false);
+
+    for (const key of ['Tab', 'Enter', ' ']) {
+      expect(press(home, key).defaultPrevented).toBe(false);
+    }
+    travel.click();
+    expect(travel.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector<HTMLElement>('[data-lab-view="travel"]')?.hidden).toBe(false);
+  });
+
+  test('removes tab key handlers during cleanup', () => {
+    const root = createDesignLabRoot();
+    const cleanup = initDesignLabPrototype(root);
+    const vocabulary = root.querySelector<HTMLButtonElement>(
+      '[data-lab-nav][data-lab-target="vocabulary"]',
+    )!;
+
+    const activateVocabulary = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
+    root.querySelector<HTMLButtonElement>('[data-lab-nav][data-lab-target="home"]')!
+      .dispatchEvent(activateVocabulary);
+    expect(vocabulary.getAttribute('aria-selected')).toBe('true');
+
+    cleanup();
+    const afterCleanup = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
+    vocabulary.dispatchEvent(afterCleanup);
+
+    expect(afterCleanup.defaultPrevented).toBe(false);
+    expect(vocabulary.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector<HTMLElement>('[data-lab-view="lesson"]')?.hidden).toBe(true);
+  });
+
+  test('ignores navigation owned by a nested prototype root', () => {
+    const root = createDesignLabRoot();
+    const nestedRoot = createDesignLabRoot();
+    root.append(nestedRoot);
+
+    initDesignLabPrototype(root);
+
+    expect([
+      ...nestedRoot.querySelectorAll<HTMLButtonElement>('[data-lab-nav]'),
+    ].map((item) => item.tabIndex)).toEqual([0, 0, 0, 0]);
+  });
+
   test('falls back from an invalid query and keeps exactly one selected view', () => {
     window.history.replaceState({}, '', '/design-lab/apple/?view=unknown');
     const root = createDesignLabRoot();
