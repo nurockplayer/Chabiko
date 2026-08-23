@@ -827,6 +827,58 @@ describe('design lab grammar routes', () => {
     expect(travelPanel).toContain('data-readiness-state={index === 0 ? \'current\' : \'next\'}');
   });
 
+  test('Linear learner chrome uses Japanese learning semantics instead of internal tool labels', () => {
+    const source = readFileSync('src/components/design-lab/LinearPrototype.astro', 'utf8');
+
+    for (const internalLabel of [
+      'LAB',
+      'CONTENT',
+      'STRUCTURED',
+      'LEARNING OPERATIONS',
+      'HOME / CURRENT',
+      'OUTCOME',
+      'SCENARIO',
+      'VOCAB',
+      'SCRIPT',
+      'KANA',
+      'TYPE',
+      'RECALL',
+      'TRAVEL / READINESS',
+      'REQUIRED ACTIONS',
+    ]) {
+      expect(source).not.toContain(`>${internalLabel}<`);
+    }
+    for (const learnerLabel of [
+      '台湾編',
+      '学習ステージ',
+      'できること',
+      '使う場面',
+      '単語',
+      '簡体字',
+      '日本語',
+      '分類',
+      '復習',
+      '旅行 / 準備度',
+      '必要な行動',
+    ]) {
+      expect(source).toContain(`>${learnerLabel}<`);
+    }
+  });
+
+  test('Linear category metadata reserves space without arbitrary word breaks', () => {
+    const source = readFileSync('src/components/design-lab/LinearPrototype.astro', 'utf8');
+    const factsRule = source.match(/\.compact-facts\s*\{(?<body>[^}]*)\}/)?.groups?.body ?? '';
+    const definitionRules = [...source.matchAll(/\.compact-facts dd\s*\{(?<body>[^}]*)\}/g)]
+      .map((match) => match.groups?.body ?? '')
+      .join('\n');
+
+    expect(source).toContain('class="category-fact"');
+    expect(factsRule).toContain('minmax(118px, 1.35fr)');
+    expect(definitionRules).toContain('margin: 0');
+    expect(definitionRules).toContain('white-space: nowrap');
+    expect(definitionRules).not.toContain('overflow-wrap: anywhere');
+  });
+
   test.each([
     ['airbnb', 'src/components/design-lab/AirbnbPrototype.astro', '.airbnb-target-card summary'],
     ['notion', 'src/components/design-lab/NotionPrototype.astro', '.document-disclosure summary'],
