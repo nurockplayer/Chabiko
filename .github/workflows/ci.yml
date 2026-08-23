@@ -115,6 +115,9 @@ jobs:
           test -f dist/auth/callback/index.html
           test -f dist/vocabulary/basic/index.html
           test -f dist/vocabulary/basic/words/index.html
+          test -f dist/v2-reference/data/lesson-001-answer.json
+          test -f dist/_headers
+          test "$(sed -n '\|^/v2-reference/data/lesson-001-answer.json$|{n;p;}' dist/_headers)" = "  Cache-Control: private, no-store"
 
   content:
     name: Content validation

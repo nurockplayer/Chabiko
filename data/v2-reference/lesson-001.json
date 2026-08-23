@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "lessonId": "lesson-001",
+  "today": {
+    "titleJa": "夜市で、指さし注文",
+    "contextJa": "台湾の夜市。食べたいものを見つけました。",
+    "primaryActionJa": "この場面を練習"
+  },
+  "scene": {
+    "src": "/assets/v2-reference/night-market-order-reference.webp",
+    "width": 1200,
+    "height": 900,
+    "altJa": "台湾の夜市の屋台で、食べたい料理を指さして注文する場面",
+    "locationJa": "台湾・夜市",
+    "provenance": {
+      "kind": "ai-generated",
+      "generator": "OpenAI built-in imagegen",
+      "sourceArtifactId": "exec-e2455514-6911-4af3-b8f7-1cfe62021230",
+      "generatedOn": "2026-08-23",
+      "transform": "cwebp q82, resized to 1200x900",
+      "rightsStatus": "generated-for-project-reference",
+      "allowedUse": "isolated-v2-reference-only",
+      "reviewStatus": "reference-only"
+    }
+  },
+  "audio": {
+    "kind": "device-speech-synthesis",
+    "lang": "zh-TW",
+    "labelJa": "音声を聞く",
+    "unavailableJa": "この端末では音声を再生できません。",
+    "reviewStatus": "reference-only",
+    "productionReplacement": "reviewed-static-zh-TW-audio-required"
+  },
+  "retrieval": {
+    "promptJa": "「これをください」を中国語の順番に並べよう。",
+    "contextJa": "食べたいものを指さして、ひと言。",
+    "hintJa": "「私」を表すことばから始めます。",
+    "chunks": [
+      { "id": "v2-a91", "text": "我" },
+      { "id": "v2-b07", "text": "要" },
+      { "id": "v2-c42", "text": "這個" }
+    ],
+    "initialOrder": ["v2-c42", "v2-a91", "v2-b07"],
+    "answerOrder": ["v2-a91", "v2-b07", "v2-c42"]
+  },
+  "result": {
+    "headingJa": "今日できるようになったこと"
+  }
+}

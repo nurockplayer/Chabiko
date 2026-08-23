@@ -121,6 +121,13 @@ const CONFIG_FILES = new Set([
 function isBuildCi(file: string): boolean {
   const base = file.split('/').at(-1) ?? file;
   if (CONFIG_FILES.has(base)) return true;
+  // The V2 reference metadata, deployed scene asset, and Pages headers form one
+  // learner-visible/secrecy contract. Any of them can change rendered evidence
+  // or the built answer response, so future edits must run build + Vitest +
+  // visual + a11y instead of falling through as ordinary T1 content.
+  if (file.startsWith('data/v2-reference/')) return true;
+  if (file === 'public/_headers') return true;
+  if (file.startsWith('public/assets/v2-reference/')) return true;
   if (base.startsWith('playwright.') && base.endsWith('.config.ts')) return true;
   if (file.startsWith('.github/workflows/')) return true;
   if (file.startsWith('scripts/') || file.startsWith('src/scripts/')) return true;
@@ -231,6 +238,10 @@ interface DomainRule {
 }
 
 export const DOMAIN_TEST_RULES: DomainRule[] = [
+  {
+    match: (b) => b.includes('v2reference'),
+    testGlobs: ['tests/v2-reference-*.test.ts'],
+  },
   {
     match: (b) => b.includes('basicvocabulary'),
     testGlobs: ['tests/basic-vocabulary-*.test.ts'],
