@@ -10,6 +10,12 @@
 
 **Spec:** `docs/design/prototypes/design-lab/README.md`
 
+**Cross-cutting contract:**
+`docs/design/prototypes/design-lab/impact-map.md`
+
+**Validation status:** Prototype implementation, focused validation, and
+capture evidence exist. Final exact-head T3 integration validation is pending.
+
 ## Global Constraints
 
 - Do not modify production UI, production routes, `BaseLayout.astro`, `Header.astro`, shared production tokens, loaders, progress logic, or existing visual snapshots.
@@ -203,4 +209,3 @@ Compare all five home captures and all five lesson captures with color removed.
 Apple must remain focal and airy, Airbnb image-led, Notion document-like,
 Linear rail-and-stage, and Duolingo path-driven. Rework any pair that cannot be
 identified from layout, density, geometry, and type alone.
-

@@ -3,6 +3,9 @@
 > Status: exploratory, prototype-only. These routes do not replace the frozen
 > A1 Editorial Calm production contract in `docs/design/reference-family-389.md`.
 
+The cross-cutting surface inventory and Requirement -> Diff -> Test Evidence
+matrix are in [the Design Lab Impact Map](./impact-map.md).
+
 ## Design read
 
 Mobile-first consumer learning for Japanese-speaking adults who need practical
