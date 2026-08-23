@@ -232,6 +232,12 @@ interface DomainRule {
 
 export const DOMAIN_TEST_RULES: DomainRule[] = [
   {
+    // Isolated design-lab source adapter; keep this exact rule ahead of any
+    // future generic fixture matcher so its contract suite stays selected.
+    match: (b) => b === 'designlabfixture.ts',
+    testGlobs: ['tests/design-lab-routes.test.ts'],
+  },
+  {
     match: (b) => b.includes('basicvocabulary'),
     testGlobs: ['tests/basic-vocabulary-*.test.ts'],
   },

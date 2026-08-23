@@ -477,6 +477,12 @@ describe('affected-domain test selection never silently skips a domain source', 
       'tests/basic-vocabulary-*.test.ts',
     ]);
   });
+
+  it('maps the design-lab fixture adapter to its focused contract suite', () => {
+    expect(domainTestGlobsFor('src/content/designLabFixture.ts')).toEqual([
+      'tests/design-lab-routes.test.ts',
+    ]);
+  });
 });
 
 describe('tier ordering and risk-class table are complete', () => {
