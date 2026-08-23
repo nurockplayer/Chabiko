@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "scope": "Chabiko design-lab prototypes only",
+  "generator": "OpenAI built-in image generation",
+  "generatedAt": "2026-08-24",
+  "assets": [
+    {
+      "path": "/assets/design-lab/night-market-ordering.webp",
+      "sourceFile": "/Users/tachikoma/.codex/generated_images/01a02fb2-a678-77b0-9bdd-8e4d302be677/exec-11450f1e-8d34-44c3-9c88-2b7c9ee0404f.png",
+      "useCase": "photorealistic-natural",
+      "promptSummary": "Adult traveler pointing at food at an authentic Taiwan night-market counter; mature editorial documentary photography; no text, logos, landmarks, or tourist-poster styling.",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "format": "webp",
+      "allowedUse": "prototype-only"
+    },
+    {
+      "path": "/assets/design-lab/rainy-taiwan-street.webp",
+      "sourceFile": "/Users/tachikoma/.codex/generated_images/01a02fb2-a678-77b0-9bdd-8e4d302be677/exec-474550a5-ab9f-4492-a557-ee263344e068.png",
+      "useCase": "photorealistic-natural",
+      "promptSummary": "Quiet rainy Taiwan neighborhood street seen by an adult traveler; mature editorial documentary photography; no text, logos, landmarks, or tourist-poster styling.",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "format": "webp",
+      "allowedUse": "prototype-only"
+    }
+  ]
+}
+
