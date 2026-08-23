@@ -68,7 +68,7 @@
       "filename": "linear-home.png",
       "width": 390,
       "height": 844,
-      "sha256": "89d917a754273fa162339a4769dd5fe8ef6c7beffd1d10f58db25263bea8fb78",
+      "sha256": "44e7c2c6717b6c07f337728d094be77fee88c57a6c6c1ae2bf6b81e060b62f8b",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -138,7 +138,7 @@
       "filename": "linear-vocabulary.png",
       "width": 390,
       "height": 844,
-      "sha256": "b44e8ae42638a8e844d2a3ed70d1988247505f464d718f9e396701cfa412c631",
+      "sha256": "4e7bac1adbc3d7e85a2a920871e1a43819e9e7629c24ca5718190b5997803d35",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -194,7 +194,7 @@
       "filename": "notion-lesson.png",
       "width": 390,
       "height": 844,
-      "sha256": "1446b5fcef4456db990cb0dc4a415c7de8d6eca3d8324f6977f65ec9a1f67427",
+      "sha256": "8164d8f94f83973c0f995cb36e413adc51f1bf067e78df6151a00e301c61436a",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -208,7 +208,7 @@
       "filename": "linear-lesson.png",
       "width": 390,
       "height": 844,
-      "sha256": "1916c7d6c0b090bbcc435b9d3235ce1b35a10f95f0cdd843009bcf18afa0271a",
+      "sha256": "06dfb7ddcfc3c2527625aa328bcc37639a8acc48fd988c3949b5b6cab0898d17",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -250,7 +250,7 @@
       "filename": "airbnb-travel.png",
       "width": 390,
       "height": 844,
-      "sha256": "136858830124bb2cdc507f058fce7b239b3b0d62959a301b1f35b4ce3d0fc646",
+      "sha256": "8d8369f2e7b556c36f0f2be33372521d4394539c45947b3dda8a0b882a169393",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -278,7 +278,7 @@
       "filename": "linear-travel.png",
       "width": 390,
       "height": 844,
-      "sha256": "896ccd3b1b6628349536acba7c6eb9e6c631d4cadb467aa340e2446819ef9585",
+      "sha256": "bb56827a6abf1bb77769c68f44b70c0a3a680f4982364ce83f55df54b76ebafe",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -292,7 +292,7 @@
       "filename": "duolingo-travel.png",
       "width": 390,
       "height": 844,
-      "sha256": "bdf64ba0016fd00d131f4d72ac98c3af652926113d57037f98598aa5ab514a33",
+      "sha256": "3182af55fa97f311312ab7e7c74437fa2fb63549ad4bbe7edf6e2173e598284e",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -305,7 +305,7 @@
       "filename": "comparison-home.png",
       "width": 2000,
       "height": 934,
-      "sha256": "00ec3d9b32868b7244a096e77d22763be1e69dd86a95e03dc814749ff3d1897b",
+      "sha256": "ec7cc94fabf6d534f60f6ee62ea3118a63507bfaea22ae126e7875f34793632d",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -318,7 +318,7 @@
       "filename": "comparison-vocabulary.png",
       "width": 2000,
       "height": 934,
-      "sha256": "2c0571dec7d3b5c558da5daf76b047de70a43069d8f862344b9eefa4c72128f5",
+      "sha256": "4174ca79b2a96fc542aabd8372834e5f8b6df6ac92ba4067fa2aec17b96fe1e9",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -331,7 +331,7 @@
       "filename": "comparison-lesson.png",
       "width": 2000,
       "height": 934,
-      "sha256": "e4cf0fc8b1c497e6f6949e6e3ffd89be596b5b539d55a81a6555d5e4f7a4ca05",
+      "sha256": "a7e2b6b2fe30c888acfdea954e1caaef33ce0bb9bb08016ac3a75238c8ab7e26",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -344,7 +344,7 @@
       "filename": "comparison-travel.png",
       "width": 2000,
       "height": 934,
-      "sha256": "95f6e19124ca473ac43a7df42d08a5a561e0ecbe3265f8afa4d706b44987b593",
+      "sha256": "3e7c5828f43e2bb06d974d41ec0b22d17e2b51f786b8738a8c24100d78b76cde",
       "checks": {
         "renderedContract": "passed",
         "browserDiagnostics": "clean",
@@ -392,5 +392,5 @@
       }
     }
   },
-  "manifestDigest": "7f246fc1d850f2bfa177140918f5952aae90c42b0de9470f4a0e901806188da7"
+  "manifestDigest": "9ff613552937f607cec81e8ec6b0bfd1de51ed0ec404b65dbefea4c5fb99f08e"
 }

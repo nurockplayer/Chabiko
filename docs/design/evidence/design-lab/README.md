@@ -67,7 +67,7 @@ contains no capture timestamp so byte-identical repeated runs stay deterministic
 <!-- Generated from capture.json by scripts/capture-design-lab.ts. Do not edit this block. -->
 
 - Manifest entries: 24
-- Manifest digest: `7f246fc1d850f2bfa177140918f5952aae90c42b0de9470f4a0e901806188da7`
+- Manifest digest: `9ff613552937f607cec81e8ec6b0bfd1de51ed0ec404b65dbefea4c5fb99f08e`
 - Rendered validation: 5 interaction scenarios, 120 responsive states, 20 axe scans, 20 focus-visible checks, and 20 reduced-motion checks
 - Closest grayscale distance, Home: `0.1021` (notion/duolingo)
 - Closest grayscale distance, Lesson: `0.1044` (notion/duolingo)
