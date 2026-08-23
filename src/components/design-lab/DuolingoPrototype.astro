@@ -354,41 +354,54 @@ const distractors = quiz?.distractorsJa ?? [];
         <p>場面ごとの準備を確かめながら進みます。</p>
       </header>
 
-      <div class="travel-media">
-        <figure class="travel-photo travel-photo-main">
-          <img
-            src="/assets/design-lab/night-market-ordering.webp"
-            alt="台湾の夜市で注文する場面"
-            width="1536"
-            height="1024"
-          />
-          <figcaption>{fixture.lesson.travelTask}</figcaption>
-        </figure>
-        <figure class="travel-photo travel-photo-secondary">
-          <img
-            src="/assets/design-lab/rainy-taiwan-street.webp"
-            alt="雨の台湾の通りを歩く場面"
-            width="1536"
-            height="1024"
-            loading="lazy"
-          />
-          <figcaption>台湾の街で使う準備</figcaption>
-        </figure>
-      </div>
+      <div class="travel-quest-layout">
+        <div
+          class="readiness-path"
+          data-lab-travel-priority
+          aria-label="Travel Quest の進行"
+        >
+          {fixture.travelTargets.map((target, index) => (
+            <article
+              class="readiness-node"
+              data-readiness-state={index === 0 ? 'current' : 'next'}
+            >
+              <span class="readiness-index" aria-hidden="true">{index + 1}</span>
+              <div>
+                <p class="readiness-status">
+                  <strong>{index === 0 ? '現在' : index === 1 ? '次' : 'このあと'}</strong>
+                  <span>{index + 1} / {fixture.travelTargets.length}</span>
+                </p>
+                <h2>{target.labelJa}</h2>
+                <p>{target.goalJa}</p>
+                <ul>
+                  {target.evidence.map((evidence) => <li>{evidence.labelJa}</li>)}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
 
-      <div class="readiness-path">
-        {fixture.travelTargets.map((target, index) => (
-          <article class="readiness-node">
-            <span class="readiness-index" aria-hidden="true">{index + 1}</span>
-            <div>
-              <h2>{target.labelJa}</h2>
-              <p>{target.goalJa}</p>
-              <ul>
-                {target.evidence.map((evidence) => <li>{evidence.labelJa}</li>)}
-              </ul>
-            </div>
-          </article>
-        ))}
+        <div class="travel-media" data-lab-travel-media>
+          <figure class="travel-photo travel-photo-main">
+            <img
+              src="/assets/design-lab/night-market-ordering.webp"
+              alt="台湾の夜市で注文する場面"
+              width="1536"
+              height="1024"
+            />
+            <figcaption>{fixture.lesson.travelTask}</figcaption>
+          </figure>
+          <figure class="travel-photo travel-photo-secondary">
+            <img
+              src="/assets/design-lab/rainy-taiwan-street.webp"
+              alt="雨の台湾の通りを歩く場面"
+              width="1536"
+              height="1024"
+              loading="lazy"
+            />
+            <figcaption>台湾の街で使う準備</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
   </div>
@@ -1046,22 +1059,37 @@ const distractors = quiz?.distractorsJa ?? [];
     text-wrap: balance;
   }
 
+  .travel-quest-layout {
+    margin-top: 28px;
+  }
+
   .travel-media {
     display: grid;
-    gap: 12px;
-    margin-top: 34px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--duo-line);
   }
 
   .travel-photo {
     overflow: hidden;
-    border-radius: 18px;
+    border-radius: 14px;
     background: var(--duo-surface);
   }
 
   .travel-photo img {
     width: 100%;
-    aspect-ratio: 3 / 2;
+    height: clamp(112px, 34vw, 146px);
     object-fit: cover;
+  }
+
+  .travel-photo-main img {
+    object-position: 42% 58%;
+  }
+
+  .travel-photo-secondary img {
+    object-position: 50% 54%;
   }
 
   .travel-photo figcaption {
@@ -1073,7 +1101,7 @@ const distractors = quiz?.distractorsJa ?? [];
 
   .readiness-path {
     position: relative;
-    margin-top: 52px;
+    margin-top: 0;
   }
 
   .readiness-path::before {
@@ -1084,13 +1112,40 @@ const distractors = quiz?.distractorsJa ?? [];
 
   .readiness-node {
     grid-template-columns: 44px minmax(0, 1fr);
-    gap: 18px;
-    min-height: 150px;
-    padding-bottom: 38px;
+    gap: 16px;
+    min-height: 0;
+    padding-bottom: 34px;
   }
 
   .readiness-index {
     border-color: var(--duo-accent);
+    color: var(--duo-accent-dark);
+  }
+
+  .readiness-node[data-readiness-state="current"] .readiness-index {
+    background: var(--duo-accent);
+    color: #f9fcfa;
+    box-shadow: 0 0 0 6px #e1ebe4;
+  }
+
+  .readiness-node[data-readiness-state="next"] .readiness-index {
+    border-style: dashed;
+    border-radius: 12px;
+  }
+
+  .readiness-node .readiness-status {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 5px;
+    color: var(--duo-muted);
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .readiness-node .readiness-status strong {
     color: var(--duo-accent-dark);
   }
 
@@ -1279,18 +1334,35 @@ const distractors = quiz?.distractorsJa ?? [];
       padding-block: 36px 18px;
     }
 
-    .lesson-split,
-    .travel-media {
+    .lesson-split {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .travel-photo-main {
-      grid-row: span 2;
+    .travel-quest-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+      gap: 48px;
+      align-items: start;
+      margin-top: 42px;
     }
 
-    .travel-photo-main img {
-      height: 100%;
-      aspect-ratio: auto;
+    .travel-media {
+      position: sticky;
+      top: 28px;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .travel-photo img {
+      height: auto;
+      aspect-ratio: 4 / 3;
+    }
+
+    .travel-photo-secondary {
+      margin-left: 52px;
     }
   }
 

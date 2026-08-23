@@ -815,6 +815,18 @@ describe('design lab grammar routes', () => {
     expect(source).not.toMatch(/\?\?\s*['"][^'"]*台湾/);
   });
 
+  test('Duolingo travel leads with the readiness sequence before supporting imagery', () => {
+    const source = readFileSync('src/components/design-lab/DuolingoPrototype.astro', 'utf8');
+    const travelPanel = source.slice(source.indexOf('id="duo-travel"'), source.indexOf('</main>'));
+    const readinessIndex = travelPanel.indexOf('data-lab-travel-priority');
+    const mediaIndex = travelPanel.indexOf('data-lab-travel-media');
+
+    expect(readinessIndex).toBeGreaterThan(-1);
+    expect(mediaIndex).toBeGreaterThan(-1);
+    expect(readinessIndex).toBeLessThan(mediaIndex);
+    expect(travelPanel).toContain('data-readiness-state={index === 0 ? \'current\' : \'next\'}');
+  });
+
   test.each([
     ['airbnb', 'src/components/design-lab/AirbnbPrototype.astro', '.airbnb-target-card summary'],
     ['notion', 'src/components/design-lab/NotionPrototype.astro', '.document-disclosure summary'],
