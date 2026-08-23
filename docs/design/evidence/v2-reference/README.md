@@ -23,12 +23,12 @@ The individual PNG files retain the exact viewport dimensions.
 
 `tests/a11y/v2-reference.a11y.spec.ts` verifies the live built flow rather than static screenshots:
 
-- 320×800, 375×812, and 390×844 have no horizontal overflow, undersized controls, or partially clipped visible controls;
-- learning, retrieval, repair, reveal, retry, correct, and result transitions are keyboard-operable with managed focus;
+- 320×800, 375×812, and 390×844 run the complete learning → retrieval → repair → hint → reveal → retry → correct → result flow with no horizontal overflow, undersized controls, or partially clipped visible controls at any state;
+- the 390×844 evidence runs learning, retrieval, repair, reveal, retry, correct, and result transitions from the keyboard with managed focus;
 - global navigation is absent from the focused learning flow;
 - the answer and pinyin are absent from rendered page text through retrieval, incorrect, and hint states;
 - the answer artifact is not requested until the explicit reveal action;
-- serious and critical axe findings are empty across the major states;
-- no external request, console error, or page error occurs during capture.
+- serious and critical axe findings are empty across the major 390×844 states;
+- request, console-error, and page-error listeners remain clean across every full-flow viewport run.
 
 The scene image is an AI-generated, reference-only asset. Its generator, transformation, rights status, and allowed-use metadata are stored in `data/v2-reference/lesson-001.json`.

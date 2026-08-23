@@ -9,6 +9,44 @@ const VIEWPORTS = [
   { width: 390, height: 844 },
 ] as const;
 
+interface RuntimeAudit {
+  answerRequests: string[];
+  consoleErrors: string[];
+  externalRequests: Set<string>;
+  pageErrors: string[];
+}
+
+function watchRuntime(page: Page): RuntimeAudit {
+  const audit: RuntimeAudit = {
+    answerRequests: [],
+    consoleErrors: [],
+    externalRequests: new Set(),
+    pageErrors: [],
+  };
+  page.on('console', (message) => {
+    if (message.type() === 'error') audit.consoleErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => audit.pageErrors.push(error.message));
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.pathname === ANSWER_PATH) audit.answerRequests.push(url.pathname);
+    if (url.origin !== 'http://127.0.0.1:4321') audit.externalRequests.add(url.href);
+  });
+  return audit;
+}
+
+function expectCleanRuntime(audit: RuntimeAudit): void {
+  expect(audit.consoleErrors).toEqual([]);
+  expect(audit.pageErrors).toEqual([]);
+  expect(audit.externalRequests).toEqual(new Set());
+}
+
+async function selectChunks(page: Page, chunks: readonly string[]): Promise<void> {
+  for (const chunk of chunks) {
+    await page.getByRole('button', { name: chunk, exact: true }).click();
+  }
+}
+
 async function expectStage(page: Page, stage: string): Promise<void> {
   await expect(page.locator('[data-v2-reference-root]')).toHaveAttribute(
     'data-v2-stage',
@@ -84,7 +122,10 @@ async function expectNoBlockingAxeViolations(page: Page): Promise<void> {
 }
 
 for (const viewport of VIEWPORTS) {
-  test(`mobile containment ${viewport.width}×${viewport.height}`, async ({ page }) => {
+  test(`full-flow mobile containment ${viewport.width}×${viewport.height}`, async ({
+    page,
+  }) => {
+    const runtime = watchRuntime(page);
     await page.setViewportSize(viewport);
     await page.goto(ROUTE, { waitUntil: 'networkidle' });
 
@@ -99,18 +140,40 @@ for (const viewport of VIEWPORTS) {
     await page.locator('[data-action="start-retrieval"]').click();
     await expectStage(page, 'retrieval');
     await expectViewportContainment(page);
+
+    await selectChunks(page, ['這個', '我', '要']);
+    await page.locator('[data-action="submit-retrieval"]').click();
+    await expectStage(page, 'repair');
+    await expectViewportContainment(page);
+    expect(runtime.answerRequests).toEqual([]);
+
+    await page.locator('[data-action="show-hint"]').click();
+    await expectViewportContainment(page);
+    expect(runtime.answerRequests).toEqual([]);
+
+    await page.locator('[data-action="reveal-answer"]').click();
+    await expect(page.locator('[data-reveal-answer]')).toContainText('我要這個');
+    await expectViewportContainment(page);
+    expect(runtime.answerRequests).toEqual([ANSWER_PATH]);
+
+    await page.locator('[data-action="retry"]').click();
+    await expectStage(page, 'retrieval');
+    await expectViewportContainment(page);
+    await selectChunks(page, ['我', '要', '這個']);
+    await page.locator('[data-action="submit-retrieval"]').click();
+    await expectStage(page, 'correct');
+    await expectViewportContainment(page);
+
+    await page.locator('[data-action="view-result"]').click();
+    await expectStage(page, 'result');
+    await expectViewportContainment(page);
+    expectCleanRuntime(runtime);
   });
 }
 
 test('keyboard-operable repair flow keeps the answer hidden until reveal', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const externalRequests = new Set<string>();
-  const answerRequests: string[] = [];
-  page.on('request', (request) => {
-    const url = new URL(request.url());
-    if (url.pathname === ANSWER_PATH) answerRequests.push(url.pathname);
-    if (url.origin !== 'http://127.0.0.1:4321') externalRequests.add(url.href);
-  });
+  const runtime = watchRuntime(page);
 
   await page.goto(ROUTE, { waitUntil: 'networkidle' });
   await expect(page.locator('#v2-reference-bootstrap')).toHaveCount(0);
@@ -142,37 +205,33 @@ test('keyboard-operable repair flow keeps the answer hidden until reveal', async
   await expect(page.locator('[data-screen-heading]')).toBeFocused();
   await expect(page.locator('body')).not.toContainText('我要這個');
   await expect(page.locator('body')).not.toContainText('wǒ yào zhège');
-  expect(answerRequests).toEqual([]);
+  expect(runtime.answerRequests).toEqual([]);
   await expectNoBlockingAxeViolations(page);
 
-  for (const chunk of ['這個', '我', '要']) {
-    await page.getByRole('button', { name: chunk, exact: true }).click();
-  }
+  await selectChunks(page, ['這個', '我', '要']);
   await page.locator('[data-action="submit-retrieval"]').click();
   await expectStage(page, 'repair');
   await expect(page.locator('body')).not.toContainText('我要這個');
   await expect(page.locator('body')).not.toContainText('wǒ yào zhège');
-  expect(answerRequests).toEqual([]);
+  expect(runtime.answerRequests).toEqual([]);
 
   await page.locator('[data-action="show-hint"]').click();
   await expect(page.locator('[data-repair-focus]')).toBeFocused();
   await expect(page.locator('body')).not.toContainText('我要這個');
   await expect(page.locator('body')).not.toContainText('wǒ yào zhège');
-  expect(answerRequests).toEqual([]);
+  expect(runtime.answerRequests).toEqual([]);
 
   await page.locator('[data-action="reveal-answer"]').click();
   await expect(page.locator('[data-reveal-answer]')).toBeFocused();
   await expect(page.locator('[data-reveal-answer]')).toContainText('我要這個');
-  expect(answerRequests).toEqual([ANSWER_PATH]);
+  expect(runtime.answerRequests).toEqual([ANSWER_PATH]);
   await expectViewportContainment(page);
   await expectNoBlockingAxeViolations(page);
 
   await page.locator('[data-action="retry"]').click();
   await expect(page.locator('body')).not.toContainText('我要這個');
   await expect(page.locator('body')).not.toContainText('wǒ yào zhège');
-  for (const chunk of ['我', '要', '這個']) {
-    await page.getByRole('button', { name: chunk, exact: true }).click();
-  }
+  await selectChunks(page, ['我', '要', '這個']);
   await page.locator('[data-action="submit-retrieval"]').click();
   await expectStage(page, 'correct');
   await page.locator('[data-action="view-result"]').click();
@@ -185,5 +244,5 @@ test('keyboard-operable repair flow keeps the answer hidden until reveal', async
   await expect(page.locator('[data-v2-reference-root]')).not.toContainText(/XP|ストリーク|バッジ|%/);
   await expectViewportContainment(page);
   await expectNoBlockingAxeViolations(page);
-  expect(externalRequests).toEqual(new Set());
+  expectCleanRuntime(runtime);
 });
