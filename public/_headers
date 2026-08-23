@@ -1,0 +1,3 @@
+# Cloudflare Pages applies these rules to the built static responses.
+/v2-reference/data/lesson-001-answer.json
+  Cache-Control: private, no-store
