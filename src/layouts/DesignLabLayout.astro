@@ -18,6 +18,33 @@ const {
     <meta name="description" content={description} />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title} | Chabiko Design Lab</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      img,
+      picture,
+      svg,
+      video,
+      canvas {
+        display: block;
+        max-width: 100%;
+      }
+    </style>
   </head>
   <body>
     <slot />

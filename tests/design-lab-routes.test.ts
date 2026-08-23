@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { initDesignLabPrototype } from '../src/client/designLabPrototype';
 import { buildDesignLabFixture } from '../src/content/designLabFixture';
@@ -45,6 +46,17 @@ describe('design lab fixture', () => {
     expect(fixture.lesson.coreSentence).toBe('我要這個');
     expect(fixture.vocabulary.id).toBe('voc-002');
     expect(fixture.travelTargets).toHaveLength(4);
+  });
+});
+
+describe('design lab layout isolation', () => {
+  test('owns the baseline reset required by prototype routes', () => {
+    const layout = readFileSync('src/layouts/DesignLabLayout.astro', 'utf8');
+
+    expect(layout).toMatch(/\*,\s*\*::before,\s*\*::after\s*\{\s*box-sizing:\s*border-box;/);
+    expect(layout).toMatch(/body\s*\{\s*margin:\s*0;/);
+    expect(layout).toMatch(/button,\s*input,\s*select,\s*textarea\s*\{\s*font:\s*inherit;/);
+    expect(layout).toMatch(/img,\s*picture,\s*svg,\s*video,\s*canvas\s*\{[\s\S]*?display:\s*block;[\s\S]*?max-width:\s*100%;/);
   });
 });
 
