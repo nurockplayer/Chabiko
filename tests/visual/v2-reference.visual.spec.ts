@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { V2_REFERENCE_EVIDENCE_STORAGE_KEY } from '../../src/domain/v2ReferenceFlow';
 import {
   V2_REFERENCE_VISUAL_CASES,
   type V2ReferenceScreen,
@@ -122,9 +123,19 @@ async function assertInteractiveContainment(page: Page) {
           rect.width > 0 &&
           rect.height > 0 &&
           getComputedStyle(element).visibility !== 'hidden';
-        if (!visible || (rect.left >= 0 && rect.right <= window.innerWidth)) return [];
+        const intersectsViewport =
+          rect.right > 0 &&
+          rect.left < window.innerWidth &&
+          rect.bottom > 0 &&
+          rect.top < window.innerHeight;
+        const fullyContained =
+          rect.left >= 0 &&
+          rect.right <= window.innerWidth &&
+          rect.top >= 0 &&
+          rect.bottom <= window.innerHeight;
+        if (!visible || !intersectsViewport || fullyContained) return [];
         return [
-          `${element.tagName} ${element.textContent?.trim() ?? ''}: ${rect.left}..${rect.right}`,
+          `${element.tagName} ${element.textContent?.trim() ?? ''}: x=${rect.left}..${rect.right}, y=${rect.top}..${rect.bottom}`,
         ];
       }),
     );
@@ -290,6 +301,35 @@ test.describe('/v2-reference/ behavior and answer secrecy', () => {
     await assertWcagAaClean(page, 'result');
   });
 
+  test('result rejects stale session evidence instead of labeling it as today', async ({
+    page,
+  }) => {
+    await preparePage(page, { width: 390, height: 844 });
+    await page.goto(`${BASE_URL}/v2-reference/`, { waitUntil: 'load' });
+    await page.evaluate(
+      ({ key }) => {
+        sessionStorage.setItem(
+          key,
+          JSON.stringify({
+            schemaVersion: 1,
+            referenceSchemaVersion: 1,
+            sourceLessonId: 'lesson-001',
+            completedOn: '2000-01-01',
+            kind: 'first-try',
+            attempt: 1,
+            usedHint: false,
+            usedReveal: false,
+          }),
+        );
+      },
+      { key: V2_REFERENCE_EVIDENCE_STORAGE_KEY },
+    );
+
+    await page.goto(`${BASE_URL}/v2-reference/result/`, { waitUntil: 'load' });
+    await expect(page.locator('[data-v2-evidence-empty]')).toBeVisible();
+    await expect(page.locator('[data-v2-evidence]')).toBeHidden();
+  });
+
   test('primary controls expose names and visible keyboard focus', async ({ page }) => {
     await preparePage(page, { width: 390, height: 844 });
     await page.goto(`${BASE_URL}/v2-reference/`, { waitUntil: 'load' });
@@ -308,6 +348,32 @@ test.describe('/v2-reference/ behavior and answer secrecy', () => {
     const firstToken = page.getByRole('button', { name: '這個を選ぶ' });
     await tabUntil(page, firstToken);
     await expectVisibleFocus(page);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: '我を選ぶ' })).toBeFocused();
+    await expectVisibleFocus(page);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: '要を選ぶ' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(
+      page.getByRole('button', { name: 'この語順で確認する' }),
+    ).toBeFocused();
+    await page.keyboard.press('Enter');
+
+    await expect(page.getByRole('button', { name: 'ヒントを見る' })).toBeFocused();
+    await expect(
+      page.locator('[data-v2-answer] button, [data-v2-token-pool] button'),
+    ).toHaveCount(0);
+    await expect(page.locator('.v2-token--static')).toHaveCount(3);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'もう一度試す' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: '答えを見て直す' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(
+      page.getByRole('button', { name: 'もう一度、自分で作る' }),
+    ).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: '這個を選ぶ' })).toBeFocused();
   });
 
   for (const viewport of [
@@ -335,6 +401,17 @@ test.describe('/v2-reference/ behavior and answer secrecy', () => {
       await assertViewportContract(page, viewport, externalRequests);
       await assertInteractiveContainment(page);
       await expect(page.getByRole('button', { name: 'もう一度、自分で作る' })).toBeInViewport();
+      await page.getByRole('button', { name: 'もう一度、自分で作る' }).click();
+      await chooseTokens(page, ['我', '要', '這個']);
+      await page.getByRole('button', { name: 'この語順で確認する' }).click();
+      await page.getByRole('link', { name: '今日の結果を見る' }).click();
+      await expect(page.locator('[data-v2-screen="result"]')).toBeVisible();
+      await assertViewportContract(page, viewport, externalRequests);
+      await assertInteractiveContainment(page);
+      const finish = page.getByRole('link', { name: '今日を終える' });
+      await finish.scrollIntoViewIfNeeded();
+      await expect(finish).toBeInViewport();
+      await assertInteractiveContainment(page);
     });
   }
 
@@ -357,6 +434,7 @@ test.describe('/v2-reference/ visual evidence', () => {
         externalRequests,
         true,
       );
+      await assertInteractiveContainment(page);
       await expect(page).toHaveScreenshot(visualCase.snapshotName, {
         fullPage: false,
       });

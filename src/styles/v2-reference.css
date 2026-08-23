@@ -154,8 +154,8 @@ body:has(.v2-app) {
 }
 
 .v2-back-link {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid var(--v2-line);

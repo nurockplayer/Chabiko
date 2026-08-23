@@ -10,10 +10,12 @@ export function mountV2ReferenceAudio(root: HTMLElement): void {
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
     button.disabled = true;
     status.textContent = 'このブラウザでは音声を再生できません。';
+    status.dataset.visible = 'true';
     return;
   }
 
   button.addEventListener('click', () => {
+    delete status.dataset.visible;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(phrase);
     utterance.lang = 'zh-TW';
@@ -26,15 +28,18 @@ export function mountV2ReferenceAudio(root: HTMLElement): void {
 
     utterance.addEventListener('start', () => {
       button.dataset.playing = 'true';
+      delete status.dataset.visible;
       status.textContent = '再生中です。';
     });
     utterance.addEventListener('end', () => {
       delete button.dataset.playing;
+      delete status.dataset.visible;
       status.textContent = '音声を再生しました。';
     });
     utterance.addEventListener('error', () => {
       delete button.dataset.playing;
       status.textContent = '音声を再生できませんでした。';
+      status.dataset.visible = 'true';
     });
     window.speechSynthesis.speak(utterance);
   });

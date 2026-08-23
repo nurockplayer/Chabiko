@@ -176,6 +176,9 @@ const serializedPayload = JSON.stringify(safePayload);
     min-width: 68px;
     min-height: 56px;
     padding: 9px 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid #aebbb1;
     border-radius: 15px;
     background: var(--v2-surface);
@@ -187,12 +190,12 @@ const serializedPayload = JSON.stringify(safePayload);
     line-height: 1.15;
   }
 
-  .v2-token:hover {
+  button.v2-token:hover {
     border-color: var(--v2-teal);
     background: var(--v2-teal-soft);
   }
 
-  .v2-token:active {
+  button.v2-token:active {
     transform: translateY(2px);
     box-shadow: 0 1px 0 #bdc9c0;
   }
@@ -200,6 +203,20 @@ const serializedPayload = JSON.stringify(safePayload);
   .v2-token--answer {
     border-color: var(--v2-teal);
     background: var(--v2-teal-soft);
+    color: var(--v2-teal-deep);
+  }
+
+  .v2-token--static {
+    border-color: var(--v2-line);
+    background: transparent;
+    box-shadow: none;
+    color: var(--v2-ink-soft);
+    cursor: default;
+  }
+
+  .v2-token--answer.v2-token--static {
+    border-color: #b9cbc1;
+    background: var(--v2-surface-cool);
     color: var(--v2-teal-deep);
   }
 

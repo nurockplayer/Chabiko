@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   buildV2ReferenceEvidence,
   createV2RetrievalSession,
+  parseV2ReferenceEvidence,
   requestV2RetrievalHint,
   retryV2Retrieval,
   revealV2RetrievalAnswer,
   selectV2RetrievalToken,
+  summarizeV2ReferenceEvidence,
   submitV2Retrieval,
 } from '../src/domain/v2ReferenceFlow';
 
@@ -69,6 +71,7 @@ describe('V2 reference retrieval state machine', () => {
   });
 
   it('builds truthful evidence that distinguishes blind recall from repair', () => {
+    const completedAt = new Date(2026, 7, 24, 12, 0, 0);
     const firstTry = submitV2Retrieval(
       choose(createV2RetrievalSession(), ['wo', 'yao', 'zhege']),
     );
@@ -85,13 +88,64 @@ describe('V2 reference retrieval state machine', () => {
       ),
     );
 
-    expect(buildV2ReferenceEvidence(firstTry)).toMatchObject({
+    const firstTryEvidence = buildV2ReferenceEvidence(firstTry, completedAt);
+    const repairedEvidence = buildV2ReferenceEvidence(afterReveal, completedAt);
+
+    expect(firstTryEvidence).toMatchObject({
+      schemaVersion: 1,
+      referenceSchemaVersion: 1,
+      sourceLessonId: 'lesson-001',
+      completedOn: '2026-08-24',
       kind: 'first-try',
-      summaryJa: '答えを見ずに、最初の一回で語順を組み立てられました。',
     });
-    expect(buildV2ReferenceEvidence(afterReveal)).toMatchObject({
+    expect(repairedEvidence).toMatchObject({
       kind: 'after-reveal',
-      summaryJa: '答えを確認したあと、もう一度自分で語順を組み立てられました。',
     });
+    expect(summarizeV2ReferenceEvidence(firstTryEvidence)).toBe(
+      '答えを見ずに、最初の一回で語順を組み立てられました。',
+    );
+    expect(summarizeV2ReferenceEvidence(repairedEvidence)).toBe(
+      '答えを確認したあと、もう一度自分で語順を組み立てられました。',
+    );
+  });
+
+  it('accepts only current, internally consistent evidence', () => {
+    const today = new Date(2026, 7, 24, 12, 0, 0);
+    const correct = submitV2Retrieval(
+      choose(createV2RetrievalSession(), ['wo', 'yao', 'zhege']),
+    );
+    const valid = buildV2ReferenceEvidence(correct, today);
+
+    expect(parseV2ReferenceEvidence(valid, today)).toEqual(valid);
+
+    for (const invalid of [
+      { ...valid, summaryJa: '任意の未検証コピー' },
+      { ...valid, attempt: 2 },
+      { ...valid, usedHint: true },
+      { ...valid, sourceLessonId: 'lesson-stale' },
+      { ...valid, referenceSchemaVersion: 0 },
+      { ...valid, completedOn: '2026-08-23' },
+      {
+        ...valid,
+        kind: 'after-hint',
+        attempt: 2,
+        usedHint: false,
+      },
+    ]) {
+      expect(parseV2ReferenceEvidence(invalid, today)).toBeUndefined();
+    }
+  });
+
+  it('refuses to serialize a contradictory successful session', () => {
+    const correct = submitV2Retrieval(
+      choose(createV2RetrievalSession(), ['wo', 'yao', 'zhege']),
+    );
+
+    expect(() =>
+      buildV2ReferenceEvidence(
+        { ...correct, usedHint: true },
+        new Date(2026, 7, 24, 12, 0, 0),
+      ),
+    ).toThrow(/internally consistent/);
   });
 });

@@ -15,6 +15,14 @@ interface SafeRetrievalPayload {
   readonly tokens: readonly { readonly id: string; readonly text: string }[];
 }
 
+type FocusTarget =
+  | {
+      readonly kind: 'token';
+      readonly tokenId: string;
+      readonly location: 'answer' | 'pool';
+    }
+  | { readonly kind: 'command' };
+
 function parsePayload(root: HTMLElement): SafeRetrievalPayload {
   const payloadElement = root.querySelector<HTMLScriptElement>(
     '[data-v2-retrieval-payload]',
@@ -73,12 +81,24 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
 
   let session = createV2RetrievalSession();
 
-  function renderTokenButton(
+  function renderToken(
     tokenId: string,
     location: 'answer' | 'pool',
-  ): HTMLButtonElement {
+  ): HTMLElement {
     const token = tokenById.get(tokenId);
     if (!token) throw new Error(`Unknown V2 reference token '${tokenId}'`);
+
+    if (session.status !== 'retrieval') {
+      const staticToken = document.createElement('span');
+      staticToken.className =
+        `v2-token v2-token--${location} v2-token--static`;
+      staticToken.lang = 'zh-Hant';
+      staticToken.textContent = token.text;
+      staticToken.dataset.v2TokenId = tokenId;
+      staticToken.dataset.v2TokenLocation = location;
+      return staticToken;
+    }
+
     const button = makeButton(
       token.text,
       `v2-token v2-token--${location}`,
@@ -87,14 +107,26 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
           location === 'pool'
             ? selectV2RetrievalToken(session, tokenId)
             : removeV2RetrievalToken(session, tokenId);
-        render();
+        if (location === 'answer') {
+          render({ kind: 'token', tokenId, location: 'pool' });
+          return;
+        }
+
+        const nextTokenId = session.availableTokenIds[0];
+        render(
+          nextTokenId
+            ? { kind: 'token', tokenId: nextTokenId, location: 'pool' }
+            : { kind: 'command' },
+        );
       },
     );
+    button.lang = 'zh-Hant';
     button.setAttribute(
       'aria-label',
       `${token.text}${location === 'pool' ? 'を選ぶ' : 'を戻す'}`,
     );
     button.dataset.v2TokenId = tokenId;
+    button.dataset.v2TokenLocation = location;
     return button;
   }
 
@@ -178,7 +210,7 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
               // The result route fails honestly to its empty evidence state.
             }
           }
-          render();
+          render({ kind: 'command' });
         },
       );
       submit.disabled = session.selectedTokenIds.length !== payload.tokens.length;
@@ -192,11 +224,17 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
         session.status === 'incorrect' ? 'ヒントを見る' : 'もう一度試す',
         'v2-command-secondary',
         () => {
+          const wasHint = session.status === 'hint';
           session =
             session.status === 'incorrect'
               ? requestV2RetrievalHint(session)
               : retryV2Retrieval(session);
-          render();
+          const firstTokenId = session.availableTokenIds[0];
+          render(
+            wasHint && firstTokenId
+              ? { kind: 'token', tokenId: firstTokenId, location: 'pool' }
+              : { kind: 'command' },
+          );
         },
       );
       const reveal = makeButton(
@@ -204,7 +242,7 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
         'v2-command-primary',
         () => {
           session = revealV2RetrievalAnswer(session);
-          render();
+          render({ kind: 'command' });
         },
       );
       commandRoot.append(hintOrRetry, reveal);
@@ -218,7 +256,12 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
           'v2-command-primary',
           () => {
             session = retryV2Retrieval(session);
-            render();
+            const firstTokenId = session.availableTokenIds[0];
+            render(
+              firstTokenId
+                ? { kind: 'token', tokenId: firstTokenId, location: 'pool' }
+                : { kind: 'command' },
+            );
           },
         ),
       );
@@ -232,7 +275,27 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
     commandRoot.append(resultLink);
   }
 
-  function render(): void {
+  function focusAfterRender(target?: FocusTarget): void {
+    if (!target) return;
+    if (target.kind === 'command') {
+      commandRoot
+        .querySelector<HTMLElement>('button:not(:disabled), a[href]')
+        ?.focus({ preventScroll: true });
+      return;
+    }
+
+    const tokenRoot = target.location === 'answer' ? answerRoot : poolRoot;
+    const tokenButton = [...tokenRoot.querySelectorAll<HTMLButtonElement>(
+      'button[data-v2-token-id][data-v2-token-location]',
+    )].find(
+      (button) =>
+        button.dataset.v2TokenId === target.tokenId &&
+        button.dataset.v2TokenLocation === target.location,
+    );
+    tokenButton?.focus({ preventScroll: true });
+  }
+
+  function render(focusTarget?: FocusTarget): void {
     attemptRoot.textContent = `${session.attempt}回目`;
     answerRoot.replaceChildren();
     poolRoot.replaceChildren();
@@ -244,16 +307,17 @@ export function mountV2ReferenceRetrieval(root: HTMLElement): void {
       answerRoot.append(placeholder);
     } else {
       for (const tokenId of session.selectedTokenIds) {
-        answerRoot.append(renderTokenButton(tokenId, 'answer'));
+        answerRoot.append(renderToken(tokenId, 'answer'));
       }
     }
 
     for (const tokenId of session.availableTokenIds) {
-      poolRoot.append(renderTokenButton(tokenId, 'pool'));
+      poolRoot.append(renderToken(tokenId, 'pool'));
     }
 
     renderFeedback();
     renderCommand();
+    focusAfterRender(focusTarget);
   }
 
   render();

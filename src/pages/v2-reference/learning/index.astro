@@ -46,7 +46,12 @@ const reference = loadV2Reference();
           <span class="v2-audio-symbol" aria-hidden="true"></span>
           <span>音声を聞く</span>
         </button>
-        <p id="v2-audio-status" class="v2-visually-hidden" role="status" data-v2-audio-status></p>
+        <p
+          id="v2-audio-status"
+          class="v2-visually-hidden v2-audio-status"
+          role="status"
+          data-v2-audio-status
+        ></p>
       </div>
     </div>
 
@@ -164,6 +169,21 @@ const reference = loadV2Reference();
     box-shadow: 0 4px 0 #aeb9b1;
     color: #69766f;
     cursor: not-allowed;
+  }
+
+  .v2-audio-status[data-visible='true'] {
+    position: static !important;
+    width: 82px !important;
+    height: auto !important;
+    margin: 8px 0 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    color: var(--v2-error);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
   }
 
   .v2-audio-symbol {

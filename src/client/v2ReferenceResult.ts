@@ -1,30 +1,9 @@
 import {
   V2_REFERENCE_EVIDENCE_STORAGE_KEY,
+  parseV2ReferenceEvidence,
+  summarizeV2ReferenceEvidence,
   type V2ReferenceEvidence,
 } from '../domain/v2ReferenceFlow';
-
-const EVIDENCE_KINDS = new Set<V2ReferenceEvidence['kind']>([
-  'first-try',
-  'after-hint',
-  'after-retry',
-  'after-reveal',
-]);
-
-function isEvidence(value: unknown): value is V2ReferenceEvidence {
-  if (!value || typeof value !== 'object') return false;
-  const candidate = value as Partial<V2ReferenceEvidence>;
-  return (
-    candidate.schemaVersion === 1 &&
-    typeof candidate.kind === 'string' &&
-    EVIDENCE_KINDS.has(candidate.kind as V2ReferenceEvidence['kind']) &&
-    Number.isInteger(candidate.attempt) &&
-    (candidate.attempt ?? 0) > 0 &&
-    typeof candidate.usedHint === 'boolean' &&
-    typeof candidate.usedReveal === 'boolean' &&
-    typeof candidate.summaryJa === 'string' &&
-    candidate.summaryJa.length > 0
-  );
-}
 
 export function mountV2ReferenceResult(root: HTMLElement): void {
   if (root.dataset.v2ResultMounted === 'true') return;
@@ -41,7 +20,7 @@ export function mountV2ReferenceResult(root: HTMLElement): void {
     const raw = sessionStorage.getItem(V2_REFERENCE_EVIDENCE_STORAGE_KEY);
     if (raw) {
       const parsed: unknown = JSON.parse(raw);
-      if (isEvidence(parsed)) evidence = parsed;
+      evidence = parseV2ReferenceEvidence(parsed);
     }
   } catch {
     // An unavailable or malformed store stays in the honest empty state.
@@ -49,7 +28,7 @@ export function mountV2ReferenceResult(root: HTMLElement): void {
 
   if (!evidence) return;
 
-  summary.textContent = evidence.summaryJa;
+  summary.textContent = summarizeV2ReferenceEvidence(evidence);
   method.textContent = evidence.usedReveal
     ? `答えを確認 → ${evidence.attempt}回目に自分で再構成`
     : evidence.usedHint

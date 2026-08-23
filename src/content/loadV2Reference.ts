@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, realpathSync, statSync } from 'node:fs';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 import referenceData from '../../data/v2-reference/reference.json' assert { type: 'json' };
 import { loadLessonById } from './loadLessons';
 import { parseWebpDimensions } from './webpDimensions';
@@ -9,16 +9,39 @@ function sha256(value: string | Uint8Array): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function assertReferenceAsset(): void {
-  const { scene } = referenceData;
+function isContainedPath(root: string, candidate: string): boolean {
+  const pathFromRoot = relative(root, candidate);
+  return (
+    pathFromRoot.length > 0 &&
+    pathFromRoot !== '..' &&
+    !pathFromRoot.startsWith(`..${sep}`) &&
+    !isAbsolute(pathFromRoot)
+  );
+}
+
+export function validateV2ReferenceScene(
+  scene: typeof referenceData.scene,
+  publicRoot = resolve(process.cwd(), 'public'),
+): void {
   if (!scene.assetPath.startsWith('/assets/v2-reference/')) {
     throw new Error('V2 reference scene must stay inside /assets/v2-reference/');
   }
 
-  const assetPath = resolve(process.cwd(), 'public', scene.assetPath.slice(1));
-  const bytes = readFileSync(assetPath);
+  const assetRoot = resolve(publicRoot, 'assets/v2-reference');
+  const assetPath = resolve(publicRoot, scene.assetPath.slice(1));
+  if (!isContainedPath(assetRoot, assetPath)) {
+    throw new Error('V2 reference scene must stay inside /assets/v2-reference/');
+  }
+
+  const canonicalAssetRoot = realpathSync(assetRoot);
+  const canonicalAssetPath = realpathSync(assetPath);
+  if (!isContainedPath(canonicalAssetRoot, canonicalAssetPath)) {
+    throw new Error('V2 reference scene must stay inside /assets/v2-reference/');
+  }
+
+  const bytes = readFileSync(canonicalAssetPath);
   const dimensions = parseWebpDimensions(bytes);
-  const size = statSync(assetPath).size;
+  const size = statSync(canonicalAssetPath).size;
 
   if (sha256(bytes) !== scene.assetChecksumSha256) {
     throw new Error('V2 reference scene checksum does not match provenance metadata');
@@ -87,7 +110,7 @@ export function loadV2Reference() {
     throw new Error('V2 reference requires a reviewed core example with pinyin');
   }
 
-  assertReferenceAsset();
+  validateV2ReferenceScene(referenceData.scene);
 
   return {
     ...referenceData,

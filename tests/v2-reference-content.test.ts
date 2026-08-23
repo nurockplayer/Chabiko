@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSafeV2RetrievalPayload,
   loadV2Reference,
+  validateV2ReferenceScene,
 } from '../src/content/loadV2Reference';
 
 describe('V2 reference content loader', () => {
@@ -51,5 +52,69 @@ describe('V2 reference content loader', () => {
       publicWebDisplay: true,
       attributionRequired: false,
     });
+  });
+
+  it('rejects scene paths that escape the isolated asset directory', () => {
+    const scene = structuredClone(loadV2Reference().scene);
+
+    expect(() =>
+      validateV2ReferenceScene({
+        ...scene,
+        assetPath: '/assets/v2-reference/../../package.json',
+      }),
+    ).toThrow(/stay inside \/assets\/v2-reference\//);
+  });
+
+  it.each([
+    {
+      label: 'checksum',
+      mutate: (scene: ReturnType<typeof loadV2Reference>['scene']) => ({
+        ...scene,
+        assetChecksumSha256: '0'.repeat(64),
+      }),
+      message: /checksum/,
+    },
+    {
+      label: 'file size',
+      mutate: (scene: ReturnType<typeof loadV2Reference>['scene']) => ({
+        ...scene,
+        fileSizeBytes: scene.fileSizeBytes + 1,
+      }),
+      message: /file size/,
+    },
+    {
+      label: 'dimensions',
+      mutate: (scene: ReturnType<typeof loadV2Reference>['scene']) => ({
+        ...scene,
+        width: scene.width + 1,
+      }),
+      message: /dimensions/,
+    },
+    {
+      label: 'prompt digest',
+      mutate: (scene: ReturnType<typeof loadV2Reference>['scene']) => ({
+        ...scene,
+        provenance: {
+          ...scene.provenance,
+          promptDigestSha256: '0'.repeat(64),
+        },
+      }),
+      message: /prompt digest/,
+    },
+    {
+      label: 'rights',
+      mutate: (scene: ReturnType<typeof loadV2Reference>['scene']) => ({
+        ...scene,
+        provenance: {
+          ...scene.provenance,
+          allowedUse: 'unreviewed-use',
+        },
+      }),
+      message: /rights metadata/,
+    },
+  ])('rejects scene $label drift', ({ mutate, message }) => {
+    const scene = structuredClone(loadV2Reference().scene);
+
+    expect(() => validateV2ReferenceScene(mutate(scene))).toThrow(message);
   });
 });
