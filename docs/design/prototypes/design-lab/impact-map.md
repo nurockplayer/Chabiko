@@ -3,7 +3,9 @@
 > Inventory basis: repository diff
 > `709889127aaa64d24b68a3d649f30522203be045` through implementation candidate
 > `8d0872a6655ede4c3801538ffa93e2f34221c4f4`. This document is the docs-only
-> contract follow-up. The final exact-head T3 integration gate remains pending.
+> contract follow-up. A complete T3 integration run passed on candidate
+> `9481a3b33e57c334b5d5c928f226ff5bd38ef0a4`; this validation-evidence update is
+> followed by the same gate on its exact docs-only head before final review.
 
 ## Source of Truth and Scope
 
@@ -61,7 +63,7 @@ and a large committed evidence set.
 | Capture and committed evidence | `scripts/capture-design-lab.ts` consumes the built loopback routes and comparison page. Reviewers and the prototype report consume the 20 individual PNGs, four comparison PNGs, `capture.json`, and `docs/design/evidence/design-lab/README.md`. |
 | Focused validation | `tests/design-lab-routes.test.ts` validates fixture failure boundaries, layout isolation, root ownership, storage non-use, every route and surface, interaction semantics, asset provenance, grammar-specific review fixes, comparison behavior, canonical capture behavior, drift, rollback, and dirty-environment preservation. |
 | Validation routing | `scripts/validation/classify.ts` maps the isolated fixture adapter to `tests/design-lab-routes.test.ts`; `tests/validation/classifier.test.ts` prevents that mapping from drifting. Learner-visible Astro and script changes still classify the complete candidate to T3. |
-| Build and final gate | Astro lint/typecheck/build consume all source routes and assets. `pnpm validate` is the final T3 consumer and includes full Vitest, build, production visual regression, accessibility, and content validation. Its final exact-head run is explicitly pending below. |
+| Build and final gate | Astro lint/typecheck/build consume all source routes and assets. `pnpm validate` is the final T3 consumer and includes full Vitest, build, production visual regression, accessibility, and content validation. The candidate run is recorded below; the docs-only evidence head receives the same gate before review. |
 
 ## Legacy and Compatibility Paths
 
@@ -162,7 +164,8 @@ the committed WebP bytes plus the portable source/derivative records in
 ## Requirement -> Diff -> Test Evidence
 
 Focused and capture results below were observed on the implementation candidate.
-They do not replace the pending final exact-head T3 integration gate.
+The first complete T3 result is recorded below; the final handoff records the
+required exact-head rerun after this docs-only evidence update.
 
 | # | Frozen requirement | Changed file / artifact | Validation | Observed result |
 | --- | --- | --- | --- | --- |
@@ -183,4 +186,4 @@ They do not replace the pending final exact-head T3 integration gate.
 | 15 | Flatten Airbnb's nested travel evidence surfaces while retaining tactile itinerary structure. | `AirbnbPrototype.astro`; refreshed capture set | Flat-row CSS regression test; canonical browser capture; manual visual review. | One outer tactile target card remains; evidence uses transparent divider rows with no nested radius/card surface. |
 | 16 | Close the 24-image evidence set over dimensions, bytes, and metadata. | 20 individual PNGs; four comparison PNGs; `capture.json`; evidence README generated block | Canonical capture plus `validateCapturePublication()`. | 20 files are exactly 390 x 844, four are exactly 2000 x 934, every SHA/dimension matches metadata, and the ordered manifest digest is `9ff613552937f607cec81e8ec6b0bfd1de51ed0ec404b65dbefea4c5fb99f08e`. |
 | 17 | Add no dependency or package-manager change. | No `package.json` or `pnpm-lock.yaml` diff | Base-to-candidate path scan; build with repository-installed dependencies. | No dependency, lockfile, package-manager, lifecycle, or external runtime asset change. |
-| 18 | Pass the classifier-required validation on the final exact head. | Entire scoped candidate | `pnpm validate:classify`, then final exact-head `pnpm validate`. | **Pending final integration.** The candidate classifies to T3; the coordinator must replace this status only after the final-head command completes successfully. |
+| 18 | Pass the classifier-required validation on the final exact head. | Entire scoped candidate | `pnpm validate:classify`, then final exact-head `pnpm validate`. | Candidate `9481a3b33e57c334b5d5c928f226ff5bd38ef0a4` classified T3 and passed lint, typecheck, full Vitest, a 1,615-page build, 109/109 visual gates, 40/40 accessibility gates, and content validation. Because recording that observation changes the docs-only head, the same gate is rerun on the resulting exact head before review and reported in the final handoff. |
