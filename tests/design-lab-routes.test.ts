@@ -171,10 +171,44 @@ describe('design lab controller', () => {
     const localSetItem = vi.spyOn(window.localStorage, 'setItem');
     const localRemoveItem = vi.spyOn(window.localStorage, 'removeItem');
     const localClear = vi.spyOn(window.localStorage, 'clear');
+    const localKey = vi.spyOn(window.localStorage, 'key');
     const sessionGetItem = vi.spyOn(window.sessionStorage, 'getItem');
     const sessionSetItem = vi.spyOn(window.sessionStorage, 'setItem');
     const sessionRemoveItem = vi.spyOn(window.sessionStorage, 'removeItem');
     const sessionClear = vi.spyOn(window.sessionStorage, 'clear');
+    const sessionKey = vi.spyOn(window.sessionStorage, 'key');
+    const localStoragePrototype = Object.getPrototypeOf(window.localStorage) as Storage;
+    const sessionStoragePrototype = Object.getPrototypeOf(window.sessionStorage) as Storage;
+    const nativeLocalStorageLength = Object.getOwnPropertyDescriptor(
+      localStoragePrototype,
+      'length',
+    )?.get;
+    if (!nativeLocalStorageLength) throw new Error('Storage length getter is unavailable');
+    const localLength = vi.spyOn(localStoragePrototype, 'length', 'get').mockImplementation(
+      function (this: Storage) {
+        return nativeLocalStorageLength.call(this);
+      },
+    );
+    let sessionLength = localLength;
+    if (sessionStoragePrototype !== localStoragePrototype) {
+      const nativeSessionStorageLength = Object.getOwnPropertyDescriptor(
+        sessionStoragePrototype,
+        'length',
+      )?.get;
+      if (!nativeSessionStorageLength) throw new Error('Storage length getter is unavailable');
+      sessionLength = vi.spyOn(sessionStoragePrototype, 'length', 'get').mockImplementation(
+        function (this: Storage) {
+          return nativeSessionStorageLength.call(this);
+        },
+      );
+    }
+    // Preflight both areas, then clear only test-created getter reads before mounting.
+    void window.localStorage.length;
+    expect(localLength).toHaveBeenCalledTimes(1);
+    void window.sessionStorage.length;
+    expect(sessionLength).toHaveBeenCalledTimes(sessionLength === localLength ? 2 : 1);
+    localLength.mockClear();
+    if (sessionLength !== localLength) sessionLength.mockClear();
 
     initDesignLabPrototype(root);
 
@@ -199,13 +233,17 @@ describe('design lab controller', () => {
       localSetItem,
       localRemoveItem,
       localClear,
+      localKey,
       sessionGetItem,
       sessionSetItem,
       sessionRemoveItem,
       sessionClear,
+      sessionKey,
     ]) {
       expect(storageApi).not.toHaveBeenCalled();
     }
+    expect(localLength).not.toHaveBeenCalled();
+    if (sessionLength !== localLength) expect(sessionLength).not.toHaveBeenCalled();
   });
 
   test('retains the current cleanup after a stale cleanup runs', () => {
