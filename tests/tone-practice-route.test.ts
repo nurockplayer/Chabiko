@@ -246,11 +246,16 @@ describe('tone route wiring', () => {
 });
 
 describe('tone route page structure', () => {
-  it('page source renders a route shell with title, subtitle, and back link', () => {
+  it('page source renders a route shell with title, subtitle, and home breadcrumb', () => {
     const source = readAstroSource('src/pages/practice/tones/index.astro');
-    expect(source).toMatch(/<BaseLayout title="声調練習">/);
+    expect(source).toMatch(/<BaseLayout title="声調練習" themeEnabled>/);
     expect(source).toMatch(/声調の形を見て、正しい声調を選びましょう/);
-    expect(source).toMatch(/ホームに戻る/);
+    // Auxiliary practice surface: a contextual home breadcrumb (not a
+    // first-class track, so no TrackNav) replaces the old bare back link.
+    expect(source).toContain('Breadcrumb');
+    expect(source).toContain("{ label: 'ホーム', href: '/' }");
+    expect(source).toContain("{ label: '声調練習' }");
+    expect(source).not.toMatch(/ホームに戻る/);
   });
 
   it('page and component have no forbidden media or audio APIs', () => {

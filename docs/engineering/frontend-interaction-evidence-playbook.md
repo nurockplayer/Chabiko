@@ -1,97 +1,97 @@
 # Frontend Interaction and Browser Evidence Playbook
 
-本 playbook 收錄跨 ticket 可重用的 JS-free 前端互動模式、瀏覽器驗證證據、截圖驗證與唯讀 arbiter 邊界規則。內容與 Direction 無關，不綁定任何設計方向的 selector 或學習者文案。
+This playbook defines reusable JS-free frontend interaction patterns, browser-validation evidence, screenshot verification, and read-only arbiter boundaries. It is independent of any design Direction and does not bind selectors or learner-facing copy to a specific redesign.
 
-來源：Issue #155 的 post-merge retrospective、PR #156 的實作與 review 歷史，以及解析後的 Codex review threads。Incident-specific 歷史留在 #155 與 PR #156，本檔只保存可重用規則。
+Source: the post-merge retrospective for Issue #155, implementation/review history from PR #156, and the resolved Codex review threads. Incident-specific history remains in #155 and PR #156; this document preserves reusable rules only.
 
 ## 1. Native interaction decision table
 
-JS-free 原型必須只用原生互動模式。需要滿足下列需求時，採用對應的 required pattern：
+A JS-free prototype must use native interaction patterns. Use the required pattern for each need:
 
-| 需求 | 必須使用的模式 |
+| Need | Required pattern |
 | --- | --- |
-| reveal/hide toggle | `<details>` 與 `<summary>` |
-| mutually exclusive options | 原生 radio input 搭配關聯的 `<label>` |
-| fragment-driven state | 帶真實 `#id` target 的 anchor 與 `:target` |
+| reveal/hide toggle | `<details>` with `<summary>` |
+| mutually exclusive options | native radio input with associated `<label>` |
+| fragment-driven state | anchor with a real `#id` target plus `:target` |
 | action without navigation | `<button type="button">` |
-| state-dependent visible text | 用 CSS display 切換的真實 child elements |
+| state-dependent visible text | real child elements switched with CSS display |
 
-禁止模式：
+Forbidden patterns:
 
-- focusable label 或泛用元素當作模擬按鈕；
-- 用靜態 ARIA state 模仿可變的原生 mutable state；
-- transparent 或 zero-size、但仍留在 keyboard tab sequence 的控制項；
-- 把 `href="#"` 當成 inert action；
-- 把 generated CSS content（例如 `::after`）當成唯一或主要的 accessible label；
-- 使用 issue contract 未要求的控制項或狀態。
+- a focusable label or generic element used as a simulated button;
+- static ARIA state used to imitate mutable native state;
+- transparent or zero-size controls that remain in the keyboard tab sequence;
+- `href="#"` used as an inert action;
+- generated CSS content such as `::after` used as the only or primary accessible label;
+- controls or states not required by the issue contract.
 
 ## 2. Required per-control behavior contract
 
-實作前，每個互動控制項都必須定義並凍結以下項目：
+Before implementation, freeze these properties for every interactive control:
 
-- 原生 element type；
-- 可見狀態；
-- 鍵盤觸發行為；
-- state 或 fragment transition（含預期的 hash 變化）；
-- 是否可能觸發 completion；
-- 瀏覽器計算出的 expected accessible name；
-- 必須出現在哪個 screenshot state。
+- native element type;
+- visible states;
+- keyboard activation behavior;
+- state or fragment transition, including expected hash changes;
+- whether the control can trigger completion;
+- expected browser-computed accessible name;
+- screenshot state in which the control must appear.
 
-規格未描述的行為是 contract gap，不是授權 implementer 自行選一個看似合理的行為。
+Behavior that the specification does not describe is a contract gap, not permission for the implementer to invent a reasonable-looking behavior.
 
 ## 3. Browser evidence before arbiter review
 
-瀏覽器 smoke test 必須在唯讀 arbiter review 之前執行，並提供具體證據，涵蓋：
+Run browser smoke tests before read-only arbiter review and provide concrete evidence covering:
 
-- Tab traversal 沒有 invisible 或 zero-size focus stops；
-- summary、radio、button、anchor 都能以鍵盤正確觸發；
-- focus indicator 可見；
-- 需要時，渲染出的互動 target 至少 44px；
-- accessible name 來自瀏覽器 accessibility tree，或等價的 Playwright assertion；
-- 預期的 hash/state transition 與 visibility 結果發生；
-- 每個 contract viewport 都沒有 horizontal overflow。
+- Tab traversal has no invisible or zero-size focus stops;
+- summary, radio, button, and anchor controls activate correctly from the keyboard;
+- focus indicators are visible;
+- where required, rendered interactive targets are at least 44 px;
+- accessible names come from the browser accessibility tree or equivalent Playwright assertions;
+- expected hash/state transitions and visibility changes occur;
+- every contract viewport has no horizontal overflow.
 
-`textContent`、`innerText`、DOM visibility、browser-computed accessible name、viewport inclusion 與 PNG evidence 是不同訊號，不能互相取代。
+`textContent`, `innerText`, DOM visibility, browser-computed accessible name, viewport inclusion, and PNG evidence are different signals and must not be substituted for one another.
 
 ## 4. Screenshot and viewport evidence
 
-每個相關 capture 都必須驗證：
+For every relevant capture, verify:
 
-- 確切的 viewport 與 PNG IHDR dimensions；
-- issue 要求的 `fullPage` state；
-- 預期的 reveal/completion/hash 與 scroll state；
-- 每個必要 evidence element 的完整 viewport bounding box；
-- 擷取片段中每個可見互動控制項的完整 viewport bounding box，包括手寫 checklist 遺漏的控制項；
-- 視覺檢查已提交的 PNG 本身，不只是 `checkVisibility()` 這類 DOM visibility proxy。
+- the exact viewport and PNG IHDR dimensions;
+- the issue-required `fullPage` state;
+- expected reveal/completion/hash and scroll state;
+- full viewport bounding boxes for every required evidence element;
+- full viewport bounding boxes for every visible interactive control in the captured fragment, including controls omitted from a handwritten checklist;
+- the committed PNG itself through visual inspection, not only a DOM-visibility proxy such as `checkVisibility()`.
 
 ## 5. Reviewer capability boundary
 
-Read/Grep/Glob-only 的 arbiter 可以審查 code、contract 與提供的證據，但無法獨立建立：
+A Read/Grep/Glob-only arbiter can review code, contract, and supplied evidence, but it cannot independently establish:
 
-- 實際瀏覽器鍵盤行為；
-- accessibility-tree output；
-- viewport inclusion；
-- 已提交 PNG 的 pixel 內容。
+- actual browser keyboard behavior;
+- accessibility-tree output;
+- viewport inclusion;
+- pixel content of a committed PNG.
 
-因此瀏覽器證據必須在 arbiter review 前產生，並納入其 review packet。
+Therefore browser evidence must be produced before arbiter review and included in the review packet.
 
 ## 6. Review and merge rule
 
-最終獨立 review 可由 ChatGPT 或 Codex 執行。當 ChatGPT 親自驗證：
+Final independent review may be performed by ChatGPT or Codex. When ChatGPT personally verifies all of the following:
 
-- 最新被 review 的 head 沒有移動；
-- 最新 CI 成功；
-- 完整 diff 與 changed-file scope 符合 issue；
-- review findings 與 threads 都已處理；
-- 沒有殘留的 blocking findings；
+- the latest reviewed head has not moved;
+- latest CI succeeded;
+- the full diff and changed-file scope match the issue;
+- review findings and threads have been handled;
+- no blocking finding remains;
 
-ChatGPT 可直接 merge，不需要額外的 abstract controller gate。
+ChatGPT may merge directly without an additional abstract controller gate. A more specific current issue or repository merge policy may still impose additional requirements such as a named reviewer, risk-tier signals, or a concurrency hold.
 
 ## 7. Worked example
 
-下列 compact、方向無關的範例取自 PR #156 的修復歷程。
+The following compact, direction-independent example comes from the PR #156 remediation history.
 
-- **為何 focusable-label/hidden-input simulation 失敗**：用 focusable `<label>` 模擬按鈕、控制 transparent zero-size checkbox/radio，並疊上靜態 ARIA state，造成三種連動失敗：鍵盤啟動 label 無法可靠 toggle 關聯 input；隱藏 focusable input 留在 tab sequence 卻沒有可見 focus target；靜態 `aria-pressed` 無法追蹤真實 mutable state。
-- **如何以 native primitives 取代**：reveal/hide 改用 `<details>`/`<summary>`，互斥選項改用原生 radio + label，completion 改用帶真實 `#id` 的 anchor 與 `:target`，無導覽動作改用 `<button type="button">`，狀態依賴文字改用 CSS display 切換的真實 child elements，並移除所有 `role=button`、`tabindex` 與靜態 `aria-pressed`。
-- **為何 `checkVisibility()` 無法證明截圖包含**：DOM visibility proxy 只回報元素是否可視，不證明它在已提交 PNG 的 viewport 內完整可見。需改用完整 viewport bounding-box assertions，並視覺檢查 PNG 本身。
-- **為何額外 non-contract 控制項增加驗證表面**：新增一個 contract 未要求的控制項後，它成為必須驗證與納入截圖的元素；若在行動版證據中被裁切，就會產生新的 blocking finding。控制項必須先在 per-control contract 中定義並納入驗證範圍，不能事後補上。
+- **Why focusable-label/hidden-input simulation failed:** a focusable `<label>` simulated a button, controlled a transparent zero-size checkbox/radio, and was overlaid with static ARIA state. Three failures followed: keyboard activation of the label did not reliably toggle its associated input; a hidden focusable input remained in the tab sequence without a visible focus target; static `aria-pressed` could not track real mutable state.
+- **How native primitives replaced it:** reveal/hide moved to `<details>`/`<summary>`, exclusive options to native radio + label, completion to an anchor with a real `#id` plus `:target`, non-navigation actions to `<button type="button">`, and state-dependent text to real child elements switched with CSS display. The implementation removed simulated `role=button`, `tabindex`, and static `aria-pressed` state.
+- **Why `checkVisibility()` could not prove screenshot inclusion:** a DOM-visibility proxy only reports whether an element is considered visible. It does not prove that the element is fully inside the viewport captured in the committed PNG. Full viewport bounding-box assertions plus visual inspection of the PNG are required.
+- **Why non-contract controls increase the validation surface:** adding a control not required by contract makes it another element that must be verified and included in evidence. If a mobile capture clips it, the extra control creates a new blocking finding. Define a control in the per-control contract and validation matrix before adding it.

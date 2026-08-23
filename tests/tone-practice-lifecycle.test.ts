@@ -342,7 +342,7 @@ describe('no storage / network / audio / speech / canvas / timer', () => {
 describe('tone practice responsive containment', () => {
   it('declares grid/flex containment that cannot overflow at narrow widths', () => {
     const source = readFileSync('src/components/TonePractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
@@ -360,5 +360,34 @@ describe('tone practice responsive containment', () => {
     expect(css).toMatch(/\.tone-actions\s*\{[^}]*display:\s*flex[^}]*flex-wrap:\s*wrap/);
     // Browser measurements at 320/375/390 are recorded in the PR body as the
     // genuine layout evidence. Happy DOM does not perform layout.
+  });
+});
+
+// ─── #370 theme-safe state styling in the Astro stylesheet ──────────────────
+
+describe('tone practice theme-safe state styling', () => {
+  it('drives selected/retry states from shared A1 tokens and defers focus to the shared theme rule', () => {
+    const source = readFileSync('src/components/TonePractice.astro', 'utf8');
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
+    expect(styleMatch).not.toBeNull();
+    const css = styleMatch![1];
+
+    // Selected choice uses the shared A1 jade learning-state soft surface + ink
+    // so the selection stays readable in both themes (never white-on-accent).
+    expect(css).toMatch(
+      /\.tone-choice\[aria-pressed='true'\]\s*\{[\s\S]*?background:\s*var\(--jade-soft\)[\s\S]*?color:\s*var\(--jade-ink\)/,
+    );
+    // The chosen answer stays fully visible after submit while other choices
+    // dim, so the selected state survives the feedback transition.
+    expect(css).toMatch(
+      /\.tone-choice:disabled\[aria-pressed='true'\]\s*\{[\s\S]*?opacity:\s*1/,
+    );
+    // Focus rings follow the shared BaseLayout :focus-visible theme rule (the
+    // #366 focus token), never a hard-coded or per-component accent colour.
+    expect(css).not.toMatch(/:focus-visible\s*\{/);
+    // Retry uses the A1 coral attention family instead of a hard-coded hex.
+    expect(css).toMatch(
+      /\.tone-action--retry\s*\{[\s\S]*?border-color:\s*var\(--coral-deep\)[\s\S]*?color:\s*var\(--coral-deep\)/,
+    );
   });
 });

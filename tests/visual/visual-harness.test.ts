@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { VISUAL_CASES, VISUAL_STATES, VISUAL_THEMES, VISUAL_VIEWPORTS } from './matrix';
 import { LEARNER_ROUTE_CASES } from './learnerRouteCases';
+import { KANJI_BRIDGE_VISUAL_CASES } from './kanjiBridgeCases';
+import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
 
 const snapshotsDirectory = fileURLToPath(
@@ -46,10 +48,14 @@ describe('visual regression harness contract', () => {
 
     const verifyArgs = buildDockerArgs('verify', '/repo');
     const updateArgs = buildDockerArgs('update', '/repo');
+    const worktreeArgs = buildDockerArgs('verify', '/repo', '/host/.git');
     expect(verifyArgs.at(-1)).toContain('--update-snapshots=none');
     expect(updateArgs.at(-1)).toContain('--update-snapshots=all');
     expect(verifyArgs).toContain(PLAYWRIGHT_IMAGE);
     expect(PLAYWRIGHT_IMAGE).toContain('@sha256:');
+    expect(worktreeArgs).toContain(
+      'type=bind,source=/host/.git,target=/host/.git',
+    );
 
     // The bind-mounted checkout is owned by the host, so the container must
     // declare it safe before git ls-files runs during the Astro build.
@@ -64,10 +70,21 @@ describe('visual regression harness contract', () => {
     }
   });
 
-  it('commits exactly one baseline for every matrix and learner-route case', () => {
+  it('commits exactly one baseline for every matrix, learner-route, kanji-bridge, and phrasebook case', () => {
     const expectedMatrix = VISUAL_CASES.map((visualCase) => visualCase.snapshotName);
     const expectedLearner = LEARNER_ROUTE_CASES.map((learnerCase) => learnerCase.snapshotName);
-    const expected = [...expectedMatrix, ...expectedLearner].sort();
+    const expectedKanji = KANJI_BRIDGE_VISUAL_CASES.map(
+      (kanjiCase) => kanjiCase.snapshotName,
+    );
+    const expectedPhrasebook = PHRASEBOOK_VISUAL_CASES.map(
+      (phrasebookCase) => phrasebookCase.snapshotName,
+    );
+    const expected = [
+      ...expectedMatrix,
+      ...expectedLearner,
+      ...expectedKanji,
+      ...expectedPhrasebook,
+    ].sort();
     const actual = existsSync(snapshotsDirectory)
       ? readdirSync(snapshotsDirectory)
           .filter((fileName) => fileName.endsWith('.png'))
@@ -93,6 +110,30 @@ describe('visual regression harness contract', () => {
       expect(png.subarray(0, 8)).toEqual(
         Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       );
+    }
+
+    // Kanji-bridge baselines are viewport-sized top-of-page captures.
+    for (const kanjiCase of KANJI_BRIDGE_VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, kanjiCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBe(kanjiCase.viewport.width);
+      expect(png.readUInt32BE(20)).toBe(kanjiCase.viewport.height);
+    }
+
+    // Phrasebook baselines are viewport-sized top-of-page captures.
+    for (const phrasebookCase of PHRASEBOOK_VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, phrasebookCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBe(phrasebookCase.viewport.width);
+      expect(png.readUInt32BE(20)).toBe(phrasebookCase.viewport.height);
     }
   });
 

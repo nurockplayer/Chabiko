@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-shopping-001",
+      "scenario": "shopping",
+      "titleJa": "買い物と支払い",
+      "goalJa": "お店で値段や色を尋ね、カード払いを確認して購入を伝えられる",
+      "guidanceJa": "お店で商品の値段を聞き、色違いを尋ね、カード払いができるか確認して購入を伝える練習です。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-007"],
+      "phraseRefs": ["phrase-shopping-001", "phrase-shopping-002", "phrase-shopping-003", "phrase-shopping-005"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "這個多少錢？",
+          "traditionalStatus": "authored",
+          "simplified": "这个多少钱？",
+          "simplifiedStatus": "verified",
+          "pinyin": "zhège duōshǎo qián?",
+          "japanese": "これはいくらですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，我幫你看一下價格。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, wǒ bāng nǐ kàn yíxià jiàgé",
+          "japanese": "はい、お値段を確認しますね。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "有別的顏色嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "有别的颜色吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "yǒu bié de yánsè ma?",
+          "japanese": "他の色はありますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "有，我拿給你看。",
+          "traditionalStatus": "authored",
+          "pinyin": "yǒu, wǒ ná gěi nǐ kàn",
+          "japanese": "ありますよ、お見せしますね。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我要這個，可以刷卡嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "我要这个，可以刷卡吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ yào zhège, kěyǐ shuākǎ ma?",
+          "japanese": "これをください。カードで払えますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "我確認一下刷卡機，請稍等。",
+          "traditionalStatus": "authored",
+          "pinyin": "wǒ quèrèn yíxià shuākǎjī, qǐng shāo děng",
+          "japanese": "カードの機械を確認しますので、少々お待ちください。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan travel shopping roleplay content; no third-party text copied"}
+    }
+  ]
+}

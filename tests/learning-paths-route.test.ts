@@ -12,8 +12,8 @@
  * mobile/desktop containment.
  *
  * The fresh build writes to a unique temporary directory (never the shared
- * dist/) so this suite cannot race with tests/build/teacher-preview-build.test.ts,
- * which owns dist/.
+ * dist/). Vitest also serializes this file with the other Astro build suite
+ * because Astro still writes its repository-local .astro cache.
  */
 
 import { execSync } from 'node:child_process';
@@ -98,9 +98,10 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
       "import { loadLearningPaths } from '../../content/loadLearningPaths'",
     );
     expect(routeSource.match(/loadLearningPaths\(\)/g)).toHaveLength(1);
-    // No direct data file access, no progress or readiness integration.
+    // No direct data-file reads; the route consumes the loader and the fixed
+    // readiness data contract only. Progress/readiness come from the client.
     expect(routeSource).not.toMatch(
-      /readFileSync|data\/learning-paths\.json|localStorage|progress|readiness|fetch\(/,
+      /readFileSync|data\/learning-paths\.json|fetch\(/,
     );
     // Deterministic order: Taiwan travel first, then HSK, then kanji bridge.
     const ids = document.learningPaths.map((path) => path.id);
@@ -183,8 +184,6 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     expect(routeSource).not.toContain('scriptPreference');
     expect(routeSource).not.toContain('path-default');
     expect(routeSource).not.toContain('localStorage');
-    // The route carries no client script block at all.
-    expect(routeSource).not.toContain('<script>');
   });
 
   it('language attributes: page is Japanese-first with no content script markers', () => {
@@ -206,7 +205,7 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
       /\.learning-path-card--available:focus-visible\s*\{([^}]*)\}/,
     );
     expect(focusRule).not.toBeNull();
-    expect(focusRule![1]).toMatch(/border-color:\s*var\(--color-focus\)/);
+    expect(focusRule![1]).toMatch(/border-color:\s*var\(--jade\)/);
     expect(focusRule![1]).not.toContain('outline');
     expect(focusRule![1]).not.toContain('display: none');
     // No unavailable-path focus rule: the inert card can never receive focus.
@@ -238,7 +237,12 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     }
     // Cards and page are contained by their containers at every width.
     expect(componentStyles).toMatch(
-      /\.learning-path-card\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*overflow-wrap:\s*anywhere/,
+      /\.learning-path-card\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*box-sizing:\s*border-box[^}]*overflow-wrap:\s*anywhere/,
+    );
+    // The route restores border-box sizing in its effective scope (BaseLayout's
+    // global reset does not reach page-rendered content; Issue #406).
+    expect(pageStyles).toMatch(
+      /^\s*(?:\/\*[\s\S]*?\*\/)?\s*\*\s*\{[^}]*box-sizing:\s*border-box/,
     );
     expect(componentStyles).toMatch(
       /\.learning-path-card__body\s*\{[^}]*min-width:\s*0[^}]*flex:\s*1\s*1\s*auto/,
@@ -284,6 +288,126 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
   });
 });
 
+describe('/paths/ — wayfinding refinement (Issue #367)', () => {
+  it('applies the shared breadcrumb/context contract: ホーム › 学習ルート', () => {
+    expect(routeSource).toContain('Breadcrumb');
+    expect(routeSource).toContain("{ label: 'ホーム', href: '/' }");
+    expect(routeSource).toContain("{ label: '学習ルート' }");
+    // The built page renders the labelled landmark with the current crumb.
+    expect(builtRouteHtml).toContain('<nav class="breadcrumb"');
+    expect(builtRouteHtml).toMatch(/<a class="breadcrumb__link" href="\/"/);
+    expect(builtRouteHtml).toMatch(
+      /<span class="breadcrumb__current" aria-current="page"/,
+    );
+    expect(builtRouteHtml).toContain('ホーム');
+    expect(builtRouteHtml).toContain('学習ルート');
+  });
+
+  it('marks only the primary Taiwan-travel card as the first-class track', () => {
+    const fragment = builtRouteFragment();
+    // The badge renders exactly once, inside the Taiwan-travel card, before HSK.
+    expect(fragment.match(/data-path-primary-badge/g)).toHaveLength(1);
+    const taiwanStart = fragment.indexOf('data-path-id="taiwan-travel"');
+    const hskStart = fragment.indexOf('data-path-id="hsk-vocabulary"');
+    const badgeIndex = fragment.indexOf('data-path-primary-badge');
+    expect(badgeIndex).toBeGreaterThan(taiwanStart);
+    expect(badgeIndex).toBeLessThan(hskStart);
+    expect(fragment).toContain('メインルート');
+    // The badge is gated by the emphasized (primary) prop in the component.
+    expect(componentSource).toContain('{emphasized && (');
+    // Available-but-secondary HSK never gains the badge.
+    const hskBlock = fragment.slice(
+      hskStart,
+      fragment.indexOf('data-path-id="kanji-bridge"'),
+    );
+    expect(hskBlock).not.toContain('data-path-primary-badge');
+    // The unavailable kanji-bridge card stays inert and badge-free.
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    expect(kanjiBlock).not.toContain('data-path-primary-badge');
+    expect(kanjiBlock).not.toMatch(
+      /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
+    );
+  });
+
+  it('drops the redundant percent summary from readiness items', () => {
+    // The status + fixed-denominator count already convey progress; the percent
+    // display duplicated the same fact and is removed from the surface.
+    expect(routeSource).not.toContain('data-readiness-percent');
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    expect(readinessBlock).not.toContain('data-readiness-percent');
+    // The fixed denominators, states, and unavailable-evidence note remain.
+    expect(readinessBlock).toContain('0 / 3');
+    expect(readinessBlock).toContain('0 / 5');
+    expect(readinessBlock).toContain('data-readiness-note');
+    expect(readinessBlock).toContain('利用できない項目');
+  });
+});
+
+describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
+  it('renders the four frozen targets in repository order with Japanese labels', () => {
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    const targetIds = [
+      ...readinessBlock.matchAll(/data-readiness-target="([^"]+)"/g),
+    ].map((m) => m[1]);
+    expect(targetIds).toEqual([
+      'navigate-arrival',
+      'order-and-pay',
+      'stay-and-ask',
+      'recover-and-get-help',
+    ]);
+    // The labels come from the fixed readiness data contract.
+    expect(readinessBlock).toContain('到着して動ける');
+    expect(readinessBlock).toContain('注文して支払う');
+    expect(readinessBlock).toContain('宿泊して尋ねる');
+    expect(readinessBlock).toContain('聞き直して助けを求める');
+    expect(readinessBlock).toContain('未開始');
+    // No fake ready/in-progress state in the SSR snapshot.
+    expect(readinessBlock).not.toContain('準備OK');
+  });
+
+  it('renders fixed denominators and the unavailable-evidence note truthfully', () => {
+    const readinessBlock = builtRouteHtml.slice(
+      builtRouteHtml.indexOf('data-readiness-section'),
+      builtRouteHtml.indexOf('data-readiness-section') +
+        builtRouteHtml.slice(builtRouteHtml.indexOf('data-readiness-section')).indexOf('</section>'),
+    );
+    // The four fixed denominators from data/travel-quest-readiness.json.
+    expect(readinessBlock).toContain('0 / 3');
+    expect(readinessBlock).toContain('0 / 5');
+    expect(readinessBlock).toContain('0 / 2');
+    // Phrase/roleplay-only targets show the unavailable note.
+    expect(readinessBlock).toContain('data-readiness-note');
+    expect(readinessBlock).toContain('利用できない項目');
+  });
+
+  it('links only to real learner destinations', () => {
+    const hrefs = [
+      ...builtRouteHtml.matchAll(/href="\/([^"]+)"/g),
+    ].map((m) => m[1]);
+    // Exact destinations of available paths plus the home link.
+    expect(hrefs).toContain('lessons/');
+    expect(hrefs).toContain('vocabulary/hsk/');
+    // The unavailable kanji-bridge destination never appears as a link.
+    expect(hrefs).not.toContain('vocabulary/kanji-bridge/');
+  });
+
+  it('emits the frozen member payload and initializes the client controller', () => {
+    expect(routeSource).toContain('paths-progress-data');
+    expect(routeSource).toContain('initPathsReadiness');
+    expect(routeSource).not.toContain('localStorage');
+    // The payload references the loader contract, never the raw data file.
+    expect(routeSource).not.toMatch(/data\/learning-paths\.json/);
+  });
+});
+
 describe('/paths/ — availability reflects the frozen contract (source-level)', () => {
   it('maps the loader availability to the card surface contract', () => {
     const byId = new Map(
@@ -300,8 +424,16 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
 
   it('keeps unavailable paths out of interactive markup in the component', () => {
     // The unavailable branch renders a plain div with no href or handler.
+    // Scoped to the branch itself: the sibling track-config quiz link (#376)
+    // is a separate feature that only renders when the caller supplies a quiz
+    // entry for the track (the unavailable kanji-bridge path never does).
+    const unavailableStart = componentSource.indexOf(
+      'learning-path-card--unavailable',
+    );
+    const quizStart = componentSource.indexOf('quiz &&');
     const unavailableBranch = componentSource.slice(
-      componentSource.indexOf('learning-path-card--unavailable'),
+      unavailableStart,
+      quizStart === -1 ? undefined : quizStart,
     );
     expect(unavailableBranch).not.toContain('href=');
     expect(unavailableBranch).not.toMatch(
@@ -310,31 +442,58 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
   });
 });
 
-describe('home — one compact link to /paths/', () => {
-  it('adds exactly one compact link to /paths/ before the vocabulary entry', () => {
-    expect(homeSource.match(/href="\/paths\/"/g)).toHaveLength(1);
-    const linkIndex = homeSource.indexOf('href="/paths/"');
-    // Placed before the vocabulary entry section, in the shared header area.
-    expect(linkIndex).toBeGreaterThan(0);
-    expect(linkIndex).toBeLessThan(
-      homeSource.indexOf('id="basic-vocabulary-entry"'),
+describe('/paths/ — Taiwan Travel 総合テスト entry (Issue #376)', () => {
+  it('renders the single track-config quiz entry for the Taiwan Travel path only', () => {
+    const fragment = builtRouteFragment();
+    // The quiz destination comes from the navigation-config domain module
+    // (taiwanTravelQuizEntryForTrack), never hardcoded in the page.
+    expect(fragment).toContain('href="/paths/taiwan-travel/quiz/"');
+    expect(fragment).toContain('総合テスト');
+    expect(fragment.match(/data-path-quiz/g)).toHaveLength(1);
+    const taiwanBlock = fragment.slice(
+      fragment.indexOf('data-path-id="taiwan-travel"'),
+      fragment.indexOf('data-path-id="hsk-vocabulary"'),
     );
+    expect(taiwanBlock).toContain('data-path-quiz');
+    const hskBlock = fragment.slice(
+      fragment.indexOf('data-path-id="hsk-vocabulary"'),
+      fragment.indexOf('data-path-id="kanji-bridge"'),
+    );
+    expect(hskBlock).not.toContain('data-path-quiz');
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    expect(kanjiBlock).not.toContain('data-path-quiz');
+    // The quiz entry is a real anchor, keyboard-focusable and not inert.
+    expect(fragment).toMatch(/<a[^>]*class="learning-path-card__quiz"[^>]*href="\/paths\/taiwan-travel\/quiz\/"[^>]*>/);
+  });
+
+  it('keeps the quiz route out of a new global navigation tier', () => {
+    // The entry lives only inside the Taiwan Travel path card context; the
+    // route source stays id-free (the loader and the nav-config module are the
+    // single sources of truth).
+    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary|taiwan-travel/);
+    expect(routeSource).not.toContain('paths/taiwan-travel/quiz');
+  });
+});
+
+describe('home — one compact link to /paths/', () => {
+  it('adds exactly one compact link to /paths/ on the Dashboard', () => {
+    expect(homeSource.match(/href="\/paths\/"/g)).toHaveLength(1);
     // The home page still has exactly its one pre-existing script block.
     expect(homeSource.match(/<script>/g)).toHaveLength(1);
   });
 
   it('keeps the home link keyboard-focusable with a visible focus style', () => {
     const homeStyles = extractStyles(homeSource);
-    const linkRule = homeStyles.match(/\.goal-paths-link a\s*\{([^}]*)\}/);
+    const linkRule = homeStyles.match(/\.dashboard-paths-link\s*\{([^}]*)\}/);
     expect(linkRule).not.toBeNull();
     expect(linkRule![1]).toMatch(/min-height:\s*44px/);
     expect(linkRule![1]).toMatch(/font-size:\s*0\.875rem/);
     const focusRule = homeStyles.match(
-      /\.goal-paths-link a:focus-visible\s*\{([^}]*)\}/,
+      /\.dashboard-paths-link:focus-visible\s*\{([^}]*)\}/,
     );
     expect(focusRule).not.toBeNull();
-    expect(focusRule![1]).toMatch(/border-color:\s*var\(--color-focus\)/);
-    expect(focusRule![1]).not.toContain('outline');
+    expect(focusRule![1]).toMatch(/outline:\s*3px solid var\(--color-focus\)/);
+    expect(focusRule![1]).toMatch(/outline-offset:\s*3px/);
     expect(focusRule![1]).not.toContain('display: none');
   });
 });

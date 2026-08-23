@@ -1,0 +1,98 @@
+---
+/**
+ * Semantic breadcrumb (#366 contextual-wayfinding contract).
+ *
+ * Renders a breadcrumb trail `ホーム › track › current surface` as a labelled
+ * landmark with an ordered list. The last crumb is the current page and is
+ * rendered as a non-link `<span aria-current="page">`, so the current location
+ * is identifiable without colour alone (bold + aria-current, and it is not a
+ * focusable link). Separators are decorative CSS-generated `›` marks, so they
+ * are not announced by assistive technology. Long Japanese labels wrap safely.
+ *
+ * Pages without a meaningful trail may omit the breadcrumb entirely.
+ */
+export interface BreadcrumbCrumb {
+  label: string;
+  /** Destination. Omit for the current (last) crumb. */
+  href?: string;
+}
+
+export interface Props {
+  crumbs: BreadcrumbCrumb[];
+  /** Accessible name for the breadcrumb landmark. */
+  label?: string;
+}
+
+const { crumbs, label = 'パンくず' } = Astro.props;
+---
+
+<nav class="breadcrumb" aria-label={label}>
+  <ol class="breadcrumb__list">
+    {crumbs.map((crumb, index) => {
+      const isLast = index === crumbs.length - 1;
+      return (
+        <li class="breadcrumb__item">
+          {crumb.href !== undefined && !isLast ? (
+            <a class="breadcrumb__link" href={crumb.href}>
+              {crumb.label}
+            </a>
+          ) : (
+            <span class="breadcrumb__current" aria-current={isLast ? 'page' : undefined}>
+              {crumb.label}
+            </span>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumb {
+    margin: 0 0 var(--sp-6);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    min-width: 0;
+  }
+  .breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+  .breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  /* Decorative separator between non-first items; not announced by AT. */
+  .breadcrumb__item + .breadcrumb__item::before {
+    content: '›';
+    margin-inline: var(--sp-1);
+    color: var(--hairline-strong);
+    line-height: 1;
+  }
+  .breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+  }
+  .breadcrumb__current {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-secondary);
+    font-weight: 600;
+  }
+</style>

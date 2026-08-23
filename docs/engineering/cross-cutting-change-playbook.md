@@ -1,125 +1,125 @@
 # Cross-Cutting Change Playbook
 
-本 playbook 收錄跨 ticket 可重用的 cross-cutting 變更工作流程，定義在實作前如何凍結完整 contract surface、如何產出可稽核的完成證據，以及最終 reviewer 如何以完整 surface 收斂 findings。內容與特定 Direction 或 issue 無關。
+This playbook defines a reusable workflow for cross-cutting changes: how to freeze the complete contract surface before implementation, produce auditable completion evidence, and have the final reviewer converge findings across the whole surface. It is independent of any specific Direction or issue.
 
-來源：Issue #198 的 scope 定義，以及 Issue #193 / PR #196 的反覆 review 歷史。Incident-specific 細節留在 #193 與 PR #196，本檔只保存可重用規則。
+Source: the scope of Issue #198 and the repeated review history of Issue #193 / PR #196. Incident-specific details remain in #193 and PR #196; this document preserves only reusable rules.
 
-## 1. Cross-cutting 分類觸發器
+## 1. Cross-cutting classification triggers
 
-實作前先用下列清單判斷是否為 cross-cutting 變更。影響至少兩類領域即屬於 cross-cutting：
+Before implementation, use this checklist to determine whether a change is cross-cutting. A change that affects at least two categories is cross-cutting:
 
-- asset 路徑、generated 檔案或 migration；
-- schema、state 或 metadata contract；
-- generator、importer、rebuild script 或 legacy 相容路徑；
-- build、deployment、pruning、`.gitignore` 或 cleanup 行為；
-- rights、license、attribution 或 provenance；
-- 多個 runtime consumer（loader、UI、API、validator、測試）；
-- 大型 committed generated 輸出。
+- asset paths, generated files, or migration;
+- schema, state, or metadata contracts;
+- generator, importer, rebuild script, or legacy compatibility paths;
+- build, deployment, pruning, `.gitignore`, or cleanup behavior;
+- rights, license, attribution, or provenance;
+- multiple runtime consumers such as loader, UI, API, validator, and tests;
+- large committed generated output.
 
-只影響單一檔案或單一本地機制的變更不需 Impact Map，保持既有輕量流程。
+A change that affects only one file or one local mechanism does not require an Impact Map and should use the normal lightweight workflow.
 
-## 2. Impact Map 模板
+## 2. Impact Map template
 
-實作前產出精簡 Impact Map，凍結下列每個 surface。任一 surface 未知或仍需產品決策時，停止實作並回報，不得自行猜測。
+Before implementation, produce a concise Impact Map and freeze every surface below. If any surface is unknown or still requires a product decision, stop and report it instead of guessing.
 
 ```text
-# Impact Map — <issue 標題>
+# Impact Map — <issue title>
 
 ## Writers
-- <寫入受影響路徑／資料／state 的每個來源；包含 generator、importer、手動編輯、測試 fixture>
+- <every source that writes the affected path/data/state, including generators, importers, manual edits, and test fixtures>
 
 ## Consumers
-- <每個讀取或依賴該路徑／schema／state 的 consumer：資料檔、loader、validator、UI、API、測試>
+- <every consumer that reads or depends on the path/schema/state: data files, loaders, validators, UI, APIs, tests>
 
 ## Legacy paths
-- <legacy writer、舊路徑、相容層；移除安全機制前必須確認沒有其他 writer 仍依賴>
+- <legacy writers, old paths, compatibility layers; before removing a safety mechanism confirm no other writer still depends on it>
 
 ## Canonical workflow
-- <重建或 migration 的正式命令與順序，例如 canonical build command>
+- <official rebuild or migration commands and order, such as the canonical build command>
 
 ## Boundaries
-- Git、build、deployment、`.gitignore`、pruning 與 cleanup 各自限制；測試 cleanup 只刪除自己建立的檔案／目錄>
+- <Git, build, deployment, .gitignore, pruning, and cleanup limits; test cleanup removes only files/directories created by that test>
 
 ## Rights / provenance
-- <license、attribution、provenance 要求與其來源（ADR、rights 檔、product-owner 決策）>
+- <license, attribution, and provenance requirements plus their repository source: ADR, rights record, product-owner decision>
 
 ## Clean / dirty environment
-- <clean 與 dirty 環境各自的預期行為與失敗案例>
+- <expected behavior and failure cases in clean and dirty environments>
 ```
 
-## 3. Requirement → Diff → Test Evidence 矩陣
+## 3. Requirement → Diff → Test Evidence matrix
 
-每個 frozen requirement 都必須在完成報告中對應到變更檔案、驗證與觀察結果。沒有證據的 requirement 不得宣稱完成。
+Every frozen requirement must map to a changed file/artifact, validation, and observed result in the completion report. Do not claim a requirement is complete without evidence.
 
 ```text
-| # | 凍結 requirement | 變更的檔案／artifact | 驗證 | 觀察到的結果 |
+| # | Frozen requirement | Changed file/artifact | Validation | Observed result |
 | --- | --- | --- | --- | --- |
-| 1 | <從 issue 凍結的 contract> | <diff 對應路徑或 generated 輸出> | <focused test 或 validation 名稱> | <通過／失敗與關鍵數字> |
+| 1 | <contract frozen by issue> | <matching diff path or generated output> | <focused test or validation> | <pass/fail and key value> |
 ```
 
-## 4. Writer / consumer / legacy-path 搜尋指引
+## 4. Writer / consumer / legacy-path search guidance
 
-變更跨檔契約或安全機制前，先完整盤點，再動手。搜尋至少涵蓋：
+Before changing a cross-file contract or safety mechanism, inventory the complete surface first. Search at least for:
 
-- writer：直接寫入路徑／資料／state 的所有來源，包括 generator、importer、build 整合、手動或 fixture 寫入。
-- consumer：資料檔、loader、validator、UI、API、測試中讀取或依賴該契約的位置。
-- legacy 相容路徑：舊路徑、舊 state、舊 label、被淘汰的 guard 及其殘留引用。
-- stale assumptions：已凍結契約的舊假設，可能散落在文件、ADR、測試或 generated 輸出中。
+- **writers:** every direct writer to the affected path/data/state, including generators, importers, build integration, manual writes, and fixtures;
+- **consumers:** data files, loaders, validators, UI, APIs, and tests that read or depend on the contract;
+- **legacy compatibility paths:** old paths, old state, old labels, retired guards, and remaining references;
+- **stale assumptions:** old assumptions about a frozen contract that may remain in documentation, ADRs, tests, or generated output.
 
-移除或收窄任何安全機制（build guard、`.gitignore` 規則、驗證 gate）前，先確認沒有其他 writer 仍依賴該機制。
+Before removing or narrowing a safety mechanism such as a build guard, `.gitignore` rule, or validation gate, confirm that no other writer still depends on it.
 
-## 5. Canonical workflow 驗證
+## 5. Canonical workflow validation
 
-- 文件化的 workflow 命令必須由 self-test 斷言其行為本身，不能只測被呼叫的函式。
-- 涉及 generators、builds、migrations 或 cleanup 時，canonical 命令本身要作為驗證目標，例如確認 rebuild 後 serialized corpus 與 committed metadata 一致。
-- 涉及 reuse 或 provenance 時，重跑 canonical 命令不得悄悄改變既有 accepted 狀態；例如 accepted-AI reuse 必須 fail closed，除非 committed `promptDigest`、`generationRevision` 與 `referenceSetIds` 與當前 frozen prompt contract 相符。
+- A documented workflow command must have a self-test that asserts the command's behavior, not only the functions it invokes.
+- For generators, builds, migrations, or cleanup, validate the canonical command itself. For example, a rebuild should prove the serialized corpus and committed metadata remain consistent.
+- When reuse or provenance is involved, rerunning the canonical command must not silently alter an already accepted state. For example, accepted-AI reuse must fail closed unless committed `promptDigest`, `generationRevision`, and `referenceSetIds` match the current frozen prompt contract.
 
-## 6. Clean / dirty 環境測試
+## 6. Clean / dirty environment tests
 
-凡涉及檔案、目錄、generator、build、migration 或 cleanup 的變更，clean 與 dirty 環境驗證都必須：
+Any change involving files, directories, generators, builds, migrations, or cleanup must verify both clean and dirty environments:
 
-- clean 環境：全新 checkout 或受控 fixture 下，canonical workflow 從頭成功。
-- dirty 環境：工作區含其他開發者檔案時，驗證 build、prune、cleanup 與 migration 不會刪除或覆蓋非本變更建立的內容。
+- **clean environment:** the canonical workflow succeeds from a fresh checkout or controlled fixture;
+- **dirty environment:** when the workspace also contains another developer's files, build/prune/cleanup/migration behavior does not delete or overwrite content not owned by this change.
 
-cleanup 規則：
+Cleanup rules:
 
-- regression-test cleanup 只移除該 test 建立的檔案與目錄；只有當該 test 自己建立了該目錄且目錄為空時，才移除該目錄。
-- migrations、pruners 與 stale generated artifacts 只有在 ownership 已由明確的 managed path、manifest、metadata 或 allowlist 建立時，才可以刪除；例如 canonical rebuild 記錄其寫入的路徑清單，pruner 只從該清單刪除。
-- 不屬於上述 managed 範圍的開發者檔案必須永遠保留，即使其內容看似重複或陳舊。
+- Regression-test cleanup removes only files and directories created by that test. A directory may be removed only if the test itself created it and it is empty.
+- Migrations, pruners, and stale-generated-artifact cleanup may delete only when ownership is established through an explicit managed path, manifest, metadata record, or allowlist. For example, a canonical rebuild can record the paths it owns and a pruner can delete only from that list.
+- Developer-owned files outside the managed set must always be preserved, even if they appear duplicated or stale.
 
-## 7. Rights / provenance 一致性檢查
+## 7. Rights / provenance consistency
 
-- 每個 committed 資產與 metadata 的 rights、license、attribution 與 provenance 都必須可回溯到 repository 內的來源（ADR、rights 檔、product-owner 決策、commit）。
-- generated 輸出（例如 preview corpus）與 committed metadata（例如 rights 檔、契約）不得互相矛盾。
-- 涉及 reuse 時，provenance 欄位（`promptDigest`、`generationRevision`、`referenceSetIds`）必須與 frozen 契約一致。
+- Every committed asset and metadata record must trace its rights, license, attribution, and provenance to repository evidence such as an ADR, rights file, product-owner decision, or commit.
+- Generated output, such as a preview corpus, must not contradict committed metadata or rights contracts.
+- For reuse, provenance fields such as `promptDigest`, `generationRevision`, and `referenceSetIds` must match the frozen contract.
 
-## 8. Repo-wide 最終 Reviewer Checklist
+## 8. Repository-wide final reviewer checklist
 
-最終唯讀 reviewer 檢查完整 contract surface，不能只看最後一次 follow-up diff。至少驗證：
+The final read-only reviewer checks the complete contract surface, not only the last follow-up diff. At minimum verify:
 
-- 所有已知 writer 與 consumer 都已盤點並同步。
-- 沒有 stale path、state、metadata 或 documentation 殘留。
-- canonical rebuild／migration workflow 正確且被驗證。
-- destructive cleanup 與 dirty 環境行為安全。
-- rights／license／provenance 一致。
-- generated 輸出與 committed metadata 一致。
-- negative drift test 與 fail-closed 行為存在且有效。
+- all known writers and consumers were inventoried and synchronized;
+- no stale path, state, metadata, or documentation remains;
+- the canonical rebuild/migration workflow is correct and validated;
+- destructive cleanup and dirty-environment behavior are safe;
+- rights/license/provenance remain consistent;
+- generated output and committed metadata agree;
+- negative-drift tests and fail-closed behavior exist and work.
 
-除立即的 P0／P1 安全或資料遺失中斷外，reviewer 應完成完整 contract-surface 掃描，並把全部 findings 聚合到一份 review 結果或 follow-up plan。隨後由 coordinator 依 root cause、implementation mechanism、主要修改檔案與 validation boundary 分組：只有符合「Flash 任務大小 Gate」merge criteria 的 findings 可共享一個 bounded implementation cycle；無關的 findings 在同一 branch／PR 上拆成 separate bounded cycles 依序實作。
+Except for an immediate P0/P1 safety or data-loss interruption, the reviewer should complete the full contract-surface scan and aggregate all findings into one review result or follow-up plan. The coordinator then groups findings by root cause, implementation mechanism, primary changed files, and validation boundary. Only findings that meet the `Flash Task-Size Gate` merge criteria may share one bounded implementation cycle; unrelated findings are handled as separate bounded cycles on the same branch/PR.
 
 ## 9. Worked example — Issue #193 / PR #196
 
-PR #196 因為初始實作與 review 只驗證最終 asset 狀態、未先映射完整 contract surface，經歷多次 follow-up。下列 compact 範例濃縮其教訓：
+PR #196 went through repeated follow-ups because the initial implementation and review validated only the final asset state without first mapping the complete contract surface. The reusable lessons are:
 
-- **Legacy writer**：`pruneLocalOnlyAssets()` 在 cleanup 時移除已 tracked 的 teacher derivatives，且舊的本地 guard 遺漏 `public/assets/dev/` 的 legacy 來源，造成 legacy 資產滲入部署。
-  → 移除安全機制前先盤點所有 writer；新 `pruneDevAssets()` 只移除 build 產生的 `dist/assets/dev/`，不碰 deployable 目錄。
-- **Schema／loader consumer**：`rights.status` 契約變更後，learner loader 仍拒絕新狀態，或契約新增 `approved` 狀態但未同步 validator／UI。
-  → 跨檔契約變更必須在同一個變更內同步所有 consumer（資料檔、loader、validator、UI、測試）。
-- **Canonical rebuild command**：文件化的 build 命令遺漏 `--reuse-accepted-ai-assets`，重跑後 432 個 accepted AI assets 退化為 `ai-pending`。
-  → canonical 命令本身必須由 self-test 斷言，確保 rebuild 不會悄悄改變 accepted 狀態。
-- **Dirty 環境 cleanup**：build regression test 在包含開發者檔案的 workspace 中刪除了開發者擁有的 dev assets。
-  → 測試 cleanup 只刪除自己建立的檔案；只有自己建立的空目錄才移除。
-- **Rights／provenance**：accepted-AI reuse 必須比對 committed `promptDigest`／`generationRevision`／`referenceSetIds` 與 frozen prompt contract，不符則 fail closed。
-  → provenance 欄位與 frozen 契約一致是驗收的一部分。
+- **Legacy writer:** `pruneLocalOnlyAssets()` removed tracked teacher derivatives during cleanup, while an old local guard omitted the legacy `public/assets/dev/` source, allowing legacy assets into deployment.
+  → Inventory every writer before removing a safety mechanism. The replacement `pruneDevAssets()` removes only build-generated `dist/assets/dev/` and never touches deployable directories.
+- **Schema/loader consumer:** after changing the `rights.status` contract, a learner loader still rejected the new state, or the contract added `approved` without synchronizing validator/UI behavior.
+  → A cross-file contract change must update all consumers in the same change: data, loader, validator, UI, and tests.
+- **Canonical rebuild command:** a documented build command omitted `--reuse-accepted-ai-assets`, causing 432 accepted AI assets to degrade back to `ai-pending` when rebuilt.
+  → Self-test the canonical command itself so a rebuild cannot silently change accepted state.
+- **Dirty-environment cleanup:** a build regression test deleted developer-owned dev assets from a workspace containing unrelated files.
+  → Test cleanup removes only what the test created, and removes a directory only when the test created that now-empty directory.
+- **Rights/provenance:** accepted-AI reuse must compare committed `promptDigest`, `generationRevision`, and `referenceSetIds` with the frozen prompt contract and fail closed when they do not match.
+  → Provenance consistency with the frozen contract is part of acceptance.
 
-每個凍結 requirement 都要能對應到 diff 與驗證結果；review 只看最終狀態而不映射完整 surface，正是這些缺陷層層浮現的原因。
+Every frozen requirement must map to diff and validation evidence. Reviewing only the final state without mapping the complete surface is what allows these defects to appear one layer at a time.

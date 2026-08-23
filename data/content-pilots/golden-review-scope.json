@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "golden-content-pilot-v1",
+  "compatibleWithCampaignId": "issue-360-launch-v1",
+  "reviewState": "pending-human-review",
+  "decisionContract": {
+    "outcomes": ["accepted", "needs_changes"],
+    "fingerprint": "sha256(stableStringify(recordWithoutTopLevelReviewStatus))",
+    "separateDecisionNamespace": true,
+    "baseCampaignUnchanged": true
+  },
+  "dimensions": [
+    {
+      "id": "natural-taiwan-mandarin",
+      "label": "Natural Taiwan Mandarin",
+      "reviewerRoles": ["human-language-reviewer", "human-regional-reviewer"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    },
+    {
+      "id": "natural-japanese-explanation",
+      "label": "Natural Japanese explanation",
+      "reviewerRoles": ["human-language-reviewer"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    },
+    {
+      "id": "learner-usefulness",
+      "label": "Usefulness for Japanese learners",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    },
+    {
+      "id": "taiwan-regional-cultural-accuracy",
+      "label": "Taiwan regional and cultural accuracy",
+      "reviewerRoles": ["human-regional-reviewer"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    },
+    {
+      "id": "teaching-progression",
+      "label": "Teaching progression",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "appliesTo": ["lesson"],
+      "state": "pending"
+    },
+    {
+      "id": "dialogue-naturalness",
+      "label": "Dialogue naturalness",
+      "reviewerRoles": ["human-language-reviewer"],
+      "appliesTo": [],
+      "state": "not-applicable",
+      "note": "This golden set contains no dialogue records; the dimension becomes required when dialogue content is added."
+    },
+    {
+      "id": "exercise-quality",
+      "label": "Exercise quality",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "appliesTo": ["lesson"],
+      "state": "pending"
+    },
+    {
+      "id": "graph-cross-link-correctness",
+      "label": "Graph and cross-link correctness",
+      "reviewerRoles": ["maintainer"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    },
+    {
+      "id": "source-provenance-correctness",
+      "label": "Source and provenance correctness",
+      "reviewerRoles": ["human-source-reviewer", "human-script-verifier"],
+      "appliesTo": ["lesson", "vocabulary"],
+      "state": "pending"
+    }
+  ],
+  "records": [
+    {"collection": "lessons", "type": "lesson", "id": "pilot-tw-airport-gate-001", "sourcePath": "data/content-pilots/taiwan-travel-golden/lessons.json"},
+    {"collection": "lessons", "type": "lesson", "id": "pilot-tw-transport-mrt-001", "sourcePath": "data/content-pilots/taiwan-travel-golden/lessons.json"},
+    {"collection": "lessons", "type": "lesson", "id": "pilot-tw-food-no-spicy-001", "sourcePath": "data/content-pilots/taiwan-travel-golden/lessons.json"},
+    {"collection": "lessons", "type": "lesson", "id": "pilot-tw-hotel-reservation-001", "sourcePath": "data/content-pilots/taiwan-travel-golden/lessons.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-001-qing", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-002-wen", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-003-nali", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-004-zai", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-005-men", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-006-dao", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-007-zhan", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-008-chi", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-009-la", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-010-yi", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-011-yuding", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-012-mingzi", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-013-wo", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"},
+    {"collection": "hskVocabulary", "type": "vocabulary", "id": "pilot-hsk-014-you", "sourcePath": "data/content-pilots/hsk-golden/vocabulary.json"}
+  ]
+}

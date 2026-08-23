@@ -1,0 +1,368 @@
+{
+  "lessons": [
+    {
+      "id": "pilot-tw-airport-gate-001",
+      "titleJa": "搭乗口を探してみよう",
+      "level": "beginner",
+      "canDoJa": "空港で搭乗口の場所を尋ね、案内を聞き取る準備ができる",
+      "learnerOutcomeJa": "「請問」と「在哪裡」を使って、搭乗口の場所を丁寧に尋ねられる",
+      "hookJa": "出発前、案内板を見ても搭乗口が見つからない。近くの係員さんにどう聞く？",
+      "travelScenario": "airport",
+      "coreSentence": "請問，登機門在哪裡？",
+      "sections": [
+        {
+          "headingJa": "まずは丁寧に呼びかける",
+          "contentJa": "「請問」は、知らない人に質問するときの「すみません／お尋ねします」。後ろに知りたいことを続ける。"
+        },
+        {
+          "headingJa": "場所を尋ねる型",
+          "contentJa": "「場所＋在哪裡？」ではなく、知りたい名詞を先に置いて「登機門在哪裡？」と言う。"
+        }
+      ],
+      "chunks": [
+        {
+          "chunk": "請問",
+          "meaning": "すみません、お尋ねします",
+          "notesJa": "質問の前置き。日本語の「すみません」に近いが、謝罪ではなく呼びかけとして使える。"
+        },
+        {
+          "chunk": "登機門",
+          "meaning": "搭乗口",
+          "notesJa": "「登機」＝搭乗、「門」＝ゲート。空港の案内表示で見つける語。"
+        },
+        {
+          "chunk": "在哪裡",
+          "meaning": "どこにありますか",
+          "notesJa": "「在」＋場所の疑問詞。場所を尋ねるときのまとまりで覚える。"
+        }
+      ],
+      "kanjiBridgeNotes": [
+        {
+          "kanji": "門",
+          "jpReading": "もん",
+          "noteJa": "字形は日本語の「門」と同じ。中国語では mén と読み、音読みをそのまま当てない。"
+        },
+        {
+          "kanji": "問",
+          "jpReading": "もん",
+          "noteJa": "「質問」の手がかりになる字。中国語の wèn は日本語の音読みとは別の音なので、拼音を基準にする。"
+        }
+      ],
+      "soundFocus": [
+        {
+          "item": "請 qǐng",
+          "noteJa": "第三声。q は息を出す音。短く切らず、声を低くしてから少し上げる。"
+        },
+        {
+          "item": "登機門 dēngjīmén",
+          "noteJa": "dēng と jī は高く平らに、mén は上がる声調。三つを同じ高さで読まない。"
+        },
+        {
+          "item": "哪裡 nǎlǐ",
+          "noteJa": "どちらも第三声。まずゆっくり区切り、慣れたら会話の流れで滑らかにする。"
+        }
+      ],
+      "examples": [
+        {
+          "traditional": "請問，登機門在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "请问，登机门在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "qǐngwèn, dēngjīmén zài nǎlǐ?",
+          "japanese": "すみません、搭乗口はどこですか？"
+        },
+        {
+          "traditional": "請問，洗手間在哪裡？",
+          "traditionalStatus": "generated",
+          "simplified": "请问，洗手间在哪里？",
+          "simplifiedStatus": "generated",
+          "pinyin": "qǐngwèn, xǐshǒujiān zài nǎlǐ?",
+          "japanese": "すみません、お手洗いはどこですか？"
+        }
+      ],
+      "reviewPrompts": [
+        {
+          "promptJa": "「請問，登機門在哪裡？」は何を尋ねている？",
+          "answerJa": "搭乗口の場所",
+          "distractorsJa": ["搭乗時刻", "荷物の重さ"]
+        }
+      ],
+      "travelTask": "空港で案内板を確認してから、必要なら係員さんに「請問，登機門在哪裡？」と尋ねてみよう。聞き取れないときは案内板を指差して確認する。",
+      "painPointTags": ["word-order", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "pilot-tw-transport-mrt-001",
+      "titleJa": "MRTで行き先を伝えてみよう",
+      "level": "beginner",
+      "canDoJa": "MRTを利用するとき、行き先を短い中国語で伝えられる",
+      "learnerOutcomeJa": "「我要搭捷運到〜」を使って、目的地を伝える準備ができる",
+      "hookJa": "台北駅まで行きたい。路線図を指差しながら、行き先を一言で伝えよう。",
+      "travelScenario": "transport",
+      "coreSentence": "我要搭捷運到台北車站。",
+      "sections": [
+        {
+          "headingJa": "乗り物を指定する",
+          "contentJa": "台湾で都市鉄道を指す「捷運」を「搭（乗る）」と組み合わせる。「搭」は乗り物に乗る動作を表す。"
+        },
+        {
+          "headingJa": "到で目的地をつなぐ",
+          "contentJa": "「到＋場所」で「〜まで／〜へ」。行き先を最後に置くので、場所を言い換えて練習できる。"
+        }
+      ],
+      "chunks": [
+        {
+          "chunk": "我要",
+          "meaning": "私は〜したい／〜するつもりです",
+          "notesJa": "「要」は欲求や意思。後ろに動作を続けると「〜したい」の型になる。"
+        },
+        {
+          "chunk": "搭捷運",
+          "meaning": "MRTに乗る",
+          "notesJa": "台湾では地下鉄・高架鉄道を「捷運」と呼ぶ。中国本土の一般的な語と地域差がある。"
+        },
+        {
+          "chunk": "到台北車站",
+          "meaning": "台北駅まで",
+          "notesJa": "「到」の後ろに目的地を置く。駅名は案内板や地図を指差して差し替えられる。"
+        }
+      ],
+      "kanjiBridgeNotes": [
+        {
+          "kanji": "車站",
+          "jpReading": "しゃ・たん",
+          "noteJa": "「車」と「站」の組み合わせで駅を表す。日本語の「駅」とは字が異なるので、台湾の案内表示と一緒に覚える。"
+        },
+        {
+          "kanji": "到",
+          "jpReading": "とう",
+          "noteJa": "到着の「到」。中国語では dào と読み、目的地を示す前置きのように使える。"
+        }
+      ],
+      "soundFocus": [
+        {
+          "item": "搭 dā",
+          "noteJa": "第一声。高く平らに保ち、d の後に母音を足しすぎない。"
+        },
+        {
+          "item": "捷運 jiéyùn",
+          "noteJa": "jié は第二声、yùn は第四声。後半を急に落として区切る。"
+        },
+        {
+          "item": "到 dào",
+          "noteJa": "第四声。短く下げる。日本語の「どう」と同じ音ではない。"
+        }
+      ],
+      "examples": [
+        {
+          "traditional": "我要搭捷運到台北車站。",
+          "traditionalStatus": "generated",
+          "simplified": "我要搭捷运到台北车站。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yào dā jiéyùn dào Táiběi Chēzhàn.",
+          "japanese": "MRTに乗って台北駅まで行きたいです。"
+        },
+        {
+          "traditional": "我要搭公車到這裡。",
+          "traditionalStatus": "generated",
+          "simplified": "我要搭公交到这里。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yào dā gōngchē dào zhèlǐ.",
+          "japanese": "バスに乗ってここまで行きたいです。"
+        }
+      ],
+      "reviewPrompts": [
+        {
+          "promptJa": "「到台北車站」の「到」は何を表す？",
+          "answerJa": "目的地の「〜まで／〜へ」",
+          "distractorsJa": ["乗り物の種類", "質問の前置き"]
+        }
+      ],
+      "travelTask": "路線図や駅名を指差しながら「我要搭捷運到＋目的地」と言ってみよう。目的地が伝わったか、相手の指差しで確認する。",
+      "painPointTags": ["word-order", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "pilot-tw-food-no-spicy-001",
+      "titleJa": "辛さを伝えて注文してみよう",
+      "level": "beginner",
+      "canDoJa": "食べられない辛さを伝え、指差しと量詞を使って注文できる",
+      "learnerOutcomeJa": "「不吃辣」と「一份」を組み合わせて、自分の希望を短く伝えられる",
+      "hookJa": "おいしそうな料理を見つけたけれど、辛いものは苦手。注文前にどう伝える？",
+      "travelScenario": "food",
+      "coreSentence": "我不吃辣，請給我一份這個。",
+      "sections": [
+        {
+          "headingJa": "食べないものを先に伝える",
+          "contentJa": "「不＋動詞」で否定する。「不吃辣」は「辛いものは食べません」。アレルギーや医療上の制限は、この一文だけで安全が保証されるわけではないので、必要なら日本語や翻訳を併用する。"
+        },
+        {
+          "headingJa": "一份で一人分を頼む",
+          "contentJa": "料理を数えるときの「份」を使う。「一份」は一人前・一つ分のまとまり。"
+        }
+      ],
+      "chunks": [
+        {
+          "chunk": "我不吃辣",
+          "meaning": "私は辛いものを食べません",
+          "notesJa": "「吃」は食べる、「辣」は辛い。苦手を伝える表現で、重いアレルギーの説明の代用にはしない。"
+        },
+        {
+          "chunk": "請給我一份",
+          "meaning": "私に一人分ください",
+          "notesJa": "「給」は与える。「請給我〜」で注文の形になる。"
+        },
+        {
+          "chunk": "這個",
+          "meaning": "これ",
+          "notesJa": "メニューや料理を指差して使う。料理名が言えなくても注文の入口になる。"
+        }
+      ],
+      "kanjiBridgeNotes": [
+        {
+          "kanji": "辣",
+          "jpReading": "らつ",
+          "noteJa": "日本語ではなじみが薄い字。見た目だけで意味を決めず、là と「辛い」をセットで覚える。"
+        },
+        {
+          "kanji": "份",
+          "jpReading": "ぶん",
+          "noteJa": "「部分」の「分」と似た働きで、まとまりや一人分を数える量詞。日本語の助数詞と一対一ではない。"
+        }
+      ],
+      "soundFocus": [
+        {
+          "item": "不 bù／吃 chī",
+          "noteJa": "bù は第四声、chī は第一声。否定を平らに伸ばさず、短く落としてから次へ進む。"
+        },
+        {
+          "item": "辣 là",
+          "noteJa": "第四声。短く落とす。l の音で、r に寄せない。"
+        },
+        {
+          "item": "一份 yí fèn",
+          "noteJa": "一は後ろの音に影響されて yí。份は第四声。二語をつなげて練習する。"
+        }
+      ],
+      "examples": [
+        {
+          "traditional": "我不吃辣，請給我一份這個。",
+          "traditionalStatus": "generated",
+          "simplified": "我不吃辣，请给我一份这个。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ bù chī là, qǐng gěi wǒ yí fèn zhège.",
+          "japanese": "私は辛いものを食べません。これを一人分ください。"
+        },
+        {
+          "traditional": "請不要加辣。",
+          "traditionalStatus": "generated",
+          "simplified": "请不要加辣。",
+          "simplifiedStatus": "generated",
+          "pinyin": "qǐng bú yào jiā là.",
+          "japanese": "辛さを加えないでください。"
+        }
+      ],
+      "reviewPrompts": [
+        {
+          "promptJa": "「我不吃辣」は何を伝える？",
+          "answerJa": "辛いものを食べないこと",
+          "distractorsJa": ["料理を二人分頼むこと", "料理の値段を尋ねること"]
+        }
+      ],
+      "travelTask": "注文前に辛さの希望を伝え、料理を指差して「請給我一份這個」と言ってみよう。食物アレルギーなど重要な制限は、別の確実な方法でも確認する。",
+      "painPointTags": ["measure-word", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "pilot-tw-hotel-reservation-001",
+      "titleJa": "ホテルで予約名を伝えてみよう",
+      "level": "beginner",
+      "canDoJa": "ホテルの受付で予約があることと名前を短く伝えられる",
+      "learnerOutcomeJa": "「我有預訂，名字是〜」を使って、チェックインの最初の一言を言える",
+      "hookJa": "受付に着いたら、まず予約があることを伝えよう。長い説明は後からで大丈夫。",
+      "travelScenario": "hotel",
+      "coreSentence": "我有預訂，名字是佐藤。",
+      "sections": [
+        {
+          "headingJa": "予約があると伝える",
+          "contentJa": "「有」は持っている・ある。「我有預訂」で予約があることを先に伝え、受付の次の質問を待つ。"
+        },
+        {
+          "headingJa": "名前を続ける",
+          "contentJa": "「名字是〜」は「名前は〜です」。名前は相手に聞き返されたら、予約確認画面を見せて綴りを確認する。"
+        }
+      ],
+      "chunks": [
+        {
+          "chunk": "我有預訂",
+          "meaning": "予約があります",
+          "notesJa": "預訂は予約。ホテルや交通の予約を指す。"
+        },
+        {
+          "chunk": "名字是",
+          "meaning": "名前は〜です",
+          "notesJa": "「是」は説明や同定。「名字是＋名前」の順で言う。"
+        },
+        {
+          "chunk": "佐藤",
+          "meaning": "佐藤（名前の例）",
+          "notesJa": "ここでは発音練習用の例。実際の予約名は予約画面の表記を見せて確認する。"
+        }
+      ],
+      "kanjiBridgeNotes": [
+        {
+          "kanji": "名",
+          "jpReading": "めい",
+          "noteJa": "名前の「名」。中国語では míng と読み、日本語の音読みとは異なる。"
+        },
+        {
+          "kanji": "字",
+          "jpReading": "じ",
+          "noteJa": "名字の「字」は字面を覚える手がかり。人名の読み方を日本語から推測しない。"
+        }
+      ],
+      "soundFocus": [
+        {
+          "item": "有 yǒu",
+          "noteJa": "第三声。短く下げてから上げる。"
+        },
+        {
+          "item": "預訂 yùdìng",
+          "noteJa": "二つとも第四声。前後を同じ高さで読まず、二回落とす。"
+        },
+        {
+          "item": "名字 míngzi",
+          "noteJa": "名は第二声。字は軽く添えるように読むことが多い。"
+        }
+      ],
+      "examples": [
+        {
+          "traditional": "我有預訂，名字是佐藤。",
+          "traditionalStatus": "generated",
+          "simplified": "我有预订，名字是佐藤。",
+          "simplifiedStatus": "generated",
+          "pinyin": "wǒ yǒu yùdìng, míngzi shì Zuǒténg.",
+          "japanese": "予約があります。名前は佐藤です。"
+        },
+        {
+          "traditional": "這是我的預訂資料。",
+          "traditionalStatus": "generated",
+          "simplified": "这是我的预订资料。",
+          "simplifiedStatus": "generated",
+          "pinyin": "zhè shì wǒ de yùdìng zīliào.",
+          "japanese": "これが私の予約情報です。"
+        }
+      ],
+      "reviewPrompts": [
+        {
+          "promptJa": "受付で「我有預訂，名字是〜」と言う目的は？",
+          "answerJa": "予約があることと名前を伝えるため",
+          "distractorsJa": ["部屋の値段を交渉するため", "駅までの道を尋ねるため"]
+        }
+      ],
+      "travelTask": "チェックインの最初に「我有預訂，名字是＋自分の名前」と伝え、必要なら予約画面を見せて綴りを確認しよう。",
+      "painPointTags": ["word-order", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    }
+  ]
+}

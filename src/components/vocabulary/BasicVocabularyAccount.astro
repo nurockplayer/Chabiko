@@ -25,10 +25,25 @@
 
 <script>
   import { initBasicVocabularyAccount } from '../../client/basicVocabularyAccount';
+  import {
+    ensureBasicVocabularyProgressCoordinator,
+    getBasicVocabularyProgressCoordinator,
+  } from '../../client/basicVocabularyProgressCoordinator';
+  import { bindBasicVocabularySyncStatus } from '../../client/basicVocabularySyncStatusAdapter';
 
   function initialiseAccounts(): void {
     document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-account]').forEach((root) => {
+      // The account component owns the single document-level coordinator
+      // (Issue #293). It is created exactly once per document and never torn
+      // down by Astro re-initialization, so the study/catalog clients always
+      // resolve the same runtime store.
+      ensureBasicVocabularyProgressCoordinator();
+      const coordinator = getBasicVocabularyProgressCoordinator();
       initBasicVocabularyAccount(root);
+      if (coordinator !== null) {
+        const status = root.querySelector<HTMLElement>('[data-basic-vocabulary-account-status]');
+        if (status) bindBasicVocabularySyncStatus(coordinator, status);
+      }
     });
   }
 
@@ -39,16 +54,16 @@
 <style is:global>
   .basic-vocabulary-account {
     display: grid;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
     width: 100%;
     max-width: 34rem;
-    margin: 0 0 var(--space-lg);
+    margin: 0 0 var(--sp-6);
   }
 
   .basic-vocabulary-account__status {
     min-height: 1.5rem;
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     overflow-wrap: anywhere;
   }
@@ -57,20 +72,20 @@
     box-sizing: border-box;
     width: min(100%, 16rem);
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--sp-2) var(--sp-6);
     font: inherit;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--c-text);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
     cursor: pointer;
     overflow-wrap: anywhere;
   }
 
   .basic-vocabulary-account__action:hover:not(:disabled) {
-    background: var(--c-slot-bg);
+    background: var(--jade-soft);
   }
 
   .basic-vocabulary-account__action:disabled {
@@ -79,14 +94,14 @@
   }
 
   .basic-vocabulary-account__action:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
 
   @media (max-width: 359px) {
     .basic-vocabulary-account__action {
       font-size: 0.8125rem;
-      padding-inline: var(--space-md);
+      padding-inline: var(--sp-4);
     }
   }
 </style>

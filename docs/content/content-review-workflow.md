@@ -82,6 +82,30 @@ The following rules must never be violated:
 - A record can have `reviewStatus: "draft"` while one script form is `"authored"` and the other is `"generated"`. These are independent facts.
 - Moving a record from `draft` to `reviewed` does not change any script provenance value. Changing a script form from `generated` to `verified` does not change reviewStatus.
 
+### 2.6 Reusable content graph boundary
+
+Chabiko may derive a read-only learning-content graph from the canonical
+collection files so HSK and Taiwan Travel paths can compose shared learning
+objects without copying records. Graph indexing is not a review action:
+
+- Resolving a `ContentRef`, mounting a record in another path view, or adding a
+  graph relationship never changes `reviewStatus`, script provenance, source
+  metadata, rights status, or teacher-review decisions.
+- A draft record remains draft when indexed. Learner surfaces must continue to
+  apply their existing production-eligibility gates, and a graph must not be
+  used to bypass an HSK rights or allowed-use blocker.
+- A content change, path-membership change, or relationship change that alters
+  learner-facing composition must be included in the reviewed item list and
+  exact review version for the relevant review artifact.
+- Stale or duplicate references are validation failures, not reasons to infer,
+  convert, or silently replace a missing record.
+
+The graph contract and loader are documented in
+`docs/content/content-model-draft.md`. Its derived nature preserves the
+existing teacher-review campaign and semantic fingerprint boundary: review
+artifacts continue to identify the exact source records and review-relevant
+fields, while graph construction only reads those records.
+
 ---
 
 ## 3. Review Artifact Requirements
@@ -397,7 +421,7 @@ Before re-review after a change:
 Every content proposal should include:
 
 - **Scope statement**: What content is being proposed and what is explicitly out of scope.
-- **Source of truth reference**: Which issue, planning document, or reference material governs this content.
+- **Source of truth reference**: The current GitHub issue, and any active canonical contract it explicitly references or adopts, govern this content. Planning, historical, or reference material governs only when that issue explicitly adopts or reactivates it; otherwise record it as evidence or context.
 - **Content records**: Structured data in the correct schema format.
 - **Provenance information**: For each script form, note whether it is `authored`, `verified`, or `generated`.
 - **Review metadata**: Any known review requirements (language review, regional review, license review).

@@ -8,11 +8,19 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "lint": "eslint src/ tests/",
-    "typecheck": "astro check",
+    "lint": "eslint src/ tests/ functions/",
+    "typecheck": "astro check && tsc --noEmit -p functions/tsconfig.json",
+    "typecheck:functions": "tsc --noEmit -p functions/tsconfig.json",
     "test": "vitest run",
+    "test:a11y": "node tests/a11y/run.ts",
     "test:visual": "node tests/visual/run.ts verify",
-    "test:visual:update": "node tests/visual/run.ts update"
+    "test:visual:update": "node tests/visual/run.ts update",
+    "validate": "node scripts/validation/run.ts run",
+    "validate:affected": "node scripts/validation/run.ts run --tier t1",
+    "validate:integration": "node scripts/validation/run.ts run --tier t2",
+    "validate:full": "node scripts/validation/run.ts run --tier t3",
+    "validate:classify": "node scripts/validation/run.ts classify",
+    "validate:content": "bash scripts/validate-content.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.0",
@@ -20,6 +28,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@axe-core/playwright": "4.12.1",
+    "@cloudflare/workers-types": "^5.20260815.1",
     "@eslint/js": "^9.0.0",
     "@fontsource-variable/noto-sans-jp": "5.3.0",
     "@playwright/test": "1.61.1",

@@ -7,6 +7,8 @@
  * exact route that must exist for an available path.
  */
 
+import type { LearningPathContentKind } from './learningContent';
+
 /** Path default display script. Taiwan travel and kanji bridge are
  *  Traditional-first; HSK is Simplified-first. */
 export type LearningPathScript = 'traditional' | 'simplified';
@@ -25,10 +27,7 @@ export type LearningPathAvailabilityReason =
   | 'hsk';
 
 /** Content reference kinds resolvable against repository data. */
-export type LearningPathMemberType =
-  | 'lesson'
-  | 'vocabulary'
-  | 'phrase';
+export type LearningPathMemberType = LearningPathContentKind;
 
 /**
  * A single ordered content reference. `type` selects the source collection

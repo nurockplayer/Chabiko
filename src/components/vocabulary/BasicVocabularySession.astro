@@ -20,18 +20,10 @@ const sessionSize = Math.min(10, ids.length);
   <p class="basic-vocabulary-total" data-total>全{totalCount}語</p>
   <p class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</p>
   <p class="basic-vocabulary-progress" data-progress aria-live="polite">今回 0 / {sessionSize}語</p>
+  <!-- Recall-first reveal (#356): the opening card is the front word only.
+       The illustration is answer feedback, rendered client-side together with
+       the answer when 「答えを見る」 is pressed — never a pre-reveal hint. -->
   <div class="basic-vocabulary-card" data-card>
-    {
-      first?.illustration && (
-        <img
-          class="basic-vocabulary-illustration"
-          src={first.illustration.assetPath}
-          width={first.illustration.width}
-          height={first.illustration.height}
-          alt={first.illustration.altJa}
-        />
-      )
-    }
     {first && <p class="basic-vocabulary-simplified" lang="zh-Hans">{first.simplified}</p>}
     <button class="basic-vocabulary-action basic-vocabulary-reveal" data-action="reveal" type="button">
       答えを見る
@@ -66,33 +58,33 @@ const sessionSize = Math.min(10, ids.length);
 
   .basic-vocabulary-total,
   .basic-vocabulary-summary {
-    margin: 0 0 var(--space-xs);
-    color: var(--c-text-secondary);
+    margin: 0 0 var(--sp-1);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     text-align: right;
   }
 
   .basic-vocabulary-progress {
-    margin: 0 0 var(--space-sm);
-    color: var(--c-text-secondary);
+    margin: 0 0 var(--sp-2);
+    color: var(--ink-secondary);
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
 
   .basic-vocabulary-reset {
-    margin-top: var(--space-sm);
+    margin-top: var(--sp-2);
   }
 
   .basic-vocabulary-reset summary {
     width: fit-content;
     margin: 0 0 0 auto;
-    padding: var(--space-xs) var(--space-md);
-    color: var(--c-text-secondary);
+    padding: var(--sp-1) var(--sp-4);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-weight: 400;
     cursor: pointer;
-    border-radius: var(--radius);
+    border-radius: var(--radius-control);
     list-style: none;
     user-select: none;
   }
@@ -102,7 +94,7 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-reset summary:hover {
-    background: var(--c-slot-bg);
+    background: var(--jade-soft);
   }
 
   .basic-vocabulary-reset[open] .basic-vocabulary-reset-button {
@@ -113,24 +105,24 @@ const sessionSize = Math.min(10, ids.length);
     display: none;
     width: auto;
     min-height: 2.75rem;
-    margin-top: var(--space-xs);
-    padding: var(--space-xs) var(--space-md);
+    margin-top: var(--sp-1);
+    padding: var(--sp-1) var(--sp-4);
     font: inherit;
     font-size: 0.8125rem;
     font-weight: 400;
-    color: var(--c-text-secondary);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
+    color: var(--ink-secondary);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
     background: transparent;
     cursor: pointer;
   }
 
   .basic-vocabulary-reset-button:hover {
-    background: var(--c-slot-bg);
+    background: var(--jade-soft);
   }
 
   .basic-vocabulary-reset-button:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
 
@@ -144,9 +136,9 @@ const sessionSize = Math.min(10, ids.length);
     justify-content: center;
     gap: clamp(0.75rem, 3vw, 1.25rem);
     overflow: hidden;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
     padding: clamp(1rem, 5vw, 2rem);
     text-align: center;
   }
@@ -159,36 +151,49 @@ const sessionSize = Math.min(10, ids.length);
     align-items: center;
     justify-content: center;
     gap: clamp(0.75rem, 3vw, 1.25rem);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
     padding: clamp(1rem, 5vw, 2rem);
     text-align: center;
+  }
+
+  .basic-vocabulary-state {
+    align-self: flex-start;
+    color: var(--jade-ink);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    margin: 0;
   }
 
   .basic-vocabulary-illustration {
     display: block;
     box-sizing: border-box;
     width: auto;
-    max-width: 100%;
+    max-width: 180px;
     height: auto;
     max-height: min(42vh, 420px);
     object-fit: contain;
+    border-radius: var(--radius-content);
   }
 
   .basic-vocabulary-simplified {
     max-width: 100%;
     margin: 0;
-    color: var(--c-text);
-    font-size: clamp(2.5rem, 16vw, 5rem);
+    font-family: var(--font-serif-zh);
+    color: var(--ink);
+    font-size: 3.25rem;
     font-weight: 700;
-    line-height: 1.15;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
     overflow-wrap: anywhere;
   }
 
   .basic-vocabulary-answer {
     display: grid;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
     max-width: 100%;
   }
 
@@ -201,35 +206,40 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-script-fallback {
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.875rem;
   }
 
   .basic-vocabulary-pinyin {
-    color: var(--c-accent);
-    font-size: clamp(1.125rem, 5vw, 1.35rem);
-    font-weight: 700;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
   }
 
   .basic-vocabulary-japanese {
-    color: var(--c-text);
-    font-size: clamp(1rem, 4.5vw, 1.2rem);
-    font-weight: 600;
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 700;
   }
 
   .basic-vocabulary-traditional {
-    color: var(--c-text-secondary);
-    font-size: 0.9375rem;
+    /* Reveal hierarchy (#369): the traditional form is the supplementary
+     * comparison, visually demoted from the reading/meaning unit above it. */
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-1);
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-muted);
+    font-size: 0.75rem;
   }
 
   .basic-vocabulary-action,
   .basic-vocabulary-rating {
     box-sizing: border-box;
     min-height: 2.75rem;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
     cursor: pointer;
     font: inherit;
     font-weight: 700;
@@ -237,14 +247,14 @@ const sessionSize = Math.min(10, ids.length);
 
   .basic-vocabulary-action {
     width: min(100%, 22rem);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--sp-2) var(--sp-4);
   }
 
   .basic-vocabulary-reveal,
   .basic-vocabulary-continue {
-    border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    border-color: var(--coral-deep);
+    background: var(--coral-deep);
+    color: var(--color-on-primary);
   }
 
   .basic-vocabulary-ratings {
@@ -254,35 +264,63 @@ const sessionSize = Math.min(10, ids.length);
     gap: clamp(0.375rem, 2vw, 0.75rem);
   }
 
+  .basic-vocabulary-detail-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: var(--sp-2) var(--sp-6);
+    color: var(--jade-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    border-radius: var(--radius-control);
+  }
+
+  .basic-vocabulary-detail-link:hover {
+    background: var(--jade-soft);
+    text-decoration: underline;
+  }
+
+  .basic-vocabulary-detail-link:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
   .basic-vocabulary-rating {
     min-width: 0;
-    padding: var(--space-sm) 0.375rem;
+    padding: var(--sp-2) 0.375rem;
     overflow-wrap: anywhere;
   }
 
   .basic-vocabulary-rating[data-rating="again"] {
-    border-color: #991b1b;
-    color: #991b1b;
+    border-color: var(--coral-deep);
+    color: var(--coral-deep);
   }
 
   .basic-vocabulary-rating[data-rating="unsure"] {
-    border-color: #92400e;
-    color: #92400e;
+    border-color: var(--ink-secondary);
+    color: var(--ink-secondary);
   }
 
   .basic-vocabulary-rating[data-rating="known"] {
-    border-color: #166534;
-    color: #166534;
+    border-color: var(--jade-ink);
+    color: var(--jade-ink);
   }
 
-  .basic-vocabulary-action:hover,
+  .basic-vocabulary-action:hover {
+    background: var(--jade-soft);
+  }
+
   .basic-vocabulary-rating:hover {
-    background: var(--c-slot-bg);
+    border-color: var(--ink-muted);
   }
 
   .basic-vocabulary-reveal:hover,
   .basic-vocabulary-continue:hover {
     background: var(--c-accent-hover);
+    box-shadow: 0 0 0 3px var(--coral-soft);
   }
 
   .basic-vocabulary-action:active,
@@ -292,17 +330,13 @@ const sessionSize = Math.min(10, ids.length);
 
   .basic-vocabulary-action:focus-visible,
   .basic-vocabulary-rating:focus-visible {
-    outline: 3px solid var(--c-accent);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
-  }
-
-  .basic-vocabulary-completion {
-    gap: clamp(0.75rem, 3vw, 1.25rem);
   }
 
   .basic-vocabulary-completion-title {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(1.25rem, 6vw, 1.75rem);
     overflow-wrap: anywhere;
   }
@@ -311,7 +345,7 @@ const sessionSize = Math.min(10, ids.length);
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
     column-gap: clamp(0.75rem, 3vw, 1.5rem);
-    row-gap: var(--space-2xs);
+    row-gap: var(--sp-1);
     width: 100%;
     max-width: 24rem;
     margin: 0;
@@ -323,13 +357,13 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-completion-stat dt {
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: clamp(0.8125rem, 3.5vw, 0.9375rem);
   }
 
   .basic-vocabulary-completion-stat dd {
     margin: 0;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: clamp(0.8125rem, 3.5vw, 0.9375rem);
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -339,7 +373,7 @@ const sessionSize = Math.min(10, ids.length);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     width: min(100%, 22rem);
   }
 
@@ -348,9 +382,9 @@ const sessionSize = Math.min(10, ids.length);
   }
 
   .basic-vocabulary-replay {
-    background: var(--c-surface);
-    color: var(--c-accent);
-    border-color: var(--c-accent);
+    background: var(--paper);
+    color: var(--ink-secondary);
+    border-color: var(--hairline-strong);
   }
 
   .basic-vocabulary-sr-only {
@@ -365,6 +399,25 @@ const sessionSize = Math.min(10, ids.length);
     border: 0;
   }
 
+  @media (max-width: 480px) {
+    .basic-vocabulary-illustration {
+      /* Mobile ergonomics (#369): the reveal illustration is answer feedback,
+       * not the card anchor — cap it lower on phones so the word, the answer,
+       * and the rating controls stay reachable without excess scroll. */
+      max-height: min(30vh, 240px);
+    }
+  }
+
+  @media (max-width: 374px) {
+    .basic-vocabulary-simplified {
+      font-size: 2.75rem;
+    }
+
+    .basic-vocabulary-illustration {
+      max-width: 150px;
+    }
+  }
+
   @media (max-width: 359px) {
     .basic-vocabulary-card {
       min-height: 20rem;
@@ -377,6 +430,16 @@ const sessionSize = Math.min(10, ids.length);
 
     .basic-vocabulary-rating {
       font-size: 0.8125rem;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .basic-vocabulary-simplified {
+      font-size: 3.5rem;
+    }
+
+    .basic-vocabulary-illustration {
+      max-width: 220px;
     }
   }
 </style>

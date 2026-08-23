@@ -95,13 +95,24 @@ afterEach(() => {
 describe('callback route contract', () => {
   it('uses BaseLayout with the exact title and robots, the exact heading/copy, and one root', async () => {
     const route = await readFile('src/pages/auth/callback/index.astro', 'utf8');
-    expect(route).toContain('<BaseLayout title="ログイン" robots="noindex,nofollow">');
+    expect(route).toContain(
+      '<BaseLayout title="ログイン" robots="noindex,nofollow" referrerPolicy="no-referrer">',
+    );
     expect(route).toContain('<h1>ログインを確認しています</h1>');
     expect(route).toContain('data-supabase-auth-callback');
     expect(route.match(/data-supabase-auth-callback-status/g)).toHaveLength(1);
     expect(route).toContain('aria-live="polite"');
     expect(route).toContain("from '../../../client/supabaseAuthCallback'");
     expect(route).toContain('ログインを確認しています');
+  });
+
+  it('emits no-referrer in the head before any callback subresource', async () => {
+    const layout = await readFile('src/layouts/BaseLayout.astro', 'utf8');
+    expect(layout).toContain("referrerPolicy?: 'no-referrer'");
+    const policy = layout.indexOf('<meta name="referrer" content={referrerPolicy} />');
+    const favicon = layout.indexOf('<link rel="icon"');
+    expect(policy).toBeGreaterThan(0);
+    expect(favicon).toBeGreaterThan(policy);
   });
 
   it('contains no progress, session, catalog, or cloud payload', async () => {
@@ -236,6 +247,7 @@ describe('initSupabaseAuthCallback', () => {
       expect(statusText(root)).toBe(CALLBACK_FAILED_TEXT);
       expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
       expect(window.location.pathname).toBe('/auth/callback/');
+      expect(window.location.search).toBe('');
     }
   });
 
@@ -249,6 +261,47 @@ describe('initSupabaseAuthCallback', () => {
 
     expect(statusText(root)).toBe(CALLBACK_UNAVAILABLE_TEXT);
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
+  });
+
+  it('falls back to same-path replacement when history scrubbing is unavailable', async () => {
+    const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
+    const client = createFakeClient();
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    setSearch(`?code=${CODE}`);
+    vi.spyOn(History.prototype, 'replaceState').mockImplementationOnce(() => {
+      throw new Error('history locked');
+    });
+    const root = createCallbackRoot();
+
+    initSupabaseAuthCallback(root);
+    await flush();
+    vi.restoreAllMocks();
+
+    expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(statusText(root)).toBe(CALLBACK_CHECKING_TEXT);
+    expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
+  });
+
+  it('does not reload an already-clean callback when history remains locked', async () => {
+    const { initSupabaseAuthCallback, getSupabaseBrowserClient } = await freshCallbackModules();
+    const client = createFakeClient();
+    vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
+    setSearch('');
+    vi.spyOn(History.prototype, 'replaceState').mockImplementation(() => {
+      throw new Error('history locked');
+    });
+    const root = createCallbackRoot();
+
+    initSupabaseAuthCallback(root);
+    await flush();
+    vi.restoreAllMocks();
+
+    expect(client.auth.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(statusText(root)).toBe(CALLBACK_FAILED_TEXT);
+    expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('on exchange error shows the failed copy, removes the stored return path, and does not navigate', async () => {
@@ -270,6 +323,7 @@ describe('initSupabaseAuthCallback', () => {
     expect(root.textContent).not.toContain('token leak');
     expect(window.sessionStorage.getItem(AUTH_RETURN_PATH_STORAGE_KEY)).toBeNull();
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('on a throwing exchange shows the failed copy without raw errors and does not navigate', async () => {
@@ -287,6 +341,7 @@ describe('initSupabaseAuthCallback', () => {
     expect(root.textContent).not.toContain('network exploded');
     expect(window.sessionStorage.getItem(AUTH_RETURN_PATH_STORAGE_KEY)).toBeNull();
     expect(window.location.pathname).toBe('/auth/callback/');
+    expect(window.location.search).toBe('');
   });
 
   it('does not throw when sessionStorage is unavailable and still completes the exchange', async () => {
@@ -367,6 +422,7 @@ describe('initSupabaseAuthCallback', () => {
 
     // Immediately after init: still the checking copy (pre-dispatch state).
     expect(statusText(root)).toBe(CALLBACK_CHECKING_TEXT);
+    expect(window.location.search).toBe('');
     resolveExchange({
       data: { user: { id: 'x' }, session: {} },
       error: null,

@@ -1,0 +1,369 @@
+---
+// Teacher-review portal shell (Issue #363).
+//
+// Static shell only: all record data is fetched at runtime from the same-origin
+// Access-protected API (`/teacher-review/api/*`). The route is intentionally
+// absent from learner navigation and search: no header, no sitemap entry, and
+// `noindex, nofollow` robots. Cloudflare Access protects `/teacher-review` and
+// all descendants at the edge; the API additionally validates the Access JWT
+// server-side, so the shell and the API fail closed independently.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="教師レビュー"
+  description="Chabiko 学習コンテンツの教師レビュー用ポータル"
+  robots="noindex, nofollow"
+>
+  <main class="teacher-review" data-teacher-review-page>
+    <noscript>
+      <p class="teacher-review__noscript" lang="ja">
+        このページは JavaScript が必要です。ブラウザの設定を確認してください。
+      </p>
+    </noscript>
+    <div data-teacher-review-root></div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { initTeacherReview } from '../../client/teacherReview';
+  initTeacherReview();
+</script>
+
+<style>
+  .teacher-review {
+    width: 100%;
+    max-width: 48rem;
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  .teacher-review__noscript {
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+  }
+
+  .tr-head,
+  .tr-toolbar,
+  .tr-record,
+  .tr-summary,
+  .tr-status,
+  .tr-error {
+    margin-bottom: var(--space-xl);
+  }
+
+  .tr-head h1 {
+    margin: 0 0 var(--space-sm);
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    overflow-wrap: anywhere;
+  }
+
+  .tr-head__campaign,
+  .tr-head__reviewer,
+  .tr-progress {
+    margin: 0 0 var(--space-xs);
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .tr-export {
+    display: inline-block;
+    margin-top: var(--space-sm);
+    font-weight: 700;
+  }
+
+  .tr-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    min-width: 0;
+  }
+
+  .tr-toolbar__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+  }
+
+  .tr-toolbar select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+  .tr-toolbar select:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .tr-toolbar__needs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.875rem;
+    min-height: 44px;
+  }
+  .tr-toolbar__needs input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--c-primary);
+  }
+
+  .tr-toolbar__count {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .tr-toolbar__nav {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .tr-button {
+    min-height: 44px;
+    padding: 0 var(--space-lg);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tr-button:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .tr-button--primary {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: var(--color-on-primary);
+  }
+  .tr-button--danger {
+    background: var(--c-error-bg);
+    border-color: var(--c-error);
+    color: var(--c-error);
+  }
+
+  .tr-record {
+    padding: var(--space-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    min-width: 0;
+  }
+  .tr-record:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .tr-record__heading {
+    margin: 0 0 var(--space-xs);
+    font-size: 1.125rem;
+    overflow-wrap: anywhere;
+  }
+  .tr-record__id {
+    margin: 0 0 var(--space-md);
+    color: var(--c-text-secondary);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
+  .tr-record__empty {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .tr-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+  }
+  .tr-badge--accepted {
+    background: var(--c-success-bg);
+    color: var(--c-success);
+  }
+  .tr-badge--needs {
+    background: var(--c-error-bg);
+    color: var(--c-error);
+  }
+
+  .tr-record__content p {
+    margin: 0 0 var(--space-md);
+    overflow-wrap: anywhere;
+  }
+  .tr-phrase__traditional {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+  .tr-phrase__simplified {
+    color: var(--c-text-secondary);
+    font-size: 1.125rem;
+  }
+  .tr-phrase__pinyin {
+    color: var(--c-text-secondary);
+  }
+  .tr-provenance {
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+  }
+
+  .tr-phrase__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    list-style: none;
+  }
+  .tr-phrase__tags li {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    color: var(--c-text-secondary);
+  }
+
+  .tr-conversation {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  .tr-turn {
+    display: grid;
+    gap: 0.125rem;
+    padding: var(--space-md);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+    min-width: 0;
+  }
+  .tr-turn--learner {
+    border-left: 4px solid var(--c-primary);
+  }
+  .tr-turn--partner {
+    border-left: 4px solid var(--c-success);
+  }
+  .tr-turn__speaker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+  }
+  .tr-turn__traditional {
+    font-size: 1.125rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .tr-turn__pinyin,
+  .tr-turn__japanese {
+    color: var(--c-text-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .tr-roleplay__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+  .tr-roleplay__goal,
+  .tr-roleplay__guidance {
+    color: var(--c-text-secondary);
+  }
+
+  .tr-decision {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--c-border);
+  }
+  .tr-decision__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-secondary);
+    margin-bottom: var(--space-xs);
+  }
+  .tr-decision textarea {
+    width: 100%;
+    min-height: 5rem;
+    padding: var(--space-sm);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+  }
+  .tr-decision textarea:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .tr-decision__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+  .tr-decision__error {
+    margin: var(--space-md) 0 0;
+    color: var(--c-error);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .tr-summary__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .tr-summary__table th,
+  .tr-summary__table td {
+    padding: 0.5rem;
+    border: 1px solid var(--c-border);
+    text-align: left;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+  .tr-summary__table [data-tr-summary-row] {
+    cursor: pointer;
+  }
+  .tr-summary__table [data-tr-summary-row]:hover {
+    background: var(--c-slot-bg);
+  }
+
+  .tr-status {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .tr-error {
+    color: var(--c-error);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  @media (width >= 640px) {
+    .tr-toolbar {
+      grid-template-columns: auto minmax(10rem, 14rem) 1fr;
+      align-items: center;
+      column-gap: var(--space-lg);
+    }
+    .tr-toolbar__count,
+    .tr-toolbar__nav {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

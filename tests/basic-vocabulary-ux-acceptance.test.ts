@@ -142,10 +142,13 @@ describe('source and route contract (Issue #281)', () => {
     const study = await readFile('src/pages/vocabulary/basic/index.astro', 'utf8');
     const catalogComponent = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    // Home: study + catalog destinations, exactly once, primary first.
-    expect(home.match(/href="\/vocabulary\/basic\/"/g)).toHaveLength(1);
-    expect(home.match(/href="\/vocabulary\/basic\/words\/"/g)).toHaveLength(1);
-    expect(home.indexOf('単語学習を始める')).toBeLessThan(home.indexOf('単語一覧を見る'));
+    // Home (Issue #374 Dashboard): the 先生厳選単語 track card is the study
+    // entry point; destinations are derived by the domain module, not
+    // hard-coded into the page. No old static entry copy remains.
+    expect(home).toContain('data-dashboard-track={trackId}');
+    expect(home).not.toContain('単語学習を始める');
+    expect(home).not.toContain('単語一覧を見る');
+    expect(home).not.toContain('basic-vocabulary-entry');
 
     // Study: exactly one catalog link, no duplicate home/study CTA.
     expect(study.match(/href="\/vocabulary\/basic\/words\/"/g)).toHaveLength(1);
@@ -194,16 +197,18 @@ describe('source and route contract (Issue #281)', () => {
     }
   });
 
-  it('catalog links are native anchors with visible focus styles and 44px minimum targets', async () => {
+  it('track/catalog links are native anchors with visible focus styles and 44px minimum targets', async () => {
     const home = await readFile('src/pages/index.astro', 'utf8');
     const study = await readFile('src/pages/vocabulary/basic/index.astro', 'utf8');
     const catalogComponent = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
-    const homeCatalogLink = home.match(
-      /<a[^>]*class="basic-vocabulary-entry__catalog-link"[^>]*>/,
+    // The Dashboard track row is the home entry point to the study route
+    // (Issue #374 migration of the former basic-vocabulary-entry catalog link).
+    const homeTrackTemplate = home.match(
+      /<a\s+class="track-row track-row--available"[\s\S]*?data-dashboard-track=\{trackId\}[\s\S]*?>/,
     );
-    expect(homeCatalogLink).not.toBeNull();
-    expect(homeCatalogLink![0]).not.toMatch(/\btabindex="-1"\b/);
+    expect(homeTrackTemplate).not.toBeNull();
+    expect(homeTrackTemplate![0]).not.toMatch(/\btabindex="-1"\b/);
 
     const studyCatalogLink = study.match(
       /<a[^>]*class="basic-vocabulary-page__catalog-link"[^>]*>/,
@@ -211,13 +216,32 @@ describe('source and route contract (Issue #281)', () => {
     expect(studyCatalogLink).not.toBeNull();
     expect(studyCatalogLink![0]).not.toContain('disabled');
 
+    // Both surfaces declare a 44px minimum interactive target.
+    const homeStyleMatch = home.match(/<style>([\s\S]*?)<\/style>/);
+    expect(homeStyleMatch).not.toBeNull();
+    const homeRules = (homeStyleMatch![1] ?? '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}');
+    const trackRowRule = homeRules.find(
+      (rule) => rule.includes('.track-row') && rule.includes('min-height'),
+    );
+    expect(trackRowRule).toBeDefined();
+    const studyStyleMatch = study.match(/<style>([\s\S]*?)<\/style>/);
+    expect(studyStyleMatch).not.toBeNull();
+    const studyRules = (studyStyleMatch![1] ?? '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}');
+    const studyCatalogRule = studyRules.find(
+      (rule) => rule.includes('.basic-vocabulary-page__catalog-link') && rule.includes('min-height'),
+    );
+    expect(studyCatalogRule).toBeDefined();
+
+    // Focus styles must not be suppressed for either surface.
     for (const source of [home, study]) {
       const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
       expect(styleMatch).not.toBeNull();
       const rules = (styleMatch![1] ?? '').replace(/\/\*[\s\S]*?\*\//g, '').split('}');
-      const focusRule = rules.find(
-        (rule) => rule.includes('catalog-link') && rule.includes(':focus-visible'),
-      );
+      const focusRule = rules.find((rule) => rule.includes(':focus-visible'));
       expect(focusRule).toBeDefined();
       expect(focusRule).not.toContain('outline: 0');
       expect(focusRule).not.toContain('outline: none');
@@ -227,6 +251,23 @@ describe('source and route contract (Issue #281)', () => {
     expect(catalogComponent).toContain('.basic-vocabulary-catalog-back a');
     expect(catalogComponent).toContain('.basic-vocabulary-catalog-field input:focus-visible');
     expect(catalogComponent).toContain('.basic-vocabulary-catalog-field select:focus-visible');
+  });
+
+  it('A1 audit F3: vocab and HSK back links carry the jade A1 link color', async () => {
+    const sources = [
+      ['src/components/vocabulary/BasicVocabularyCatalog.astro', '.basic-vocabulary-catalog-back a'],
+      ['src/components/vocabulary/BasicVocabularyQuiz.astro', '.basic-vocabulary-quiz-back a'],
+      ['src/components/vocabulary/BasicVocabularyDetail.astro', '.basic-vocabulary-detail-back a'],
+      ['src/pages/vocabulary/hsk/1/index.astro', '.back-link'],
+    ] as const;
+
+    for (const [path, selector] of sources) {
+      const source = await readFile(path, 'utf8');
+      const selectorIndex = source.indexOf(selector);
+      expect(selectorIndex).toBeGreaterThan(-1);
+      const rule = source.slice(selectorIndex, source.indexOf('}', selectorIndex));
+      expect(rule).toContain('color: var(--jade-ink)');
+    }
   });
 });
 
@@ -540,8 +581,13 @@ describe('repeated Astro-style init/cleanup leaves one live controller per root 
     const payload = buildLearnerSessionPayload();
     const root = createSessionRoot([...payload.ids], '10');
 
+    // The second init disposes the first controller internally; only the final
+    // controller stays live.
     initBasicVocabularySession(root);
-    initBasicVocabularySession(root);
+    const live = initBasicVocabularySession(root);
+    // Register the final live controller so afterEach() always tears it down,
+    // including when an assertion below fails.
+    cleanups.add(live);
 
     reveal(root);
     rate(root, 'known');
@@ -550,6 +596,26 @@ describe('repeated Astro-style init/cleanup leaves one live controller per root 
     };
     // Exactly one write — one item, one store, one controller.
     expect(Object.keys(stored.items)).toHaveLength(1);
+
+    // Explicit cleanup leaves zero live controllers: neither a storage nor a
+    // pageshow refresh can update the cleaned-up session root anymore. The
+    // rated-item summary is the no-op baseline.
+    const baseline = root.querySelector('[data-summary]')?.textContent;
+    live();
+
+    // A different progress document would re-render the summary if any
+    // listener survived cleanup.
+    seedProgress({
+      [payload.ids[1]]: { status: 'learned', knownStreak: 2 },
+    });
+    dispatchStorage(
+      BASIC_VOCABULARY_PROGRESS_KEY,
+      window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY),
+      window.localStorage,
+    );
+    window.dispatchEvent(new Event('pageshow'));
+    // No listener survived: the summary is byte-identical to the baseline.
+    expect(root.querySelector('[data-summary]')?.textContent).toBe(baseline);
   });
 
   it('cleanup removes the session listeners; a later storage event is a no-op', () => {
@@ -651,6 +717,11 @@ describe('a11y, language, and responsive containment (Issue #281)', () => {
     expect(templateRegion).not.toContain('data-action="rate"');
     expect(templateRegion).not.toContain('data-action="continue"');
     expect(templateRegion).not.toContain('data-action="replay"');
+    // Recall-first reveal (#356): the SSR opening card never renders the
+    // illustration — the image is reveal-only, so it is absent from the server
+    // markup and added client-side together with the answer.
+    expect(templateRegion).not.toContain('basic-vocabulary-illustration');
+    expect(templateRegion).not.toMatch(/<img\b/);
   });
 
   it('contains responsive containment declarations with no nowrap on long text', async () => {

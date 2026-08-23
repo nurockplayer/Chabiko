@@ -1,0 +1,235 @@
+---
+import Header from '../../components/Header.astro';
+import PhrasebookScenario from '../../components/PhrasebookScenario.astro';
+import {
+  groupPhrasebookByScenario,
+  loadEligiblePhrasebook,
+  loadPhrasebook,
+} from '../../content/loadPhrasebook';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Fail-closed first-release phrasebook surface (#236, #349 kanji-bridge
+// precedent): the route shows learners ONLY records whose record-level
+// reviewStatus is reviewed/published AND whose script forms are independently
+// authored/verified. The full loader still deterministically validates the
+// COMPLETE canonical corpus (exactly 30 phrases + 6 dialogs, controlled
+// scenario order, same-scenario references) as the authoring/validation
+// contract — unchanged. The learner surface renders the eligible subset and a
+// truthful pending/under-review state for the rest (never leaking draft text).
+const full = loadPhrasebook();
+const eligible = loadEligiblePhrasebook();
+const pendingPhraseCount = full.phrases.length - eligible.phrases.length;
+const pendingDialogCount = full.dialogs.length - eligible.dialogs.length;
+const eligibleEntryCount = eligible.phrases.length;
+// Only scenarios with eligible content render; transport/shopping/hotel/
+// emergency currently have none, so the route leaves them to the no-match
+// state of the scenario filter.
+const scenarioGroups = groupPhrasebookByScenario(eligible).filter(
+  (group) => group.phrases.length > 0 || group.dialog !== null,
+);
+---
+
+<BaseLayout
+  title="台湾旅行フレーズ集"
+  description="台湾旅行で使える中国語フレーズと会話を場面ごとに確認できるフレーズ集"
+  themeEnabled
+>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
+  <section class="phrasebook-page" data-phrasebook-page>
+    <h1>台湾旅行フレーズ集</h1>
+    <p class="phrasebook-page__subtitle" lang="ja">
+      旅行で使える中国語フレーズと会話を場面ごとに確認できます。基本は繁体字で表示します。
+    </p>
+
+    {
+      pendingPhraseCount + pendingDialogCount > 0 && (
+        <div
+          class="phrasebook-pending"
+          lang="ja"
+          role="status"
+          data-phrasebook-pending
+        >
+          <p>
+            このコンテンツは現在、内容の確認・レビューを進めています。レビュー済みのフレーズ{eligibleEntryCount}件を確認できます。残り{pendingPhraseCount}件のフレーズと{pendingDialogCount}件の会話は、レビューが完了し公開の準備が整い次第、ここで確認できるようになります。
+          </p>
+        </div>
+      )
+    }
+
+    <div class="phrasebook-toolbar" data-phrasebook-toolbar>
+      <label class="phrasebook-toolbar__label" for="phrasebook-scenario-filter">
+        場面で絞り込む
+      </label>
+      <select
+        id="phrasebook-scenario-filter"
+        class="phrasebook-toolbar__select"
+        data-scenario-filter
+      >
+        <option value="all">すべて</option>
+        <option value="airport">空港</option>
+        <option value="transport">交通</option>
+        <option value="food">食事</option>
+        <option value="shopping">買い物</option>
+        <option value="hotel">ホテル</option>
+        <option value="emergency">緊急時</option>
+      </select>
+      <a class="phrasebook-toolbar__reset" href="/phrasebook/">
+        絞り込みを解除
+      </a>
+      <p
+        class="phrasebook-toolbar__count"
+        data-scenario-count
+        role="status"
+      >全{eligibleEntryCount}件</p>
+      <p class="phrasebook-toolbar__no-match" data-phrasebook-no-match hidden>
+        該当する場面がありません。
+      </p>
+    </div>
+
+    <div class="phrasebook-list" data-phrasebook-list>
+      {
+        scenarioGroups.map((group) => (
+          <PhrasebookScenario
+            scenario={group.scenario}
+            phrases={group.phrases}
+            dialog={group.dialog}
+          />
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { initPhrasebookScenarioFilter } from '../../client/phrasebookScenarioFilter';
+  import { initPhrasebookScriptPreference } from '../../client/phrasebookScriptPreference';
+
+  // The eligible surface is present, so bind the interactive clients to the
+  // rendered scenario list (the pending state alone binds nothing).
+  if (document.querySelector('[data-phrasebook-list]')) {
+    initPhrasebookScenarioFilter();
+    initPhrasebookScriptPreference();
+  }
+</script>
+
+<style>
+  .phrasebook-page {
+    width: 100%;
+    max-width: 48rem;
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  h1 {
+    margin: 0 0 var(--sp-3);
+    font-family: var(--font-serif-ja);
+    font-size: 28px;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .phrasebook-page__subtitle {
+    margin: 0 0 var(--sp-10);
+    color: var(--ink-secondary);
+    font-size: 13.5px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .phrasebook-pending {
+    margin: 0 0 var(--sp-10);
+    padding: var(--sp-5);
+    background: var(--paper-deep);
+    border-radius: var(--radius-content);
+    color: var(--ink-secondary);
+    font-size: 13.5px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  .phrasebook-pending p {
+    margin: 0;
+  }
+
+  .phrasebook-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-2);
+    margin: 0 0 var(--sp-10);
+    padding: 0 0 var(--sp-4);
+    border-bottom: 1px solid var(--hairline);
+    min-width: 0;
+  }
+
+  .phrasebook-toolbar__label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink-secondary);
+  }
+
+  .phrasebook-toolbar__select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .phrasebook-toolbar__reset {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .phrasebook-toolbar__reset:hover {
+    color: var(--jade-ink);
+  }
+
+  .phrasebook-toolbar__count {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .phrasebook-toolbar__no-match {
+    margin: 0;
+    color: var(--coral-deep);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .phrasebook-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  @media (width >= 640px) {
+    .phrasebook-toolbar {
+      grid-template-columns: auto minmax(10rem, 16rem) auto;
+      align-items: center;
+      column-gap: var(--sp-6);
+    }
+    .phrasebook-toolbar__count,
+    .phrasebook-toolbar__no-match {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

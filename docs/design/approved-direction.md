@@ -1,5 +1,11 @@
 # Approved Direction: C — Taiwan City Exploration
 
+> **Historical Direction C / Issue #60 record.** Direction C was selected under
+> Issue #60/#61 and implemented in PR #165. The current learner-facing visual
+> target is A1 Editorial Calm, frozen in `reference-family-389.md`; its core
+> production propagation is complete, and remaining work is owned by live GitHub
+> Issues. This document preserves the original decision and rationale.
+
 > Part of Issue #60. Implementation baseline for Issue #61 (contract) and
 > subsequent implementation tickets.
 

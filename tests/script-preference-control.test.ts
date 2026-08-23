@@ -659,4 +659,25 @@ describe('Header.astro style contract', () => {
     expect(headerSource).toContain('.brand:focus-visible');
     expect(headerSource).toContain('id="theme-toggle"');
   });
+
+  it('keeps shared Header navigation and utilities visibly control-like at rest', () => {
+    // The current Home destination is semantic navigation, while both utility
+    // inputs use the same bounded A1 control family before hover/focus.
+    expect(headerSource).toContain("const isHome = Astro.url.pathname === '/'");
+    expect(headerSource).toContain("aria-current={isHome ? 'page' : undefined}");
+    expect(headerSource).toMatch(
+      /\.nav-link\s*\{[^}]*border-bottom:\s*2px solid var\(--hairline-strong\)/,
+    );
+    expect(headerSource).toContain(".nav-link[aria-current='page']");
+    expect(headerSource).toMatch(
+      /\.theme-toggle\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-control\)[^}]*background:\s*var\(--paper-deep\)/,
+    );
+    expect(headerSource).toMatch(
+      /\.script-preference-select\s*\{[^}]*border:\s*1px solid var\(--hairline-strong\)[^}]*border-radius:\s*var\(--radius-control\)[^}]*background:\s*var\(--paper-deep\)/,
+    );
+    expect(headerSource).toContain('.theme-toggle:active');
+    expect(headerSource).toContain('.nav-link:focus-visible');
+    expect(headerSource).toContain('outline: 2px solid var(--color-focus)');
+    expect(headerSource).toContain('outline-offset: 3px');
+  });
 });

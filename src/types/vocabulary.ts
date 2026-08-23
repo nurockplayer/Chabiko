@@ -126,6 +126,10 @@ export interface TeacherVocabulary {
   travelScenario?: never;
   painPointTags?: never;
   examples?: never;
+  /** Teacher-authored example sentence (Simplified Chinese) from the workbook
+   * `造词/造句` column, preserved verbatim. Absent when the source cell is
+   * empty — a deliberate missing-example state. */
+  example?: string;
 }
 
 /** Teacher-curriculum record with a reviewed Traditional form. */
@@ -150,6 +154,10 @@ export interface TeacherVocabularyWithTraditional {
   travelScenario?: never;
   painPointTags?: never;
   examples?: never;
+  /** Teacher-authored example sentence (Simplified Chinese) from the workbook
+   * `造词/造句` column, preserved verbatim. Absent when the source cell is
+   * empty — a deliberate missing-example state. */
+  example?: string;
 }
 
 export type TeacherVocabularyType = TeacherVocabulary | TeacherVocabularyWithTraditional;

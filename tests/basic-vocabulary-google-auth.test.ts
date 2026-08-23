@@ -5,7 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BASIC_VOCABULARY_AUTH_EVENT,
   type BasicVocabularyAuthState,
+  clearBasicVocabularyAuthState,
+  getBasicVocabularyAuthState,
   initBasicVocabularyAccount,
+  subscribeBasicVocabularyAuthState,
 } from '../src/client/basicVocabularyAccount';
 import { BASIC_VOCABULARY_PROGRESS_KEY } from '../src/domain/basicVocabularyProgress';
 
@@ -109,10 +112,10 @@ function rootText(root: HTMLElement): string {
   return root.textContent ?? '';
 }
 
-function collectEvents(root: HTMLElement): Array<BasicVocabularyAuthState> {
-  const events: Array<BasicVocabularyAuthState> = [];
+function collectEvents(root: HTMLElement): Array<Pick<BasicVocabularyAuthState, 'kind'>> {
+  const events: Array<Pick<BasicVocabularyAuthState, 'kind'>> = [];
   root.addEventListener(BASIC_VOCABULARY_AUTH_EVENT, (e) => {
-    events.push((e as CustomEvent<BasicVocabularyAuthState>).detail);
+    events.push((e as CustomEvent<Pick<BasicVocabularyAuthState, 'kind'>>).detail);
   });
   return events;
 }
@@ -162,7 +165,9 @@ describe('route placement', () => {
     expect(route.match(/<BasicVocabularyAccount/g)).toHaveLength(1);
 
     const h1End = route.indexOf('</h1>');
-    const linkStart = route.indexOf('href="/vocabulary/basic/words/"');
+    const linkStart = route.indexOf(
+      'href="/vocabulary/basic/words/">単語一覧を見る',
+    );
     const accountStart = route.indexOf('<BasicVocabularyAccount');
     const sessionStart = route.indexOf('<BasicVocabularySession');
     expect(h1End).toBeGreaterThan(0);
@@ -255,6 +260,33 @@ describe('account states and exact copy', () => {
     expect(rootText(root)).not.toContain(FAKE_SUBJECT);
     expect(rootText(root)).not.toContain(FAKE_AVATAR);
     expect(rootText(root)).not.toMatch(/google|Google/);
+  });
+
+  it('publishes an immutable signed-in state that subscribers cannot change', async () => {
+    clearBasicVocabularyAuthState();
+    const observed: BasicVocabularyAuthState[] = [];
+    const unsubscribe = subscribeBasicVocabularyAuthState((state) => observed.push(state));
+    await initRoot({
+      getSession: () =>
+        Promise.resolve({
+          data: { session: fakeSession(CANONICAL_USER_ID, 'learner@example.com') },
+          error: null,
+        }),
+    });
+
+    const signedIn = observed.at(-1);
+    expect(signedIn?.kind).toBe('signed-in');
+    expect(Object.isFrozen(signedIn)).toBe(true);
+    expect(Reflect.set(signedIn as object, 'userId', '22222222-2222-2222-2222-222222222222')).toBe(
+      false,
+    );
+    expect(getBasicVocabularyAuthState()).toEqual({
+      kind: 'signed-in',
+      userId: CANONICAL_USER_ID,
+      email: 'learner@example.com',
+    });
+    unsubscribe();
+    clearBasicVocabularyAuthState();
   });
 
   it('omits the email fragment when the session email is absent', async () => {
@@ -482,11 +514,7 @@ describe('auth lifecycle', () => {
     expect(kinds[0]).toBe('loading');
     expect(kinds.filter((k) => k === 'signed-in')).toHaveLength(1);
     const signedIn = events.find((e) => e.kind === 'signed-in');
-    expect(signedIn).toEqual({
-      kind: 'signed-in',
-      userId: CANONICAL_USER_ID,
-      email: 'learner@example.com',
-    });
+    expect(signedIn).toEqual({ kind: 'signed-in' });
 
     // A later SIGNED_OUT event transitions to signed-out
     authListeners.forEach((listener) => listener('SIGNED_OUT', null));
@@ -536,6 +564,7 @@ describe('auth lifecycle', () => {
     expect(serialized).not.toContain(FAKE_AVATAR);
     expect(serialized).not.toContain(FAKE_NAME);
     expect(serialized).not.toContain('provider');
+    expect(serialized).not.toContain(CANONICAL_USER_ID);
     expect(rootText(root)).not.toContain(FAKE_JWT);
     expect(rootText(root)).not.toContain(FAKE_SUBJECT);
     expect(rootText(root)).not.toContain(FAKE_AVATAR);

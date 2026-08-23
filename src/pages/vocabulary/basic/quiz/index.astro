@@ -1,0 +1,65 @@
+---
+import Header from '../../../../components/Header.astro';
+import Breadcrumb from '../../../../components/Breadcrumb.astro';
+import TrackNav from '../../../../components/TrackNav.astro';
+import BasicVocabularyQuiz from '../../../../components/vocabulary/BasicVocabularyQuiz.astro';
+import { buildVocabularyQuizPayload, serializeVocabularyQuizPayload } from '../../../../content/vocabularyQuizPayload';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+const payload = buildVocabularyQuizPayload();
+const payloadJson = serializeVocabularyQuizPayload(payload);
+
+if (payload.eligibleIds.length === 0) {
+  throw new Error('basic vocabulary quiz has no eligible items');
+}
+---
+
+<BaseLayout title="絵なしテスト" themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
+  <div class="basic-vocabulary-quiz-page">
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '先生厳選単語', href: '/vocabulary/basic/' },
+        { label: 'テスト' },
+      ]}
+    />
+    <TrackNav
+      label="先生厳選単語"
+      items={[
+        { label: '学ぶ', href: '/vocabulary/basic/' },
+        { label: '単語一覧', href: '/vocabulary/basic/words/' },
+        { label: 'テスト', href: '/vocabulary/basic/quiz/', current: true },
+      ]}
+    />
+    <h1>絵なしテスト</h1>
+    <p class="basic-vocabulary-quiz-page__lead">
+      中国語の単語を見て、日本語の意味を選んでください。絵は表示されません。
+    </p>
+    <BasicVocabularyQuiz payload={payload} payloadJson={payloadJson} />
+  </div>
+</BaseLayout>
+
+<style>
+  .basic-vocabulary-quiz-page {
+    width: min(100%, 45rem);
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin: 0 0 var(--sp-4);
+    font-family: var(--font-serif-ja);
+    color: var(--ink);
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .basic-vocabulary-quiz-page__lead {
+    margin: 0 0 var(--sp-8);
+    color: var(--ink-secondary);
+    font-size: 0.9375rem;
+  }
+</style>

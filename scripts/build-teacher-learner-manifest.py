@@ -279,7 +279,7 @@ def build(
             "sourceSheet": row["sourceSheet"],
             "sourceRow": row["sourceRow"],
         }
-        for field in ("traditional", "pinyin", "japanese", "difficulty"):
+        for field in ("traditional", "pinyin", "japanese", "difficulty", "example"):
             value = row.get(field)
             if value:
                 payload[field] = value
@@ -432,6 +432,19 @@ def run_self_tests() -> int:
         large = build(synthetic(17, 3), production_ids=(), public_root=public_root, **synthetic_ctx)
         check("synthetic corpus counts scale with input (5 eligible / 2 excluded)", small["totals"]["eligible"] == 5 and small["totals"]["excluded"] == 2)
         check("synthetic corpus counts scale with input (17 eligible / 3 excluded)", large["totals"]["eligible"] == 17 and large["totals"]["excluded"] == 3)
+
+        # Example-sentence contract (#340): a teacher-authored example is carried
+        # verbatim and an empty cell is omitted (missing-example state).
+        example_rows = synthetic(2, 0)["rows"]
+        example_rows[0]["example"] = "我爱你"
+        example_manifest = build(
+            {"schemaVersion": 1, "workbook": {"basename": "x", "sha256": "0" * 64, "candidateRows": 2},
+             "teacherImagePackage": {"readableImages": 0, "pathSensitiveFingerprintSha256": "0" * 64},
+             "totals": {"usableRows": 2}, "rows": example_rows},
+            production_ids=(), public_root=public_root, **synthetic_ctx)
+        with_example = [r for r in example_manifest["rows"] if "example" in r]
+        check("example-sentence contract carries exactly the authored example and omits the empty cell",
+              len(with_example) == 1 and with_example[0]["example"] == "我爱你")
 
         # ── Input-order independence ──
         base_rows = synthetic(8, 2)["rows"]

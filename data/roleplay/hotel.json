@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-hotel-001",
+      "scenario": "hotel",
+      "titleJa": "ホテルでチェックインする",
+      "goalJa": "ホテルのフロントで、予約と名前を伝え、荷物を預かってもらえる",
+      "guidanceJa": "ホテルのフロントでチェックインするとき、予約と名前を伝え、荷物を預かってもらえるか尋ね、最後に丁寧に確認してもらう練習です。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-008"],
+      "phraseRefs": ["phrase-hotel-001", "phrase-hotel-002", "phrase-hotel-003", "phrase-hotel-004"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "你好，我有預約。",
+          "traditionalStatus": "authored",
+          "simplified": "你好，我有预约。",
+          "simplifiedStatus": "authored",
+          "pinyin": "nǐ hǎo, wǒ yǒu yùyuē",
+          "japanese": "こんにちは、予約しています。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，歡迎光臨。請問貴姓？",
+          "traditionalStatus": "authored",
+          "simplified": "好，欢迎光临。请问贵姓？",
+          "simplifiedStatus": "authored",
+          "pinyin": "hǎo, huānyíng guānglín. qǐngwèn guìxìng?",
+          "japanese": "はい、いらっしゃいませ。お名前は何でしょうか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我叫田中。",
+          "traditionalStatus": "authored",
+          "simplified": "我叫田中。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ jiào Tiánzhōng",
+          "japanese": "田中と申します。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，我幫你確認預約，請稍等。",
+          "traditionalStatus": "authored",
+          "simplified": "好的，我帮你确认预约，请稍等。",
+          "simplifiedStatus": "authored",
+          "pinyin": "hǎo de, wǒ bāng nǐ quèrèn yùyuē, qǐng shāo děng",
+          "japanese": "はい、ご予約を確認しますね。少々お待ちください。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以寄放行李嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以寄放行李吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "kěyǐ jìfàng xíngli ma?",
+          "japanese": "荷物を預かってもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "可以，沒問題。行李放這裡就好。",
+          "traditionalStatus": "authored",
+          "simplified": "可以，没问题。行李放这里就好。",
+          "simplifiedStatus": "verified",
+          "pinyin": "kěyǐ, méi wèntí. xíngli fàng zhèlǐ jiù hǎo",
+          "japanese": "はい、大丈夫です。荷物はここに置いておいてください。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original Taiwan hotel check-in roleplay content; learner lines reference committed hotel phrases; no third-party text copied"
+      }
+    }
+  ]
+}

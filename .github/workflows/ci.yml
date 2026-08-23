@@ -15,8 +15,47 @@ permissions:
   contents: read
 
 jobs:
+  # Deterministic change-risk classification (T0–T3). Emits the minimum
+  # validation tier and the per-gate booleans that the downstream jobs gate on.
+  # `main` pushes always force T3; unknown/unclassifiable changes fail safe to
+  # T3. The classifier is pure repo logic (scripts/validation/classify.ts), not
+  # model judgment.
+  classify:
+    name: Classify change risk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      tier: ${{ steps.classify.outputs.tier }}
+      trustworthy: ${{ steps.classify.outputs.trustworthy }}
+      run_full_vitest: ${{ steps.classify.outputs.run_full_vitest }}
+      run_affected_vitest: ${{ steps.classify.outputs.run_affected_vitest }}
+      run_build: ${{ steps.classify.outputs.run_build }}
+      run_content: ${{ steps.classify.outputs.run_content }}
+      run_visual: ${{ steps.classify.outputs.run_visual }}
+      run_a11y: ${{ steps.classify.outputs.run_a11y }}
+      summary: ${{ steps.classify.outputs.summary }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Classify change surface
+        id: classify
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            node scripts/validation/run.ts classify --main --emit-github-output
+          else
+            node scripts/validation/run.ts classify --base origin/main --emit-github-output
+          fi
+
   app:
     name: TypeScript checks
+    needs: classify
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
@@ -24,6 +63,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -32,6 +72,14 @@ jobs:
           node-version: "24"
           cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Reject non-pnpm lockfiles
         run: |
@@ -52,14 +100,49 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
+      - name: Test (full suite)
+        if: ${{ needs.classify.outputs.run_full_vitest == 'true' }}
         run: pnpm test
 
+      - name: Test (affected)
+        if: ${{ needs.classify.outputs.run_affected_vitest == 'true' }}
+        run: node scripts/validation/run.ts affected --base origin/main
+
       - name: Build
-        run: pnpm build
+        if: ${{ needs.classify.outputs.run_build == 'true' }}
+        run: |
+          pnpm build
+          test -f dist/auth/callback/index.html
+          test -f dist/vocabulary/basic/index.html
+          test -f dist/vocabulary/basic/words/index.html
+
+  content:
+    name: Content validation
+    needs: classify
+    if: ${{ needs.classify.outputs.run_content == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run content validators
+        run: bash scripts/validate-content.sh
 
   visual:
     name: Visual regression
+    needs: classify
+    if: ${{ needs.classify.outputs.run_visual == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -77,37 +160,23 @@ jobs:
       - name: Verify production learner journey snapshots
         run: pnpm test:visual
 
-  content:
-    name: Content validation
+  accessibility:
+    name: Accessibility
+    needs: classify
+    if: ${{ needs.classify.outputs.run_a11y == 'true' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
-          python-version-file: .python-version
+          node-version: "24"
 
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Run validator self-tests
-        run: |
-          uv run --locked python scripts/validate-pain-points.py
-          uv run --locked python scripts/validate-script-status.py
-          uv run --locked python scripts/validate-content-schema.py
-          # Byte-identity drift gate: fails if the committed learner manifest
-          # does not match a fresh generation from the preview corpus.
-          uv run --locked python scripts/build-teacher-learner-manifest.py --test
-
-      - name: Validate checked-in content
-        run: |
-          for f in data/examples/valid/*.json; do
-            uv run --locked python scripts/validate-pain-points.py --check "$f"
-            uv run --locked python scripts/validate-script-status.py --check "$f"
-            uv run --locked python scripts/validate-content-schema.py --check "$f"
-          done
+      - name: Run axe and keyboard-flow accessibility suite
+        run: pnpm test:a11y

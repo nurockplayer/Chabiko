@@ -325,7 +325,7 @@ describe('no storage / random / network / timer', () => {
 describe('word-order practice responsive containment', () => {
   it('declares wrap/flex containment for chunk regions and actions', () => {
     const source = readFileSync('src/components/WordOrderPractice.astro', 'utf8');
-    const styleMatch = source.match(/<style>([\s\S]*?)<\/style>/);
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
     expect(styleMatch).not.toBeNull();
     const css = styleMatch![1];
 
@@ -337,5 +337,35 @@ describe('word-order practice responsive containment', () => {
     expect(css).toMatch(/\.word-order-chunk\s*\{[^}]*box-sizing:\s*border-box/);
     // Browser measurements at 320/375/390 are recorded in the PR body as the
     // genuine layout evidence. Happy DOM does not perform layout.
+  });
+});
+
+// ─── #370 theme-safe state styling in the Astro stylesheet ──────────────────
+
+describe('word-order practice theme-safe state styling', () => {
+  it('drives answer/selected/retry states from shared A1 tokens and defers focus to the shared theme rule', () => {
+    const source = readFileSync('src/components/WordOrderPractice.astro', 'utf8');
+    const styleMatch = source.match(/<style(?:\s+is:global)?>([\s\S]*?)<\/style>/);
+    expect(styleMatch).not.toBeNull();
+    const css = styleMatch![1];
+
+    // Placed (answer-well) chunks use the shared A1 jade learning-state soft
+    // surface + ink so the assembly stays readable in both themes (never
+    // white-on-accent).
+    expect(css).toMatch(
+      /\.word-order-chunk--answer\s*\{[\s\S]*?background:\s*var\(--jade-soft\)[\s\S]*?color:\s*var\(--jade-ink\)/,
+    );
+    // Placed chunks stay fully visible after submit (distinct from dimmed pool
+    // chunks), preserving the removable/selected affordance.
+    expect(css).toMatch(
+      /\.word-order-chunk--answer:disabled\s*\{[\s\S]*?opacity:\s*1[\s\S]*?background:\s*var\(--jade-soft\)/,
+    );
+    // Focus rings follow the shared BaseLayout :focus-visible theme rule (the
+    // #366 focus token), never a hard-coded or per-component accent colour.
+    expect(css).not.toMatch(/:focus-visible\s*\{/);
+    // Retry uses the A1 coral attention family instead of a hard-coded hex.
+    expect(css).toMatch(
+      /\.word-order-action--retry\s*\{[\s\S]*?border-color:\s*var\(--coral-deep\)[\s\S]*?color:\s*var\(--coral-deep\)/,
+    );
   });
 });

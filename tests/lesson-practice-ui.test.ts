@@ -64,8 +64,28 @@ describe('lesson practice answer visibility', () => {
     );
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--correct')");
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--incorrect')");
-    expect(practiceComponentSource).toContain("timer.schedule(() => renderCompleted(), 1200)");
-    expect(practiceComponentSource).toContain("timer.schedule(() => render(), 1200)");
-    expect(practiceComponentSource).toContain("timer.schedule(() => render(), 2000)");
+    // The answer handler still schedules the completion render after the
+    // correct-answer timeout and the next render after the incorrect timeout.
+    expect(practiceComponentSource).toContain('renderCompleted()');
+    expect(practiceComponentSource).toContain('}, 1200);');
+    expect(practiceComponentSource).toContain('}, 2000);');
+  });
+
+  it('manages focus after answering and after completion re-render (no focus loss)', () => {
+    // The answer handler focuses the feedback status so keyboard and screen-reader
+    // users hear the result and focus does not fall to the document body.
+    expect(practiceComponentSource).toContain('feedback.tabIndex = -1;');
+    expect(practiceComponentSource).toContain('feedback.focus();');
+    // After the correct/completed re-render, focus moves to the completion status
+    // only when the user has not moved focus elsewhere during the feedback window.
+    expect(practiceComponentSource).toContain(
+      "const shouldTakeFocus = feedback.contains(document.activeElement);\n            renderCompleted();\n            if (shouldTakeFocus) {\n              const complete = root.querySelector('.practice-complete') as HTMLElement | null;\n              if (complete) complete.focus();\n            }",
+    );
+    // After a non-completing correct answer or an incorrect answer, the next
+    // question's first choice receives focus (again, only if focus is still on
+    // the feedback) so the learner can continue without focus loss or a trap.
+    expect(practiceComponentSource).toContain(
+      "const shouldTakeFocus = feedback.contains(document.activeElement);\n            render();\n            if (shouldTakeFocus) {\n              const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;\n              if (firstChoice) firstChoice.focus();\n            }",
+    );
   });
 });

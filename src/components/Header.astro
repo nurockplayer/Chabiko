@@ -4,6 +4,7 @@ export interface Props {
 }
 
 const { themeEnabled = false } = Astro.props;
+const isHome = Astro.url.pathname === '/';
 ---
 
 <header class="site-header">
@@ -14,7 +15,11 @@ const { themeEnabled = false } = Astro.props;
       <span class="logo-sub">チャビコ</span>
     </a>
     <nav class="nav-primary" aria-label="メインナビゲーション">
-      <a href="/" class="nav-link">ホーム</a>
+      <a
+        href="/"
+        class="nav-link"
+        aria-current={isHome ? 'page' : undefined}
+      >ホーム</a>
     </nav>
     {
       themeEnabled && (
@@ -83,8 +88,9 @@ const { themeEnabled = false } = Astro.props;
 
 <style>
   .site-header {
-    background: var(--color-header);
-    color: var(--color-header-text);
+    background: var(--paper);
+    color: var(--ink);
+    border-bottom: 1px solid var(--hairline);
     position: sticky;
     top: 0;
     z-index: 20;
@@ -92,18 +98,18 @@ const { themeEnabled = false } = Astro.props;
   .header-inner {
     display: flex;
     align-items: center;
-    gap: var(--space-lg);
+    gap: var(--sp-6);
     max-width: var(--max-w);
     margin: 0 auto;
-    padding: 0 var(--space-lg);
+    padding: 0 var(--sp-7);
     min-height: 56px;
   }
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
     min-height: 44px;
-    color: var(--color-header-text);
+    color: var(--ink);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -113,94 +119,124 @@ const { themeEnabled = false } = Astro.props;
   .brand:focus-visible,
   .nav-link:focus-visible,
   .theme-toggle:focus-visible {
-    outline-color: var(--c-accent);
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
   }
   .brand-mark {
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--c-accent);
+    background: var(--coral);
     color: var(--color-on-status);
-    font-size: 0.8125rem;
-    font-weight: 800;
+    font-family: var(--font-serif-ja);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
     flex: 0 0 auto;
   }
   .logo {
+    font-family: var(--font-serif-ja);
     font-weight: 700;
-    font-size: 1rem;
-    color: var(--color-header-text);
+    font-size: 1.0625rem;
+    color: var(--ink);
+    letter-spacing: 0.02em;
   }
   .logo-sub {
-    font-size: 0.75rem;
-    color: var(--color-header-muted);
-    margin-left: -0.25rem;
+    font-size: 0.625rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.12em;
   }
   .nav-primary {
     margin-left: auto;
   }
   .nav-link {
-    font-size: 0.875rem;
-    color: var(--color-header-text);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-secondary);
     min-width: 44px;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-bottom: 2px solid var(--hairline-strong);
+    text-decoration: none;
+  }
+  .nav-link[aria-current='page'] {
+    border-bottom-color: var(--coral);
+    color: var(--coral-deep);
+    font-weight: 700;
+  }
+  .nav-link:hover {
+    border-bottom-color: var(--jade);
+    color: var(--ink);
+  }
+  .nav-link:active {
+    background: var(--paper-deep);
   }
   .theme-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-xs);
-    min-width: 52px;
+    gap: var(--sp-1);
+    min-width: 44px;
     min-height: 44px;
-    padding: 0 var(--space-sm);
-    border: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
-    background: transparent;
-    color: var(--color-header-text);
+    padding: 0 var(--sp-2);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper-deep);
+    color: var(--ink);
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
   }
   .theme-toggle:hover {
-    background: color-mix(in srgb, var(--color-header-text) 10%, transparent);
+    border-color: var(--coral);
+    background: var(--coral-soft);
+  }
+  .theme-toggle:active {
+    background: var(--paper);
   }
   .theme-toggle__mark {
-    color: var(--c-accent);
-    font-size: 1rem;
+    color: var(--coral);
+    font-size: 1.125rem;
     line-height: 1;
   }
   .script-toggle-slot {
     display: flex;
     align-items: center;
-    gap: var(--space-xs);
+    gap: var(--sp-2);
     font-size: 0.6875rem;
-    color: var(--color-header-muted);
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
     white-space: nowrap;
   }
   .script-toggle-slot label {
     font-size: 0.6875rem;
-    color: var(--color-header-muted);
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
     white-space: nowrap;
   }
   .script-preference-select {
     min-height: 44px;
     max-width: 8.5rem;
-    padding: 0 var(--space-sm);
-    border: 1px solid color-mix(in srgb, var(--color-header-text) 35%, transparent);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--color-header-text) 8%, transparent);
-    color: var(--color-header-text);
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper-deep);
+    color: var(--ink-secondary);
     font: inherit;
     font-size: 0.6875rem;
     font-weight: 700;
     cursor: pointer;
   }
   .script-preference-select:hover {
-    background: color-mix(in srgb, var(--color-header-text) 10%, transparent);
+    border-color: var(--jade);
+  }
+  .script-preference-select:active {
+    background: var(--paper);
   }
   .script-preference-select:focus-visible {
     outline: 2px solid var(--c-accent);
@@ -211,7 +247,7 @@ const { themeEnabled = false } = Astro.props;
       display: none;
     }
     .header-inner {
-      gap: var(--space-sm);
+      gap: var(--sp-3);
     }
     /* The control label stacks above the select so the header never
      * overflows at 320/375/390px. */
@@ -226,13 +262,13 @@ const { themeEnabled = false } = Astro.props;
     }
     .script-preference-select {
       max-width: 6.5rem;
-      padding-inline: var(--space-xs);
+      padding-inline: var(--sp-1);
       font-size: 0.625rem;
     }
   }
   @media (width <= 374px) {
     .header-inner {
-      padding-inline: var(--space-md);
+      padding-inline: var(--sp-5);
     }
     .script-toggle-slot label {
       font-size: 0.5625rem;
@@ -243,7 +279,7 @@ const { themeEnabled = false } = Astro.props;
     }
     .theme-toggle {
       min-width: 44px;
-      padding-inline: var(--space-xs);
+      padding-inline: var(--sp-1);
     }
     .theme-toggle__mark {
       display: none;

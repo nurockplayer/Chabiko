@@ -64,23 +64,23 @@ const serialized = JSON.stringify({
   document.addEventListener('astro:page-load', initialisePractices);
 </script>
 
-<style>
+<style is:global>
   .tone-practice {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--sp-4);
   }
 
   .tone-practice-header {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
   }
 
   .tone-practice-progress {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
     font-variant-numeric: tabular-nums;
   }
@@ -89,6 +89,7 @@ const serialized = JSON.stringify({
     margin: 0;
     font-size: 1.0625rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
   }
 
   .tone-contour {
@@ -98,16 +99,16 @@ const serialized = JSON.stringify({
     align-items: center;
     justify-content: center;
     min-height: 5rem;
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-slot-bg);
-    padding: var(--space-md);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
+    padding: var(--sp-4);
     overflow: hidden;
   }
 
   .tone-contour__label {
     display: inline-block;
-    color: var(--c-text);
+    color: var(--ink);
     font-size: 1.25rem;
     font-weight: 800;
     line-height: 1.2;
@@ -116,54 +117,52 @@ const serialized = JSON.stringify({
 
   .tone-hint {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
+    overflow-wrap: anywhere;
   }
 
   .tone-interference {
     margin: 0;
-    border-left: 3px solid var(--c-error);
-    background: var(--c-error-bg);
-    padding: var(--space-sm) var(--space-md);
-    color: var(--c-text-secondary);
+    border-left: 3px solid var(--coral);
+    background: var(--coral-soft);
+    padding: var(--sp-2) var(--sp-4);
+    color: var(--ink-secondary);
     font-size: 0.8125rem;
+    overflow-wrap: anywhere;
   }
 
   .tone-choices {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
 
   .tone-choice {
     box-sizing: border-box;
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
     font: inherit;
     font-size: 1.0625rem;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    overflow-wrap: anywhere;
   }
 
   .tone-choice:hover:not(:disabled) {
-    border-color: var(--c-accent);
-    background: var(--c-accent-light);
-  }
-
-  .tone-choice:focus-visible {
-    outline: 3px solid var(--c-accent);
-    outline-offset: 3px;
+    background: var(--paper-deep);
+    border-color: var(--jade);
   }
 
   .tone-choice[aria-pressed='true'] {
-    border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    border-color: var(--jade);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
   }
 
   .tone-choice:disabled {
@@ -171,26 +170,33 @@ const serialized = JSON.stringify({
     opacity: 0.6;
   }
 
+  /* The chosen answer stays fully visible after submit while the other
+   * choices dim, so the selected state survives the feedback transition. */
+  .tone-choice:disabled[aria-pressed='true'] {
+    opacity: 1;
+  }
+
   .tone-feedback {
     min-height: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: var(--sp-1);
   }
 
   .tone-feedback__line {
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   .tone-feedback--correct {
-    color: var(--c-success);
+    color: var(--jade-ink);
     font-weight: 700;
   }
 
   .tone-feedback--incorrect {
-    border-left: 4px solid var(--c-error);
-    background: var(--c-error-bg);
-    padding: var(--space-sm) var(--space-md);
+    border-left: 4px solid var(--coral);
+    background: var(--coral-soft);
+    padding: var(--sp-2) var(--sp-4);
   }
 
   .tone-feedback--incorrect .tone-feedback__line:first-child {
@@ -203,13 +209,13 @@ const serialized = JSON.stringify({
 
   .tone-feedback--complete {
     text-align: center;
-    padding: var(--space-lg) var(--space-md);
-    background: var(--c-primary-light);
+    padding: var(--sp-6) var(--sp-4);
+    background: var(--jade-soft);
   }
 
   .tone-complete-text {
     margin: 0;
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-size: 0.9375rem;
     font-weight: 600;
   }
@@ -217,31 +223,27 @@ const serialized = JSON.stringify({
   .tone-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
 
   .tone-action {
     box-sizing: border-box;
     flex: 1 1 auto;
     min-height: 2.75rem;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    background: var(--c-surface);
-    color: var(--c-text);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
     font: inherit;
     font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
+    overflow-wrap: anywhere;
   }
 
   .tone-action:hover:not(:disabled) {
-    background: var(--c-slot-bg);
-  }
-
-  .tone-action:focus-visible {
-    outline: 3px solid var(--c-accent);
-    outline-offset: 3px;
+    background: var(--paper-deep);
   }
 
   .tone-action:disabled {
@@ -252,34 +254,35 @@ const serialized = JSON.stringify({
   .tone-action--submit,
   .tone-action--next,
   .tone-action--restart {
-    border-color: var(--c-accent);
-    background: var(--c-accent);
-    color: #fff;
+    border-color: var(--jade);
+    background: var(--jade);
+    color: var(--paper);
   }
 
   .tone-action--submit:hover:not(:disabled),
   .tone-action--next:hover:not(:disabled),
   .tone-action--restart:hover:not(:disabled) {
-    background: var(--c-accent-hover);
+    background: var(--jade-ink);
+    border-color: var(--jade-ink);
   }
 
   .tone-action--retry {
-    border-color: #991b1b;
-    color: #991b1b;
+    border-color: var(--coral-deep);
+    color: var(--coral-deep);
   }
 
   .tone-action--retry:hover:not(:disabled) {
-    background: var(--c-error-bg);
+    background: var(--coral-soft);
   }
 
   @media (width <= 374px) {
     .tone-choice {
-      padding-inline: var(--space-sm);
+      padding-inline: var(--sp-2);
       font-size: 1rem;
     }
 
     .tone-action {
-      padding-inline: var(--space-sm);
+      padding-inline: var(--sp-2);
       font-size: 0.875rem;
     }
   }

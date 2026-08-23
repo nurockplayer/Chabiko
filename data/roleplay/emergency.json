@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "roleplayCards": [
+    {
+      "id": "roleplay-emergency-001",
+      "scenario": "emergency",
+      "titleJa": "困ったときに助けを求めよう",
+      "goalJa": "困ったとき、周りの人に助けを求め、なくした物を伝え、ゆっくり話してもらえる",
+      "guidanceJa": "旅行中に困ったとき、周りの人に「請幫幫我」と助けを求め、携帯電話をなくした状況を伝えます。聞き取れないときは「可以說慢一點嗎」とゆっくり話してもらうよう頼みます。最後に、タクシーを呼ぶなど、相手にできる範囲の助けを受けます。学習者は全ターンを練習します。",
+      "lessonRefs": ["lesson-009", "lesson-010"],
+      "phraseRefs": ["phrase-emergency-001", "phrase-emergency-002", "phrase-emergency-003", "phrase-emergency-005"],
+      "allLearnerTurnsRehearsed": true,
+      "lines": [
+        {
+          "speaker": "learner",
+          "traditional": "請幫幫我。",
+          "traditionalStatus": "authored",
+          "simplified": "请帮帮我。",
+          "simplifiedStatus": "verified",
+          "pinyin": "qǐng bāng bāng wǒ",
+          "japanese": "助けてください。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，別著急。發生什麼事了？",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, bié zháojí. fāshēng shénme shì le",
+          "japanese": "はい、落ち着いてください。何かありましたか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我的手機不見了。",
+          "traditionalStatus": "authored",
+          "simplified": "我的手机不见了。",
+          "simplifiedStatus": "verified",
+          "pinyin": "wǒ de shǒujī bùjiàn le",
+          "japanese": "携帯電話をなくしました。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "別擔心。你最後一次看到手機是在哪裡？",
+          "traditionalStatus": "authored",
+          "pinyin": "bié dānxīn. nǐ zuìhòu yí cì kàndào shǒujī shì zài nǎlǐ",
+          "japanese": "心配しないでください。最後に携帯電話を見たのはどこですか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "不好意思，我聽不懂。可以說慢一點嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "不好意思，我听不懂。可以说慢一点吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "bù hǎoyìsi, wǒ tīng bù dǒng. kěyǐ shuō màn yìdiǎn ma",
+          "japanese": "すみません、聞き取れません。もう少しゆっくり話してもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好的，我幫你叫計程車。你在這裡等我一下。",
+          "traditionalStatus": "authored",
+          "pinyin": "hǎo de, wǒ bāng nǐ jiào jìchéngchē. nǐ zài zhèlǐ děng wǒ yíxià",
+          "japanese": "はい、タクシーを呼びますね。ここで少し待っていてください。"
+        }
+      ],
+      "reviewStatus": "draft",
+      "source": {"type": "authored", "note": "Chabiko original Taiwan travel roleplay emergency content; no third-party text copied"}
+    }
+  ]
+}

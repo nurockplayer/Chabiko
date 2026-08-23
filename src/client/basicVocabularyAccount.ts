@@ -9,6 +9,12 @@ import { isValidSupabaseUserId } from '../domain/basicVocabularyProgressScope';
  * scope, and never exposes session objects, JWTs, access/refresh/provider
  * tokens, raw metadata, the Google subject, or error objects — neither in the
  * DOM, in event detail, nor in logs.
+ *
+ * The current immutable safe auth state is also published through the
+ * module-level {@link getBasicVocabularyAuthState} /
+ * {@link subscribeBasicVocabularyAuthState} API (Issue #293), so the progress
+ * coordinator can consume the exact already-published state and every later
+ * transition without ever seeing a session or token.
  */
 
 /** Bubbling CustomEvent name for every accepted auth state transition. */
@@ -42,6 +48,54 @@ interface UiParts {
 }
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
+
+// ─── Module-level immutable auth state + subscription (Issue #293) ────────────
+
+/**
+ * The single current safe auth state observed by this module instance, or null
+ * before the first accepted transition. Only the immutable, learner-safe
+ * `BasicVocabularyAuthState` is ever stored here — never a session, JWT,
+ * token, or raw Supabase metadata.
+ */
+let currentAuthState: BasicVocabularyAuthState | null = null;
+
+const authStateSubscribers = new Set<(state: BasicVocabularyAuthState) => void>();
+
+/** The current immutable safe auth state, or null when none has been accepted. */
+export function getBasicVocabularyAuthState(): BasicVocabularyAuthState | null {
+  return currentAuthState;
+}
+
+/**
+ * Subscribe to every accepted auth-state transition. The current state (when
+ * already accepted) is delivered immediately, so a late subscriber can never
+ * miss an already-published state. Identical states are never re-delivered.
+ * Returns an idempotent unsubscribe.
+ */
+export function subscribeBasicVocabularyAuthState(
+  listener: (state: BasicVocabularyAuthState) => void,
+): () => void {
+  authStateSubscribers.add(listener);
+  if (currentAuthState !== null) listener(currentAuthState);
+  return () => {
+    authStateSubscribers.delete(listener);
+  };
+}
+
+/** Forget the observed state and drop subscribers (test/teardown boundary). */
+export function clearBasicVocabularyAuthState(): void {
+  currentAuthState = null;
+  authStateSubscribers.clear();
+}
+
+function publishAuthState(state: BasicVocabularyAuthState): void {
+  // Publish a frozen copy: DOM privacy uses a separate kind-only detail, while
+  // module subscribers still require the full identity to select user scope.
+  // No subscriber may mutate the canonical state observed by later consumers.
+  const immutableState = Object.freeze({ ...state }) as BasicVocabularyAuthState;
+  currentAuthState = immutableState;
+  for (const listener of [...authStateSubscribers]) listener(immutableState);
+}
 
 function getActionLabel(state: BasicVocabularyAuthState): string | null {
   if (state.kind === 'signed-in') return 'ログアウト';
@@ -89,7 +143,9 @@ function render(ui: UiParts, state: BasicVocabularyAuthState): void {
  * signed-in/signed-out state (or unavailable when the client is not
  * configured). Exactly one `onAuthStateChange` subscription processes
  * subsequent events; every accepted state dispatches one bubbling
- * `BASIC_VOCABULARY_AUTH_EVENT` with an immutable safe detail. Returns a
+ * `BASIC_VOCABULARY_AUTH_EVENT` with an immutable kind-only detail. The DOM
+ * event never carries the private user UUID; the coordinator receives the
+ * full safe state through the module-level subscription instead. Returns a
  * cleanup function that unsubscribes and removes the root handler.
  */
 export function initBasicVocabularyAccount(root: HTMLElement): () => void {
@@ -111,6 +167,7 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
   if (client === null) {
     render({ status, action }, { kind: 'unavailable' });
     dispatchState(root, { kind: 'unavailable' });
+    publishAuthState({ kind: 'unavailable' });
     return () => undefined;
   }
 
@@ -141,6 +198,7 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
     lastTrustworthyKind = trustworthyKind;
     render({ status, action }, state);
     dispatchState(root, state);
+    publishAuthState(state);
   }
 
   function acceptSignedIn(userId: string, email: string | null): void {
@@ -295,10 +353,13 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
 }
 
 function dispatchState(root: HTMLElement, state: BasicVocabularyAuthState): void {
+  const detail: Readonly<Pick<BasicVocabularyAuthState, 'kind'>> = Object.freeze({
+    kind: state.kind,
+  });
   root.dispatchEvent(
-    new CustomEvent<BasicVocabularyAuthState>(BASIC_VOCABULARY_AUTH_EVENT, {
+    new CustomEvent<Readonly<Pick<BasicVocabularyAuthState, 'kind'>>>(BASIC_VOCABULARY_AUTH_EVENT, {
       bubbles: true,
-      detail: Object.freeze(state),
+      detail,
     }),
   );
 }

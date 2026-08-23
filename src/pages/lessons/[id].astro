@@ -1,8 +1,14 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import LessonPractice from '../../components/LessonPractice.astro';
+import {
+  lessonPhrasebookDestination,
+  loadProductionPhrasebookScenarios,
+} from '../../content/lessonPhrasebook';
 import { loadAllRenderableLessons } from '../../content/loadLessons';
+import type { PhrasebookScenario } from '../../content/loadPhrasebook';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { Lesson } from '../../types/lesson';
 
@@ -13,24 +19,32 @@ interface NavLesson {
 
 export const getStaticPaths = (() => {
   const lessons = loadAllRenderableLessons();
+  // Production-eligible phrasebook scenarios (#239): computed once at build time
+  // from the same eligible surface as /phrasebook/ (loadEligiblePhrasebook +
+  // groupPhrasebookByScenario), so a lesson links ONLY to a scenario with real
+  // learner-visible content — never to a draft/pending-only scenario.
+  const productionPhrasebookScenarios = loadProductionPhrasebookScenarios();
   return lessons.map((lesson, index) => ({
     params: { id: lesson.id },
     props: {
       lesson,
       lessonNumber: index + 1,
-      lessonCount: lessons.length,
       prevLesson: index > 0 ? ({ id: lessons[index - 1].id, titleJa: lessons[index - 1].titleJa } satisfies NavLesson) : null,
       nextLesson: index < lessons.length - 1 ? ({ id: lessons[index + 1].id, titleJa: lessons[index + 1].titleJa } satisfies NavLesson) : null,
+      phrasebookScenario: lessonPhrasebookDestination(
+        lesson.travelScenario,
+        productionPhrasebookScenarios,
+      ),
     },
   }));
 }) satisfies GetStaticPaths;
 
-const { lesson, lessonNumber, lessonCount, prevLesson, nextLesson } = Astro.props as {
+const { lesson, lessonNumber, prevLesson, nextLesson, phrasebookScenario } = Astro.props as {
   lesson?: Lesson;
   lessonNumber?: number;
-  lessonCount?: number;
   prevLesson?: NavLesson | null;
   nextLesson?: NavLesson | null;
+  phrasebookScenario?: PhrasebookScenario | null;
 };
 const hasText = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -88,25 +102,15 @@ const exampleScriptAttrs = (example: {
 
   {
     lesson ? (
-      <div class="lesson-journey">
-        <aside class="lesson-route" aria-labelledby="lesson-route-heading">
-          <a class="back-link" href="/">← 台湾旅行パスに戻る</a>
-          <h2 id="lesson-route-heading" class="route-heading">台湾旅行で使える中国語</h2>
-          <div class="route-station" aria-current="step">
-            <span class="route-station-dot" aria-hidden="true"></span>
-            <p class="route-position">レッスン {lessonNumber} / {lessonCount}</p>
-            <p class="route-title">{lesson.titleJa}</p>
-            <p class="route-can-do">{lesson.canDoJa}</p>
-            <p class="route-example" lang="zh-Hant" data-script-path-default={lesson.coreSentence}>{lesson.coreSentence}</p>
-            <span class="route-status">進行中</span>
-          </div>
-          <div class="pending-path">
-            <span class="pending-dot" aria-hidden="true"></span>
-            <span>HSK対策</span>
-            <span class="pending-status">準備中</span>
-          </div>
-        </aside>
-
+      <>
+        <div class="lesson-page-shell">
+        <Breadcrumb
+          crumbs={[
+            { label: 'ホーム', href: '/' },
+            { label: '台湾旅行', href: '/#taiwan-travel-path' },
+            { label: `第${lessonNumber}課` },
+          ]}
+        />
         <article class="lesson-page">
           <header class="lesson-intro">
             <p class="lesson-label">台湾旅行の中国語</p>
@@ -121,8 +125,11 @@ const exampleScriptAttrs = (example: {
           </section>
 
           <section class="core-section" aria-labelledby="core-heading">
-            <h2 id="core-heading" class="section-label">今日のコア表現</h2>
-            <div class="core-card">
+            <div class="core-block">
+              <p class="core-kicker">
+                <span id="core-heading">今日のコア表現</span>
+                <span class="core-kicker__sub" aria-current="step">レッスン {lessonNumber}</span>
+              </p>
               <p class="core-sentence" lang="zh-Hant" data-script-path-default={lesson.coreSentence}>{lesson.coreSentence}</p>
               {coreExample && hasText(coreExample.pinyin) && (
                 <p class="core-pinyin" lang="zh-Latn">{coreExample.pinyin}</p>
@@ -197,24 +204,49 @@ const exampleScriptAttrs = (example: {
             <p>{lesson.travelTask}</p>
           </section>
 
+          {phrasebookScenario && (
+            <section class="related-phrasebook" aria-label="関連フレーズ">
+              <a
+                class="related-phrasebook__link"
+                data-phrasebook-link
+                href={`/phrasebook/?scenario=${phrasebookScenario}`}
+              >
+                関連フレーズを見る
+              </a>
+            </section>
+          )}
+
           <nav class="lesson-nav" aria-label="レッスンナビゲーション">
             {prevLesson && (
               <a class="nav-link nav-prev" href={`/lessons/${prevLesson.id}/`}>
-                <span aria-hidden="true">←</span> {prevLesson.titleJa}
+                <span class="nav-direction">前のレッスン</span>
+                <span class="nav-title">
+                  <span class="nav-arrow" aria-hidden="true">←</span>
+                  <span class="nav-title-text">{prevLesson.titleJa}</span>
+                </span>
               </a>
             )}
             {nextLesson ? (
               <a class="nav-link nav-next" href={`/lessons/${nextLesson.id}/`}>
-                {nextLesson.titleJa} <span aria-hidden="true">→</span>
+                <span class="nav-direction">次のレッスン</span>
+                <span class="nav-title">
+                  <span class="nav-title-text">{nextLesson.titleJa}</span>
+                  <span class="nav-arrow" aria-hidden="true">→</span>
+                </span>
               </a>
             ) : (
               <a class="nav-link nav-complete" href="/">
-                台湾旅行パスを完了 <span aria-hidden="true">→</span> 一覧に戻る
+                <span class="nav-direction">台湾旅行パスを完了</span>
+                <span class="nav-title">
+                  <span class="nav-title-text">一覧に戻る</span>
+                  <span class="nav-arrow" aria-hidden="true">→</span>
+                </span>
               </a>
             )}
           </nav>
         </article>
-      </div>
+        </div>
+      </>
     ) : (
       <article class="fallback-message">
         <h1>レッスンを読み込めませんでした</h1>
@@ -253,366 +285,375 @@ const exampleScriptAttrs = (example: {
 </script>
 
 <style>
-  .lesson-journey {
-    display: grid;
-    gap: var(--space-xl);
-    align-items: start;
-  }
-  .lesson-route {
+  .lesson-page-shell {
     min-width: 0;
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--c-border);
-  }
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    margin-bottom: var(--space-sm);
-    color: var(--c-primary);
-    font-size: 0.8125rem;
-    font-weight: 700;
-  }
-  .route-heading {
-    padding-bottom: var(--space-sm);
-    margin-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--c-border);
-    color: var(--c-text-secondary);
-    font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-  }
-  .route-station {
-    position: relative;
-    margin-left: 15px;
-    padding: 0 0 var(--space-lg) 32px;
-    border-left: 2px solid var(--c-route-line);
-  }
-  .route-station-dot {
-    position: absolute;
-    left: -10px;
-    top: 4px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--c-primary);
-    border: 2px solid var(--c-primary);
-    box-shadow: 0 0 0 4px var(--c-accent-light);
-  }
-  .route-station-dot::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border-radius: 50%;
-    background: var(--c-accent);
-  }
-  .route-position {
-    color: var(--c-primary);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-  .route-title {
-    color: var(--c-primary);
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-  .route-can-do {
-    margin-top: 2px;
-    color: var(--c-text-secondary);
-    font-size: 0.75rem;
-    line-height: 1.5;
-  }
-  .route-example {
-    margin-top: var(--space-xs);
-    font-family: var(--font-zh);
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-  .route-status,
-  .pending-status {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
-    margin-top: var(--space-xs);
-    padding: 0 var(--space-sm);
-    background: var(--c-accent-light);
-    color: var(--color-status-current);
-    font-size: 0.6875rem;
-    font-weight: 700;
-  }
-  .pending-path {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    min-height: 44px;
-    margin-top: var(--space-md);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--c-border);
-    color: var(--c-text-muted);
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-  .pending-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 2px solid var(--c-route-line);
-    background: var(--c-surface);
-    flex: 0 0 auto;
-  }
-  .pending-status {
-    margin: 0;
-    background: var(--c-primary-light);
-    color: var(--c-text-secondary);
   }
   .lesson-page {
     min-width: 0;
     overflow-wrap: anywhere;
   }
-  .lesson-intro {
-    margin-bottom: var(--space-xl);
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--c-border);
-  }
   .lesson-label {
-    color: var(--c-primary);
-    font-size: 0.75rem;
+    margin-bottom: var(--sp-2);
+    color: var(--coral-deep);
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-xs);
+    letter-spacing: 0.14em;
+  }
+  .lesson-page h1 {
+    font-family: var(--font-serif-ja);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+  }
+  .hook {
+    max-width: 48rem;
+    margin-top: var(--sp-4);
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--ink-secondary);
   }
   .completion-badge {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
-    margin-top: var(--space-sm);
-    padding: 0 var(--space-sm);
-    font-size: 0.75rem;
+    margin-top: var(--sp-3);
+    padding: 0 var(--sp-3);
+    border-radius: var(--radius-chip);
+    font-size: 12px;
   }
   .completion-badge:empty {
     display: none;
   }
   .completion-badge--done {
-    color: var(--color-status-success);
-    background: var(--c-success-bg);
+    color: var(--jade-ink);
+    background: var(--jade-soft);
     font-weight: 700;
-  }
-  h1 {
-    max-width: 22ch;
-    font-size: clamp(1.75rem, 7vw, 2.5rem);
-    line-height: 1.25;
-  }
-  h2 {
-    font-size: 1.0625rem;
-    line-height: 1.4;
-    margin-bottom: var(--space-sm);
-  }
-  .hook,
-  .pinyin,
-  .note {
-    color: var(--c-text-secondary);
-  }
-  .hook {
-    max-width: 48rem;
-    margin-top: var(--space-md);
-    font-size: 0.9375rem;
   }
   .can-do-section {
-    margin-bottom: var(--space-2xl);
-    padding: var(--space-md) var(--space-lg);
-    border-left: 4px solid var(--c-accent);
-    background: var(--c-accent-light);
+    margin-top: var(--sp-10);
+    padding: var(--sp-5);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
   }
   .can-do-section h2 {
-    color: var(--color-status-current);
-    font-size: 0.8125rem;
+    margin-bottom: var(--sp-1);
+    color: var(--jade-ink);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
   }
   .can-do-section p {
+    font-size: 13.5px;
+    line-height: 1.8;
     font-weight: 600;
   }
-  .core-section,
-  .reading-section,
-  .travel-task {
-    margin-top: var(--space-2xl);
+  .core-section {
+    margin-top: var(--sp-10);
   }
-  .section-label {
-    color: var(--c-text-secondary);
-    font-size: 0.75rem;
+  .core-block {
+    padding-top: 20px;
+    border-top: 2px solid var(--coral);
+  }
+  .core-kicker {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--jade-ink);
+    font-family: var(--font-sans);
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-md);
+    letter-spacing: 0.16em;
   }
-  .core-card {
-    background: var(--c-surface);
-    border-top: 4px solid var(--c-primary);
-    padding: var(--space-xl) var(--space-lg);
+  .core-kicker__sub {
+    color: var(--ink-muted);
+    font-weight: 500;
+    letter-spacing: 0.08em;
   }
   .core-sentence {
-    font-family: var(--font-zh);
-    color: var(--c-text);
-    font-size: clamp(2.25rem, 11vw, 2.75rem);
+    margin-top: var(--sp-4);
+    font-family: var(--font-serif-zh);
+    font-size: 46px;
     font-weight: 700;
-    letter-spacing: 0.03em;
-    line-height: 1.2;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
     word-break: break-word;
   }
   .core-pinyin {
-    margin-top: var(--space-sm);
-    color: var(--c-text-muted);
-    font-family: var(--font-pinyin);
-    font-size: 1rem;
+    margin-top: var(--sp-2);
+    color: var(--ink-muted);
+    font-size: 14px;
     letter-spacing: 0.04em;
   }
   .core-meaning {
-    margin-top: var(--space-md);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--c-border);
+    margin-top: var(--sp-4);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
   }
   .reading-section {
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--c-border);
+    margin-top: var(--sp-10);
   }
-  .reading-section > p,
-  .sound-list,
-  .bridge-list {
+  .reading-section h2 {
+    margin-bottom: var(--sp-3);
+    font-family: var(--font-serif-ja);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .reading-section > p {
     max-width: 48rem;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink-secondary);
   }
   .detail-list,
   .example-list,
-  .sound-list,
-  .bridge-list {
-    display: grid;
-    gap: var(--space-md);
+  .sound-list {
+    border-top: 1px solid var(--hairline);
   }
   .detail-list > div {
     display: grid;
-    grid-template-columns: minmax(4.5rem, auto) 1fr;
-    column-gap: var(--space-md);
-    padding: var(--space-md) 0;
+    grid-template-columns: minmax(72px, auto) 1fr;
+    column-gap: var(--sp-4);
+    padding: var(--sp-4) 0;
   }
   .detail-list > div + div {
-    border-top: 1px solid var(--c-border);
+    border-top: 1px solid var(--hairline);
   }
   dt {
-    grid-row: 1 / span 3;
-    font-family: var(--font-zh);
-    font-size: 1.125rem;
+    grid-row: 1 / span 2;
+    font-family: var(--font-serif-zh);
+    font-size: 21px;
     font-weight: 700;
+    letter-spacing: 0.02em;
   }
   dd {
     margin: 0;
+    min-width: 0;
   }
   .note {
-    margin-top: var(--space-xs);
-    font-size: 0.75rem;
-    line-height: 1.5;
+    margin-top: var(--sp-1);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--ink-muted);
   }
   .bridge-section {
-    padding: var(--space-lg);
-    border-top: 4px solid var(--c-primary);
-    background: var(--c-surface);
+    margin-top: var(--sp-10);
+    padding: var(--sp-5);
+    border-radius: var(--radius-content);
+    background: var(--jade-soft);
+  }
+  .bridge-list {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .bridge-list p {
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--ink-secondary);
   }
   .bridge-list strong {
-    font-family: var(--font-zh);
-    font-size: 1.125rem;
+    font-family: var(--font-serif-zh);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .sound-list > p {
+    padding: var(--sp-3) 0;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-secondary);
+  }
+  .sound-list > p + p {
+    border-top: 1px solid var(--hairline);
+  }
+  .sound-list strong {
+    color: var(--jade-ink);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
   .example-list > div {
-    padding: var(--space-md) 0;
+    padding: var(--sp-4) 0;
   }
   .example-list > div + div {
-    border-top: 1px solid var(--c-border);
+    border-top: 1px solid var(--hairline);
   }
   .example-sentence {
-    font-family: var(--font-zh);
-    color: var(--c-text);
-    font-size: 1.375rem;
+    font-family: var(--font-serif-zh);
+    font-size: 22px;
     font-weight: 700;
-    line-height: 1.35;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
     overflow-wrap: anywhere;
+  }
+  .example-list .pinyin {
+    margin-top: var(--sp-1);
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    letter-spacing: 0.03em;
+  }
+  .example-list > div > p:last-child {
+    margin-top: var(--sp-1);
+    font-size: 13px;
+    color: var(--ink-secondary);
   }
   .script-fallback {
     display: block;
-    margin-top: var(--space-xs);
-    color: var(--c-text-secondary);
-    font-family: var(--font-ja);
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
+    margin-top: var(--sp-1);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink-secondary);
     overflow-wrap: anywhere;
   }
-  .pinyin {
-    font-family: var(--font-pinyin);
-    font-size: 0.8125rem;
-    letter-spacing: 0.03em;
-  }
   .travel-task {
-    padding: var(--space-lg);
-    border-left: 4px solid var(--c-accent);
-    background: var(--c-accent-light);
+    margin-top: var(--sp-10);
+    padding: var(--sp-5);
+    border-radius: var(--radius-content);
+    background: var(--coral-soft);
   }
   .travel-task h2 {
-    color: var(--color-status-current);
+    margin-bottom: var(--sp-1);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  :global(html[data-theme='dark']) .travel-task h2 {
+    color: var(--coral-deep);
+  }
+  .travel-task p {
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+  .related-phrasebook {
+    margin-top: var(--sp-10);
+    padding: var(--sp-5);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
+  }
+  .related-phrasebook__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 44px;
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--coral);
+    border-radius: var(--radius-control);
+    background: var(--coral-soft);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .related-phrasebook__link:hover {
+    background: var(--coral-soft);
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
   .lesson-nav {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    align-items: stretch;
-    gap: var(--space-sm);
-    margin-top: var(--space-xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--c-border);
+    gap: var(--sp-2) var(--sp-4);
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--hairline);
   }
   .nav-link {
     display: flex;
-    align-items: center;
-    min-height: 52px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 44px;
     flex: 1 1 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--c-border);
-    background: var(--c-surface);
-    font-weight: 600;
-    font-size: 0.875rem;
+    padding: var(--sp-2) 0;
+    color: var(--jade-ink);
     text-decoration: none;
-    color: var(--c-text);
-    transition: background 0.15s ease, transform 0.15s ease;
   }
   .nav-link:hover {
-    background: var(--c-primary-light);
-    text-decoration: none;
-    transform: translateY(-1px);
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
   .nav-prev {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
-  .nav-next {
+  .nav-next,
+  .nav-complete {
+    align-items: flex-end;
+  }
+  .nav-direction {
+    margin-bottom: 2px;
+    color: var(--ink-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .nav-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-width: 0;
+    max-width: 100%;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .nav-next .nav-title,
+  .nav-complete .nav-title {
     justify-content: flex-end;
   }
-  .nav-complete {
-    color: var(--c-primary);
-    border-color: var(--c-primary);
+  .nav-title-text {
+    overflow-wrap: anywhere;
+  }
+  .nav-arrow {
+    flex: 0 0 auto;
+    color: var(--ink-muted);
   }
   .fallback-message {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    padding: var(--space-xl);
+    padding: var(--sp-8) var(--sp-6);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
     text-align: center;
   }
+  .fallback-message h1 {
+    font-family: var(--font-serif-ja);
+    font-size: 30px;
+    line-height: 1.3;
+  }
   .fallback-message p {
-    color: var(--c-text-secondary);
-    margin: var(--space-md) 0;
+    margin: var(--sp-4) 0;
+    color: var(--ink-secondary);
+  }
+  .fallback-message a {
+    color: var(--jade-ink);
+    font-weight: 700;
   }
   @media (width <= 374px) {
-    .core-card {
-      padding: var(--space-lg) var(--space-md);
+    .lesson-page h1 {
+      font-size: 28px;
+    }
+    .core-block {
+      padding-top: 16px;
     }
     .core-sentence {
-      font-size: 2.25rem;
+      font-size: 40px;
     }
     .detail-list > div {
-      grid-template-columns: 1fr;
+      column-gap: var(--sp-3);
     }
     dt {
-      grid-row: auto;
+      min-width: 60px;
+      font-size: 19px;
+    }
+    .example-sentence {
+      font-size: 19px;
     }
   }
   @media (width >= 640px) {
@@ -621,22 +662,19 @@ const exampleScriptAttrs = (example: {
     }
   }
   @media (width >= 1024px) {
-    .lesson-journey {
-      grid-template-columns: 300px minmax(0, 720px);
+    .lesson-page-shell {
+      max-width: 760px;
+      margin: 0 auto;
     }
-    .lesson-route {
-      position: sticky;
-      top: 88px;
-      padding: 0 var(--space-lg) var(--space-xl) 0;
-      border: 0;
-      border-right: 1px solid var(--c-border);
-      min-height: calc(100dvh - 136px);
-    }
-    .lesson-page {
-      padding-left: 0;
+    .lesson-page h1 {
+      font-size: 32px;
     }
     .core-sentence {
-      font-size: 3rem;
+      font-size: 50px;
+    }
+    .can-do-section,
+    .travel-task {
+      padding: var(--sp-6) 24px;
     }
   }
 </style>

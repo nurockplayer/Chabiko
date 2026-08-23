@@ -19,13 +19,49 @@
           "traditionalStatus": "authored",
           "pinyin": "yǒu, wǎng qián zǒu liǎng fēnzhōng jiù dào le",
           "japanese": "ありますよ。まっすぐ2分歩けば着きますよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我要去台北車站。",
+          "traditionalStatus": "authored",
+          "simplified": "我要去台北车站。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ yào qù Táiběi chēzhàn.",
+          "japanese": "台北駅に行きたいです。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，你在站裡看路線圖，就知道坐哪一班車。",
+          "traditionalStatus": "authored",
+          "simplified": "好，你在站里看路线图，就知道坐哪一班车。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, nǐ zài zhàn lǐ kàn lùxiàntú, jiù zhīdào zuò nǎ yī bān chē.",
+          "japanese": "はい、駅の路線図を見れば、どの列車に乗ればいいか分かりますよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "請問這班車有到台北車站嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "请问这班车有到台北车站吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Qǐngwèn zhè bān chē yǒu dào Táiběi chēzhàn ma?",
+          "japanese": "すみません、この列車は台北駅に着きますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "你可以問站務人員確認。",
+          "traditionalStatus": "authored",
+          "simplified": "你可以问站务人员确认。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Nǐ kěyǐ wèn zhànwù rényuán quèrèn.",
+          "japanese": "駅員さんに聞いて確認してみてください。"
         }
       ],
-      "relatedPhraseIds": ["phrase-002"],
+      "relatedPhraseIds": ["phrase-002", "phrase-transport-002", "phrase-transport-005"],
       "reviewStatus": "draft",
       "source": {
         "type": "authored",
-        "note": "Chabiko original transport dialog schema fixture; learner line mirrors committed phrase phrase-002; no third-party text copied"
+        "note": "Chabiko original transport dialog; learner lines mirror committed phrases phrase-002/phrase-transport-002/phrase-transport-005; no third-party text copied"
       }
     },
     {
@@ -92,6 +128,270 @@
       "source": {
         "type": "authored",
         "note": "Chabiko original airport dialog; learner lines mirror committed phrases phrase-airport-001/004/005; no third-party text copied"
+      }
+    },
+    {
+      "id": "dialog-food-001",
+      "scenario": "food",
+      "turns": [
+        {
+          "speaker": "learner",
+          "traditional": "我要一杯珍珠奶茶。",
+          "traditionalStatus": "authored",
+          "simplified": "我要一杯珍珠奶茶。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ yào yī bēi zhēnzhū nǎichá.",
+          "japanese": "タピオカミルクティーを一杯ください。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，甜的嗎？要冰的還是熱的？",
+          "traditionalStatus": "authored",
+          "simplified": "好，甜的吗？要冰的还是热的？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, tián de ma? Yào bīng de háishì rè de?",
+          "japanese": "はい、甘さはどうしますか？冷たいのと温かいの、どちらにしますか？"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以少冰嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以少冰吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ shǎo bīng ma?",
+          "japanese": "氷を少なめにしてもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "可以，少冰。",
+          "traditionalStatus": "authored",
+          "simplified": "可以，少冰。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ, shǎo bīng.",
+          "japanese": "はい、氷少なめですね。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以外帶嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以外带吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ wàidài ma?",
+          "japanese": "テイクアウトできますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "可以，幫你包好。",
+          "traditionalStatus": "authored",
+          "simplified": "可以，帮你包好。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ, bāng nǐ bāo hǎo.",
+          "japanese": "はい、お包みします。"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-001", "phrase-food-003", "phrase-food-005"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original food dialog; learner lines mirror committed phrases phrase-001/phrase-food-003/phrase-food-005; no third-party text copied"
+      }
+    },
+    {
+      "id": "dialog-shopping-001",
+      "scenario": "shopping",
+      "turns": [
+        {
+          "speaker": "learner",
+          "traditional": "這個多少錢？",
+          "traditionalStatus": "authored",
+          "simplified": "这个多少钱？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Zhège duōshǎo qián?",
+          "japanese": "これはいくらですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "價錢在標籤上，你可以看一下。",
+          "traditionalStatus": "authored",
+          "simplified": "价钱在标签上，你可以看一下。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Jiàqián zài biāoqiān shàng, nǐ kěyǐ kàn yīxià.",
+          "japanese": "値段はタグに書いてありますよ。見てみてください。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "有別的顏色嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "有别的颜色吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Yǒu bié de yánsè ma?",
+          "japanese": "他の色はありますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "有，我拿給你看。",
+          "traditionalStatus": "authored",
+          "simplified": "有，我拿给你看。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Yǒu, wǒ ná gěi nǐ kàn.",
+          "japanese": "ありますよ。お見せしますね。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我要這個。",
+          "traditionalStatus": "authored",
+          "simplified": "我要这个。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ yào zhège.",
+          "japanese": "これをください。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，我幫你包起來。",
+          "traditionalStatus": "authored",
+          "simplified": "好，我帮你包起来。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, wǒ bāng nǐ bāo qǐlái.",
+          "japanese": "はい、お包みしますね。"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-shopping-001", "phrase-shopping-003", "phrase-shopping-005"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original shopping dialog; learner lines mirror committed phrases phrase-shopping-001/003/005; no third-party text copied"
+      }
+    },
+    {
+      "id": "dialog-hotel-001",
+      "scenario": "hotel",
+      "turns": [
+        {
+          "speaker": "learner",
+          "traditional": "我有預約。",
+          "traditionalStatus": "authored",
+          "simplified": "我有预约。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ yǒu yùyuē.",
+          "japanese": "予約しています。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，歡迎光臨。",
+          "traditionalStatus": "authored",
+          "simplified": "好，欢迎光临。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, huānyíng guānglín.",
+          "japanese": "はい、いらっしゃいませ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以寄放行李嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以寄放行李吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ jìfàng xíngli ma?",
+          "japanese": "荷物を預かってもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "可以，沒問題。行李放這裡就好。",
+          "traditionalStatus": "authored",
+          "simplified": "可以，没问题。行李放这里就好。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ, méi wèntí. Xíngli fàng zhèlǐ jiù hǎo.",
+          "japanese": "はい、大丈夫です。荷物はここに置いておいてください。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "早餐幾點開始？",
+          "traditionalStatus": "authored",
+          "simplified": "早餐几点开始？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Zǎocān jǐ diǎn kāishǐ?",
+          "japanese": "朝食は何時からですか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "早餐時間在房間裡的通知單上。",
+          "traditionalStatus": "authored",
+          "simplified": "早餐时间在房间里的通知单上。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Zǎocān shíjiān zài fángjiān lǐ de tōngzhīdān shàng.",
+          "japanese": "朝食の時間はお部屋の案内に書いてありますよ。"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-hotel-001", "phrase-hotel-003", "phrase-hotel-005"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original hotel dialog; learner lines mirror committed phrases phrase-hotel-001/003/005; no third-party text copied"
+      }
+    },
+    {
+      "id": "dialog-emergency-001",
+      "scenario": "emergency",
+      "turns": [
+        {
+          "speaker": "learner",
+          "traditional": "請幫幫我。",
+          "traditionalStatus": "authored",
+          "simplified": "请帮帮我。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Qǐng bāng bāng wǒ.",
+          "japanese": "助けてください。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "怎麼了？慢慢說。",
+          "traditionalStatus": "authored",
+          "simplified": "怎么了？慢慢说。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Zěnme le? Mànmàn shuō.",
+          "japanese": "どうしましたか？ゆっくり話してください。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "我迷路了。",
+          "traditionalStatus": "authored",
+          "simplified": "我迷路了。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Wǒ mílù le.",
+          "japanese": "道に迷ってしまいました。"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "別擔心。你住在哪裡？我幫你查路線。",
+          "traditionalStatus": "authored",
+          "simplified": "别担心。你住在哪里？我帮你查路线。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Bié dānxīn. Nǐ zhù zài nǎlǐ? Wǒ bāng nǐ chá lùxiàn.",
+          "japanese": "大丈夫です。どこに泊まっていますか？道順を調べてあげますよ。"
+        },
+        {
+          "speaker": "learner",
+          "traditional": "可以幫我叫計程車嗎？",
+          "traditionalStatus": "authored",
+          "simplified": "可以帮我叫计程车吗？",
+          "simplifiedStatus": "verified",
+          "pinyin": "Kěyǐ bāng wǒ jiào jìchéngchē ma?",
+          "japanese": "タクシーを呼んでもらえますか？"
+        },
+        {
+          "speaker": "partner",
+          "traditional": "好，我幫你叫一輛。",
+          "traditionalStatus": "authored",
+          "simplified": "好，我帮你叫一辆。",
+          "simplifiedStatus": "verified",
+          "pinyin": "Hǎo, wǒ bāng nǐ jiào yī liàng.",
+          "japanese": "はい、タクシーを呼びますね。"
+        }
+      ],
+      "relatedPhraseIds": ["phrase-emergency-001", "phrase-emergency-002", "phrase-emergency-005"],
+      "reviewStatus": "draft",
+      "source": {
+        "type": "authored",
+        "note": "Chabiko original emergency dialog; learner lines mirror committed phrases phrase-emergency-001/002/005; no third-party text copied"
       }
     }
   ]

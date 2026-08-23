@@ -17,7 +17,7 @@ const json = JSON.stringify(questions);
       <p class="practice-label">確認クイズ</p>
       <h2 id="practice-heading">練習</h2>
       <p class="practice-intro">各質問に答えて、レッスンを完了しましょう。</p>
-      <div id="practice-root" role="region" aria-labelledby="practice-heading" aria-live="polite">
+      <div id="practice-root" aria-live="polite">
         <p class="loading-placeholder">読み込み中…</p>
       </div>
     </section>
@@ -64,6 +64,8 @@ const json = JSON.stringify(questions);
       syncBadge();
       root.innerHTML =
         '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+      const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+      if (complete) complete.tabIndex = -1;
     }
 
     function render() {
@@ -77,6 +79,8 @@ const json = JSON.stringify(questions);
       if (isComplete && getCurrentIndex(session) === 0) {
         root.innerHTML =
           '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
+        const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+        if (complete) complete.tabIndex = -1;
         return;
       }
 
@@ -130,12 +134,31 @@ const json = JSON.stringify(questions);
           '<p class="feedback-correct"><span class="feedback-icon" aria-hidden="true">✓</span><span>正解！</span></p>';
         feedback.className = 'practice-feedback feedback-visible';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
+        feedback.tabIndex = -1;
+        feedback.focus();
         if (result.session.status === 'completed') {
           // Write completion to storage immediately, before the animation timeout
           store.markComplete(session.lessonId);
-          timer.schedule(() => renderCompleted(), 1200);
+          timer.schedule(() => {
+            // Decide focus before the re-render replaces the feedback element:
+            // only take focus if the user has not moved it elsewhere (e.g. Tab
+            // into the lesson navigation) during the feedback window.
+            const shouldTakeFocus = feedback.contains(document.activeElement);
+            renderCompleted();
+            if (shouldTakeFocus) {
+              const complete = root.querySelector('.practice-complete') as HTMLElement | null;
+              if (complete) complete.focus();
+            }
+          }, 1200);
         } else {
-          timer.schedule(() => render(), 1200);
+          timer.schedule(() => {
+            const shouldTakeFocus = feedback.contains(document.activeElement);
+            render();
+            if (shouldTakeFocus) {
+              const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+              if (firstChoice) firstChoice.focus();
+            }
+          }, 1200);
         }
       } else {
         btn.classList.add('practice-choice--incorrect');
@@ -146,7 +169,17 @@ const json = JSON.stringify(questions);
           '</p>';
         feedback.className = 'practice-feedback feedback-visible feedback-visible--incorrect';
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
-        timer.schedule(() => render(), 2000);
+        feedback.tabIndex = -1;
+        feedback.focus();
+        timer.schedule(() => {
+          // Preserve an explicit focus move away from the feedback.
+          const shouldTakeFocus = feedback.contains(document.activeElement);
+          render();
+          if (shouldTakeFocus) {
+            const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
+            if (firstChoice) firstChoice.focus();
+          }
+        }, 2000);
       }
     }
 
@@ -226,98 +259,100 @@ const json = JSON.stringify(questions);
 
 <style>
   .lesson-practice {
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--c-border);
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--hairline);
   }
   .practice-label {
-    margin: 0 0 var(--space-xs);
-    color: var(--c-text-secondary);
-    font-size: 0.75rem;
+    margin: 0 0 var(--sp-2);
+    color: var(--coral-deep);
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.14em;
   }
   .lesson-practice h2 {
-    font-size: 1.125rem;
-    margin-bottom: var(--space-xs);
+    font-family: var(--font-serif-ja);
+    font-size: 16px;
+    margin-bottom: var(--sp-2);
   }
   .practice-intro {
-    font-size: 0.875rem;
-    color: var(--c-text-secondary);
-    margin-bottom: var(--space-lg);
+    font-size: 13px;
+    color: var(--ink-secondary);
+    margin-bottom: var(--sp-6);
   }
   :global(.practice-question) {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--sp-4);
   }
   :global(.practice-progress) {
-    font-size: 0.8125rem;
-    color: var(--c-text-muted);
+    font-size: 12px;
+    color: var(--ink-muted);
     margin: 0;
   }
   :global(.practice-prompt) {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
     margin: 0;
   }
   :global(.practice-choices) {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--sp-2);
   }
   :global(.practice-choice) {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--sp-3);
     width: 100%;
-    min-height: 52px;
-    padding: var(--space-md) var(--space-lg);
-    border: 1px solid var(--c-border);
-    background: var(--c-surface);
-    color: var(--c-text);
-    font-size: 0.9375rem;
+    min-height: 48px;
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
     text-align: left;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
   :global(.practice-choice:hover:not(:disabled)) {
-    background: var(--c-primary-light);
-    border-color: var(--c-primary);
-    transform: translateY(-1px);
+    background: var(--paper-deep);
+    border-color: var(--jade);
   }
   :global(.practice-choice__indicator) {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    border: 2px solid var(--c-border);
+    border: 2px solid var(--hairline-strong);
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
   :global(.practice-choice--correct) {
-    border-color: var(--c-success);
-    background: var(--c-success-bg);
+    border-color: var(--jade);
+    background: var(--jade-soft);
   }
   :global(.practice-choice--correct .practice-choice__indicator) {
-    border-color: var(--c-success);
-    background: var(--c-success);
+    border-color: var(--jade);
+    background: var(--jade);
   }
   :global(.practice-choice--correct .practice-choice__indicator::after) {
     content: '';
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--c-surface);
+    background: var(--color-on-primary);
   }
   :global(.practice-choice--incorrect) {
-    border-color: var(--c-error);
-    background: var(--c-error-bg);
+    border-color: var(--color-error);
+    background: var(--color-error-soft);
   }
   :global(.practice-choice--incorrect .practice-choice__indicator) {
-    border-color: var(--c-error);
-    background: var(--c-error);
+    border-color: var(--color-error);
+    background: var(--color-error);
   }
   :global(.practice-choice--incorrect .practice-choice__indicator::after) {
     content: '✕';
@@ -330,28 +365,29 @@ const json = JSON.stringify(questions);
     cursor: default;
   }
   :global(.practice-choice:disabled:not(.practice-choice--correct, .practice-choice--incorrect)) {
-    color: var(--c-text-muted);
-    background: var(--c-bg);
+    color: var(--ink-muted);
+    background: var(--paper-deep);
   }
   :global(.practice-feedback) {
     min-height: 0;
     transition: min-height 0.2s;
   }
   :global(.practice-feedback.feedback-visible) {
-    padding: var(--space-md) var(--space-lg);
-    border-left: 4px solid var(--c-success);
-    background: var(--c-success-bg);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--jade);
+    border-radius: var(--radius-content);
+    background: var(--jade-soft);
   }
   :global(.practice-feedback.feedback-visible--incorrect) {
-    border-left-color: var(--c-error);
-    background: var(--c-error-bg);
+    border-color: var(--color-error);
+    background: var(--color-error-soft);
   }
   :global(.feedback-correct),
   :global(.feedback-incorrect) {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    color: var(--c-text);
+    gap: var(--sp-2);
+    color: var(--ink);
     font-weight: 700;
     margin: 0;
   }
@@ -362,24 +398,26 @@ const json = JSON.stringify(questions);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--c-success);
-    color: var(--color-on-status);
+    background: var(--jade);
+    color: var(--color-on-primary);
     font-size: 0.75rem;
     font-weight: 800;
     flex: 0 0 auto;
   }
   :global(.feedback-incorrect .feedback-icon) {
-    background: var(--c-error);
+    background: var(--color-error);
   }
   :global(.feedback-answer) {
-    color: var(--c-text-secondary);
-    font-size: 0.9rem;
+    color: var(--ink-secondary);
+    font-size: 13px;
     margin: 0;
   }
   :global(.practice-complete) {
     text-align: center;
-    padding: var(--space-lg) var(--space-md);
-    background: var(--c-primary-light);
+    padding: var(--sp-5) var(--sp-4);
+    border: 1px solid var(--jade);
+    border-radius: var(--radius-content);
+    background: var(--jade-soft);
   }
   :global(.practice-complete-icon) {
     display: inline-flex;
@@ -387,25 +425,25 @@ const json = JSON.stringify(questions);
     justify-content: center;
     width: 40px;
     height: 40px;
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--sp-3);
     border-radius: 50%;
-    background: var(--c-primary);
+    background: var(--jade);
     color: var(--color-on-primary);
     font-size: 1.25rem;
   }
   :global(.practice-complete-text) {
-    color: var(--c-text-secondary);
+    color: var(--ink-secondary);
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 13px;
     margin: 0;
   }
   .loading-placeholder {
-    color: var(--c-text-secondary);
-    font-size: 0.85rem;
+    color: var(--ink-secondary);
+    font-size: 13px;
   }
   @media (width <= 374px) {
     :global(.practice-choice) {
-      padding-inline: var(--space-md);
+      padding-inline: var(--sp-3);
     }
   }
 </style>

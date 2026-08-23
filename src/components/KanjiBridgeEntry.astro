@@ -1,0 +1,239 @@
+---
+import type { KanjiBridgeEntry } from '../content/loadKanjiBridge';
+
+interface Props {
+  entry: KanjiBridgeEntry;
+}
+
+const { entry } = Astro.props;
+
+const RELATION_LABELS: Record<KanjiBridgeEntry['similarityType'], string> = {
+  'same-meaning': '同じ意味',
+  'partial-overlap': '一部が重なる',
+  'false-friend': '見せかけの同義語',
+};
+
+const REVIEW_STATUS_LABELS: Record<KanjiBridgeEntry['reviewStatus'], string> = {
+  draft: '未レビュー',
+  reviewed: 'レビュー済み',
+  published: '公開済み',
+};
+
+const relationLabel = RELATION_LABELS[entry.similarityType];
+const reviewLabel = REVIEW_STATUS_LABELS[entry.reviewStatus];
+const sourceLabel = entry.source.type === 'generated' ? 'AI生成・未検証' : '学習用データ';
+const provenance = `${sourceLabel}（${reviewLabel}）`;
+const example = entry.examples[0];
+// The kana field is the Japanese on-reading of the bridge headword, NOT a
+// reading of the full Japanese gloss. Many glosses already carry it inline
+// (e.g. 「電話（でんわ）」); appending it again duplicates, and for false
+// friends it would falsely imply the gloss is read that way. Show it as an
+// explicit 「日本語読み」 label only when the gloss does not already include it.
+const glossIncludesKana = entry.japanese.includes(entry.kana);
+---
+
+<li
+  class="kanji-bridge-entry"
+  data-kanji-bridge-entry
+  data-relation={entry.similarityType}
+>
+  <div class="kanji-bridge-entry__head">
+    <h2
+      class="kanji-bridge-entry__headword"
+      lang="zh-Hant"
+      data-script-path-default={entry.traditional}
+      data-script-path-default-status={entry.traditionalStatus}
+      data-script-traditional={entry.traditional}
+      data-script-traditional-status={entry.traditionalStatus}
+      data-script-simplified={entry.simplified}
+      data-script-simplified-status={entry.simplifiedStatus}
+      data-script-annotation-host
+    >
+      {entry.traditional}
+      {
+        entry.traditionalStatus !== 'authored' &&
+          entry.traditionalStatus !== 'verified' && (
+            <span class="script-fallback" lang="ja">この表記は未収録のため、コース標準を表示しています。</span>
+          )
+      }
+    </h2>
+    <p class="kanji-bridge-entry__pinyin" lang="zh-Latn">{entry.pinyin}</p>
+    {
+      !glossIncludesKana && (
+        <p class="kanji-bridge-entry__reading" lang="ja">
+          <span class="kanji-bridge-entry__note-label">日本語読み：</span>
+          {entry.kana}
+        </p>
+      )
+    }
+  </div>
+
+  <dl class="kanji-bridge-entry__meta">
+    <div class="kanji-bridge-entry__meta-row">
+      <dt lang="ja">意味</dt>
+      <dd lang="ja">
+        <span class="kanji-bridge-entry__japanese">{entry.japanese}</span>
+      </dd>
+    </div>
+    <div class="kanji-bridge-entry__meta-row">
+      <dt lang="ja">関係</dt>
+      <dd lang="ja" class="kanji-bridge-entry__relation">{relationLabel}</dd>
+    </div>
+  </dl>
+
+  <p class="kanji-bridge-entry__tone-note" lang="ja">
+    <span class="kanji-bridge-entry__note-label">声調メモ：</span>
+    {entry.toneNote}
+  </p>
+
+  {
+    entry.caution && (
+      <p class="kanji-bridge-entry__caution" lang="ja">
+        <span class="kanji-bridge-entry__note-label">注意：</span>
+        {entry.caution}
+      </p>
+    )
+  }
+
+  <div class="kanji-bridge-entry__example">
+    <p class="kanji-bridge-entry__example-label" lang="ja">例文</p>
+    <p
+      class="kanji-bridge-entry__example-text"
+      lang="zh-Hant"
+      data-script-path-default={example.traditional}
+      data-script-path-default-status={example.traditionalStatus}
+      data-script-traditional={example.traditional}
+      data-script-traditional-status={example.traditionalStatus}
+      data-script-simplified={example.simplified}
+      data-script-simplified-status={example.simplifiedStatus}
+    >{example.traditional}</p>
+    <p class="kanji-bridge-entry__example-pinyin" lang="zh-Latn">{example.pinyin}</p>
+    <p class="kanji-bridge-entry__example-japanese" lang="ja">{example.japanese}</p>
+  </div>
+
+  <p class="kanji-bridge-entry__provenance" lang="ja">{provenance}</p>
+</li>
+
+<style>
+  .kanji-bridge-entry {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--sp-5) 0;
+    border-bottom: 1px solid var(--hairline);
+    overflow-wrap: anywhere;
+    word-break: normal;
+    list-style: none;
+  }
+  .kanji-bridge-entry:last-child {
+    border-bottom: none;
+  }
+  .kanji-bridge-entry__head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+    margin-bottom: var(--sp-4);
+  }
+  .kanji-bridge-entry__headword {
+    font-family: var(--font-serif-zh);
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__pinyin,
+  .kanji-bridge-entry__reading {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+    overflow-wrap: anywhere;
+  }
+  .script-fallback {
+    display: inline-block;
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__meta {
+    margin: 0 0 var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+  .kanji-bridge-entry__meta-row {
+    display: flex;
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+  .kanji-bridge-entry__meta-row dt {
+    flex: 0 0 auto;
+    min-width: 2.5rem;
+    font-weight: 700;
+    color: var(--ink-secondary);
+  }
+  .kanji-bridge-entry__meta-row dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__relation {
+    font-weight: 600;
+  }
+  .kanji-bridge-entry__tone-note,
+  .kanji-bridge-entry__caution {
+    margin: 0 0 var(--sp-3);
+    font-size: 13.5px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__caution {
+    background: var(--coral-soft);
+    border-radius: var(--radius-control);
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .kanji-bridge-entry__note-label {
+    font-weight: 700;
+  }
+  .kanji-bridge-entry__example {
+    margin: var(--sp-4) 0;
+    padding: var(--sp-4);
+    border-left: 3px solid var(--jade);
+    background: var(--jade-soft);
+    border-radius: var(--radius-content);
+    min-width: 0;
+  }
+  .kanji-bridge-entry__example-label {
+    margin: 0 0 var(--sp-2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--jade-ink);
+  }
+  .kanji-bridge-entry__example-text {
+    margin: 0 0 var(--sp-1);
+    font-family: var(--font-serif-zh);
+    font-size: 18px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__example-pinyin {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__example-japanese {
+    margin: var(--sp-1) 0 0;
+    font-size: 13px;
+    color: var(--ink-secondary);
+    overflow-wrap: anywhere;
+  }
+  .kanji-bridge-entry__provenance {
+    margin: var(--sp-2) 0 0;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    overflow-wrap: anywhere;
+  }
+</style>

@@ -1,7 +1,7 @@
 import {
-  BASIC_VOCABULARY_PROGRESS_KEY,
   BasicVocabularyProgressStore,
 } from '../domain/basicVocabularyProgress';
+import { getBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import {
   selectBasicVocabularyCatalogPage,
   type BasicVocabularyCatalogStatusFilter,
@@ -29,7 +29,14 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   }
   const items = parsed;
 
-  const store = new BasicVocabularyProgressStore();
+  /** The coordinator runtime store when present (Issue #293), read-only. When
+   * the account coordinator is not installed, fall back to a direct guest
+   * store so the catalog route keeps its pre-#293 behavior. */
+  const coordinator = getBasicVocabularyProgressCoordinator();
+  const directStore =
+    coordinator === null ? new BasicVocabularyProgressStore() : null;
+  let store: BasicVocabularyProgressStore =
+    coordinator !== null ? coordinator.getStore() : directStore!;
 
   const searchInput = root.querySelector<HTMLInputElement>('[data-catalog-search]');
   const statusSelect = root.querySelector<HTMLSelectElement>('[data-catalog-status]');
@@ -192,7 +199,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
 
   function onStorage(event: StorageEvent): void {
     if (!store.isRelevantStorageArea(event.storageArea)) return;
-    if (event.key !== BASIC_VOCABULARY_PROGRESS_KEY && event.key !== null) return;
+    if (!store.isRelevantStorageKey(event.key)) return;
     if (event.key === null || event.newValue === null) {
       if (store.acceptExternalClear()) {
         render();
@@ -200,6 +207,20 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
       }
     }
     refreshFromStore();
+  }
+
+  // Coordinator bridge (Issue #293): an identity or sync refresh recomputes the
+  // status badges while preserving search/filter/page/focus except a required
+  // page clamp. Browsing never creates a rating/reset/dirty mutation or a
+  // network request, and can never leak another identity's status.
+  let unsubscribeCoordinator: () => void = () => undefined;
+  function onCoordinatorSnapshot(): void {
+    if (coordinator === null) return;
+    store = coordinator.getStore();
+    render();
+  }
+  if (coordinator !== null) {
+    unsubscribeCoordinator = coordinator.subscribe(onCoordinatorSnapshot);
   }
 
   root.addEventListener('click', onClick);
@@ -211,6 +232,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   render();
 
   const cleanup = (): void => {
+    unsubscribeCoordinator();
     root.removeEventListener('click', onClick);
     searchInput?.removeEventListener('input', handleSearchInput);
     statusSelect?.removeEventListener('change', handleStatusChange);

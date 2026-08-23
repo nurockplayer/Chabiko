@@ -1,0 +1,159 @@
+---
+import type { BasicVocabularyDetailItem } from '../../content/basicVocabularyDetail';
+
+export interface Props {
+  item: BasicVocabularyDetailItem | null;
+}
+
+const { item } = Astro.props;
+
+const POS_JA: Record<string, string> = {
+  noun: '名詞',
+  verb: '動詞',
+  adjective: '形容詞',
+  adverb: '副詞',
+};
+---
+
+<nav class="basic-vocabulary-detail-back">
+  <a href="/vocabulary/basic/">単語学習に戻る</a>
+</nav>
+
+{item === null ? (
+  <div class="basic-vocabulary-detail-state">
+    <p class="basic-vocabulary-detail-state-text">単語が見つかりませんでした。</p>
+  </div>
+) : (
+  <article class="basic-vocabulary-detail">
+    <h1 class="basic-vocabulary-detail-simplified" lang="zh-Hans">
+      {item.simplified}
+    </h1>
+    {item.traditional !== undefined && item.traditional !== item.simplified && (
+      <p class="basic-vocabulary-detail-traditional" lang="zh-Hant">
+        {item.traditional}
+      </p>
+    )}
+    {item.pinyin !== undefined && (
+      <p class="basic-vocabulary-detail-pinyin" lang="zh-Latn">
+        {item.pinyin}
+      </p>
+    )}
+    {item.japanese !== undefined && (
+      <p class="basic-vocabulary-detail-japanese" lang="ja">
+        {item.japanese}
+      </p>
+    )}
+    <p class="basic-vocabulary-detail-pos">{POS_JA[item.partOfSpeech]}</p>
+
+    {item.example !== undefined ? (
+      <section class="basic-vocabulary-detail-example">
+        <h2 class="basic-vocabulary-detail-example-title">例文</h2>
+        <p class="basic-vocabulary-detail-example-sentence" lang="zh-Hans">
+          {item.example}
+        </p>
+      </section>
+    ) : (
+      <p class="basic-vocabulary-detail-unavailable">例文はまだありません。</p>
+    )}
+  </article>
+)}
+
+<style>
+  .basic-vocabulary-detail-back {
+    margin: 0 0 var(--sp-6);
+  }
+
+  .basic-vocabulary-detail-back a {
+    display: inline-block;
+    min-height: 2.75rem;
+    padding: var(--sp-2) 0;
+    color: var(--jade-ink);
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-detail {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
+    padding: clamp(1rem, 5vw, 2rem);
+  }
+
+  .basic-vocabulary-detail-simplified {
+    max-width: 100%;
+    margin: 0;
+    font-family: var(--font-serif-zh);
+    color: var(--ink);
+    font-size: clamp(2rem, 12vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-detail-pinyin {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: clamp(1.125rem, 5vw, 1.35rem);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-detail-japanese {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-detail-traditional,
+  .basic-vocabulary-detail-pos {
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-detail-example {
+    width: 100%;
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--hairline);
+  }
+
+  .basic-vocabulary-detail-example-title {
+    margin: 0 0 var(--sp-1);
+    color: var(--ink-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .basic-vocabulary-detail-example-sentence {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(1.125rem, 5vw, 1.35rem);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-detail-unavailable,
+  .basic-vocabulary-detail-state-text {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+
+  .basic-vocabulary-detail-state {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--paper-deep);
+    padding: var(--sp-6);
+  }
+</style>

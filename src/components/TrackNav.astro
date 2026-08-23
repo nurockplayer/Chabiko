@@ -1,0 +1,102 @@
+---
+/**
+ * Track-local navigation (#366 contextual-wayfinding contract).
+ *
+ * Exposes the real sibling modes inside one learning track (for example the
+ * 先生厳選単語 modes 学ぶ / 単語一覧 / テスト). The current mode renders as a
+ * non-link `<span aria-current="page">` with a bold weight, so the current
+ * location is identifiable without colour alone and is not a focusable link;
+ * sibling modes are native anchors with >=44px targets. Long Japanese labels
+ * wrap safely.
+ *
+ * Pages with no real sibling destination should omit local navigation entirely.
+ */
+export interface TrackNavItem {
+  label: string;
+  href: string;
+  /** True for the current mode (rendered as the current indicator). */
+  current?: boolean;
+}
+
+export interface Props {
+  items: TrackNavItem[];
+  /** Accessible name for the track-local navigation landmark. */
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<nav class="track-nav" aria-label={label}>
+  <ul class="track-nav__list">
+    {items.map((item) => (
+      <li class="track-nav__item">
+        {item.current === true ? (
+          <span class="track-nav__current" aria-current="page">
+            {item.label}
+          </span>
+        ) : (
+          <a class="track-nav__link" href={item.href}>
+            {item.label}
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .track-nav {
+    margin: 0 0 var(--sp-6);
+    border-bottom: 1px solid var(--hairline);
+    min-width: 0;
+  }
+  .track-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--sp-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+  .track-nav__item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .track-nav__link,
+  .track-nav__current {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-inline: var(--sp-3);
+    position: relative;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+  .track-nav__link {
+    color: var(--ink-secondary);
+    font-weight: 600;
+  }
+  .track-nav__link:hover {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  /* Current mode: bold + aria-current + 2px jade underline. The hairline row
+   * plus the active underline reads as a native in-track switcher, not a
+   * global tab bar; identifiability does not rely on colour alone. */
+  .track-nav__current {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .track-nav__current::after {
+    content: '';
+    position: absolute;
+    left: var(--sp-3);
+    right: var(--sp-3);
+    bottom: 0;
+    height: 2px;
+    background: var(--jade);
+  }
+</style>
