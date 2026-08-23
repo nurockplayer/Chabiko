@@ -171,6 +171,21 @@ describe('T2 and T3 coverage', () => {
     expect(classification.runVisual).toBe(true);
     expect(classification.runA11y).toBe(true);
   });
+
+  it.each([
+    'data/v2-reference/lesson-001.json',
+    'public/_headers',
+    'public/assets/v2-reference/night-market-order-reference.webp',
+  ])('a V2 reference contract change at %s runs every full gate', (file) => {
+    const classification = classifyFiles([file]);
+
+    expect(classification.tier).toBe('t3');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+    expect(classification.runContent).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
+  });
 });
 
 describe('#347: learner-visible UI changes escalate to the full gate', () => {
@@ -359,6 +374,37 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       const emitted = readFileSync(outputPath, 'utf8');
       expect(emitted).toContain('run_visual=false');
       expect(emitted).toContain('run_a11y=false');
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('V2 metadata, hosting headers, and scene assets emit every full-gate flag', () => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    writeFile(repo, 'data/v2-reference/lesson-001.json', '{}\n');
+    writeFile(repo, 'public/_headers', '/v2-reference/data/lesson-001-answer.json\n');
+    writeFile(
+      repo,
+      'public/assets/v2-reference/night-market-order-reference.webp',
+      'fixture\n',
+    );
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t3');
+      expect(stdout).toContain('run_full_vitest=true');
+      expect(stdout).toContain('run_build=true');
+      expect(stdout).toContain('run_content=true');
+      expect(stdout).toContain('run_visual=true');
+      expect(stdout).toContain('run_a11y=true');
+      const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('run_full_vitest=true');
+      expect(emitted).toContain('run_build=true');
+      expect(emitted).toContain('run_content=true');
+      expect(emitted).toContain('run_visual=true');
+      expect(emitted).toContain('run_a11y=true');
     } finally {
       rmSync(outputPath, { force: true });
     }
