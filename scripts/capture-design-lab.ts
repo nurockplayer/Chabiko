@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
-import { chromium, type Frame, type Page } from '@playwright/test';
+import { chromium, type Frame, type Locator, type Page } from '@playwright/test';
 
 export const GRAMMARS = ['apple', 'airbnb', 'notion', 'linear', 'duolingo'] as const;
 export const VIEWS = ['home', 'vocabulary', 'lesson', 'travel'] as const;
@@ -571,6 +571,185 @@ async function captureIndividual(
   return captureStableScreenshot(page, outputPath, `${entry.grammar}-${entry.view}`);
 }
 
+type ComparisonLinkStyle = {
+  backgroundColor: string;
+  borderBottomColor: string;
+  borderBottomWidth: string;
+  color: string;
+  fontWeight: string;
+  outlineStyle: string;
+  outlineWidth: string;
+  textDecorationLine: string;
+  textDecorationThickness: string;
+  transform: string;
+};
+
+async function comparisonLinkStyle(
+  link: Locator,
+): Promise<ComparisonLinkStyle> {
+  return link.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderBottomColor: style.borderBottomColor,
+      borderBottomWidth: style.borderBottomWidth,
+      color: style.color,
+      fontWeight: style.fontWeight,
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      textDecorationLine: style.textDecorationLine,
+      textDecorationThickness: style.textDecorationThickness,
+      transform: style.transform,
+    };
+  });
+}
+
+function stylesDiffer(
+  before: ComparisonLinkStyle,
+  after: ComparisonLinkStyle,
+  properties: readonly (keyof ComparisonLinkStyle)[],
+): boolean {
+  return properties.some((property) => before[property] !== after[property]);
+}
+
+async function resetComparisonInteractionState(page: Page): Promise<void> {
+  await page.mouse.move(COMPARISON_VIEWPORT.width - 1, COMPARISON_VIEWPORT.height - 1);
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  });
+}
+
+async function validateComparisonToolbar(page: Page, view: View): Promise<void> {
+  const label = `comparison-${view}`;
+  const root = page.locator('[data-design-lab-comparison]');
+  const toolbar = root.locator('[data-comparison-toolbar]');
+  ensure(await toolbar.count() === 1, `${label}: expected one comparison toolbar`);
+
+  const navigation = toolbar.locator('nav');
+  ensure(await navigation.count() === 1, `${label}: comparison toolbar requires one navigation landmark`);
+  ensure(
+    (await navigation.getAttribute('aria-label'))?.trim(),
+    `${label}: comparison toolbar navigation lacks an accessible label`,
+  );
+
+  const links = toolbar.locator('a[data-comparison-view]');
+  ensure(await links.count() === VIEWS.length, `${label}: expected four comparison toolbar links`);
+  const linkViews = await links.evaluateAll((items) => items.map((item) => (
+    (item as HTMLElement).dataset.comparisonView
+  )));
+  ensure(
+    JSON.stringify(linkViews) === JSON.stringify(VIEWS),
+    `${label}: comparison toolbar views are ${linkViews.join(', ') || 'missing'}`,
+  );
+
+  const rootView = await root.getAttribute('data-active-view');
+  const currentByAttribute = toolbar.locator('a[data-comparison-view][aria-current="page"]');
+  ensure(rootView === view, `${label}: comparison root selected ${rootView ?? 'nothing'}`);
+  ensure(await currentByAttribute.count() === 1, `${label}: expected one current comparison view`);
+  ensure(
+    await currentByAttribute.getAttribute('data-comparison-view') === view,
+    `${label}: current comparison link does not match ${view}`,
+  );
+
+  const measurements = await links.evaluateAll((items) => items.map((item) => {
+    const rect = item.getBoundingClientRect();
+    const radii = [
+      getComputedStyle(item).borderTopLeftRadius,
+      getComputedStyle(item).borderTopRightRadius,
+      getComputedStyle(item).borderBottomRightRadius,
+      getComputedStyle(item).borderBottomLeftRadius,
+    ].map((radius) => Number.parseFloat(radius) || 0);
+    return {
+      view: (item as HTMLElement).dataset.comparisonView,
+      width: rect.width,
+      height: rect.height,
+      maximumRadius: Math.max(...radii),
+    };
+  }));
+  const undersized = measurements.filter(({ width, height }) => width < 44 || height < 44);
+  ensure(
+    undersized.length === 0,
+    `${label}: comparison toolbar controls smaller than 44px: ${undersized.map(({ view: itemView, width, height }) => (
+      `${itemView ?? 'unknown'} (${width.toFixed(1)}x${height.toFixed(1)})`
+    )).join(', ')}`,
+  );
+  const pillControls = measurements.filter(({ maximumRadius, height }) => (
+    maximumRadius > 8 || maximumRadius >= height / 3
+  ));
+  ensure(
+    pillControls.length === 0,
+    `${label}: comparison toolbar uses floating-pill geometry: ${pillControls.map(({ view: itemView }) => itemView).join(', ')}`,
+  );
+
+  const currentStyle = await comparisonLinkStyle(currentByAttribute);
+  const nonCurrentStyle = await comparisonLinkStyle(
+    toolbar.locator('a[data-comparison-view]:not([aria-current="page"])').first(),
+  );
+  ensure(
+    stylesDiffer(currentStyle, nonCurrentStyle, [
+      'backgroundColor',
+      'borderBottomColor',
+      'color',
+      'fontWeight',
+      'textDecorationLine',
+      'textDecorationThickness',
+    ]),
+    `${label}: current comparison view lacks visible selected styling`,
+  );
+
+  for (let index = 0; index < VIEWS.length; index += 1) {
+    const link = links.nth(index);
+    await resetComparisonInteractionState(page);
+    const restingStyle = await comparisonLinkStyle(link);
+
+    await link.hover();
+    const hoverStyle = await comparisonLinkStyle(link);
+    ensure(
+      stylesDiffer(restingStyle, hoverStyle, ['backgroundColor', 'borderBottomColor', 'color', 'transform']),
+      `${label}: ${VIEWS[index]} comparison link lacks a visible hover state`,
+    );
+
+    const box = await link.boundingBox();
+    ensure(box, `${label}: ${VIEWS[index]} comparison link is not rendered`);
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    const activeEvidence = await link.evaluate((element) => element.matches(':active'));
+    const activeStyle = await comparisonLinkStyle(link);
+    ensure(activeEvidence, `${label}: ${VIEWS[index]} comparison link did not enter :active`);
+    ensure(
+      stylesDiffer(hoverStyle, activeStyle, ['backgroundColor', 'borderBottomColor', 'color', 'transform']),
+      `${label}: ${VIEWS[index]} comparison link lacks a visible pressed state`,
+    );
+    await page.mouse.move(COMPARISON_VIEWPORT.width - 1, COMPARISON_VIEWPORT.height - 1);
+    await page.mouse.up();
+
+    await link.focus();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    const focusEvidence = await link.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        active: document.activeElement === element,
+        focusVisible: element.matches(':focus-visible'),
+        outlineWidth: Number.parseFloat(style.outlineWidth),
+        outlineStyle: style.outlineStyle,
+        boxShadow: style.boxShadow,
+      };
+    });
+    ensure(
+      focusEvidence.active && focusEvidence.focusVisible,
+      `${label}: ${VIEWS[index]} comparison link lacks keyboard focus evidence`,
+    );
+    ensure(
+      (focusEvidence.outlineStyle !== 'none' && focusEvidence.outlineWidth >= 2)
+        || focusEvidence.boxShadow !== 'none',
+      `${label}: ${VIEWS[index]} comparison link focus-visible state is not visually measurable`,
+    );
+  }
+
+  await resetComparisonInteractionState(page);
+}
+
 async function captureComparison(
   page: Page,
   baseUrl: URL,
@@ -593,6 +772,7 @@ async function captureComparison(
   );
   await waitForLocalAssets(page.mainFrame());
   await stabilizeFrame(page.mainFrame());
+  await validateComparisonToolbar(page, entry.view);
 
   const frameElements = await page.locator('[data-comparison-frame]').all();
   ensure(frameElements.length === GRAMMARS.length, `comparison-${entry.view}: expected five iframe surfaces`);

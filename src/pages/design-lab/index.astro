@@ -18,7 +18,7 @@ const selectedView = views.includes(requestedView as (typeof views)[number]) ? r
   description="Compare all five Chabiko design-lab grammars at one shared learner view"
 >
   <main class="comparison-tool" data-design-lab-comparison data-active-view={selectedView}>
-    <header class="comparison-header">
+    <header class="comparison-header" data-comparison-toolbar>
       <h1>Design Lab comparison</h1>
       <nav aria-label="Shared learner view">
         {
@@ -101,27 +101,48 @@ const selectedView = views.includes(requestedView as (typeof views)[number]) ? r
 
   nav {
     display: flex;
-    gap: 16px;
+    gap: 0;
     padding-right: 4px;
+    border-bottom: 1px solid #cbc7bc;
   }
 
   nav a {
+    min-width: 80px;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border-bottom: 2px solid transparent;
     color: inherit;
+    background: transparent;
     font-size: 13px;
-    text-underline-offset: 4px;
+    text-decoration: none;
+    transition:
+      color 120ms ease,
+      background-color 120ms ease,
+      transform 80ms ease;
+  }
+
+  nav a:hover {
+    color: #050504;
+    background: #e8e4da;
+  }
+
+  nav a:active {
+    color: #fff;
+    background: #3b3933;
+    transform: translateY(1px);
   }
 
   nav a[aria-current='page'] {
+    border-bottom-color: currentColor;
     font-weight: 700;
-    text-decoration-thickness: 2px;
   }
 
   nav a:focus-visible {
     outline: 2px solid currentColor;
-    outline-offset: 2px;
+    outline-offset: -3px;
   }
 
   .comparison-row {
@@ -150,5 +171,11 @@ const selectedView = views.includes(requestedView as (typeof views)[number]) ? r
     height: 844px;
     border: 0;
     background: white;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav a {
+      transition: none;
+    }
   }
 </style>

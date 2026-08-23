@@ -647,6 +647,7 @@ describe('design lab comparison and evidence capture', () => {
   test('canonical capture command writes only its manifest and preserves dirty evidence', async () => {
     const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
     const grammars = ['apple', 'airbnb', 'notion', 'linear', 'duolingo'] as const;
+    let comparisonToolbarDrift = false;
     const server = createServer((request, response) => {
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
       const requestedView = url.searchParams.get('view');
@@ -659,11 +660,30 @@ describe('design lab comparison and evidence capture', () => {
         response.end(`<!doctype html><html><head><style>
           * { box-sizing: border-box; }
           html, body { margin: 0; width: 100%; overflow-x: hidden; }
+          [data-comparison-toolbar] { height: 54px; display: flex; align-items: center; }
+          [data-comparison-toolbar] nav { display: flex; gap: 8px; }
+          [data-comparison-view] {
+            min-width: 72px; min-height: 44px; display: inline-flex; align-items: center;
+            justify-content: center; border-bottom: 2px solid transparent; border-radius: 0;
+            color: #202020; background: transparent; text-decoration: none; font-size: 0;
+          }
+          [data-comparison-view]:hover { color: #000; background: #ebe8df; }
+          [data-comparison-view]:active { color: #fff; background: #3d3a34; transform: translateY(1px); }
+          [data-comparison-view]:focus-visible { outline: 3px solid #1254a6; outline-offset: 2px; }
+          [data-comparison-view][aria-current="page"] { border-bottom-color: #202020; font-weight: 700; }
+          ${comparisonToolbarDrift ? `
+            [data-comparison-view] { min-width: 28px; min-height: 28px; }
+          ` : ''}
           .row { display: flex; gap: 8px; }
           section { width: 390px; }
           iframe { display: block; width: 390px; height: 844px; border: 0; }
         </style></head><body>
           <main data-design-lab-comparison data-active-view="${view}">
+            <header data-comparison-toolbar>
+              <nav aria-label="Shared learner view">
+                ${views.map((candidate) => `<a href="?view=${candidate}" aria-label="${candidate}" data-comparison-view="${candidate}"${candidate === view ? ' aria-current="page"' : ''}>${candidate}</a>`).join('')}
+              </nav>
+            </header>
             <div class="row">${grammars.map((grammar) => `
               <section><iframe data-comparison-frame="${grammar}" src="/design-lab/${grammar}/?view=${view}" width="390" height="844"></iframe></section>
             `).join('')}</div>
@@ -864,8 +884,14 @@ describe('design lab comparison and evidence capture', () => {
       expect(repeatedResult.code, repeatedResult.output).toBe(0);
       expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
       for (const filename of pngFiles) {
-        expect(await readFile(join(evidenceDirectory, filename))).toEqual(firstCapture.get(filename));
+        expect(await readFile(join(evidenceDirectory, filename)), filename).toEqual(firstCapture.get(filename));
       }
+
+      comparisonToolbarDrift = true;
+      const driftedResult = await runCapture();
+
+      expect(driftedResult.code, driftedResult.output).toBe(1);
+      expect(driftedResult.output).toContain('comparison toolbar controls smaller than 44px');
     } finally {
       await new Promise<void>((done) => server.close(() => done()));
       await rm(temporaryRoot, { recursive: true, force: true });
