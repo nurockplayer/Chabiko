@@ -125,6 +125,15 @@ function isBuildCi(file: string): boolean {
   if (file.startsWith('.github/workflows/')) return true;
   if (file.startsWith('scripts/') || file.startsWith('src/scripts/')) return true;
   if (file.startsWith('supabase/')) return true;
+  // The V2 reference JSON and committed scene asset form one provenance,
+  // checksum, dimensions, rights, build, and visual contract. A data/asset-only
+  // edit must run the same fail-closed tests as its loader and UI consumers.
+  if (
+    file.startsWith('data/v2-reference/') ||
+    file.startsWith('public/assets/v2-reference/')
+  ) {
+    return true;
+  }
   // Generated outputs and the Unicode data surface are correctness-enforced by
   // generators + byte-identity drift gates, so they escalate like generator
   // changes rather than authored content.

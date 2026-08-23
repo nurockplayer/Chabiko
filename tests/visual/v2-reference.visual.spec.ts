@@ -144,7 +144,7 @@ async function assertInteractiveContainment(page: Page) {
 
 async function assertWcagAaClean(page: Page, state: string) {
   const results = await new AxeBuilder({ page })
-    .include('[data-v2-screen]')
+    .include('[data-v2-reference-root]')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
   const blocking = results.violations.filter(
@@ -157,6 +157,43 @@ async function assertWcagAaClean(page: Page, state: string) {
       targets: violation.nodes.map((node) => node.target.join(' ')),
     })),
   ).toEqual([]);
+}
+
+function relativeLuminance(hex: string): number {
+  const match = hex.trim().match(/^#([0-9a-f]{6})$/i);
+  if (!match) throw new Error(`expected a six-digit hex color, received '${hex}'`);
+  const channels = [0, 2, 4].map((offset) =>
+    Number.parseInt(match[1].slice(offset, offset + 2), 16) / 255,
+  );
+  const [red, green, blue] = channels.map((channel) =>
+    channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4,
+  );
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  return (
+    (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+    (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+  );
+}
+
+async function assertChromeTextContrast(page: Page) {
+  const colors = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    return {
+      faint: root.getPropertyValue('--v2-ink-faint'),
+      paper: root.getPropertyValue('--v2-paper'),
+      surface: root.getPropertyValue('--v2-surface'),
+    };
+  });
+
+  expect(contrastRatio(colors.faint, colors.paper)).toBeGreaterThanOrEqual(4.5);
+  expect(contrastRatio(colors.faint, colors.surface)).toBeGreaterThanOrEqual(4.5);
 }
 
 async function tabUntil(page: Page, target: Locator, maxTabs = 16) {
@@ -284,6 +321,7 @@ test.describe('/v2-reference/ behavior and answer secrecy', () => {
     await preparePage(page, { width: 390, height: 844 });
 
     await page.goto(`${BASE_URL}/v2-reference/`, { waitUntil: 'load' });
+    await assertChromeTextContrast(page);
     await assertWcagAaClean(page, 'today');
     await page.getByRole('link', { name: '4分で始める' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('我要這個');

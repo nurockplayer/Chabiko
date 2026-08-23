@@ -7,6 +7,7 @@ import { LEARNER_ROUTE_CASES } from './learnerRouteCases';
 import { KANJI_BRIDGE_VISUAL_CASES } from './kanjiBridgeCases';
 import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
+import { V2_REFERENCE_VISUAL_CASES } from './v2ReferenceCases';
 
 const snapshotsDirectory = fileURLToPath(
   new URL('./__screenshots__/', import.meta.url),
@@ -79,11 +80,15 @@ describe('visual regression harness contract', () => {
     const expectedPhrasebook = PHRASEBOOK_VISUAL_CASES.map(
       (phrasebookCase) => phrasebookCase.snapshotName,
     );
+    const expectedV2Reference = V2_REFERENCE_VISUAL_CASES.map(
+      (v2ReferenceCase) => v2ReferenceCase.snapshotName,
+    );
     const expected = [
       ...expectedMatrix,
       ...expectedLearner,
       ...expectedKanji,
       ...expectedPhrasebook,
+      ...expectedV2Reference,
     ].sort();
     const actual = existsSync(snapshotsDirectory)
       ? readdirSync(snapshotsDirectory)
@@ -134,6 +139,18 @@ describe('visual regression harness contract', () => {
       );
       expect(png.readUInt32BE(16)).toBe(phrasebookCase.viewport.width);
       expect(png.readUInt32BE(20)).toBe(phrasebookCase.viewport.height);
+    }
+
+    // V2 reference baselines are viewport-sized mobile captures.
+    for (const v2ReferenceCase of V2_REFERENCE_VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, v2ReferenceCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBe(v2ReferenceCase.viewport.width);
+      expect(png.readUInt32BE(20)).toBe(v2ReferenceCase.viewport.height);
     }
   });
 
