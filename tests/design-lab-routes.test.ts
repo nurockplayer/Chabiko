@@ -2,6 +2,12 @@
 
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
+import {
+  CAPTURE_MANIFEST,
+  COMPARISON_VIEWPORT,
+  EVIDENCE_DIRECTORY,
+  INDIVIDUAL_VIEWPORT,
+} from '../scripts/capture-design-lab';
 import { initDesignLabPrototype } from '../src/client/designLabPrototype';
 import {
   buildDesignLabFixture,
@@ -424,5 +430,41 @@ describe('design lab grammar routes', () => {
 
     expect(source).toContain(`${selector}:hover`);
     expect(source).toContain(`${selector}:active`);
+  });
+});
+
+describe('design lab comparison and evidence capture', () => {
+  const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
+  const expectedManifest = [
+    ...views.flatMap((view) => grammarContracts.map(({ slug }) => `${slug}-${view}.png`)),
+    ...views.map((view) => `comparison-${view}.png`),
+  ];
+
+  test('comparison route embeds every labeled grammar at the selected shared view', () => {
+    const source = readFileSync('src/pages/design-lab/index.astro', 'utf8');
+
+    for (const { slug } of grammarContracts) {
+      expect(source).toContain(`/design-lab/${slug}/`);
+      expect(source).toContain(`${slug}-comparison-label`);
+    }
+    expect(source).toContain('grammars.map(');
+    expect(source).toContain('<iframe');
+    expect(source).toContain('width="390"');
+    expect(source).toContain('height="844"');
+    expect(source).toContain("const views = ['home', 'vocabulary', 'lesson', 'travel']");
+    expect(source).toMatch(/views\.includes\([^)]+\)\s*\?[^:]+:\s*'home'/);
+  });
+
+  test('capture manifest is fixed to 20 mobile views and four comparisons', () => {
+    expect(INDIVIDUAL_VIEWPORT).toEqual({ width: 390, height: 844 });
+    expect(COMPARISON_VIEWPORT.width).toBeGreaterThanOrEqual(1950);
+    expect(COMPARISON_VIEWPORT.height).toBeGreaterThanOrEqual(844);
+    expect(EVIDENCE_DIRECTORY).toBe('docs/design/evidence/design-lab');
+    expect(CAPTURE_MANIFEST.map(({ filename }) => filename)).toEqual(expectedManifest);
+    expect(new Set(CAPTURE_MANIFEST.map(({ filename }) => filename))).toHaveLength(24);
+
+    const source = readFileSync('scripts/capture-design-lab.ts', 'utf8');
+    expect(source).toContain('fullPage: false');
+    expect(source).not.toMatch(/\b(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)\b/);
   });
 });
