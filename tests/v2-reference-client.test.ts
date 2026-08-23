@@ -215,6 +215,28 @@ describe('V2 reference client flow', () => {
     expect(getRoot().querySelector('[data-action="start-retrieval"]')).not.toBeNull();
   });
 
+  it('derives result evidence from the structured result phrase', () => {
+    const bootstrap = {
+      ...BOOTSTRAP,
+      result: { ...BOOTSTRAP.result, phrase: '我想這個' },
+    };
+    mountV2ReferenceFlow(getRoot(), bootstrap, {
+      speak: vi.fn().mockResolvedValue(true),
+      fetchAnswer: vi.fn().mockResolvedValue(ANSWER),
+    });
+
+    click('[data-action="start-learning"]');
+    click('[data-action="start-retrieval"]');
+    click('[data-chunk-id="v2-a91"]');
+    click('[data-chunk-id="v2-b07"]');
+    click('[data-chunk-id="v2-c42"]');
+    click('[data-action="submit-retrieval"]');
+    click('[data-action="view-result"]');
+
+    expect(getRoot().textContent).toContain('「我想這個」を正しい順番で組み立てた');
+    expect(getRoot().textContent).not.toContain('「我要這個」を正しい順番で組み立てた');
+  });
+
   it.each([
     ['lesson identity drifts', { ...ANSWER, lessonId: 'wrong-lesson' }],
     [

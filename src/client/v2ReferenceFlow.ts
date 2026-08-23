@@ -380,8 +380,8 @@ function renderCorrect(
   `;
 }
 
-function buildEvidence(state: V2ReferenceFlowState): string[] {
-  const evidence = ['「我要這個」を正しい順番で組み立てた'];
+function buildEvidence(state: V2ReferenceFlowState, phrase: string): string[] {
+  const evidence = [`「${phrase}」を正しい順番で組み立てた`];
   if (state.answerRevealed) {
     evidence.push('答えを確認したあと、正しい順番に組み立て直した');
   } else if (state.hintUsed) {
@@ -401,7 +401,7 @@ function renderResult(
   bootstrap: V2ReferenceBootstrap,
   state: V2ReferenceFlowState,
 ): string {
-  const evidence = buildEvidence(state)
+  const evidence = buildEvidence(state, bootstrap.result.phrase)
     .map(
       (item) => `
         <li>
