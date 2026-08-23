@@ -23,25 +23,61 @@ and HTTPS origins are rejected:
 DESIGN_LAB_BASE_URL=http://127.0.0.1:4328 node scripts/capture-design-lab.ts
 ```
 
-The command overwrites only the 24 filenames listed below. It does not delete
-or prune this directory, and it blocks requests outside the selected local
-origin.
+The command first validates the rendered routes, then overwrites only the 24
+filenames listed below. It does not delete or prune this directory, and it
+blocks requests outside the selected local origin. Chromium uses fixed locale,
+timezone, color scheme, scale, reduced-motion, and font-rasterization settings.
+Animations, transitions, and carets are disabled only for capture; hover,
+active, and focus production styles remain available. Each file is written
+only after two consecutive screenshots of its rendered frame are byte-identical.
 
 ## Viewports and checks
 
 - Individual captures: 390 x 844, viewport-only (`fullPage: false`).
 - Comparison captures: 2000 x 934, viewport-only, with five complete 390 x 844
   iframe surfaces in one row.
-- Every route waits for DOM content, fonts, and active-view images.
-- Every capture verifies the selected view, broken active-view images, and
-  horizontal overflow, and collects console and page errors.
-- The 2026-08-24 run produced all 24 files with no browser, image, overflow, or
-  external-request errors.
+- The responsive sweep covers widths 320, 375, 390, 430, 768, and 1440 at an
+  844-pixel viewport height: five grammars by four views, or 120 states.
+- Each state verifies exactly one selected tab and visible panel, horizontal
+  overflow, CSS ancestor clipping and center-point overlap, active image
+  integrity, accessible names, and practical mobile targets. Pure inline text
+  links without the primary continuation contract are excluded from the
+  44-pixel target rule.
+- The 20 individual 390 x 844 evidence surfaces and the same 20 surfaces in
+  comparison iframes additionally require every intersecting control to be
+  fully inside the evidence viewport. Natural vertical continuation at other
+  sweep widths is not classified as clipping.
+- At 390 pixels, all 20 states run axe with zero serious or critical findings,
+  verify measurable keyboard `:focus-visible` evidence, and confirm reduced
+  motion leaves no running animations.
+- Five real interaction scenarios verify initial and invalid queries, APG-style
+  tab roving with ArrowLeft/ArrowRight wrap and Home/End, vocabulary reveal and
+  rating, and incorrect/correct lesson status feedback.
+- Every route waits for DOM content, fonts, and active-view images. Console and
+  page errors fail the command, as do requests outside the selected origin.
+- The 2026-08-24 final run passed 5 interaction scenarios, 120 responsive
+  states, 20 axe scans, 20 focus-visible checks, and 20 reduced-motion checks,
+  then produced all 24 files with no browser findings. Airbnb Home retains its
+  photo-led itinerary orientation and fully contained 390 x 844 continuation
+  control.
 
-Task 4 final framing pass: Airbnb Home was revalidated at 320, 375, 390, and
-430 x 844. The `レッスンを続ける` control is fully contained at each width, and
-the final individual and comparison Home captures retain the photo-led
-itinerary orientation.
+## Grayscale structural guard
+
+Home and Lesson individual screenshots are converted in memory to grayscale
+8 x 8 luminance signatures. Pairwise mean absolute luminance distance must be
+at least `0.035`. The final run measured Home `0.1021` and Lesson `0.1044`, both
+for the closest Notion/Duolingo pair.
+
+| Grammar | Home signature | Lesson signature |
+| --- | --- | --- |
+| Apple | `eeeeeeeeeeeeeeeee3e9ee2eeeeeeeeeeeeeeeee972333962253d28322dddddd` | `eeeeeeeeeeeeeeeeeeeeeeee98beeeee35ddaebeeeeeeeeeeeeeeeeedddd22dd` |
+| Airbnb | `ffffffff2121222122542377e8edb8ee292f22ffeb9bdeeeffffffff55555555` | `ffffffff322113225664426a1157244322ffffffeeeeeeeeeeeeeeeeffffffff` |
+| Notion | `ddddddddeeeedeaefffffffffffffffffffffffffffffffffff8efffffffffff` | `ddddddddeeeedeaeffffffffffffffffffffffffffffffffffffffff2f226fff` |
+| Linear | `22222222111111111eeeee111111111111111111151111111111111111111111` | `2222222211111111e11b11111111111111111111111111111111111141111111` |
+| Duolingo | `fffffffff2229f2ffffffffffffffffffd98effff8ffffffffffffffffffffff` | `ffffffffffffafffffffffffdeeeeeeefffffffffebfd99fffffffffffffffff` |
+
+This guard detects accidental structural convergence; it does not replace
+manual inspection of the individual and comparison captures.
 
 ## Fixed manifest
 

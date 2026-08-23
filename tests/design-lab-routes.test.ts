@@ -7,6 +7,7 @@ import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
+import * as designLabCapture from '../scripts/capture-design-lab';
 import {
   CAPTURE_MANIFEST,
   COMPARISON_VIEWPORT,
@@ -558,6 +559,13 @@ describe('design lab comparison and evidence capture', () => {
     expect(source).not.toMatch(/\b(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)\b/);
   });
 
+  test('exports the canonical rendered validation contract and required widths', () => {
+    const captureExports = designLabCapture as Record<string, unknown>;
+
+    expect(captureExports.REQUIRED_WIDTHS).toEqual([320, 375, 390, 430, 768, 1440]);
+    expect(captureExports.validateRenderedDesignLab).toBeTypeOf('function');
+  });
+
   test('capture base URL accepts only a loopback HTTP server', () => {
     expect(validateLocalBaseUrl('http://127.0.0.1:4321').origin).toBe('http://127.0.0.1:4321');
     expect(validateLocalBaseUrl('http://localhost:4321').origin).toBe('http://localhost:4321');
@@ -572,6 +580,8 @@ describe('design lab comparison and evidence capture', () => {
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
       const requestedView = url.searchParams.get('view');
       const view = views.includes(requestedView as (typeof views)[number]) ? requestedView : 'home';
+      const grammar = grammars.find((candidate) => url.pathname.includes(`/design-lab/${candidate}/`))
+        ?? 'apple';
       response.setHeader('content-type', 'text/html; charset=utf-8');
 
       if (url.pathname === '/design-lab/' || url.pathname === '/design-lab') {
@@ -591,14 +601,146 @@ describe('design lab comparison and evidence capture', () => {
         return;
       }
 
-      response.end(`<!doctype html><html><head><style>
+      response.end(`<!doctype html><html lang="ja"><head>
+        <meta charset="utf-8"><title>${grammar} fixture</title><style>
         * { box-sizing: border-box; }
         html, body { margin: 0; width: 100%; overflow-x: hidden; }
+        body { color: #202020; background: #f7f7f5; font-family: sans-serif; }
+        main { min-height: 100vh; padding: 12px; }
+        nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+        button, a, summary { min-width: 44px; min-height: 44px; font: inherit; }
+        button:focus-visible, a:focus-visible, summary:focus-visible {
+          outline: 3px solid #1254a6; outline-offset: 2px;
+        }
+        nav button { border: 1px solid #555; background: #fff; }
+        [aria-selected="true"] { color: #fff; background: #252525; }
+        [data-lab-view] { min-height: 740px; padding: 18px 4px 48px; }
+        .fixture-visual { margin: 20px 0; background: #444; }
+        .fixture-copy { max-width: 28rem; font-size: 1.4rem; font-weight: 700; }
+        .fixture-actions { display: grid; gap: 12px; max-width: 20rem; margin-top: 24px; }
+        .fixture-actions button, .fixture-actions a {
+          display: inline-flex; align-items: center; justify-content: center;
+          padding: 8px 16px; border: 1px solid #333; color: inherit; background: #fff;
+        }
+        [data-grammar="apple"] .fixture-visual {
+          width: 58%; height: 250px; margin: 90px auto 40px; border-radius: 48px;
+        }
+        [data-grammar="apple"] .fixture-copy,
+        [data-grammar="apple"] .fixture-actions { margin-inline: auto; text-align: center; }
+        [data-grammar="airbnb"] .fixture-visual {
+          width: 100%; height: 310px; border-radius: 28px; background: #737373;
+        }
+        [data-grammar="airbnb"] .fixture-copy { font-size: 2rem; }
+        [data-grammar="notion"] { background: #fff; }
+        [data-grammar="notion"] .fixture-visual {
+          width: 76%; height: 180px; border-left: 6px solid #222; background: #e5e5e5;
+        }
+        [data-grammar="notion"] .fixture-copy { border-bottom: 1px solid #555; padding-bottom: 28px; }
+        [data-grammar="linear"] { color: #f1f1f1; background: #111216; }
+        [data-grammar="linear"] nav button,
+        [data-grammar="linear"] .fixture-actions button,
+        [data-grammar="linear"] .fixture-actions a { color: #f1f1f1; background: #202129; }
+        [data-grammar="linear"] .fixture-visual {
+          width: calc(100% - 52px); height: 360px; margin-left: 52px;
+          border: 1px solid #777; background: #292a32;
+        }
+        [data-grammar="duolingo"] { color: #183b2a; background: #f3f8f3; }
+        [data-grammar="duolingo"] .fixture-visual {
+          width: 168px; height: 168px; margin: 70px auto 80px;
+          border: 18px solid #47765e; border-radius: 50%; background: #f3f8f3;
+        }
+        [data-grammar="duolingo"] .fixture-copy,
+        [data-grammar="duolingo"] .fixture-actions { margin-inline: auto; text-align: center; }
+        @media (min-width: 768px) {
+          main { padding-inline: 32px; }
+          [data-lab-view] { max-width: 1120px; margin-inline: auto; }
+        }
       </style></head><body>
-        <main data-design-lab>
-          ${views.map((candidate) => `<span data-lab-nav data-lab-target="${candidate}" aria-selected="${candidate === view}"></span>`).join('')}
-          ${views.map((candidate) => `<section data-lab-view="${candidate}"${candidate === view ? '' : ' hidden'}>${candidate}</section>`).join('')}
+        <main data-design-lab data-grammar="${grammar}">
+          <nav aria-label="学習ビュー" role="tablist">
+            ${views.map((candidate) => `<button type="button" role="tab" id="${grammar}-${candidate}-tab" data-lab-nav data-lab-target="${candidate}" aria-controls="${grammar}-${candidate}" aria-selected="${candidate === view}" tabindex="${candidate === view ? '0' : '-1'}">${candidate}</button>`).join('')}
+          </nav>
+          <section data-lab-view="home" id="${grammar}-home" role="tabpanel" aria-labelledby="${grammar}-home-tab"${view === 'home' ? '' : ' hidden'}>
+            <div class="fixture-visual" aria-hidden="true"></div>
+            <h1 class="fixture-copy">Home learning fixture</h1>
+            <div class="fixture-actions"><a data-lab-continuation href="?view=lesson">Continue lesson</a></div>
+          </section>
+          <section data-lab-view="vocabulary" id="${grammar}-vocabulary" role="tabpanel" aria-labelledby="${grammar}-vocabulary-tab"${view === 'vocabulary' ? '' : ' hidden'}>
+            <div class="fixture-visual" aria-hidden="true"></div>
+            <h1 class="fixture-copy">Vocabulary learning fixture</h1>
+            <div class="fixture-actions">
+              <button type="button" data-lab-reveal aria-expanded="false">Reveal answer</button>
+              <p data-lab-answer hidden>Answer</p>
+              <button type="button" data-lab-rating="again" aria-pressed="false">Again</button>
+              <button type="button" data-lab-rating="known" aria-pressed="false">Known</button>
+            </div>
+          </section>
+          <section data-lab-view="lesson" id="${grammar}-lesson" role="tabpanel" aria-labelledby="${grammar}-lesson-tab"${view === 'lesson' ? '' : ' hidden'}>
+            <div class="fixture-visual" aria-hidden="true"></div>
+            <h1 class="fixture-copy">Lesson learning fixture</h1>
+            <div class="fixture-actions">
+              <button type="button" data-lab-quiz-choice data-lab-correct="true" aria-pressed="false">Correct answer</button>
+              <button type="button" data-lab-quiz-choice data-lab-correct="false" aria-pressed="false">Incorrect answer</button>
+              <p data-lab-quiz-feedback role="status" aria-live="polite"></p>
+            </div>
+          </section>
+          <section data-lab-view="travel" id="${grammar}-travel" role="tabpanel" aria-labelledby="${grammar}-travel-tab"${view === 'travel' ? '' : ' hidden'}>
+            <div class="fixture-visual" aria-hidden="true"></div>
+            <h1 class="fixture-copy">Travel readiness fixture</h1>
+            <div class="fixture-actions"><details><summary>Readiness details</summary><p>Ready</p></details></div>
+          </section>
         </main>
+        <script>
+          const views = ['home', 'vocabulary', 'lesson', 'travel'];
+          const root = document.querySelector('[data-design-lab]');
+          const navigation = [...root.querySelectorAll('[data-lab-nav]')];
+          const panels = [...root.querySelectorAll('[data-lab-view]')];
+          function applyView(requested) {
+            const active = views.includes(requested) ? requested : 'home';
+            panels.forEach((panel) => { panel.hidden = panel.dataset.labView !== active; });
+            navigation.forEach((item) => {
+              const selected = item.dataset.labTarget === active;
+              item.setAttribute('aria-selected', String(selected));
+              item.tabIndex = selected ? 0 : -1;
+            });
+          }
+          navigation.forEach((item, index) => {
+            item.addEventListener('click', () => applyView(item.dataset.labTarget));
+            item.addEventListener('keydown', (event) => {
+              let targetIndex;
+              if (event.key === 'ArrowRight') targetIndex = (index + 1) % navigation.length;
+              else if (event.key === 'ArrowLeft') targetIndex = (index - 1 + navigation.length) % navigation.length;
+              else if (event.key === 'Home') targetIndex = 0;
+              else if (event.key === 'End') targetIndex = navigation.length - 1;
+              else return;
+              event.preventDefault();
+              const target = navigation[targetIndex];
+              target.focus();
+              applyView(target.dataset.labTarget);
+            });
+          });
+          root.querySelector('[data-lab-reveal]').addEventListener('click', (event) => {
+            root.querySelector('[data-lab-answer]').hidden = false;
+            event.currentTarget.hidden = true;
+            event.currentTarget.setAttribute('aria-expanded', 'true');
+          });
+          root.querySelectorAll('[data-lab-rating]').forEach((rating) => {
+            rating.addEventListener('click', () => {
+              root.dataset.labRating = rating.dataset.labRating;
+              root.querySelectorAll('[data-lab-rating]').forEach((option) => {
+                option.setAttribute('aria-pressed', String(option === rating));
+                option.disabled = true;
+              });
+            });
+          });
+          root.querySelectorAll('[data-lab-quiz-choice]').forEach((choice) => {
+            choice.addEventListener('click', () => {
+              root.querySelector('[data-lab-quiz-feedback]').textContent =
+                choice.dataset.labCorrect === 'true' ? '正解です' : 'もう一度試してみましょう';
+            });
+          });
+          applyView(new URLSearchParams(location.search).get('view'));
+        </script>
       </body></html>`);
     });
     const temporaryRoot = await mkdtemp(join(tmpdir(), 'chabiko-design-lab-capture-'));
@@ -615,7 +757,7 @@ describe('design lab comparison and evidence capture', () => {
       await mkdir(evidenceDirectory, { recursive: true });
       await writeFile(sentinel, 'preserve me');
 
-      const result = await new Promise<{ code: number | null; output: string }>((done, reject) => {
+      const runCapture = () => new Promise<{ code: number | null; output: string }>((done, reject) => {
         const child = spawn(process.execPath, [resolve('scripts/capture-design-lab.ts')], {
           cwd: temporaryRoot,
           env: {
@@ -631,14 +773,31 @@ describe('design lab comparison and evidence capture', () => {
         child.once('close', (code) => done({ code, output }));
       });
 
+      const result = await runCapture();
+
       expect(result.code, result.output).toBe(0);
+      expect(result.output).toContain('validated rendered Design Lab contract');
+      expect(result.output).toContain('120 responsive states');
+      expect(result.output).toContain('20 axe scans');
       expect(result.output).toContain('captured 24 Design Lab evidence files without browser errors');
       expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
       const pngFiles = (await readdir(evidenceDirectory)).filter((file) => file.endsWith('.png')).sort();
       expect(pngFiles).toEqual(CAPTURE_MANIFEST.map(({ filename }) => filename).sort());
+      const firstCapture = new Map(await Promise.all(pngFiles.map(async (filename) => [
+        filename,
+        await readFile(join(evidenceDirectory, filename)),
+      ] as const)));
+
+      const repeatedResult = await runCapture();
+
+      expect(repeatedResult.code, repeatedResult.output).toBe(0);
+      expect(await readFile(sentinel, 'utf8')).toBe('preserve me');
+      for (const filename of pngFiles) {
+        expect(await readFile(join(evidenceDirectory, filename))).toEqual(firstCapture.get(filename));
+      }
     } finally {
       await new Promise<void>((done) => server.close(() => done()));
       await rm(temporaryRoot, { recursive: true, force: true });
     }
-  }, 30_000);
+  }, 45_000);
 });
