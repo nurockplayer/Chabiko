@@ -954,12 +954,24 @@ describe('design lab comparison and evidence capture', () => {
     const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
     const grammars = ['apple', 'airbnb', 'notion', 'linear', 'duolingo'] as const;
     let comparisonToolbarDrift = false;
+    let forceComparisonFrameScroll = false;
+    const comparisonFrameScrollReports: number[] = [];
     const server = createServer((request, response) => {
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
       const requestedView = url.searchParams.get('view');
       const view = views.includes(requestedView as (typeof views)[number]) ? requestedView : 'home';
       const grammar = grammars.find((candidate) => url.pathname.includes(`/design-lab/${candidate}/`))
         ?? 'apple';
+
+      if (url.pathname === '/design-lab/capture-scroll-report') {
+        const scrollY = Number(url.searchParams.get('y'));
+        if (Number.isFinite(scrollY) && scrollY > 0) comparisonFrameScrollReports.push(scrollY);
+        response.statusCode = 204;
+        response.end();
+        return;
+      }
+
+      const embeddedForCapture = url.searchParams.get('capture-test-embedded') === 'true';
       response.setHeader('content-type', 'text/html; charset=utf-8');
 
       if (url.pathname === '/design-lab/' || url.pathname === '/design-lab') {
@@ -991,7 +1003,7 @@ describe('design lab comparison and evidence capture', () => {
               </nav>
             </header>
             <div class="row">${grammars.map((grammar) => `
-              <section><iframe data-comparison-frame="${grammar}" src="/design-lab/${grammar}/?view=${view}" width="390" height="844"></iframe></section>
+              <section><iframe data-comparison-frame="${grammar}" src="/design-lab/${grammar}/?view=${view}&capture-test-embedded=true" width="390" height="844"></iframe></section>
             `).join('')}</div>
           </main>
         </body></html>`);
@@ -1006,6 +1018,10 @@ describe('design lab comparison and evidence capture', () => {
         main { min-height: 100vh; padding: 12px; }
         nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
         button, a, summary { min-width: 44px; min-height: 44px; font: inherit; }
+        .capture-scroll-target {
+          position: absolute; top: 3200px; left: 12px; display: inline-flex;
+          width: 44px; height: 44px; align-items: center; justify-content: center;
+        }
         button:focus-visible, a:focus-visible, summary:focus-visible {
           outline: 3px solid #1254a6; outline-offset: 2px;
         }
@@ -1053,6 +1069,9 @@ describe('design lab comparison and evidence capture', () => {
           [data-lab-view] { max-width: 1120px; margin-inline: auto; }
         }
       </style></head><body>
+        ${embeddedForCapture ? `
+          <a class="capture-scroll-target" href="#capture-scroll-end" aria-label="Embedded capture focus target">Target</a>
+        ` : ''}
         <main data-design-lab data-grammar="${grammar}">
           <nav aria-label="学習ビュー" role="tablist">
             ${views.map((candidate) => `<button type="button" role="tab" id="${grammar}-${candidate}-tab" data-lab-nav data-lab-target="${candidate}" aria-controls="${grammar}-${candidate}" aria-selected="${candidate === view}" tabindex="${candidate === view ? '0' : '-1'}">${candidate}</button>`).join('')}
@@ -1086,8 +1105,17 @@ describe('design lab comparison and evidence capture', () => {
             <h1 class="fixture-copy">Travel readiness fixture</h1>
             <div class="fixture-actions"><details><summary>Readiness details</summary><p>Ready</p></details></div>
           </section>
+          <span id="capture-scroll-end"></span>
         </main>
         <script>
+          ${embeddedForCapture ? `
+            addEventListener('scroll', () => {
+              if (scrollY > 0) {
+                fetch('/design-lab/capture-scroll-report?y=' + scrollY, { keepalive: true });
+              }
+            });
+            ${forceComparisonFrameScroll ? `requestAnimationFrame(() => scrollTo(0, 640));` : ''}
+          ` : ''}
           const views = ['home', 'vocabulary', 'lesson', 'travel'];
           const root = document.querySelector('[data-design-lab]');
           const navigation = [...root.querySelectorAll('[data-lab-nav]')];
@@ -1182,6 +1210,7 @@ describe('design lab comparison and evidence capture', () => {
       expect(result.output).toContain('120 responsive states');
       expect(result.output).toContain('20 axe scans');
       expect(result.output).toContain('captured 24 Design Lab evidence files without browser errors');
+      expect(comparisonFrameScrollReports).toEqual([]);
       const pngFiles = (await readdir(evidenceDirectory)).filter((file) => file.endsWith('.png')).sort();
       expect(pngFiles).toEqual(CAPTURE_MANIFEST.map(({ filename }) => filename).sort());
       const firstCapture = new Map(await Promise.all([
@@ -1233,6 +1262,16 @@ describe('design lab comparison and evidence capture', () => {
       expect(lateFailureResult.code, lateFailureResult.output).toBe(1);
       expect(lateFailureResult.output).toContain('test failpoint after-original-backup');
       expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforeLateFailure);
+
+      forceComparisonFrameScroll = true;
+      const beforeScrolledFailure = await snapshotFileBytes(evidenceDirectory);
+      const scrolledResult = await runCapture();
+
+      expect(scrolledResult.code, scrolledResult.output).toBe(1);
+      expect(scrolledResult.output).toContain('iframe scroll position');
+      expect(await snapshotFileBytes(evidenceDirectory)).toEqual(beforeScrolledFailure);
+      forceComparisonFrameScroll = false;
+      comparisonFrameScrollReports.length = 0;
 
       comparisonToolbarDrift = true;
       const beforeRenderedFailure = await snapshotFileBytes(evidenceDirectory);

@@ -1140,8 +1140,13 @@ async function validateComparisonToolbar(page: Page, view: View): Promise<void> 
     await page.mouse.up();
 
     await link.focus();
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Shift+Tab');
+    if (index === VIEWS.length - 1) {
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+    } else {
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Shift+Tab');
+    }
     const focusEvidence = await link.evaluate((element) => {
       const style = getComputedStyle(element);
       return {
@@ -1192,6 +1197,7 @@ async function captureComparison(
 
   const frameElements = await page.locator('[data-comparison-frame]').all();
   ensure(frameElements.length === GRAMMARS.length, `comparison-${entry.view}: expected five iframe surfaces`);
+  const embeddedFrames: Array<{ grammar: Grammar; frame: Frame }> = [];
   for (const [index, frameElement] of frameElements.entries()) {
     const box = await frameElement.boundingBox();
     ensure(box?.width === 390 && box.height === 844, `comparison-${entry.view}: iframe ${index + 1} is not 390x844`);
@@ -1205,6 +1211,7 @@ async function captureComparison(
     const frameHandle = await frameElement.elementHandle();
     const frame = await frameHandle?.contentFrame();
     ensure(frame, `comparison-${entry.view}: iframe ${index + 1} did not load`);
+    embeddedFrames.push({ grammar: GRAMMARS[index], frame });
     await stabilizeFrame(frame);
     await validatePrototypeFrame(frame, entry.view, `comparison-${entry.view}/${GRAMMARS[index]}`, 390);
   }
@@ -1213,6 +1220,14 @@ async function captureComparison(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
   ensure(!comparisonOverflow, `comparison-${entry.view}: comparison tool overflows its viewport`);
+  for (const { grammar, frame } of embeddedFrames) {
+    const position = await frame.evaluate(() => ({ scrollX, scrollY }));
+    ensure(
+      position.scrollX === 0 && position.scrollY === 0,
+      `comparison-${entry.view}: ${grammar} iframe scroll position is `
+        + `${position.scrollX},${position.scrollY}; expected 0,0 before screenshot`,
+    );
+  }
   await captureStableScreenshot(page, outputPath, `comparison-${entry.view}`);
 }
 
