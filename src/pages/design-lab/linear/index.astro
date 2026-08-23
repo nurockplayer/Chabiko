@@ -1,0 +1,21 @@
+---
+import DesignLabLayout from '../../../layouts/DesignLabLayout.astro';
+import { buildDesignLabFixture } from '../../../content/designLabFixture';
+import LinearPrototype from '../../../components/design-lab/LinearPrototype.astro';
+
+const fixture = buildDesignLabFixture();
+---
+
+<DesignLabLayout
+  title="Linear grammar"
+  description="Chabikoの学習内容を高密度な操作画面で比較するデザインラボ"
+>
+  <LinearPrototype fixture={fixture} />
+</DesignLabLayout>
+
+<script>
+  import { initDesignLabPrototype } from '../../../client/designLabPrototype';
+
+  const root = document.querySelector<HTMLElement>('[data-design-lab]');
+  if (root) initDesignLabPrototype(root);
+</script>

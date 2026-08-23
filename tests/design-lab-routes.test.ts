@@ -280,3 +280,149 @@ describe('design lab controller', () => {
     );
   });
 });
+
+const grammarContracts = [
+  {
+    slug: 'apple',
+    componentName: 'ApplePrototype',
+    componentFile: 'src/components/design-lab/ApplePrototype.astro',
+    routeFile: 'src/pages/design-lab/apple/index.astro',
+  },
+  {
+    slug: 'airbnb',
+    componentName: 'AirbnbPrototype',
+    componentFile: 'src/components/design-lab/AirbnbPrototype.astro',
+    routeFile: 'src/pages/design-lab/airbnb/index.astro',
+  },
+  {
+    slug: 'notion',
+    componentName: 'NotionPrototype',
+    componentFile: 'src/components/design-lab/NotionPrototype.astro',
+    routeFile: 'src/pages/design-lab/notion/index.astro',
+  },
+  {
+    slug: 'linear',
+    componentName: 'LinearPrototype',
+    componentFile: 'src/components/design-lab/LinearPrototype.astro',
+    routeFile: 'src/pages/design-lab/linear/index.astro',
+  },
+  {
+    slug: 'duolingo',
+    componentName: 'DuolingoPrototype',
+    componentFile: 'src/components/design-lab/DuolingoPrototype.astro',
+    routeFile: 'src/pages/design-lab/duolingo/index.astro',
+  },
+] as const;
+
+describe('design lab grammar routes', () => {
+  test.each(grammarContracts)('$slug route wires the isolated layout, canonical fixture, grammar, and controller', ({ componentName, routeFile }) => {
+    const route = readFileSync(routeFile, 'utf8');
+
+    expect(route).toContain("import DesignLabLayout from '../../../layouts/DesignLabLayout.astro'");
+    expect(route).toContain("import { buildDesignLabFixture } from '../../../content/designLabFixture'");
+    expect(route).toContain(`import ${componentName} from '../../../components/design-lab/${componentName}.astro'`);
+    expect(route).toContain('const fixture = buildDesignLabFixture()');
+    expect(route).toContain('<DesignLabLayout');
+    expect(route).toContain(`<${componentName} fixture={fixture} />`);
+    expect(route).toContain("import { initDesignLabPrototype } from '../../../client/designLabPrototype'");
+    expect(route).toContain("document.querySelector<HTMLElement>('[data-design-lab]')");
+    expect(route).toContain('initDesignLabPrototype(root)');
+    expect(route).not.toMatch(/(?:local|session)Storage/);
+  });
+
+  test.each(grammarContracts)('$slug grammar exposes all shared views and interaction attributes', ({ componentFile }) => {
+    const source = readFileSync(componentFile, 'utf8');
+
+    expect(source).toContain('data-design-lab');
+    for (const view of ['home', 'vocabulary', 'lesson', 'travel']) {
+      expect(source).toContain(`data-lab-view="${view}"`);
+      expect(source).toContain(`data-lab-target="${view}"`);
+      expect(source.match(new RegExp(`data-lab-target="${view}"`, 'g')) ?? []).toHaveLength(1);
+    }
+    for (const attribute of [
+      'data-lab-nav',
+      'aria-selected',
+      'data-lab-continuation',
+      'data-lab-reveal',
+      'data-lab-answer',
+      'data-lab-rating="again"',
+      'data-lab-rating="known"',
+      'data-lab-quiz-choice',
+      'data-lab-correct="true"',
+      'data-lab-quiz-feedback',
+    ]) {
+      expect(source).toContain(attribute);
+    }
+    const tabPanels = source.match(/<section\b(?=[^>]*\brole="tabpanel")[^>]*>/gs) ?? [];
+    expect(tabPanels).toHaveLength(4);
+    for (const panel of tabPanels) {
+      expect(panel).toMatch(/aria-(?:label|labelledby)=/);
+    }
+    expect(source).toContain('type="button"');
+    expect(source).toMatch(/data-lab-continuation\s+href="\?view=lesson"/);
+  });
+
+  test.each(grammarContracts)('$slug grammar renders the complete shared fixture and prototype imagery', ({ componentFile }) => {
+    const source = readFileSync(componentFile, 'utf8');
+
+    for (const fixtureReference of [
+      'fixture.pathLabels',
+      'fixture.vocabulary.traditional',
+      'fixture.vocabulary.simplified',
+      'fixture.vocabulary.pinyin',
+      'fixture.vocabulary.japanese',
+      'fixture.vocabulary.kana',
+      'fixture.vocabulary.category',
+      'fixture.lesson.hookJa',
+      'fixture.lesson.canDoJa',
+      'fixture.lesson.learnerOutcomeJa',
+      'fixture.lesson.coreSentence',
+      'fixture.lesson.level',
+      'fixture.lesson.travelScenario',
+      'fixture.lesson.chunks',
+      'fixture.lesson.kanjiBridgeNotes',
+      'fixture.lesson.soundFocus',
+      'fixture.lesson.examples',
+      'fixture.lesson.reviewPrompts',
+      'fixture.lesson.travelTask',
+      'fixture.travelTargets',
+    ]) {
+      expect(source).toContain(fixtureReference);
+    }
+    expect(source).toMatch(/fixture\.pathLabels\.map\(/);
+    expect(source).toMatch(/fixture\.lesson\.examples(?:\?|!)?\.map\(/);
+    expect(source).toContain('/assets/design-lab/night-market-ordering.webp');
+    expect(source).toContain('/assets/design-lab/rainy-taiwan-street.webp');
+  });
+
+  test.each(grammarContracts)('$slug prototype source avoids forbidden copy and visual effects', ({ componentFile, routeFile }) => {
+    const source = `${readFileSync(componentFile, 'utf8')}\n${readFileSync(routeFile, 'utf8')}`;
+
+    expect(source).not.toMatch(/[—–]/);
+    expect(source).not.toMatch(/backdrop-filter|\b(?:linear|radial|conic)-gradient\(/);
+  });
+
+  test('Duolingo grammar distinguishes complete, current, and next path steps', () => {
+    const source = readFileSync('src/components/design-lab/DuolingoPrototype.astro', 'utf8');
+
+    for (const state of ['complete', 'current', 'next']) {
+      expect(source).toContain(`path-node-${state}`);
+    }
+    for (const label of ['完了', '現在', '次']) {
+      expect(source).toContain(label);
+    }
+    expect(source).toContain('if (!taiwanPath)');
+    expect(source).not.toMatch(/\?\?\s*['"][^'"]*台湾/);
+  });
+
+  test.each([
+    ['airbnb', 'src/components/design-lab/AirbnbPrototype.astro', '.airbnb-target-card summary'],
+    ['notion', 'src/components/design-lab/NotionPrototype.astro', '.document-disclosure summary'],
+    ['linear', 'src/components/design-lab/LinearPrototype.astro', '.vocabulary-inspector summary'],
+  ])('%s disclosures expose hover and active states', (_slug, componentFile, selector) => {
+    const source = readFileSync(componentFile, 'utf8');
+
+    expect(source).toContain(`${selector}:hover`);
+    expect(source).toContain(`${selector}:active`);
+  });
+});

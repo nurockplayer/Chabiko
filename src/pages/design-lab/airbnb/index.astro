@@ -1,0 +1,21 @@
+---
+import DesignLabLayout from '../../../layouts/DesignLabLayout.astro';
+import { buildDesignLabFixture } from '../../../content/designLabFixture';
+import AirbnbPrototype from '../../../components/design-lab/AirbnbPrototype.astro';
+
+const fixture = buildDesignLabFixture();
+---
+
+<DesignLabLayout
+  title="Airbnb-inspired prototype"
+  description="Airbnb-inspired Chabiko travel-learning prototype"
+>
+  <AirbnbPrototype fixture={fixture} />
+</DesignLabLayout>
+
+<script>
+  import { initDesignLabPrototype } from '../../../client/designLabPrototype';
+
+  const root = document.querySelector<HTMLElement>('[data-design-lab]');
+  if (root) initDesignLabPrototype(root);
+</script>

@@ -1,0 +1,1205 @@
+---
+import type { DesignLabFixture } from '../../content/designLabFixture';
+
+export interface Props {
+  fixture: DesignLabFixture;
+}
+
+const { fixture } = Astro.props;
+---
+
+<main class="apple-lab" data-design-lab>
+  <header class="apple-brand" aria-label="Chabiko Design Lab">
+    <span class="apple-brand__name">Chabiko</span>
+    <span class="apple-brand__context">台湾トラベル</span>
+  </header>
+
+  <section
+    class="apple-view apple-home"
+    data-lab-view="home"
+    id="apple-home"
+    role="tabpanel"
+    aria-labelledby="apple-home-title"
+  >
+    <div class="apple-home__focus">
+      <div class="apple-paths" aria-label="学習パス">
+        {fixture.pathLabels.map((path, index) => (
+          <span class:list={["apple-path", { "apple-path--primary": index === 0 }]} data-path-id={path.id}>
+            {path.labelJa}
+          </span>
+        ))}
+      </div>
+      <div class="apple-home__phrase">
+        <p class="apple-overline">今日使えるひとこと</p>
+        <h1 id="apple-home-title" lang="zh-Hant">{fixture.lesson.coreSentence}</h1>
+        <p class="apple-home__title">{fixture.lesson.titleJa}</p>
+        <p class="apple-home__goal">{fixture.lesson.canDoJa}</p>
+        <div class="apple-continuation">
+          <a
+            class="apple-primary-button"
+            data-lab-continuation
+            href="?view=lesson"
+          >
+            レッスンを続ける
+          </a>
+        </div>
+      </div>
+      <p class="apple-home__hook">{fixture.lesson.hookJa}</p>
+    </div>
+
+    <figure class="apple-cinema apple-home__cinema">
+      <img
+        src="/assets/design-lab/night-market-ordering.webp"
+        alt={`${fixture.lesson.titleJa}の場面`}
+        width="1536"
+        height="1024"
+      />
+      <figcaption>{fixture.lesson.travelTask}</figcaption>
+    </figure>
+  </section>
+
+  <section
+    class="apple-view apple-vocabulary"
+    data-lab-view="vocabulary"
+    id="apple-vocabulary"
+    role="tabpanel"
+    aria-labelledby="apple-vocabulary-title"
+    hidden
+  >
+    <div class="apple-word-stage">
+      <p class="apple-overline">旅先のことば</p>
+      <h1 id="apple-vocabulary-title" lang="zh-Hant">{fixture.vocabulary.traditional}</h1>
+      <p class="apple-word-stage__pinyin">{fixture.vocabulary.pinyin}</p>
+      <button
+        class="apple-primary-button"
+        type="button"
+        data-lab-reveal
+        aria-expanded="false"
+        aria-controls="apple-vocabulary-answer"
+      >
+        意味を見る
+      </button>
+
+      <div class="apple-word-answer" id="apple-vocabulary-answer" data-lab-answer hidden>
+        <p class="apple-word-answer__meaning">{fixture.vocabulary.japanese}</p>
+        <dl class="apple-word-facts">
+          <div>
+            <dt>簡体字</dt>
+            <dd lang="zh-Hans">{fixture.vocabulary.simplified}</dd>
+          </div>
+          <div>
+            <dt>かな</dt>
+            <dd>{fixture.vocabulary.kana}</dd>
+          </div>
+          <div>
+            <dt>カテゴリー</dt>
+            <dd>{fixture.vocabulary.category}</dd>
+          </div>
+        </dl>
+
+        {fixture.vocabulary.toneNote && (
+          <div class="apple-note">
+            <h2>音のポイント</h2>
+            <p>{fixture.vocabulary.toneNote}</p>
+          </div>
+        )}
+        {fixture.vocabulary.caution && (
+          <div class="apple-note">
+            <h2>発音の注意</h2>
+            <p>{fixture.vocabulary.caution}</p>
+          </div>
+        )}
+        {fixture.vocabulary.examples && fixture.vocabulary.examples.length > 0 && (
+          <div class="apple-word-examples">
+            <h2>使い方</h2>
+            {fixture.vocabulary.examples.map((example) => (
+              <article>
+                <p class="apple-word-examples__han" lang="zh-Hant">{example.traditional}</p>
+                <p class="apple-word-examples__pinyin">{example.pinyin}</p>
+                <p>{example.japanese}</p>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <div class="apple-rating" aria-label="自己評価">
+          <p>このことばは思い出せましたか？</p>
+          <div>
+            <button type="button" data-lab-rating="again" aria-pressed="false">もう一度</button>
+            <button type="button" data-lab-rating="known" aria-pressed="false">覚えた</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="apple-view apple-lesson"
+    data-lab-view="lesson"
+    id="apple-lesson"
+    role="tabpanel"
+    aria-labelledby="apple-lesson-title"
+    hidden
+  >
+    <header class="apple-lesson__intro">
+      <p class="apple-overline">{fixture.lesson.level}</p>
+      <h1 id="apple-lesson-title">{fixture.lesson.titleJa}</h1>
+      <p class="apple-lesson__hook">{fixture.lesson.hookJa}</p>
+      <dl class="apple-lesson__outcomes">
+        <div>
+          <dt>できるようになること</dt>
+          <dd>{fixture.lesson.canDoJa}</dd>
+        </div>
+        <div>
+          <dt>学習後のゴール</dt>
+          <dd>{fixture.lesson.learnerOutcomeJa}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <div class="apple-core-sentence">
+      <p>コアフレーズ</p>
+      <h2 lang="zh-Hant">{fixture.lesson.coreSentence}</h2>
+    </div>
+
+    {fixture.lesson.sections && fixture.lesson.sections.length > 0 && (
+      <div class="apple-lesson__sections">
+        {fixture.lesson.sections.map((section) => (
+          <section>
+            <h2>{section.headingJa}</h2>
+            <p>{section.contentJa}</p>
+          </section>
+        ))}
+      </div>
+    )}
+
+    <section class="apple-lesson-block apple-chunks" aria-labelledby="apple-chunks-title">
+      <h2 id="apple-chunks-title">かたまりで理解する</h2>
+      <div class="apple-chunks__list">
+        {fixture.lesson.chunks.map((chunk) => (
+          <article>
+            <p class="apple-chunks__han" lang="zh-Hant">{chunk.chunk}</p>
+            <p class="apple-chunks__meaning">{chunk.meaning}</p>
+            {chunk.notesJa && <p class="apple-chunks__note">{chunk.notesJa}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="apple-lesson-block apple-bridge" aria-labelledby="apple-bridge-title">
+      <h2 id="apple-bridge-title">漢字ブリッジ</h2>
+      {fixture.lesson.kanjiBridgeNotes.map((note) => (
+        <article>
+          <p class="apple-bridge__kanji" lang="zh-Hant">{note.kanji}</p>
+          <div>
+            <p class="apple-bridge__reading">日本語の読み: {note.jpReading}</p>
+            <p>{note.noteJa}</p>
+          </div>
+        </article>
+      ))}
+    </section>
+
+    <section class="apple-lesson-block apple-sound" aria-labelledby="apple-sound-title">
+      <h2 id="apple-sound-title">音に集中する</h2>
+      {fixture.lesson.soundFocus.map((focus) => (
+        <article>
+          <p class="apple-sound__item">{focus.item}</p>
+          <p>{focus.noteJa}</p>
+        </article>
+      ))}
+    </section>
+
+    {fixture.lesson.examples && fixture.lesson.examples.length > 0 && (
+      <section class="apple-lesson-block apple-examples" aria-labelledby="apple-examples-title">
+        <h2 id="apple-examples-title">言い換えてみる</h2>
+        <div>
+          {fixture.lesson.examples.map((example) => (
+            <article>
+              <p class="apple-examples__han" lang="zh-Hant">{example.traditional}</p>
+              <p class="apple-examples__pinyin">{example.pinyin}</p>
+              <p>{example.japanese}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="apple-lesson-block apple-practice" aria-labelledby="apple-practice-title">
+      <h2 id="apple-practice-title">ミニ練習</h2>
+      {fixture.lesson.reviewPrompts.map((prompt) => (
+        <article class="apple-practice__question">
+          <p>{prompt.promptJa}</p>
+          <div class="apple-practice__choices">
+            <button
+              type="button"
+              data-lab-quiz-choice
+              data-lab-correct="true"
+              aria-pressed="false"
+            >
+              {prompt.answerJa}
+            </button>
+            {prompt.distractorsJa?.map((answer) => (
+              <button
+                type="button"
+                data-lab-quiz-choice
+                data-lab-correct="false"
+                aria-pressed="false"
+              >
+                {answer}
+              </button>
+            ))}
+          </div>
+        </article>
+      ))}
+      <p class="apple-practice__feedback" data-lab-quiz-feedback></p>
+    </section>
+
+    <footer class="apple-travel-task">
+      <p>旅先で試す</p>
+      <strong>{fixture.lesson.travelTask}</strong>
+      <span>{fixture.lesson.travelScenario}</span>
+    </footer>
+  </section>
+
+  <section
+    class="apple-view apple-travel"
+    data-lab-view="travel"
+    id="apple-travel"
+    role="tabpanel"
+    aria-labelledby="apple-travel-title"
+    hidden
+  >
+    <header class="apple-travel__intro">
+      <p class="apple-overline">Travel Quest</p>
+      <h1 id="apple-travel-title">旅の場面を、ひとつずつ。</h1>
+      <p>{fixture.pathLabels[0]?.labelJa}</p>
+    </header>
+
+    <figure class="apple-cinema apple-travel__cinema">
+      <img
+        src="/assets/design-lab/rainy-taiwan-street.webp"
+        alt="雨の台湾の街を歩く旅行者"
+        width="1536"
+        height="1024"
+      />
+    </figure>
+
+    <div class="apple-targets">
+      {fixture.travelTargets.map((target) => (
+        <article class="apple-target" data-target-id={target.id}>
+          <div>
+            <h2>{target.labelJa}</h2>
+            <p class="apple-target__goal">{target.goalJa}</p>
+            <ul aria-label={`${target.labelJa}の準備項目`}>
+              {target.evidence.map((evidence) => (
+                <li data-evidence-id={evidence.id}>{evidence.labelJa}</li>
+              ))}
+            </ul>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <figure class="apple-cinema apple-travel__closing">
+      <img
+        src="/assets/design-lab/night-market-ordering.webp"
+        alt={`${fixture.lesson.titleJa}の場面`}
+        width="1536"
+        height="1024"
+        loading="lazy"
+      />
+      <figcaption>{fixture.lesson.travelTask}</figcaption>
+    </figure>
+  </section>
+
+  <nav class="apple-rail" aria-label="学習ビュー" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="home"
+      aria-controls="apple-home"
+      aria-selected="true"
+    >
+      ホーム
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="vocabulary"
+      aria-controls="apple-vocabulary"
+      aria-selected="false"
+    >
+      単語
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="lesson"
+      aria-controls="apple-lesson"
+      aria-selected="false"
+    >
+      レッスン
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="travel"
+      aria-controls="apple-travel"
+      aria-selected="false"
+    >
+      旅クエスト
+    </button>
+  </nav>
+</main>
+
+<style>
+  .apple-lab {
+    --apple-ink: #1d1d1f;
+    --apple-muted: #626268;
+    --apple-surface: #f5f5f7;
+    --apple-panel: #e9e9ed;
+    --apple-accent: #0068d9;
+    --apple-accent-dark: #004f9f;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    color: var(--apple-ink);
+    background: var(--apple-surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .apple-lab :where(h1, h2, p, figure, figcaption, dl, dd, ul) {
+    margin: 0;
+  }
+
+  .apple-lab :where(ul) {
+    padding: 0;
+    list-style: none;
+  }
+
+  .apple-lab :where(button) {
+    min-height: 44px;
+    border: 0;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .apple-lab :where(a, button):focus-visible {
+    outline: 3px solid var(--apple-accent);
+    outline-offset: 3px;
+  }
+
+  .apple-brand {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60px;
+    padding: 0 20px;
+    border-bottom: 1px solid rgb(29 29 31 / 8%);
+    background: var(--apple-surface);
+  }
+
+  .apple-brand__name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .apple-brand__context {
+    color: var(--apple-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .apple-view[hidden] {
+    display: none;
+  }
+
+  .apple-view:not(.apple-home) {
+    width: min(100%, 1120px);
+    min-height: 100dvh;
+    margin-inline: auto;
+    padding: 104px 20px 132px;
+  }
+
+  .apple-overline {
+    color: var(--apple-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .apple-home {
+    display: grid;
+    grid-template-rows: minmax(420px, 1fr) minmax(180px, 26vh);
+    gap: 18px;
+    min-height: 100dvh;
+    padding: 74px 16px 100px;
+  }
+
+  .apple-home__focus {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-width: 0;
+    padding: 10px 4px 0;
+  }
+
+  .apple-paths {
+    display: flex;
+    gap: 14px;
+    max-width: 100%;
+    overflow-x: auto;
+    color: var(--apple-muted);
+    font-size: 0.7rem;
+    scrollbar-width: none;
+  }
+
+  .apple-paths::-webkit-scrollbar {
+    display: none;
+  }
+
+  .apple-path {
+    flex: 0 0 auto;
+    padding-block: 8px;
+    white-space: nowrap;
+  }
+
+  .apple-path--primary {
+    color: var(--apple-ink);
+    font-weight: 700;
+  }
+
+  .apple-home__phrase {
+    align-self: center;
+    text-align: center;
+  }
+
+  .apple-home__phrase h1 {
+    margin-top: 14px;
+    font-size: clamp(3.4rem, 19vw, 6.8rem);
+    font-weight: 650;
+    letter-spacing: -0.075em;
+    line-height: 0.96;
+  }
+
+  .apple-home__title {
+    margin-top: 22px;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-weight: 650;
+    letter-spacing: -0.035em;
+  }
+
+  .apple-home__goal {
+    max-width: 32rem;
+    margin: 8px auto 0;
+    color: var(--apple-muted);
+    font-size: 0.84rem;
+    line-height: 1.7;
+  }
+
+  .apple-home__hook {
+    max-width: 38rem;
+    color: var(--apple-muted);
+    font-size: 0.72rem;
+    line-height: 1.6;
+  }
+
+  .apple-cinema {
+    position: relative;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 28px;
+    background: var(--apple-panel);
+  }
+
+  .apple-cinema img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .apple-cinema figcaption {
+    padding: 11px 14px 13px;
+    color: var(--apple-muted);
+    background: var(--apple-panel);
+    font-size: 0.67rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .apple-home__cinema img {
+    object-position: 48% 58%;
+  }
+
+  .apple-word-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: calc(100dvh - 236px);
+    text-align: center;
+  }
+
+  .apple-word-stage > h1 {
+    margin-top: clamp(72px, 15vh, 150px);
+    font-size: clamp(6rem, 34vw, 13rem);
+    font-weight: 650;
+    letter-spacing: -0.08em;
+    line-height: 0.9;
+  }
+
+  .apple-word-stage__pinyin {
+    margin-top: 24px;
+    color: var(--apple-muted);
+    font-size: clamp(1.15rem, 4vw, 1.6rem);
+    letter-spacing: 0.04em;
+  }
+
+  .apple-primary-button {
+    display: inline-flex;
+    min-width: 140px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 42px;
+    padding: 0 24px;
+    border-radius: 999px;
+    color: #f8f8fa !important;
+    background: var(--apple-accent);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 180ms ease, transform 180ms ease;
+  }
+
+  .apple-primary-button:hover {
+    background: var(--apple-accent-dark);
+  }
+
+  .apple-primary-button:active {
+    transform: scale(0.97);
+  }
+
+  .apple-word-answer {
+    width: min(100%, 700px);
+    margin-top: 72px;
+    padding-top: 46px;
+    border-top: 1px solid rgb(29 29 31 / 14%);
+    text-align: left;
+  }
+
+  .apple-word-answer__meaning {
+    text-align: center;
+    font-size: clamp(2.2rem, 10vw, 4.6rem);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+  }
+
+  .apple-word-facts {
+    display: grid;
+    gap: 0;
+    margin-top: 48px;
+    border-top: 1px solid rgb(29 29 31 / 13%);
+  }
+
+  .apple-word-facts > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 56px;
+    padding: 12px 2px;
+    border-bottom: 1px solid rgb(29 29 31 / 13%);
+  }
+
+  .apple-word-facts dt {
+    color: var(--apple-muted);
+    font-size: 0.76rem;
+  }
+
+  .apple-word-facts dd {
+    font-weight: 650;
+  }
+
+  .apple-note,
+  .apple-word-examples,
+  .apple-rating {
+    margin-top: 54px;
+  }
+
+  .apple-note h2,
+  .apple-word-examples h2 {
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .apple-note p {
+    margin-top: 12px;
+    color: var(--apple-muted);
+    line-height: 1.85;
+  }
+
+  .apple-word-examples article {
+    margin-top: 20px;
+    padding-block: 20px;
+    border-top: 1px solid rgb(29 29 31 / 12%);
+  }
+
+  .apple-word-examples__han {
+    font-size: 1.5rem;
+    font-weight: 650;
+  }
+
+  .apple-word-examples__pinyin {
+    margin-top: 7px !important;
+    color: var(--apple-accent);
+  }
+
+  .apple-word-examples article > p:last-child {
+    margin-top: 7px;
+    color: var(--apple-muted);
+  }
+
+  .apple-rating {
+    padding: 24px;
+    border-radius: 20px;
+    background: var(--apple-panel);
+    text-align: center;
+  }
+
+  .apple-rating > p {
+    color: var(--apple-muted);
+    font-size: 0.82rem;
+  }
+
+  .apple-rating > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .apple-rating button,
+  .apple-practice__choices button {
+    padding: 10px 16px;
+    border: 1px solid rgb(29 29 31 / 14%);
+    border-radius: 999px;
+    background: #f3f3f5;
+    font-weight: 650;
+    transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .apple-rating button:hover,
+  .apple-practice__choices button:hover {
+    border-color: var(--apple-accent);
+    background: #e7eef8;
+  }
+
+  .apple-rating button:active,
+  .apple-practice__choices button:active {
+    transform: scale(0.98);
+  }
+
+  .apple-rating button[aria-pressed="true"],
+  .apple-practice__choices button[aria-pressed="true"] {
+    border-color: var(--apple-accent);
+    color: #f8f8fa;
+    background: var(--apple-accent);
+  }
+
+  .apple-rating button:disabled {
+    cursor: default;
+    opacity: 0.78;
+  }
+
+  .apple-lesson__intro,
+  .apple-travel__intro {
+    padding-block: clamp(40px, 9vw, 110px);
+  }
+
+  .apple-lesson__intro h1,
+  .apple-travel__intro h1 {
+    max-width: 14ch;
+    margin-top: 20px;
+    font-size: clamp(2.8rem, 9vw, 6.8rem);
+    font-weight: 650;
+    letter-spacing: -0.065em;
+    line-height: 1.02;
+  }
+
+  .apple-lesson__hook {
+    max-width: 36rem;
+    margin-top: 34px !important;
+    color: var(--apple-muted);
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    line-height: 1.75;
+  }
+
+  .apple-lesson__outcomes {
+    display: grid;
+    gap: 28px;
+    margin-top: 58px;
+  }
+
+  .apple-lesson__outcomes div {
+    max-width: 42rem;
+  }
+
+  .apple-lesson__outcomes dt {
+    color: var(--apple-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .apple-lesson__outcomes dd {
+    margin-top: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+
+  .apple-core-sentence {
+    display: grid;
+    min-height: min(72vh, 700px);
+    place-content: center;
+    padding: 60px 16px;
+    text-align: center;
+  }
+
+  .apple-core-sentence > p {
+    color: var(--apple-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .apple-core-sentence h2 {
+    margin-top: 24px;
+    font-size: clamp(4.2rem, 16vw, 10rem);
+    font-weight: 650;
+    letter-spacing: -0.075em;
+    line-height: 0.94;
+  }
+
+  .apple-lesson__sections,
+  .apple-lesson-block,
+  .apple-travel-task {
+    width: min(100%, 820px);
+    margin-inline: auto;
+    padding-block: clamp(58px, 9vw, 112px);
+  }
+
+  .apple-lesson__sections section + section {
+    margin-top: 44px;
+  }
+
+  .apple-lesson__sections h2,
+  .apple-lesson-block > h2 {
+    font-size: clamp(1.65rem, 4vw, 2.6rem);
+    letter-spacing: -0.04em;
+  }
+
+  .apple-lesson__sections p {
+    max-width: 48rem;
+    margin-top: 18px;
+    color: var(--apple-muted);
+    line-height: 1.9;
+  }
+
+  .apple-chunks__list {
+    display: grid;
+    gap: 34px;
+    margin-top: 48px;
+  }
+
+  .apple-chunks article {
+    padding-bottom: 34px;
+    border-bottom: 1px solid rgb(29 29 31 / 12%);
+  }
+
+  .apple-chunks__han {
+    font-size: clamp(2.7rem, 8vw, 4.8rem);
+    font-weight: 650;
+    letter-spacing: -0.055em;
+  }
+
+  .apple-chunks__meaning {
+    margin-top: 13px !important;
+    font-weight: 650;
+  }
+
+  .apple-chunks__note {
+    margin-top: 11px !important;
+    color: var(--apple-muted);
+    line-height: 1.8;
+  }
+
+  .apple-bridge article,
+  .apple-sound article {
+    display: grid;
+    gap: 24px;
+    margin-top: 44px;
+    padding: 0 0 34px;
+    border-bottom: 1px solid rgb(29 29 31 / 12%);
+  }
+
+  .apple-bridge__kanji {
+    font-size: 5rem;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .apple-bridge__reading,
+  .apple-sound__item {
+    font-weight: 700;
+  }
+
+  .apple-bridge article div p:last-child,
+  .apple-sound article p:last-child {
+    margin-top: 10px;
+    color: var(--apple-muted);
+    line-height: 1.8;
+  }
+
+  .apple-examples > div {
+    display: grid;
+    gap: 28px;
+    margin-top: 44px;
+    border-top: 1px solid rgb(29 29 31 / 12%);
+  }
+
+  .apple-examples article {
+    padding: 28px 0 0;
+  }
+
+  .apple-examples__han {
+    font-size: 2rem;
+    font-weight: 650;
+  }
+
+  .apple-examples__pinyin {
+    margin-top: 10px !important;
+    color: var(--apple-accent-dark);
+  }
+
+  .apple-examples article p:last-child {
+    margin-top: 8px;
+    color: var(--apple-muted);
+  }
+
+  .apple-practice__question {
+    margin-top: 44px;
+  }
+
+  .apple-practice__question > p {
+    font-size: 1.12rem;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .apple-practice__choices {
+    display: grid;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .apple-practice__choices button {
+    min-height: 54px;
+    text-align: left;
+  }
+
+  .apple-practice__feedback {
+    min-height: 1.6em;
+    margin-top: 20px !important;
+    color: var(--apple-accent-dark);
+    font-weight: 700;
+  }
+
+  .apple-travel-task {
+    border-top: 1px solid rgb(29 29 31 / 14%);
+  }
+
+  .apple-travel-task > p,
+  .apple-travel-task > span {
+    color: var(--apple-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .apple-travel-task strong {
+    display: block;
+    max-width: 28ch;
+    margin-block: 14px 18px;
+    font-size: clamp(1.8rem, 5vw, 3.3rem);
+    letter-spacing: -0.045em;
+    line-height: 1.35;
+  }
+
+  .apple-travel__intro > p:last-child {
+    margin-top: 24px;
+    color: var(--apple-muted);
+  }
+
+  .apple-travel__cinema,
+  .apple-travel__closing {
+    height: min(64vh, 680px);
+  }
+
+  .apple-targets {
+    width: min(100%, 920px);
+    margin: clamp(72px, 12vw, 150px) auto;
+  }
+
+  .apple-target {
+    padding-block: 44px;
+    border-bottom: 1px solid rgb(29 29 31 / 13%);
+  }
+
+  .apple-target h2 {
+    font-size: clamp(1.55rem, 4vw, 2.5rem);
+    letter-spacing: -0.04em;
+  }
+
+  .apple-target__goal {
+    max-width: 42rem;
+    margin-top: 14px !important;
+    color: var(--apple-muted);
+    line-height: 1.8;
+  }
+
+  .apple-target ul {
+    display: grid;
+    gap: 0;
+    margin-top: 24px;
+    border-top: 1px solid rgb(29 29 31 / 12%);
+  }
+
+  .apple-target li {
+    padding: 11px 2px;
+    border-bottom: 1px solid rgb(29 29 31 / 12%);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .apple-travel__closing {
+    margin-top: 80px;
+  }
+
+  .apple-rail {
+    position: fixed;
+    z-index: 3;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    padding: 5px max(12px, calc((100% - 660px) / 2)) calc(5px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(29 29 31 / 12%);
+    background: #e4e4e8;
+    box-shadow: 0 -10px 28px rgb(34 40 54 / 10%);
+  }
+
+  .apple-rail button {
+    min-width: 0;
+    min-height: 52px;
+    padding: 6px 4px;
+    border-radius: 17px;
+    background: transparent;
+    color: var(--apple-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .apple-rail button:hover {
+    color: var(--apple-ink);
+    background: rgb(248 248 250 / 64%);
+  }
+
+  .apple-rail button:active {
+    transform: scale(0.96);
+  }
+
+  .apple-rail button[aria-selected="true"] {
+    color: #f8f8fa;
+    background: var(--apple-ink);
+  }
+
+  @media (min-width: 700px) {
+    .apple-brand {
+      min-height: 68px;
+      padding-inline: 32px;
+    }
+
+    .apple-view:not(.apple-home) {
+      padding: 126px 40px 154px;
+    }
+
+    .apple-home {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 34vw);
+      grid-template-rows: 1fr;
+      gap: clamp(20px, 3vw, 48px);
+      padding: 92px 32px 104px;
+    }
+
+    .apple-home__focus {
+      padding: 18px 4vw 18px 2vw;
+    }
+
+    .apple-home__phrase {
+      text-align: left;
+    }
+
+    .apple-home__phrase h1 {
+      font-size: clamp(5.2rem, 10vw, 10.5rem);
+    }
+
+    .apple-home__goal {
+      margin-left: 0;
+    }
+
+    .apple-home__cinema {
+      min-height: calc(100dvh - 196px);
+    }
+
+    .apple-home__cinema img {
+      object-position: 54% center;
+    }
+
+    .apple-word-facts {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .apple-word-facts > div {
+      flex-direction: column;
+      justify-content: center;
+      min-height: 104px;
+    }
+
+    .apple-lesson__outcomes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .apple-chunks__list,
+    .apple-examples > div,
+    .apple-practice__choices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .apple-bridge article,
+    .apple-sound article {
+      grid-template-columns: 112px minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .apple-target {
+      padding-block: 62px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .apple-brand {
+      padding-inline: 14px;
+    }
+
+    .apple-brand__context {
+      font-size: 0.66rem;
+    }
+
+    .apple-home {
+      grid-template-rows: minmax(400px, 1fr) 150px;
+      gap: 12px;
+      padding-inline: 12px;
+    }
+
+    .apple-home__phrase h1 {
+      font-size: 3.2rem;
+    }
+
+    .apple-home__goal {
+      font-size: 0.76rem;
+    }
+
+    .apple-home__hook {
+      font-size: 0.66rem;
+    }
+
+    .apple-cinema {
+      border-radius: 22px;
+    }
+
+    .apple-cinema figcaption {
+      font-size: 0.61rem;
+    }
+
+    .apple-view:not(.apple-home) {
+      padding-inline: 14px;
+    }
+
+    .apple-word-stage > h1 {
+      font-size: 5.2rem;
+    }
+
+    .apple-rating {
+      padding-inline: 16px;
+    }
+
+    .apple-rating button,
+    .apple-practice__choices button {
+      padding-inline: 10px;
+      font-size: 0.78rem;
+    }
+
+    .apple-target li {
+      width: 100%;
+    }
+
+    .apple-rail {
+      bottom: 0;
+      width: 100%;
+      padding-inline: 8px;
+    }
+
+    .apple-rail button {
+      min-height: 48px;
+      font-size: 0.62rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .apple-view:not([hidden]) {
+      animation: apple-enter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes apple-enter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .apple-lab *,
+    .apple-lab *::before,
+    .apple-lab *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+</style>

@@ -1,0 +1,1325 @@
+---
+import type { DesignLabFixture } from '../../content/designLabFixture';
+
+interface Props {
+  fixture: DesignLabFixture;
+}
+
+const { fixture } = Astro.props;
+const taiwanPath = fixture.pathLabels.find((path) => path.id === 'taiwan-travel');
+if (!taiwanPath) throw new Error('Design lab requires the Taiwan travel path');
+const quiz = fixture.lesson.reviewPrompts[0];
+const distractors = quiz?.distractorsJa ?? [];
+---
+
+<main class="duolingo-lab" data-design-lab>
+  <header class="duo-topbar">
+    <div>
+      <p class="duo-brand">Chabiko</p>
+      <p class="duo-course">{taiwanPath.labelJa}</p>
+    </div>
+    <p class="duo-outcome">旅先で使う一言を、ひとつずつ</p>
+  </header>
+
+  <nav class="duo-nav" aria-label="学習ビュー" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="home"
+      aria-controls="duo-home"
+      aria-selected="true"
+    >
+      続き
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="vocabulary"
+      aria-controls="duo-vocabulary"
+      aria-selected="false"
+    >
+      単語
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="lesson"
+      aria-controls="duo-lesson"
+      aria-selected="false"
+    >
+      レッスン
+    </button>
+    <button
+      type="button"
+      role="tab"
+      data-lab-nav
+      data-lab-target="travel"
+      aria-controls="duo-travel"
+      aria-selected="false"
+    >
+      旅の準備
+    </button>
+  </nav>
+
+  <div class="duo-stage">
+    <section
+      id="duo-home"
+      class="lab-view home-view"
+      data-lab-view="home"
+      role="tabpanel"
+      aria-label="ホーム"
+    >
+      <div class="home-intro">
+        <p class="section-label">今日の続き</p>
+        <h1>{fixture.lesson.coreSentence}</h1>
+        <p class="home-pinyin">{fixture.lesson.examples?.[0]?.pinyin}</p>
+        <p class="home-goal">{fixture.lesson.canDoJa}</p>
+        <div class="continuation-action">
+          <a
+            class="primary-action"
+            data-lab-continuation
+            href="?view=lesson"
+          >
+            レッスンを続ける
+          </a>
+        </div>
+      </div>
+
+      <div class="guided-path" aria-label={taiwanPath.labelJa}>
+        <div class="path-heading">
+          <h2>{taiwanPath?.labelJa}</h2>
+          <p>使う場面に向かって順番に進みます。</p>
+        </div>
+
+        <ul class="path-catalog" aria-label="学習パス一覧">
+          {fixture.pathLabels.map((path) => (
+            <li class:list={{ 'is-active': path.id === taiwanPath.id }}>
+              <span aria-hidden="true">{path.id === taiwanPath.id ? '●' : '○'}</span>
+              <span>{path.labelJa}</span>
+              {path.id === taiwanPath.id && <small>選択中</small>}
+            </li>
+          ))}
+        </ul>
+
+        <div class="path-sequence">
+          <div class="path-node path-node-complete">
+            <span class="node-marker" aria-hidden="true">✓</span>
+            <div>
+              <p class="node-kicker"><strong>完了</strong>　指差しで使うことば</p>
+              <h3>{fixture.vocabulary.traditional}</h3>
+              <p>{fixture.vocabulary.pinyin}　{fixture.vocabulary.japanese}</p>
+            </div>
+          </div>
+
+          <div class="path-node path-node-current">
+            <span class="node-marker" aria-hidden="true">今</span>
+            <div>
+              <p class="node-kicker"><strong>現在</strong>　{fixture.lesson.titleJa}</p>
+              <h3>{fixture.lesson.coreSentence}</h3>
+              <p>{fixture.lesson.learnerOutcomeJa}</p>
+            </div>
+          </div>
+
+          {fixture.travelTargets.map((target, index) => (
+            <div class:list={['path-node', { 'path-node-next': index === 0, 'path-node-later': index > 0 }]}>
+              <span class="node-marker" aria-hidden="true">{index === 0 ? '次' : index + 1}</span>
+              <div>
+                <p class="node-kicker"><strong>{index === 0 ? '次' : 'このあと'}</strong>　旅の準備</p>
+                <h3>{target.labelJa}</h3>
+                <p>{target.goalJa}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="duo-vocabulary"
+      class="lab-view vocabulary-view"
+      data-lab-view="vocabulary"
+      role="tabpanel"
+      aria-label="単語"
+      hidden
+    >
+      <header class="practice-heading">
+        <p class="section-label">指差しで使うことば</p>
+        <h1>意味を思い出せますか？</h1>
+      </header>
+
+      <div class="word-stage">
+        <p class="word-script" lang="zh-Hant">{fixture.vocabulary.traditional}</p>
+        <p class="word-pinyin">{fixture.vocabulary.pinyin}</p>
+        <button
+          class="reveal-action"
+          type="button"
+          data-lab-reveal
+          aria-expanded="false"
+          aria-controls="duo-word-answer"
+        >
+          答えを見る
+        </button>
+      </div>
+
+      <div id="duo-word-answer" class="word-answer" data-lab-answer hidden>
+        <p class="answer-meaning">{fixture.vocabulary.japanese}</p>
+        <dl class="word-metadata">
+          <div>
+            <dt>簡体字</dt>
+            <dd lang="zh-Hans">{fixture.vocabulary.simplified}</dd>
+          </div>
+          <div>
+            <dt>かな</dt>
+            <dd>{fixture.vocabulary.kana}</dd>
+          </div>
+          <div>
+            <dt>分類</dt>
+            <dd>{fixture.vocabulary.category}</dd>
+          </div>
+        </dl>
+        {fixture.vocabulary.toneNote && (
+          <div class="answer-note">
+            <h2>声調</h2>
+            <p>{fixture.vocabulary.toneNote}</p>
+          </div>
+        )}
+        {fixture.vocabulary.caution && (
+          <div class="answer-note">
+            <h2>発音の注意</h2>
+            <p>{fixture.vocabulary.caution}</p>
+          </div>
+        )}
+        {fixture.vocabulary.examples?.map((example) => (
+          <div class="word-example">
+            <p lang="zh-Hant">{example.traditional}</p>
+            <span>{example.pinyin}</span>
+            <span>{example.japanese}</span>
+          </div>
+        ))}
+
+        <fieldset class="rating-fieldset">
+          <legend>思い出せましたか？</legend>
+          <div class="rating-actions">
+            <button
+              type="button"
+              data-lab-rating="again"
+              aria-pressed="false"
+            >
+              もう一度
+            </button>
+            <button
+              type="button"
+              data-lab-rating="known"
+              aria-pressed="false"
+            >
+              わかった
+            </button>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <section
+      id="duo-lesson"
+      class="lab-view lesson-view"
+      data-lab-view="lesson"
+      role="tabpanel"
+      aria-label="レッスン"
+      hidden
+    >
+      <header class="lesson-hero">
+        <p class="section-label">{fixture.lesson.titleJa}</p>
+        <dl class="lesson-metadata">
+          <div>
+            <dt>レベル</dt>
+            <dd>{fixture.lesson.level}</dd>
+          </div>
+          <div>
+            <dt>旅行場面</dt>
+            <dd>{fixture.lesson.travelScenario}</dd>
+          </div>
+        </dl>
+        <p class="lesson-hook">{fixture.lesson.hookJa}</p>
+        <h1 lang="zh-Hant">{fixture.lesson.coreSentence}</h1>
+        <p class="lesson-can-do">できること　{fixture.lesson.canDoJa}</p>
+      </header>
+
+      {fixture.lesson.sections?.map((section) => (
+        <section class="lesson-band">
+          <h2>{section.headingJa}</h2>
+          <p>{section.contentJa}</p>
+        </section>
+      ))}
+
+      <section class="lesson-band">
+        <h2>場面で使う</h2>
+        <div class="lesson-examples">
+          {fixture.lesson.examples?.map((example) => (
+            <article>
+              <p class="example-script" lang="zh-Hant">{example.traditional}</p>
+              <p class="example-pinyin">{example.pinyin}</p>
+              <p>{example.japanese}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="lesson-band">
+        <h2>かたまりで覚える</h2>
+        <div class="chunk-list">
+          {fixture.lesson.chunks.map((chunk) => (
+            <article class="chunk-row">
+              <p class="chunk-script" lang="zh-Hant">{chunk.chunk}</p>
+              <div>
+                <h3>{chunk.meaning}</h3>
+                {chunk.notesJa && <p>{chunk.notesJa}</p>}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="lesson-band lesson-split">
+        <div>
+          <h2>漢字ブリッジ</h2>
+          {fixture.lesson.kanjiBridgeNotes.map((note) => (
+            <article class="bridge-note">
+              <p class="bridge-kanji">{note.kanji}</p>
+              <div>
+                <h3>日本語の読み　{note.jpReading}</h3>
+                <p>{note.noteJa}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div>
+          <h2>音の焦点</h2>
+          {fixture.lesson.soundFocus.map((sound) => (
+            <article class="sound-note">
+              <h3>{sound.item}</h3>
+              <p>{sound.noteJa}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {quiz && (
+        <section class="quiz-stage">
+          <p class="section-label">ひとつ選ぶ</p>
+          <h2>{quiz.promptJa}</h2>
+          <div class="quiz-choices">
+            <button
+              type="button"
+              data-lab-quiz-choice
+              data-lab-correct="true"
+              aria-pressed="false"
+            >
+              {quiz.answerJa}
+            </button>
+            {distractors.map((choice) => (
+              <button
+                type="button"
+                data-lab-quiz-choice
+                data-lab-correct="false"
+                aria-pressed="false"
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+          <p class="quiz-feedback" data-lab-quiz-feedback role="status" aria-live="polite"></p>
+        </section>
+      )}
+
+      <section class="travel-task">
+        <p class="section-label">台湾で試す</p>
+        <h2>{fixture.lesson.travelTask}</h2>
+      </section>
+    </section>
+
+    <section
+      id="duo-travel"
+      class="lab-view travel-view"
+      data-lab-view="travel"
+      role="tabpanel"
+      aria-label="旅の準備"
+      hidden
+    >
+      <header class="travel-heading">
+        <p class="section-label">Travel Quest</p>
+        <h1>旅先でできることを増やす</h1>
+        <p>場面ごとの準備を確かめながら進みます。</p>
+      </header>
+
+      <div class="travel-media">
+        <figure class="travel-photo travel-photo-main">
+          <img
+            src="/assets/design-lab/night-market-ordering.webp"
+            alt="台湾の夜市で注文する場面"
+            width="1536"
+            height="1024"
+          />
+          <figcaption>{fixture.lesson.travelTask}</figcaption>
+        </figure>
+        <figure class="travel-photo travel-photo-secondary">
+          <img
+            src="/assets/design-lab/rainy-taiwan-street.webp"
+            alt="雨の台湾の通りを歩く場面"
+            width="1536"
+            height="1024"
+            loading="lazy"
+          />
+          <figcaption>台湾の街で使う準備</figcaption>
+        </figure>
+      </div>
+
+      <div class="readiness-path">
+        {fixture.travelTargets.map((target, index) => (
+          <article class="readiness-node">
+            <span class="readiness-index" aria-hidden="true">{index + 1}</span>
+            <div>
+              <h2>{target.labelJa}</h2>
+              <p>{target.goalJa}</p>
+              <ul>
+                {target.evidence.map((evidence) => <li>{evidence.labelJa}</li>)}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</main>
+
+<style>
+  .duolingo-lab {
+    --duo-bg: #f7f8f4;
+    --duo-surface: #ffffff;
+    --duo-ink: #202622;
+    --duo-muted: #657068;
+    --duo-line: #d9ded9;
+    --duo-accent: #356b4e;
+    --duo-accent-dark: #28523c;
+    min-height: 100dvh;
+    padding: 0 0 calc(76px + env(safe-area-inset-bottom));
+    overflow-x: clip;
+    background: var(--duo-bg);
+    color: var(--duo-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  .duo-topbar {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px clamp(18px, 5vw, 36px);
+    border-bottom: 1px solid var(--duo-line);
+    background: color-mix(in srgb, var(--duo-bg) 94%, transparent);
+  }
+
+  .duo-brand,
+  .duo-course,
+  .duo-outcome,
+  .section-label,
+  .node-kicker,
+  .home-pinyin,
+  .word-pinyin,
+  .path-heading p,
+  .guided-path p,
+  .lab-view h1,
+  .lab-view h2,
+  .lab-view h3,
+  .lab-view p,
+  .travel-photo,
+  .travel-photo figcaption {
+    margin: 0;
+  }
+
+  .duo-brand {
+    color: var(--duo-accent);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+
+  .duo-course {
+    margin-top: 2px;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .duo-outcome {
+    max-width: 22ch;
+    color: var(--duo-muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    text-align: right;
+    text-wrap: balance;
+  }
+
+  .duo-nav {
+    position: fixed;
+    z-index: 4;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--duo-line);
+    background: var(--duo-surface);
+    box-shadow: 0 -12px 32px rgb(52 68 57 / 0.08);
+  }
+
+  .duo-nav button,
+  .primary-action,
+  .reveal-action,
+  .rating-actions button,
+  .quiz-choices button {
+    min-height: 44px;
+    border: 1px solid transparent;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .duo-nav button {
+    min-width: 0;
+    padding: 8px 4px;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--duo-muted);
+    font-size: clamp(0.69rem, 3vw, 0.78rem);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .duo-nav button[aria-selected="true"] {
+    background: #e1ebe4;
+    color: var(--duo-accent-dark);
+  }
+
+  .duo-stage {
+    width: min(100%, 760px);
+    margin: 0 auto;
+  }
+
+  .lab-view {
+    min-width: 0;
+    padding: clamp(34px, 9vw, 64px) clamp(18px, 5vw, 40px) 72px;
+  }
+
+  .lab-view[hidden] {
+    display: none !important;
+  }
+
+  .section-label {
+    color: var(--duo-accent-dark);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  .home-intro {
+    text-align: center;
+  }
+
+  .home-intro h1 {
+    margin-top: 24px;
+    font-size: clamp(3.3rem, 18vw, 6.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+
+  .home-pinyin {
+    margin-top: 14px;
+    color: var(--duo-accent);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .home-goal {
+    max-width: 30rem;
+    margin: 20px auto 0;
+    color: var(--duo-muted);
+    line-height: 1.75;
+  }
+
+  .primary-action,
+  .reveal-action {
+    display: inline-flex;
+    min-width: min(100%, 260px);
+    align-items: center;
+    justify-content: center;
+    margin-top: 28px;
+    padding: 13px 24px;
+    border-color: var(--duo-accent-dark);
+    border-radius: 14px;
+    background: var(--duo-accent);
+    box-shadow: 0 4px 0 var(--duo-accent-dark);
+    color: #f9fcfa;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .guided-path {
+    position: relative;
+    margin-top: 72px;
+    padding-left: 10px;
+  }
+
+  .path-sequence::before,
+  .readiness-path::before {
+    position: absolute;
+    top: 4px;
+    bottom: 34px;
+    left: 21px;
+    width: 2px;
+    background: var(--duo-line);
+    content: "";
+  }
+
+  .path-heading {
+    margin-bottom: 30px;
+    padding-left: 4px;
+  }
+
+  .path-heading h2 {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    line-height: 1.35;
+  }
+
+  .path-heading p {
+    margin-top: 8px;
+    color: var(--duo-muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .path-catalog {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--duo-line);
+    list-style: none;
+  }
+
+  .path-catalog li {
+    min-height: 44px;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--duo-line);
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    color: var(--duo-muted);
+    font-size: 0.8rem;
+  }
+
+  .path-catalog li.is-active {
+    color: var(--duo-ink);
+    font-weight: 800;
+  }
+
+  .path-catalog li > span:first-child,
+  .path-catalog small {
+    color: var(--duo-accent-dark);
+    font-size: 0.7rem;
+  }
+
+  .path-sequence {
+    position: relative;
+    margin-top: 38px;
+  }
+
+  .path-node,
+  .readiness-node {
+    position: relative;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 18px;
+    min-height: 112px;
+    padding-bottom: 30px;
+  }
+
+  .node-marker,
+  .readiness-index {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 2px solid var(--duo-line);
+    border-radius: 50%;
+    background: var(--duo-bg);
+    color: var(--duo-muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .path-node-current .node-marker {
+    border-color: var(--duo-accent);
+    background: var(--duo-accent);
+    color: #f9fcfa;
+    box-shadow: 0 0 0 6px #e1ebe4;
+  }
+
+  .path-node-complete .node-marker {
+    border-color: var(--duo-accent-dark);
+    background: var(--duo-bg);
+    color: var(--duo-accent-dark);
+  }
+
+  .path-node-next .node-marker {
+    border-color: var(--duo-accent);
+    border-style: dashed;
+    border-radius: 12px;
+    color: var(--duo-accent-dark);
+  }
+
+  .path-node-later {
+    color: var(--duo-ink);
+  }
+
+  .path-node-later .node-marker {
+    border-color: #aab4ac;
+  }
+
+  .node-kicker {
+    color: var(--duo-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .node-kicker strong {
+    color: var(--duo-accent-dark);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+  }
+
+  .path-node h3 {
+    margin-top: 4px;
+    font-size: 1.12rem;
+    line-height: 1.45;
+  }
+
+  .path-node p:last-child {
+    margin-top: 6px;
+    color: var(--duo-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  .practice-heading h1,
+  .travel-heading h1 {
+    margin-top: 10px;
+    font-size: clamp(1.8rem, 8vw, 3rem);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+
+  .word-stage {
+    display: flex;
+    min-height: 390px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 42px 0;
+    text-align: center;
+  }
+
+  .word-script {
+    margin: 0;
+    font-size: clamp(4.7rem, 25vw, 8rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.07em;
+  }
+
+  .word-pinyin {
+    margin-top: 18px;
+    color: var(--duo-muted);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .word-answer {
+    padding-top: 34px;
+    border-top: 1px solid var(--duo-line);
+  }
+
+  .answer-meaning {
+    font-size: clamp(2rem, 10vw, 3.4rem);
+    font-weight: 800;
+  }
+
+  .word-metadata,
+  .lesson-metadata {
+    margin: 22px 0 0;
+  }
+
+  .word-metadata > div {
+    min-height: 44px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--duo-line);
+    display: grid;
+    grid-template-columns: minmax(72px, 0.34fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+  }
+
+  .word-metadata dt,
+  .lesson-metadata dt {
+    color: var(--duo-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .word-metadata dd,
+  .lesson-metadata dd {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 750;
+  }
+
+  .answer-note,
+  .word-example {
+    margin-top: 28px;
+  }
+
+  .answer-note h2 {
+    font-size: 0.84rem;
+  }
+
+  .answer-note p {
+    margin-top: 8px;
+    color: var(--duo-muted);
+    font-size: 0.93rem;
+    line-height: 1.75;
+  }
+
+  .word-example {
+    display: grid;
+    gap: 4px;
+    padding: 18px 0;
+    border-block: 1px solid var(--duo-line);
+  }
+
+  .word-example p {
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  .word-example span {
+    color: var(--duo-muted);
+    font-size: 0.85rem;
+  }
+
+  .rating-fieldset {
+    margin: 34px 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .rating-fieldset legend {
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+
+  .rating-actions,
+  .quiz-choices {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rating-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rating-actions button,
+  .quiz-choices button {
+    padding: 13px 16px;
+    border-color: var(--duo-line);
+    border-radius: 14px;
+    background: var(--duo-surface);
+    color: var(--duo-ink);
+    font-weight: 750;
+    box-shadow: 0 3px 0 #cbd2cc;
+  }
+
+  .rating-actions button[aria-pressed="true"],
+  .quiz-choices button[aria-pressed="true"] {
+    border-color: var(--duo-accent);
+    background: #e1ebe4;
+    color: var(--duo-accent-dark);
+    box-shadow: 0 3px 0 var(--duo-accent);
+  }
+
+  .rating-actions button:disabled {
+    cursor: default;
+    opacity: 0.72;
+  }
+
+  .lesson-hero {
+    padding-bottom: 44px;
+    text-align: center;
+  }
+
+  .lesson-metadata {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+  }
+
+  .lesson-metadata > div {
+    display: grid;
+    gap: 2px;
+    text-align: left;
+  }
+
+  .lesson-hook {
+    margin-top: 14px !important;
+    color: var(--duo-muted);
+    line-height: 1.65;
+    text-wrap: balance;
+  }
+
+  .lesson-hero h1 {
+    margin-top: 28px;
+    font-size: clamp(3.1rem, 16vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+
+  .lesson-can-do {
+    max-width: 34rem;
+    margin: 24px auto 0 !important;
+    padding: 14px 18px;
+    border-left: 4px solid var(--duo-accent);
+    background: #eaf0eb;
+    color: var(--duo-accent-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.65;
+    text-align: left;
+  }
+
+  .lesson-band,
+  .quiz-stage,
+  .travel-task {
+    padding: 40px 0;
+    border-top: 1px solid var(--duo-line);
+  }
+
+  .lesson-band > h2,
+  .lesson-split h2,
+  .quiz-stage h2,
+  .travel-task h2 {
+    font-size: clamp(1.25rem, 5vw, 1.65rem);
+    line-height: 1.45;
+  }
+
+  .lesson-band > p {
+    margin-top: 14px;
+    color: var(--duo-muted);
+    line-height: 1.8;
+  }
+
+  .lesson-examples {
+    margin-top: 22px;
+    border-top: 1px solid var(--duo-line);
+  }
+
+  .lesson-examples article {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--duo-line);
+  }
+
+  .lesson-examples .example-script {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .lesson-examples .example-pinyin,
+  .lesson-examples article > p:last-child {
+    margin-top: 5px;
+    color: var(--duo-muted);
+    font-size: 0.86rem;
+    line-height: 1.65;
+  }
+
+  .chunk-list {
+    margin-top: 22px;
+  }
+
+  .chunk-row,
+  .bridge-note {
+    display: grid;
+    grid-template-columns: minmax(74px, 0.35fr) minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--duo-line);
+  }
+
+  .chunk-script,
+  .bridge-kanji {
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .chunk-row h3,
+  .bridge-note h3,
+  .sound-note h3 {
+    font-size: 0.96rem;
+    line-height: 1.5;
+  }
+
+  .chunk-row div p,
+  .bridge-note div p,
+  .sound-note p {
+    margin-top: 7px;
+    color: var(--duo-muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .lesson-split {
+    display: grid;
+    gap: 42px;
+  }
+
+  .bridge-note,
+  .sound-note {
+    margin-top: 16px;
+  }
+
+  .sound-note {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--duo-line);
+  }
+
+  .quiz-stage .section-label,
+  .travel-task .section-label {
+    margin-bottom: 10px;
+  }
+
+  .quiz-choices {
+    margin-top: 24px;
+  }
+
+  .quiz-feedback {
+    min-height: 1.6em;
+    margin-top: 18px !important;
+    color: var(--duo-accent-dark);
+    font-weight: 800;
+  }
+
+  .travel-task {
+    text-align: center;
+  }
+
+  .travel-task h2 {
+    max-width: 28rem;
+    margin: 0 auto;
+  }
+
+  .travel-heading > p:last-child {
+    margin-top: 12px;
+    color: var(--duo-muted);
+    line-height: 1.7;
+  }
+
+  .travel-heading h1 {
+    text-wrap: balance;
+  }
+
+  .travel-media {
+    display: grid;
+    gap: 12px;
+    margin-top: 34px;
+  }
+
+  .travel-photo {
+    overflow: hidden;
+    border-radius: 18px;
+    background: var(--duo-surface);
+  }
+
+  .travel-photo img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .travel-photo figcaption {
+    padding: 14px 16px;
+    color: var(--duo-muted);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .readiness-path {
+    position: relative;
+    margin-top: 52px;
+  }
+
+  .readiness-path::before {
+    top: 4px;
+    bottom: 76px;
+    left: 21px;
+  }
+
+  .readiness-node {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 18px;
+    min-height: 150px;
+    padding-bottom: 38px;
+  }
+
+  .readiness-index {
+    border-color: var(--duo-accent);
+    color: var(--duo-accent-dark);
+  }
+
+  .readiness-node h2 {
+    font-size: 1.14rem;
+    line-height: 1.45;
+  }
+
+  .readiness-node p {
+    margin-top: 7px;
+    color: var(--duo-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  .readiness-node ul {
+    display: grid;
+    gap: 7px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .readiness-node li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--duo-muted);
+    font-size: 0.79rem;
+    line-height: 1.55;
+  }
+
+  .readiness-node li::before {
+    position: absolute;
+    top: 0.66em;
+    left: 0;
+    width: 7px;
+    height: 2px;
+    background: var(--duo-accent);
+    content: "";
+  }
+
+  :is(
+    .duo-nav button,
+    .primary-action,
+    .reveal-action,
+    .rating-actions button,
+    .quiz-choices button
+  ):focus-visible {
+    outline: 3px solid #1f5139;
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .duo-nav button:hover {
+      background: #edf1ed;
+      color: var(--duo-ink);
+    }
+
+    .duo-nav button[aria-selected="true"]:hover {
+      background: #d7e5dc;
+      color: var(--duo-accent-dark);
+    }
+
+    .primary-action:hover,
+    .reveal-action:hover {
+      background: var(--duo-accent-dark);
+    }
+
+    .rating-actions button:hover,
+    .quiz-choices button:hover {
+      border-color: #8fa297;
+      background: #f0f4f1;
+    }
+  }
+
+  :is(
+    .duo-nav button,
+    .primary-action,
+    .reveal-action,
+    .rating-actions button,
+    .quiz-choices button
+  ):active {
+    transform: translateY(1px) scale(0.985);
+  }
+
+  @media (max-width: 340px) {
+    .duo-topbar {
+      min-height: 64px;
+      padding-inline: 14px;
+    }
+
+    .duo-outcome {
+      display: none;
+    }
+
+    .lab-view {
+      padding-inline: 14px;
+    }
+
+    .duo-nav {
+      padding-inline: 4px;
+    }
+
+    .duo-nav button {
+      font-size: 0.64rem;
+    }
+
+    .home-intro h1 {
+      font-size: 3rem;
+    }
+
+    .word-script {
+      font-size: 4.2rem;
+    }
+
+    .chunk-row,
+    .bridge-note {
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .rating-actions {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 860px) {
+    .duolingo-lab {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 820px);
+      grid-template-rows: auto 1fr;
+      justify-content: center;
+      padding: 0 28px 80px;
+    }
+
+    .duo-topbar {
+      grid-column: 1 / -1;
+      margin: 0 -28px;
+      padding-inline: max(36px, calc((100vw - 1066px) / 2));
+    }
+
+    .duo-nav {
+      position: sticky;
+      top: 28px;
+      right: auto;
+      bottom: auto;
+      left: auto;
+      z-index: 1;
+      display: flex;
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 42px;
+      padding: 0 28px 0 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .duo-nav button {
+      min-height: 48px;
+      padding-inline: 16px;
+      text-align: left;
+    }
+
+    .duo-nav button[aria-selected="true"] {
+      box-shadow: inset 4px 0 var(--duo-accent);
+    }
+
+    .duo-stage {
+      grid-column: 2;
+      grid-row: 2;
+      width: 100%;
+      border-right: 1px solid var(--duo-line);
+      border-left: 1px solid var(--duo-line);
+      background: color-mix(in srgb, var(--duo-surface) 58%, transparent);
+    }
+
+    .lab-view {
+      padding-inline: clamp(48px, 7vw, 76px);
+    }
+
+    .home-intro {
+      padding-block: 36px 18px;
+    }
+
+    .lesson-split,
+    .travel-media {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .travel-photo-main {
+      grid-row: span 2;
+    }
+
+    .travel-photo-main img {
+      height: 100%;
+      aspect-ratio: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lab-view:not([hidden]) {
+      animation: duo-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .duo-nav button,
+    .primary-action,
+    .reveal-action,
+    .rating-actions button,
+    .quiz-choices button {
+      scroll-behavior: auto;
+      transition: none;
+    }
+  }
+
+  @keyframes duo-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
