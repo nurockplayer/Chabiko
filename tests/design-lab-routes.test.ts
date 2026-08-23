@@ -245,6 +245,77 @@ describe('design lab controller', () => {
     ].map((item) => item.tabIndex)).toEqual([0, 0, 0, 0]);
   });
 
+  test('keeps every controller state surface inside the owning prototype root', () => {
+    const root = createDesignLabRoot();
+    const parentViews = [...root.querySelectorAll<HTMLElement>('[data-lab-view]')];
+    const parentReveal = root.querySelector<HTMLButtonElement>('[data-lab-reveal]')!;
+    const parentAnswer = root.querySelector<HTMLElement>('[data-lab-answer]')!;
+    const parentKnown = root.querySelector<HTMLButtonElement>('[data-lab-rating="known"]')!;
+    const parentQuizChoice = root.querySelector<HTMLButtonElement>('[data-lab-quiz-choice]')!;
+    const parentLesson = root.querySelector<HTMLElement>('[data-lab-view="lesson"]')!;
+    const nestedRoot = createDesignLabRoot();
+    const nestedViews = [...nestedRoot.querySelectorAll<HTMLElement>('[data-lab-view]')];
+    const nestedReveal = nestedRoot.querySelector<HTMLButtonElement>('[data-lab-reveal]')!;
+    const nestedAnswer = nestedRoot.querySelector<HTMLElement>('[data-lab-answer]')!;
+    const nestedRatings = [
+      ...nestedRoot.querySelectorAll<HTMLButtonElement>('[data-lab-rating]'),
+    ];
+    const nestedKnown = nestedRoot.querySelector<HTMLButtonElement>('[data-lab-rating="known"]')!;
+    const nestedQuizChoice = nestedRoot.querySelector<HTMLButtonElement>(
+      '[data-lab-quiz-choice][data-lab-correct="false"]',
+    )!;
+    const nestedFeedback = document.createElement('p');
+    nestedFeedback.setAttribute('data-lab-quiz-feedback', '');
+    nestedRoot.querySelector<HTMLElement>('[data-lab-view="lesson"]')!.append(nestedFeedback);
+    root.append(nestedRoot);
+
+    initDesignLabPrototype(root);
+
+    expect(parentViews.map((view) => view.hidden)).toEqual([false, true, true, true]);
+    expect(nestedViews.map((view) => view.hidden)).toEqual([false, false, false, false]);
+    expect(nestedFeedback.getAttribute('role')).toBeNull();
+    expect(nestedFeedback.getAttribute('aria-live')).toBeNull();
+
+    nestedReveal.click();
+    expect(parentAnswer.hidden).toBe(true);
+    expect(nestedAnswer.hidden).toBe(true);
+    expect(nestedReveal.hidden).toBe(false);
+
+    nestedKnown.click();
+    expect(root.dataset.labRating).toBeUndefined();
+    expect(nestedRatings.map((rating) => rating.disabled)).toEqual([false, false]);
+    expect(nestedRatings.map((rating) => rating.getAttribute('aria-pressed'))).toEqual([
+      null,
+      null,
+    ]);
+
+    const parentFeedback = parentLesson.querySelector<HTMLElement>(
+      '[data-lab-quiz-feedback]',
+    )!;
+    expect(parentFeedback).not.toBe(nestedFeedback);
+    nestedQuizChoice.click();
+    expect(parentFeedback.textContent).toBe('');
+    expect(nestedFeedback.textContent).toBe('');
+    expect(nestedQuizChoice.getAttribute('aria-pressed')).toBeNull();
+
+    parentReveal.click();
+    expect(parentAnswer.hidden).toBe(false);
+    expect(nestedAnswer.hidden).toBe(true);
+
+    parentKnown.click();
+    expect(root.dataset.labRating).toBe('known');
+    expect(nestedRatings.map((rating) => rating.disabled)).toEqual([false, false]);
+    expect(nestedRatings.map((rating) => rating.getAttribute('aria-pressed'))).toEqual([
+      null,
+      null,
+    ]);
+
+    parentQuizChoice.click();
+    expect(parentFeedback.textContent).toBe('正解です');
+    expect(nestedFeedback.textContent).toBe('');
+    expect(nestedQuizChoice.getAttribute('aria-pressed')).toBeNull();
+  });
+
   test('falls back from an invalid query and keeps exactly one selected view', () => {
     window.history.replaceState({}, '', '/design-lab/apple/?view=unknown');
     const root = createDesignLabRoot();

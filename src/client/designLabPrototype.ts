@@ -5,6 +5,22 @@ export type DesignLabView = (typeof DESIGN_LAB_VIEWS)[number];
 const DESIGN_LAB_VIEW_SET = new Set<string>(DESIGN_LAB_VIEWS);
 const cleanups = new WeakMap<HTMLElement, () => void>();
 
+type OwnedQueries = {
+  all<T extends Element>(selector: string): T[];
+  first<T extends Element>(selector: string): T | null;
+};
+
+function createOwnedQueries(root: HTMLElement): OwnedQueries {
+  const all = <T extends Element>(selector: string): T[] => [
+    ...root.querySelectorAll<T>(selector),
+  ].filter((element) => element.closest('[data-design-lab]') === root);
+
+  return {
+    all,
+    first: <T extends Element>(selector: string): T | null => all<T>(selector)[0] ?? null,
+  };
+}
+
 function isDesignLabView(value: string | null): value is DesignLabView {
   return value !== null && DESIGN_LAB_VIEW_SET.has(value);
 }
@@ -26,10 +42,9 @@ function setButtonDisabled(element: HTMLElement, disabled: boolean): void {
 export function initDesignLabPrototype(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
-  const views = [...root.querySelectorAll<HTMLElement>('[data-lab-view]')];
-  const navigation = [...root.querySelectorAll<HTMLElement>('[data-lab-nav]')].filter(
-    (item) => item.closest('[data-design-lab]') === root,
-  );
+  const owned = createOwnedQueries(root);
+  const views = owned.all<HTMLElement>('[data-lab-view]');
+  const navigation = owned.all<HTMLElement>('[data-lab-nav]');
   const removers: Array<() => void> = [];
 
   function applyView(requested: DesignLabView): void {
@@ -89,9 +104,9 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
     removers.push(() => item.removeEventListener('keydown', onKeyDown));
   }
 
-  for (const reveal of root.querySelectorAll<HTMLElement>('[data-lab-reveal]')) {
+  for (const reveal of owned.all<HTMLElement>('[data-lab-reveal]')) {
     const onClick = (): void => {
-      for (const answer of root.querySelectorAll<HTMLElement>('[data-lab-answer]')) {
+      for (const answer of owned.all<HTMLElement>('[data-lab-answer]')) {
         answer.hidden = false;
       }
       reveal.hidden = true;
@@ -101,7 +116,7 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
     removers.push(() => reveal.removeEventListener('click', onClick));
   }
 
-  const ratings = [...root.querySelectorAll<HTMLElement>('[data-lab-rating]')];
+  const ratings = owned.all<HTMLElement>('[data-lab-rating]');
   for (const rating of ratings) {
     const onClick = (): void => {
       if (root.dataset.labRating) return;
@@ -119,8 +134,8 @@ export function initDesignLabPrototype(root: HTMLElement): () => void {
     removers.push(() => rating.removeEventListener('click', onClick));
   }
 
-  const quizChoices = [...root.querySelectorAll<HTMLElement>('[data-lab-quiz-choice]')];
-  let quizFeedback = root.querySelector<HTMLElement>('[data-lab-quiz-feedback]');
+  const quizChoices = owned.all<HTMLElement>('[data-lab-quiz-choice]');
+  let quizFeedback = owned.first<HTMLElement>('[data-lab-quiz-feedback]');
   if (quizChoices.length > 0 && !quizFeedback) {
     quizFeedback = document.createElement('p');
     quizFeedback.setAttribute('data-lab-quiz-feedback', '');
