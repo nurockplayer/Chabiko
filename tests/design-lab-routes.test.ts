@@ -3,7 +3,32 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { initDesignLabPrototype } from '../src/client/designLabPrototype';
-import { buildDesignLabFixture } from '../src/content/designLabFixture';
+import {
+  buildDesignLabFixture,
+  buildDesignLabFixtureFromSources,
+} from '../src/content/designLabFixture';
+import { loadLessonById } from '../src/content/loadLessons';
+import learningPathsData from '../data/learning-paths.json';
+import readinessData from '../data/travel-quest-readiness.json';
+import vocabularyData from '../data/examples/valid/vocabulary.json';
+
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function fixtureSources(): {
+  lesson: ReturnType<typeof loadLessonById>;
+  vocabularyDocument: unknown;
+  readinessDocument: unknown;
+  learningPathsDocument: unknown;
+} {
+  return {
+    lesson: loadLessonById('lesson-001'),
+    vocabularyDocument: clone(vocabularyData),
+    readinessDocument: clone(readinessData),
+    learningPathsDocument: clone(learningPathsData),
+  };
+}
 
 function createDesignLabRoot(): HTMLElement {
   const root = document.createElement('main');
@@ -46,6 +71,46 @@ describe('design lab fixture', () => {
     expect(fixture.lesson.coreSentence).toBe('我要這個');
     expect(fixture.vocabulary.id).toBe('voc-002');
     expect(fixture.travelTargets).toHaveLength(4);
+  });
+
+  test('rejects malformed required vocabulary fields and example metadata', () => {
+    expect(buildDesignLabFixtureFromSources).toBeTypeOf('function');
+
+    const invalidStatus = fixtureSources();
+    const vocabularyWithInvalidStatus = invalidStatus.vocabularyDocument as {
+      vocabulary: Array<Record<string, unknown>>;
+    };
+    vocabularyWithInvalidStatus.vocabulary.find((entry) => entry.id === 'voc-002')!.simplifiedStatus = 'unavailable';
+    expect(() => buildDesignLabFixtureFromSources(invalidStatus)).toThrow();
+
+    const invalidExample = fixtureSources();
+    const vocabularyWithInvalidExample = invalidExample.vocabularyDocument as {
+      vocabulary: Array<Record<string, unknown>>;
+    };
+    vocabularyWithInvalidExample.vocabulary.find((entry) => entry.id === 'voc-002')!.examples = [
+      { traditional: '這個多少錢', traditionalStatus: 'authored', pinyin: 2, japanese: 'これはいくらですか？' },
+    ];
+    expect(() => buildDesignLabFixtureFromSources(invalidExample)).toThrow();
+  });
+
+  test('rejects malformed travel readiness documents, targets, and evidence', () => {
+    const invalidDocument = fixtureSources();
+    (invalidDocument.readinessDocument as { schemaVersion: unknown }).schemaVersion = 2;
+    expect(() => buildDesignLabFixtureFromSources(invalidDocument)).toThrow();
+
+    const invalidTarget = fixtureSources();
+    const readinessWithInvalidTarget = invalidTarget.readinessDocument as {
+      targets: Array<Record<string, unknown>>;
+    };
+    readinessWithInvalidTarget.targets[0].evidence = [];
+    expect(() => buildDesignLabFixtureFromSources(invalidTarget)).toThrow();
+
+    const invalidEvidence = fixtureSources();
+    const readinessWithInvalidEvidence = invalidEvidence.readinessDocument as {
+      targets: Array<{ evidence: Array<Record<string, unknown>> }>;
+    };
+    readinessWithInvalidEvidence.targets[0].evidence[0].type = 'opened-lesson';
+    expect(() => buildDesignLabFixtureFromSources(invalidEvidence)).toThrow();
   });
 });
 
