@@ -2,15 +2,16 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import {
+  V2_REFERENCE_VIEWPORTS,
+  V2_REFERENCE_VISUAL_CASES,
+  type V2ReferenceVisualState,
+} from './v2ReferenceCases';
 
 const BASE_URL = 'http://127.0.0.1:4321';
 const ROUTE = '/v2-reference/';
 const ANSWER_PATH = '/v2-reference/data/lesson-001-answer.json';
 const FONT_FAMILY = 'Noto Sans JP Variable';
-const VIEWPORTS = [
-  { width: 375, height: 812 },
-  { width: 390, height: 844 },
-] as const;
 
 const require = createRequire(import.meta.url);
 const fontCssPath = require.resolve(
@@ -131,11 +132,18 @@ async function capture(
   page: Page,
   viewport: { width: number; height: number },
   audit: RuntimeAudit,
-  state: string,
+  state: V2ReferenceVisualState,
 ): Promise<void> {
+  const visualCase = V2_REFERENCE_VISUAL_CASES.find(
+    (candidate) =>
+      candidate.state === state &&
+      candidate.viewport.width === viewport.width &&
+      candidate.viewport.height === viewport.height,
+  );
+  if (!visualCase) throw new Error(`Missing V2 visual case: ${state}`);
   await expectCaptureContract(page, viewport, audit);
   await expect(page).toHaveScreenshot(
-    `v2-reference-${state}-${viewport.width}x${viewport.height}.png`,
+    visualCase.snapshotName,
     { fullPage: false },
   );
 }
@@ -147,7 +155,7 @@ async function selectChunks(page: Page, chunks: readonly string[]): Promise<void
 }
 
 test.describe('/v2-reference/ complete mobile-flow visual baselines', () => {
-  for (const viewport of VIEWPORTS) {
+  for (const viewport of V2_REFERENCE_VIEWPORTS) {
     test(`${viewport.width}×${viewport.height}`, async ({ page }) => {
       test.setTimeout(90_000);
       const audit = watchRuntime(page);
