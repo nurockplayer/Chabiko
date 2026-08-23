@@ -1,0 +1,322 @@
+---
+import V2Scene from '../../../components/v2-reference/V2Scene.astro';
+import { loadV2Reference } from '../../../content/loadV2Reference';
+import V2ReferenceLayout from '../../../layouts/V2ReferenceLayout.astro';
+
+const reference = loadV2Reference();
+---
+
+<V2ReferenceLayout
+  title="台湾で話す"
+  description="夜市の場面で「我要這個」を学ぶ Chabiko V2 reference"
+  screen="learning"
+  chrome="focus"
+  backHref="/v2-reference/"
+  headerLabel="夜市で注文"
+  headerMeta="見る"
+>
+  <section class="v2-screen v2-learning" data-v2-screen="learning">
+    <V2Scene
+      assetPath={reference.scene.assetPath}
+      altJa={reference.scene.altJa}
+      labelJa={reference.scene.labelJa}
+      width={reference.scene.width}
+      height={reference.scene.height}
+      captionJa={reference.learning.contextJa}
+      compact
+    />
+
+    <div class="v2-phrase-focus">
+      <div class="v2-phrase-copy">
+        <h1 class="v2-learning-phrase" lang="zh-Hant">
+          {reference.lesson.coreSentence}
+        </h1>
+        <p class="v2-learning-pinyin" lang="zh-Latn-pinyin">
+          {reference.coreExample.pinyin}
+        </p>
+        <p class="v2-learning-japanese">{reference.coreExample.japanese}</p>
+      </div>
+
+      <div
+        class="v2-audio-object"
+        data-v2-audio
+        data-v2-audio-phrase={reference.lesson.coreSentence}
+      >
+        <button type="button" data-v2-audio-button aria-describedby="v2-audio-status">
+          <span class="v2-audio-symbol" aria-hidden="true"></span>
+          <span>音声を聞く</span>
+        </button>
+        <p
+          id="v2-audio-status"
+          class="v2-visually-hidden v2-audio-status"
+          role="status"
+          data-v2-audio-status
+        ></p>
+      </div>
+    </div>
+
+    <details class="v2-support">
+      <summary>{reference.learning.supportLabelJa}</summary>
+      <div class="v2-support-body">
+        <div class="v2-chunk-list">
+          {
+            reference.lesson.chunks.map((chunk) => (
+              <div class="v2-chunk-row">
+                <strong lang="zh-Hant">{chunk.chunk}</strong>
+                <span>{chunk.meaning}</span>
+              </div>
+            ))
+          }
+        </div>
+        <p class="v2-sound-note">
+          <strong>{reference.lesson.soundFocus[0]?.item}</strong>
+          <span>{reference.lesson.soundFocus[0]?.noteJa}</span>
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <div class="v2-fixed-command">
+    <a class="v2-command-primary" href="/v2-reference/retrieval/">
+      {reference.learning.primaryActionJa}
+    </a>
+  </div>
+</V2ReferenceLayout>
+
+<script>
+  import { mountV2ReferenceAudio } from '../../../client/v2ReferenceAudio';
+
+  function initialiseV2Audio(): void {
+    document.querySelectorAll<HTMLElement>('[data-v2-audio]').forEach((root) => {
+      mountV2ReferenceAudio(root);
+    });
+  }
+
+  initialiseV2Audio();
+  document.addEventListener('astro:page-load', initialiseV2Audio);
+</script>
+
+<style>
+  .v2-learning {
+    display: grid;
+    gap: 17px;
+    padding-top: 12px;
+  }
+
+  .v2-phrase-focus {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 1px 2px 2px;
+  }
+
+  .v2-learning-phrase {
+    color: var(--v2-ink);
+    font-size: clamp(40px, 12vw, 52px);
+    font-weight: 900;
+    letter-spacing: 0.015em;
+    line-height: 1.04;
+    white-space: nowrap;
+  }
+
+  .v2-learning-pinyin {
+    margin-top: 7px !important;
+    color: var(--v2-teal-deep);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+  }
+
+  .v2-learning-japanese {
+    margin-top: 3px !important;
+    color: var(--v2-ink-soft);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .v2-audio-object button {
+    width: 82px;
+    min-height: 82px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--v2-teal-deep);
+    border-radius: 24px;
+    background: var(--v2-teal);
+    box-shadow: var(--v2-shadow-action);
+    color: #fff;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+
+  .v2-audio-object button:hover {
+    background: var(--v2-teal-deep);
+  }
+
+  .v2-audio-object button:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--v2-teal-deep);
+  }
+
+  .v2-audio-object button:disabled {
+    border-color: #aeb9b1;
+    background: #cbd3cd;
+    box-shadow: 0 4px 0 #aeb9b1;
+    color: #69766f;
+    cursor: not-allowed;
+  }
+
+  .v2-audio-status[data-visible='true'] {
+    position: static !important;
+    width: 82px !important;
+    height: auto !important;
+    margin: 8px 0 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    color: var(--v2-error);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .v2-audio-symbol {
+    position: relative;
+    width: 28px;
+    height: 25px;
+    display: block;
+  }
+
+  .v2-audio-symbol::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 1px;
+    width: 8px;
+    height: 11px;
+    border-radius: 3px;
+    background: #fff;
+  }
+
+  .v2-audio-symbol::after {
+    content: ')))';
+    position: absolute;
+    top: -2px;
+    left: 7px;
+    overflow: hidden;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -5px;
+    line-height: 28px;
+  }
+
+  .v2-support {
+    overflow: hidden;
+    border: 1px solid var(--v2-line);
+    border-radius: var(--v2-radius-md);
+    background: var(--v2-surface);
+  }
+
+  .v2-support summary {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--v2-ink);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 850;
+    list-style: none;
+  }
+
+  .v2-support summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .v2-support summary::after {
+    content: '+';
+    width: 28px;
+    height: 28px;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--v2-teal-soft);
+    color: var(--v2-teal-deep);
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .v2-support[open] summary::after {
+    content: '−';
+  }
+
+  .v2-support-body {
+    display: grid;
+    gap: 12px;
+    padding: 0 15px 15px;
+  }
+
+  .v2-chunk-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .v2-chunk-row {
+    display: grid;
+    gap: 2px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--v2-surface-cool);
+  }
+
+  .v2-chunk-row strong {
+    font-size: 21px;
+  }
+
+  .v2-chunk-row span {
+    color: var(--v2-ink-soft);
+    font-size: 11px;
+    font-weight: 650;
+  }
+
+  .v2-sound-note {
+    display: grid;
+    gap: 2px;
+    padding-left: 11px;
+    border-left: 4px solid var(--v2-apricot);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .v2-sound-note span {
+    color: var(--v2-ink-soft);
+  }
+
+  @media (width <= 340px) {
+    .v2-phrase-focus {
+      gap: 10px;
+    }
+
+    .v2-learning-phrase {
+      font-size: 38px;
+    }
+
+    .v2-audio-object button {
+      width: 72px;
+      min-height: 72px;
+      border-radius: 21px;
+    }
+  }
+</style>

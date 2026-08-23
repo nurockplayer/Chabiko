@@ -1,0 +1,163 @@
+---
+import { loadV2Reference } from '../../../content/loadV2Reference';
+import V2ReferenceLayout from '../../../layouts/V2ReferenceLayout.astro';
+
+const reference = loadV2Reference();
+---
+
+<V2ReferenceLayout
+  title="今日の記録"
+  description="今日できるようになったことを学習証拠で確認する Chabiko V2 reference"
+  screen="result"
+  chrome="navigation"
+  currentNav="record"
+  headerLabel="今日の記録"
+>
+  <section class="v2-screen v2-result" data-v2-screen="result" data-v2-result>
+    <div class="v2-result-heading">
+      <p class="v2-kicker">今日の学習証拠</p>
+      <h1 class="v2-screen-title">{reference.result.headingJa}</h1>
+    </div>
+
+    <article class="v2-result-capability">
+      <p class="v2-result-situation">{reference.scene.labelJa}</p>
+      <p class="v2-result-phrase" lang="zh-Hant">{reference.lesson.coreSentence}</p>
+      <p class="v2-result-pinyin" lang="zh-Latn-pinyin">{reference.coreExample.pinyin}</p>
+      <h2>{reference.result.canDoJa}</h2>
+    </article>
+
+    <div class="v2-evidence" data-v2-evidence hidden>
+      <p class="v2-evidence-label">今回たしかめられたこと</p>
+      <p class="v2-evidence-summary" data-v2-evidence-summary></p>
+      <p class="v2-evidence-method" data-v2-evidence-method></p>
+    </div>
+
+    <div class="v2-evidence-empty" data-v2-evidence-empty>
+      <p>まだ今日の学習証拠はありません。短い練習を終えると、ここに事実だけを記録します。</p>
+    </div>
+
+    <p class="v2-return-note">{reference.result.nextJa}</p>
+
+    <a class="v2-primary-action v2-result-action" href="/v2-reference/">
+      <span>今日を終える</span>
+      <span aria-hidden="true">→</span>
+    </a>
+  </section>
+</V2ReferenceLayout>
+
+<script>
+  import { mountV2ReferenceResult } from '../../../client/v2ReferenceResult';
+
+  function initialiseV2Result(): void {
+    document.querySelectorAll<HTMLElement>('[data-v2-result]').forEach((root) => {
+      mountV2ReferenceResult(root);
+    });
+  }
+
+  initialiseV2Result();
+  document.addEventListener('astro:page-load', initialiseV2Result);
+</script>
+
+<style>
+  .v2-result {
+    display: grid;
+    gap: 17px;
+    padding-top: 7px;
+  }
+
+  .v2-result-capability {
+    position: relative;
+    overflow: hidden;
+    padding: 18px;
+    border: 1px solid var(--v2-line);
+    border-radius: var(--v2-radius-lg);
+    background:
+      radial-gradient(circle at 100% 0, rgb(244 162 115 / 27%), transparent 42%),
+      var(--v2-surface);
+  }
+
+  .v2-result-situation {
+    color: var(--v2-teal-deep);
+    font-size: 11px;
+    font-weight: 850;
+  }
+
+  .v2-result-phrase {
+    margin-top: 8px !important;
+    color: var(--v2-ink);
+    font-size: clamp(42px, 12vw, 50px);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+  }
+
+  .v2-result-pinyin {
+    margin-top: 6px !important;
+    color: var(--v2-teal-deep);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+  }
+
+  .v2-result-capability h2 {
+    max-width: 18rem;
+    margin-top: 16px;
+    color: var(--v2-ink);
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.5;
+  }
+
+  .v2-evidence,
+  .v2-evidence-empty {
+    padding: 14px 15px;
+    border-left: 5px solid var(--v2-teal);
+    border-radius: 4px var(--v2-radius-md) var(--v2-radius-md) 4px;
+    background: var(--v2-teal-soft);
+  }
+
+  .v2-evidence-label {
+    color: var(--v2-teal-deep);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .v2-evidence-summary {
+    margin-top: 5px !important;
+    color: var(--v2-ink);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.55;
+  }
+
+  .v2-evidence-method {
+    margin-top: 6px !important;
+    color: var(--v2-ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .v2-evidence-empty {
+    border-left-color: #9aa69e;
+    background: var(--v2-surface-cool);
+    color: var(--v2-ink-soft);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.6;
+  }
+
+  .v2-return-note {
+    padding-inline: 3px;
+    color: var(--v2-ink-soft);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.6;
+  }
+
+  .v2-result-action {
+    width: 100%;
+    justify-content: space-between;
+    padding-inline: 20px;
+  }
+</style>

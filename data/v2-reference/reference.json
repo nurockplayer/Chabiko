@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "sourceLessonId": "lesson-001",
+  "scene": {
+    "id": "taiwan-night-market-pointing-order",
+    "labelJa": "台湾・夜市",
+    "taskJa": "欲しいものを指さして、ひと言で注文します。",
+    "assetPath": "/assets/v2-reference/taiwan-night-market-order.webp",
+    "altJa": "台湾の夜市で、客が焼き餃子を指さして注文している場面",
+    "width": 1536,
+    "height": 1024,
+    "mimeType": "image/webp",
+    "fileSizeBytes": 163122,
+    "assetChecksumSha256": "a25ecd17c886e6161d9236c8894873783c898e8b9301d443374cafc227f5132c",
+    "provenance": {
+      "source": "openai-built-in-image-generation",
+      "generatedAt": "2026-08-23",
+      "generationRevision": 1,
+      "referenceSetIds": [],
+      "prompt": "Use case: photorealistic-natural\nAsset type: mobile learning app scene window\nPrimary request: a candid documentary photo inside a Taiwanese night-market food stall, captured at the exact moment a customer points to one item to order\nScene/backdrop: compact street-food counter in Taiwan at early evening, stainless counter, warm practical stall lights, trays of freshly cooked dumplings and scallion pancakes, the street softly out of focus\nSubject: one natural adult hand entering from the lower edge and pointing clearly at a single food item; only a small partial view of the vendor's hands, no posed faces\nStyle/medium: photorealistic candid editorial travel photography, true-to-life Taiwan street texture, not a tourism advertisement\nComposition/framing: 3:2 landscape, eye-level close crop, clear focal point on the pointing gesture and selected food, enough darker calm area near the top for a small UI label but no text embedded in the image\nLighting/mood: warm stall light balanced with cool evening ambient light, quietly vivid, tactile, inviting, natural contrast\nColor palette: documentary neutrals with restrained warm amber and muted red accents\nMaterials/textures: realistic brushed steel, paper food trays, cooking steam, worn counter surfaces\nConstraints: no readable text, no logos, no trademarks, no watermark, no mascot, no exaggerated saturation, no recognizable private person\nAvoid: Taipei 101, lantern-wall clichés, bubble-tea hero shots, influencer travel poses, staged stock-photo smiles, synthetic CGI polish",
+      "promptDigestSha256": "560e3c43067d1cdcabdc85935c6e6300f12c8d57ccbb9b145d270ee0aa3083b1",
+      "rightsBasis": "product-owner-requested-generation-for-chabiko-v2-reference",
+      "allowedUse": "chabiko-v2-reference-only",
+      "publicWebDisplay": true,
+      "attributionRequired": false
+    }
+  },
+  "today": {
+    "headingJa": "台湾で、ひとつ話せるようになる。",
+    "primaryActionJa": "4分で始める",
+    "reviewLabelJa": "昨日のことばを復習"
+  },
+  "learning": {
+    "contextJa": "欲しいものを指さして、このひと言を使います。",
+    "supportLabelJa": "ことばを分けて見る",
+    "primaryActionJa": "答えを隠して思い出す"
+  },
+  "retrieval": {
+    "promptJa": "「これをください」を中国語の順に並べてください。",
+    "tokens": [
+      {
+        "id": "wo",
+        "text": "我",
+        "meaningJa": "私"
+      },
+      {
+        "id": "yao",
+        "text": "要",
+        "meaningJa": "欲しい・したい"
+      },
+      {
+        "id": "zhege",
+        "text": "這個",
+        "meaningJa": "これ"
+      }
+    ],
+    "initialOrder": [
+      "zhege",
+      "wo",
+      "yao"
+    ],
+    "correctOrder": [
+      "wo",
+      "yao",
+      "zhege"
+    ],
+    "hintJa": "まず「私」、次に「欲しい」、最後に「これ」。",
+    "incorrectJa": "語順が違います。まだ答えは表示していません。",
+    "correctJa": "できました。自分で語順を組み立てられました。"
+  },
+  "result": {
+    "headingJa": "今日できるようになったこと",
+    "canDoJa": "夜市で、欲しいものを指さして注文する",
+    "nextJa": "要 yào の音は、明日もう一度たしかめます。"
+  }
+}

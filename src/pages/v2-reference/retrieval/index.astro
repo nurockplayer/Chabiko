@@ -1,0 +1,334 @@
+---
+import { buildSafeV2RetrievalPayload } from '../../../content/loadV2Reference';
+import V2ReferenceLayout from '../../../layouts/V2ReferenceLayout.astro';
+
+const safePayload = buildSafeV2RetrievalPayload();
+const serializedPayload = JSON.stringify(safePayload);
+---
+
+<V2ReferenceLayout
+  title="思い出す"
+  description="答えを隠して中国語の語順を思い出す Chabiko V2 reference"
+  screen="retrieval"
+  chrome="focus"
+  backHref="/v2-reference/learning/"
+  headerLabel="答えを隠して思い出す"
+  headerMeta="作る"
+>
+  <section
+    class="v2-screen v2-retrieval"
+    data-v2-screen="retrieval"
+    data-v2-retrieval
+  >
+    <div class="v2-retrieval-heading">
+      <div>
+        <p class="v2-kicker">見ないで取り出す</p>
+        <h1>{safePayload.promptJa}</h1>
+      </div>
+      <span data-v2-attempt>1回目</span>
+    </div>
+
+    <div
+      class="v2-answer-well"
+      role="region"
+      aria-label="組み立て中の中国語"
+      data-v2-answer
+    >
+      <p class="v2-answer-placeholder">下のことばを順にタップ</p>
+    </div>
+
+    <div class="v2-token-section">
+      <p>ことば</p>
+      <div class="v2-token-pool" role="group" aria-label="ことばを選ぶ" data-v2-token-pool>
+        {
+          safePayload.tokens.map((token) => (
+            <button
+              type="button"
+              class="v2-token v2-token--pool"
+              aria-label={`${token.text}を選ぶ`}
+              data-v2-token-id={token.id}
+            >
+              {token.text}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div
+      class="v2-retrieval-feedback"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      data-v2-feedback
+    ></div>
+
+    <div class="v2-fixed-command" data-v2-command>
+      <button type="button" class="v2-command-primary" disabled>
+        この語順で確認する
+      </button>
+    </div>
+
+    <script
+      type="application/json"
+      data-v2-retrieval-payload
+      set:html={serializedPayload}
+      is:inline
+    ></script>
+  </section>
+</V2ReferenceLayout>
+
+<script>
+  import { mountV2ReferenceRetrieval } from '../../../client/v2ReferenceRetrieval';
+
+  function initialiseV2Retrieval(): void {
+    document.querySelectorAll<HTMLElement>('[data-v2-retrieval]').forEach((root) => {
+      try {
+        mountV2ReferenceRetrieval(root);
+      } catch (error) {
+        console.error('V2 reference retrieval failed to mount', error);
+      }
+    });
+  }
+
+  initialiseV2Retrieval();
+  document.addEventListener('astro:page-load', initialiseV2Retrieval);
+</script>
+
+<style is:global>
+  .v2-retrieval {
+    display: grid;
+    gap: 19px;
+    padding-top: 14px;
+  }
+
+  .v2-retrieval-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+  }
+
+  .v2-retrieval-heading h1 {
+    max-width: 20rem;
+    margin-top: 5px !important;
+    color: var(--v2-ink);
+    font-size: clamp(21px, 6vw, 25px);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 1.42;
+  }
+
+  .v2-retrieval-heading > span {
+    min-height: 29px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--v2-teal-soft);
+    color: var(--v2-teal-deep);
+    font-size: 11px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .v2-answer-well {
+    width: 100%;
+    min-height: 103px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    gap: 9px;
+    padding: 16px;
+    border: 2px dashed #aebbb1;
+    border-radius: var(--v2-radius-md);
+    background: var(--v2-surface-cool);
+  }
+
+  .v2-answer-placeholder {
+    width: 100%;
+    color: var(--v2-ink-soft);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .v2-token-section {
+    display: grid;
+    gap: 9px;
+  }
+
+  .v2-token-section > p {
+    color: var(--v2-ink-soft);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .v2-token-pool {
+    min-height: 64px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .v2-token {
+    min-width: 68px;
+    min-height: 56px;
+    padding: 9px 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #aebbb1;
+    border-radius: 15px;
+    background: var(--v2-surface);
+    box-shadow: var(--v2-shadow-object);
+    color: var(--v2-ink);
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.15;
+  }
+
+  button.v2-token:hover {
+    border-color: var(--v2-teal);
+    background: var(--v2-teal-soft);
+  }
+
+  button.v2-token:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #bdc9c0;
+  }
+
+  .v2-token--answer {
+    border-color: var(--v2-teal);
+    background: var(--v2-teal-soft);
+    color: var(--v2-teal-deep);
+  }
+
+  .v2-token--static {
+    border-color: var(--v2-line);
+    background: transparent;
+    box-shadow: none;
+    color: var(--v2-ink-soft);
+    cursor: default;
+  }
+
+  .v2-token--answer.v2-token--static {
+    border-color: #b9cbc1;
+    background: var(--v2-surface-cool);
+    color: var(--v2-teal-deep);
+  }
+
+  .v2-retrieval-feedback {
+    min-height: 0;
+    display: grid;
+    gap: 4px;
+    border-radius: var(--v2-radius-md);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .v2-retrieval-feedback:empty {
+    display: none;
+  }
+
+  .v2-retrieval-feedback strong {
+    font-size: 15px;
+  }
+
+  .v2-retrieval-feedback--error,
+  .v2-retrieval-feedback--hint {
+    padding: 13px 14px;
+  }
+
+  .v2-retrieval-feedback--error {
+    border-left: 5px solid var(--v2-error);
+    background: var(--v2-error-soft);
+    color: var(--v2-error);
+  }
+
+  .v2-retrieval-feedback--hint {
+    border-left: 5px solid var(--v2-apricot);
+    background: var(--v2-apricot-soft);
+    color: var(--v2-ink);
+  }
+
+  .v2-retrieval-feedback--repair {
+    gap: 11px;
+    padding: 16px;
+    border: 1px solid var(--v2-line);
+    background: var(--v2-surface);
+  }
+
+  .v2-repair-label {
+    color: var(--v2-ink-soft);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .v2-revealed-answer {
+    color: var(--v2-ink);
+    font-size: 39px !important;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  .v2-repair-chunks {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .v2-repair-chunks > div {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+    padding: 8px;
+    border-radius: 11px;
+    background: var(--v2-surface-cool);
+  }
+
+  .v2-repair-chunks span {
+    font-size: 19px;
+    font-weight: 900;
+  }
+
+  .v2-repair-chunks small {
+    overflow-wrap: anywhere;
+    color: var(--v2-ink-soft);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .v2-retrieval-feedback--success {
+    padding: 15px;
+    border-left: 5px solid var(--v2-teal);
+    background: var(--v2-teal-soft);
+    color: var(--v2-teal-deep);
+  }
+
+  @media (width <= 340px) {
+    .v2-retrieval {
+      gap: 15px;
+    }
+
+    .v2-answer-well {
+      min-height: 92px;
+      padding: 13px;
+    }
+
+    .v2-token {
+      min-width: 62px;
+      min-height: 52px;
+      padding-inline: 14px;
+      font-size: 22px;
+    }
+
+    .v2-repair-chunks small {
+      font-size: 8.5px;
+    }
+  }
+</style>

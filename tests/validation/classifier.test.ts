@@ -140,6 +140,20 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runA11y).toBe(true);
   });
 
+  it.each([
+    'data/v2-reference/reference.json',
+    'public/assets/v2-reference/taiwan-night-market-order.webp',
+  ])('%s runs the full gate for V2 provenance and asset drift protection', (file) => {
+    const classification = classifyFiles([file]);
+    expect(classification.tier).toBe('t3');
+    expect(classification.riskClasses).toContain('build-ci');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runBuild).toBe(true);
+    expect(classification.runContent).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
+  });
+
   it('a tests-only change runs the changed tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['tests/lessons.test.ts']);
     expect(classification.tier).toBe('t1');
