@@ -1,0 +1,125 @@
+---
+import V2Scene from '../../components/v2-reference/V2Scene.astro';
+import { loadV2Reference } from '../../content/loadV2Reference';
+import V2ReferenceLayout from '../../layouts/V2ReferenceLayout.astro';
+
+const reference = loadV2Reference();
+---
+
+<V2ReferenceLayout
+  title="今日"
+  description="Chabiko V2 isolated consumer UX reference"
+  screen="today"
+  chrome="navigation"
+  currentNav="today"
+>
+  <section class="v2-screen v2-today" data-v2-screen="today">
+    <div class="v2-today-heading">
+      <p class="v2-kicker">今日の4分</p>
+      <h1 class="v2-screen-title">{reference.today.headingJa}</h1>
+    </div>
+
+    <article class="v2-today-moment" aria-labelledby="v2-today-phrase">
+      <V2Scene
+        assetPath={reference.scene.assetPath}
+        altJa={reference.scene.altJa}
+        labelJa={reference.scene.labelJa}
+        width={reference.scene.width}
+        height={reference.scene.height}
+      />
+      <div class="v2-today-phrase-block">
+        <div>
+          <p id="v2-today-phrase" class="v2-today-phrase" lang="zh-Hant">
+            {reference.lesson.coreSentence}
+          </p>
+          <p class="v2-today-pinyin" lang="zh-Latn-pinyin">
+            {reference.coreExample.pinyin}
+          </p>
+        </div>
+        <p class="v2-today-context">{reference.scene.taskJa}</p>
+      </div>
+    </article>
+
+    <a class="v2-primary-action v2-today-cta" href="/v2-reference/learning/">
+      <span>{reference.today.primaryActionJa}</span>
+      <span class="v2-action-arrow" aria-hidden="true">→</span>
+    </a>
+  </section>
+</V2ReferenceLayout>
+
+<style>
+  .v2-today {
+    display: grid;
+    gap: 16px;
+  }
+
+  .v2-today-heading {
+    padding-top: 2px;
+  }
+
+  .v2-today-moment {
+    min-width: 0;
+  }
+
+  .v2-today-phrase-block {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    padding: 17px 4px 3px;
+  }
+
+  .v2-today-phrase {
+    color: var(--v2-ink);
+    font-size: clamp(30px, 9vw, 39px);
+    font-weight: 900;
+    letter-spacing: 0.015em;
+    line-height: 1.08;
+    white-space: nowrap;
+  }
+
+  .v2-today-pinyin {
+    margin-top: 5px !important;
+    color: var(--v2-teal-deep);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+  }
+
+  .v2-today-context {
+    max-width: 14rem;
+    color: var(--v2-ink-soft);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.55;
+  }
+
+  .v2-today-cta {
+    width: 100%;
+    justify-content: space-between;
+    padding-inline: 20px;
+  }
+
+  .v2-action-arrow {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  @media (width <= 340px) {
+    .v2-today {
+      gap: 13px;
+    }
+
+    .v2-today-phrase-block {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding-top: 13px;
+    }
+
+    .v2-today-context {
+      max-width: none;
+    }
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import '../styles/v2-reference.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  screen: 'today' | 'learning' | 'retrieval' | 'result';
+  chrome: 'navigation' | 'focus';
+  currentNav?: 'today' | 'learn' | 'record';
+  backHref?: string;
+  headerLabel?: string;
+  headerMeta?: string;
+}
+
+const {
+  title,
+  description,
+  screen,
+  chrome,
+  currentNav,
+  backHref = '/v2-reference/',
+  headerLabel = '台湾で話す',
+  headerMeta,
+} = Astro.props;
+
+const navItems = [
+  { id: 'today', label: '今日', href: '/v2-reference/' },
+  { id: 'learn', label: '学ぶ', href: '/v2-reference/learning/' },
+  { id: 'record', label: '記録', href: '/v2-reference/result/' },
+] as const;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  robots="noindex,nofollow"
+>
+  <div
+    class:list={[
+      'v2-app',
+      `v2-app--${chrome}`,
+      `v2-app--${screen}`,
+    ]}
+    data-v2-reference-root
+  >
+    {
+      chrome === 'focus' ? (
+        <header class="v2-focus-header" data-v2-focus-header>
+          <a class="v2-back-link" href={backHref} aria-label="前の画面に戻る">
+            <span aria-hidden="true">‹</span>
+          </a>
+          <p>{headerLabel}</p>
+          <span class="v2-header-meta">{headerMeta}</span>
+        </header>
+      ) : (
+        <header class="v2-app-header">
+          <a class="v2-wordmark" href="/v2-reference/" aria-label="Chabiko V2 今日">
+            <span aria-hidden="true" class="v2-wordmark-mark">茶</span>
+            <span>Chabiko</span>
+          </a>
+          <p>{headerLabel}</p>
+        </header>
+      )
+    }
+
+    <div class="v2-stage">
+      <slot />
+    </div>
+
+    {
+      chrome === 'navigation' && (
+        <nav class="v2-bottom-nav" aria-label="V2 reference navigation">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              class:list={['v2-nav-item', `v2-nav-item--${item.id}`]}
+              aria-current={currentNav === item.id ? 'page' : undefined}
+            >
+              <span class="v2-nav-icon" aria-hidden="true" />
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </nav>
+      )
+    }
+  </div>
+</BaseLayout>

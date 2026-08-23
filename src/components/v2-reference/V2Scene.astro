@@ -1,0 +1,29 @@
+---
+export interface Props {
+  assetPath: string;
+  altJa: string;
+  labelJa: string;
+  width: number;
+  height: number;
+  captionJa?: string;
+  compact?: boolean;
+}
+
+const {
+  assetPath,
+  altJa,
+  labelJa,
+  width,
+  height,
+  captionJa,
+  compact = false,
+} = Astro.props;
+---
+
+<figure class:list={['v2-scene', { 'v2-scene--compact': compact }]}>
+  <div class="v2-scene-image">
+    <img src={assetPath} alt={altJa} width={width} height={height} loading="eager" />
+    <span class="v2-scene-label">{labelJa}</span>
+  </div>
+  {captionJa && <figcaption>{captionJa}</figcaption>}
+</figure>
