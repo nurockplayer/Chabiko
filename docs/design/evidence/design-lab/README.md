@@ -38,9 +38,10 @@ origin.
 - The 2026-08-24 run produced all 24 files with no browser, image, overflow, or
   external-request errors.
 
-Task 4 follow-up: the Airbnb Home control labelled `レッスンを続ける` intersects
-the bottom boundary of the 390 x 844 viewport. This evidence task records the
-finding and does not modify the grammar component.
+Task 4 final framing pass: Airbnb Home was revalidated at 320, 375, 390, and
+430 x 844. The `レッスンを続ける` control is fully contained at each width, and
+the final individual and comparison Home captures retain the photo-led
+itinerary orientation.
 
 ## Fixed manifest
 
