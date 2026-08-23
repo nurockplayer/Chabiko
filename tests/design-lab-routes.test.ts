@@ -118,6 +118,7 @@ describe('design lab layout isolation', () => {
   test('owns the baseline reset required by prototype routes', () => {
     const layout = readFileSync('src/layouts/DesignLabLayout.astro', 'utf8');
 
+    expect(layout).toMatch(/<style\s+is:global(?:\s|>)/);
     expect(layout).toMatch(/\*,\s*\*::before,\s*\*::after\s*\{\s*box-sizing:\s*border-box;/);
     expect(layout).toMatch(/body\s*\{\s*margin:\s*0;/);
     expect(layout).toMatch(/button,\s*input,\s*select,\s*textarea\s*\{\s*font:\s*inherit;/);
