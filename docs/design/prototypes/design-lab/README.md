@@ -127,6 +127,30 @@ The versions must remain identifiable in grayscale:
 If any pair loses those signatures after desaturation, the layout must be
 reworked before evidence capture.
 
+## Generated asset rights and provenance
+
+The two prototype photographs were generated for this task with OpenAI
+built-in image generation under the requester account context. The task
+requester authorized their use only within the Design Lab prototype scope.
+
+The recorded rights basis is the Output-rights allocation in the
+[OpenAI Terms of Use](https://openai.com/policies/terms-of-use/) effective
+2026-01-01 under "Content ownership," and the
+[OpenAI Services Agreement](https://openai.com/policies/services-agreement/)
+effective 2026-01-01 under §4.1. This records the relevant contractual rights
+allocation; it is not a non-infringement guarantee.
+
+Human review found no readable text, visible logo, or identifiable specific
+person in either image. The prototype UI displays no third-party source
+attribution as a project presentation decision. Repository-level provenance is
+still required so the generation context, rights basis, authorized scope,
+review, and artifact hashes remain auditable.
+
+`assets.json` is the machine-readable contract. It records portable generation
+artifact identifiers, source PNG SHA-256 digests, committed WebP SHA-256
+digests, prompt summaries, prototype-only scope, and the complete runtime
+consumer allowlist. Machine-local source paths are intentionally excluded.
+
 ## Isolation boundary
 
 - No changes to `BaseLayout.astro`, `Header.astro`, production routes, design
@@ -134,4 +158,3 @@ reworked before evidence capture.
 - The lab uses its own layout, fixture adapter, controller, routes, and assets.
 - Routes use `noindex, nofollow` and never appear in production navigation.
 - Generated images are prototype-only and documented in `assets.json`.
-

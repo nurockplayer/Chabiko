@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, readdirSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -504,6 +505,214 @@ const grammarContracts = [
     routeFile: 'src/pages/design-lab/duolingo/index.astro',
   },
 ] as const;
+
+type DesignLabAssetRecord = {
+  path: string;
+  allowedUse: string;
+  useCase: string;
+  promptSummary: string;
+  sourceArtifact: {
+    id: string;
+    kind: string;
+    format: string;
+    sha256: string;
+  };
+  committedArtifact: {
+    kind: string;
+    format: string;
+    width: number;
+    height: number;
+    sha256: string;
+  };
+  consumers: string[];
+};
+
+type DesignLabAssetManifest = {
+  schemaVersion: number;
+  scope: string;
+  generator: {
+    provider: string;
+    product: string;
+    outputKind: string;
+    generatedAt: string;
+  };
+  rightsDecision: {
+    decision: string;
+    accountContext: string;
+    requesterAuthorization: string;
+    rightsBasis: Array<{
+      document: string;
+      url: string;
+      effectiveDate: string;
+      section: string;
+      basis: string;
+    }>;
+    limitations: string;
+    humanReview: {
+      reviewed: boolean;
+      findings: string[];
+    };
+    attribution: {
+      uiDisplay: string;
+      repositoryRecord: string;
+      rationale: string;
+    };
+  };
+  assets: DesignLabAssetRecord[];
+};
+
+function loadDesignLabAssetManifest(): DesignLabAssetManifest {
+  return JSON.parse(
+    readFileSync('docs/design/prototypes/design-lab/assets.json', 'utf8'),
+  ) as DesignLabAssetManifest;
+}
+
+function listFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory() ? listFiles(path) : [path];
+  });
+}
+
+describe('design lab generated asset provenance', () => {
+  test('records a portable, qualified prototype-only rights decision', () => {
+    const manifest = loadDesignLabAssetManifest();
+
+    expect(manifest.schemaVersion).toBe(2);
+    expect(manifest.scope).toBe('prototype-only');
+    expect(manifest.generator).toEqual({
+      provider: 'OpenAI',
+      product: 'built-in image generation',
+      outputKind: 'generated',
+      generatedAt: '2026-08-24',
+    });
+    expect(manifest.rightsDecision).toEqual({
+      decision: 'approved-for-prototype-only-use',
+      accountContext:
+        'The task used OpenAI built-in image generation under the requester account context.',
+      requesterAuthorization:
+        'The task requester authorized generation and use within the Design Lab prototype scope.',
+      rightsBasis: [
+        {
+          document: 'OpenAI Terms of Use',
+          url: 'https://openai.com/policies/terms-of-use/',
+          effectiveDate: '2026-01-01',
+          section: 'Content ownership',
+          basis:
+            'Records OpenAI\'s allocation of Output ownership to the user, subject to the agreement.',
+        },
+        {
+          document: 'OpenAI Services Agreement',
+          url: 'https://openai.com/policies/services-agreement/',
+          effectiveDate: '2026-01-01',
+          section: '§4.1',
+          basis:
+            'Records OpenAI\'s allocation of Output ownership to the customer, subject to the agreement.',
+        },
+      ],
+      limitations:
+        'This provenance record documents rights allocation and project scope; it is not a non-infringement guarantee.',
+      humanReview: {
+        reviewed: true,
+        findings: [
+          'No readable text',
+          'No visible logo',
+          'No identifiable specific person',
+        ],
+      },
+      attribution: {
+        uiDisplay: 'none',
+        repositoryRecord: 'required',
+        rationale:
+          'Generated imagery carries no third-party source credit in the prototype UI; repository metadata remains required so the generation context, rights basis, scope, review, and hashes stay auditable.',
+      },
+    });
+    expect(JSON.stringify(manifest)).not.toMatch(/(?:sourceFile|\/Users\/|[A-Za-z]:\\\\)/);
+  });
+
+  test('binds every committed image to its portable source artifact and actual output bytes', () => {
+    const manifest = loadDesignLabAssetManifest();
+    const expectedArtifacts = new Map([
+      [
+        '/assets/design-lab/night-market-ordering.webp',
+        {
+          sourceArtifact: {
+            id: 'openai-imagegen:exec-11450f1e-8d34-44c3-9c88-2b7c9ee0404f',
+            kind: 'generated-png',
+            format: 'png',
+            sha256: '08ddefd1e012095c0a38bb113d10d9e6d4edbc5a2c3609a1c3e8838245a62049',
+          },
+          committedArtifact: {
+            kind: 'optimized-webp',
+            format: 'webp',
+            width: 1536,
+            height: 1024,
+            sha256: '78d3ad47f0496871f0dca8f99bec57c77911ec182b26bc3696490a512ea6a9bf',
+          },
+        },
+      ],
+      [
+        '/assets/design-lab/rainy-taiwan-street.webp',
+        {
+          sourceArtifact: {
+            id: 'openai-imagegen:exec-474550a5-ab9f-4492-a557-ee263344e068',
+            kind: 'generated-png',
+            format: 'png',
+            sha256: '96ec3e60f15cc0332fcabfd4c65fc17a8cd61395ea6cb24a635ac70afa2c4825',
+          },
+          committedArtifact: {
+            kind: 'optimized-webp',
+            format: 'webp',
+            width: 1536,
+            height: 1024,
+            sha256: 'c1a704d3b8a427f387daed04f9318462bac5d424ac4871330a699f24107069e4',
+          },
+        },
+      ],
+    ]);
+
+    for (const asset of manifest.assets) {
+      const expected = expectedArtifacts.get(asset.path);
+
+      expect(expected).toBeDefined();
+      expect(asset.allowedUse).toBe('prototype-only');
+      expect(asset.useCase).toBe('photorealistic-natural');
+      expect(asset.promptSummary).toMatch(/\S/);
+      expect(asset.sourceArtifact).toEqual(expected?.sourceArtifact);
+      expect(asset.committedArtifact).toEqual(expected?.committedArtifact);
+
+      const publicPath = join('public', asset.path);
+      const actualDigest = createHash('sha256')
+        .update(readFileSync(publicPath))
+        .digest('hex');
+      expect(actualDigest).toBe(asset.committedArtifact.sha256);
+    }
+  });
+
+  test('keeps the public Design Lab asset inventory closed over metadata', () => {
+    const manifest = loadDesignLabAssetManifest();
+    const actualAssets = readdirSync('public/assets/design-lab', { withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => `/assets/design-lab/${entry.name}`)
+      .sort();
+
+    expect(actualAssets).toEqual(manifest.assets.map((asset) => asset.path).sort());
+  });
+
+  test('keeps metadata consumer allowlists and runtime asset references bidirectionally aligned', () => {
+    const manifest = loadDesignLabAssetManifest();
+    const sourceFiles = listFiles('src');
+
+    for (const asset of manifest.assets) {
+      const actualConsumers = sourceFiles
+        .filter((sourceFile) => readFileSync(sourceFile, 'utf8').includes(asset.path))
+        .sort();
+
+      expect(asset.consumers).toEqual([...new Set(asset.consumers)].sort());
+      expect(actualConsumers).toEqual(asset.consumers);
+    }
+  });
+});
 
 describe('design lab grammar routes', () => {
   test.each(grammarContracts)('$slug route wires the isolated layout, canonical fixture, grammar, and controller', ({ componentName, routeFile }) => {
