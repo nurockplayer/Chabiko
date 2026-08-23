@@ -479,11 +479,18 @@ function validateAnswerPayload(
     }
     chunks.push({ id: rawChunk.id, text: rawChunk.text });
   }
+  const canonicalChunkTextById = new Map(
+    bootstrap.retrieval.chunks.map((chunk) => [chunk.id, chunk.text]),
+  );
   if (
     chunks.length !== bootstrap.retrieval.chunks.length ||
     new Set(chunks.map((chunk) => chunk.id)).size !== chunks.length ||
     sequenceSignature(chunks.map((chunk) => chunk.id)) !== bootstrap.retrieval.answerSignature ||
-    chunks.map((chunk) => chunk.text).join('') !== value.phrase
+    chunks.some((chunk) => canonicalChunkTextById.get(chunk.id) !== chunk.text) ||
+    chunks.map((chunk) => chunk.text).join('') !== value.phrase ||
+    value.phrase !== bootstrap.learning.phrase ||
+    value.pinyin !== bootstrap.learning.pinyin ||
+    value.meaningJa !== bootstrap.learning.meaningJa
   ) {
     return null;
   }

@@ -215,10 +215,26 @@ describe('V2 reference client flow', () => {
     expect(getRoot().querySelector('[data-action="start-retrieval"]')).not.toBeNull();
   });
 
-  it('keeps the answer hidden when the on-demand reveal payload is invalid', async () => {
+  it.each([
+    ['lesson identity drifts', { ...ANSWER, lessonId: 'wrong-lesson' }],
+    [
+      'chunk text and phrase drift together',
+      {
+        ...ANSWER,
+        chunks: [
+          { id: 'v2-a91', text: '你' },
+          { id: 'v2-b07', text: '想' },
+          { id: 'v2-c42', text: '那個' },
+        ],
+        phrase: '你想那個',
+      },
+    ],
+    ['pinyin drifts', { ...ANSWER, pinyin: 'stale pinyin' }],
+    ['Japanese meaning drifts', { ...ANSWER, meaningJa: '古い意味' }],
+  ])('keeps the answer hidden when %s in the reveal payload', async (_case, payload) => {
     mountV2ReferenceFlow(getRoot(), BOOTSTRAP, {
       speak: vi.fn().mockResolvedValue(true),
-      fetchAnswer: vi.fn().mockResolvedValue({ ...ANSWER, lessonId: 'wrong-lesson' }),
+      fetchAnswer: vi.fn().mockResolvedValue(payload),
     });
 
     click('[data-action="start-learning"]');
@@ -230,11 +246,11 @@ describe('V2 reference client flow', () => {
     click('[data-action="show-hint"]');
     click('[data-action="reveal-answer"]');
 
-    await vi.waitFor(() =>
-      expect(getRoot().querySelector('[role="alert"]')?.textContent).toContain(
-        '答えを読み込めませんでした',
-      ),
-    );
+    await vi.waitFor(() => {
+      const alert = getRoot().querySelector('[role="alert"]');
+      expect(alert).not.toBeNull();
+      expect(alert?.textContent).toContain('答えを読み込めませんでした');
+    });
     expect(getRoot().textContent).not.toContain('我要這個');
     expect(getRoot().textContent).not.toContain('wǒ yào zhège');
   });
