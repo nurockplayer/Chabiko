@@ -145,8 +145,14 @@ describe('design lab controller', () => {
   test('switches views and keeps prototype interactions local to the mounted root', () => {
     window.history.replaceState({}, '', '/design-lab/apple/?view=vocabulary');
     const root = createDesignLabRoot();
-    const getItem = vi.spyOn(Storage.prototype, 'getItem');
-    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    const localGetItem = vi.spyOn(window.localStorage, 'getItem');
+    const localSetItem = vi.spyOn(window.localStorage, 'setItem');
+    const localRemoveItem = vi.spyOn(window.localStorage, 'removeItem');
+    const localClear = vi.spyOn(window.localStorage, 'clear');
+    const sessionGetItem = vi.spyOn(window.sessionStorage, 'getItem');
+    const sessionSetItem = vi.spyOn(window.sessionStorage, 'setItem');
+    const sessionRemoveItem = vi.spyOn(window.sessionStorage, 'removeItem');
+    const sessionClear = vi.spyOn(window.sessionStorage, 'clear');
 
     initDesignLabPrototype(root);
 
@@ -156,8 +162,6 @@ describe('design lab controller', () => {
 
     (root.querySelector<HTMLButtonElement>('[data-lab-rating="known"]') as HTMLButtonElement).click();
     expect(root.dataset.labRating).toBe('known');
-    expect(getItem).not.toHaveBeenCalled();
-    expect(setItem).not.toHaveBeenCalled();
 
     (root.querySelector<HTMLButtonElement>('[data-lab-nav][data-lab-target="lesson"]') as HTMLButtonElement).click();
     expect(root.querySelector<HTMLElement>('[data-lab-view="lesson"]')?.hidden).toBe(false);
@@ -167,6 +171,19 @@ describe('design lab controller', () => {
     const feedback = root.querySelector<HTMLElement>('[data-lab-quiz-feedback]');
     expect(feedback?.getAttribute('role')).toBe('status');
     expect(feedback?.textContent).toBe('正解です');
+
+    for (const storageApi of [
+      localGetItem,
+      localSetItem,
+      localRemoveItem,
+      localClear,
+      sessionGetItem,
+      sessionSetItem,
+      sessionRemoveItem,
+      sessionClear,
+    ]) {
+      expect(storageApi).not.toHaveBeenCalled();
+    }
   });
 
   test('retains the current cleanup after a stale cleanup runs', () => {
