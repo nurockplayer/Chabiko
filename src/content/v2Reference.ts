@@ -248,6 +248,11 @@ function parseMetadata(raw: string, path: string): V2ReferenceMetadata {
     }
     return order as string[];
   };
+  const initialOrder = validateOrder(retrieval.initialOrder, 'initialOrder');
+  const answerOrder = validateOrder(retrieval.answerOrder, 'answerOrder');
+  if (initialOrder.every((chunkId, index) => chunkId === answerOrder[index])) {
+    throw new Error('initialOrder must differ from answerOrder to keep the answer hidden');
+  }
 
   return {
     version: 1,
@@ -263,8 +268,8 @@ function parseMetadata(raw: string, path: string): V2ReferenceMetadata {
       contextJa: retrieval.contextJa as string,
       hintJa: retrieval.hintJa as string,
       chunks,
-      initialOrder: validateOrder(retrieval.initialOrder, 'initialOrder'),
-      answerOrder: validateOrder(retrieval.answerOrder, 'answerOrder'),
+      initialOrder,
+      answerOrder,
     },
     result: result as V2ReferenceMetadata['result'],
   };

@@ -114,6 +114,17 @@ describe('V2 reference content', () => {
     );
   });
 
+  it('fails closed when the initial chunk bank already uses the answer order', () => {
+    const fixture = writeMetadataFixture((value) => {
+      const retrieval = value.retrieval as Record<string, unknown>;
+      retrieval.initialOrder = [...(retrieval.answerOrder as string[])];
+    });
+
+    expect(() => loadV2ReferenceContent(fixture)).toThrow(
+      /initialOrder must differ from answerOrder to keep the answer hidden/,
+    );
+  });
+
   it('requires explicit generated-asset and device-audio provenance', () => {
     const fixture = writeMetadataFixture((value) => {
       const scene = value.scene as Record<string, unknown>;
