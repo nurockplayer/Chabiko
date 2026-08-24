@@ -170,6 +170,53 @@ describe('design lab fixture', () => {
     readinessWithInvalidEvidence.targets[0].evidence[0].type = 'opened-lesson';
     expect(() => buildDesignLabFixtureFromSources(invalidEvidence)).toThrow();
   });
+
+  test.each([
+    ['empty review prompts', []],
+    [
+      'non-array distractors',
+      [{ promptJa: '質問', answerJa: '答え', distractorsJa: { wrong: 'shape' } }],
+    ],
+    [
+      'no effective distractor',
+      [{ promptJa: '質問', answerJa: '答え', distractorsJa: ['答え', ' 答え ', '   '] }],
+    ],
+    [
+      'unusable first prompt despite a later usable prompt',
+      [
+        { promptJa: '壊れた質問', answerJa: '答え', distractorsJa: [' 答え '] },
+        { promptJa: '使える質問', answerJa: '別の答え', distractorsJa: ['誤答'] },
+      ],
+    ],
+  ])('rejects lesson practice with %s', (_label, reviewPrompts) => {
+    const invalidSource = fixtureSources();
+    const lesson = invalidSource.lesson as unknown as Record<string, unknown>;
+    lesson.reviewPrompts = clone(reviewPrompts);
+
+    expect(() => buildDesignLabFixtureFromSources(invalidSource)).toThrow(/lesson-001/);
+  });
+
+  test.each([
+    ['sections', [{ headingJa: '', contentJa: '説明' }]],
+    ['chunks', [{ chunk: '我要', meaning: 7 }]],
+    ['kanjiBridgeNotes', [{ kanji: '要', jpReading: '', noteJa: '説明' }]],
+    ['soundFocus', [null]],
+    ['examples', [{ traditional: '我要這個', pinyin: '', japanese: 'これをください' }]],
+  ])('rejects malformed nested lesson collection %s', (field, value) => {
+    const invalidSource = fixtureSources();
+    const lesson = invalidSource.lesson as unknown as Record<string, unknown>;
+    lesson[field] = clone(value);
+
+    expect(() => buildDesignLabFixtureFromSources(invalidSource)).toThrow(/lesson-001/);
+  });
+
+  test('rejects a malformed consumed top-level lesson field', () => {
+    const invalidSource = fixtureSources();
+    const lesson = invalidSource.lesson as unknown as Record<string, unknown>;
+    lesson.coreSentence = '   ';
+
+    expect(() => buildDesignLabFixtureFromSources(invalidSource)).toThrow(/lesson-001/);
+  });
 });
 
 describe('design lab layout isolation', () => {

@@ -55,6 +55,86 @@ function isReviewStatus(value: unknown): boolean {
   return typeof value === 'string' && REVIEW_STATUSES.has(value);
 }
 
+function hasNonEmptyFields(value: unknown, fields: readonly string[]): value is Record<string, unknown> {
+  return isRecord(value) && fields.every((field) => isNonEmptyString(value[field]));
+}
+
+function isLessonSection(value: unknown): boolean {
+  return hasNonEmptyFields(value, ['headingJa', 'contentJa']);
+}
+
+function isLessonChunk(value: unknown): boolean {
+  return hasNonEmptyFields(value, ['chunk', 'meaning'])
+    && (value.notesJa === undefined || isNonEmptyString(value.notesJa));
+}
+
+function isKanjiBridgeNote(value: unknown): boolean {
+  return hasNonEmptyFields(value, ['kanji', 'jpReading', 'noteJa']);
+}
+
+function isSoundFocus(value: unknown): boolean {
+  return hasNonEmptyFields(value, ['item', 'noteJa']);
+}
+
+function isLessonExample(value: unknown): boolean {
+  return hasNonEmptyFields(value, ['traditional', 'pinyin', 'japanese']);
+}
+
+function isDesignLabReviewPrompt(value: unknown): boolean {
+  if (
+    !isRecord(value)
+    || !isNonEmptyString(value.promptJa)
+    || !isNonEmptyString(value.answerJa)
+    || !Array.isArray(value.distractorsJa)
+    || value.distractorsJa.length === 0
+  ) {
+    return false;
+  }
+  const answer = value.answerJa.trim();
+  return value.distractorsJa.every(
+    (distractor) => isNonEmptyString(distractor) && distractor.trim() !== answer,
+  );
+}
+
+function isDesignLabLesson(value: unknown): boolean {
+  if (
+    !hasNonEmptyFields(value, [
+      'titleJa',
+      'level',
+      'canDoJa',
+      'learnerOutcomeJa',
+      'hookJa',
+      'travelScenario',
+      'coreSentence',
+      'travelTask',
+    ])
+    || value.id !== LESSON_ID
+    || (value.sections !== undefined
+      && (!Array.isArray(value.sections) || !value.sections.every(isLessonSection)))
+    || !Array.isArray(value.chunks)
+    || !value.chunks.every(isLessonChunk)
+    || !Array.isArray(value.kanjiBridgeNotes)
+    || !value.kanjiBridgeNotes.every(isKanjiBridgeNote)
+    || !Array.isArray(value.soundFocus)
+    || !value.soundFocus.every(isSoundFocus)
+    || (value.examples !== undefined
+      && (!Array.isArray(value.examples) || !value.examples.every(isLessonExample)))
+    || !Array.isArray(value.reviewPrompts)
+    || value.reviewPrompts.length === 0
+    || !value.reviewPrompts.every(isDesignLabReviewPrompt)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function requireLesson(value: unknown): Lesson {
+  if (!isDesignLabLesson(value)) {
+    throw new Error(`Design lab requires valid lesson '${LESSON_ID}'`);
+  }
+  return value as Lesson;
+}
+
 function isVocabularyExample(value: unknown): value is VocabularyExample {
   if (
     !isRecord(value) ||
@@ -200,12 +280,8 @@ function requirePathLabels(document: unknown): readonly DesignLabPathLabel[] {
 export function buildDesignLabFixtureFromSources(
   sources: DesignLabFixtureSources,
 ): DesignLabFixture {
-  if (!sources.lesson) {
-    throw new Error(`Design lab requires lesson '${LESSON_ID}'`);
-  }
-
   return {
-    lesson: sources.lesson,
+    lesson: requireLesson(sources.lesson),
     vocabulary: requireVocabulary(sources.vocabularyDocument),
     travelTargets: requireTravelTargets(sources.readinessDocument),
     pathLabels: requirePathLabels(sources.learningPathsDocument),
