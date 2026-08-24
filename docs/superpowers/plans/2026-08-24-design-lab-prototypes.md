@@ -14,7 +14,9 @@
 `docs/design/prototypes/design-lab/impact-map.md`
 
 **Validation status:** Prototype implementation, focused validation, and
-capture evidence exist. Final exact-head T3 integration validation is pending.
+capture evidence are complete. Exact head `e715d250dbb9203088648b5f921440eb26bf4758`
+passed the T3 integration gate before independent review. The bounded review
+repairs require one final exact-head rerun and fresh contract verdict.
 
 ## Global Constraints
 
