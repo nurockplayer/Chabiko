@@ -396,6 +396,15 @@ export function domainTestGlobsFor(file: string): string[] {
   return [];
 }
 
+const DESIGN_LAB_CONTRACT_TEST = 'tests/design-lab-routes.test.ts';
+
+function isDesignLabContractArtifact(file: string): boolean {
+  const normalized = normalize(file);
+  return normalized.startsWith('docs/design/evidence/design-lab/')
+    || normalized === 'docs/design/prototypes/design-lab/assets.json'
+    || normalized.startsWith('public/assets/design-lab/');
+}
+
 // ---------------------------------------------------------------------------
 // Top-level classification.
 // ---------------------------------------------------------------------------
@@ -461,6 +470,17 @@ export function classifyFiles(files: string[], options: ClassifyOptions = {}): C
     } else {
       for (const glob of globs) affectedTestGlobs.add(glob);
     }
+  }
+
+  // Design Lab screenshots, their metadata/provenance record, and runtime
+  // WebPs form one generated-artifact contract. Keep their existing docs or
+  // content risk classes, but always route an isolated artifact-only change
+  // through the suite that verifies the committed publication and asset bytes.
+  const designLabContractArtifacts = files.filter(isDesignLabContractArtifact);
+  if (designLabContractArtifacts.length > 0) {
+    affectedTestGlobs.add(DESIGN_LAB_CONTRACT_TEST);
+    if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
+    reasons.push('Design Lab evidence/provenance/assets → T1 coupled contract test');
   }
   if (unmappedDomain) {
     if (TIER_ORDER[tier] < TIER_ORDER.t2) tier = 't2';

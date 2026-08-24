@@ -152,6 +152,48 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
   });
 });
 
+describe('Design Lab generated artifacts stay coupled to their contract suite', () => {
+  const coupledPaths = [
+    'docs/design/evidence/design-lab/README.md',
+    'docs/design/evidence/design-lab/capture.json',
+    'docs/design/evidence/design-lab/apple-home.png',
+    'docs/design/prototypes/design-lab/assets.json',
+    'public/assets/design-lab/night-market-ordering.webp',
+  ];
+
+  it.each(coupledPaths)('%s selects the focused Design Lab contract at T1', (path) => {
+    const classification = classifyFiles([path]);
+
+    expect(classification.tier).toBe('t1');
+    expect(classification.affectedTestGlobs).toEqual(['tests/design-lab-routes.test.ts']);
+    expect(classification.runAffectedVitest).toBe(true);
+    expect(classification.runFullVitest).toBe(false);
+    expect(classification.runBuild).toBe(false);
+    expect(classification.runVisual).toBe(false);
+    expect(classification.runA11y).toBe(false);
+  });
+
+  it('keeps public Design Lab assets in content validation and deduplicates the focused suite', () => {
+    const classification = classifyFiles(coupledPaths);
+
+    expect(classification.affectedContent).toBe(true);
+    expect(classification.runContent).toBe(true);
+    expect(classification.affectedTestGlobs).toEqual(['tests/design-lab-routes.test.ts']);
+  });
+
+  it('does not couple narrative prototype docs or unrelated public assets', () => {
+    const narrative = classifyFiles(['docs/design/prototypes/design-lab/README.md']);
+    const unrelatedAsset = classifyFiles(['public/assets/lessons/example.webp']);
+
+    expect(narrative.tier).toBe('t0');
+    expect(narrative.affectedTestGlobs).toEqual([]);
+    expect(unrelatedAsset.tier).toBe('t1');
+    expect(unrelatedAsset.affectedTestGlobs).toEqual([]);
+    expect(unrelatedAsset.runAffectedVitest).toBe(false);
+    expect(unrelatedAsset.runContent).toBe(true);
+  });
+});
+
 describe('T2 and T3 coverage', () => {
   it('a UI change runs the full gate including visual + a11y', () => {
     const classification = classifyFiles(['src/components/LessonPractice.astro']);
@@ -359,6 +401,26 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       const emitted = readFileSync(outputPath, 'utf8');
       expect(emitted).toContain('run_visual=false');
       expect(emitted).toContain('run_a11y=false');
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('a Design Lab evidence-only add emits the focused T1 validation gate', () => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    writeFile(repo, 'docs/design/evidence/design-lab/capture.json', '{}\n');
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t1');
+      expect(stdout).toContain('run_affected_vitest=true');
+      expect(stdout).toContain('run_full_vitest=false');
+      const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('tier=t1');
+      expect(emitted).toContain('run_affected_vitest=true');
+      expect(emitted).toContain('run_full_vitest=false');
     } finally {
       rmSync(outputPath, { force: true });
     }

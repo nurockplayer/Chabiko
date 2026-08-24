@@ -936,6 +936,18 @@ describe('design lab comparison and evidence capture', () => {
     expect(source).toContain('fullPage: false');
   });
 
+  test('committed capture publication is metadata-closed with no extra PNGs', async () => {
+    const metadata = await validateCapturePublication(EVIDENCE_DIRECTORY);
+    const committedPngs = (await readdir(EVIDENCE_DIRECTORY))
+      .filter((filename) => filename.endsWith('.png'))
+      .sort();
+
+    expect(metadata.entries).toHaveLength(CAPTURE_MANIFEST.length);
+    expect(committedPngs).toEqual(
+      CAPTURE_MANIFEST.map(({ filename }) => filename).sort(),
+    );
+  });
+
   test('exports the canonical rendered validation contract and required widths', () => {
     const captureExports = designLabCapture as Record<string, unknown>;
 
