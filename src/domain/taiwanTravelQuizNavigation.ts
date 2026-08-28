@@ -11,6 +11,9 @@
 /** The exact 総合テスト route (frozen V1 contract). */
 export const TAIWAN_TRAVEL_ASSESSMENT_ROUTE = '/paths/taiwan-travel/quiz/';
 
+/** The canonical Taiwan Travel path landing route. */
+export const TAIWAN_TRAVEL_PATH_ROUTE = '/paths/taiwan-travel/';
+
 /** The Taiwan Travel track id (its learning-path id). */
 export const TAIWAN_TRAVEL_TRACK_ID = 'taiwan-travel';
 

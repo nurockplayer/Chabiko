@@ -1,5 +1,6 @@
 ---
 import type { TaiwanTravelAssessmentPayload } from '../content/taiwanTravelAssessmentPayload';
+import { TAIWAN_TRAVEL_PATH_ROUTE } from '../domain/taiwanTravelQuizNavigation';
 
 export interface Props {
   payload: TaiwanTravelAssessmentPayload;
@@ -16,7 +17,7 @@ const total = lessonIds.length;
   data-taiwan-travel-quiz
 >
   <nav class="taiwan-travel-quiz-back">
-    <a href="/">← 台湾旅行に戻る</a>
+    <a href={TAIWAN_TRAVEL_PATH_ROUTE}>← 台湾旅行に戻る</a>
   </nav>
 
   <p class="taiwan-travel-quiz-total" data-quiz-total>対象 {total}レッスン</p>

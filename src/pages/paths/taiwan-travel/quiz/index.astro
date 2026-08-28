@@ -7,7 +7,10 @@ import {
   buildTaiwanTravelAssessmentPayload,
   serializeTaiwanTravelAssessmentPayload,
 } from '../../../../content/taiwanTravelAssessmentPayload';
-import { TAIWAN_TRAVEL_ASSESSMENT_ROUTE } from '../../../../domain/taiwanTravelQuizNavigation';
+import {
+  TAIWAN_TRAVEL_ASSESSMENT_ROUTE,
+  TAIWAN_TRAVEL_PATH_ROUTE,
+} from '../../../../domain/taiwanTravelQuizNavigation';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 
 // buildTaiwanTravelAssessmentPayload fails closed: it throws at build time when
@@ -26,14 +29,14 @@ const payloadJson = serializeTaiwanTravelAssessmentPayload(payload);
     <Breadcrumb
       crumbs={[
         { label: 'ホーム', href: '/' },
-        { label: '台湾旅行', href: '/#taiwan-travel-path' },
+        { label: '台湾旅行', href: TAIWAN_TRAVEL_PATH_ROUTE },
         { label: '総合テスト' },
       ]}
     />
     <TrackNav
       label="台湾旅行"
       items={[
-        { label: 'レッスン', href: '/lessons/lesson-001/' },
+        { label: 'レッスン', href: TAIWAN_TRAVEL_PATH_ROUTE },
         { label: '総合テスト', href: TAIWAN_TRAVEL_ASSESSMENT_ROUTE, current: true },
       ]}
     />

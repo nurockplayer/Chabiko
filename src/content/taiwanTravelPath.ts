@@ -1,12 +1,13 @@
 import type { LearningPathRecord } from '../types/learningPath';
 import type { Lesson } from '../types/lesson';
-import { TAIWAN_TRAVEL_ASSESSMENT_ROUTE } from '../domain/taiwanTravelQuizNavigation';
+import {
+  TAIWAN_TRAVEL_ASSESSMENT_ROUTE,
+  TAIWAN_TRAVEL_PATH_ROUTE,
+} from '../domain/taiwanTravelQuizNavigation';
 import { loadLearningPaths } from './loadLearningPaths';
 import { loadAllRenderableLessons } from './loadLessons';
 
 const TAIWAN_TRAVEL_PATH_ID = 'taiwan-travel';
-const TAIWAN_TRAVEL_PATH_ROUTE = '/paths/taiwan-travel/';
-
 export interface TaiwanTravelPathLesson {
   readonly id: string;
   readonly lessonNumber: number;
