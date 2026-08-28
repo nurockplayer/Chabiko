@@ -96,6 +96,16 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         expect(value.simplifiedStatus).toBe('generated');
       }
     }
+
+    const transportLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-013',
+    )?.lesson;
+    const busExample = transportLesson?.examples?.find((example) =>
+      example.traditional.includes('公車'),
+    );
+    expect(busExample?.simplified).toContain('公车');
+    expect(busExample?.simplified).not.toContain('公交车');
+    expect(busExample?.pinyin).toContain('gōngchē');
   });
 
   it('fails closed on wrong order, duplicate source IDs, stale graph refs, and production overlap', async () => {

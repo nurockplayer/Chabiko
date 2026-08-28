@@ -101,7 +101,7 @@
       ],
       "examples": [
         { "traditional": "請問，這班車有到台北車站嗎？", "traditionalStatus": "generated", "simplified": "请问，这班车有到台北车站吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, zhè bān chē yǒu dào Táiběi Chēzhàn ma?", "japanese": "すみません、この便は台北駅へ行きますか？" },
-        { "traditional": "這班公車有到那裡嗎？", "traditionalStatus": "generated", "simplified": "这班公交车有到那里吗？", "simplifiedStatus": "generated", "pinyin": "zhè bān gōngchē yǒu dào nàlǐ ma?", "japanese": "このバスはそこへ行きますか？" }
+        { "traditional": "這班公車有到那裡嗎？", "traditionalStatus": "generated", "simplified": "这班公车有到那里吗？", "simplifiedStatus": "generated", "pinyin": "zhè bān gōngchē yǒu dào nàlǐ ma?", "japanese": "このバスはそこへ行きますか？" }
       ],
       "reviewPrompts": [
         { "promptJa": "「這班車」は何を指す？", "answerJa": "この便・車両", "distractorsJa": ["次の駅", "自分の切符"] },

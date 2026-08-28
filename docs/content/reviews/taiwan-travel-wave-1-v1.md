@@ -6,7 +6,7 @@
 **Reviewer role:** {{HUMAN_REVIEWER_ROLE}}
 **Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** 92f1156865d12664b2a08e9fdc7f2179e245f7c0f73c836d87d637b5e92d5a9f
+**Review version:** 8960e7af7e04eac0232a1033c868a7e3dafd1d0d5da29c392e5bf59fd157c2d9
 **Overall review outcome:** pending-human-review
 **Decision storage:** No decisions recorded. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | lesson-011 | airport | 到着後、預けた荷物を受け取る場所を空港で尋ねられる | draft | bfbb2d2cf977c562b25c2b28244a917c863926b322a891ff336ed950934720ee |
 | lesson-012 | airport | 預けた荷物が受取場所に出てこない状況を係員に伝えられる | draft | d4603e864e57876a725906f9d7a97c8ac6b00c25fdbe5fec60c0bbfb89168150 |
-| lesson-013 | transport | 乗る前に、その車両が自分の目的地へ行くか確認できる | draft | a42f6498184cd16556928c19e5cd6027828d2bb5db1b368742b9e51294302aa2 |
+| lesson-013 | transport | 乗る前に、その車両が自分の目的地へ行くか確認できる | draft | 3c727a28a7d98b86a07cdcae68a89d92b7332cf5753287aa32011472fde9da82 |
 | lesson-014 | transport | 目的地へ向かう途中で、どこで乗り換えるか尋ねられる | draft | 9ca25f7a5cbe0e54b43dc9af44d750df2b6ad3dc0cb616e5feb9dbbf5cccd74d |
 | lesson-015 | food | 飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる | draft | 91d3154c7cf8e65542cb4877d985235c15066747acfe68852087deb6b2c934cb |
 | lesson-016 | food | 料理にピーナッツが入っているか、注文前に店員へ尋ねられる | draft | 6dc493fe3c839c9a19e77c20b9e5de67e825c9900305436860c4fa41bf151d9b |
