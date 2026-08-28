@@ -234,33 +234,23 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     }
   });
 
-  it('rebuild command writes only its target and is idempotent', () => {
+  it('rebuild command resolves vite-node through pnpm, writes only its target, and is idempotent', () => {
     const temporaryDirectory = mkdtempSync(join(tmpdir(), 'chabiko-wave1-review-'));
     const outputPath = join(temporaryDirectory, 'packet.md');
+    const commandArguments = [
+      'pnpm',
+      'exec',
+      'vite-node',
+      'scripts/render-taiwan-travel-wave1-review-packet.ts',
+      '--root',
+      root,
+      '--output',
+      outputPath,
+    ];
     try {
-      execFileSync(
-        resolve(root, 'node_modules/.bin/vite-node'),
-        [
-          'scripts/render-taiwan-travel-wave1-review-packet.ts',
-          '--root',
-          root,
-          '--output',
-          outputPath,
-        ],
-        { cwd: root, stdio: 'pipe' },
-      );
+      execFileSync('corepack', commandArguments, { cwd: root, stdio: 'pipe' });
       const first = readFileSync(outputPath, 'utf8');
-      execFileSync(
-        resolve(root, 'node_modules/.bin/vite-node'),
-        [
-          'scripts/render-taiwan-travel-wave1-review-packet.ts',
-          '--root',
-          root,
-          '--output',
-          outputPath,
-        ],
-        { cwd: root, stdio: 'pipe' },
-      );
+      execFileSync('corepack', commandArguments, { cwd: root, stdio: 'pipe' });
       expect(readFileSync(outputPath, 'utf8')).toBe(first);
       expect(first).toBe(
         readFileSync(resolve(root, TAIWAN_TRAVEL_WAVE1_PACKET_PATH), 'utf8'),
