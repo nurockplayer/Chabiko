@@ -15,6 +15,7 @@ const { items, itemsJson } = Astro.props;
 const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   searchText: '',
   status: 'all',
+  partOfSpeech: 'all',
   page: 1,
 });
 ---
@@ -44,6 +45,19 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
         <option value="learned">習得済み</option>
       </select>
     </div>
+    <div class="basic-vocabulary-catalog-field">
+      <label for="basic-vocabulary-catalog-part-of-speech">品詞</label>
+      <select
+        id="basic-vocabulary-catalog-part-of-speech"
+        data-catalog-part-of-speech
+      >
+        <option value="all">すべて</option>
+        <option value="noun">名詞</option>
+        <option value="verb">動詞</option>
+        <option value="adjective">形容詞</option>
+        <option value="adverb">副詞</option>
+      </select>
+    </div>
   </div>
 
   <p class="basic-vocabulary-catalog-summary" data-catalog-summary aria-live="polite">
@@ -65,9 +79,14 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
             />
           </div>
           <div class="basic-vocabulary-catalog-body">
-            <h3 class="basic-vocabulary-catalog-simplified" lang="zh-Hans">
-              {pageItem.item.simplified}
-            </h3>
+            <a
+              class="basic-vocabulary-catalog-detail-link"
+              href={`/vocabulary/basic/words/${pageItem.item.learnerId}/`}
+            >
+              <h3 class="basic-vocabulary-catalog-simplified" lang="zh-Hans">
+                {pageItem.item.simplified}
+              </h3>
+            </a>
             {pageItem.item.traditional !== undefined && (
               <p class="basic-vocabulary-catalog-traditional" lang="zh-Hant">
                 {pageItem.item.traditional}
@@ -141,6 +160,12 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   @media (min-width: 640px) {
     .basic-vocabulary-catalog-controls {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  @media (min-width: 960px) {
+    .basic-vocabulary-catalog-controls {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
@@ -249,6 +274,22 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
     font-weight: 700;
     line-height: 1.3;
     overflow-wrap: anywhere;
+  }
+
+  .basic-vocabulary-catalog-detail-link {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    min-width: 0;
+    min-height: 2.75rem;
+    color: var(--jade-ink);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.16em;
+  }
+
+  .basic-vocabulary-catalog-detail-link:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
   }
 
   .basic-vocabulary-catalog-traditional,
