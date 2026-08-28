@@ -66,7 +66,7 @@ drift.
 From the repository root:
 
 ```bash
-pnpm exec vite-node scripts/render-taiwan-travel-wave1-review-packet.ts
+node scripts/render-taiwan-travel-wave1-review-packet.ts
 ```
 
 The command validates the complete package before overwriting exactly the
