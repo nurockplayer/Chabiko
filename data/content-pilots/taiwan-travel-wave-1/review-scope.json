@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "taiwan-travel-wave-1-v1",
+  "reviewState": "pending-human-review",
+  "decisionContract": {
+    "outcomes": ["accepted", "needs_changes"],
+    "fingerprint": "sha256(stableStringify(recordWithoutTopLevelReviewStatus))",
+    "separateDecisionNamespace": true,
+    "productionUnlinked": true
+  },
+  "dimensions": [
+    {
+      "id": "natural-taiwan-mandarin",
+      "label": "Natural Taiwan Mandarin",
+      "reviewerRoles": ["human-language-reviewer", "human-regional-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "natural-japanese-explanation",
+      "label": "Natural Japanese explanation",
+      "reviewerRoles": ["human-language-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "lesson-loop-usefulness",
+      "label": "Lesson loop and travel usefulness",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "pronunciation-guidance",
+      "label": "Pinyin and pronunciation guidance",
+      "reviewerRoles": ["human-language-reviewer", "human-teaching-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "kanji-bridge-accuracy",
+      "label": "Kanji bridge accuracy",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "exercise-quality",
+      "label": "Review prompt quality",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "state": "pending"
+    },
+    {
+      "id": "graph-and-scope-correctness",
+      "label": "Graph, identity, order, and scope correctness",
+      "reviewerRoles": ["maintainer"],
+      "state": "pending"
+    },
+    {
+      "id": "source-and-script-provenance",
+      "label": "Source and script provenance correctness",
+      "reviewerRoles": ["human-source-reviewer", "human-script-verifier"],
+      "state": "pending"
+    }
+  ],
+  "records": [
+    { "collection": "lessons", "type": "lesson", "id": "lesson-011", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-012", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-013", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-014", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-015", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-016", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-017", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-018", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-019", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-020", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-021", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-022", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-023", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" },
+    { "collection": "lessons", "type": "lesson", "id": "lesson-024", "sourcePath": "data/content-pilots/taiwan-travel-wave-1/lessons.json" }
+  ]
+}

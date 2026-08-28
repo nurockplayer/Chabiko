@@ -66,6 +66,12 @@ describe('shared learning-content graph coverage', () => {
       'tests/golden-set-review-scope.test.ts',
     );
   });
+
+  it('selects the Taiwan Travel Wave 1 candidate suite for its loader', () => {
+    expect(domainTestGlobsFor('src/content/loadTaiwanTravelWave1ReviewScope.ts')).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+  });
 });
 
 describe('tier selects the minimum tier as the max across changed files', () => {

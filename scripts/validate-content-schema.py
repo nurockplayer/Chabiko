@@ -56,6 +56,10 @@ VALID_SCENARIOS = frozenset({
     "food", "transport", "hotel", "shopping", "emergency", "airport",
 })
 
+# Lessons may teach a bounded social interaction without broadening the
+# established phrasebook/dialog/roleplay/practice scenario vocabulary.
+VALID_LESSON_SCENARIOS = VALID_SCENARIOS | {"social"}
+
 VALID_PRACTICE_TYPES = frozenset({
     "tone-discrimination", "pinyin-contrast", "guided-shadowing", "pronunciation-practice", "word-order",
     "measure-word", "complement", "aspect-particle",
@@ -1042,7 +1046,7 @@ def _build_schemas():
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
-            "travelScenario": VALID_SCENARIOS,
+            "travelScenario": VALID_LESSON_SCENARIOS,
             "reviewStatus": VALID_REVIEW_STATUSES,
         },
         "extra_validators": [
@@ -3047,6 +3051,7 @@ def run_tests():
         test_lesson_missing_review_prompts,
         test_lesson_missing_travel_task,
         test_lesson_invalid_level,
+        test_lesson_social_scenario_valid,
         test_lesson_invalid_travel_scenario,
         test_lesson_invalid_review_status,
         test_lesson_unknown_field,
@@ -3684,8 +3689,18 @@ def test_lesson_invalid_level():
     _assert_has_error(errs, "not valid", "lesson_level")
 
 
+def test_lesson_social_scenario_valid():
+    """The lesson-only social scenario must not broaden other content schemas."""
+    assert validate_single(_minimal_lesson(travelScenario="social"), "lesson") == []
+    _assert_has_error(
+        validate_single(_minimal_phrasebook(scenario="social"), "phrasebook"),
+        "not valid",
+        "phrasebook_social_scenario",
+    )
+
+
 def test_lesson_invalid_travel_scenario():
-    """travelScenario must be from VALID_SCENARIOS."""
+    """travelScenario must be from the lesson scenario vocabulary."""
     errs = validate_single(_minimal_lesson(travelScenario="travel"), "lesson")
     _assert_has_error(errs, "not valid", "lesson_travel_scenario")
 

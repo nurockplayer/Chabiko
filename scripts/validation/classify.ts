@@ -372,6 +372,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/golden-set-review-scope.test.ts'],
   },
   {
+    // Taiwan Travel Wave 1 review scope: keep its isolated candidate package,
+    // fingerprints, and fail-closed graph/manifest checks on the focused suite.
+    match: (b) => b === 'loadtaiwantravelwave1reviewscope.ts',
+    testGlobs: ['tests/taiwan-travel-wave1-candidates.test.ts'],
+  },
+  {
     match: (b) => b.includes('theme'),
     testGlobs: ['tests/theme-preference.test.ts'],
   },
