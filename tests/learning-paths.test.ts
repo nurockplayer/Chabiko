@@ -62,7 +62,7 @@ describe('loadLearningPaths', () => {
   it('has valid destinations per the frozen contract', () => {
     const document = loadLearningPaths();
     const byId = new Map(document.learningPaths.map((path) => [path.id, path]));
-    expect(byId.get('taiwan-travel')?.destination).toBe('/lessons/');
+    expect(byId.get('taiwan-travel')?.destination).toBe('/paths/taiwan-travel/');
     expect(byId.get('hsk-vocabulary')?.destination).toBe('/vocabulary/hsk/');
     expect(byId.get('kanji-bridge')?.destination).toBe('/vocabulary/kanji-bridge/');
   });
