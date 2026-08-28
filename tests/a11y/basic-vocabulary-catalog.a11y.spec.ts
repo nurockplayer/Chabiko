@@ -76,6 +76,7 @@ for (const theme of A11Y_THEMES) {
       );
       const linkBox = await firstDetailLink.boundingBox();
       expect(linkBox).not.toBeNull();
+      expect(linkBox!.width).toBeGreaterThanOrEqual(44);
       expect(linkBox!.height).toBeGreaterThanOrEqual(44);
       expect(
         await firstDetailLink.evaluate((link) => {
