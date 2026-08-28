@@ -112,6 +112,25 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runA11y).toBe(false);
   });
 
+  it('runs the candidate drift suite for the exact Wave 1 packet without broadening docs', () => {
+    const packet = classifyFiles([
+      'docs/content/reviews/taiwan-travel-wave-1-v1.md',
+    ]);
+    expect(packet.tier).toBe('t1');
+    expect(packet.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(packet.runAffectedVitest).toBe(true);
+    expect(packet.runFullVitest).toBe(false);
+
+    const ordinaryDocs = classifyFiles([
+      'docs/content/reviews/ordinary-not-generated.md',
+    ]);
+    expect(ordinaryDocs.tier).toBe('t0');
+    expect(ordinaryDocs.affectedTestGlobs).toEqual([]);
+    expect(ordinaryDocs.runAffectedVitest).toBe(false);
+  });
+
   it('a pure domain change runs affected tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['src/domain/tonePractice.ts']);
     expect(classification.tier).toBe('t1');

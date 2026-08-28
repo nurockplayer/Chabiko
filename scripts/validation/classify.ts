@@ -428,6 +428,11 @@ export const CLASS_LABEL: Record<RiskClass, string> = {
   unknown: 'unknown',
 };
 
+const TAIWAN_TRAVEL_WAVE1_PACKET_PATH =
+  'docs/content/reviews/taiwan-travel-wave-1-v1.md';
+const TAIWAN_TRAVEL_WAVE1_PACKET_TEST =
+  'tests/taiwan-travel-wave1-candidates.test.ts';
+
 export function classifyFiles(files: string[], options: ClassifyOptions = {}): Classification {
   const unicodeSourcePaths = options.unicodeSourcePaths ?? new Set<string>();
   const riskClasses = new Set<RiskClass>();
@@ -465,6 +470,16 @@ export function classifyFiles(files: string[], options: ClassifyOptions = {}): C
   if (unmappedDomain) {
     if (TIER_ORDER[tier] < TIER_ORDER.t2) tier = 't2';
     reasons.push('unmapped domain source → escalate to T2 (full Vitest)');
+  }
+
+  // This generated review packet is byte-checked by the candidate suite. Keep
+  // ordinary docs at T0, but never let a packet-only edit skip its drift gate.
+  if (files.some((file) => normalize(file) === TAIWAN_TRAVEL_WAVE1_PACKET_PATH)) {
+    affectedTestGlobs.add(TAIWAN_TRAVEL_WAVE1_PACKET_TEST);
+    if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
+    reasons.push(
+      `${TAIWAN_TRAVEL_WAVE1_PACKET_PATH}: generated packet → T1 candidate drift test`,
+    );
   }
 
   // #359: a changed path allowlisted in data/unicode/source-manifest.json must
