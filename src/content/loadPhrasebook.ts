@@ -571,13 +571,16 @@ export function isPhrasebookDialogProductionEligible(
 }
 
 /**
- * The deterministic, source-order-preserving eligible subset for the learner
- * route at `/phrasebook/`. Fails closed: records that are not human-reviewed
- * or whose script forms are not independently authored/verified stay out of
- * the learner surface (the route renders a truthful pending state for them).
- * The full {@link loadPhrasebook} validation contract (exact 30 phrases + 6
- * dialogs, controlled scenario ordering, same-scenario references, deep
- * freeze) is unchanged — this only filters its result.
+ * The deterministic, source-order-preserving formal-production subset for
+ * consumers such as lesson links. Fails closed: records that are not
+ * human-reviewed or whose script forms are not independently authored/verified
+ * stay out of that production projection. The `/phrasebook/` prelaunch route
+ * instead uses `loadPrelaunchPhrasebook` to expose the exact #440 canonical 30
+ * phrases + 6 dialogs while preserving truthful `reviewStatus` and provenance;
+ * that #438 exposure override does not satisfy the still-open #360 formal-launch
+ * review debt. The full {@link loadPhrasebook} validation contract (exact 30
+ * phrases + 6 dialogs, controlled scenario ordering, same-scenario references,
+ * deep freeze) is unchanged — this only filters its result.
  */
 export function loadEligiblePhrasebook(
   phraseFilePath?: string,
