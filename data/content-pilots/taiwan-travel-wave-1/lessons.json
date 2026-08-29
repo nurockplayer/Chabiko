@@ -2,39 +2,39 @@
   "lessons": [
     {
       "id": "lesson-011",
-      "titleJa": "空港で手荷物受取所を探そう",
+      "titleJa": "空港で壊れたスーツケースを見てもらおう",
       "level": "beginner",
-      "canDoJa": "到着後、預けた荷物を受け取る場所を空港で尋ねられる",
-      "learnerOutcomeJa": "「行李提領處在哪裡？」を使って、手荷物受取所の場所を丁寧に確認できる",
-      "hookJa": "飛行機を降りたけれど、預けた荷物をどこで受け取るのか分からない。係員に短く尋ねよう。",
+      "canDoJa": "到着後、預けたスーツケースが壊れていることを空港の係員に伝え、確認を頼める",
+      "learnerOutcomeJa": "「我的行李箱壞了，可以幫我看看嗎？」を使って、スーツケースの破損を伝えて確認を頼める",
+      "hookJa": "預けたスーツケースを受け取ったら、壊れている箇所が見つかった。原因を決めつけず、見てもらおう。",
       "travelScenario": "airport",
-      "coreSentence": "請問，行李提領處在哪裡？",
+      "coreSentence": "我的行李箱壞了，可以幫我看看嗎？",
       "sections": [
-        { "headingJa": "知りたい場所を先に言う", "contentJa": "「行李提領處」を先に置き、「在哪裡？」を続けて場所を尋ねる。" },
-        { "headingJa": "表示と指差しを併用する", "contentJa": "聞き返されたら、荷物の引換証や案内表示を見せながら同じ語を繰り返す。" }
+        { "headingJa": "壞了で状態を伝える", "contentJa": "「我的行李箱壞了」で、受け取ったスーツケースが壊れている状態を伝える。原因や補償は決めつけない。" },
+        { "headingJa": "看看で確認を頼む", "contentJa": "「可以幫我看看嗎？」を続け、壊れた箇所を見て確認してもらえるか尋ねる。" }
       ],
       "chunks": [
-        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "質問の前に添える丁寧な呼びかけ。" },
-        { "chunk": "行李提領處", "meaning": "手荷物受取所", "notesJa": "「行李」は荷物、「提領處」は受け取る場所。ひとまとまりで覚える。" },
-        { "chunk": "在哪裡", "meaning": "どこにありますか", "notesJa": "場所を尋ねる定型表現。" }
+        { "chunk": "我的行李箱", "meaning": "私のスーツケースが", "notesJa": "状態を伝える物を先に置く。" },
+        { "chunk": "壞了", "meaning": "壊れています", "notesJa": "見えている破損状態を伝える。" },
+        { "chunk": "可以幫我看看嗎", "meaning": "見てもらえますか", "notesJa": "相手に状態の確認を頼む。" }
       ],
       "kanjiBridgeNotes": [
-        { "kanji": "行李", "jpReading": "こうり", "noteJa": "字から意味を決めつけず、中国語では xínglǐ で「荷物」と覚える。日本語の「行李」は日常語としての使い方が異なる。" }
+        { "kanji": "箱", "jpReading": "はこ", "noteJa": "スーツケースを指す「行李箱」に含まれるが、中国語では xiāng と読み、日本語の読みをそのまま使わない。" }
       ],
       "soundFocus": [
-        { "item": "行李 xínglǐ", "noteJa": "第二声から第三声。二語を同じ高さにせず、後半を低くする。" },
-        { "item": "提領處 tílǐngchù", "noteJa": "第二声・第三声・第四声。最後の chù を短く下げる。" }
+        { "item": "行李箱 xínglǐxiāng", "noteJa": "第二声・第三声・第一声。xíng を上げ、lǐ を低くし、xiāng を高く保つ。" },
+        { "item": "壞了 huài le", "noteJa": "huài は第四声で下げ、le は軽く添える。" }
       ],
       "examples": [
-        { "traditional": "請問，行李提領處在哪裡？", "traditionalStatus": "generated", "simplified": "请问，行李提领处在哪里？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, xínglǐ tílǐngchù zài nǎlǐ?", "japanese": "すみません、手荷物受取所はどこですか？" },
-        { "traditional": "請問，我要去哪裡拿行李？", "traditionalStatus": "generated", "simplified": "请问，我要去哪里拿行李？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, wǒ yào qù nǎlǐ ná xínglǐ?", "japanese": "すみません、荷物はどこへ取りに行けばいいですか？" }
+        { "traditional": "我的行李箱壞了，可以幫我看看嗎？", "traditionalStatus": "generated", "simplified": "我的行李箱坏了，可以帮我看看吗？", "simplifiedStatus": "generated", "pinyin": "wǒ de xínglǐxiāng huài le, kěyǐ bāng wǒ kànkan ma?", "japanese": "私のスーツケースが壊れています。見てもらえますか？" },
+        { "traditional": "這裡壞了。", "traditionalStatus": "generated", "simplified": "这里坏了。", "simplifiedStatus": "generated", "pinyin": "zhèlǐ huài le.", "japanese": "ここが壊れています。" }
       ],
       "reviewPrompts": [
-        { "promptJa": "「行李提領處」は何を指す？", "answerJa": "手荷物受取所", "distractorsJa": ["搭乗口", "保安検査場"] },
-        { "promptJa": "場所を尋ねる部分はどれ？", "answerJa": "在哪裡", "distractorsJa": ["請問", "行李"] }
+        { "promptJa": "スーツケースが壊れていると伝える文はどれ？", "answerJa": "我的行李箱壞了。", "distractorsJa": ["我的行李箱很重。", "我要拿行李。"] },
+        { "promptJa": "状態を見てもらうよう頼む部分はどれ？", "answerJa": "可以幫我看看嗎？", "distractorsJa": ["在哪裡？", "多少錢？"] }
       ],
-      "travelTask": "荷物の引換証を手元に用意し、必要なら係員に「請問，行李提領處在哪裡？」と尋ねて、案内表示も一緒に確認しよう。",
-      "painPointTags": ["word-order", "pinyin-pronunciation", "same-kanji-different-usage"],
+      "travelTask": "スーツケースの壊れた箇所を指し、「我的行李箱壞了，可以幫我看看嗎？」と空港の係員に伝え、原因や補償を決めつけず確認を頼もう。",
+      "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
       "reviewStatus": "draft"
     },
     {

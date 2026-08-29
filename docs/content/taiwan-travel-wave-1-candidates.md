@@ -30,7 +30,7 @@ and unchanged.
 
 | IDs | Scenario | New sub-tasks |
 |---|---|---|
-| `lesson-011`–`lesson-012` | airport (2) | Find baggage claim; report checked baggage has not appeared |
+| `lesson-011`–`lesson-012` | airport (2) | Report damaged checked baggage and ask staff to inspect; report checked baggage has not appeared |
 | `lesson-013`–`lesson-014` | transport (2) | Confirm a vehicle reaches a destination; ask where to transfer |
 | `lesson-015`–`lesson-017` | food (3) | Ask for a table; ask about peanuts; ask to pack leftovers |
 | `lesson-018`–`lesson-019` | shopping (2) | Ask to try on clothing; request a receipt |

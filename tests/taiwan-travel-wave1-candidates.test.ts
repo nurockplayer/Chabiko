@@ -170,6 +170,41 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(busExample?.pinyin).toContain('gōngchē');
   });
 
+  it('extends airport arrival coverage with damaged baggage instead of location or missing-baggage semantics', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const sourceBundle = loadSourceBundle();
+    const damagedBaggageLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-011',
+    )?.lesson;
+    const productionLocationLesson = sourceBundle.productionLessons.find(
+      (lesson) => lesson.id === 'lesson-003',
+    );
+    const missingBaggageLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-012',
+    )?.lesson;
+    const semanticSurface = [
+      damagedBaggageLesson?.canDoJa,
+      damagedBaggageLesson?.coreSentence,
+      damagedBaggageLesson?.travelTask,
+    ].join(' ');
+    const coverageMatrix = readFileSync(
+      resolve(root, 'docs/content/taiwan-travel-wave-1-candidates.md'),
+      'utf8',
+    );
+
+    expect(damagedBaggageLesson?.travelScenario).toBe('airport');
+    expect(damagedBaggageLesson?.coreSentence).toBe(
+      '我的行李箱壞了，可以幫我看看嗎？',
+    );
+    expect(semanticSurface).toMatch(/壊れている|壞了/);
+    expect(semanticSurface).toMatch(/確認を頼める|幫我看看/);
+    expect(semanticSurface).not.toMatch(/どこ|在哪裡|出てこない|還沒出來/);
+    expect(productionLocationLesson?.coreSentence).toContain('在哪裡');
+    expect(missingBaggageLesson?.coreSentence).toContain('還沒出來');
+    expect(coverageMatrix).toContain('Report damaged checked baggage');
+    expect(coverageMatrix).not.toContain('Find baggage claim');
+  });
+
   it('explains 給我 third-tone sandhi while keeping lexical pinyin and grammatical chunk glosses', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
     const lessons = new Map(

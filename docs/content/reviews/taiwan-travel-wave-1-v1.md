@@ -6,7 +6,7 @@
 **Reviewer role:** {{HUMAN_REVIEWER_ROLE}}
 **Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** b81fcb4d732224eaf56ea812cfff1f89b6e154f0fb0322596586df874742d38d
+**Review version:** c4791ab82b23dafc2c6a529ca2b54e37006d14003770bc12693039a90376b291
 **Overall review outcome:** pending-human-review
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
 **Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.
@@ -40,7 +40,7 @@
 
 | Lesson | Scenario | Can-Do | reviewStatus | Fingerprint |
 |---|---|---|---|---|
-| lesson-011 | airport | 到着後、預けた荷物を受け取る場所を空港で尋ねられる | draft | bfbb2d2cf977c562b25c2b28244a917c863926b322a891ff336ed950934720ee |
+| lesson-011 | airport | 到着後、預けたスーツケースが壊れていることを空港の係員に伝え、確認を頼める | draft | 248cac43777349e3c089c9f2894ae1391cf2128d982f73bcffdde2b18ea6f9ec |
 | lesson-012 | airport | 預けた荷物が受取場所に出てこない状況を係員に伝えられる | draft | a78edb00d9123526e5ebc51b358817e9d8aee6b8fccab9461d0ac795b6d05b46 |
 | lesson-013 | transport | 乗る前に、その車両が自分の目的地へ行くか確認できる | draft | 3c727a28a7d98b86a07cdcae68a89d92b7332cf5753287aa32011472fde9da82 |
 | lesson-014 | transport | 目的地へ向かう途中で、どこで乗り換えるか尋ねられる | draft | 9ca25f7a5cbe0e54b43dc9af44d750df2b6ad3dc0cb616e5feb9dbbf5cccd74d |
