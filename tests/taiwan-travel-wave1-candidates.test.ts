@@ -31,6 +31,70 @@ import { loadAllRenderableLessons } from '../src/content/loadLessons';
 import type { Lesson } from '../src/types/lesson';
 
 const root = process.cwd();
+const WAVE_REVIEW_WORKFLOW_HEADER =
+  '### 4.1 Per-dimension role evidence for Taiwan Travel Wave 1';
+const WAVE_REVIEW_MATRIX_MARKER =
+  'For Taiwan Travel Wave 1, the canonical ordered dimension matrix is:';
+
+function countOccurrences(value: string, needle: string): number {
+  return value.split(needle).length - 1;
+}
+
+function parseWaveReviewWorkflow(workflow: string): {
+  rows: Array<{ id: string; workflowDescription: string; roles: string[] }>;
+  outcomes: string[];
+} {
+  if (countOccurrences(workflow, WAVE_REVIEW_WORKFLOW_HEADER) !== 1) {
+    throw new Error('Wave review workflow header must appear exactly once');
+  }
+  if (countOccurrences(workflow, WAVE_REVIEW_MATRIX_MARKER) !== 1) {
+    throw new Error('Wave review matrix marker must appear exactly once');
+  }
+  const waveSection = workflow
+    .split(WAVE_REVIEW_WORKFLOW_HEADER)[1]
+    ?.split('\n---\n')[0];
+  if (!waveSection) throw new Error('Wave review workflow section is missing');
+  const matrixSection = waveSection
+    .split(WAVE_REVIEW_MATRIX_MARKER)[1]
+    ?.split('The Wave package uses `human-language-reviewer`')[0];
+  if (!matrixSection) throw new Error('Wave review matrix is missing');
+
+  const rows = matrixSection
+    .split('\n')
+    .filter((line) => line.startsWith('| `'))
+    .map((line) => {
+      const match = line.match(/^\| `([^`]+)` \| (.+) \| (.+) \|$/);
+      if (!match) throw new Error(`Malformed Wave review matrix row: ${line}`);
+      return {
+        id: match[1],
+        workflowDescription: match[2],
+        roles: [...match[3].matchAll(/`([^`]+)`/g)].map((role) => role[1]),
+      };
+    });
+
+  const reviewedOutcomes = waveSection.match(
+    /An ([\s\S]*?) role outcome\s+requires complete identity/,
+  )?.[1];
+  const pendingOutcome = waveSection.match(/A `([^`]+)`\s+role must/)?.[1];
+  if (!reviewedOutcomes || !pendingOutcome) {
+    throw new Error('Wave review outcome vocabulary is missing');
+  }
+  const outcomes = [
+    ...reviewedOutcomes.matchAll(/`([^`]+)`/g),
+  ].map((match) => match[1]);
+  outcomes.push(pendingOutcome);
+  const expectedOutcomes = [
+    'accepted',
+    'rejected',
+    'needs-changes',
+    'not-reviewed',
+  ];
+  if (JSON.stringify(outcomes) !== JSON.stringify(expectedOutcomes)) {
+    throw new Error(`Wave review outcome vocabulary drifted: ${outcomes.join(', ')}`);
+  }
+
+  return { rows, outcomes };
+}
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(resolve(root, path), 'utf8')) as T;
@@ -507,6 +571,106 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         candidateManifest.dimensions[1].reviewerRoles.push('maintainer');
       }),
     ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-japanese-explanation'/);
+  });
+
+  it('matches the canonical workflow dimension matrix and outcome vocabulary exactly', async () => {
+    const expected = [
+      'natural-taiwan-mandarin\tTraditional Mandarin naturalness and Taiwan usage\tNatural Taiwan Mandarin\thuman-language-reviewer,human-regional-reviewer',
+      'natural-japanese-explanation\tJapanese explanation naturalness\tNatural Japanese explanation\thuman-language-reviewer',
+      'review-status\tWhether the candidate `reviewStatus` assignment is correct for draft → reviewed\tReview status assignment\thuman-language-reviewer',
+      'teaching-accuracy\tGeneral teaching accuracy, including grammar, tone explanations, false-friend guidance, and pain-point tags\tTeaching accuracy and pain-point metadata\thuman-teaching-reviewer',
+      'lesson-loop-usefulness\tLesson-loop completeness and travel usefulness\tLesson loop and travel usefulness\thuman-teaching-reviewer',
+      'pronunciation-guidance\tPinyin and pronunciation guidance\tPinyin and pronunciation guidance\thuman-language-reviewer,human-teaching-reviewer',
+      'kanji-bridge-accuracy\tKanji bridge accuracy\tKanji bridge accuracy\thuman-teaching-reviewer',
+      'exercise-quality\tReview-prompt quality\tReview prompt quality\thuman-teaching-reviewer',
+      'graph-and-scope-correctness\tGraph, identity, order, and issue-scope correctness\tGraph, identity, order, and scope correctness\tmaintainer',
+      'source-and-script-provenance\tSource metadata and generated-script provenance\tSource and script provenance correctness\thuman-source-reviewer,human-script-verifier',
+    ].map((row) => {
+      const [id, workflowDescription, manifestLabel, roles] = row.split('\t');
+      return { id, workflowDescription, manifestLabel, roles: roles.split(',') };
+    });
+    const expectedWorkflowRows = expected.map(
+      ({ id, workflowDescription, roles }) => ({ id, workflowDescription, roles }),
+    );
+    const expectedManifestRows = expected.map(
+      ({ id, manifestLabel, roles }) => ({ id, manifestLabel, roles }),
+    );
+    const workflow = readFileSync(
+      resolve(root, 'docs/content/content-review-workflow.md'),
+      'utf8',
+    );
+    const parsedWorkflow = parseWaveReviewWorkflow(workflow);
+
+    expect(parsedWorkflow.rows).toEqual(expectedWorkflowRows);
+
+    const manifest = loadManifest();
+    const manifestDimensions = manifest.dimensions.map(
+      ({ id, label: manifestLabel, reviewerRoles: roles }) => ({
+        id,
+        manifestLabel,
+        roles,
+      }),
+    );
+    expect(manifestDimensions).toEqual(expectedManifestRows);
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    expect(
+      packet.dimensions.map(({ id, label, reviewerRoles }) => ({
+        id,
+        manifestLabel: label,
+        roles: reviewerRoles,
+      })),
+    ).toEqual(manifestDimensions);
+
+    expect(parsedWorkflow.outcomes).toEqual([
+      'accepted',
+      'rejected',
+      'needs-changes',
+      'not-reviewed',
+    ]);
+    expect(manifest.decisionContract.outcomes).toEqual([
+      'accepted',
+      'rejected',
+      'needs-changes',
+    ]);
+    expect(
+      manifest.dimensions.flatMap(({ reviewerEvidence }) =>
+        reviewerEvidence.map(({ outcome }) => outcome),
+      ),
+    ).toEqual(Array(13).fill('not-reviewed'));
+  });
+
+  it('fails closed on duplicate Wave workflow boundaries or outcome vocabulary drift', () => {
+    const workflow = readFileSync(
+      resolve(root, 'docs/content/content-review-workflow.md'),
+      'utf8',
+    );
+
+    expect(() =>
+      parseWaveReviewWorkflow(
+        workflow.replace(
+          WAVE_REVIEW_WORKFLOW_HEADER,
+          `${WAVE_REVIEW_WORKFLOW_HEADER}\n${WAVE_REVIEW_WORKFLOW_HEADER}`,
+        ),
+      ),
+    ).toThrow(/header must appear exactly once/);
+    expect(() =>
+      parseWaveReviewWorkflow(
+        workflow.replace(
+          WAVE_REVIEW_MATRIX_MARKER,
+          `${WAVE_REVIEW_MATRIX_MARKER}\n${WAVE_REVIEW_MATRIX_MARKER}`,
+        ),
+      ),
+    ).toThrow(/matrix marker must appear exactly once/);
+    expect(() =>
+      parseWaveReviewWorkflow(
+        workflow.replace(
+          '`accepted`, `rejected`, or `needs-changes` role outcome',
+          '`accepted`, `rejected`, `needs-changes`, or `waived` role outcome',
+        ),
+      ),
+    ).toThrow(
+      /outcome vocabulary drifted: accepted, rejected, needs-changes, waived, not-reviewed/,
+    );
   });
 
   it('keeps canonical review-status and teaching-accuracy scopes independently reviewable', async () => {
