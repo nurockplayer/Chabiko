@@ -312,6 +312,7 @@ describe('production corpus reconciliation (Issue #281)', () => {
       const result = selectBasicVocabularyCatalogPage(catalog, {}, {
         searchText: '',
         status: 'all',
+        partOfSpeech: 'all',
         page,
       });
       expect(result.items.length).toBeLessThanOrEqual(BASIC_VOCABULARY_CATALOG_PAGE_SIZE);

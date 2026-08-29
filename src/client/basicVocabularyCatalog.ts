@@ -4,6 +4,7 @@ import {
 import { getBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import {
   selectBasicVocabularyCatalogPage,
+  type BasicVocabularyCatalogPartOfSpeechFilter,
   type BasicVocabularyCatalogStatusFilter,
 } from '../domain/basicVocabularyCatalog';
 import type { BasicVocabularyCatalogItem } from '../content/basicVocabularyCatalog';
@@ -12,9 +13,9 @@ import type { VocabularyProgressStatus } from '../domain/vocabularyProgress';
 /** Read-only browser controller for the full-word catalog at
  * `/vocabulary/basic/words/`. Binds the #278 pure domain selection logic to
  * the DOM and to the local progress store, so every render is a truthful
- * snapshot of `store.getStatus()` — search, status filter, and page are
- * page-memory only. The catalog is never mutated and progress is never
- * written here. */
+ * snapshot of `store.getStatus()` — search, status filter, part-of-speech
+ * filter, and page are page-memory only. The catalog is never mutated and
+ * progress is never written here. */
 export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
@@ -40,6 +41,9 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
 
   const searchInput = root.querySelector<HTMLInputElement>('[data-catalog-search]');
   const statusSelect = root.querySelector<HTMLSelectElement>('[data-catalog-status]');
+  const partOfSpeechSelect = root.querySelector<HTMLSelectElement>(
+    '[data-catalog-part-of-speech]',
+  );
   const summaryElement = root.querySelector<HTMLElement>('[data-catalog-summary]');
   const resultsList = root.querySelector<HTMLElement>('[data-catalog-results]');
   const previousButton = root.querySelector<HTMLButtonElement>('[data-catalog-page="previous"]');
@@ -47,6 +51,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   const indicatorElement = root.querySelector<HTMLElement>('[data-catalog-page-indicator]');
 
   let statusFilter: BasicVocabularyCatalogStatusFilter = 'all';
+  let partOfSpeechFilter: BasicVocabularyCatalogPartOfSpeechFilter = 'all';
   let searchText = '';
   let page = 1;
 
@@ -85,11 +90,16 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     const body = document.createElement('div');
     body.className = 'basic-vocabulary-catalog-body';
 
+    const detailLink = document.createElement('a');
+    detailLink.className = 'basic-vocabulary-catalog-detail-link';
+    detailLink.href = `/vocabulary/basic/words/${encodeURIComponent(item.learnerId)}/`;
+
     const heading = document.createElement('h3');
     heading.className = 'basic-vocabulary-catalog-simplified';
     heading.lang = 'zh-Hans';
     heading.textContent = item.simplified;
-    body.append(heading);
+    detailLink.append(heading);
+    body.append(detailLink);
 
     if (item.traditional !== undefined) {
       const traditional = document.createElement('p');
@@ -128,6 +138,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     const result = selectBasicVocabularyCatalogPage(items, statusById, {
       searchText,
       status: statusFilter,
+      partOfSpeech: partOfSpeechFilter,
       page,
     });
     page = result.page;
@@ -168,11 +179,31 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     render();
   }
 
+  function handlePartOfSpeechChange(): void {
+    const value = partOfSpeechSelect
+      ? (partOfSpeechSelect.value as BasicVocabularyCatalogPartOfSpeechFilter)
+      : 'all';
+    if (value === partOfSpeechFilter) return;
+    partOfSpeechFilter = value;
+    page = 1;
+    render();
+  }
+
   function handlePage(direction: 'previous' | 'next'): void {
     const target =
       direction === 'previous'
-        ? { searchText, status: statusFilter, page: page - 1 }
-        : { searchText, status: statusFilter, page: page + 1 };
+        ? {
+            searchText,
+            status: statusFilter,
+            partOfSpeech: partOfSpeechFilter,
+            page: page - 1,
+          }
+        : {
+            searchText,
+            status: statusFilter,
+            partOfSpeech: partOfSpeechFilter,
+            page: page + 1,
+          };
     const statusById = readStatusMap();
     const result = selectBasicVocabularyCatalogPage(items, statusById, target);
     if (result.page === page) return;
@@ -226,6 +257,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   root.addEventListener('click', onClick);
   searchInput?.addEventListener('input', handleSearchInput);
   statusSelect?.addEventListener('change', handleStatusChange);
+  partOfSpeechSelect?.addEventListener('change', handlePartOfSpeechChange);
   window.addEventListener('pageshow', onPageShow);
   window.addEventListener('storage', onStorage);
 
@@ -236,6 +268,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     root.removeEventListener('click', onClick);
     searchInput?.removeEventListener('input', handleSearchInput);
     statusSelect?.removeEventListener('change', handleStatusChange);
+    partOfSpeechSelect?.removeEventListener('change', handlePartOfSpeechChange);
     window.removeEventListener('pageshow', onPageShow);
     window.removeEventListener('storage', onStorage);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
@@ -287,7 +320,7 @@ function isValidCatalogItem(value: unknown): value is BasicVocabularyCatalogItem
 
 function setControlsDisabled(root: HTMLElement, disabled: boolean): void {
   const controls = root.querySelectorAll<HTMLElement>(
-    '[data-catalog-search], [data-catalog-status], [data-catalog-page]',
+    '[data-catalog-search], [data-catalog-status], [data-catalog-part-of-speech], [data-catalog-page]',
   );
   for (const control of controls) {
     (control as HTMLInputElement | HTMLSelectElement | HTMLButtonElement).disabled = disabled;
