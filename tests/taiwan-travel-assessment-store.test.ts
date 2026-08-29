@@ -136,12 +136,18 @@ describe('TaiwanTravelAssessmentStore', () => {
       JSON.stringify({ version: 2 }),
       JSON.stringify({ version: 2, bestScore: '9' }),
       JSON.stringify({ version: 2, bestScore: null }),
+      JSON.stringify({ version: 2, bestScore: 3.5 }),
+      JSON.stringify({ version: 2, bestScore: -1 }),
+      JSON.stringify({ version: 2, bestScore: 25 }),
+      '{"version":2,"bestScore":NaN}',
+      '{"version":2,"bestScore":Infinity}',
       JSON.stringify('not an object'),
     ]) {
       const storage = createMemoryStorage({ [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: raw });
       const store = new TaiwanTravelAssessmentStore(storage);
       expect(store.readBestScore(), raw).toBe(0);
       expect(store.hasCompletedAttempt(), raw).toBe(false);
+      expect(store.recordCompletedAttempt(4), raw).toEqual({ bestScore: 4, wrote: true });
     }
   });
 

@@ -119,7 +119,15 @@ export class TaiwanTravelAssessmentStore {
         return null;
       }
       const bestScore = (parsed as Record<string, unknown>).bestScore;
-      if (typeof bestScore !== 'number' || !Number.isFinite(bestScore)) return null;
+      if (
+        typeof bestScore !== 'number' ||
+        !Number.isFinite(bestScore) ||
+        !Number.isInteger(bestScore) ||
+        bestScore < 0 ||
+        bestScore > TAIWAN_TRAVEL_MAX_SCORE
+      ) {
+        return null;
+      }
       return { version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore };
     } catch {
       return null;
