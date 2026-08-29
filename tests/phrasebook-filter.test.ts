@@ -4,16 +4,15 @@
  * Phrasebook scenario filter client (Issue #236, fail-closed rework per the
  * #349 kanji-bridge precedent).
  *
- * The surface is fail-closed: only scenarios with eligible learner-visible
- * content render (currently airport 5 + food 1 = 6 eligible entries). The
- * filter is URL-only and deterministic: missing/unknown/empty/repeated values
- * show every rendered scenario group in controlled order, a single controlled
- * value filters to that scenario's section, direct refresh re-applies from
- * `location.search`, and the URL is written only through
- * `history.replaceState`. It never touches storage or the network. The count
- * always reflects ELIGIBLE phrase entries, so a controlled scenario with no
- * eligible content (transport/shopping/hotel/emergency) shows the no-match
- * state.
+ * The #440 prelaunch surface is fail-closed: its exact 30 canonical phrases
+ * and 6 dialogs render across all six scenarios. The filter is URL-only and
+ * deterministic: missing/unknown/empty/repeated values show every rendered
+ * scenario group in controlled order, a single controlled value filters to
+ * that scenario's section, direct refresh re-applies from `location.search`,
+ * and the URL is written only through `history.replaceState`. It never touches
+ * storage or the network. The count reflects phrase entries only; dialogs and
+ * their references must not affect counts or hidden-state behavior. A sparse
+ * fail-closed projection still surfaces no-match for a missing scenario.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -23,28 +22,25 @@ import {
   readScenarioFromSearch,
   scenarioToSearch,
 } from '../src/client/phrasebookScenarioFilter';
-import { PHRASEBOOK_SCENARIOS } from '../src/content/loadPhrasebook';
+import {
+  groupPhrasebookByScenario,
+  loadPrelaunchPhrasebook,
+  PHRASEBOOK_SCENARIOS,
+} from '../src/content/loadPhrasebook';
 
-// The eligible learner-visible surface (verified corpus facts): airport has 5
-// reviewed phrases, food has 1. The other scenarios render no eligible content.
-const ELIGIBLE_GROUPS: { scenario: string; entryIds: string[] }[] = [
-  {
-    scenario: 'airport',
-    entryIds: [
-      'phrase-airport-001',
-      'phrase-airport-002',
-      'phrase-airport-003',
-      'phrase-airport-004',
-      'phrase-airport-005',
-    ],
-  },
-  { scenario: 'food', entryIds: ['phrase-001'] },
-];
+// Derive the harness fixture from the exact #440 prelaunch projection so the
+// filter contract cannot silently drift from canonical source order/content.
+const CANONICAL_GROUPS = groupPhrasebookByScenario(loadPrelaunchPhrasebook()).map(
+  (group) => ({
+    scenario: group.scenario,
+    entryIds: group.phrases.map((phrase) => phrase.id),
+    dialogId: group.dialog?.id ?? null,
+    turnCount: group.dialog?.turns.length ?? 0,
+    referenceIds: group.dialog?.relatedPhraseIds ?? [],
+  }),
+);
 
-/** Controlled scenarios that currently render NO eligible content. */
-const NO_CONTENT_SCENARIOS = ['transport', 'shopping', 'hotel', 'emergency'];
-
-const TOTAL_ELIGIBLE = ELIGIBLE_GROUPS.reduce(
+const TOTAL_CANONICAL = CANONICAL_GROUPS.reduce(
   (sum, group) => sum + group.entryIds.length,
   0,
 );
@@ -62,16 +58,22 @@ function buildSelect(): string {
   );
 }
 
-/** A page mirroring /phrasebook/ from the real eligible surface. */
-function buildPage(): HTMLElement {
+/** A page mirroring /phrasebook/ from the exact prelaunch surface. */
+function buildPage(
+  renderedGroups = CANONICAL_GROUPS,
+): HTMLElement {
   const root = document.createElement('section');
+  const renderedEntryCount = renderedGroups.reduce(
+    (sum, group) => sum + group.entryIds.length,
+    0,
+  );
   root.innerHTML =
     `<label for="phrasebook-scenario-filter">場面で絞り込む</label>` +
     buildSelect() +
-    `<p data-scenario-count>全${TOTAL_ELIGIBLE}件</p>` +
+    `<p data-scenario-count>全${renderedEntryCount}件</p>` +
     '<p data-phrasebook-no-match hidden>該当する場面がありません。</p>' +
     '<div data-phrasebook-list>' +
-    ELIGIBLE_GROUPS.map(
+    renderedGroups.map(
       (group) =>
         `<section class="phrasebook-scenario" data-phrasebook-scenario data-scenario="${group.scenario}">` +
         group.entryIds
@@ -79,10 +81,37 @@ function buildPage(): HTMLElement {
             (id) => `<article class="phrasebook-phrase" data-phrasebook-entry>${id}</article>`,
           )
           .join('') +
+        (group.dialogId === null
+          ? ''
+          : `<div data-phrasebook-dialog><ol>` +
+            Array.from(
+              { length: group.turnCount },
+              (_, index) =>
+                `<li data-phrasebook-dialog-turn>${group.dialogId}-turn-${index + 1}</li>`,
+            ).join('') +
+            `</ol><p class="phrasebook-dialog__references">` +
+            group.referenceIds
+              .map((id) => `<span data-phrasebook-dialog-reference>${id}</span>`)
+              .join('') +
+            `</p></div>`
+          ) +
         '</section>',
     ).join('') +
     '</div>';
   return root;
+}
+
+function dialogs(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('[data-phrasebook-dialog]'),
+  );
+}
+
+function visibleDialogs(root: HTMLElement): HTMLElement[] {
+  return dialogs(root).filter((dialog) => {
+    const group = dialog.closest('[data-phrasebook-scenario]') as HTMLElement | null;
+    return group !== null && !group.hidden;
+  });
 }
 
 function selectOf(root: HTMLElement): HTMLSelectElement {
@@ -168,24 +197,31 @@ describe('readScenarioFromSearch / scenarioToSearch', () => {
 
 // ─── Default + controlled-value filtering ──────────────────────────────────────
 
-describe('initPhrasebookScenarioFilter — filtering behavior over the eligible set', () => {
-  it('shows the eligible groups with the deterministic count and no-match hidden by default', () => {
+describe('initPhrasebookScenarioFilter — exact prelaunch corpus', () => {
+  it('shows all six canonical groups with the deterministic count and no-match hidden by default', () => {
     const root = buildPage();
     document.body.append(root);
     initPhrasebookScenarioFilter(root);
 
-    expect(visibleGroups(root)).toHaveLength(2);
+    expect(visibleGroups(root)).toHaveLength(6);
     expect(visibleGroups(root).map((group) => group.dataset.scenario)).toEqual([
       'airport',
+      'transport',
       'food',
+      'shopping',
+      'hotel',
+      'emergency',
     ]);
-    expect(visibleEntries(root)).toHaveLength(TOTAL_ELIGIBLE);
-    expect(countText(root)).toBe(`全${TOTAL_ELIGIBLE}件`);
+    expect(visibleEntries(root)).toHaveLength(TOTAL_CANONICAL);
+    expect(visibleDialogs(root)).toHaveLength(6);
+    expect(root.querySelectorAll('[data-phrasebook-dialog-turn]')).toHaveLength(36);
+    expect(root.querySelectorAll('[data-phrasebook-dialog-reference]')).toHaveLength(18);
+    expect(countText(root)).toBe(`全${TOTAL_CANONICAL}件`);
     expect(noMatch(root).hidden).toBe(true);
   });
 
-  it.each(ELIGIBLE_GROUPS)(
-    'filters to %s and counts only its eligible entries',
+  it.each(CANONICAL_GROUPS)(
+    'filters to %s and counts only its canonical entries without hiding its dialog',
     (group) => {
       const root = buildPage();
       document.body.append(root);
@@ -199,43 +235,54 @@ describe('initPhrasebookScenarioFilter — filtering behavior over the eligible 
       expect(visible).toHaveLength(1);
       expect(visible[0].dataset.scenario).toBe(group.scenario);
       expect(visibleEntries(root)).toHaveLength(group.entryIds.length);
+      expect(visibleDialogs(root)).toHaveLength(1);
+      expect(visibleDialogs(root)[0].querySelectorAll('[data-phrasebook-dialog-turn]')).toHaveLength(
+        group.turnCount,
+      );
+      expect(visibleDialogs(root)[0].querySelectorAll('[data-phrasebook-dialog-reference]')).toHaveLength(
+        group.referenceIds.length,
+      );
       expect(countText(root)).toBe(`${group.entryIds.length}件`);
       expect(noMatch(root).hidden).toBe(true);
     },
   );
 
-  it.each(NO_CONTENT_SCENARIOS)(
-    'shows the no-match state for %s (no eligible content)',
-    (scenario) => {
+  it('shows no-match when a sparse fail-closed projection omits a controlled scenario', () => {
+    const scenario = 'transport';
+    const root = buildPage(
+      CANONICAL_GROUPS.filter((group) => group.scenario !== scenario),
+    );
+    document.body.append(root);
+    initPhrasebookScenarioFilter(root);
+
+    const select = selectOf(root);
+    select.value = scenario;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+
+    expect(visibleGroups(root)).toHaveLength(0);
+    expect(visibleEntries(root)).toHaveLength(0);
+    expect(countText(root)).toBe('0件');
+    expect(noMatch(root).hidden).toBe(false);
+  });
+
+  it.each(CANONICAL_GROUPS)(
+    're-applies the %s filter from location.search on a direct refresh',
+    (group) => {
+      setSearch(`?scenario=${group.scenario}`);
       const root = buildPage();
       document.body.append(root);
       initPhrasebookScenarioFilter(root);
 
-      const select = selectOf(root);
-      select.value = scenario;
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-
-      expect(visibleGroups(root)).toHaveLength(0);
-      expect(visibleEntries(root)).toHaveLength(0);
-      expect(countText(root)).toBe('0件');
-      expect(noMatch(root).hidden).toBe(false);
+      expect(selectOf(root).value).toBe(group.scenario);
+      expect(visibleGroups(root)).toHaveLength(1);
+      expect(visibleGroups(root)[0].dataset.scenario).toBe(group.scenario);
+      expect(visibleEntries(root)).toHaveLength(group.entryIds.length);
+      expect(visibleDialogs(root)).toHaveLength(1);
+      expect(countText(root)).toBe(`${group.entryIds.length}件`);
     },
   );
 
-  it('re-applies the filter from location.search on a direct refresh', () => {
-    setSearch('?scenario=food');
-    const root = buildPage();
-    document.body.append(root);
-    initPhrasebookScenarioFilter(root);
-
-    expect(selectOf(root).value).toBe('food');
-    expect(visibleGroups(root)).toHaveLength(1);
-    expect(visibleGroups(root)[0].dataset.scenario).toBe('food');
-    expect(visibleEntries(root)).toHaveLength(1);
-    expect(countText(root)).toBe('1件');
-  });
-
-  it('shows the full eligible set for a missing/unknown/repeated URL on refresh', () => {
+  it('shows the full canonical set for a missing/unknown/repeated URL on refresh', () => {
     for (const search of [
       '',
       '?scenario=garbage',
@@ -247,15 +294,18 @@ describe('initPhrasebookScenarioFilter — filtering behavior over the eligible 
       initPhrasebookScenarioFilter(root);
 
       expect(selectOf(root).value).toBe('all');
-      expect(visibleGroups(root)).toHaveLength(2);
-      expect(visibleEntries(root)).toHaveLength(TOTAL_ELIGIBLE);
-      expect(countText(root)).toBe(`全${TOTAL_ELIGIBLE}件`);
+      expect(visibleGroups(root)).toHaveLength(6);
+      expect(visibleEntries(root)).toHaveLength(TOTAL_CANONICAL);
+      expect(visibleDialogs(root)).toHaveLength(6);
+      expect(countText(root)).toBe(`全${TOTAL_CANONICAL}件`);
       document.body.replaceChildren();
     }
   });
 
-  it('returns to the full eligible set after a no-match selection', () => {
-    const root = buildPage();
+  it('returns to the sparse rendered set after a no-match selection', () => {
+    const root = buildPage(
+      CANONICAL_GROUPS.filter((group) => group.scenario !== 'transport'),
+    );
     document.body.append(root);
     initPhrasebookScenarioFilter(root);
 
@@ -266,7 +316,7 @@ describe('initPhrasebookScenarioFilter — filtering behavior over the eligible 
 
     select.value = 'all';
     select.dispatchEvent(new Event('change', { bubbles: true }));
-    expect(visibleEntries(root)).toHaveLength(TOTAL_ELIGIBLE);
+    expect(visibleEntries(root)).toHaveLength(TOTAL_CANONICAL - 5);
     expect(noMatch(root).hidden).toBe(true);
   });
 });
@@ -304,7 +354,7 @@ describe('initPhrasebookScenarioFilter — URL-only, storage-free, native contro
     selectOf(root).dispatchEvent(new Event('change', { bubbles: true }));
 
     expect(window.location.search).toBe('');
-    expect(visibleEntries(root)).toHaveLength(TOTAL_ELIGIBLE);
+    expect(visibleEntries(root)).toHaveLength(TOTAL_CANONICAL);
   });
 
   it('binds the native select control with the source-order list', () => {
@@ -340,7 +390,7 @@ describe('initPhrasebookScenarioFilter — singleton lifecycle', () => {
 
     select.value = 'food';
     select.dispatchEvent(new Event('change', { bubbles: true }));
-    expect(visibleEntries(root)).toHaveLength(1);
+    expect(visibleEntries(root)).toHaveLength(5);
     expect(visibleGroups(root)[0].dataset.scenario).toBe('food');
   });
 
@@ -354,7 +404,7 @@ describe('initPhrasebookScenarioFilter — singleton lifecycle', () => {
     select.value = 'airport';
     select.dispatchEvent(new Event('change', { bubbles: true }));
 
-    expect(visibleEntries(root)).toHaveLength(TOTAL_ELIGIBLE);
+    expect(visibleEntries(root)).toHaveLength(TOTAL_CANONICAL);
     expect(window.location.search).toBe('');
   });
 });
