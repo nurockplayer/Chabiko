@@ -123,7 +123,8 @@ const ELIGIBLE_PHRASE_IDS = [
   'phrase-airport-005',
 ];
 
-/** Draft phrase/dialog text that must never reach learner-facing HTML. */
+/** Canonical draft phrase text expected in #440 prelaunch HTML; fixture and
+ * non-canonical draft content must never reach learner-facing HTML. */
 const DRAFT_PHRASE_TEXTS = [
   '不要辣，謝謝。',
   '我要去台北車站。',

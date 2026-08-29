@@ -484,7 +484,8 @@ function parseDialogs(
 }
 
 /**
- * Load the phrasebook corpus for the learner surface at `/phrasebook/`.
+ * Load and validate the base phrasebook corpus used by learner projections,
+ * including the `/phrasebook/` production and #440 prelaunch routes.
  *
  * Deterministic and fail-closed: throws on a missing/unparseable file, an
  * invalid document structure, a count that is not exactly
@@ -498,6 +499,9 @@ function parseDialogs(
  * The loader performs no runtime script conversion and never fabricates or
  * converts content: it maps the surface fields and typed relationship fields
  * verbatim.
+ * Route-specific eligibility is applied by callers: `loadEligiblePhrasebook`
+ * enforces the formal production review gate, while
+ * `loadPrelaunchPhrasebook` enforces the exact #440 canonical projection.
  *
  * @param phraseFilePath  optional override for the phrase collection
  *   (defaults to `data/examples/valid/phrasebook.json`).
