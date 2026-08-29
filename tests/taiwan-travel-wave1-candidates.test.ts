@@ -487,6 +487,14 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(busExample?.pinyin).toContain('gōngchē');
   });
 
+  it('fails closed when a candidate lesson has no kanji bridge note', async () => {
+    await expect(
+      build(undefined, ({ lessons }) => {
+        lessons[0].kanjiBridgeNotes = [];
+      }),
+    ).rejects.toThrow(/at least one kanji bridge note/);
+  });
+
   it('keeps one canonical pronunciation point per lesson', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
     const expectedSoundFocus = new Map([

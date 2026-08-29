@@ -427,7 +427,10 @@ function validateLesson(lesson: Lesson, index: number): void {
   lesson.chunks.forEach((chunk, itemIndex) =>
     validateNonEmptyObjectFields(chunk, ['chunk', 'meaning'], `${label}.chunks[${itemIndex}]`),
   );
-  assert(Array.isArray(lesson.kanjiBridgeNotes), `${label}.kanjiBridgeNotes must be an array`);
+  assert(
+    Array.isArray(lesson.kanjiBridgeNotes) && lesson.kanjiBridgeNotes.length >= 1,
+    `${label}.kanjiBridgeNotes must have at least one kanji bridge note`,
+  );
   lesson.kanjiBridgeNotes.forEach((note, itemIndex) =>
     validateNonEmptyObjectFields(note, ['kanji', 'jpReading', 'noteJa'], `${label}.kanjiBridgeNotes[${itemIndex}]`),
   );
