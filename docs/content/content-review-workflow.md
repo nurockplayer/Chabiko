@@ -195,6 +195,68 @@ Each human review must be performed under one or more of the following roles. A 
 
 **Important:** A single person performing multiple roles must record each role separately in the artifact (e.g., `human-language-reviewer` and `human-script-verifier` both performed by `@nurockplayer`). The `maintainer` role cannot approve language accuracy; that requires `human-language-reviewer`.
 
+### 4.1 Per-dimension role evidence for Taiwan Travel Wave 1
+
+The Taiwan Travel Wave 1 scope treats each dimension's ordered
+`reviewerRoles` list as an authorization allowlist, not a suggestion. The
+manifest and generated packet must keep the exact required role set for each
+dimension. Missing, extra, duplicated, or reordered roles are validation
+failures.
+
+Each required role has its own evidence row with an independent outcome,
+reviewer identity, ISO 8601 review date, reviewed `reviewVersion`, and findings.
+A person acting in two roles must fill and retain both role rows; top-level or
+global reviewer identity fields cannot substitute for either row. There is no
+shared dimension outcome: multi-role dimensions may retain mixed role outcomes
+without one role overwriting another. An `accepted`, `rejected`, or
+`needs-changes` role outcome requires complete identity, a valid review date,
+the exact current immutable `reviewVersion`, and findings. A `not-reviewed`
+role must keep all evidence fields, including `reviewVersion`, null. Content,
+graph, record, or scope-contract drift changes the immutable version and makes
+evidence for the prior version invalid. Any pending or negative role keeps the
+package non-promotable. Even when every required role is accepted, promotion
+still requires a separate overall accepted decision and maintainer action. The
+checked-in initial state keeps every role outcome `not-reviewed` and every
+evidence value null.
+
+The Wave manifest is also the canonical mutable input for the artifact's
+separate `overallDecision`, `unresolvedIssues`, and `blockedContent` results.
+`overallDecision` is null until a human records an attributed object containing
+the canonical `outcome` (`accepted`, `rejected`, or `needs-changes`),
+`reviewerIdentity`, canonical `reviewerRole`, ISO `reviewDate`, exact current
+`reviewVersion`, and non-empty `findings`. It does not substitute for any
+required per-role evidence row. Unresolved issues are trimmed non-empty notes,
+while blocked content is identified by an exact in-scope lesson ID. The
+checked-in initial state uses null and empty arrays. A canonical rebuild must
+preserve these values and derive its pending-role summary from the per-role
+outcomes; it must not restore placeholders or claim that completed roles remain
+pending. An overall accepted decision is invalid while any required role is not
+accepted or while unresolved/blocked entries remain. These mutable human
+results and their version references do not change the immutable review
+version, and none of them authorize production linking: promotion remains a
+separate maintainer action.
+
+For Taiwan Travel Wave 1, the canonical ordered dimension matrix is:
+
+| Dimension ID | What it records | Required reviewer roles, in order |
+|---|---|---|
+| `natural-taiwan-mandarin` | Traditional Mandarin naturalness and Taiwan usage | `human-language-reviewer`, `human-regional-reviewer` |
+| `natural-japanese-explanation` | Japanese explanation naturalness | `human-language-reviewer` |
+| `review-status` | Whether the candidate `reviewStatus` assignment is correct for draft → reviewed | `human-language-reviewer` |
+| `teaching-accuracy` | General teaching accuracy, including grammar, tone explanations, false-friend guidance, and pain-point tags | `human-teaching-reviewer` |
+| `lesson-loop-usefulness` | Lesson-loop completeness and travel usefulness | `human-teaching-reviewer` |
+| `pronunciation-guidance` | Pinyin and pronunciation guidance | `human-language-reviewer`, `human-teaching-reviewer` |
+| `kanji-bridge-accuracy` | Kanji bridge accuracy | `human-teaching-reviewer` |
+| `exercise-quality` | Review-prompt quality | `human-teaching-reviewer` |
+| `graph-and-scope-correctness` | Graph, identity, order, and issue-scope correctness | `maintainer` |
+| `source-and-script-provenance` | Source metadata and generated-script provenance | `human-source-reviewer`, `human-script-verifier` |
+
+The Wave package uses `human-language-reviewer` for the `review-status`
+draft → reviewed gate. The separate reviewed → published transition remains a
+maintainer action. `teaching-accuracy` is not interchangeable with the more
+specific lesson-loop, pronunciation, kanji-bridge, or exercise dimensions;
+each retains its own role outcome and evidence row.
+
 ---
 
 ## 5. Review Checklists

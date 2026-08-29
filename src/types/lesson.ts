@@ -20,12 +20,21 @@ export interface SoundFocus {
   noteJa: string;
 }
 
-export interface LessonExample {
+export type LessonExampleScriptStatus = 'authored' | 'verified' | 'generated';
+
+interface LessonExampleBase {
   traditional: string;
-  simplified?: string;
+  traditionalStatus: LessonExampleScriptStatus;
   pinyin: string;
   japanese: string;
 }
+
+export type LessonExample = LessonExampleBase &
+  (
+    | { simplified?: never; simplifiedStatus?: never }
+    | { simplified?: never; simplifiedStatus: 'unavailable' }
+    | { simplified: string; simplifiedStatus: LessonExampleScriptStatus }
+  );
 
 export interface ReviewPrompt {
   promptJa: string;
@@ -52,6 +61,9 @@ export interface Lesson {
   examples?: LessonExample[];
   reviewPrompts: ReviewPrompt[];
   travelTask: string;
+  /** Lesson-loop step 9. Optional in the shared contract for legacy lessons;
+   *  candidate packages may require it before promotion. */
+  reviewHookJa?: string;
   relatedVocabulary?: string[];
   painPointTags?: string[];
   reviewStatus: string;

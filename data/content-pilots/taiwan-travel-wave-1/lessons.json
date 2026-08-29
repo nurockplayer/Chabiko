@@ -1,0 +1,522 @@
+{
+  "lessons": [
+    {
+      "id": "lesson-011",
+      "titleJa": "空港で壊れたスーツケースを見てもらおう",
+      "level": "beginner",
+      "canDoJa": "到着後、預けたスーツケースが壊れていることを空港の係員に伝え、確認を頼める",
+      "learnerOutcomeJa": "「我的行李箱壞了，可以幫我看看嗎？」を使って、スーツケースの破損を伝えて確認を頼める",
+      "hookJa": "預けたスーツケースを受け取ったら、壊れている箇所が見つかった。原因を決めつけず、見てもらおう。",
+      "travelScenario": "airport",
+      "coreSentence": "我的行李箱壞了，可以幫我看看嗎？",
+      "sections": [
+        { "headingJa": "壞了で状態を伝える", "contentJa": "「我的行李箱壞了」で、受け取ったスーツケースが壊れている状態を伝える。原因や補償は決めつけない。" },
+        { "headingJa": "看看で確認を頼む", "contentJa": "「可以幫我看看嗎？」を続け、壊れた箇所を見て確認してもらえるか尋ねる。" }
+      ],
+      "chunks": [
+        { "chunk": "我的行李箱", "meaning": "私のスーツケースが", "notesJa": "状態を伝える物を先に置く。" },
+        { "chunk": "壞了", "meaning": "壊れています", "notesJa": "見えている破損状態を伝える。" },
+        { "chunk": "可以幫我看看嗎", "meaning": "見てもらえますか", "notesJa": "相手に状態の確認を頼む。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "箱", "jpReading": "はこ", "noteJa": "スーツケースを指す「行李箱」に含まれるが、中国語では xiāng と読み、日本語の読みをそのまま使わない。" }
+      ],
+      "soundFocus": [
+        { "item": "壞了 huài le", "noteJa": "huài は第四声で下げ、le は軽く添える。" }
+      ],
+      "examples": [
+        { "traditional": "我的行李箱壞了，可以幫我看看嗎？", "traditionalStatus": "generated", "simplified": "我的行李箱坏了，可以帮我看看吗？", "simplifiedStatus": "generated", "pinyin": "wǒ de xínglǐxiāng huài le, kěyǐ bāng wǒ kànkan ma?", "japanese": "私のスーツケースが壊れています。見てもらえますか？" },
+        { "traditional": "這裡壞了。", "traditionalStatus": "generated", "simplified": "这里坏了。", "simplifiedStatus": "generated", "pinyin": "zhèlǐ huài le.", "japanese": "ここが壊れています。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "スーツケースが壊れていると伝える文はどれ？", "answerJa": "我的行李箱壞了。", "distractorsJa": ["我的行李箱很重。", "我要拿行李。"] },
+        { "promptJa": "状態を見てもらうよう頼む部分はどれ？", "answerJa": "可以幫我看看嗎？", "distractorsJa": ["在哪裡？", "多少錢？"] }
+      ],
+      "travelTask": "スーツケースの壊れた箇所を指し、「我的行李箱壞了，可以幫我看看嗎？」と空港の係員に伝え、原因や補償を決めつけず確認を頼もう。",
+      "reviewHookJa": "第12課では、「我的＋荷物＋状態」で預けた荷物が出てこない状況をもう一度伝えます。",
+      "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-012",
+      "titleJa": "預けた荷物が出てこないと伝えよう",
+      "level": "beginner",
+      "canDoJa": "預けた荷物が受取場所に出てこない状況を係員に伝えられる",
+      "learnerOutcomeJa": "「還沒出來」を使って、待っている荷物がまだ出てこないと説明できる",
+      "hookJa": "荷物を待っているのに、自分のスーツケースが見当たらない。決めつけず、今の状況を伝えよう。",
+      "travelScenario": "airport",
+      "coreSentence": "我的託運行李還沒出來。",
+      "sections": [
+        { "headingJa": "状況をそのまま述べる", "contentJa": "「還沒＋動詞」で「まだ〜していない」。紛失と断定せず、荷物がまだ出てこないことを伝える。" },
+        { "headingJa": "確認をお願いする", "contentJa": "状況を言った後に「可以幫我看看嗎？」を添えると、確認を頼める。" }
+      ],
+      "chunks": [
+        { "chunk": "我的", "meaning": "私の", "notesJa": "後ろの名詞が自分のものだと示す。" },
+        { "chunk": "託運行李", "meaning": "預けた荷物", "notesJa": "搭乗時に預けた荷物を指すまとまり。" },
+        { "chunk": "還沒出來", "meaning": "まだ出てきていません", "notesJa": "「還沒」で未完了の状態を表す。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "運", "jpReading": "うん", "noteJa": "運ぶ意味の手がかりにはなるが、「託運」は tuōyùn と読み、語全体で「預けて運んでもらう」と覚える。" }
+      ],
+      "soundFocus": [
+        { "item": "託運 tuōyùn", "noteJa": "第一声から第四声。tuō を高く保ち、yùn を下げる。" }
+      ],
+      "examples": [
+        { "traditional": "我的託運行李還沒出來。", "traditionalStatus": "generated", "simplified": "我的托运行李还没出来。", "simplifiedStatus": "generated", "pinyin": "wǒ de tuōyùn xínglǐ hái méi chūlái.", "japanese": "私の預けた荷物がまだ出てきません。" },
+        { "traditional": "可以幫我看看嗎？", "traditionalStatus": "generated", "simplified": "可以帮我看看吗？", "simplifiedStatus": "generated", "pinyin": "kěyǐ bāng wǒ kànkan ma?", "japanese": "確認してもらえますか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「還沒出來」はどんな状態？", "answerJa": "まだ出てきていない", "distractorsJa": ["すでに受け取った", "荷物を預けたくない"] },
+        { "promptJa": "確認を頼む表現はどれ？", "answerJa": "可以幫我看看嗎？", "distractorsJa": ["我的行李很重。", "我要去登機門。"] }
+      ],
+      "travelTask": "荷物の引換証とスーツケースの特徴を確認できるようにし、「我的託運行李還沒出來。可以幫我看看嗎？」と係員に状況確認を頼もう。",
+      "reviewHookJa": "第20課では、ホテルで荷物について尋ねるときに「行李」をもう一度使います。",
+      "painPointTags": ["word-order", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-013",
+      "titleJa": "この乗り物が目的地へ行くか確かめよう",
+      "level": "beginner",
+      "canDoJa": "乗る前に、その車両が自分の目的地へ行くか確認できる",
+      "learnerOutcomeJa": "「這班車有到〜嗎？」を使って、目的地に停まるかを尋ねられる",
+      "hookJa": "目の前のバスや列車に乗ってよいか不安。行き先を告げるだけでなく、この便で合っているか確認しよう。",
+      "travelScenario": "transport",
+      "coreSentence": "請問，這班車有到台北車站嗎？",
+      "sections": [
+        { "headingJa": "この便を指す", "contentJa": "「這班車」は目の前の便・車両を指す。行き先表示を指差しながら使える。" },
+        { "headingJa": "到着するかを質問にする", "contentJa": "「有到＋場所＋嗎？」で、その場所に行くか・停まるかを確認する。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "知らない人への質問を始める表現。" },
+        { "chunk": "這班車", "meaning": "この便／この車両", "notesJa": "「班」は運行便を数えるときに使う量詞。" },
+        { "chunk": "有到台北車站嗎", "meaning": "台北駅へ行きますか", "notesJa": "目的地を差し替えて確認できる。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "班", "jpReading": "はん", "noteJa": "日本語の「班」と同じ字だが、ここでは交通の便を数える働き。日本語の意味だけで判断しない。" }
+      ],
+      "soundFocus": [
+        { "item": "這班車 zhè bān chē", "noteJa": "第四声・第一声・第一声。zhè を下げ、後ろ二語は高く保つ。" }
+      ],
+      "examples": [
+        { "traditional": "請問，這班車有到台北車站嗎？", "traditionalStatus": "generated", "simplified": "请问，这班车有到台北车站吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, zhè bān chē yǒu dào Táiběi Chēzhàn ma?", "japanese": "すみません、この便は台北駅へ行きますか？" },
+        { "traditional": "這班公車有到那裡嗎？", "traditionalStatus": "generated", "simplified": "这班公车有到那里吗？", "simplifiedStatus": "generated", "pinyin": "zhè bān gōngchē yǒu dào nàlǐ ma?", "japanese": "このバスはそこへ行きますか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「這班車」は何を指す？", "answerJa": "この便・車両", "distractorsJa": ["次の駅", "自分の切符"] },
+        { "promptJa": "目的地に行くか確認する型はどれ？", "answerJa": "有到＋場所＋嗎？", "distractorsJa": ["我要＋数量", "不要＋食べ物"] }
+      ],
+      "travelTask": "乗る前に目的地の表示を指差し、「請問，這班車有到＋目的地＋嗎？」と確認してから行動しよう。",
+      "reviewHookJa": "第14課では、同じ「請問」で乗り換える駅を尋ねます。",
+      "painPointTags": ["measure-word", "word-order", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-014",
+      "titleJa": "乗り換える場所を尋ねよう",
+      "level": "beginner",
+      "canDoJa": "目的地へ向かう途中で、どこで乗り換えるか尋ねられる",
+      "learnerOutcomeJa": "「在哪一站轉車？」を使って、乗換駅を確認できる",
+      "hookJa": "路線図には複数の線がある。目的地だけでなく、乗り換える場所も聞いてみよう。",
+      "travelScenario": "transport",
+      "coreSentence": "請問，我要在哪一站轉車？",
+      "sections": [
+        { "headingJa": "どの駅かを尋ねる", "contentJa": "「哪一站」は「どの駅」。場所を表す「在」を前に置く。" },
+        { "headingJa": "乗り換え動作を最後に置く", "contentJa": "「轉車」は乗り換えること。「在＋駅＋轉車」の順で組み立てる。" }
+      ],
+      "chunks": [
+        { "chunk": "我要", "meaning": "私は〜する必要があります／〜します", "notesJa": "ここでは次に必要な行動を尋ねる前置き。" },
+        { "chunk": "在哪一站", "meaning": "どの駅で", "notesJa": "「在」が場所、「哪一站」がどの駅かを表す。" },
+        { "chunk": "轉車", "meaning": "乗り換える", "notesJa": "乗り物を変える動作。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "轉", "jpReading": "てん", "noteJa": "「転」の繁体字。乗り換えの意味は語全体「轉車」で確認し、音は zhuǎn を基準にする。" }
+      ],
+      "soundFocus": [
+        { "item": "哪一站 nǎ yí zhàn", "noteJa": "「一」は後ろの第四声の前で第二声のように上げる。" }
+      ],
+      "examples": [
+        { "traditional": "請問，我要在哪一站轉車？", "traditionalStatus": "generated", "simplified": "请问，我要在哪一站转车？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, wǒ yào zài nǎ yí zhàn zhuǎnchē?", "japanese": "すみません、どの駅で乗り換えればいいですか？" },
+        { "traditional": "我要在這一站轉車嗎？", "traditionalStatus": "generated", "simplified": "我要在这一站转车吗？", "simplifiedStatus": "generated", "pinyin": "wǒ yào zài zhè yí zhàn zhuǎnchē ma?", "japanese": "この駅で乗り換えるのですか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「轉車」はどんな行動？", "answerJa": "乗り換える", "distractorsJa": ["切符を買う", "荷物を預ける"] },
+        { "promptJa": "「どの駅で」に当たる部分は？", "answerJa": "在哪一站", "distractorsJa": ["我要", "請問"] }
+      ],
+      "travelTask": "路線図で目的地を示し、「請問，我要在哪一站轉車？」と尋ね、相手が示した駅名を画面や表示でも確認しよう。",
+      "reviewHookJa": "第18課では、店員への声かけで同じ「請問」をもう一度使います。",
+      "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-015",
+      "titleJa": "人数を伝えて席があるか尋ねよう",
+      "level": "beginner",
+      "canDoJa": "飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる",
+      "learnerOutcomeJa": "「兩位有位子嗎？」を使って、二人分の席があるか確認できる",
+      "hookJa": "店に入ったら、注文の前に何人で利用したいかを伝える必要がある。入口で短く聞いてみよう。",
+      "travelScenario": "food",
+      "coreSentence": "請問，兩位有位子嗎？",
+      "sections": [
+        { "headingJa": "人数には位を使う", "contentJa": "「兩位」で二人。人を丁寧に数える量詞として使う。" },
+        { "headingJa": "席の有無を質問する", "contentJa": "「人数＋位＋有位子嗎？」で、人数を伝えて席があるか尋ねる。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "店員への呼びかけ。" },
+        { "chunk": "兩位", "meaning": "二人です", "notesJa": "人数を変えて使える。" },
+        { "chunk": "有位子嗎", "meaning": "席はありますか", "notesJa": "「嗎」でYes/Noの質問にする。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "位", "jpReading": "い", "noteJa": "人を丁寧に数える働きは日本語の「〜名様」に近いが、使い方が同一とは限らない。" }
+      ],
+      "soundFocus": [
+        { "item": "兩位 liǎng wèi", "noteJa": "第三声から第四声。liǎng を低くし、wèi を短く下げる。" }
+      ],
+      "examples": [
+        { "traditional": "請問，兩位有位子嗎？", "traditionalStatus": "generated", "simplified": "请问，两位有位子吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, liǎng wèi yǒu wèizi ma?", "japanese": "すみません、二人用の席はありますか？" },
+        { "traditional": "我們有三位。", "traditionalStatus": "generated", "simplified": "我们有三位。", "simplifiedStatus": "generated", "pinyin": "wǒmen yǒu sān wèi.", "japanese": "私たちは三人です。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「兩位」は何人？", "answerJa": "二人", "distractorsJa": ["一人", "三人"] },
+        { "promptJa": "席があるか尋ねる部分は？", "answerJa": "有位子嗎？", "distractorsJa": ["轉車？", "行李？"] }
+      ],
+      "travelTask": "店の入口で自分たちの人数を確認し、「請問，＋人数＋位有位子嗎？」または「我們有＋人数＋位」と伝えよう。",
+      "reviewHookJa": "第16課では、同じ「有〜嗎？」で料理に花生があるか尋ねます。",
+      "painPointTags": ["measure-word", "word-order", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-016",
+      "titleJa": "料理にピーナッツが入っているか尋ねよう",
+      "level": "beginner",
+      "canDoJa": "料理にピーナッツが入っているか、注文前に店員へ尋ねられる",
+      "learnerOutcomeJa": "「這道菜有花生嗎？」を使って、特定の食材の有無を確認できる",
+      "hookJa": "避けたい食材があるときは、見た目だけで判断せず、料理を指して尋ねよう。",
+      "travelScenario": "food",
+      "coreSentence": "請問，這道菜有花生嗎？",
+      "sections": [
+        { "headingJa": "料理を道で数える", "contentJa": "「這道菜」は「この料理」。「道」は料理を数える量詞。" },
+        { "headingJa": "確認だけで安全を断定しない", "contentJa": "この表現は食材の有無を尋ねる入口。重いアレルギーでは、書面や翻訳など別の確実な方法も併用し、一つの返答だけで安全を保証されたと判断しない。" }
+      ],
+      "chunks": [
+        { "chunk": "這道菜", "meaning": "この料理", "notesJa": "料理を指差しながら使う。" },
+        { "chunk": "有", "meaning": "入っていますか／ありますか", "notesJa": "食材の有無を尋ねる。" },
+        { "chunk": "花生嗎", "meaning": "ピーナッツは入っていますか", "notesJa": "食材名を差し替えられる。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "花生", "jpReading": "か・せい", "noteJa": "日本語の字音から意味を推測しにくい語。中国語では huāshēng で「ピーナッツ」と覚える。" }
+      ],
+      "soundFocus": [
+        { "item": "花生 huāshēng", "noteJa": "どちらも第一声。高く平らに保つ。" }
+      ],
+      "examples": [
+        { "traditional": "請問，這道菜有花生嗎？", "traditionalStatus": "generated", "simplified": "请问，这道菜有花生吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, zhè dào cài yǒu huāshēng ma?", "japanese": "すみません、この料理にピーナッツは入っていますか？" },
+        { "traditional": "我不能吃花生。", "traditionalStatus": "generated", "simplified": "我不能吃花生。", "simplifiedStatus": "generated", "pinyin": "wǒ bù néng chī huāshēng.", "japanese": "私はピーナッツを食べられません。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「花生」は何？", "answerJa": "ピーナッツ", "distractorsJa": ["唐辛子", "卵"] },
+        { "promptJa": "「這道菜」の「道」は何のため？", "answerJa": "料理を数えるため", "distractorsJa": ["人を数えるため", "乗り物を数えるため"] }
+      ],
+      "travelTask": "避けたい食材を文字でも示し、料理を指して「請問，這道菜有花生嗎？」と尋ねよう。重要な食事制限では別の確認手段も併用する。",
+      "reviewHookJa": "第17課では、同じ飲食店の場面で「請問」から始め、持ち帰りの包装を頼みます。",
+      "painPointTags": ["measure-word", "tone", "same-kanji-different-usage"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-017",
+      "titleJa": "残った料理を包んでもらえるか尋ねよう",
+      "level": "beginner",
+      "canDoJa": "食べ切れなかった料理を持ち帰れるよう包んでもらえるか尋ねられる",
+      "learnerOutcomeJa": "「可以幫我打包嗎？」を使って、料理の持ち帰り準備を頼める",
+      "hookJa": "料理を食べ切れなかった。店の対応を決めつけず、包んでもらえるか尋ねよう。",
+      "travelScenario": "food",
+      "coreSentence": "請問，可以幫我打包嗎？",
+      "sections": [
+        { "headingJa": "できるかを先に尋ねる", "contentJa": "「可以〜嗎？」で可能かどうかを確認してから依頼する。" },
+        { "headingJa": "打包をまとまりで覚える", "contentJa": "ここでの「打包」は、料理を持ち帰れるよう包むこと。店ごとの対応は質問して確認する。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "店員への呼びかけ。" },
+        { "chunk": "可以幫我", "meaning": "私のために〜してもらえますか", "notesJa": "依頼の前置き。" },
+        { "chunk": "打包嗎", "meaning": "包んでもらえますか", "notesJa": "残った料理を持ち帰る準備を頼む表現。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "包", "jpReading": "ほう", "noteJa": "包む意味は手がかりになるが、「打包」は二字で一つの動作として覚える。" }
+      ],
+      "soundFocus": [
+        { "item": "可以 kěyǐ", "noteJa": "第三声が二つ続くため、表記は kěyǐ のままでも、発音では最初の kě が第二声のように上がって kéyǐ となる。" }
+      ],
+      "examples": [
+        { "traditional": "請問，可以幫我打包嗎？", "traditionalStatus": "generated", "simplified": "请问，可以帮我打包吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ bāng wǒ dǎbāo ma?", "japanese": "すみません、持ち帰り用に包んでもらえますか？" },
+        { "traditional": "這些可以打包嗎？", "traditionalStatus": "generated", "simplified": "这些可以打包吗？", "simplifiedStatus": "generated", "pinyin": "zhèxiē kěyǐ dǎbāo ma?", "japanese": "これらは持ち帰り用に包めますか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "この課の「打包」は何を頼む表現？", "answerJa": "料理を持ち帰り用に包むこと", "distractorsJa": ["席を予約すること", "会計を分けること"] },
+        { "promptJa": "可能かどうかを尋ねる型は？", "answerJa": "可以〜嗎？", "distractorsJa": ["不要〜。", "在哪裡？"] }
+      ],
+      "travelTask": "残った料理を示し、「請問，可以幫我打包嗎？」と尋ね、可能かどうか相手の返答を確認しよう。",
+      "reviewHookJa": "第20課では、「可以＋動詞＋嗎？」で荷物を預けられるかもう一度尋ねます。",
+      "painPointTags": ["tone", "pinyin-pronunciation", "same-kanji-different-usage"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-018",
+      "titleJa": "服を試着してよいか尋ねよう",
+      "level": "beginner",
+      "canDoJa": "店で気になる服を指し、試着してよいか尋ねられる",
+      "learnerOutcomeJa": "「可以試穿這件嗎？」を使って、特定の服の試着許可を求められる",
+      "hookJa": "サイズが合うか確かめたい。勝手に着る前に、商品を示して聞いてみよう。",
+      "travelScenario": "shopping",
+      "coreSentence": "請問，可以試穿這件嗎？",
+      "sections": [
+        { "headingJa": "試穿で試着を表す", "contentJa": "「試」は試す、「穿」は身につける。「試穿」で試着する。" },
+        { "headingJa": "服を件で数える", "contentJa": "「這件」で「この一着」。服を指差しながら使う。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "店員への呼びかけ。" },
+        { "chunk": "可以試穿", "meaning": "試着してもよいですか", "notesJa": "「可以」で許可を尋ねる。" },
+        { "chunk": "這件嗎", "meaning": "この一着を", "notesJa": "「件」は服を数える量詞。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "試", "jpReading": "し", "noteJa": "試す意味は共通の手がかりになるが、中国語では shì と発音する。" }
+      ],
+      "soundFocus": [
+        { "item": "試穿 shìchuān", "noteJa": "第四声から第一声。shì を短く下げ、chuān を高く保つ。" }
+      ],
+      "examples": [
+        { "traditional": "請問，可以試穿這件嗎？", "traditionalStatus": "generated", "simplified": "请问，可以试穿这件吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ shìchuān zhè jiàn ma?", "japanese": "すみません、これを試着してもいいですか？" },
+        { "traditional": "我想試穿這件。", "traditionalStatus": "generated", "simplified": "我想试穿这件。", "simplifiedStatus": "generated", "pinyin": "wǒ xiǎng shìchuān zhè jiàn.", "japanese": "これを試着したいです。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「試穿」は何をすること？", "answerJa": "試着すること", "distractorsJa": ["支払うこと", "返品すること"] },
+        { "promptJa": "服を数える語はどれ？", "answerJa": "件", "distractorsJa": ["班", "位"] }
+      ],
+      "travelTask": "試したい服を指し、「請問，可以試穿這件嗎？」と尋ね、店員の案内を待とう。",
+      "reviewHookJa": "第19課では、同じ「請問，可以〜嗎？」で領収書を頼みます。",
+      "painPointTags": ["measure-word", "tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-019",
+      "titleJa": "支払い後に領収書を頼もう",
+      "level": "beginner",
+      "canDoJa": "支払い後、必要な領収書を店員に頼める",
+      "learnerOutcomeJa": "「可以給我收據嗎？」を使って、領収書が必要だと伝えられる",
+      "hookJa": "会計は終わったけれど、支払いの記録が必要。欲しいものを短く頼もう。",
+      "travelScenario": "shopping",
+      "coreSentence": "請問，可以給我收據嗎？",
+      "sections": [
+        { "headingJa": "給我で受け取りを頼む", "contentJa": "「給我＋物」で「私に〜をください」。前に「可以」を置くと可能かを丁寧に尋ねられる。" },
+        { "headingJa": "必要な書類名を示す", "contentJa": "ここでは「收據」を領収書として使う。必要なら文字を画面に出して確認する。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "会計後の呼びかけ。" },
+        { "chunk": "可以給我", "meaning": "私にいただけますか", "notesJa": "受け取りたい物を後ろに置く。" },
+        { "chunk": "收據嗎", "meaning": "領収書を", "notesJa": "「收據」が欲しい物。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "收據", "jpReading": "しゅう・きょ", "noteJa": "「收」は受け取る、「據」は記録の手がかりになるが、語の使い分けは日本語の「領収書」と完全には一致しない。" }
+      ],
+      "soundFocus": [
+        { "item": "給我 gěi wǒ", "noteJa": "第三声が二つ続くため、表記は gěi wǒ のままでも、発音では最初の gěi が第二声のように上がって géi wǒ となる。" }
+      ],
+      "examples": [
+        { "traditional": "請問，可以給我收據嗎？", "traditionalStatus": "generated", "simplified": "请问，可以给我收据吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ gěi wǒ shōujù ma?", "japanese": "すみません、領収書をいただけますか？" },
+        { "traditional": "我需要收據。", "traditionalStatus": "generated", "simplified": "我需要收据。", "simplifiedStatus": "generated", "pinyin": "wǒ xūyào shōujù.", "japanese": "領収書が必要です。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「收據」は何？", "answerJa": "領収書", "distractorsJa": ["試着室", "乗車券"] },
+        { "promptJa": "「私にください」に当たる部分は？", "answerJa": "給我", "distractorsJa": ["請問", "收據"] }
+      ],
+      "travelTask": "支払い後、必要なら「請問，可以給我收據嗎？」と頼み、書類名が伝わりにくければ文字も見せよう。",
+      "reviewHookJa": "第20課では、同じ「請問，可以〜嗎？」で荷物を預けられるか尋ねます。",
+      "painPointTags": ["word-order", "tone", "same-kanji-different-usage"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-020",
+      "titleJa": "ホテルで荷物を預けられるか尋ねよう",
+      "level": "beginner",
+      "canDoJa": "チェックイン前やチェックアウト後に、ホテルで荷物を預けられるか尋ねられる",
+      "learnerOutcomeJa": "「可以寄放行李嗎？」を使って、荷物預かりが可能か確認できる",
+      "hookJa": "部屋を使えない時間に大きな荷物がある。サービスがあると決めつけず、受付で尋ねよう。",
+      "travelScenario": "hotel",
+      "coreSentence": "請問，可以寄放行李嗎？",
+      "sections": [
+        { "headingJa": "寄放で一時的に預ける", "contentJa": "「寄放行李」で荷物を預けること。可能かどうかは「可以〜嗎？」で確認する。" },
+        { "headingJa": "時間を追加する", "contentJa": "必要なら「退房後」を文頭に置き、チェックアウト後について尋ねられる。" }
+      ],
+      "chunks": [
+        { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "受付への呼びかけ。" },
+        { "chunk": "可以寄放", "meaning": "預けられますか", "notesJa": "可能かを尋ねる。" },
+        { "chunk": "行李嗎", "meaning": "荷物を", "notesJa": "預けたい対象を示す。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "寄", "jpReading": "き", "noteJa": "「寄託」のように預ける意味の手がかりはあるが、会話では「寄放」をひとまとまりで覚える。" }
+      ],
+      "soundFocus": [
+        { "item": "寄放 jìfàng", "noteJa": "どちらも第四声。二語を続けて短く下げる。" }
+      ],
+      "examples": [
+        { "traditional": "請問，可以寄放行李嗎？", "traditionalStatus": "generated", "simplified": "请问，可以寄放行李吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ jìfàng xínglǐ ma?", "japanese": "すみません、荷物を預けられますか？" },
+        { "traditional": "退房後可以寄放行李嗎？", "traditionalStatus": "generated", "simplified": "退房后可以寄放行李吗？", "simplifiedStatus": "generated", "pinyin": "tuìfáng hòu kěyǐ jìfàng xínglǐ ma?", "japanese": "チェックアウト後に荷物を預けられますか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「寄放行李」は何をすること？", "answerJa": "荷物を預けること", "distractorsJa": ["部屋を予約すること", "荷物を開けること"] },
+        { "promptJa": "チェックアウト後を表すのは？", "answerJa": "退房後", "distractorsJa": ["登機門", "這班車"] }
+      ],
+      "travelTask": "受付で荷物を示し、「請問，可以寄放行李嗎？」と尋ねよう。必要なら「退房後」を加え、利用できるか相手の返答を確認する。",
+      "reviewHookJa": "第21課では、同じホテルの受付で「可以〜嗎？」を使って別の用件の確認を頼みます。",
+      "painPointTags": ["tone", "word-order", "same-kanji-different-usage"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-021",
+      "titleJa": "ルームキーが使えないと伝えよう",
+      "level": "beginner",
+      "canDoJa": "ホテルの受付で、ルームキーが使えない状況を説明できる",
+      "learnerOutcomeJa": "「我的房卡不能用」を使って、カードキーの不具合を伝えられる",
+      "hookJa": "部屋の前でカードキーが反応しない。無理に操作せず、受付で状況を伝えよう。",
+      "travelScenario": "hotel",
+      "coreSentence": "我的房卡不能用。",
+      "sections": [
+        { "headingJa": "問題の物を先に示す", "contentJa": "「我的房卡」で自分のルームキーを示す。カードも一緒に見せると伝わりやすい。" },
+        { "headingJa": "不能用で使えないと言う", "contentJa": "「不能用」は使用できない状態。原因を断定せず、現在の問題だけを伝える。" }
+      ],
+      "chunks": [
+        { "chunk": "我的", "meaning": "私の", "notesJa": "後ろの物が自分のものだと示す。" },
+        { "chunk": "房卡", "meaning": "ルームキー／カードキー", "notesJa": "「房」は部屋、「卡」はカード。" },
+        { "chunk": "不能用", "meaning": "使えません", "notesJa": "現在使えない状況を表す。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "房", "jpReading": "ぼう", "noteJa": "部屋に関係する字だが、中国語の fáng を日本語の音読みで代用しない。" }
+      ],
+      "soundFocus": [
+        { "item": "不能用 bù néng yòng", "noteJa": "第四声・第二声・第四声。最後の yòng を短く下げる。" }
+      ],
+      "examples": [
+        { "traditional": "我的房卡不能用。", "traditionalStatus": "generated", "simplified": "我的房卡不能用。", "simplifiedStatus": "generated", "pinyin": "wǒ de fángkǎ bù néng yòng.", "japanese": "私のルームキーが使えません。" },
+        { "traditional": "可以幫我看看嗎？", "traditionalStatus": "generated", "simplified": "可以帮我看看吗？", "simplifiedStatus": "generated", "pinyin": "kěyǐ bāng wǒ kànkan ma?", "japanese": "確認してもらえますか？" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「房卡」は何？", "answerJa": "ルームキー／カードキー", "distractorsJa": ["予約確認書", "荷物の引換証"] },
+        { "promptJa": "「使えません」に当たる部分は？", "answerJa": "不能用", "distractorsJa": ["我的", "可以"] }
+      ],
+      "travelTask": "カードキーと部屋番号を確認できるものを持って受付へ行き、「我的房卡不能用。可以幫我看看嗎？」と状況確認を頼もう。",
+      "reviewHookJa": "第22課では、困った状況を伝えたあと、「可以幫我嗎？」で助けを求めます。",
+      "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-022",
+      "titleJa": "同行者とはぐれたと伝えよう",
+      "level": "beginner",
+      "canDoJa": "同行者とはぐれた状況を伝え、周囲の人に助けを求められる",
+      "learnerOutcomeJa": "「我跟朋友走散了」を使って、友人とはぐれたことを説明できる",
+      "hookJa": "混雑した場所で同行者が見当たらない。落ち着いて状況を短く伝えよう。",
+      "travelScenario": "emergency",
+      "coreSentence": "我跟朋友走散了，可以幫我嗎？",
+      "sections": [
+        { "headingJa": "誰とはぐれたかを言う", "contentJa": "「我跟朋友」で「私は友人と」。相手を家族などに差し替えられる。" },
+        { "headingJa": "走散了で状況を伝える", "contentJa": "「走散了」は一緒にいた人とはぐれた状態。続けて助けを求める。" }
+      ],
+      "chunks": [
+        { "chunk": "我跟朋友", "meaning": "私は友人と", "notesJa": "「跟」で一緒にいた相手をつなぐ。" },
+        { "chunk": "走散了", "meaning": "はぐれました", "notesJa": "起きた変化を「了」で示す。" },
+        { "chunk": "可以幫我嗎", "meaning": "助けてもらえますか", "notesJa": "周囲の人に助けを求める。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "散", "jpReading": "さん", "noteJa": "散らばる意味は手がかりになるが、「走散」は zǒusàn と読み、人とはぐれる状況で使う。" }
+      ],
+      "soundFocus": [
+        { "item": "走散 zǒusàn", "noteJa": "第三声から第四声。zǒu を低くし、sàn を下げる。" }
+      ],
+      "examples": [
+        { "traditional": "我跟朋友走散了，可以幫我嗎？", "traditionalStatus": "generated", "simplified": "我跟朋友走散了，可以帮我吗？", "simplifiedStatus": "generated", "pinyin": "wǒ gēn péngyou zǒusàn le, kěyǐ bāng wǒ ma?", "japanese": "友人とはぐれました。助けてもらえますか？" },
+        { "traditional": "我找不到我的朋友。", "traditionalStatus": "generated", "simplified": "我找不到我的朋友。", "simplifiedStatus": "generated", "pinyin": "wǒ zhǎo bu dào wǒ de péngyou.", "japanese": "友人が見つかりません。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「走散了」はどんな状況？", "answerJa": "一緒にいた人とはぐれた", "distractorsJa": ["乗り物を降りた", "荷物を預けた"] },
+        { "promptJa": "助けを求める部分は？", "answerJa": "可以幫我嗎？", "distractorsJa": ["我跟朋友", "找不到"] }
+      ],
+      "travelTask": "同行者の名前や写真など確認に役立つ情報を用意し、「我跟朋友走散了，可以幫我嗎？」と周囲の係員などに状況を伝えよう。",
+      "reviewHookJa": "第23課では、「幫我」を使って救急車を呼んでもらう具体的な依頼につなげます。",
+      "painPointTags": ["aspect-particle", "word-order", "tone"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-023",
+      "titleJa": "救急車を呼んでほしいと頼もう",
+      "level": "beginner",
+      "canDoJa": "緊急時に、周囲の人へ救急車を呼んでほしいと頼める",
+      "learnerOutcomeJa": "「請幫我叫救護車」を使って、救急車の手配を明確に求められる",
+      "hookJa": "すぐに助けが必要な場面では、長く説明する前に必要な行動を短く伝えよう。",
+      "travelScenario": "emergency",
+      "coreSentence": "請幫我叫救護車。",
+      "sections": [
+        { "headingJa": "必要な行動を直接頼む", "contentJa": "「請幫我＋動詞」で、自分のために行動してほしいと頼む。" },
+        { "headingJa": "結果を保証する表現ではない", "contentJa": "この文は救急車を呼ぶよう依頼する言葉。到着時間や医療結果を示すものではない。可能なら現在地や状況も周囲に伝える。" }
+      ],
+      "chunks": [
+        { "chunk": "請", "meaning": "〜してください", "notesJa": "依頼を始める。" },
+        { "chunk": "幫我叫", "meaning": "私のために呼んでください", "notesJa": "「叫」はここでは呼ぶこと。" },
+        { "chunk": "救護車", "meaning": "救急車", "notesJa": "必要な対象を明確にする。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "救護", "jpReading": "きゅうご", "noteJa": "字の意味は日本語の「救護」を手がかりにできるが、中国語では jiùhù と発音する。" }
+      ],
+      "soundFocus": [
+        { "item": "救護車 jiùhùchē", "noteJa": "第四声・第四声・第一声。前二語を下げ、chē を高く保つ。" }
+      ],
+      "examples": [
+        { "traditional": "請幫我叫救護車。", "traditionalStatus": "generated", "simplified": "请帮我叫救护车。", "simplifiedStatus": "generated", "pinyin": "qǐng bāng wǒ jiào jiùhùchē.", "japanese": "救急車を呼んでください。" },
+        { "traditional": "有人受傷了，請幫我叫救護車。", "traditionalStatus": "generated", "simplified": "有人受伤了，请帮我叫救护车。", "simplifiedStatus": "generated", "pinyin": "yǒu rén shòushāng le, qǐng bāng wǒ jiào jiùhùchē.", "japanese": "けがをした人がいます。救急車を呼んでください。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "「救護車」は何？", "answerJa": "救急車", "distractorsJa": ["警察署", "タクシー"] },
+        { "promptJa": "「呼んでください」に当たる部分は？", "answerJa": "請幫我叫", "distractorsJa": ["有人", "受傷了"] }
+      ],
+      "travelTask": "緊急時に周囲へ向けて「請幫我叫救護車」とはっきり言う練習をし、可能なら現在地や誰が助けを必要としているかも示せるよう準備しよう。",
+      "reviewHookJa": "【第23課後の場面復習】「可以幫我嗎？」と「請幫我叫救護車」を使い分け、必要な助けを具体的に頼む練習をします。",
+      "painPointTags": ["tone", "pinyin-pronunciation", "word-order"],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "lesson-024",
+      "titleJa": "名前と日本から来たことを伝えよう",
+      "level": "beginner",
+      "canDoJa": "初対面の相手に自分の名前と日本から来たことを簡単に伝えられる",
+      "learnerOutcomeJa": "「我叫〜，從日本來」を使って、短い自己紹介ができる",
+      "hookJa": "旅先で話しかけられた。まずはあいさつ、名前、どこから来たかの三つだけ伝えてみよう。",
+      "travelScenario": "social",
+      "coreSentence": "你好，我叫田中，從日本來。",
+      "sections": [
+        { "headingJa": "我叫で名前を伝える", "contentJa": "「我叫＋名前」で「私は〜といいます」。自分の名前に差し替える。" },
+        { "headingJa": "從〜來で出身地を伝える", "contentJa": "「從＋場所＋來」で「〜から来ました」。ここでは日本を入れる。" }
+      ],
+      "chunks": [
+        { "chunk": "你好", "meaning": "こんにちは", "notesJa": "最初のあいさつ。" },
+        { "chunk": "我叫田中", "meaning": "私は田中といいます", "notesJa": "名前を自分のものに替える。" },
+        { "chunk": "從日本來", "meaning": "日本から来ました", "notesJa": "「從」の後ろに出発点を置く。" }
+      ],
+      "kanjiBridgeNotes": [
+        { "kanji": "日本", "jpReading": "にほん／にっぽん", "noteJa": "字形は同じでも中国語では Rìběn と読む。日本語の読みをそのまま使わない。" }
+      ],
+      "soundFocus": [
+        { "item": "你好 nǐ hǎo", "noteJa": "第三声が二つ続くため、表記は nǐ hǎo のままでも、発音では最初の nǐ が第二声のように上がって ní hǎo となる。" }
+      ],
+      "examples": [
+        { "traditional": "你好，我叫田中，從日本來。", "traditionalStatus": "generated", "simplified": "你好，我叫田中，从日本来。", "simplifiedStatus": "generated", "pinyin": "nǐ hǎo, wǒ jiào Tiánzhōng, cóng Rìběn lái.", "japanese": "こんにちは、田中といいます。日本から来ました。" },
+        { "traditional": "我是來台灣旅行的。", "traditionalStatus": "generated", "simplified": "我是来台湾旅行的。", "simplifiedStatus": "generated", "pinyin": "wǒ shì lái Táiwān lǚxíng de.", "japanese": "台湾へ旅行に来ました。" }
+      ],
+      "reviewPrompts": [
+        { "promptJa": "名前を伝える型はどれ？", "answerJa": "我叫＋名前", "distractorsJa": ["我有＋予約", "我要＋数量"] },
+        { "promptJa": "「從日本來」は何を伝える？", "answerJa": "日本から来たこと", "distractorsJa": ["日本へ帰ること", "日本語を教えること"] }
+      ],
+      "travelTask": "自分の名前に差し替えて「你好，我叫〜，從日本來」と声に出し、相手の名前を聞き返す前の短い自己紹介を練習しよう。",
+      "reviewHookJa": "【第24課後のコース復習】自己紹介の「我叫〜，從日本來」に、聞き取れないときの「可以再說慢一點嗎？」を続けて使う練習をします。",
+      "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
+      "reviewStatus": "draft"
+    }
+  ]
+}

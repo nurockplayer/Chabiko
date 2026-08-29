@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "paths": [
+    {
+      "id": "candidate-taiwan-travel-wave-1",
+      "members": [
+        { "collection": "lessons", "type": "lesson", "id": "lesson-011" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-012" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-013" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-014" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-015" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-016" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-017" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-018" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-019" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-020" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-021" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-022" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-023" },
+        { "collection": "lessons", "type": "lesson", "id": "lesson-024" }
+      ]
+    }
+  ]
+}

@@ -100,12 +100,16 @@ function isRenderableLesson(value: unknown): value is LessonBundle['lessons'][nu
     'examples',
     'relatedVocabulary',
   ];
+  const optionalTextFields = ['reviewHookJa'];
 
   if (
     !requiredTextFields.every((field) => isNonEmptyString(lesson[field])) ||
     !requiredArrayFields.every((field) => Array.isArray(lesson[field])) ||
     !optionalArrayFields.every(
       (field) => lesson[field] === undefined || Array.isArray(lesson[field]),
+    ) ||
+    !optionalTextFields.every(
+      (field) => lesson[field] === undefined || isNonEmptyString(lesson[field]),
     ) ||
     !isValidPainPointTags(lesson.painPointTags)
   ) {

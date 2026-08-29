@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
@@ -67,6 +68,12 @@ describe('shared learning-content graph coverage', () => {
     );
   });
 
+  it('selects the Taiwan Travel Wave 1 candidate suite for its loader', () => {
+    expect(domainTestGlobsFor('src/content/loadTaiwanTravelWave1ReviewScope.ts')).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+  });
+
   it('selects the Taiwan Travel projection suites for its adapter', () => {
     expect(domainTestGlobsFor('src/content/taiwanTravelPath.ts')).toContain(
       'tests/taiwan-travel-path*.test.ts',
@@ -112,6 +119,57 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runA11y).toBe(false);
   });
 
+  it('runs the candidate drift suite for the exact Wave 1 packet without broadening docs', () => {
+    const packet = classifyFiles([
+      'docs/content/reviews/taiwan-travel-wave-1-v1.md',
+    ]);
+    expect(packet.tier).toBe('t1');
+    expect(packet.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(packet.runAffectedVitest).toBe(true);
+    expect(packet.runFullVitest).toBe(false);
+
+    const ordinaryDocs = classifyFiles([
+      'docs/content/reviews/ordinary-not-generated.md',
+    ]);
+    expect(ordinaryDocs.tier).toBe('t0');
+    expect(ordinaryDocs.affectedTestGlobs).toEqual([]);
+    expect(ordinaryDocs.runAffectedVitest).toBe(false);
+  });
+
+  it('runs the candidate command self-test for the exact Wave 1 workflow document', () => {
+    const workflowDocument = classifyFiles([
+      'docs/content/taiwan-travel-wave-1-candidates.md',
+    ]);
+
+    expect(workflowDocument.tier).toBe('t1');
+    expect(workflowDocument.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(workflowDocument.runAffectedVitest).toBe(true);
+    expect(workflowDocument.runFullVitest).toBe(false);
+  });
+
+  it('runs the candidate contract self-test for the canonical review workflow', () => {
+    const canonicalWorkflow = classifyFiles([
+      'docs/content/content-review-workflow.md',
+    ]);
+
+    expect(canonicalWorkflow.tier).toBe('t1');
+    expect(canonicalWorkflow.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(canonicalWorkflow.runAffectedVitest).toBe(true);
+    expect(canonicalWorkflow.runFullVitest).toBe(false);
+
+    const ordinaryDocs = classifyFiles(['docs/content/ordinary-workflow.md']);
+    expect(ordinaryDocs.tier).toBe('t0');
+    expect(ordinaryDocs.affectedTestGlobs).not.toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+  });
+
   it('a pure domain change runs affected tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['src/domain/tonePractice.ts']);
     expect(classification.tier).toBe('t1');
@@ -132,6 +190,23 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runAffectedVitest).toBe(false);
     expect(classification.runVisual).toBe(false);
     expect(classification.runA11y).toBe(false);
+  });
+
+  it('runs the Wave 1 candidate suite when production lessons change without broadening other content', () => {
+    const productionLessons = classifyFiles(['data/examples/valid/lessons.json']);
+    expect(productionLessons.tier).toBe('t1');
+    expect(productionLessons.affectedContent).toBe(true);
+    expect(productionLessons.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(productionLessons.runAffectedVitest).toBe(true);
+    expect(productionLessons.runFullVitest).toBe(false);
+
+    const otherContent = classifyFiles(['data/examples/valid/sentences.json']);
+    expect(otherContent.affectedTestGlobs).not.toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(otherContent.runAffectedVitest).toBe(false);
   });
 
   it('golden pilot source changes run the full gate for packet drift protection', () => {
@@ -368,6 +443,52 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     } finally {
       rmSync(outputPath, { force: true });
     }
+  });
+
+  it('the canonical review workflow path selects the candidate suite through the real classify CLI', () => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    writeFile(
+      repo,
+      'docs/content/content-review-workflow.md',
+      '# canonical review workflow\n',
+    );
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t1');
+      expect(stdout).toContain('run_affected_vitest=true');
+      expect(stdout).toContain(
+        'canonical review contract → T1 candidate matrix self-test',
+      );
+      const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('tier=t1');
+      expect(emitted).toContain('run_affected_vitest=true');
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('the real affected CLI executes the candidate contract suite for the canonical workflow', () => {
+    const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
+    const result = spawnSync(
+      process.execPath,
+      [
+        scriptPath,
+        'affected',
+        '--files',
+        'docs/content/content-review-workflow.md',
+      ],
+      { cwd: repositoryRoot, encoding: 'utf8' },
+    );
+    const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+    const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
+
+    expect(result.status, output).toBe(0);
+    expect(normalizedOutput).toContain('tests/taiwan-travel-wave1-candidates.test.ts');
+    expect(normalizedOutput).toMatch(/Test Files 1 passed/);
+    expect(normalizedOutput).toMatch(/Tests [1-9]\d* passed/);
   });
 
   it('a delete-only learner-visible UI change still triggers visual + a11y (gitChangedFiles D path)', () => {
