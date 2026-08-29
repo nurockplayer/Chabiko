@@ -1,9 +1,35 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const VIEWPORTS = [320, 375, 390, 1440];
 const FIRST_LEARNER_LINE = '我是來台灣旅遊的。';
 const FIRST_SIMPLIFIED_LINE = '我是来台湾旅游的。';
+
+async function expectViewportContainment(
+  page: Page,
+  selectors: string[],
+): Promise<void> {
+  const result = await page.evaluate((requiredSelectors) => {
+    const viewportWidth = document.documentElement.clientWidth;
+    const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+    const boxes = requiredSelectors.map((selector) => {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (element === null) return null;
+      const rect = element.getBoundingClientRect();
+      return { selector, left: rect.left, right: rect.right, width: rect.width };
+    });
+    return { viewportWidth, scrollWidth, boxes };
+  }, selectors);
+
+  expect(result.scrollWidth).toBeLessThanOrEqual(result.viewportWidth);
+  for (const box of result.boxes) {
+    expect(box, `missing required visible element: ${selectors.join(', ')}`).not.toBeNull();
+    if (box === null) continue;
+    expect(box.width, `${box.selector} should have a visible box`).toBeGreaterThan(0);
+    expect(box.left, `${box.selector} extends left of the viewport`).toBeGreaterThanOrEqual(0);
+    expect(box.right, `${box.selector} extends right of the viewport`).toBeLessThanOrEqual(result.viewportWidth);
+  }
+}
 
 test.describe('/roleplay/ launch surface', () => {
   test('exposes exactly six cards and keeps learner answers out of initial HTML', async ({ page }) => {
@@ -36,6 +62,7 @@ test.describe('/roleplay/ launch surface', () => {
       await page.locator('[data-roleplay-card-select="roleplay-airport-001"]').click();
       await page.locator('[data-roleplay-start]').click();
       await expect(page.locator('[data-roleplay-active]')).toBeVisible();
+      await expectViewportContainment(page, ['[data-roleplay-active]', '[data-roleplay-reveal]']);
       await expect(page.locator('[data-roleplay-active]')).not.toContainText(FIRST_LEARNER_LINE);
       await expect(page.locator('[data-roleplay-active]')).toContainText('歡迎來台灣。');
 
@@ -44,7 +71,7 @@ test.describe('/roleplay/ launch surface', () => {
       await page.locator('[data-roleplay-reveal]').click();
       await expect(page.locator('[data-roleplay-active]')).toContainText(FIRST_SIMPLIFIED_LINE);
       await expect(page.locator('[data-roleplay-next]')).toBeVisible();
-      await expect(page.locator('body')).toHaveCSS('overflow-x', 'visible');
+      await expectViewportContainment(page, ['[data-roleplay-active]', '[data-roleplay-next]']);
     });
   }
 });
