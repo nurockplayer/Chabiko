@@ -137,6 +137,19 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(ordinaryDocs.runAffectedVitest).toBe(false);
   });
 
+  it('runs the candidate command self-test for the exact Wave 1 workflow document', () => {
+    const workflowDocument = classifyFiles([
+      'docs/content/taiwan-travel-wave-1-candidates.md',
+    ]);
+
+    expect(workflowDocument.tier).toBe('t1');
+    expect(workflowDocument.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(workflowDocument.runAffectedVitest).toBe(true);
+    expect(workflowDocument.runFullVitest).toBe(false);
+  });
+
   it('a pure domain change runs affected tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['src/domain/tonePractice.ts']);
     expect(classification.tier).toBe('t1');

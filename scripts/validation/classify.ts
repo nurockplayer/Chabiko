@@ -436,6 +436,8 @@ export const CLASS_LABEL: Record<RiskClass, string> = {
 
 const TAIWAN_TRAVEL_WAVE1_PACKET_PATH =
   'docs/content/reviews/taiwan-travel-wave-1-v1.md';
+const TAIWAN_TRAVEL_WAVE1_WORKFLOW_PATH =
+  'docs/content/taiwan-travel-wave-1-candidates.md';
 const TAIWAN_TRAVEL_WAVE1_PACKET_TEST =
   'tests/taiwan-travel-wave1-candidates.test.ts';
 
@@ -485,6 +487,17 @@ export function classifyFiles(files: string[], options: ClassifyOptions = {}): C
     if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
     reasons.push(
       `${TAIWAN_TRAVEL_WAVE1_PACKET_PATH}: generated packet → T1 candidate drift test`,
+    );
+  }
+
+  // The canonical workflow documents the real Node rebuild command asserted by
+  // the same candidate suite. Keep this exact docs path covered without
+  // broadening ordinary documentation beyond T0.
+  if (files.some((file) => normalize(file) === TAIWAN_TRAVEL_WAVE1_WORKFLOW_PATH)) {
+    affectedTestGlobs.add(TAIWAN_TRAVEL_WAVE1_PACKET_TEST);
+    if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
+    reasons.push(
+      `${TAIWAN_TRAVEL_WAVE1_WORKFLOW_PATH}: canonical workflow → T1 candidate command self-test`,
     );
   }
 
