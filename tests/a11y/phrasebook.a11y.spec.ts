@@ -6,12 +6,12 @@ import { BASE_URL, assertStructuralContract } from './helpers';
  * /phrasebook/ accessibility (Issue #236, fail-closed rework per the #349
  * kanji-bridge precedent).
  *
- * The learner surface is fail-closed: only production-eligible records render
- * (currently 6 reviewed phrases: airport 5 + food 1; all 6 dialogs and the
- * other 24 phrases are `draft` and render as a truthful pending state). These
- * specs cover that real partial/pending surface — an axe WCAG AA scan
+ * The learner surface is fail-closed: the bounded #440 prelaunch projection
+ * renders exactly the canonical 30 phrases + 6 dialogs while preserving each
+ * record's truthful review status. These specs cover that exact launch surface
+ * with an axe WCAG AA scan
  * (serious/critical blocking), the global structural contract, the semantic
- * heading/live-status/reset affordances, pending-notice truthfulness, a
+ * heading/live-status/reset affordances, truthful draft-status presentation, a
  * no-cross-origin boundary, a clean console, and keyboard reachability +
  * visible focus for the native scenario select AND the global header
  * script-preference select.
@@ -115,20 +115,19 @@ async function assertWcagAaClean(page: Page): Promise<void> {
   }
 }
 
-test.describe('/phrasebook/ axe + structure (fail-closed eligible surface)', () => {
-  test('eligible surface: WCAG AA clean, structural contract, no external requests', async ({
+test.describe('/phrasebook/ axe + structure (fail-closed prelaunch surface)', () => {
+  test('prelaunch surface: WCAG AA clean, structural contract, no external requests', async ({
     page,
   }) => {
     const { errors, externalRequests } = await openRoute(page);
     await assertStructuralContract(page);
     await assertWcagAaClean(page);
 
-    // The fail-closed surface: 6 eligible phrase entries, NO dialogs, and the
-    // truthful pending notice for the rest.
-    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(6);
-    await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(0);
-    await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(0);
-    await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(1);
+    // The bounded prelaunch surface: exact canonical 30 phrases + 6 dialogs.
+    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(30);
+    await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(6);
+    await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(36);
+    await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(0);
 
     expect([...externalRequests]).toEqual([]);
     expect(errors).toEqual([]);
@@ -139,62 +138,65 @@ test.describe('/phrasebook/ axe + structure (fail-closed eligible surface)', () 
   }) => {
     await openRoute(page);
 
-    // One h1 and the two eligible scenario h2 headings in controlled order.
+    // One h1 and all six canonical scenario h2 headings in controlled order.
     await expect(page.locator('h1')).toHaveText('台湾旅行フレーズ集');
     const scenarioHeadings = page.locator('h2');
-    await expect(scenarioHeadings).toHaveCount(2);
-    await expect(scenarioHeadings.nth(0)).toHaveText('空港');
-    await expect(scenarioHeadings.nth(1)).toHaveText('食事');
-    // No dialog h3 headings render while all dialogs are pending.
-    await expect(page.locator('h3').filter({ hasText: '会話' })).toHaveCount(0);
+    await expect(scenarioHeadings).toHaveCount(6);
+    await expect(scenarioHeadings).toHaveText(['空港', '交通', '食事', '買い物', 'ホテル', '緊急時']);
+    // Every canonical scenario carries one dialog heading.
+    await expect(page.locator('h3').filter({ hasText: '会話' })).toHaveCount(6);
 
-    // The scenario count is a live status region announcing the eligible set.
+    // The scenario count is a live status region announcing the canonical set.
     const count = page.locator('[data-scenario-count]');
     await expect(count).toHaveAttribute('role', 'status');
-    await expect(count).toHaveText('全6件');
+    await expect(count).toHaveText('全30件');
 
     // The reset link clears the filter back to the unfiltered surface.
     const reset = page.locator('a[href="/phrasebook/"]');
     await expect(reset).toContainText('絞り込みを解除');
   });
 
-  test('the pending notice is truthful about the review-in-progress surface', async ({
+  test('draft records remain visibly truthful on the prelaunch surface', async ({
     page,
   }) => {
     await openRoute(page);
 
-    const pending = page.locator('[data-phrasebook-pending]');
-    await expect(pending).toHaveCount(1);
-    await expect(pending).toContainText('このコンテンツは現在、内容の確認・レビューを進めています');
-    // Truthful pending counts (24 phrases + 6 dialogs under review).
-    await expect(pending).toContainText('残り24件のフレーズと6件の会話');
-    // The reviewed coverage is made explicit, never implied as complete.
-    await expect(pending).toContainText('レビュー済みのフレーズ6件');
+    await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(0);
+    await expect(page.locator('.phrasebook-phrase__provenance')).toHaveCount(30);
+    await expect(
+      page.locator('.phrasebook-phrase__provenance').filter({ hasText: '未レビュー' }),
+    ).toHaveCount(24);
+    await expect(page.locator('.phrasebook-dialog__provenance')).toHaveCount(6);
+    await expect(
+      page.locator('.phrasebook-dialog__provenance').filter({ hasText: '未レビュー' }),
+    ).toHaveCount(6);
+    await expect(
+      page.locator('.phrasebook-phrase__provenance').filter({ hasText: 'レビュー済み' }),
+    ).toHaveCount(6);
   });
 
-  test('the scenario select filters to an eligible scenario via the URL', async ({
+  test('the scenario select filters to a canonical scenario via the URL', async ({
     page,
   }) => {
     await openRoute(page, '?scenario=food');
     await expect(
       page.locator('[data-phrasebook-scenario][data-scenario="food"]'),
     ).toBeVisible();
-    // The other eligible scenario group is hidden by the filter (still in DOM).
+    // The other scenario groups are hidden by the filter (still in DOM).
     await expect(
       page.locator('[data-phrasebook-scenario][data-scenario="airport"]'),
     ).toBeHidden();
-    await expect(page.locator('[data-scenario-count]')).toHaveText('1件');
+    await expect(page.locator('[data-scenario-count]')).toHaveText('5件');
   });
 
-  test('a controlled scenario with no eligible content shows the no-match state', async ({
+  test('a controlled scenario keeps its canonical content and no-match stays hidden', async ({
     page,
   }) => {
     await openRoute(page, '?scenario=transport');
-    // No transport section renders (no eligible content), so the no-match state
-    // is announced instead of a misleading empty scenario.
-    await expect(page.locator('[data-phrasebook-scenario][data-scenario="transport"]')).toHaveCount(0);
-    await expect(page.locator('[data-phrasebook-no-match]')).toBeVisible();
-    await expect(page.locator('[data-scenario-count]')).toHaveText('0件');
+    await expect(page.locator('[data-phrasebook-scenario][data-scenario="transport"]')).toBeVisible();
+    await expect(page.locator('[data-phrasebook-scenario][data-scenario="transport"] [data-phrasebook-entry]')).toHaveCount(5);
+    await expect(page.locator('[data-phrasebook-no-match]')).toBeHidden();
+    await expect(page.locator('[data-scenario-count]')).toHaveText('5件');
   });
 });
 
@@ -226,7 +228,7 @@ test.describe('/phrasebook/ keyboard flows', () => {
     await expect(
       page.locator('[data-phrasebook-scenario][data-scenario="food"]'),
     ).toBeVisible();
-    await expect(page.locator('[data-scenario-count]')).toHaveText('1件');
+    await expect(page.locator('[data-scenario-count]')).toHaveText('5件');
     await expect(page.locator('a[href="/phrasebook/"]')).toBeVisible();
   });
 });
