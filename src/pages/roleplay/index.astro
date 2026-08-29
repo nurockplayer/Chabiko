@@ -1,0 +1,40 @@
+---
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Header from '../../components/Header.astro';
+import RoleplayRehearsal from '../../components/RoleplayRehearsal.astro';
+import { loadPrelaunchRoleplayCards } from '../../content/loadRoleplayCards';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const cards = loadPrelaunchRoleplayCards();
+---
+
+<BaseLayout title="旅行ロールプレイ" description="台湾旅行の場面を選んで、中国語の会話を練習できます。" themeEnabled>
+  <Fragment slot="header"><Header themeEnabled /></Fragment>
+  <div class="roleplay-page">
+    <Breadcrumb crumbs={[{ label: 'ホーム', href: '/' }, { label: '旅行ロールプレイ' }]} />
+    <header class="roleplay-page__intro">
+      <h1>旅行ロールプレイ</h1>
+      <p>台湾旅行で使う会話を、相手のセリフを聞きながら一つずつ声に出して練習しましょう。</p>
+      <p class="roleplay-page__script">繁体字を基本表示にして学びます。</p>
+    </header>
+    <RoleplayRehearsal cards={cards} />
+  </div>
+</BaseLayout>
+
+<script>
+  import { mountRoleplayRehearsal } from '../../client/roleplayRehearsal';
+  function mount() {
+    const root = document.querySelector<HTMLElement>('[data-roleplay-root]');
+    if (root) mountRoleplayRehearsal(root);
+  }
+  mount();
+  document.addEventListener('astro:page-load', mount);
+</script>
+
+<style>
+  .roleplay-page { width: 100%; max-width: 56rem; min-width: 0; margin: 0 auto; }
+  .roleplay-page__intro { max-width: 44rem; margin-bottom: var(--sp-10); }
+  .roleplay-page__intro h1 { margin: 0 0 var(--sp-3); font-family: var(--font-serif-ja); font-size: clamp(1.75rem, 7vw, 2.25rem); line-height: 1.3; overflow-wrap: anywhere; }
+  .roleplay-page__intro p { margin: 0; color: var(--ink-secondary); font-size: 0.875rem; line-height: 1.8; overflow-wrap: anywhere; }
+  .roleplay-page__intro .roleplay-page__script { margin-top: var(--sp-3); color: var(--jade-ink); font-weight: 700; }
+</style>
