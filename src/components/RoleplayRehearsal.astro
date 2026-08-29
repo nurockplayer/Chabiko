@@ -98,8 +98,9 @@ const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
 </div>
 
 <style>
-  .roleplay-rehearsal { width: 100%; min-width: 0; }
-  .roleplay-kicker { margin: 0 0 var(--sp-2); color: var(--coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.14em; }
+  .roleplay-rehearsal { --roleplay-coral-deep: #A94432; width: 100%; min-width: 0; }
+  :global(:root[data-theme-enabled='true'][data-theme='dark']) .roleplay-rehearsal { --roleplay-coral-deep: #EB8D74; }
+  .roleplay-kicker { margin: 0 0 var(--sp-2); color: var(--roleplay-coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.14em; }
   h2 { margin: 0; font-family: var(--font-serif-ja); font-size: clamp(1.4rem, 6vw, 1.9rem); line-height: 1.3; overflow-wrap: anywhere; }
   .roleplay-selection__lead, .roleplay-guidance__goal, .roleplay-guidance__copy, .roleplay-complete p { color: var(--ink-secondary); font-size: 0.875rem; line-height: 1.8; overflow-wrap: anywhere; }
   .roleplay-selection__lead { margin: var(--sp-3) 0 var(--sp-6); }
@@ -107,7 +108,7 @@ const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
   .roleplay-card-select { display: grid; gap: var(--sp-2); width: 100%; min-height: 7.5rem; padding: var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-card); background: var(--paper-deep); color: var(--ink); text-align: left; cursor: pointer; font: inherit; transition: border-color 0.15s, transform 0.15s, background 0.15s; }
   .roleplay-card-select:hover { border-color: var(--jade); background: var(--jade-soft); }
   .roleplay-card-select:active, .roleplay-action:active { transform: translateY(1px); }
-  .roleplay-card-select__scenario { color: var(--coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; }
+  .roleplay-card-select__scenario { color: var(--roleplay-coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; }
   .roleplay-card-select__title { font-family: var(--font-serif-ja); font-size: 1.1rem; font-weight: 700; }
   .roleplay-card-select__goal { color: var(--ink-secondary); font-size: 0.8125rem; line-height: 1.6; }
   .roleplay-card-select__status { color: var(--jade-ink); font-size: 0.75rem; font-weight: 700; }
@@ -129,7 +130,7 @@ const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
   .roleplay-line__speaker { margin: 0 0 var(--sp-1); color: var(--ink-secondary); font-size: 0.75rem; font-weight: 700; }
   .roleplay-line__script { margin: 0; font-family: var(--font-serif-zh); font-size: 1.25rem; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
   .roleplay-line__pinyin, .roleplay-line__japanese { margin: var(--sp-1) 0 0; color: var(--ink-secondary); font-size: 0.8125rem; line-height: 1.7; overflow-wrap: anywhere; }
-  .roleplay-line__fallback { display: block; color: var(--coral-deep); font-size: 0.75rem; line-height: 1.6; }
+  .roleplay-line__fallback { display: block; color: var(--roleplay-coral-deep); font-size: 0.75rem; line-height: 1.6; }
   .roleplay-line__learner-placeholder { color: var(--ink-secondary); font-size: 0.875rem; }
   .roleplay-feedback { min-height: 1.5rem; margin-top: var(--sp-4); color: var(--jade-ink); font-weight: 700; }
   .roleplay-complete { text-align: center; }
