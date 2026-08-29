@@ -123,7 +123,17 @@ export interface TaiwanTravelWave1ReviewerEvidence {
   outcome: TaiwanTravelWave1ReviewOutcome;
   reviewerIdentity: string | null;
   reviewDate: string | null;
+  reviewVersion: string | null;
   findings: string | null;
+}
+
+export interface TaiwanTravelWave1OverallDecision {
+  outcome: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'>;
+  reviewerIdentity: string;
+  reviewerRole: TaiwanTravelWave1ReviewerRole;
+  reviewDate: string;
+  reviewVersion: string;
+  findings: string;
 }
 
 export interface TaiwanTravelWave1DecisionContract {
@@ -141,7 +151,7 @@ export interface TaiwanTravelWave1ReviewScopeManifest {
   reviewState: 'pending-human-review';
   decisionContract: TaiwanTravelWave1DecisionContract;
   dimensions: TaiwanTravelWave1ReviewDimension[];
-  overallDecision: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'> | null;
+  overallDecision: TaiwanTravelWave1OverallDecision | null;
   unresolvedIssues: string[];
   blockedContent: string[];
   records: TaiwanTravelWave1ScopeRecord[];
@@ -189,7 +199,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   dimensions: TaiwanTravelWave1ReviewDimension[];
   records: TaiwanTravelWave1ReviewRecord[];
   scenarioDistribution: typeof TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION;
-  overallDecision: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'> | null;
+  overallDecision: TaiwanTravelWave1OverallDecision | null;
   unresolvedIssues: string[];
   blockedContent: string[];
   decisionCount: number;
@@ -304,11 +314,44 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   assert(contract.separateDecisionNamespace === true, 'decision namespace must remain separate');
   assert(contract.productionUnlinked === true, 'scope must remain production-unlinked');
 
-  assert(
-    manifest.overallDecision === null ||
-      contract.outcomes.includes(manifest.overallDecision),
-    `overallDecision must be null or a canonical outcome`,
-  );
+  if (manifest.overallDecision !== null) {
+    validateExactKeys(
+      manifest.overallDecision,
+      [
+        'outcome',
+        'reviewerIdentity',
+        'reviewerRole',
+        'reviewDate',
+        'reviewVersion',
+        'findings',
+      ],
+      'overallDecision',
+    );
+    assert(
+      contract.outcomes.includes(manifest.overallDecision.outcome),
+      `overallDecision must use a canonical outcome`,
+    );
+    assert(
+      isNonEmptyString(manifest.overallDecision.reviewerIdentity),
+      'overallDecision requires a reviewer identity',
+    );
+    assert(
+      REVIEWER_ROLES.has(manifest.overallDecision.reviewerRole),
+      `overallDecision has unsupported reviewer role '${String(manifest.overallDecision.reviewerRole)}'`,
+    );
+    assert(
+      isIsoCalendarDate(manifest.overallDecision.reviewDate),
+      'overallDecision requires a valid ISO review date',
+    );
+    assert(
+      /^[0-9a-f]{64}$/.test(manifest.overallDecision.reviewVersion),
+      'overallDecision requires a valid reviewVersion',
+    );
+    assert(
+      isNonEmptyString(manifest.overallDecision.findings),
+      'overallDecision requires findings',
+    );
+  }
   assert(Array.isArray(manifest.unresolvedIssues), 'unresolvedIssues must be an array');
   for (const [index, issue] of manifest.unresolvedIssues.entries()) {
     assert(
@@ -369,7 +412,14 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
       const evidence = dimension.reviewerEvidence[evidenceIndex];
       validateExactKeys(
         evidence,
-        ['role', 'outcome', 'reviewerIdentity', 'reviewDate', 'findings'],
+        [
+          'role',
+          'outcome',
+          'reviewerIdentity',
+          'reviewDate',
+          'reviewVersion',
+          'findings',
+        ],
         `reviewer evidence '${expectedId}:${expectedRole}'`,
       );
       assert(
@@ -383,10 +433,12 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
       const hasCompleteFields =
         isNonEmptyString(evidence.reviewerIdentity) &&
         isNonEmptyString(evidence.reviewDate) &&
+        isNonEmptyString(evidence.reviewVersion) &&
         isNonEmptyString(evidence.findings);
       const isEmpty =
         evidence.reviewerIdentity === null &&
         evidence.reviewDate === null &&
+        evidence.reviewVersion === null &&
         evidence.findings === null;
       if (evidence.outcome === 'not-reviewed') {
         assert(
@@ -401,6 +453,10 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
         assert(
           isIsoCalendarDate(evidence.reviewDate ?? ''),
           `${evidence.outcome} reviewer evidence '${expectedId}:${expectedRole}' requires a valid ISO review date`,
+        );
+        assert(
+          /^[0-9a-f]{64}$/.test(evidence.reviewVersion ?? ''),
+          `${evidence.outcome} reviewer evidence '${expectedId}:${expectedRole}' requires a valid reviewVersion`,
         );
       }
     }
@@ -435,7 +491,7 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   const roleOutcomes = manifest.dimensions.flatMap((dimension) =>
     dimension.reviewerEvidence.map(({ outcome }) => outcome),
   );
-  if (manifest.overallDecision === 'accepted') {
+  if (manifest.overallDecision?.outcome === 'accepted') {
     assert(
       roleOutcomes.every((outcome) => outcome === 'accepted'),
       'accepted overallDecision requires every required role outcome to be accepted',
@@ -443,6 +499,27 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
     assert(
       manifest.unresolvedIssues.length === 0 && manifest.blockedContent.length === 0,
       'accepted overallDecision cannot retain unresolved issues or blocked content',
+    );
+  }
+}
+
+function validateReviewVersionBindings(
+  manifest: TaiwanTravelWave1ReviewScopeManifest,
+  reviewVersion: string,
+): void {
+  for (const dimension of manifest.dimensions) {
+    for (const evidence of dimension.reviewerEvidence) {
+      if (evidence.outcome === 'not-reviewed') continue;
+      assert(
+        evidence.reviewVersion === reviewVersion,
+        `${evidence.outcome} reviewer evidence '${dimension.id}:${evidence.role}' is stale for reviewVersion '${reviewVersion}'`,
+      );
+    }
+  }
+  if (manifest.overallDecision !== null) {
+    assert(
+      manifest.overallDecision.reviewVersion === reviewVersion,
+      `overallDecision is stale for reviewVersion '${reviewVersion}'`,
     );
   }
 }
@@ -854,6 +931,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     graph: { pathIds: graph.pathIds, relations: graph.relations },
     records,
   });
+  validateReviewVersionBindings(manifest, reviewVersion);
 
   return {
     scopeId: TAIWAN_TRAVEL_WAVE1_SCOPE_ID,
@@ -901,12 +979,27 @@ export function renderTaiwanTravelWave1ReviewPacket(
         ({ role }) => `${markdownCell(dimension.label)} (\`${role}\`)`,
       ),
   );
-  const overallDecision =
-    packet.overallDecision ?? '{{accepted | rejected | needs-changes}}';
+  const overallDecisionOutcome =
+    packet.overallDecision?.outcome ?? '{{accepted | rejected | needs-changes}}';
+  const overallReviewerIdentity =
+    packet.overallDecision === null
+      ? '{{OVERALL_DECISION__IDENTITY}}'
+      : markdownCell(packet.overallDecision.reviewerIdentity);
+  const overallReviewerRole =
+    packet.overallDecision?.reviewerRole ?? '{{OVERALL_DECISION__ROLE}}';
+  const overallReviewDate =
+    packet.overallDecision?.reviewDate ?? '{{OVERALL_DECISION__YYYY-MM-DD}}';
+  const overallReviewVersion =
+    packet.overallDecision?.reviewVersion ??
+    `{{OVERALL_DECISION__REVIEW_VERSION: ${packet.reviewVersion}}}`;
+  const overallFindings =
+    packet.overallDecision === null
+      ? '{{OVERALL_DECISION__FINDINGS}}'
+      : markdownCell(packet.overallDecision.findings);
   const repositoryReviewState =
     packet.overallDecision === null
       ? 'pending-human-review; no overall human decision is recorded; promotion is not allowed.'
-      : `pending-human-review; overall human decision is ${packet.overallDecision}; promotion remains disallowed until a separate maintainer action.`;
+      : `pending-human-review; overall human decision is ${packet.overallDecision.outcome}; promotion remains disallowed until a separate maintainer action.`;
   const pendingReviewSummary =
     pendingRoleReviews.length > 0
       ? `- Pending required role reviews: ${pendingRoleReviews.join(', ')}.`
@@ -921,7 +1014,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
       : 'None.';
   const decisionStorage =
     `The validated \`${TAIWAN_TRAVEL_WAVE1_SCOPE_PATH}\` manifest is the canonical mutable input for per-role evidence, the overall decision, unresolved issues, and blocked content. ${packet.decisionCount} non-pending required-role outcome(s) are recorded; ` +
-    `${packet.overallDecision === null ? 'no overall decision is recorded' : `the overall decision is ${packet.overallDecision}`}. These fields are excluded from the immutable review version and never write to the production or issue-360 review campaigns.`;
+    `${packet.overallDecision === null ? 'no overall decision is recorded' : `the overall decision is ${packet.overallDecision.outcome}`}. These fields are excluded from the immutable review version and never write to the production or issue-360 review campaigns.`;
   const evidenceRows = packet.dimensions
     .flatMap((dimension) =>
       dimension.reviewerEvidence.map((evidence) => {
@@ -934,11 +1027,15 @@ export function renderTaiwanTravelWave1ReviewPacket(
           evidence.reviewDate === null
             ? `{{${placeholderPrefix}__YYYY-MM-DD}}`
             : evidence.reviewDate;
+        const reviewVersion =
+          evidence.reviewVersion === null
+            ? `{{${placeholderPrefix}__REVIEW_VERSION: ${packet.reviewVersion}}}`
+            : evidence.reviewVersion;
         const findings =
           evidence.findings === null
             ? `{{${placeholderPrefix}__FINDINGS_OR_None.}}`
             : markdownCell(evidence.findings);
-        return `| ${markdownCell(dimension.label)} | ${evidence.role} | ${evidence.outcome} | ${reviewerIdentity} | ${reviewDate} | ${findings} |`;
+        return `| ${markdownCell(dimension.label)} | ${evidence.role} | ${evidence.outcome} | ${reviewerIdentity} | ${reviewDate} | ${reviewVersion} | ${findings} |`;
       }),
     )
     .join('\n');
@@ -959,7 +1056,12 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '**Package state:** isolated candidate content; not linked to the production Taiwan path',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
-    `**Overall review outcome:** ${overallDecision}`,
+    `**Overall review outcome:** ${overallDecisionOutcome}`,
+    `**Overall reviewer identity:** ${overallReviewerIdentity}`,
+    `**Overall reviewer role:** ${overallReviewerRole}`,
+    `**Overall review date:** ${overallReviewDate}`,
+    `**Overall reviewed version:** ${overallReviewVersion}`,
+    `**Overall findings:** ${overallFindings}`,
     `**Current repository review state:** ${repositoryReviewState}`,
     `**Decision contract:** Canonical outcomes: ${packet.decisionContract.outcomes.join(', ')}. Promotable: ${packet.decisionContract.promotableOutcomes.join(', ')}. Non-promotable: ${packet.decisionContract.nonPromotableOutcomes.join(', ')}.`,
     `**Decision storage:** ${decisionStorage}`,
@@ -976,10 +1078,10 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '',
     'Each required role records its own outcome independently. Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`. The committed manifest starts with every role at `not-reviewed`; role outcomes do not set the separate overall decision or authorize promotion.',
     '',
-    'Every accepted, rejected, or needs-changes role outcome requires complete identity, valid ISO date, and findings evidence. A not-reviewed role must keep all evidence fields empty. Mixed outcomes in a multi-role dimension are retained and remain non-promotable; a global reviewer identity is not sufficient.',
+    'Every accepted, rejected, or needs-changes role outcome requires complete identity, valid ISO date, the exact immutable review version, and findings evidence. A not-reviewed role must keep all evidence fields empty. Mixed outcomes in a multi-role dimension are retained and remain non-promotable; a global reviewer identity is not sufficient.',
     '',
-    '| Dimension | Reviewer role | Outcome | Reviewer identity | Review date | Findings |',
-    '|---|---|---|---|---|---|',
+    '| Dimension | Reviewer role | Outcome | Reviewer identity | Review date | Reviewed version | Findings |',
+    '|---|---|---|---|---|---|---|',
     evidenceRows,
     '',
     '## Exact lesson versions',

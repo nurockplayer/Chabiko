@@ -385,6 +385,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
 
   it('keeps required-role outcomes independent from each other and from the overall decision', async () => {
     const manifest = loadManifest();
+    const { reviewVersion } = await loadTaiwanTravelWave1ReviewPacket();
     for (const dimension of manifest.dimensions) {
       expect(dimension).not.toHaveProperty('outcome');
       expect(
@@ -393,6 +394,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
             (evidence as unknown as { outcome?: string }).outcome === 'not-reviewed' &&
             evidence.reviewerIdentity === null &&
             evidence.reviewDate === null &&
+            evidence.reviewVersion === null &&
             evidence.findings === null,
         ),
       ).toBe(true);
@@ -409,6 +411,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: string;
         reviewerIdentity: string | null;
         reviewDate: string | null;
+        reviewVersion: string | null;
         findings: string | null;
       }>;
       evidence[0] = {
@@ -416,6 +419,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'accepted',
         reviewerIdentity: '@source-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Source metadata accepted.',
       };
       evidence[1] = {
@@ -423,6 +427,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'needs-changes',
         reviewerIdentity: '@script-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Script verification needs changes.',
       };
     });
@@ -450,10 +455,10 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       'Each required role records its own outcome independently.',
     );
     expect(rendered).toContain(
-      '| Source and script provenance correctness | human-source-reviewer | accepted | @source-reviewer | 2026-08-29 | Source metadata accepted. |',
+      `| Source and script provenance correctness | human-source-reviewer | accepted | @source-reviewer | 2026-08-29 | ${reviewVersion} | Source metadata accepted. |`,
     );
     expect(rendered).toContain(
-      '| Source and script provenance correctness | human-script-verifier | needs-changes | @script-reviewer | 2026-08-29 | Script verification needs changes. |',
+      `| Source and script provenance correctness | human-script-verifier | needs-changes | @script-reviewer | 2026-08-29 | ${reviewVersion} | Script verification needs changes. |`,
     );
 
     await expect(
@@ -482,13 +487,21 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           outcome: 'accepted',
           reviewerIdentity: `@${evidence.role}`,
           reviewDate: '2026-08-29',
+          reviewVersion: pending.reviewVersion,
           findings: 'None.',
         }));
       });
-      manifest.overallDecision = 'accepted';
+      manifest.overallDecision = {
+        outcome: 'accepted',
+        reviewerIdentity: '@maintainer',
+        reviewerRole: 'maintainer',
+        reviewDate: '2026-08-29',
+        reviewVersion: pending.reviewVersion,
+        findings: 'All required role evidence is accepted.',
+      };
     });
 
-    expect(completed.overallDecision).toBe('accepted');
+    expect(completed.overallDecision?.outcome).toBe('accepted');
     expect(completed.decisionCount).toBe(13);
     expect(completed.promotionAllowed).toBe(false);
     expect(completed.reviewVersion).toBe(pending.reviewVersion);
@@ -510,9 +523,17 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'needs-changes',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion: pending.reviewVersion,
         findings: 'Revise one Taiwan Mandarin example.',
       };
-      manifest.overallDecision = 'needs-changes';
+      manifest.overallDecision = {
+        outcome: 'needs-changes',
+        reviewerIdentity: '@maintainer',
+        reviewerRole: 'maintainer',
+        reviewDate: '2026-08-29',
+        reviewVersion: pending.reviewVersion,
+        findings: 'A language revision remains open.',
+      };
       manifest.unresolvedIssues = ['Confirm the revised example with the regional reviewer.'];
       manifest.blockedContent = ['lesson-011'];
     });
@@ -664,7 +685,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(() =>
       parseWaveReviewWorkflow(
         workflow.replace(
-          '`accepted`, `rejected`, or `needs-changes` role outcome',
+          /`accepted`, `rejected`, or\s+`needs-changes` role outcome/,
           '`accepted`, `rejected`, `needs-changes`, or `waived` role outcome',
         ),
       ),
@@ -675,6 +696,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
 
   it('keeps canonical review-status and teaching-accuracy scopes independently reviewable', async () => {
     const manifest = loadManifest();
+    const { reviewVersion } = await loadTaiwanTravelWave1ReviewPacket();
     expect(manifest.dimensions.map(({ id }) => id)).toEqual([
       'natural-taiwan-mandarin',
       'natural-japanese-explanation',
@@ -703,6 +725,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           outcome: 'not-reviewed',
           reviewerIdentity: null,
           reviewDate: null,
+          reviewVersion: null,
           findings: null,
         },
       ],
@@ -716,6 +739,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           outcome: 'not-reviewed',
           reviewerIdentity: null,
           reviewDate: null,
+          reviewVersion: null,
           findings: null,
         },
       ],
@@ -730,6 +754,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'accepted',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Draft reviewStatus is correct for the candidate package.',
       };
       const teachingDimension = candidateManifest.dimensions.find(
@@ -740,6 +765,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'needs-changes',
         reviewerIdentity: '@teaching-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Pain-point metadata needs changes.',
       };
     });
@@ -795,14 +821,18 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
 
   it('binds each role outcome to complete evidence while keeping promotion separate', async () => {
     const manifest = loadManifest();
+    const { reviewVersion } = await loadTaiwanTravelWave1ReviewPacket();
     for (const dimension of manifest.dimensions) {
       const evidence = dimension.reviewerEvidence;
       expect(evidence.map(({ role }) => role)).toEqual(dimension.reviewerRoles);
       expect(
         evidence.every(
-          ({ outcome, reviewerIdentity, reviewDate, findings }) =>
+          ({ outcome, reviewerIdentity, reviewDate, reviewVersion, findings }) =>
             outcome === 'not-reviewed' &&
-            reviewerIdentity === null && reviewDate === null && findings === null,
+            reviewerIdentity === null &&
+            reviewDate === null &&
+            reviewVersion === null &&
+            findings === null,
         ),
       ).toBe(true);
     }
@@ -814,6 +844,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'accepted',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Language review accepted; regional review remains pending.',
       };
     });
@@ -829,6 +860,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'rejected',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion,
         findings: 'Blocking language finding.',
       };
     });
@@ -891,6 +923,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           outcome: 'accepted',
           reviewerIdentity: `@${evidence.role}`,
           reviewDate: '2026-08-29',
+          reviewVersion,
           findings: 'None.',
         }));
       });
@@ -911,12 +944,187 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           outcome: 'accepted',
           reviewerIdentity: '@language-reviewer',
           reviewDate: '2026-02-30',
+          reviewVersion,
           findings: 'None.',
         };
       }),
     ).rejects.toThrow(
       /accepted reviewer evidence 'natural-japanese-explanation:human-language-reviewer' requires a valid ISO review date/,
     );
+  });
+
+  it('binds completed role evidence and the attributed overall decision to the reviewed version', async () => {
+    const pending = await loadTaiwanTravelWave1ReviewPacket();
+    expect(
+      pending.dimensions.every((dimension) =>
+        dimension.reviewerEvidence.every(
+          (evidence) =>
+            (evidence as unknown as { reviewVersion?: string | null })
+              .reviewVersion === null,
+        ),
+      ),
+    ).toBe(true);
+
+    const completed = await build((manifest) => {
+      const evidence = manifest.dimensions[0].reviewerEvidence[0] as unknown as Record<
+        string,
+        unknown
+      >;
+      Object.assign(evidence, {
+        outcome: 'needs-changes',
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        reviewVersion: pending.reviewVersion,
+        findings: 'Revise one Taiwan Mandarin example.',
+      });
+      (manifest as unknown as Record<string, unknown>).overallDecision = {
+        outcome: 'needs-changes',
+        reviewerIdentity: '@maintainer',
+        reviewerRole: 'maintainer',
+        reviewDate: '2026-08-29',
+        reviewVersion: pending.reviewVersion,
+        findings: 'Changes are required before a separate promotion action.',
+      };
+    });
+
+    expect(
+      (completed.dimensions[0].reviewerEvidence[0] as unknown as {
+        reviewVersion: string;
+      }).reviewVersion,
+    ).toBe(pending.reviewVersion);
+    expect(completed.overallDecision).toMatchObject({
+      outcome: 'needs-changes',
+      reviewerIdentity: '@maintainer',
+      reviewerRole: 'maintainer',
+      reviewDate: '2026-08-29',
+      reviewVersion: pending.reviewVersion,
+    });
+    expect(completed.promotionAllowed).toBe(false);
+  });
+
+  it('rejects stale or incomplete review-version attribution after immutable content drift', async () => {
+    const { reviewVersion } = await loadTaiwanTravelWave1ReviewPacket();
+    const bindFirstRole = (
+      manifest: TaiwanTravelWave1ReviewScopeManifest,
+      version: string,
+    ) => {
+      manifest.dimensions[0].reviewerEvidence[0] = {
+        ...manifest.dimensions[0].reviewerEvidence[0],
+        outcome: 'accepted',
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        reviewVersion: version,
+        findings: 'No blocking findings.',
+      };
+    };
+
+    await expect(
+      build((manifest) => bindFirstRole(manifest, '0'.repeat(64))),
+    ).rejects.toThrow(/reviewer evidence .* is stale for reviewVersion/);
+
+    await expect(
+      build((manifest) => bindFirstRole(manifest, 'not-a-version')),
+    ).rejects.toThrow(/requires a valid reviewVersion/);
+
+    await expect(
+      build((manifest) => {
+        bindFirstRole(manifest, reviewVersion);
+        delete (manifest.dimensions[0].reviewerEvidence[0] as unknown as Record<
+          string,
+          unknown
+        >).reviewVersion;
+      }),
+    ).rejects.toThrow(/requires complete reviewer evidence/);
+
+    await expect(
+      build(
+        (manifest) => bindFirstRole(manifest, reviewVersion),
+        ({ lessons }) => {
+          lessons[0].titleJa += '（変更）';
+        },
+      ),
+    ).rejects.toThrow(/reviewer evidence .* is stale for reviewVersion/);
+
+    await expect(
+      build(
+        (manifest) => bindFirstRole(manifest, reviewVersion),
+        ({ paths }) => {
+          paths[0].members.reverse();
+        },
+      ),
+    ).rejects.toThrow(/graph member order/);
+
+    await expect(
+      build((manifest) => {
+        (manifest as unknown as Record<string, unknown>).overallDecision = {
+          outcome: 'needs-changes',
+          reviewerIdentity: '@maintainer',
+          reviewerRole: 'maintainer',
+          reviewDate: '2026-08-29',
+          reviewVersion: '0'.repeat(64),
+          findings: 'Changes are required.',
+        };
+      }),
+    ).rejects.toThrow(/overallDecision is stale for reviewVersion/);
+
+    await expect(
+      build((manifest) => {
+        (manifest as unknown as Record<string, unknown>).overallDecision = {
+          outcome: 'needs-changes',
+          reviewerIdentity: '@maintainer',
+          reviewerRole: 'maintainer',
+          reviewDate: '2026-08-29',
+          reviewVersion,
+        };
+      }),
+    ).rejects.toThrow(/overallDecision requires findings/);
+
+    const invalidOverallAttributions: Array<{
+      mutate: (value: Record<string, unknown>) => void;
+      expectedError: RegExp;
+    }> = [
+      {
+        mutate: (value) => {
+          delete value.reviewerIdentity;
+        },
+        expectedError: /overallDecision requires a reviewer identity/,
+      },
+      {
+        mutate: (value) => {
+          value.reviewerRole = 'contributor';
+        },
+        expectedError: /overallDecision has unsupported reviewer role 'contributor'/,
+      },
+      {
+        mutate: (value) => {
+          value.reviewDate = '2026-02-30';
+        },
+        expectedError: /overallDecision requires a valid ISO review date/,
+      },
+      {
+        mutate: (value) => {
+          value.reviewVersion = 'not-a-version';
+        },
+        expectedError: /overallDecision requires a valid reviewVersion/,
+      },
+    ];
+    for (const { mutate, expectedError } of invalidOverallAttributions) {
+      await expect(
+        build((manifest) => {
+          const decision: Record<string, unknown> = {
+            outcome: 'needs-changes',
+            reviewerIdentity: '@maintainer',
+            reviewerRole: 'maintainer',
+            reviewDate: '2026-08-29',
+            reviewVersion,
+            findings: 'Changes are required.',
+          };
+          mutate(decision);
+          (manifest as unknown as Record<string, unknown>).overallDecision =
+            decision;
+        }),
+      ).rejects.toThrow(expectedError);
+    }
   });
 
   it('rejects unknown review-manifest root fields before packet construction', async () => {
@@ -930,12 +1138,13 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
   });
 
   it('rejects invalid or contradictory persisted review results', async () => {
+    const { reviewVersion } = await loadTaiwanTravelWave1ReviewPacket();
     await expect(
       build((manifest) => {
         (manifest as unknown as { overallDecision: string }).overallDecision =
           'approved';
       }),
-    ).rejects.toThrow(/overallDecision must be null or a canonical outcome/);
+    ).rejects.toThrow(/overallDecision must be an object/);
     await expect(
       build((manifest) => {
         manifest.unresolvedIssues = [''];
@@ -950,7 +1159,14 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     );
     await expect(
       build((manifest) => {
-        manifest.overallDecision = 'accepted';
+        manifest.overallDecision = {
+          outcome: 'accepted',
+          reviewerIdentity: '@maintainer',
+          reviewerRole: 'maintainer',
+          reviewDate: '2026-08-29',
+          reviewVersion,
+          findings: 'All required role evidence is accepted.',
+        };
       }),
     ).rejects.toThrow(
       /accepted overallDecision requires every required role outcome to be accepted/,
@@ -1448,6 +1664,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       outcome: 'accepted' as const,
       reviewerIdentity: '@language-reviewer',
       reviewDate: '2026-08-29',
+      reviewVersion: pending.reviewVersion,
       findings: 'No blocking findings.',
     };
     const accepted = await build((manifest) => {
@@ -1572,6 +1789,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
     );
     expect(rendered).toContain(
+      `**Overall reviewed version:** {{OVERALL_DECISION__REVIEW_VERSION: ${packet.reviewVersion}}}`,
+    );
+    expect(rendered).toContain(
       '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
     );
     expect(rendered).toContain(
@@ -1587,10 +1807,10 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       'Mixed outcomes in a multi-role dimension are retained and remain non-promotable',
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-language-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |',
+      `| Natural Taiwan Mandarin | human-language-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__REVIEW_VERSION: ${packet.reviewVersion}}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |`,
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-regional-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |',
+      `| Natural Taiwan Mandarin | human-regional-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__REVIEW_VERSION: ${packet.reviewVersion}}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |`,
     );
     expect(rendered).toContain(
       'Pending required role reviews: Natural Taiwan Mandarin (`human-language-reviewer`)',
@@ -1655,9 +1875,17 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         outcome: 'needs-changes',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
+        reviewVersion: baseline.reviewVersion,
         findings: 'Revise lesson-011.',
       };
-      manifest.overallDecision = 'needs-changes';
+      manifest.overallDecision = {
+        outcome: 'needs-changes',
+        reviewerIdentity: '@maintainer',
+        reviewerRole: 'maintainer',
+        reviewDate: '2026-08-29',
+        reviewVersion: baseline.reviewVersion,
+        findings: 'A language revision remains open.',
+      };
       manifest.unresolvedIssues = ['Regional confirmation remains open.'];
       manifest.blockedContent = ['lesson-011'];
       writeFileSync(
@@ -1692,9 +1920,14 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       expect(readFileSync(outputPath, 'utf8')).toBe(rendered);
       expect(rendered).toContain(`**Review version:** ${baseline.reviewVersion}`);
       expect(rendered).toContain(
-        '| Natural Taiwan Mandarin | human-language-reviewer | needs-changes | @language-reviewer | 2026-08-29 | Revise lesson-011. |',
+        `| Natural Taiwan Mandarin | human-language-reviewer | needs-changes | @language-reviewer | 2026-08-29 | ${baseline.reviewVersion} | Revise lesson-011. |`,
       );
       expect(rendered).toContain('**Overall review outcome:** needs-changes');
+      expect(rendered).toContain('**Overall reviewer identity:** @maintainer');
+      expect(rendered).toContain('**Overall reviewer role:** maintainer');
+      expect(rendered).toContain(
+        `**Overall reviewed version:** ${baseline.reviewVersion}`,
+      );
       expect(rendered).toContain('- Regional confirmation remains open.');
       expect(rendered).toContain('- lesson-011');
     } finally {
@@ -1883,6 +2116,20 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           /accepted reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' requires complete reviewer evidence/,
       },
       {
+        name: 'accepted role with stale review version',
+        mutate: (manifest) => {
+          manifest.dimensions[0].reviewerEvidence[0] = {
+            ...manifest.dimensions[0].reviewerEvidence[0],
+            outcome: 'accepted',
+            reviewerIdentity: '@language-reviewer',
+            reviewDate: '2026-08-29',
+            reviewVersion: '0'.repeat(64),
+            findings: 'No blocking findings.',
+          };
+        },
+        expectedError: /reviewer evidence .* is stale for reviewVersion/,
+      },
+      {
         name: 'conflicting legacy shared outcome',
         mutate: (manifest) => {
           const dimension = manifest.dimensions.find(
@@ -1893,6 +2140,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
             outcome: 'accepted',
             reviewerIdentity: '@source-reviewer',
             reviewDate: '2026-08-29',
+            reviewVersion: '0'.repeat(64),
             findings: 'Source metadata accepted.',
           };
           const legacyDimension = dimension as unknown as Record<string, unknown>;
@@ -1920,7 +2168,14 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       {
         name: 'accepted overall decision with pending roles',
         mutate: (manifest) => {
-          manifest.overallDecision = 'accepted';
+          manifest.overallDecision = {
+            outcome: 'accepted',
+            reviewerIdentity: '@maintainer',
+            reviewerRole: 'maintainer',
+            reviewDate: '2026-08-29',
+            reviewVersion: '0'.repeat(64),
+            findings: 'All required role evidence is accepted.',
+          };
         },
         expectedError:
           /accepted overallDecision requires every required role outcome to be accepted/,

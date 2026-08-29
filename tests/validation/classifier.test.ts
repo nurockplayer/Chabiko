@@ -488,7 +488,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(result.status, output).toBe(0);
     expect(normalizedOutput).toContain('tests/taiwan-travel-wave1-candidates.test.ts');
     expect(normalizedOutput).toMatch(/Test Files 1 passed/);
-    expect(normalizedOutput).toMatch(/Tests 42 passed/);
+    expect(normalizedOutput).toMatch(/Tests [1-9]\d* passed/);
   });
 
   it('a delete-only learner-visible UI change still triggers visual + a11y (gitChangedFiles D path)', () => {

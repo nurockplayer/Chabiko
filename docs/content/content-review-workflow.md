@@ -204,30 +204,37 @@ dimension. Missing, extra, duplicated, or reordered roles are validation
 failures.
 
 Each required role has its own evidence row with an independent outcome,
-reviewer identity, ISO 8601 review date, and findings. A person acting in two
-roles must fill and retain both role rows; top-level or global reviewer
-identity fields cannot substitute for either row. There is no shared dimension
-outcome: multi-role dimensions may retain mixed role outcomes without one role
-overwriting another. An `accepted`, `rejected`, or `needs-changes` role outcome
-requires complete identity, a valid review date, and findings. A `not-reviewed`
-role must keep all evidence fields empty. Any pending or negative role keeps
-the package non-promotable. Even when every required role is accepted,
-promotion still requires a separate overall accepted decision and maintainer
-action. The checked-in initial state keeps every role outcome `not-reviewed`
-and every evidence value null.
+reviewer identity, ISO 8601 review date, reviewed `reviewVersion`, and findings.
+A person acting in two roles must fill and retain both role rows; top-level or
+global reviewer identity fields cannot substitute for either row. There is no
+shared dimension outcome: multi-role dimensions may retain mixed role outcomes
+without one role overwriting another. An `accepted`, `rejected`, or
+`needs-changes` role outcome requires complete identity, a valid review date,
+the exact current immutable `reviewVersion`, and findings. A `not-reviewed`
+role must keep all evidence fields, including `reviewVersion`, null. Content,
+graph, record, or scope-contract drift changes the immutable version and makes
+evidence for the prior version invalid. Any pending or negative role keeps the
+package non-promotable. Even when every required role is accepted, promotion
+still requires a separate overall accepted decision and maintainer action. The
+checked-in initial state keeps every role outcome `not-reviewed` and every
+evidence value null.
 
 The Wave manifest is also the canonical mutable input for the artifact's
 separate `overallDecision`, `unresolvedIssues`, and `blockedContent` results.
-`overallDecision` is null until a human records one of `accepted`, `rejected`,
-or `needs-changes`; unresolved issues are trimmed non-empty notes, while
-blocked content is identified by an exact in-scope lesson ID. The checked-in
-initial state uses null and empty arrays. A canonical rebuild must preserve
-these values and derive its pending-role summary from the per-role outcomes;
-it must not restore placeholders or claim that completed roles remain pending.
-An overall accepted decision is invalid while any required role is not
+`overallDecision` is null until a human records an attributed object containing
+the canonical `outcome` (`accepted`, `rejected`, or `needs-changes`),
+`reviewerIdentity`, canonical `reviewerRole`, ISO `reviewDate`, exact current
+`reviewVersion`, and non-empty `findings`. It does not substitute for any
+required per-role evidence row. Unresolved issues are trimmed non-empty notes,
+while blocked content is identified by an exact in-scope lesson ID. The
+checked-in initial state uses null and empty arrays. A canonical rebuild must
+preserve these values and derive its pending-role summary from the per-role
+outcomes; it must not restore placeholders or claim that completed roles remain
+pending. An overall accepted decision is invalid while any required role is not
 accepted or while unresolved/blocked entries remain. These mutable human
-results do not change the immutable review version, and none of them authorize
-production linking: promotion remains a separate maintainer action.
+results and their version references do not change the immutable review
+version, and none of them authorize production linking: promotion remains a
+separate maintainer action.
 
 For Taiwan Travel Wave 1, the canonical ordered dimension matrix is:
 
