@@ -13,6 +13,7 @@ import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
   TaiwanTravelAssessmentStore,
 } from '../src/lib/taiwanTravelAssessmentStore';
+import { TAIWAN_TRAVEL_PATH_ROUTE } from '../src/domain/taiwanTravelQuizNavigation';
 
 const LESSON_PROGRESS_KEY = 'chabiko_completed_lessons';
 
@@ -80,9 +81,21 @@ describe('taiwan travel assessment route', () => {
     const client = await readFile('src/client/taiwanTravelQuiz.ts', 'utf8');
 
     expect(route).toContain('buildTaiwanTravelAssessmentPayload()');
+    expect(TAIWAN_TRAVEL_PATH_ROUTE).toBe('/paths/taiwan-travel/');
     expect(route).toContain("{ label: 'ホーム', href: '/' },");
-    expect(route).toContain("{ label: '台湾旅行', href: '/#taiwan-travel-path' },");
+    expect(route).toContain(
+      "{ label: '台湾旅行', href: TAIWAN_TRAVEL_PATH_ROUTE },",
+    );
     expect(route).toContain('{ label: \'総合テスト\' }');
+    expect(route).toContain(
+      "{ label: 'レッスン', href: TAIWAN_TRAVEL_PATH_ROUTE },",
+    );
+    expect(component).toContain(
+      '<a href={TAIWAN_TRAVEL_PATH_ROUTE}>← 台湾旅行に戻る</a>',
+    );
+    expect(route).not.toContain('/#taiwan-travel-path');
+    expect(route).not.toContain("{ label: 'レッスン', href: '/lessons/lesson-001/' },");
+    expect(component).not.toContain('<a href="/">← 台湾旅行に戻る</a>');
     // The quiz route is imported from the single navigation-config source,
     // never hardcoded in the page.
     expect(route).toContain('TAIWAN_TRAVEL_ASSESSMENT_ROUTE');

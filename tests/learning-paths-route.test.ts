@@ -89,7 +89,7 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     expect(builtHomeHtml).toContain('href="/paths/"');
     // The built route links to the exact destinations of available paths.
     const fragment = builtRouteFragment();
-    expect(fragment).toContain('href="/lessons/"');
+    expect(fragment).toContain('href="/paths/taiwan-travel/"');
     expect(fragment).toContain('href="/vocabulary/hsk/"');
   });
 
@@ -133,7 +133,9 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
   it('available paths are real links; unavailable paths are inert text', () => {
     const fragment = builtRouteFragment();
     // Available: exactly the two declared destinations as anchor hrefs.
-    const lessonsHref = fragment.match(/<a[^>]*href="\/lessons\/"[^>]*>/g);
+    const lessonsHref = fragment.match(
+      /<a[^>]*href="\/paths\/taiwan-travel\/"[^>]*>/g,
+    );
     const hskHref = fragment.match(
       /<a[^>]*href="\/vocabulary\/hsk\/"[^>]*>/g,
     );
@@ -214,7 +216,9 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     );
     // Available links are keyboard-focusable anchors in the built route.
     const fragment = builtRouteFragment();
-    expect(fragment).toMatch(/<a[^>]*href="\/lessons\/"[^>]*>/);
+    expect(fragment).toMatch(
+      /<a[^>]*href="\/paths\/taiwan-travel\/"[^>]*>/,
+    );
   });
 
   it('long-copy wrapping and mobile/desktop containment with no horizontal overflow', () => {
@@ -393,7 +397,7 @@ describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
       ...builtRouteHtml.matchAll(/href="\/([^"]+)"/g),
     ].map((m) => m[1]);
     // Exact destinations of available paths plus the home link.
-    expect(hrefs).toContain('lessons/');
+    expect(hrefs).toContain('paths/taiwan-travel/');
     expect(hrefs).toContain('vocabulary/hsk/');
     // The unavailable kanji-bridge destination never appears as a link.
     expect(hrefs).not.toContain('vocabulary/kanji-bridge/');

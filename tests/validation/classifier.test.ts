@@ -72,6 +72,12 @@ describe('shared learning-content graph coverage', () => {
       'tests/taiwan-travel-wave1-candidates.test.ts',
     );
   });
+
+  it('selects the Taiwan Travel projection suites for its adapter', () => {
+    expect(domainTestGlobsFor('src/content/taiwanTravelPath.ts')).toContain(
+      'tests/taiwan-travel-path*.test.ts',
+    );
+  });
 });
 
 describe('tier selects the minimum tier as the max across changed files', () => {

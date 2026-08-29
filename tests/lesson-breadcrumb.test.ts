@@ -37,9 +37,15 @@ const builtLessonHtml = new Map<string, string>();
 describe('lesson route source — breadcrumb and hierarchy contract', () => {
   it('renders the 台湾旅行 track breadcrumb with real labels', () => {
     expect(routeSource).toContain("import Breadcrumb from '../../components/Breadcrumb.astro'");
+    expect(routeSource).toContain(
+      "import { TAIWAN_TRAVEL_PATH_ROUTE } from '../../domain/taiwanTravelQuizNavigation'",
+    );
     expect(routeSource).toContain("<Breadcrumb");
     expect(routeSource).toContain("{ label: 'ホーム', href: '/' },");
-    expect(routeSource).toContain("{ label: '台湾旅行', href: '/#taiwan-travel-path' },");
+    expect(routeSource).toContain(
+      "{ label: '台湾旅行', href: TAIWAN_TRAVEL_PATH_ROUTE },",
+    );
+    expect(routeSource).not.toContain('/#taiwan-travel-path');
     // The current crumb is the real lesson label, non-link (rendered by the
     // shared Breadcrumb as a span with aria-current="page").
     expect(routeSource).toContain('{ label: `第${lessonNumber}課` }');
@@ -55,6 +61,9 @@ describe('lesson route source — breadcrumb and hierarchy contract', () => {
     expect(routeSource).toContain('class="nav-direction">次のレッスン');
     expect(routeSource).toContain('href={`/lessons/${prevLesson.id}/`}');
     expect(routeSource).toContain('href={`/lessons/${nextLesson.id}/`}');
+    expect(routeSource).toContain(
+      'class="nav-link nav-complete" href={TAIWAN_TRAVEL_PATH_ROUTE}',
+    );
   });
 
   it('applies the semantic A1 radius tokens to boxed reading surfaces', () => {
@@ -103,7 +112,7 @@ describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
     lessons.forEach((lesson, index) => {
       const html = builtLessonHtml.get(lesson.id) ?? '';
       expect(html.match(/class="breadcrumb"/g), `${lesson.id} breadcrumb count`).toHaveLength(1);
-      expect(html).toContain('href="/#taiwan-travel-path"');
+      expect(html).toContain('href="/paths/taiwan-travel/"');
       expect(html).toContain('href="/"');
       // The current crumb is the real non-link lesson label.
       expect(html).toContain(`第${index + 1}課`);
@@ -131,6 +140,7 @@ describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
     expect(last).not.toContain('次のレッスン');
     expect(last).toContain('台湾旅行パスを完了');
     expect(last).toContain('一覧に戻る');
+    expect(last).toContain('href="/paths/taiwan-travel/"');
     // Interior lessons show both directions and keep frozen destinations.
     const middle = builtLessonHtml.get('lesson-005') ?? '';
     expect(middle).toContain('前のレッスン');

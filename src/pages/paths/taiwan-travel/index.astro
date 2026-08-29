@@ -1,0 +1,285 @@
+---
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import Header from '../../../components/Header.astro';
+import { loadTaiwanTravelPathModel } from '../../../content/taiwanTravelPath';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+const path = loadTaiwanTravelPathModel();
+---
+
+<BaseLayout
+  title={path.labelJa}
+  description={path.descriptionJa}
+  themeEnabled
+>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+
+  <div class="taiwan-path-root" data-taiwan-travel-path>
+    <Breadcrumb
+      crumbs={[
+        { label: 'ホーム', href: '/' },
+        { label: '学習ルート', href: '/paths/' },
+        { label: '台湾旅行' },
+      ]}
+    />
+
+    <header class="taiwan-path-intro">
+      <p class="taiwan-path-intro__kicker">台湾旅行</p>
+      <h1>{path.labelJa}</h1>
+      <p class="taiwan-path-intro__description">{path.descriptionJa}</p>
+      <p class="taiwan-path-intro__script">繁体字を基本表示にして学びます。</p>
+    </header>
+
+    <section class="taiwan-path-index" aria-labelledby="taiwan-path-lessons-heading">
+      <div class="taiwan-path-index__heading">
+        <h2 id="taiwan-path-lessons-heading">全{path.lessons.length}課のレッスン</h2>
+        <p>旅行の場面に沿って、上から順番に進められます。</p>
+      </div>
+
+      <ol class="taiwan-path-lessons">
+        {path.lessons.map((lesson) => (
+          <li class="taiwan-path-lessons__item" data-lesson-number={lesson.lessonNumber}>
+            <a
+              class="taiwan-path-lesson"
+              data-taiwan-lesson-link={lesson.id}
+              href={lesson.href}
+              aria-label={`第${lesson.lessonNumber}課 ${lesson.titleJa}を開く`}
+            >
+              <span class="taiwan-path-lesson__number">第{lesson.lessonNumber}課</span>
+              <span class="taiwan-path-lesson__body">
+                <span class="taiwan-path-lesson__title">{lesson.titleJa}</span>
+                <span class="taiwan-path-lesson__outcome">{lesson.canDoJa}</span>
+                <span class="taiwan-path-lesson__action">
+                  レッスンを開く
+                  <span aria-hidden="true">→</span>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="taiwan-path-assessment" aria-labelledby="taiwan-path-assessment-heading">
+      <div>
+        <h2 id="taiwan-path-assessment-heading">{path.assessment.labelJa}</h2>
+        <p>10課を学んだら、旅行で使う表現をまとめて確認しましょう。</p>
+      </div>
+      <a class="taiwan-path-assessment__link" href={path.assessment.href}>
+        総合テストに進む
+        <span aria-hidden="true">→</span>
+      </a>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  .taiwan-path-root {
+    width: min(100%, 56rem);
+    min-width: 0;
+    margin: 0 auto;
+  }
+
+  .taiwan-path-intro {
+    max-width: 44rem;
+    margin-bottom: var(--sp-12);
+  }
+
+  .taiwan-path-intro__kicker {
+    margin: 0 0 var(--sp-2);
+    color: var(--coral-deep);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .taiwan-path-intro h1 {
+    margin: 0 0 var(--sp-4);
+    font-family: var(--font-serif-ja);
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .taiwan-path-intro__description,
+  .taiwan-path-intro__script {
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 0.875rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .taiwan-path-intro__script {
+    margin-top: var(--sp-3);
+    color: var(--jade-deep);
+    font-weight: 700;
+  }
+
+  .taiwan-path-index {
+    min-width: 0;
+  }
+
+  .taiwan-path-index__heading {
+    max-width: 44rem;
+    margin-bottom: var(--sp-6);
+  }
+
+  .taiwan-path-index__heading h2,
+  .taiwan-path-assessment h2 {
+    margin: 0 0 var(--sp-2);
+    font-family: var(--font-serif-ja);
+    font-size: clamp(1.25rem, 5vw, 1.5rem);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .taiwan-path-index__heading p,
+  .taiwan-path-assessment p {
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .taiwan-path-lessons {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .taiwan-path-lessons__item {
+    min-width: 0;
+  }
+
+  .taiwan-path-lesson {
+    min-height: 2.75rem;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-4);
+    align-items: start;
+    height: 100%;
+    padding: var(--sp-5);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
+    color: var(--ink);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .taiwan-path-lesson:hover {
+    border-color: var(--jade);
+    background: var(--paper);
+  }
+
+  .taiwan-path-lesson:active {
+    transform: translateY(1px);
+  }
+
+  .taiwan-path-lesson__number {
+    color: var(--ink-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .taiwan-path-lesson__body {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .taiwan-path-lesson__title {
+    font-family: var(--font-serif-ja);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .taiwan-path-lesson__outcome {
+    color: var(--ink-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+
+  .taiwan-path-lesson__action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--jade-deep);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .taiwan-path-assessment {
+    display: grid;
+    gap: var(--sp-5);
+    align-items: center;
+    margin-top: var(--sp-12);
+    padding: var(--sp-6);
+    border: 1px solid var(--jade);
+    border-radius: var(--radius-content);
+    background: var(--paper-deep);
+  }
+
+  .taiwan-path-assessment__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    width: fit-content;
+    min-height: 2.75rem;
+    padding: var(--sp-3) var(--sp-5);
+    border-radius: var(--radius-control);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .taiwan-path-assessment__link:hover {
+    background: var(--ink-secondary);
+    color: var(--paper);
+  }
+
+  .taiwan-path-lesson:focus-visible,
+  .taiwan-path-assessment__link:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  @media (width >= 48rem) {
+    .taiwan-path-lessons {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .taiwan-path-assessment {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .taiwan-path-lesson {
+      transition: none;
+    }
+  }
+</style>

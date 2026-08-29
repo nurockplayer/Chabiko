@@ -316,6 +316,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/learning-paths-*.test.ts'],
   },
   {
+    // #430 Taiwan Travel landing projection: canonical path/lesson reconciliation
+    // and the static route contract are intentionally tested together.
+    match: (b) => b.includes('taiwantravelpath'),
+    testGlobs: ['tests/taiwan-travel-path*.test.ts'],
+  },
+  {
     match: (b) => b.includes('loadkanjibridge'),
     testGlobs: ['tests/kanji-bridge-*.test.ts'],
   },
