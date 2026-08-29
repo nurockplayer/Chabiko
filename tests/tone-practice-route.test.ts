@@ -167,8 +167,16 @@ describe('loadTonePractice — source order and validity', () => {
 });
 
 describe('loadTonePractice — default source', () => {
-  it('loads the repository seed bundle without throwing', () => {
-    expect(() => loadTonePractice()).not.toThrow();
+  it('loads exactly one canonical item for each of the four tones', () => {
+    const items = loadTonePractice();
+    expect(items).toHaveLength(4);
+    expect(items.map((item) => item.correctAnswer)).toEqual([
+      '第一声',
+      '第二声',
+      '第三声',
+      '第四声',
+    ]);
+    expect(new Set(items.map((item) => item.toneContourId)).size).toBe(4);
   });
 });
 

@@ -74,7 +74,7 @@
     {
       "id": "practice-v1",
       "path": "data/examples/valid/practice.json",
-      "sha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sha256": "177018fb25380cffdfceeff4872eb1f476206bc6f1c6d7a6b138d35f184f83ee",
       "format": "json",
       "textFields": [
         { "field": "correctAnswer", "language": "ja" },

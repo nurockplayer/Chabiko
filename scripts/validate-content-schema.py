@@ -19,6 +19,7 @@ Usage:
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -317,6 +318,70 @@ def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
             errors.append(
                 f"{path}.correctAnswer must be null for type 'guided-shadowing'"
             )
+    return errors
+
+
+def _check_word_order_source_lesson(record: dict, path: str) -> list[str]:
+    """Validate the narrow lesson-provenance contract for word-order rows.
+
+    The stable legacy practice-002 predates source linkage and remains the
+    only word-order exception. Every new row must point to one exact allowed
+    lesson field and preserve the source lesson's actual reviewStatus.
+    Runtime reconciliation against the lesson text is owned by the loader.
+    """
+    source = record.get("sourceLesson")
+    practice_type = record.get("type")
+
+    if practice_type != "word-order":
+        if source is not None:
+            return [f"{path}.sourceLesson is only valid for type 'word-order'"]
+        return []
+
+    if record.get("id") == "practice-002":
+        if source is not None:
+            return [f"{path}.sourceLesson must be absent for legacy practice-002"]
+        return []
+
+    if source is None:
+        return [f"{path}: 'sourceLesson' is required for new word-order records"]
+    if not isinstance(source, dict):
+        return [f"{path}.sourceLesson must be a JSON object"]
+
+    errors = []
+    required = {"lessonId", "field", "reviewStatus"}
+    for field in sorted(required - set(source)):
+        errors.append(f"{path}.sourceLesson: missing required field '{field}'")
+    for field in sorted(set(source) - required):
+        errors.append(f"{path}.sourceLesson: unknown field '{field}'")
+
+    lesson_id = source.get("lessonId")
+    if not isinstance(lesson_id, str):
+        errors.append(f"{path}.sourceLesson.lessonId must be a string")
+    elif re.fullmatch(r"lesson-(00[1-9]|010)", lesson_id) is None:
+        errors.append(
+            f"{path}.sourceLesson.lessonId must reference lesson-001 through lesson-010"
+        )
+
+    field = source.get("field")
+    if not isinstance(field, str):
+        errors.append(f"{path}.sourceLesson.field must be a string")
+    elif field != "coreSentence" and re.fullmatch(
+        r"examples\[(0|[1-9][0-9]*)\]\.traditional", field
+    ) is None:
+        errors.append(
+            f"{path}.sourceLesson.field must be 'coreSentence' or "
+            "'examples[N].traditional'"
+        )
+
+    review_status = source.get("reviewStatus")
+    if not isinstance(review_status, str):
+        errors.append(f"{path}.sourceLesson.reviewStatus must be a string")
+    elif review_status not in VALID_REVIEW_STATUSES:
+        errors.append(
+            f"{path}.sourceLesson.reviewStatus '{review_status}' is invalid; "
+            f"must be one of {sorted(VALID_REVIEW_STATUSES)}"
+        )
+
     return errors
 
 
@@ -1218,6 +1283,7 @@ def _build_schemas():
             "audioRef", "contrastNoteJa", "articulationJa", "targetTraditional",
             "targetTraditionalStatus", "targetSimplified", "targetSimplifiedStatus",
             "targetPinyin", "shadowStepsJa", "selfCheckJa", "requiredForQuest",
+            "sourceLesson",
         ],
         "field_types": {
             "id": str, "type": str, "promptJa": str,
@@ -1229,6 +1295,7 @@ def _build_schemas():
             "targetTraditionalStatus": str, "targetSimplified": str,
             "targetSimplifiedStatus": str, "targetPinyin": str, "shadowStepsJa": list,
             "selfCheckJa": list, "requiredForQuest": bool,
+            "sourceLesson": dict,
         },
         "controlled_fields": {
             "type": VALID_PRACTICE_TYPES,
@@ -1240,6 +1307,7 @@ def _build_schemas():
             _check_review_status,
             _check_generated_not_production,
             _check_pronunciation_practice_fields,
+            _check_word_order_source_lesson,
         ],
     }
 
@@ -3213,6 +3281,10 @@ def run_tests():
         test_practice_valid,
         test_practice_missing_required,
         test_practice_invalid_type,
+        test_word_order_source_lesson_contract,
+        test_new_word_order_requires_source_lesson,
+        test_legacy_word_order_forbids_source_lesson,
+        test_word_order_source_lesson_rejects_stale_or_malformed_metadata,
         test_tone_discrimination_practice_contract,
         test_pinyin_contrast_practice_contract,
         test_guided_shadowing_practice_contract,
@@ -5228,6 +5300,60 @@ def test_practice_missing_required():
 def test_practice_invalid_type():
     errs = validate_single(_minimal_practice(type="translation"), "practice")
     _assert_has_error(errs, "not valid", "practice_type")
+
+
+def test_word_order_source_lesson_contract():
+    source = {
+        "lessonId": "lesson-004",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft",
+    }
+    errs = validate_single(_minimal_practice(
+        id="practice-006",
+        type="word-order",
+        correctAnswer="我要去廁所。",
+        sourceLesson=source,
+    ), "practice")
+    _assert_no_errors(errs, "word_order_source_lesson_contract")
+
+
+def test_new_word_order_requires_source_lesson():
+    errs = validate_single(_minimal_practice(
+        id="practice-006", type="word-order", correctAnswer="我要這個"
+    ), "practice")
+    _assert_has_error(errs, "sourceLesson", "word_order_source_required")
+
+
+def test_legacy_word_order_forbids_source_lesson():
+    errs = validate_single(_minimal_practice(
+        id="practice-002",
+        type="word-order",
+        correctAnswer="我明天去台北",
+        sourceLesson={
+            "lessonId": "lesson-001",
+            "field": "coreSentence",
+            "reviewStatus": "reviewed",
+        },
+    ), "practice")
+    _assert_has_error(errs, "must be absent", "legacy_word_order_source_absent")
+
+
+def test_word_order_source_lesson_rejects_stale_or_malformed_metadata():
+    errs = validate_single(_minimal_practice(
+        id="practice-006",
+        type="word-order",
+        correctAnswer="我要這個",
+        sourceLesson={
+            "lessonId": "lesson-011",
+            "field": "examples[-1].traditional",
+            "reviewStatus": "approved",
+            "extra": True,
+        },
+    ), "practice")
+    _assert_has_error(errs, "lesson-001 through lesson-010", "word_order_source_lesson_id")
+    _assert_has_error(errs, "examples[N].traditional", "word_order_source_field")
+    _assert_has_error(errs, "reviewStatus", "word_order_source_review")
+    _assert_has_error(errs, "unknown field 'extra'", "word_order_source_unknown")
 
 
 def test_tone_discrimination_practice_contract():
