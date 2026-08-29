@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
@@ -482,10 +483,12 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       { cwd: repositoryRoot, encoding: 'utf8' },
     );
     const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+    const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
 
     expect(result.status, output).toBe(0);
-    expect(output).toContain('tests/taiwan-travel-wave1-candidates.test.ts');
-    expect(output).toContain('Test Files  1 passed');
+    expect(normalizedOutput).toContain('tests/taiwan-travel-wave1-candidates.test.ts');
+    expect(normalizedOutput).toMatch(/Test Files 1 passed/);
+    expect(normalizedOutput).toMatch(/Tests 42 passed/);
   });
 
   it('a delete-only learner-visible UI change still triggers visual + a11y (gitChangedFiles D path)', () => {
