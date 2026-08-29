@@ -35,53 +35,89 @@ const DEFAULT_DIALOG_PATH = 'data/examples/valid/phrasebook-dialogs.json';
 export const PHRASEBOOK_PHRASE_COUNT = 30;
 export const PHRASEBOOK_DIALOG_COUNT = 6;
 
-/**
- * The exact first-release corpus, in canonical source order. These IDs are
- * part of the learner projection contract: a replacement record (including a
- * fixture or another draft corpus) must not become visible by matching only a
- * count or a scenario.
- */
-export const PHRASEBOOK_CANONICAL_PHRASE_IDS = [
-  'phrase-001',
-  'phrase-002',
-  'phrase-airport-001',
-  'phrase-airport-002',
-  'phrase-airport-003',
-  'phrase-airport-004',
-  'phrase-airport-005',
-  'phrase-food-002',
-  'phrase-food-003',
-  'phrase-food-004',
-  'phrase-food-005',
-  'phrase-transport-002',
-  'phrase-transport-003',
-  'phrase-transport-004',
-  'phrase-transport-005',
-  'phrase-shopping-001',
-  'phrase-shopping-002',
-  'phrase-shopping-003',
-  'phrase-shopping-004',
-  'phrase-shopping-005',
-  'phrase-hotel-001',
-  'phrase-hotel-002',
-  'phrase-hotel-003',
-  'phrase-hotel-004',
-  'phrase-hotel-005',
-  'phrase-emergency-001',
-  'phrase-emergency-002',
-  'phrase-emergency-003',
-  'phrase-emergency-004',
-  'phrase-emergency-005',
-] as const;
+type CanonicalPhraseTuple = readonly [id: string, scenario: PhrasebookScenario];
+type CanonicalDialogTuple = readonly [
+  id: string,
+  scenario: PhrasebookScenario,
+  relatedPhraseIds: readonly string[],
+];
 
-export const PHRASEBOOK_CANONICAL_DIALOG_IDS = [
-  'dialog-transport-001',
-  'dialog-airport-001',
-  'dialog-food-001',
-  'dialog-shopping-001',
-  'dialog-hotel-001',
-  'dialog-emergency-001',
-] as const;
+/**
+ * The exact first-release corpus, in canonical source order. The tuple
+ * metadata freezes each record's scenario and dialog references as well as
+ * its ID, so a replacement or relocation cannot pass by matching only a
+ * count, ID, or scenario set.
+ */
+export const PHRASEBOOK_CANONICAL_PHRASE_MANIFEST = [
+  ['phrase-001', 'food'],
+  ['phrase-002', 'transport'],
+  ['phrase-airport-001', 'airport'],
+  ['phrase-airport-002', 'airport'],
+  ['phrase-airport-003', 'airport'],
+  ['phrase-airport-004', 'airport'],
+  ['phrase-airport-005', 'airport'],
+  ['phrase-food-002', 'food'],
+  ['phrase-food-003', 'food'],
+  ['phrase-food-004', 'food'],
+  ['phrase-food-005', 'food'],
+  ['phrase-transport-002', 'transport'],
+  ['phrase-transport-003', 'transport'],
+  ['phrase-transport-004', 'transport'],
+  ['phrase-transport-005', 'transport'],
+  ['phrase-shopping-001', 'shopping'],
+  ['phrase-shopping-002', 'shopping'],
+  ['phrase-shopping-003', 'shopping'],
+  ['phrase-shopping-004', 'shopping'],
+  ['phrase-shopping-005', 'shopping'],
+  ['phrase-hotel-001', 'hotel'],
+  ['phrase-hotel-002', 'hotel'],
+  ['phrase-hotel-003', 'hotel'],
+  ['phrase-hotel-004', 'hotel'],
+  ['phrase-hotel-005', 'hotel'],
+  ['phrase-emergency-001', 'emergency'],
+  ['phrase-emergency-002', 'emergency'],
+  ['phrase-emergency-003', 'emergency'],
+  ['phrase-emergency-004', 'emergency'],
+  ['phrase-emergency-005', 'emergency'],
+] as const satisfies readonly CanonicalPhraseTuple[];
+
+export const PHRASEBOOK_CANONICAL_DIALOG_MANIFEST = [
+  [
+    'dialog-transport-001',
+    'transport',
+    ['phrase-002', 'phrase-transport-002', 'phrase-transport-005'],
+  ],
+  [
+    'dialog-airport-001',
+    'airport',
+    ['phrase-airport-001', 'phrase-airport-004', 'phrase-airport-005'],
+  ],
+  [
+    'dialog-food-001',
+    'food',
+    ['phrase-001', 'phrase-food-003', 'phrase-food-005'],
+  ],
+  [
+    'dialog-shopping-001',
+    'shopping',
+    ['phrase-shopping-001', 'phrase-shopping-003', 'phrase-shopping-005'],
+  ],
+  [
+    'dialog-hotel-001',
+    'hotel',
+    ['phrase-hotel-001', 'phrase-hotel-003', 'phrase-hotel-005'],
+  ],
+  [
+    'dialog-emergency-001',
+    'emergency',
+    ['phrase-emergency-001', 'phrase-emergency-002', 'phrase-emergency-005'],
+  ],
+] as const satisfies readonly CanonicalDialogTuple[];
+
+export const PHRASEBOOK_CANONICAL_PHRASE_IDS =
+  PHRASEBOOK_CANONICAL_PHRASE_MANIFEST.map(([id]) => id);
+export const PHRASEBOOK_CANONICAL_DIALOG_IDS =
+  PHRASEBOOK_CANONICAL_DIALOG_MANIFEST.map(([id]) => id);
 
 const CANONICAL_PHRASE_IDS = new Set<string>(PHRASEBOOK_CANONICAL_PHRASE_IDS);
 const CANONICAL_DIALOG_IDS = new Set<string>(PHRASEBOOK_CANONICAL_DIALOG_IDS);
@@ -148,6 +184,42 @@ function assertExactCanonicalIds(
       actualIds.every((id, index) => id === expectedIds[index]),
     `${label} must match the exact canonical launch set and order`,
   );
+}
+
+function assertExactCanonicalTuples(data: PhrasebookData): void {
+  assertExactCanonicalIds(
+    data.phrases.map((phrase) => phrase.id),
+    PHRASEBOOK_CANONICAL_PHRASE_IDS,
+    'phrasebook phrases',
+  );
+  data.phrases.forEach((phrase, index) => {
+    const [, expectedScenario] = PHRASEBOOK_CANONICAL_PHRASE_MANIFEST[index];
+    assert(
+      phrase.scenario === expectedScenario,
+      `canonical phrase '${phrase.id}' must keep scenario '${expectedScenario}'`,
+    );
+  });
+
+  assertExactCanonicalIds(
+    data.dialogs.map((dialog) => dialog.id),
+    PHRASEBOOK_CANONICAL_DIALOG_IDS,
+    'phrasebook dialogs',
+  );
+  data.dialogs.forEach((dialog, index) => {
+    const [, expectedScenario, expectedRelatedPhraseIds] =
+      PHRASEBOOK_CANONICAL_DIALOG_MANIFEST[index];
+    assert(
+      dialog.scenario === expectedScenario,
+      `canonical dialog '${dialog.id}' must keep scenario '${expectedScenario}'`,
+    );
+    assert(
+      dialog.relatedPhraseIds.length === expectedRelatedPhraseIds.length &&
+        dialog.relatedPhraseIds.every(
+          (relatedId, relatedIndex) => relatedId === expectedRelatedPhraseIds[relatedIndex],
+        ),
+      `canonical dialog '${dialog.id}' must keep its exact ordered relatedPhraseIds`,
+    );
+  });
 }
 
 function isScenario(value: unknown): value is PhrasebookScenario {
@@ -562,16 +634,7 @@ export function loadPrelaunchPhrasebook(
   dialogFilePath?: string,
 ): PhrasebookData {
   const data = loadPhrasebook(phraseFilePath, dialogFilePath);
-  assertExactCanonicalIds(
-    data.phrases.map((phrase) => phrase.id),
-    PHRASEBOOK_CANONICAL_PHRASE_IDS,
-    'phrasebook phrases',
-  );
-  assertExactCanonicalIds(
-    data.dialogs.map((dialog) => dialog.id),
-    PHRASEBOOK_CANONICAL_DIALOG_IDS,
-    'phrasebook dialogs',
-  );
+  assertExactCanonicalTuples(data);
   const phrases = data.phrases.filter(isPhrasebookPrelaunchEligible);
   const dialogs = data.dialogs.filter(isPhrasebookDialogPrelaunchEligible);
   assert(

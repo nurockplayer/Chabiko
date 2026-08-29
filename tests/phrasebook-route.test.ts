@@ -570,6 +570,30 @@ describe('phrasebook prelaunch projection (#440)', () => {
     );
   });
 
+  it('fails closed when an unreferenced canonical phrase moves scenarios', () => {
+    const phraseDoc = cloneDocument(basePhrasebookDocument());
+    const relocated = phraseDoc.phrasebook.find(
+      (record) => record.id === 'phrase-food-002',
+    )!;
+    relocated.scenario = 'transport';
+    expect(() => loadPrelaunchPhrasebook(writeTemp('phrasebook', phraseDoc))).toThrow(
+      /canonical phrase 'phrase-food-002' must keep scenario 'food'/,
+    );
+  });
+
+  it('fails closed when a canonical dialog changes same-scenario references', () => {
+    const dialogDoc = cloneDocument(baseDialogDocument());
+    const dialog = dialogDoc.phrasebookDialogs.find(
+      (record) => record.id === 'dialog-food-001',
+    )!;
+    dialog.relatedPhraseIds = ['phrase-001', 'phrase-food-002', 'phrase-food-005'];
+    expect(
+      () => loadPrelaunchPhrasebook(undefined, writeTemp('phrasebookDialogs', dialogDoc)),
+    ).toThrow(
+      /canonical dialog 'dialog-food-001' must keep its exact ordered relatedPhraseIds/,
+    );
+  });
+
   it('keeps generated forms fail closed without changing truthful review metadata', () => {
     const phraseDoc = cloneDocument(basePhrasebookDocument());
     const phrase = phraseDoc.phrasebook.find((record) => record.id === 'phrase-food-002')!;
