@@ -172,6 +172,23 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(classification.runA11y).toBe(false);
   });
 
+  it('runs the Wave 1 candidate suite when production lessons change without broadening other content', () => {
+    const productionLessons = classifyFiles(['data/examples/valid/lessons.json']);
+    expect(productionLessons.tier).toBe('t1');
+    expect(productionLessons.affectedContent).toBe(true);
+    expect(productionLessons.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(productionLessons.runAffectedVitest).toBe(true);
+    expect(productionLessons.runFullVitest).toBe(false);
+
+    const otherContent = classifyFiles(['data/examples/valid/sentences.json']);
+    expect(otherContent.affectedTestGlobs).not.toContain(
+      'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(otherContent.runAffectedVitest).toBe(false);
+  });
+
   it('golden pilot source changes run the full gate for packet drift protection', () => {
     const classification = classifyFiles([
       'data/content-pilots/taiwan-travel-golden/lessons.json',
