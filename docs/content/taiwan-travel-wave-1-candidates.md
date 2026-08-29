@@ -127,11 +127,16 @@ labels and ordered required roles, typed graph relations, exact record
 references, source paths, and per-record fingerprints. A change to any of
 those inputs creates a new review version.
 
-The resolver fails closed on wrong count/order/scenario coverage, duplicate or
-stale references, production ID overlap, non-draft records, malformed rich
-lesson sections, unusable prompts, source-path drift, unsupported review
-role outcomes, and generated packet drift. Per-role outcomes use the
-canonical `accepted`, `rejected`, `needs-changes`, and `not-reviewed` values.
+For the bounded prelaunch seam, only the exact allowlisted `lesson-011` through
+`lesson-024` production IDs may overlap this candidate package, and that overlap
+must pass mechanical candidate-to-production fingerprint reconciliation while
+preserving `reviewStatus: "draft"`. Any non-allowlisted overlap, missing,
+reordered, or drifted record, or any promoted/non-draft record fails closed. The
+resolver also fails closed on wrong count/order/scenario coverage, duplicate or
+stale references, malformed rich lesson sections, unusable prompts, source-path
+drift, unsupported review role outcomes, and generated packet drift. Per-role
+outcomes use the canonical `accepted`, `rejected`, `needs-changes`, and
+`not-reviewed` values.
 They remain separate from the packet's top-level overall decision and cannot
 independently authorize promotion.
 
