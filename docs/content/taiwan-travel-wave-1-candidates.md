@@ -26,6 +26,60 @@ The package owns:
 The existing golden pilot and `issue-360-launch-v1` campaign remain separate
 and unchanged.
 
+## Frozen production baseline inventory
+
+This is reconciled evidence from the immutable authoring branch point, not a
+claim that this document existed before authoring began. The frozen source for
+every row is commit `5b36ad357fa220d4210cd40fafd9543f1bb23861`, path
+`data/examples/valid/lessons.json`. The same path on current Wave integration
+main `085518d99f740fe9a96315e4e39af66786e46792` resolves to the identical Git
+blob `952696aab2893318bd7fe1c37335cf1ca6a707e1`.
+
+The key-pattern column is the ordered `chunks[].chunk` sequence; the pain-point
+column is the stored `painPointTags` array. This keeps the inventory mechanical
+and avoids adding an after-the-fact interpretation of the production lessons.
+
+| ID | Scenario | Can-Do | Core sentence | Key pattern | Pain points | Frozen source |
+|---|---|---|---|---|---|---|
+| `lesson-001` | food | 台湾の夜市で簡単に食べ物を注文できる | 我要這個 | 我要 + 這個 | tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-002` | food | 値段を尋ね、値札やレジ表示で金額を確認できる | 這個多少錢？ | 這個 + 多少 + 錢 | tone, pinyin-pronunciation | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-003` | transport | 駅やトイレなど、目的の場所がどこにあるか聞ける | 捷運站在哪裡？ | 捷運站 + 在 + 哪裡 | tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-004` | transport | 駅員さんや運転手さんに、行き先を伝えて移動できる | 我要去台北車站。 | 我要 + 去 + 台北車站 | tone, pinyin-pronunciation, same-kanji-different-meaning | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-005` | food | 屋台やお店で、欲しい数量を伝えて注文できる | 我要兩個。 | 我要 + 兩個 + 個 | measure-word, tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-006` | food | 料理の辛さを伝えて、辛くしないように注文できる | 不要辣，謝謝。 | 不要 + 辣 + 謝謝 | tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-007` | shopping | 買い物で、カード払いができるかどうか聞ける | 可以刷卡嗎？ | 可以 + 刷卡 + 嗎 | tone, pinyin-pronunciation | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-008` | hotel | ホテルの受付で、予約していることを伝えてチェックインできる | 我有預約。 | 我有 + 預約 | tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-009` | emergency | 中国語が聞き取れなかったとき、ゆっくり言い直してもらえる | 可以再說慢一點嗎？ | 再 + 說慢一點 + 嗎 | tone, pinyin-pronunciation | `5b36ad3` · `data/examples/valid/lessons.json` |
+| `lesson-010` | emergency | 困ったときに、周りの人に助けを求められる | 請幫幫我。 | 請 + 幫幫 + 我 | tone | `5b36ad3` · `data/examples/valid/lessons.json` |
+
+Reproduce the inventory from the frozen source:
+
+```bash
+rtk git show 5b36ad357fa220d4210cd40fafd9543f1bb23861:data/examples/valid/lessons.json \
+  | jq -r '.lessons[] | select(.id >= "lesson-001" and .id <= "lesson-010") | [.id, .travelScenario, .canDoJa, .coreSentence, (.chunks | map(.chunk) | join(" + ")), (.painPointTags | join(", "))] | @tsv'
+```
+
+Verify the full source blob and the normalized ten-row projection against the
+fixed Wave integration-main commit:
+
+```bash
+rtk git rev-parse 5b36ad357fa220d4210cd40fafd9543f1bb23861:data/examples/valid/lessons.json
+rtk git rev-parse 085518d99f740fe9a96315e4e39af66786e46792:data/examples/valid/lessons.json
+
+for ref in 5b36ad357fa220d4210cd40fafd9543f1bb23861 085518d99f740fe9a96315e4e39af66786e46792; do
+  rtk git show "$ref":data/examples/valid/lessons.json \
+    | jq -c '[.lessons[] | select(.id >= "lesson-001" and .id <= "lesson-010") | {id, travelScenario, canDoJa, coreSentence, chunks: [.chunks[].chunk], painPointTags}]' \
+    | shasum -a 256
+done
+```
+
+The two `rev-parse` commands each print
+`952696aab2893318bd7fe1c37335cf1ca6a707e1`. The two normalized projections
+each print
+`2f209a1c0cbbce66ecf4fed7c8cc708b8236ee6cd68ded60911f53f89a9da250`.
+The projection includes exactly the fields represented by the inventory table;
+the matching full-file blob IDs additionally cover fields outside it.
+
 ## Coverage
 
 | IDs | Scenario | New sub-tasks |
