@@ -693,6 +693,20 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_lesson_review_hook(record: dict, path: str) -> list[str]:
+    """A shared lesson may omit step 9 for legacy compatibility; if present it must be usable."""
+    if "reviewHookJa" not in record:
+        return []
+    review_hook = record.get("reviewHookJa")
+    if review_hook is None:
+        return [f"{path}.reviewHookJa: must be a non-empty string when present"]
+    if not isinstance(review_hook, str):
+        return []
+    if review_hook.strip() == "":
+        return [f"{path}.reviewHookJa: must be a non-empty string when present"]
+    return []
+
+
 def _check_resource_url(record: dict, path: str) -> list[str]:
     """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
@@ -1033,7 +1047,7 @@ def _build_schemas():
         ],
         "optional": [
             "sections", "examples", "relatedVocabulary",
-            "painPointTags",
+            "painPointTags", "reviewHookJa",
         ],
         "field_types": {
             "id": str, "titleJa": str, "level": str, "canDoJa": str,
@@ -1042,7 +1056,7 @@ def _build_schemas():
             "sections": list, "chunks": list, "kanjiBridgeNotes": list,
             "soundFocus": list, "examples": list, "reviewPrompts": list,
             "travelTask": str, "relatedVocabulary": list,
-            "painPointTags": list, "source": dict,
+            "painPointTags": list, "reviewHookJa": str, "source": dict,
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
@@ -1054,6 +1068,7 @@ def _build_schemas():
             _check_generated_not_production,
             _check_pain_point_context,
             _check_lesson_practice_readiness,
+            _check_lesson_review_hook,
         ],
     }
 
@@ -3040,6 +3055,9 @@ def run_tests():
 
         # ─── Lesson ───
         test_lesson_valid,
+        test_lesson_review_hook_optional_valid,
+        test_lesson_review_hook_empty_rejected,
+        test_lesson_review_hook_null_rejected,
         test_related_vocabulary_reference_valid,
         test_related_vocabulary_stale_reference_rejected,
         test_related_vocabulary_duplicate_reference_rejected,
@@ -3598,6 +3616,24 @@ def _minimal_lesson(**overrides):
 def test_lesson_valid():
     errs = validate_single(_minimal_lesson(), "lesson")
     _assert_no_errors(errs, "lesson_valid")
+
+
+def test_lesson_review_hook_optional_valid():
+    errs = validate_single(
+        _minimal_lesson(reviewHookJa="第2課で同じ型をもう一度使います。"),
+        "lesson",
+    )
+    _assert_no_errors(errs, "lesson_review_hook_optional_valid")
+
+
+def test_lesson_review_hook_empty_rejected():
+    errs = validate_single(_minimal_lesson(reviewHookJa="   "), "lesson")
+    _assert_has_error(errs, "must be a non-empty string", "lesson_review_hook_empty")
+
+
+def test_lesson_review_hook_null_rejected():
+    errs = validate_single(_minimal_lesson(reviewHookJa=None), "lesson")
+    _assert_has_error(errs, "must be a non-empty string", "lesson_review_hook_null")
 
 
 def test_related_vocabulary_reference_valid():

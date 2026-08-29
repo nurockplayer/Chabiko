@@ -25,6 +25,7 @@ import {
   type TaiwanTravelWave1ReviewScopeManifest,
   type TaiwanTravelWave1SourceBundle,
 } from '../src/content/loadTaiwanTravelWave1ReviewScope';
+import { loadAllRenderableLessons } from '../src/content/loadLessons';
 import type { Lesson } from '../src/types/lesson';
 
 const root = process.cwd();
@@ -79,6 +80,91 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.productionLinked).toBe(false);
     expect(packet.promotionAllowed).toBe(false);
     expect(packet.decisionCount).toBe(0);
+  });
+
+  it('completes lesson-loop step 9 with distinct review hooks that resolve to real lessons', async () => {
+    const sources = loadSourceBundle();
+    const knownLessonIds = new Set(
+      [...sources.productionLessons, ...sources.lessons].map((lesson) => lesson.id),
+    );
+    const reviewHooks = sources.lessons.map((lesson) => {
+      const reviewHookJa = (lesson as unknown as { reviewHookJa?: unknown })
+        .reviewHookJa;
+      expect(reviewHookJa).toEqual(expect.any(String));
+      expect(String(reviewHookJa).trim().length).toBeGreaterThan(0);
+      const target = /第(\d+)課/.exec(String(reviewHookJa));
+      expect(target).not.toBeNull();
+      const targetId = `lesson-${String(Number(target?.[1])).padStart(3, '0')}`;
+      expect(knownLessonIds).toContain(targetId);
+      expect(targetId).not.toBe(lesson.id);
+      return String(reviewHookJa);
+    });
+    expect(new Set(reviewHooks).size).toBe(14);
+    const sharedLoaderLessons = loadAllRenderableLessons(
+      resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
+    );
+    expect(sharedLoaderLessons).toHaveLength(14);
+    expect(sharedLoaderLessons.map((lesson) => lesson.reviewHookJa)).toEqual(
+      reviewHooks,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        delete (candidateSources.lessons[0] as unknown as Record<string, unknown>)
+          .reviewHookJa;
+      }),
+    ).rejects.toThrow(/lesson 'lesson-011'\.reviewHookJa must be a non-empty string/);
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        (candidateSources.lessons[0] as unknown as Record<string, unknown>)
+          .reviewHookJa = '   ';
+      }),
+    ).rejects.toThrow(/lesson 'lesson-011'\.reviewHookJa must be a non-empty string/);
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.lessons[0].reviewHookJa =
+          '第999課で同じ表現をもう一度使います。';
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-011'\.reviewHookJa has unresolved review target 'lesson-999'/,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.productionLessons.push({
+          ...structuredClone(candidateSources.productionLessons[0]),
+          id: 'lesson-025',
+          canDoJa: '将来追加される別の学習目標',
+          coreSentence: '未來的句子。',
+        });
+        candidateSources.lessons[0].reviewHookJa =
+          '第25課で同じ表現をもう一度使います。';
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-011'\.reviewHookJa has unresolved review target 'lesson-025'/,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.lessons[1].reviewHookJa =
+          candidateSources.lessons[0].reviewHookJa;
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-012'\.reviewHookJa must be distinct within the candidate package/,
+    );
+
+    const originalFingerprint = await fingerprintTaiwanTravelWave1Lesson(
+      sources.lessons[0],
+    );
+    const changedLesson = structuredClone(sources.lessons[0]) as Lesson & {
+      reviewHookJa: string;
+    };
+    changedLesson.reviewHookJa += ' 別の復習時点。';
+    await expect(fingerprintTaiwanTravelWave1Lesson(changedLesson)).resolves.not.toBe(
+      originalFingerprint,
+    );
   });
 
   it('aligns canonical human-review outcomes and keeps non-accepted outcomes non-promotable', async () => {

@@ -92,6 +92,15 @@ the matching full-file blob IDs additionally cover fields outside it.
 | `lesson-022`–`lesson-023` | emergency (2) | Report separation from a companion; ask someone to call an ambulance |
 | `lesson-024` | social (1) | Give a short name-and-origin introduction |
 
+Every candidate includes the canonical lesson-loop step 9 as a short Japanese
+`reviewHookJa`. Each hook names a real `第N課` in the production or Wave-1
+package and says which phrase or contrast will return there. The Wave loader
+requires all 14 hooks to be non-empty and distinct, and the focused test
+resolves every referenced lesson ID before packet construction. The shared
+lesson contract keeps this field optional for the existing production lessons;
+when present, the shared TypeScript loader and Python schema both reject an
+empty or malformed value.
+
 The lesson-only `social` scenario is intentionally not added to phrasebook,
 dialog, roleplay, vocabulary, sentence, or practice scenario vocabularies.
 

@@ -21,6 +21,11 @@ export const TAIWAN_TRAVEL_WAVE1_PACKET_PATH =
 export const TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS = Object.freeze(
   Array.from({ length: 14 }, (_, index) => `lesson-${String(index + 11).padStart(3, '0')}`),
 );
+const TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS = new Set(
+  Array.from({ length: 10 }, (_, index) =>
+    `lesson-${String(index + 1).padStart(3, '0')}`,
+  ),
+);
 
 export const TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION = Object.freeze({
   airport: 2,
@@ -405,6 +410,7 @@ function validateLesson(lesson: Lesson, index: number): void {
     'travelScenario',
     'coreSentence',
     'travelTask',
+    'reviewHookJa',
   ]) {
     assert(isNonEmptyString(value[field]), `${label}.${field} must be a non-empty string`);
   }
@@ -492,6 +498,31 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
     assert(!productionIds.has(id), `candidate lesson '${id}' overlaps production`);
   }
   sourceBundle.lessons.forEach(validateLesson);
+  const knownLessonIds = new Set([
+    ...sourceBundle.productionLessons
+      .map((lesson) => lesson.id)
+      .filter((id) => TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS.has(id)),
+    ...actualIds,
+  ]);
+  const reviewHooks = new Set<string>();
+  for (const lesson of sourceBundle.lessons) {
+    const reviewHook = lesson.reviewHookJa?.trim() ?? '';
+    assert(
+      !reviewHooks.has(reviewHook),
+      `lesson '${lesson.id}'.reviewHookJa must be distinct within the candidate package`,
+    );
+    reviewHooks.add(reviewHook);
+    const targetMatch = /第(\d+)課/.exec(reviewHook);
+    assert(
+      targetMatch !== null,
+      `lesson '${lesson.id}'.reviewHookJa must name a concrete 第N課 review target`,
+    );
+    const targetId = `lesson-${String(Number(targetMatch[1])).padStart(3, '0')}`;
+    assert(
+      targetId !== lesson.id && knownLessonIds.has(targetId),
+      `lesson '${lesson.id}'.reviewHookJa has unresolved review target '${targetId}'`,
+    );
+  }
 
   const productionCanDos = new Set(
     sourceBundle.productionLessons.map((lesson) => lesson.canDoJa.trim()),

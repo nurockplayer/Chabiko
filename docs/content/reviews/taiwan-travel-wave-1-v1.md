@@ -3,7 +3,7 @@
 **Scope:** taiwan-travel-wave-1-v1
 **Package state:** isolated candidate content; not linked to the production Taiwan path
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** 9b7d9fcb47fa4fa3d1bd8a69b26eabe8782b68677f7d50ce144eae3d66a7161e
+**Review version:** f5f1c03541a00ae6b34c835226a3809c8f1c83673189ae0aa1061fec53e40e2e
 **Overall review outcome:** {{accepted | rejected | needs-changes}}
 **Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
@@ -45,20 +45,20 @@ Every accepted, rejected, or needs-changes role outcome requires complete identi
 
 | Lesson | Scenario | Can-Do | reviewStatus | Fingerprint |
 |---|---|---|---|---|
-| lesson-011 | airport | 到着後、預けたスーツケースが壊れていることを空港の係員に伝え、確認を頼める | draft | 129a7dad1b9f113ce4c60d4cff199d248fac942485b978e749550a71fa1542b3 |
-| lesson-012 | airport | 預けた荷物が受取場所に出てこない状況を係員に伝えられる | draft | 6d1c19311c51d67ff15ca61a04d20769d3851f18119b53818e30746159e6ce39 |
-| lesson-013 | transport | 乗る前に、その車両が自分の目的地へ行くか確認できる | draft | a7119c8b02ba2dd1a27521f408ce4717983afaa2c41607409ee8fc83bfbc0e96 |
-| lesson-014 | transport | 目的地へ向かう途中で、どこで乗り換えるか尋ねられる | draft | 618de74939301cffe87d348cc6dd48a2298b6600c627847a63245549fdb7abab |
-| lesson-015 | food | 飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる | draft | 9029d3bd72f272c66946d17102be52b2cd487f1828731b0807d355a6c292b265 |
-| lesson-016 | food | 料理にピーナッツが入っているか、注文前に店員へ尋ねられる | draft | 78ce54c1e17e87ff534f459b028f208230ba26c2b5e97f29b7f2aec2acd29145 |
-| lesson-017 | food | 食べ切れなかった料理を持ち帰れるよう包んでもらえるか尋ねられる | draft | c2f3b19eb0a6fe15bf8686af64df4efde79c0b92078a0edcca765104dc66ae52 |
-| lesson-018 | shopping | 店で気になる服を指し、試着してよいか尋ねられる | draft | 780724242efb4660f38f1046cadd2fb37ec808b8cf9b000da0d41332f44ee4e5 |
-| lesson-019 | shopping | 支払い後、必要な領収書を店員に頼める | draft | d575c138e9112ccadded4cd959bfa2a1a5786ac14a35cf1d0351ad2bb39ceb57 |
-| lesson-020 | hotel | チェックイン前やチェックアウト後に、ホテルで荷物を預けられるか尋ねられる | draft | 026c20c1c0b2f6a8b13957b643d418c49782431704f1001bc96707e89224468e |
-| lesson-021 | hotel | ホテルの受付で、ルームキーが使えない状況を説明できる | draft | dd22c1e235246e5233c3bdd590f956ec4c7f71593b17bf3d0aca9bcffac7913c |
-| lesson-022 | emergency | 同行者とはぐれた状況を伝え、周囲の人に助けを求められる | draft | b2edb58862592cbd680ed77b18bfa577a10a94944d0f3bccec4e3ce633ed4203 |
-| lesson-023 | emergency | 緊急時に、周囲の人へ救急車を呼んでほしいと頼める | draft | 22042611579c176a0d7bc6e96b73f556eee974b8575e7c96f141517483659f50 |
-| lesson-024 | social | 初対面の相手に自分の名前と日本から来たことを簡単に伝えられる | draft | d9b51ace0c9b95db941e1cb44abafa6c5c5f980af53237cd94ae376a43e21401 |
+| lesson-011 | airport | 到着後、預けたスーツケースが壊れていることを空港の係員に伝え、確認を頼める | draft | 936583cc2f6a7629fbfabd807637deebcfc9ccb2b377e1e55ddef209f2b2c954 |
+| lesson-012 | airport | 預けた荷物が受取場所に出てこない状況を係員に伝えられる | draft | ccbef93b9d3ff2dec0caadb545b1207fa675b11965eb1bcee383da35efe03bc7 |
+| lesson-013 | transport | 乗る前に、その車両が自分の目的地へ行くか確認できる | draft | 2d6e0db576f8cf7f18fbe510c3ac0a87cba35d9baf16834aff3a3280989afce2 |
+| lesson-014 | transport | 目的地へ向かう途中で、どこで乗り換えるか尋ねられる | draft | da6aa08773b80a87174d5731a07d1d4bc3ca13d20a2a3571cfd508268a1d3210 |
+| lesson-015 | food | 飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる | draft | 4e118949942ee45a8c4d1e3dd4825b62eabfb95c96a040f501775dc905679b94 |
+| lesson-016 | food | 料理にピーナッツが入っているか、注文前に店員へ尋ねられる | draft | 57337f46f12e42ee7d1f27f741e83db719c90962ca46a32fde7153c3723fead7 |
+| lesson-017 | food | 食べ切れなかった料理を持ち帰れるよう包んでもらえるか尋ねられる | draft | 2f84a3124406fcf94b67bd0755492a19546e68c468e0876bf2894a3a95a25bf9 |
+| lesson-018 | shopping | 店で気になる服を指し、試着してよいか尋ねられる | draft | 278f9f42f12b70bbecc0d4751c475a69e212b95ae2f0676928237d917f48364f |
+| lesson-019 | shopping | 支払い後、必要な領収書を店員に頼める | draft | 129497f519e3d8de45c9f31d1535a04d3b6fae6260dc1750cc75b1dc7330e9b9 |
+| lesson-020 | hotel | チェックイン前やチェックアウト後に、ホテルで荷物を預けられるか尋ねられる | draft | b715140fb6b9a57fa1bd1cbe24d7211fbde7a6df3f7cfce81b9677a891c8d5fa |
+| lesson-021 | hotel | ホテルの受付で、ルームキーが使えない状況を説明できる | draft | 9986ada4d7ede5ada6a20b54efeb3c866967fbe12664683ff53650dc40cfd0de |
+| lesson-022 | emergency | 同行者とはぐれた状況を伝え、周囲の人に助けを求められる | draft | 2a0e06dd7ddb7102f56774144b6b665f2825a7f26bf1dde117fc25d44e9f7862 |
+| lesson-023 | emergency | 緊急時に、周囲の人へ救急車を呼んでほしいと頼める | draft | 80b4259043045e17304092cd57853046dc3f7f98fd10ed35d4e438638498673b |
+| lesson-024 | social | 初対面の相手に自分の名前と日本から来たことを簡単に伝えられる | draft | 792191b89d8c1bc992f6c77c1ded37ebb1af04404d199a946f4b6b52630ec2a1 |
 
 ## Human gate
 

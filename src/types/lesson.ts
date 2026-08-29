@@ -52,6 +52,9 @@ export interface Lesson {
   examples?: LessonExample[];
   reviewPrompts: ReviewPrompt[];
   travelTask: string;
+  /** Lesson-loop step 9. Optional in the shared contract for legacy lessons;
+   *  candidate packages may require it before promotion. */
+  reviewHookJa?: string;
   relatedVocabulary?: string[];
   painPointTags?: string[];
   reviewStatus: string;
