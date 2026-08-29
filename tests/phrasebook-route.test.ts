@@ -728,13 +728,13 @@ describe('/phrasebook/ — SSR route surface (Issue #236, fail-closed)', () => {
   });
 
   it('carries per-field script provenance and lang on canonical phrase/dialog forms', () => {
-    // 30 phrase headwords + 36 dialog turns carry the script-provenance host
-    // contract. The exact
+    // 30 phrase headwords + 36 dialog turns + 18 dialog references carry the
+    // script-provenance host contract. The exact
     // attribute name is matched (`=` suffix) so the
     // data-script-path-default-status attribute is not counted.
     const entryCount =
       builtHtml.match(/data-script-path-default="/g)?.length ?? 0;
-    expect(entryCount).toBe(66);
+    expect(entryCount).toBe(84);
     expect(componentSource).toContain('data-script-annotation-host');
     expect(componentSource).toContain('data-script-simplified');
     expect(componentSource).toContain('data-script-simplified-status');

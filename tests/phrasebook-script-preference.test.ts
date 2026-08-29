@@ -5,18 +5,18 @@
  * rework per the #349 kanji-bridge precedent).
  *
  * The phrasebook surface mirrors the kanji-bridge script contract: every
- * learner-visible phrase headword carries `data-script-*` provenance and is an
- * annotation host. The surface is fail-closed — only production-eligible
- * records render (currently 6 reviewed phrases: airport 5 + food 1), so the
- * client only ever sees eligible fields. The client reads ONLY the root dataset
- * + `SCRIPT_PREFERENCE_EVENT`, applies `selectScript` per field, sets the
+ * learner-visible phrase headword, dialog turn, and dialog reference carries
+ * `data-script-*` provenance and is an annotation host. Under #440 prelaunch,
+ * the exact canonical 30 phrases + 6 dialogs render while each record keeps
+ * truthful metadata. The client reads ONLY the root dataset +
+ * `SCRIPT_PREFERENCE_EVENT`, applies `selectScript` per field, sets the
  * matching `lang`, and manages the exact #251 fallback annotation — never
  * storage, URL, focus, scroll, or the scenario filter.
  *
- * Every eligible field is `authored` (Traditional) / `verified` (Simplified),
- * so under every preference the directly-selectable form renders with the
- * correct `lang` and no annotation. Synthetic fixtures exercise the
- * generated/unavailable fallback branches.
+ * Canonical phrase forms and most dialog forms are `authored` (Traditional) /
+ * `verified` (Simplified); the existing missing-Simplified dialog form keeps
+ * the shared fallback behavior. Synthetic fixtures exercise the other
+ * generated/unavailable branches.
  */
 
 import { readFileSync } from 'node:fs';
@@ -29,7 +29,7 @@ import { selectScript, type ScriptStatus } from '../src/domain/scriptSelection';
 import type { ScriptPreference } from '../src/lib/scriptPreference';
 import {
   groupPhrasebookByScenario,
-  loadEligiblePhrasebook,
+  loadPrelaunchPhrasebook,
   PHRASEBOOK_SCENARIOS,
 } from '../src/content/loadPhrasebook';
 
@@ -38,27 +38,25 @@ const CLIENT_SOURCE = readFileSync(
   'utf8',
 );
 
-// ─── Eligible real-corpus fields (SSR contract: path-default IS the
-// ─── Traditional form). Only production-eligible records are learner-facing. ──
+// ─── Exact #440 prelaunch real-corpus fields (SSR contract: path-default IS
+// ─── the Traditional form; all fields preserve authored/verified provenance). ──
 
 interface FieldFixture {
   id: string;
-  kind: 'headword';
+  kind: 'headword' | 'dialog-turn' | 'dialog-reference';
   traditional: string;
   traditionalStatus: ScriptStatus;
   simplified?: string;
   simplifiedStatus?: ScriptStatus;
 }
 
-const ELIGIBLE_GROUPS = groupPhrasebookByScenario(loadEligiblePhrasebook()).filter(
-  (group) => group.phrases.length > 0,
-);
+const PRELAUNCH_GROUPS = groupPhrasebookByScenario(loadPrelaunchPhrasebook());
 
-/** Every learner-visible script field in source order (6 eligible headwords). */
-const ALL_FIELDS: FieldFixture[] = [];
-for (const group of ELIGIBLE_GROUPS) {
+/** Every canonical phrase headword in source order (30 total). */
+const ALL_HEADWORD_FIELDS: FieldFixture[] = [];
+for (const group of PRELAUNCH_GROUPS) {
   for (const phrase of group.phrases) {
-    ALL_FIELDS.push({
+    ALL_HEADWORD_FIELDS.push({
       id: phrase.id,
       kind: 'headword',
       traditional: phrase.traditional,
@@ -68,6 +66,54 @@ for (const group of ELIGIBLE_GROUPS) {
     });
   }
 }
+
+/** Every canonical dialog turn and reference in rendered source order. */
+const ALL_DIALOG_TURN_FIELDS: FieldFixture[] = [];
+const ALL_DIALOG_REFERENCE_FIELDS: FieldFixture[] = [];
+for (const group of PRELAUNCH_GROUPS) {
+  if (group.dialog === null) continue;
+  for (const [index, turn] of group.dialog.turns.entries()) {
+    ALL_DIALOG_TURN_FIELDS.push({
+      id: `${group.dialog.id}-turn-${index + 1}`,
+      kind: 'dialog-turn',
+      traditional: turn.traditional,
+      traditionalStatus: turn.traditionalStatus,
+      simplified: turn.simplified,
+      simplifiedStatus: turn.simplifiedStatus,
+    });
+  }
+  for (const [index, phraseId] of group.dialog.relatedPhraseIds.entries()) {
+    const phrase = ALL_HEADWORD_FIELDS.find((field) => field.id === phraseId)!;
+    ALL_DIALOG_REFERENCE_FIELDS.push({
+      ...phrase,
+      id: `${group.dialog.id}-reference-${index + 1}`,
+      kind: 'dialog-reference',
+    });
+  }
+}
+
+/** Every script field in the exact prelaunch fixture page's DOM order (84). */
+const ALL_FIELDS = PRELAUNCH_GROUPS.flatMap((group) => {
+  const fields = group.phrases.map(
+    (phrase) => ALL_HEADWORD_FIELDS.find((field) => field.id === phrase.id)!,
+  );
+  if (group.dialog === null) return fields;
+  return [
+    ...fields,
+    ...group.dialog.turns.map(
+      (_, index) =>
+        ALL_DIALOG_TURN_FIELDS.find(
+          (field) => field.id === `${group.dialog!.id}-turn-${index + 1}`,
+        )!,
+    ),
+    ...group.dialog.relatedPhraseIds.map(
+      (_, index) =>
+        ALL_DIALOG_REFERENCE_FIELDS.find(
+          (field) => field.id === `${group.dialog!.id}-reference-${index + 1}`,
+        )!,
+    ),
+  ];
+});
 
 // ─── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -80,21 +126,21 @@ function escapeHtml(value: string): string {
 }
 
 /** One phrasebook script field mirroring the SSR `data-script-*` contract. */
-function fieldMarkup(field: FieldFixture): string {
+function fieldMarkup(field: FieldFixture, tag = 'h3'): string {
   const simplifiedAttr =
     field.simplified !== undefined
       ? `data-script-simplified="${escapeHtml(field.simplified)}" ` +
         `data-script-simplified-status="${field.simplifiedStatus}" `
       : '';
   return (
-    `<h3 lang="zh-Hant" data-field-id="${field.id}" ` +
+    `<${tag} lang="zh-Hant" data-field-id="${field.id}" ` +
     `data-script-annotation-host ` +
     `data-script-path-default="${escapeHtml(field.traditional)}" ` +
     `data-script-path-default-status="${field.traditionalStatus}" ` +
     `data-script-traditional="${escapeHtml(field.traditional)}" ` +
     `data-script-traditional-status="${field.traditionalStatus}" ` +
     simplifiedAttr +
-    `>${escapeHtml(field.traditional)}</h3>`
+    `>${escapeHtml(field.traditional)}</${tag}>`
   );
 }
 
@@ -102,10 +148,9 @@ function syntheticMarkup(overrides: Omit<FieldFixture, 'kind'>): string {
   return fieldMarkup({ ...overrides, kind: 'headword' });
 }
 
-/** The /phrasebook/ eligible surface: scenario filter + the scenario groups
- *  that have eligible content, each with its eligible phrase headwords (no
- *  dialogs render while all dialogs are pending). */
-function buildEligiblePage(): HTMLElement {
+/** The exact #440 prelaunch surface: all 30 headwords, 36 dialog turns, and
+ *  every canonical dialog reference carry the shared script-field contract. */
+function buildPrelaunchPage(): HTMLElement {
   const root = document.createElement('section');
   root.innerHTML =
     '<select id="phrasebook-scenario-filter" data-scenario-filter>' +
@@ -114,17 +159,40 @@ function buildEligiblePage(): HTMLElement {
       (scenario) => `<option value="${scenario}">${scenario}</option>`,
     ).join('') +
     '</select>' +
-    `<p data-scenario-count>全${ALL_FIELDS.length}件</p>` +
+    `<p data-scenario-count>全${ALL_HEADWORD_FIELDS.length}件</p>` +
     '<p data-phrasebook-no-match hidden>該当する場面がありません。</p>' +
-    ELIGIBLE_GROUPS.map(
+    PRELAUNCH_GROUPS.map(
       (group) =>
         `<section data-phrasebook-scenario data-scenario="${group.scenario}">` +
         group.phrases
           .map((phrase) => {
-            const field = ALL_FIELDS.find((f) => f.id === phrase.id)!;
+            const field = ALL_HEADWORD_FIELDS.find((f) => f.id === phrase.id)!;
             return `<article data-phrasebook-entry>${fieldMarkup(field)}</article>`;
           })
           .join('') +
+        (group.dialog === null
+          ? ''
+          : `<div data-phrasebook-dialog><ol>` +
+            group.dialog.turns
+            .map((_, index) => {
+                const field = ALL_DIALOG_TURN_FIELDS.find(
+                  (candidate) => candidate.id === `${group.dialog!.id}-turn-${index + 1}`,
+                )!;
+                return `<li data-phrasebook-dialog-turn>${fieldMarkup(field, 'p')}</li>`;
+              })
+              .join('') +
+            `</ol><p class="phrasebook-dialog__references">` +
+            group.dialog.relatedPhraseIds
+            .map((_, index) => {
+                const field = ALL_DIALOG_REFERENCE_FIELDS.find(
+                  (candidate) =>
+                    candidate.id === `${group.dialog!.id}-reference-${index + 1}`,
+                )!;
+                return `${fieldMarkup(field, 'span')}${index < group.dialog!.relatedPhraseIds.length - 1 ? '、' : ''}`;
+              })
+              .join('') +
+            `</p></div>`
+          ) +
         '</section>',
     ).join('');
   return root;
@@ -197,32 +265,34 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
-// ─── Every eligible field under every preference (real corpus) ────────────────
+// ─── Every canonical field under every preference (real prelaunch corpus) ────
 
-describe('phrasebook script preference — every eligible headword', () => {
-  it('covers all 6 eligible script fields (6 headwords, no dialog turns)', () => {
-    expect(ALL_FIELDS).toHaveLength(6);
-    expect(ALL_FIELDS.filter((field) => field.kind === 'headword')).toHaveLength(6);
-    const root = buildEligiblePage();
+describe('phrasebook script preference — exact prelaunch corpus', () => {
+  it('covers 30 headwords, 36 dialog turns, and every dialog reference', () => {
+    expect(ALL_HEADWORD_FIELDS).toHaveLength(30);
+    expect(ALL_DIALOG_TURN_FIELDS).toHaveLength(36);
+    expect(ALL_DIALOG_REFERENCE_FIELDS).toHaveLength(18);
+    expect(ALL_FIELDS).toHaveLength(84);
+    const root = buildPrelaunchPage();
     document.body.append(root);
     init(root);
     expect(
       root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
-    ).toHaveLength(6);
+    ).toHaveLength(84);
   });
 
   it.each(PREFERENCES)(
-    'applies selectScript + matching lang + annotation to all 6 fields under %s',
+    'applies selectScript + matching lang + annotation to all 84 fields under %s',
     (preference) => {
       setPreference(preference);
-      const root = buildEligiblePage();
+      const root = buildPrelaunchPage();
       document.body.append(root);
       init(root);
 
       const fields = Array.from(
         root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
       );
-      expect(fields).toHaveLength(6);
+      expect(fields).toHaveLength(84);
       for (const [index, el] of fields.entries()) {
         const field = ALL_FIELDS[index];
         const r = expected(field, preference);
@@ -247,21 +317,22 @@ describe('phrasebook script preference — every eligible headword', () => {
     },
   );
 
-  it('renders no fallback annotation under 簡体字 because every eligible form is verified', () => {
+  it('renders no fallback annotation under 簡体字 because every canonical form is verified', () => {
     setPreference('simplified');
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
     init(root);
 
-    // All 6 eligible phrases carry authored Traditional + verified Simplified,
-    // so no field ever needs the #251 fallback annotation.
-    expect(fallbackAnnotations(root)).toHaveLength(0);
-    expect(ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified'))).toHaveLength(0);
+    // One existing dialog turn has no Simplified form; it keeps the shared
+    // Traditional fallback annotation while all other canonical fields select
+    // their verified Simplified form directly.
+    expect(fallbackAnnotations(root)).toHaveLength(1);
+    expect(ALL_FIELDS.filter((field) => wantsAnnotation(field, 'simplified'))).toHaveLength(1);
   });
 
   it('applies the persisted root preference at init without reading storage (direct refresh)', () => {
     setPreference('simplified');
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
     const getSpy = vi.spyOn(window.localStorage, 'getItem');
 
@@ -270,14 +341,15 @@ describe('phrasebook script preference — every eligible headword', () => {
     const fields = Array.from(
       root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
     );
-    expect(fields).toHaveLength(6);
-    expect(fields.every((el) => el.lang === 'zh-Hans')).toBe(true);
+    expect(fields).toHaveLength(84);
+    expect(fields.filter((el) => el.lang === 'zh-Hans')).toHaveLength(83);
+    expect(fields.filter((el) => el.lang === 'zh-Hant')).toHaveLength(1);
     expect(getSpy).not.toHaveBeenCalled();
   });
 
   it('falls back to path-default behavior for an invalid root dataset value', () => {
     setPreference('garbage' as ScriptPreference);
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
     init(root);
 
@@ -387,7 +459,7 @@ describe('phrasebook script preference — generated / unavailable fallback', ()
 
 describe('phrasebook script preference — preserves surrounding state', () => {
   it('does not touch the scenario filter/URL, count, order, or the eligible set', () => {
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
     const filterCleanup = initPhrasebookScenarioFilter(root);
     init(root);
@@ -419,9 +491,9 @@ describe('phrasebook script preference — preserves surrounding state', () => {
     expect(root.querySelector('[data-scenario-count]')?.textContent).toBe(
       countBefore,
     );
-    // food keeps exactly its 1 eligible entry visible through preference churn.
-    expect(entriesBefore).toBe(1);
-    expect(visibleEntries()).toBe(1);
+    // food keeps exactly its 5 canonical entries visible through preference churn.
+    expect(entriesBefore).toBe(5);
+    expect(visibleEntries()).toBe(5);
     expect(
       Array.from(
         root.querySelectorAll<HTMLElement>('[data-script-annotation-host]'),
@@ -440,7 +512,7 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
     expect(CLIENT_SOURCE).not.toMatch(/\.focus\(|\.blur\(|scrollTo|scrollIntoView/);
     expect(CLIENT_SOURCE).not.toMatch(/replaceState/);
 
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
     const writeSpy = vi.spyOn(window.localStorage, 'setItem');
     const removeSpy = vi.spyOn(window.localStorage, 'removeItem');
@@ -454,7 +526,7 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
 
   it('re-initialization tears down the previous binding (no duplicated listeners)', () => {
     const eventSpy = vi.spyOn(document, 'addEventListener');
-    const root = buildEligiblePage();
+    const root = buildPrelaunchPage();
     document.body.append(root);
 
     init(root);
@@ -470,7 +542,7 @@ describe('phrasebook script preference — storage-free, singleton lifecycle', (
 
     // A single event must not double-apply.
     changePreference('simplified');
-    expect(fallbackAnnotations(root)).toHaveLength(0);
+    expect(fallbackAnnotations(root)).toHaveLength(1);
   });
 
   it('never duplicates the annotation across repeated preference changes', () => {
