@@ -29,6 +29,22 @@
       ]
     },
     {
+      "id": "review-status",
+      "label": "Review status assignment",
+      "reviewerRoles": ["human-language-reviewer"],
+      "reviewerEvidence": [
+        { "role": "human-language-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
+    },
+    {
+      "id": "teaching-accuracy",
+      "label": "Teaching accuracy and pain-point metadata",
+      "reviewerRoles": ["human-teaching-reviewer"],
+      "reviewerEvidence": [
+        { "role": "human-teaching-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
+    },
+    {
       "id": "lesson-loop-usefulness",
       "label": "Lesson loop and travel usefulness",
       "reviewerRoles": ["human-teaching-reviewer"],

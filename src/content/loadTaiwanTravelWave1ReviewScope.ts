@@ -42,6 +42,8 @@ const FINGERPRINT_CONTRACT =
 const REVIEW_DIMENSION_IDS = [
   'natural-taiwan-mandarin',
   'natural-japanese-explanation',
+  'review-status',
+  'teaching-accuracy',
   'lesson-loop-usefulness',
   'pronunciation-guidance',
   'kanji-bridge-accuracy',
@@ -63,6 +65,8 @@ const REVIEWER_ROLE_MATRIX = {
     'human-regional-reviewer',
   ],
   'natural-japanese-explanation': ['human-language-reviewer'],
+  'review-status': ['human-language-reviewer'],
+  'teaching-accuracy': ['human-teaching-reviewer'],
   'lesson-loop-usefulness': ['human-teaching-reviewer'],
   'pronunciation-guidance': [
     'human-language-reviewer',

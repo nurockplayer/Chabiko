@@ -238,7 +238,11 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     }
 
     const packet = await build((candidateManifest) => {
-      const evidence = candidateManifest.dimensions[7]
+      const sourceDimension = candidateManifest.dimensions.find(
+        (dimension) => dimension.id === 'source-and-script-provenance',
+      );
+      expect(sourceDimension).toBeDefined();
+      const evidence = sourceDimension!
         .reviewerEvidence as unknown as Array<{
         role: string;
         outcome: string;
@@ -263,7 +267,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     });
 
     expect(
-      packet.dimensions[7].reviewerEvidence.map(
+      packet.dimensions
+        .find((dimension) => dimension.id === 'source-and-script-provenance')!
+        .reviewerEvidence.map(
         (evidence) => (evidence as unknown as { outcome: string }).outcome,
       ),
     ).toEqual(['accepted', 'needs-changes']);
@@ -306,6 +312,8 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     const expectedRoles = new Map([
       ['natural-taiwan-mandarin', ['human-language-reviewer', 'human-regional-reviewer']],
       ['natural-japanese-explanation', ['human-language-reviewer']],
+      ['review-status', ['human-language-reviewer']],
+      ['teaching-accuracy', ['human-teaching-reviewer']],
       ['lesson-loop-usefulness', ['human-teaching-reviewer']],
       ['pronunciation-guidance', ['human-language-reviewer', 'human-teaching-reviewer']],
       ['kanji-bridge-accuracy', ['human-teaching-reviewer']],
@@ -341,6 +349,126 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         candidateManifest.dimensions[1].reviewerRoles.push('maintainer');
       }),
     ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-japanese-explanation'/);
+  });
+
+  it('keeps canonical review-status and teaching-accuracy scopes independently reviewable', async () => {
+    const manifest = loadManifest();
+    expect(manifest.dimensions.map(({ id }) => id)).toEqual([
+      'natural-taiwan-mandarin',
+      'natural-japanese-explanation',
+      'review-status',
+      'teaching-accuracy',
+      'lesson-loop-usefulness',
+      'pronunciation-guidance',
+      'kanji-bridge-accuracy',
+      'exercise-quality',
+      'graph-and-scope-correctness',
+      'source-and-script-provenance',
+    ]);
+
+    const reviewStatus = manifest.dimensions.find(
+      (dimension) => dimension.id === 'review-status',
+    );
+    const teachingAccuracy = manifest.dimensions.find(
+      (dimension) => dimension.id === 'teaching-accuracy',
+    );
+    expect(reviewStatus).toMatchObject({
+      label: 'Review status assignment',
+      reviewerRoles: ['human-language-reviewer'],
+      reviewerEvidence: [
+        {
+          role: 'human-language-reviewer',
+          outcome: 'not-reviewed',
+          reviewerIdentity: null,
+          reviewDate: null,
+          findings: null,
+        },
+      ],
+    });
+    expect(teachingAccuracy).toMatchObject({
+      label: 'Teaching accuracy and pain-point metadata',
+      reviewerRoles: ['human-teaching-reviewer'],
+      reviewerEvidence: [
+        {
+          role: 'human-teaching-reviewer',
+          outcome: 'not-reviewed',
+          reviewerIdentity: null,
+          reviewDate: null,
+          findings: null,
+        },
+      ],
+    });
+
+    const mixedScopes = await build((candidateManifest) => {
+      const reviewStatusDimension = candidateManifest.dimensions.find(
+        (dimension) => dimension.id === 'review-status',
+      )!;
+      reviewStatusDimension.reviewerEvidence[0] = {
+        ...reviewStatusDimension.reviewerEvidence[0],
+        outcome: 'accepted',
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Draft reviewStatus is correct for the candidate package.',
+      };
+      const teachingDimension = candidateManifest.dimensions.find(
+        (dimension) => dimension.id === 'teaching-accuracy',
+      )!;
+      teachingDimension.reviewerEvidence[0] = {
+        ...teachingDimension.reviewerEvidence[0],
+        outcome: 'needs-changes',
+        reviewerIdentity: '@teaching-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Pain-point metadata needs changes.',
+      };
+    });
+    expect(
+      mixedScopes.dimensions.find((dimension) => dimension.id === 'review-status')!
+        .reviewerEvidence[0].outcome,
+    ).toBe('accepted');
+    expect(
+      mixedScopes.dimensions.find((dimension) => dimension.id === 'teaching-accuracy')!
+        .reviewerEvidence[0].outcome,
+    ).toBe('needs-changes');
+    expect(mixedScopes.overallDecision).toBeNull();
+    expect(mixedScopes.promotionAllowed).toBe(false);
+    const rendered = renderTaiwanTravelWave1ReviewPacket(mixedScopes);
+    expect(rendered).toContain(
+      '| Review status assignment | human-language-reviewer | accepted | @language-reviewer |',
+    );
+    expect(rendered).toContain(
+      '| Teaching accuracy and pain-point metadata | human-teaching-reviewer | needs-changes | @teaching-reviewer |',
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions = candidateManifest.dimensions.filter(
+          (dimension) => dimension.id !== 'review-status',
+        );
+      }),
+    ).rejects.toThrow(/review dimension count drifted/);
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions.push(
+          structuredClone(candidateManifest.dimensions[0]),
+        );
+      }),
+    ).rejects.toThrow(/review dimension count drifted/);
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions.find(
+          (item) => item.id === 'review-status',
+        )!;
+        dimension.reviewerRoles[0] = 'maintainer';
+      }),
+    ).rejects.toThrow(/reviewer roles drifted for dimension 'review-status'/);
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions.find(
+          (item) => item.id === 'teaching-accuracy',
+        )!;
+        dimension.reviewerEvidence[0].role = 'human-language-reviewer';
+      }),
+    ).rejects.toThrow(/reviewer evidence roles drifted for dimension 'teaching-accuracy'/);
   });
 
   it('binds each role outcome to complete evidence while keeping promotion separate', async () => {
@@ -1235,7 +1363,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       {
         name: 'conflicting legacy shared outcome',
         mutate: (manifest) => {
-          const dimension = manifest.dimensions[7];
+          const dimension = manifest.dimensions.find(
+            (item) => item.id === 'source-and-script-provenance',
+          )!;
           dimension.reviewerEvidence[0] = {
             ...dimension.reviewerEvidence[0],
             outcome: 'accepted',

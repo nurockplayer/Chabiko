@@ -216,6 +216,27 @@ promotion still requires a separate overall accepted decision and maintainer
 action. The checked-in initial state keeps every role outcome `not-reviewed`
 and every evidence value null.
 
+For Taiwan Travel Wave 1, the canonical ordered dimension matrix is:
+
+| Dimension ID | What it records | Required reviewer roles, in order |
+|---|---|---|
+| `natural-taiwan-mandarin` | Traditional Mandarin naturalness and Taiwan usage | `human-language-reviewer`, `human-regional-reviewer` |
+| `natural-japanese-explanation` | Japanese explanation naturalness | `human-language-reviewer` |
+| `review-status` | Whether the candidate `reviewStatus` assignment is correct for draft → reviewed | `human-language-reviewer` |
+| `teaching-accuracy` | General teaching accuracy, including grammar, tone explanations, false-friend guidance, and pain-point tags | `human-teaching-reviewer` |
+| `lesson-loop-usefulness` | Lesson-loop completeness and travel usefulness | `human-teaching-reviewer` |
+| `pronunciation-guidance` | Pinyin and pronunciation guidance | `human-language-reviewer`, `human-teaching-reviewer` |
+| `kanji-bridge-accuracy` | Kanji bridge accuracy | `human-teaching-reviewer` |
+| `exercise-quality` | Review-prompt quality | `human-teaching-reviewer` |
+| `graph-and-scope-correctness` | Graph, identity, order, and issue-scope correctness | `maintainer` |
+| `source-and-script-provenance` | Source metadata and generated-script provenance | `human-source-reviewer`, `human-script-verifier` |
+
+The Wave package uses `human-language-reviewer` for the `review-status`
+draft → reviewed gate. The separate reviewed → published transition remains a
+maintainer action. `teaching-accuracy` is not interchangeable with the more
+specific lesson-loop, pronunciation, kanji-bridge, or exercise dimensions;
+each retains its own role outcome and evidence row.
+
 ---
 
 ## 5. Review Checklists

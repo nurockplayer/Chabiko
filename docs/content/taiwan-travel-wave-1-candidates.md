@@ -137,6 +137,8 @@ closed.
 |---|---|
 | Natural Taiwan Mandarin | `human-language-reviewer`, `human-regional-reviewer` |
 | Natural Japanese explanation | `human-language-reviewer` |
+| Review status assignment | `human-language-reviewer` |
+| Teaching accuracy and pain-point metadata | `human-teaching-reviewer` |
 | Lesson loop and travel usefulness | `human-teaching-reviewer` |
 | Pinyin and pronunciation guidance | `human-language-reviewer`, `human-teaching-reviewer` |
 | Kanji bridge accuracy | `human-teaching-reviewer` |
@@ -156,6 +158,12 @@ requires a separate overall accepted decision and maintainer action. A global
 reviewer identity does not substitute for per-role evidence. These fields
 participate in the packet `reviewVersion`; they do not change lesson
 fingerprints.
+
+`review-status` independently records whether the candidate package is
+truthfully still `draft`; it does not promote the package. `teaching-accuracy`
+independently covers general grammar, tone explanations, false-friend
+guidance, and pain-point tags, rather than being inferred from the narrower
+lesson-loop, pronunciation, kanji-bridge, or exercise outcomes.
 
 ## Canonical rebuild
 
