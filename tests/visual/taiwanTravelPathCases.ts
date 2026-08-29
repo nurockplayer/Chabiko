@@ -7,10 +7,15 @@ export const TAIWAN_TRAVEL_PATH_VIEWPORTS = [
   { width: 1440, height: 900 },
 ] as const;
 
+export const TAIWAN_TRAVEL_PATH_VISUAL_STATES = ['top', 'end'] as const;
+
 export const TAIWAN_TRAVEL_PATH_VISUAL_CASES = VISUAL_THEMES.flatMap((theme) =>
-  TAIWAN_TRAVEL_PATH_VIEWPORTS.map((viewport) => ({
-    theme,
-    viewport,
-    snapshotName: `taiwan-travel-path-${theme}-${viewport.width}x${viewport.height}.png`,
-  })),
+  TAIWAN_TRAVEL_PATH_VIEWPORTS.flatMap((viewport) =>
+    TAIWAN_TRAVEL_PATH_VISUAL_STATES.map((state) => ({
+      theme,
+      viewport,
+      state,
+      snapshotName: `taiwan-travel-path-${state}-${theme}-${viewport.width}x${viewport.height}.png`,
+    })),
+  ),
 );

@@ -140,8 +140,8 @@ describe('visual regression harness contract', () => {
       expect(png.readUInt32BE(20)).toBe(phrasebookCase.viewport.height);
     }
 
-    // Taiwan Travel baselines are lesson-card fragments which are scrolled
-    // fully into the configured viewport before capture.
+    // Taiwan Travel baselines are top/end viewport fragments. Their widths
+    // remain the configured viewport width; heights are bounded by it.
     for (const visualCase of TAIWAN_TRAVEL_PATH_VISUAL_CASES) {
       const png = readFileSync(
         join(snapshotsDirectory, visualCase.snapshotName),
@@ -149,8 +149,11 @@ describe('visual regression harness contract', () => {
       expect(png.subarray(0, 8)).toEqual(
         Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       );
-      expect(png.readUInt32BE(16)).toBeGreaterThan(0);
+      expect(png.readUInt32BE(16)).toBe(visualCase.viewport.width);
       expect(png.readUInt32BE(20)).toBeGreaterThanOrEqual(44);
+      expect(png.readUInt32BE(20)).toBeLessThanOrEqual(
+        visualCase.viewport.height,
+      );
     }
   });
 

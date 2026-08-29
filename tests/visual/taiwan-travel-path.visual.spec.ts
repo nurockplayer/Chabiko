@@ -1,7 +1,12 @@
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type Page,
+  type PageScreenshotOptions,
+} from '@playwright/test';
 import {
   TAIWAN_TRAVEL_PATH_VIEWPORTS,
   TAIWAN_TRAVEL_PATH_VISUAL_CASES,
@@ -124,6 +129,189 @@ async function openTaiwanTravelPath(
 }
 
 const VIEWPORT_EPSILON = 1;
+const CAPTURE_GUTTER = 16;
+
+type CaptureClip = NonNullable<PageScreenshotOptions['clip']>;
+
+async function assertLocatorInsideCapture(
+  page: Page,
+  selector: string,
+  clip: CaptureClip,
+): Promise<void> {
+  const locator = page.locator(selector);
+  await expect(locator).toBeVisible();
+  const box = await locator.boundingBox();
+  expect(box, `missing evidence element '${selector}'`).not.toBeNull();
+  expect(box!.x, `${selector} capture left`).toBeGreaterThanOrEqual(
+    clip.x - VIEWPORT_EPSILON,
+  );
+  expect(box!.x + box!.width, `${selector} capture right`).toBeLessThanOrEqual(
+    clip.x + clip.width + VIEWPORT_EPSILON,
+  );
+  expect(box!.y, `${selector} capture top`).toBeGreaterThanOrEqual(
+    clip.y - VIEWPORT_EPSILON,
+  );
+  expect(box!.y + box!.height, `${selector} capture bottom`).toBeLessThanOrEqual(
+    clip.y + clip.height + VIEWPORT_EPSILON,
+  );
+}
+
+async function assertCaptureInsideViewport(
+  page: Page,
+  clip: CaptureClip,
+  evidenceSelectors: readonly string[],
+): Promise<void> {
+  const viewport = await page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+  expect(clip.x).toBeGreaterThanOrEqual(0);
+  expect(clip.y).toBeGreaterThanOrEqual(0);
+  expect(clip.x + clip.width).toBeLessThanOrEqual(viewport.width);
+  expect(clip.y + clip.height).toBeLessThanOrEqual(viewport.height);
+
+  for (const selector of evidenceSelectors) {
+    await assertLocatorInsideCapture(page, selector, clip);
+  }
+
+  const controls = await page.locator('body').evaluate((body, capture) => {
+    const controlSelector =
+      'a[href], button, select, input:not([type="hidden"]), summary';
+    return [...body.querySelectorAll<HTMLElement>(controlSelector)]
+      .map((control) => {
+        const box = control.getBoundingClientRect();
+        const style = getComputedStyle(control);
+        return {
+          label: `${control.tagName}.${control.className}`,
+          visible:
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            box.width > 0 &&
+            box.height > 0,
+          intersectsCapture:
+            box.right > capture.x &&
+            box.left < capture.x + capture.width &&
+            box.bottom > capture.y &&
+            box.top < capture.y + capture.height,
+          box: box.toJSON(),
+        };
+      })
+      .filter((control) => control.visible && control.intersectsCapture);
+  }, clip);
+
+  expect(controls.length, 'capture must include interactive evidence').toBeGreaterThan(0);
+  for (const control of controls) {
+    expect(control.box.left, `${control.label} capture left`).toBeGreaterThanOrEqual(
+      clip.x - VIEWPORT_EPSILON,
+    );
+    expect(control.box.right, `${control.label} capture right`).toBeLessThanOrEqual(
+      clip.x + clip.width + VIEWPORT_EPSILON,
+    );
+    expect(control.box.top, `${control.label} capture top`).toBeGreaterThanOrEqual(
+      clip.y - VIEWPORT_EPSILON,
+    );
+    expect(control.box.bottom, `${control.label} capture bottom`).toBeLessThanOrEqual(
+      clip.y + clip.height + VIEWPORT_EPSILON,
+    );
+  }
+}
+
+async function prepareTopCapture(page: Page): Promise<CaptureClip> {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  const firstLesson = page.locator('[data-taiwan-lesson-link="lesson-001"]');
+  const nextRowLesson = page.locator(
+    `[data-taiwan-lesson-link="${
+      viewport!.width >= 768 ? 'lesson-003' : 'lesson-002'
+    }"]`,
+  );
+  await expect(firstLesson).toBeVisible();
+  await expect(nextRowLesson).toBeVisible();
+  const firstBox = await firstLesson.boundingBox();
+  const nextRowBox = await nextRowLesson.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(nextRowBox).not.toBeNull();
+
+  const clip: CaptureClip = {
+    x: 0,
+    y: 0,
+    width: viewport!.width,
+    height: Math.floor((firstBox!.y + firstBox!.height + nextRowBox!.y) / 2),
+  };
+  const earlyLessonEvidence = [
+    '[data-taiwan-lesson-link="lesson-001"]',
+    ...(clip.width >= 768
+      ? ['[data-taiwan-lesson-link="lesson-002"]']
+      : []),
+  ];
+  await assertCaptureInsideViewport(page, clip, [
+    '.site-header',
+    '.breadcrumb',
+    '.taiwan-path-intro',
+    '.taiwan-path-index__heading',
+    ...earlyLessonEvidence,
+  ]);
+  return clip;
+}
+
+async function prepareEndCapture(page: Page): Promise<CaptureClip> {
+  const finalLesson = page.locator('[data-taiwan-lesson-link="lesson-010"]');
+  const assessment = page.locator('.taiwan-path-assessment');
+  await expect(finalLesson).toBeVisible();
+  await expect(assessment).toBeVisible();
+  await assessment.evaluate((element) =>
+    element.scrollIntoView({ block: 'end', inline: 'nearest' }),
+  );
+
+  const finalBox = await finalLesson.boundingBox();
+  const assessmentBox = await assessment.boundingBox();
+  expect(finalBox).not.toBeNull();
+  expect(assessmentBox).not.toBeNull();
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  const previousRowLesson = page.locator(
+    `[data-taiwan-lesson-link="${
+      viewport!.width >= 768 ? 'lesson-008' : 'lesson-009'
+    }"]`,
+  );
+  const previousRowBox = await previousRowLesson.boundingBox();
+  expect(previousRowBox).not.toBeNull();
+  const previousRowBottom = previousRowBox!.y + previousRowBox!.height;
+  const top = Math.max(
+    0,
+    Math.floor((previousRowBottom + finalBox!.y) / 2),
+  );
+  const bottom = Math.min(
+    viewport!.height,
+    Math.ceil(assessmentBox!.y + assessmentBox!.height + CAPTURE_GUTTER),
+  );
+  const clip: CaptureClip = {
+    x: 0,
+    y: top,
+    width: viewport!.width,
+    height: bottom - top,
+  };
+  const finalLessonEvidence = [
+    '[data-taiwan-lesson-link="lesson-010"]',
+    ...(clip.width >= 768
+      ? ['[data-taiwan-lesson-link="lesson-009"]']
+      : []),
+  ];
+  await assertCaptureInsideViewport(page, clip, [
+    ...finalLessonEvidence,
+    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__number',
+    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__title',
+    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__outcome',
+    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__action',
+    '.taiwan-path-assessment',
+    '#taiwan-path-assessment-heading',
+    '.taiwan-path-assessment__link',
+  ]);
+  return clip;
+}
 
 async function assertFragmentInsideViewport(
   page: Page,
@@ -199,17 +387,10 @@ test.describe('/paths/taiwan-travel/ visual baselines', () => {
         visualCase.theme,
         visualCase.viewport,
       );
-      const lessonFragment = await assertFragmentInsideViewport(
-        page,
-        '[data-taiwan-lesson-link="lesson-001"]',
-        [
-          '.taiwan-path-lesson__number',
-          '.taiwan-path-lesson__title',
-          '.taiwan-path-lesson__outcome',
-          '.taiwan-path-lesson__action',
-        ],
-      );
-      await expect(lessonFragment).toHaveScreenshot(visualCase.snapshotName);
+      const clip = visualCase.state === 'top'
+        ? await prepareTopCapture(page)
+        : await prepareEndCapture(page);
+      await expect(page).toHaveScreenshot(visualCase.snapshotName, { clip });
       expect([...externalRequests]).toEqual([]);
       expect(errors).toEqual([]);
     });
