@@ -1,4 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import * as fs from 'node:fs';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('node:fs', async () => {
+  const actual = await vi.importActual<typeof import('node:fs')>('node:fs');
+  return { ...actual, readFileSync: vi.fn(actual.readFileSync) };
+});
 import { loadAllRenderableLessons } from '../src/content/loadLessons';
 import {
   assertTaiwanTravelProductionLessonSet,
@@ -41,5 +47,29 @@ describe('Taiwan Travel prelaunch production reconciliation', () => {
     expect(() => assertTaiwanTravelProductionLessonSet(lessons)).toThrow(
       /lesson-011.*reviewStatus 'draft'/,
     );
+  });
+
+  it('fails closed when a candidate record is promoted', () => {
+    const lessons = productionLessons();
+    const readFileSpy = vi.mocked(fs.readFileSync);
+    const originalReadFileSync = readFileSpy.getMockImplementation();
+    if (!originalReadFileSync) throw new Error('expected mocked readFileSync');
+    readFileSpy.mockImplementation((path, options) => {
+      const result = originalReadFileSync(path, options);
+      if (!String(path).endsWith('data/content-pilots/taiwan-travel-wave-1/lessons.json')) {
+        return result;
+      }
+      const candidateBundle = JSON.parse(String(result)) as { lessons: Lesson[] };
+      candidateBundle.lessons[0].reviewStatus = 'reviewed';
+      return JSON.stringify(candidateBundle);
+    });
+
+    try {
+      expect(() => assertTaiwanTravelProductionLessonSet(lessons)).toThrow(
+        /candidate 'lesson-011' must remain reviewStatus 'draft'/,
+      );
+    } finally {
+      readFileSpy.mockImplementation(originalReadFileSync);
+    }
   });
 });

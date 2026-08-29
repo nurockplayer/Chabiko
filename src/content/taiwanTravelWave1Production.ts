@@ -118,6 +118,11 @@ export function assertTaiwanTravelProductionLessonSet(
         `Taiwan Travel production reconciliation failed: candidate drift for '${lesson.id}'`,
       );
     }
+    if (candidate.reviewStatus !== 'draft') {
+      throw new Error(
+        `Taiwan Travel production reconciliation failed: candidate '${lesson.id}' must remain reviewStatus 'draft'`,
+      );
+    }
     if (lesson.reviewStatus !== 'draft') {
       throw new Error(
         `Taiwan Travel production reconciliation failed: '${lesson.id}' must remain reviewStatus 'draft'`,
