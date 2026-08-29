@@ -56,6 +56,10 @@ VALID_SCENARIOS = frozenset({
     "food", "transport", "hotel", "shopping", "emergency", "airport",
 })
 
+# Lessons may teach a bounded social interaction without broadening the
+# established phrasebook/dialog/roleplay/practice scenario vocabulary.
+VALID_LESSON_SCENARIOS = VALID_SCENARIOS | {"social"}
+
 VALID_PRACTICE_TYPES = frozenset({
     "tone-discrimination", "pinyin-contrast", "guided-shadowing", "pronunciation-practice", "word-order",
     "measure-word", "complement", "aspect-particle",
@@ -689,6 +693,127 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
     return errors
 
 
+def _check_lesson_review_hook(record: dict, path: str) -> list[str]:
+    """A shared lesson may omit step 9 for legacy compatibility; if present it must be usable."""
+    if "reviewHookJa" not in record:
+        return []
+    review_hook = record.get("reviewHookJa")
+    if review_hook is None:
+        return [f"{path}.reviewHookJa: must be a non-empty string when present"]
+    if not isinstance(review_hook, str):
+        return []
+    if review_hook.strip() == "":
+        return [f"{path}.reviewHookJa: must be a non-empty string when present"]
+    return []
+
+
+LESSON_NESTED_SHAPES = {
+    "sections": ({"headingJa": str, "contentJa": str}, {}),
+    "chunks": ({"chunk": str, "meaning": str}, {"notesJa": str}),
+    "kanjiBridgeNotes": ({"kanji": str, "jpReading": str, "noteJa": str}, {}),
+    "soundFocus": ({"item": str, "noteJa": str}, {}),
+    "examples": (
+        {
+            "traditional": str,
+            "traditionalStatus": str,
+            "pinyin": str,
+            "japanese": str,
+        },
+        {
+            "simplified": str,
+            "simplifiedStatus": str,
+        },
+    ),
+    "reviewPrompts": (
+        {"promptJa": str, "answerJa": str},
+        {"distractorsJa": list},
+    ),
+}
+
+
+def _check_lesson_nested_shapes(record: dict, path: str) -> list[str]:
+    """Validate exact keys and field types for every shared rich-lesson item."""
+    errors = []
+    for field, (required, optional) in LESSON_NESTED_SHAPES.items():
+        items = record.get(field)
+        if not isinstance(items, list):
+            continue
+        known_fields = set(required) | set(optional)
+        for index, item in enumerate(items):
+            item_path = f"{path}.{field}[{index}]"
+            if not isinstance(item, dict):
+                errors.append(
+                    f"{item_path}: must be a dict/object, got {type(item).__name__}"
+                )
+                continue
+            for item_field in item:
+                if item_field not in known_fields:
+                    errors.append(f"{item_path}: unknown field '{item_field}'")
+            for item_field, expected_type in required.items():
+                if item_field not in item or item[item_field] is None:
+                    errors.append(f"{item_path}: missing required field '{item_field}'")
+                    continue
+                errors.extend(
+                    _validate_type(
+                        item[item_field], expected_type, f"{item_path}.{item_field}"
+                    )
+                )
+            for item_field, expected_type in optional.items():
+                if item_field in item:
+                    value = item[item_field]
+                    if value is None or not isinstance(value, expected_type):
+                        errors.append(
+                            f"{item_path}.{item_field} must be "
+                            f"{expected_type.__name__}, got {type(value).__name__}"
+                        )
+
+            if field == "examples":
+                authored_statuses = CONTROLLED_STATUSES - {"unavailable"}
+                traditional_status = item.get("traditionalStatus")
+                if (
+                    isinstance(traditional_status, str)
+                    and traditional_status not in authored_statuses
+                ):
+                    errors.append(
+                        f"{item_path}.traditionalStatus: '{traditional_status}' is not "
+                        f"valid for a present traditional form; must be one of "
+                        f"{sorted(authored_statuses)}"
+                    )
+                simplified = item.get("simplified")
+                simplified_status = item.get("simplifiedStatus")
+                if isinstance(simplified, str):
+                    if simplified_status is None:
+                        errors.append(
+                            f"{item_path}: simplifiedStatus is required when simplified "
+                            "is present"
+                        )
+                    elif (
+                        isinstance(simplified_status, str)
+                        and simplified_status not in authored_statuses
+                    ):
+                        errors.append(
+                            f"{item_path}.simplifiedStatus: '{simplified_status}' is not "
+                            f"valid for a present simplified form; must be one of "
+                            f"{sorted(authored_statuses)}"
+                        )
+                elif (
+                    isinstance(simplified_status, str)
+                    and simplified_status != "unavailable"
+                ):
+                    errors.append(
+                        f"{item_path}: simplifiedStatus must be 'unavailable' when "
+                        "simplified is absent"
+                    )
+            if field == "reviewPrompts" and isinstance(item.get("distractorsJa"), list):
+                for distractor_index, distractor in enumerate(item["distractorsJa"]):
+                    if not isinstance(distractor, str):
+                        errors.append(
+                            f"{item_path}.distractorsJa[{distractor_index}]: "
+                            f"must be a string, got {type(distractor).__name__}"
+                        )
+    return errors
+
+
 def _check_resource_url(record: dict, path: str) -> list[str]:
     """Validate resource URLs use HTTP(S) and include a hostname."""
     errors = []
@@ -1029,7 +1154,7 @@ def _build_schemas():
         ],
         "optional": [
             "sections", "examples", "relatedVocabulary",
-            "painPointTags",
+            "painPointTags", "reviewHookJa",
         ],
         "field_types": {
             "id": str, "titleJa": str, "level": str, "canDoJa": str,
@@ -1038,18 +1163,20 @@ def _build_schemas():
             "sections": list, "chunks": list, "kanjiBridgeNotes": list,
             "soundFocus": list, "examples": list, "reviewPrompts": list,
             "travelTask": str, "relatedVocabulary": list,
-            "painPointTags": list, "source": dict,
+            "painPointTags": list, "reviewHookJa": str, "source": dict,
         },
         "controlled_fields": {
             "level": VALID_LEVELS,
-            "travelScenario": VALID_SCENARIOS,
+            "travelScenario": VALID_LESSON_SCENARIOS,
             "reviewStatus": VALID_REVIEW_STATUSES,
         },
         "extra_validators": [
             _check_review_status,
             _check_generated_not_production,
             _check_pain_point_context,
+            _check_lesson_nested_shapes,
             _check_lesson_practice_readiness,
+            _check_lesson_review_hook,
         ],
     }
 
@@ -3036,6 +3163,9 @@ def run_tests():
 
         # ─── Lesson ───
         test_lesson_valid,
+        test_lesson_review_hook_optional_valid,
+        test_lesson_review_hook_empty_rejected,
+        test_lesson_review_hook_null_rejected,
         test_related_vocabulary_reference_valid,
         test_related_vocabulary_stale_reference_rejected,
         test_related_vocabulary_duplicate_reference_rejected,
@@ -3047,9 +3177,11 @@ def run_tests():
         test_lesson_missing_review_prompts,
         test_lesson_missing_travel_task,
         test_lesson_invalid_level,
+        test_lesson_social_scenario_valid,
         test_lesson_invalid_travel_scenario,
         test_lesson_invalid_review_status,
         test_lesson_unknown_field,
+        test_lesson_nested_shapes_fail_closed,
         test_lesson_taiwan_usage_needs_context,
         test_lesson_invalid_travel_scenario,
         test_lesson_false_friend_with_kanji_bridge,
@@ -3595,6 +3727,24 @@ def test_lesson_valid():
     _assert_no_errors(errs, "lesson_valid")
 
 
+def test_lesson_review_hook_optional_valid():
+    errs = validate_single(
+        _minimal_lesson(reviewHookJa="第2課で同じ型をもう一度使います。"),
+        "lesson",
+    )
+    _assert_no_errors(errs, "lesson_review_hook_optional_valid")
+
+
+def test_lesson_review_hook_empty_rejected():
+    errs = validate_single(_minimal_lesson(reviewHookJa="   "), "lesson")
+    _assert_has_error(errs, "must be a non-empty string", "lesson_review_hook_empty")
+
+
+def test_lesson_review_hook_null_rejected():
+    errs = validate_single(_minimal_lesson(reviewHookJa=None), "lesson")
+    _assert_has_error(errs, "must be a non-empty string", "lesson_review_hook_null")
+
+
 def test_related_vocabulary_reference_valid():
     data = {
         "vocabulary": [_minimal_vocab()],
@@ -3684,8 +3834,18 @@ def test_lesson_invalid_level():
     _assert_has_error(errs, "not valid", "lesson_level")
 
 
+def test_lesson_social_scenario_valid():
+    """The lesson-only social scenario must not broaden other content schemas."""
+    assert validate_single(_minimal_lesson(travelScenario="social"), "lesson") == []
+    _assert_has_error(
+        validate_single(_minimal_phrasebook(scenario="social"), "phrasebook"),
+        "not valid",
+        "phrasebook_social_scenario",
+    )
+
+
 def test_lesson_invalid_travel_scenario():
-    """travelScenario must be from VALID_SCENARIOS."""
+    """travelScenario must be from the lesson scenario vocabulary."""
     errs = validate_single(_minimal_lesson(travelScenario="travel"), "lesson")
     _assert_has_error(errs, "not valid", "lesson_travel_scenario")
 
@@ -3698,6 +3858,105 @@ def test_lesson_invalid_review_status():
 def test_lesson_unknown_field():
     errs = validate_single(_minimal_lesson(randomField="xyz"), "lesson")
     _assert_has_error(errs, "unknown", "lesson_unknown")
+
+
+def test_lesson_nested_shapes_fail_closed():
+    cases = [
+        (
+            "sections",
+            [{"headingJa": "見出し", "contentJa": "本文", "heading": "typo"}],
+            "sections[0]: unknown field 'heading'",
+        ),
+        (
+            "chunks",
+            [{"chunk": "我要", "meaning": "私は〜が欲しい", "noteJa": "typo"}],
+            "chunks[0]: unknown field 'noteJa'",
+        ),
+        (
+            "kanjiBridgeNotes",
+            [{"kanji": "位", "jpReading": "い", "noteJa": "説明", "reading": "typo"}],
+            "kanjiBridgeNotes[0]: unknown field 'reading'",
+        ),
+        (
+            "soundFocus",
+            [{"item": "可以 kěyǐ", "noteJa": "説明", "pinyin": "typo"}],
+            "soundFocus[0]: unknown field 'pinyin'",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "traditionalStatus": "authored", "pinyin": "nǐ hǎo", "japanese": "こんにちは", "translationJa": "typo"}],
+            "examples[0]: unknown field 'translationJa'",
+        ),
+        (
+            "reviewPrompts",
+            [{"promptJa": "Q?", "answerJa": "A", "optionsJa": ["B"]}],
+            "reviewPrompts[0]: unknown field 'optionsJa'",
+        ),
+        (
+            "chunks",
+            [{"chunk": "我要", "meaning": "私は〜が欲しい", "notesJa": 7}],
+            "chunks[0].notesJa must be str, got int",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "traditionalStatus": "authored", "pinyin": "nǐ hǎo", "japanese": "こんにちは", "simplified": 7}],
+            "examples[0].simplified must be str, got int",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "pinyin": "nǐ hǎo", "japanese": "こんにちは", "traditionalStatus": None}],
+            "examples[0]: missing required field 'traditionalStatus'",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "traditionalStatus": "unavailable", "pinyin": "nǐ hǎo", "japanese": "こんにちは"}],
+            "traditionalStatus: 'unavailable' is not valid for a present traditional form",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "traditionalStatus": "authored", "simplified": "你好", "pinyin": "nǐ hǎo", "japanese": "こんにちは"}],
+            "simplifiedStatus is required when simplified is present",
+        ),
+        (
+            "examples",
+            [{"traditional": "你好", "traditionalStatus": "authored", "simplifiedStatus": "authored", "pinyin": "nǐ hǎo", "japanese": "こんにちは"}],
+            "simplifiedStatus must be 'unavailable' when simplified is absent",
+        ),
+        (
+            "reviewPrompts",
+            [{"promptJa": "Q?", "answerJa": "A", "distractorsJa": "not-a-list"}],
+            "reviewPrompts[0].distractorsJa must be list, got str",
+        ),
+    ]
+    for field, value, expected in cases:
+        errs = validate_single(_minimal_lesson(**{field: value}), "lesson")
+        _assert_has_error(errs, expected, f"lesson_nested_{field}")
+
+    for example in (
+        {
+            "traditional": "你好",
+            "traditionalStatus": "authored",
+            "pinyin": "nǐ hǎo",
+            "japanese": "こんにちは",
+        },
+        {
+            "traditional": "你好",
+            "traditionalStatus": "authored",
+            "simplifiedStatus": "unavailable",
+            "pinyin": "nǐ hǎo",
+            "japanese": "こんにちは",
+        },
+        {
+            "traditional": "你好",
+            "traditionalStatus": "authored",
+            "simplified": "你好",
+            "simplifiedStatus": "verified",
+            "pinyin": "nǐ hǎo",
+            "japanese": "こんにちは",
+        },
+    ):
+        errs = validate_single(_minimal_lesson(examples=[example]), "lesson")
+        _assert_no_errors(errs, "lesson_nested_example_provenance_valid")
 
 
 def test_lesson_taiwan_usage_needs_context():
