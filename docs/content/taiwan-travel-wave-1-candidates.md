@@ -5,10 +5,12 @@ teaching, regional, script-provenance, and source/provenance review are pending.
 
 ## Boundary
 
-This package contains exactly `lesson-011` through `lesson-024`. It is not read
-by the production lesson loader, `data/learning-paths.json`, the Taiwan Travel
-assessment, or any learner route. Merging the package cannot make a lesson
-learner-visible or change a production review decision.
+This package contains exactly `lesson-011` through `lesson-024`. The production
+lesson bundle now carries an exact copy of these records for the bounded
+prelaunch learner path. The production loader reconciles the copy against this
+candidate source by deterministic fingerprint and fails closed on drift. The
+review package remains independent: linking the records for prelaunch exposure
+does not change a production review decision or grant human approval.
 
 The package owns:
 

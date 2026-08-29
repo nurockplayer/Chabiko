@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { assertTaiwanTravelProductionLessonSet } from './taiwanTravelWave1Production';
 import type { LessonBundle } from '../types/lesson';
 
 const DEFAULT_DATA_PATH = 'data/examples/valid/lessons.json';
@@ -150,8 +151,9 @@ export function loadLessonById(
   filePath?: string,
 ): LessonBundle['lessons'][number] | undefined {
   try {
-    const bundle = loadLessons(filePath);
-    const lesson = bundle.lessons.find((candidate) => candidate.id === id);
+    const lesson = loadAllRenderableLessons(filePath).find(
+      (candidate) => candidate.id === id,
+    );
     return isRenderableLesson(lesson) ? lesson : undefined;
   } catch {
     return undefined;
@@ -167,5 +169,9 @@ export function loadAllRenderableLessons(
   filePath?: string,
 ): LessonBundle['lessons'][number][] {
   const bundle = loadLessons(filePath);
-  return bundle.lessons.filter((lesson) => isRenderableLesson(lesson));
+  const lessons = bundle.lessons.filter((lesson) => isRenderableLesson(lesson));
+  if (filePath === undefined) {
+    assertTaiwanTravelProductionLessonSet(lessons);
+  }
+  return lessons;
 }

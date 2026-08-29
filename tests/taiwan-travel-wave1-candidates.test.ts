@@ -1537,7 +1537,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     );
   });
 
-  it('fails closed on wrong order, duplicate source IDs, stale graph refs, and production overlap', async () => {
+  it('fails closed on wrong order, duplicate source IDs, and stale graph refs', async () => {
     await expect(
       build(undefined, ({ lessons }) => lessons.reverse()),
     ).rejects.toThrow(/lesson order/);
@@ -1558,11 +1558,6 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       }),
     ).rejects.toThrow(/stale member/);
 
-    await expect(
-      build(undefined, ({ lessons, productionLessons }) => {
-        productionLessons.push(structuredClone(lessons[0]));
-      }),
-    ).rejects.toThrow(/overlaps production/);
   });
 
   it('rejects duplicate Can-Dos and core sentences within or before the wave', async () => {

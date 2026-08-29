@@ -384,6 +384,12 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/taiwan-travel-wave1-candidates.test.ts'],
   },
   {
+    // Taiwan Travel production reconciliation: the exact 24-lesson allowlist
+    // and candidate fingerprint/status guard share the dedicated regression.
+    match: (b) => b === 'taiwantravelwave1production.ts',
+    testGlobs: ['tests/taiwan-travel-production-reconciliation.test.ts'],
+  },
+  {
     match: (b) => b.includes('theme'),
     testGlobs: ['tests/theme-preference.test.ts'],
   },
@@ -524,6 +530,7 @@ export function classifyFiles(files: string[], options: ClassifyOptions = {}): C
     files.some((file) => normalize(file) === TAIWAN_TRAVEL_PRODUCTION_LESSONS_PATH)
   ) {
     affectedTestGlobs.add(TAIWAN_TRAVEL_WAVE1_PACKET_TEST);
+    affectedTestGlobs.add('tests/taiwan-travel-production-reconciliation.test.ts');
     reasons.push(
       `${TAIWAN_TRAVEL_PRODUCTION_LESSONS_PATH}: production baseline → Wave 1 overlap regression`,
     );

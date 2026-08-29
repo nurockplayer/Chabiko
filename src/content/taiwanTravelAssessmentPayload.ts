@@ -7,7 +7,7 @@ import { loadAllRenderableLessons } from './loadLessons';
  *  answer, or options — so the answers stay in the client bundle (lessons
  *  import) and are never leaked into the serialized HTML. */
 export interface TaiwanTravelAssessmentPayload {
-  /** Opaque lesson ids for the frozen 10-question assessment, in lesson order. */
+  /** Opaque lesson ids for the frozen 24-question assessment, in lesson order. */
   readonly lessonIds: readonly string[];
 }
 

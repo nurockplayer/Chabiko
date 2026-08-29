@@ -111,7 +111,7 @@ async function openTaiwanTravelPath(
   await expect(page.locator('[data-taiwan-travel-path]')).toBeVisible();
   await installFixedFont(page);
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-  await expect(page.locator('[data-taiwan-lesson-link]')).toHaveCount(10);
+  await expect(page.locator('[data-taiwan-lesson-link]')).toHaveCount(24);
   await expect(
     page.locator('a[href="/paths/taiwan-travel/quiz/"]'),
   ).toHaveCount(1);
@@ -258,7 +258,7 @@ async function prepareTopCapture(page: Page): Promise<CaptureClip> {
 }
 
 async function prepareEndCapture(page: Page): Promise<CaptureClip> {
-  const finalLesson = page.locator('[data-taiwan-lesson-link="lesson-010"]');
+  const finalLesson = page.locator('[data-taiwan-lesson-link="lesson-024"]');
   const assessment = page.locator('.taiwan-path-assessment');
   await expect(finalLesson).toBeVisible();
   await expect(assessment).toBeVisible();
@@ -274,7 +274,7 @@ async function prepareEndCapture(page: Page): Promise<CaptureClip> {
   expect(viewport).not.toBeNull();
   const previousRowLesson = page.locator(
     `[data-taiwan-lesson-link="${
-      viewport!.width >= 768 ? 'lesson-008' : 'lesson-009'
+      viewport!.width >= 768 ? 'lesson-022' : 'lesson-023'
     }"]`,
   );
   const previousRowBox = await previousRowLesson.boundingBox();
@@ -295,17 +295,17 @@ async function prepareEndCapture(page: Page): Promise<CaptureClip> {
     height: bottom - top,
   };
   const finalLessonEvidence = [
-    '[data-taiwan-lesson-link="lesson-010"]',
+    '[data-taiwan-lesson-link="lesson-024"]',
     ...(clip.width >= 768
-      ? ['[data-taiwan-lesson-link="lesson-009"]']
+      ? ['[data-taiwan-lesson-link="lesson-023"]']
       : []),
   ];
   await assertCaptureInsideViewport(page, clip, [
     ...finalLessonEvidence,
-    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__number',
-    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__title',
-    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__outcome',
-    '[data-taiwan-lesson-link="lesson-010"] .taiwan-path-lesson__action',
+    '[data-taiwan-lesson-link="lesson-024"] .taiwan-path-lesson__number',
+    '[data-taiwan-lesson-link="lesson-024"] .taiwan-path-lesson__title',
+    '[data-taiwan-lesson-link="lesson-024"] .taiwan-path-lesson__outcome',
+    '[data-taiwan-lesson-link="lesson-024"] .taiwan-path-lesson__action',
     '.taiwan-path-assessment',
     '#taiwan-path-assessment-heading',
     '.taiwan-path-assessment__link',
@@ -407,7 +407,7 @@ test.describe('/paths/taiwan-travel/ viewport fragments', () => {
         'light',
         viewport,
       );
-      for (const lessonId of ['lesson-001', 'lesson-010']) {
+      for (const lessonId of ['lesson-001', 'lesson-024']) {
         await assertFragmentInsideViewport(
           page,
           `[data-taiwan-lesson-link="${lessonId}"]`,

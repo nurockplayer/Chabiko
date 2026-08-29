@@ -28,10 +28,10 @@ function createMemoryStorage(
 }
 
 describe('normalizeBestScore', () => {
-  it('bounds a completed score to 0–10', () => {
+  it('bounds a completed score to 0–24', () => {
     expect(normalizeBestScore(0)).toBe(0);
-    expect(normalizeBestScore(10)).toBe(10);
-    expect(normalizeBestScore(11)).toBe(10);
+    expect(normalizeBestScore(24)).toBe(24);
+    expect(normalizeBestScore(25)).toBe(24);
     expect(normalizeBestScore(-1)).toBe(0);
   });
 
@@ -69,11 +69,11 @@ describe('TaiwanTravelAssessmentStore', () => {
     expect(store.readBestScore()).toBe(9);
   });
 
-  it('bounds the recorded score to 0–10', () => {
+  it('bounds the recorded score to 0–24', () => {
     const store = new TaiwanTravelAssessmentStore(createMemoryStorage());
-    expect(store.recordCompletedAttempt(42).bestScore).toBe(10);
-    expect(store.readBestScore()).toBe(10);
-    expect(store.recordCompletedAttempt(-5).bestScore).toBe(10);
+    expect(store.recordCompletedAttempt(42).bestScore).toBe(24);
+    expect(store.readBestScore()).toBe(24);
+    expect(store.recordCompletedAttempt(-5).bestScore).toBe(24);
   });
 
   it('persists the isolated document under the assessment-only key', () => {

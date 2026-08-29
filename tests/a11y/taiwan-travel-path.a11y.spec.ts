@@ -105,8 +105,8 @@ for (const theme of THEMES) {
     await assertWcagAaClean(page);
 
     const lessonLinks = page.locator('[data-taiwan-lesson-link]');
-    await expect(lessonLinks).toHaveCount(10);
-    for (let index = 0; index < 10; index += 1) {
+    await expect(lessonLinks).toHaveCount(24);
+    for (let index = 0; index < 24; index += 1) {
       await expect(lessonLinks.nth(index)).toHaveAccessibleName(
         new RegExp(`^第${index + 1}課 .+を開く$`),
       );
@@ -126,7 +126,7 @@ test('keyboard reaches every lesson in order and the distinct assessment action'
   await page.setViewportSize({ width: 390, height: 844 });
   await openRoute(page, 'light');
   const lessonLinks = page.locator('[data-taiwan-lesson-link]');
-  for (let index = 0; index < 10; index += 1) {
+  for (let index = 0; index < 24; index += 1) {
     const link = lessonLinks.nth(index);
     await tabUntil(page, link);
     await expectVisibleFocus(link);
@@ -151,8 +151,8 @@ for (const viewport of VIEWPORTS) {
     const links = page.locator(
       '[data-taiwan-lesson-link], a[href="/paths/taiwan-travel/quiz/"]',
     );
-    await expect(links).toHaveCount(11);
-    for (let index = 0; index < 11; index += 1) {
+    await expect(links).toHaveCount(25);
+    for (let index = 0; index < 25; index += 1) {
       const box = await links.nth(index).boundingBox();
       expect(box).not.toBeNull();
       expect(box!.width).toBeGreaterThanOrEqual(44);

@@ -18,7 +18,7 @@ export interface TaiwanTravelAssessmentDocument {
   readonly bestScore: number;
 }
 
-/** Bounds an arbitrary value to a valid 0–10 integer score. Non-integers and
+/** Bounds an arbitrary value to a valid 0–24 integer score. Non-integers and
  *  non-numbers normalize to 0 (safe fallback), never to a fabricated value. */
 export function normalizeBestScore(value: unknown): number {
   if (typeof value !== 'number' || !Number.isInteger(value)) return 0;
@@ -45,10 +45,10 @@ function getDefaultStorage(): StorageLike | null {
  * Isolated Taiwan Travel assessment evidence store.
  *
  * Rules (frozen V1 contract):
- * - nothing is written before a full 10-question attempt completes;
+ * - nothing is written before a full 24-question attempt completes;
  * - a completed attempt writes at most once (caller transitions to completed
  *   exactly once and calls {@link recordCompletedAttempt} once);
- * - stored bestScore is max(previousBest, completedScore), bounded 0–10;
+ * - stored bestScore is max(previousBest, completedScore), bounded 0–24;
  * - malformed/unknown-version/unavailable storage falls back safely without
  *   touching lesson progress;
  * - restart does not erase the best score (restart never calls the store).
@@ -73,7 +73,7 @@ export class TaiwanTravelAssessmentStore {
 
   /**
    * Record a completed attempt's score. `bestScore` is max(previousBest,
-   * score) bounded to 0–10 and persisted once. Returns the new best score and
+   * score) bounded to 0–24 and persisted once. Returns the new best score and
    * whether a write actually happened (a write can fail when storage is full
    * or unavailable, which is a safe no-op).
    */

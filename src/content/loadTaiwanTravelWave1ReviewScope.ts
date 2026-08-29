@@ -723,10 +723,6 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
     actualIds.every((id, index) => id === TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS[index]),
     'candidate lesson order must be exactly lesson-011 through lesson-024',
   );
-  const productionIds = new Set(sourceBundle.productionLessons.map((lesson) => lesson.id));
-  for (const id of actualIds) {
-    assert(!productionIds.has(id), `candidate lesson '${id}' overlaps production`);
-  }
   sourceBundle.lessons.forEach(validateLesson);
   const knownLessonIds = new Set([
     ...sourceBundle.productionLessons
@@ -785,10 +781,14 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
   }
 
   const productionCanDos = new Set(
-    sourceBundle.productionLessons.map((lesson) => lesson.canDoJa.trim()),
+    sourceBundle.productionLessons
+      .filter((lesson) => TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS.has(lesson.id))
+      .map((lesson) => lesson.canDoJa.trim()),
   );
   const productionCoreSentences = new Set(
-    sourceBundle.productionLessons.map((lesson) => lesson.coreSentence.trim()),
+    sourceBundle.productionLessons
+      .filter((lesson) => TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS.has(lesson.id))
+      .map((lesson) => lesson.coreSentence.trim()),
   );
   const candidateCanDos = new Set<string>();
   const candidateCoreSentences = new Set<string>();
@@ -1053,7 +1053,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '# Taiwan Travel Wave 1 Human Review Packet',
     '',
     `**Scope:** ${packet.scopeId}`,
-    '**Package state:** isolated candidate content; not linked to the production Taiwan path',
+    '**Package state:** separate review package; production exposure uses a bounded reconciled copy',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
     `**Overall review outcome:** ${overallDecisionOutcome}`,

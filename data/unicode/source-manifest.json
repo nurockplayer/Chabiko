@@ -6,7 +6,7 @@
     {
       "id": "lessons-v1",
       "path": "data/examples/valid/lessons.json",
-      "sha256": "2ed506004448d76320b8a8ab62a4b8035020d1aec478a8085d77dd2c1c38941e",
+      "sha256": "e9449dea64653181636c614e4ddc13e11243dcb1eab483466e95c2c75e642c71",
       "format": "json",
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
@@ -89,7 +89,7 @@
     {
       "id": "learning-paths-v1",
       "path": "data/learning-paths.json",
-      "sha256": "e0d00d4c73b1f14af89d3a9c567e996b1e9af519bb547c8300a917439f408b22",
+      "sha256": "462aba83f90e2cddda8306fe0a3656dcecdcc18a305c6206f91614505b32856a",
       "format": "json",
       "textFields": [
         { "field": "labelJa", "language": "ja" },

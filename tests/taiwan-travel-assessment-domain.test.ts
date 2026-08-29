@@ -56,7 +56,7 @@ function lessonWithUsablePrompts(id: string, offset = 0): Lesson {
   ));
 }
 
-/** The full frozen 10-lesson synthetic corpus, all with usable prompts. */
+/** The full frozen 24-lesson synthetic corpus, all with usable prompts. */
 function fullCorpus(): Lesson[] {
   return TAIWAN_TRAVEL_LESSON_IDS.map((id) => lessonWithUsablePrompts(id));
 }
@@ -88,7 +88,7 @@ function completeAttempt(
 // ─── Coverage / source traceability ─────────────────────────────────────────
 
 describe('buildTaiwanTravelQuestions — frozen coverage contract', () => {
-  it('produces exactly 10 questions, one per lesson in lesson order', () => {
+    it('produces exactly 24 questions, one per lesson in lesson order', () => {
     const questions = buildTaiwanTravelQuestions(fullCorpus());
     expect(questions).toHaveLength(TAIWAN_TRAVEL_QUIZ_LENGTH);
     expect(questions.map((q) => q.lessonId)).toEqual([...TAIWAN_TRAVEL_LESSON_IDS]);
@@ -248,7 +248,7 @@ describe('TaiwanTravelQuiz session', () => {
     expect(scoreOfCompletedAttempt(s)).toBe(s.correctCount);
   });
 
-  it('tallies a bounded 0–10 score with no pass/fail threshold', () => {
+  it('tallies a bounded 0–24 score with no pass/fail threshold', () => {
     const questions = buildTaiwanTravelQuestions(fullCorpus());
     const allCorrect = completeAttempt(questions, questions.map((q) => q.correctIndex));
     expect(scoreOfCompletedAttempt(allCorrect)).toBe(TAIWAN_TRAVEL_MAX_SCORE);

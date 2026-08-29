@@ -279,7 +279,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
       textElement(
         document,
         'taiwan-travel-quiz-completion-score',
-        `10問中 ${score}問正解`,
+        `${total}問中 ${score}問正解`,
         'ja',
       ),
     );

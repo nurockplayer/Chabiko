@@ -1,7 +1,7 @@
 # Taiwan Travel Wave 1 Human Review Packet
 
 **Scope:** taiwan-travel-wave-1-v1
-**Package state:** isolated candidate content; not linked to the production Taiwan path
+**Package state:** separate review package; production exposure uses a bounded reconciled copy
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
 **Review version:** 4aaece4dc4eadd449ca39aff2e7c74b24851202d91125eed9aa3d6e7d5e0ffba
 **Overall review outcome:** {{accepted | rejected | needs-changes}}

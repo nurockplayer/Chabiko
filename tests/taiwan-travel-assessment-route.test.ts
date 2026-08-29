@@ -113,7 +113,7 @@ describe('taiwan travel assessment route', () => {
     expect(client).not.toContain(LESSON_PROGRESS_KEY);
   });
 
-  it('builds a payload of exactly the ten ordered lesson ids', () => {
+  it('builds a payload of exactly the 24 ordered lesson ids', () => {
     const payload = buildTaiwanTravelAssessmentPayload();
     expect(payload.lessonIds).toEqual([
       'lesson-001',
@@ -126,6 +126,20 @@ describe('taiwan travel assessment route', () => {
       'lesson-008',
       'lesson-009',
       'lesson-010',
+      'lesson-011',
+      'lesson-012',
+      'lesson-013',
+      'lesson-014',
+      'lesson-015',
+      'lesson-016',
+      'lesson-017',
+      'lesson-018',
+      'lesson-019',
+      'lesson-020',
+      'lesson-021',
+      'lesson-022',
+      'lesson-023',
+      'lesson-024',
     ]);
     const serialized = serializeTaiwanTravelAssessmentPayload(payload);
     expect(serialized).not.toContain('promptJa');
@@ -260,7 +274,7 @@ describe('taiwan travel assessment client', () => {
     expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBeNull();
   });
 
-  it('advances through all ten questions, shows 10問中 X問正解, and writes once', () => {
+  it('advances through all 24 questions, shows 24問中 X問正解, and writes once', () => {
     const payload = buildTaiwanTravelAssessmentPayload();
     const root = createQuizRoot(payload.lessonIds as string[]);
 
@@ -277,17 +291,17 @@ describe('taiwan travel assessment client', () => {
 
     const card = root.querySelector<HTMLElement>('[data-quiz-card]')!;
     expect(card.querySelector('.taiwan-travel-quiz-completion-title')).not.toBeNull();
-    expect(card.textContent).toContain(`10問中 10問正解`);
-    expect(root.querySelector('[data-quiz-progress]')?.textContent).toBe('10 / 10');
-    expect(root.querySelector('[data-quiz-score]')?.textContent).toBe('正解 10 / 10');
+    expect(card.textContent).toContain(`24問中 24問正解`);
+    expect(root.querySelector('[data-quiz-progress]')?.textContent).toBe('24 / 24');
+    expect(root.querySelector('[data-quiz-score]')?.textContent).toBe('正解 24 / 24');
 
     // Written exactly once for the attempt, with the completed score as the
     // max best score.
     expect(recordSpy).toHaveBeenCalledTimes(1);
-    expect(recordSpy).toHaveBeenCalledWith(10);
+    expect(recordSpy).toHaveBeenCalledWith(24);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 10 });
+    ).toEqual({ version: 1, bestScore: 24 });
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
     recordSpy.mockRestore();
   });
@@ -312,12 +326,12 @@ describe('taiwan travel assessment client', () => {
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
     ).toEqual({ version: 1, bestScore: 0 });
 
-    // Second attempt: all correct → best score rises to 10, never decreases.
+    // Second attempt: all correct → best score rises to 24, never decreases.
     driveFullAttempt(root, true);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 10 });
-    expect(root.querySelector<HTMLElement>('[data-quiz-card]')!.textContent).toContain('ベストスコア 10 / 10');
+    ).toEqual({ version: 1, bestScore: 24 });
+    expect(root.querySelector<HTMLElement>('[data-quiz-card]')!.textContent).toContain('ベストスコア 24 / 24');
   });
 
   it('fails safe on a malformed payload by showing the unavailable state', () => {
