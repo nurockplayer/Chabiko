@@ -136,37 +136,51 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).rejects.toThrow(/non-promotable outcomes drifted/);
   });
 
-  it('represents canonical per-dimension outcomes without treating them as an overall decision', async () => {
+  it('keeps required-role outcomes independent from each other and from the overall decision', async () => {
     const manifest = loadManifest();
-    expect(manifest.dimensions.every((dimension) => dimension.outcome === 'not-reviewed')).toBe(
-      true,
-    );
+    for (const dimension of manifest.dimensions) {
+      expect(dimension).not.toHaveProperty('outcome');
+      expect(
+        dimension.reviewerEvidence.every(
+          (evidence) =>
+            (evidence as unknown as { outcome?: string }).outcome === 'not-reviewed' &&
+            evidence.reviewerIdentity === null &&
+            evidence.reviewDate === null &&
+            evidence.findings === null,
+        ),
+      ).toBe(true);
+    }
 
-    const dimensionOutcomes = [
-      'accepted',
-      'rejected',
-      'needs-changes',
-      'not-reviewed',
-    ] as const;
     const packet = await build((candidateManifest) => {
-      candidateManifest.dimensions.forEach((dimension, index) => {
-        dimension.outcome = dimensionOutcomes[index % dimensionOutcomes.length];
-        if (dimension.outcome !== 'not-reviewed') {
-          dimension.reviewerEvidence = dimension.reviewerEvidence.map(
-            (evidence) => ({
-              ...evidence,
-              reviewerIdentity: `@${evidence.role}`,
-              reviewDate: '2026-08-29',
-              findings: 'None.',
-            }),
-          );
-        }
-      });
+      const evidence = candidateManifest.dimensions[7]
+        .reviewerEvidence as unknown as Array<{
+        role: string;
+        outcome: string;
+        reviewerIdentity: string | null;
+        reviewDate: string | null;
+        findings: string | null;
+      }>;
+      evidence[0] = {
+        ...evidence[0],
+        outcome: 'accepted',
+        reviewerIdentity: '@source-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Source metadata accepted.',
+      };
+      evidence[1] = {
+        ...evidence[1],
+        outcome: 'needs-changes',
+        reviewerIdentity: '@script-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Script verification needs changes.',
+      };
     });
 
-    expect(packet.dimensions.slice(0, 4).map((dimension) => dimension.outcome)).toEqual([
-      ...dimensionOutcomes,
-    ]);
+    expect(
+      packet.dimensions[7].reviewerEvidence.map(
+        (evidence) => (evidence as unknown as { outcome: string }).outcome,
+      ),
+    ).toEqual(['accepted', 'needs-changes']);
     expect(packet.reviewState).toBe('pending-human-review');
     expect(packet.overallDecision).toBeNull();
     expect(packet.decisionCount).toBe(0);
@@ -180,19 +194,13 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
     );
     expect(rendered).toContain(
-      'Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`.',
+      'Each required role records its own outcome independently.',
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | accepted |',
+      '| Source and script provenance correctness | human-source-reviewer | accepted | @source-reviewer | 2026-08-29 | Source metadata accepted. |',
     );
     expect(rendered).toContain(
-      '| Natural Japanese explanation | human-language-reviewer | rejected |',
-    );
-    expect(rendered).toContain(
-      '| Lesson loop and travel usefulness | human-teaching-reviewer | needs-changes |',
-    );
-    expect(rendered).toContain(
-      '| Pinyin and pronunciation guidance | human-language-reviewer, human-teaching-reviewer | not-reviewed |',
+      '| Source and script provenance correctness | human-script-verifier | needs-changes | @script-reviewer | 2026-08-29 | Script verification needs changes. |',
     );
 
     await expect(
@@ -201,28 +209,10 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           string,
           unknown
         >;
-        dimension.outcome = 'pending';
-      }),
-    ).rejects.toThrow(/invalid outcome 'pending'/);
-    await expect(
-      build((candidateManifest) => {
-        const dimension = candidateManifest.dimensions[0] as unknown as Record<
-          string,
-          unknown
-        >;
-        dimension.outcome = 'approved';
-      }),
-    ).rejects.toThrow(/invalid outcome 'approved'/);
-    await expect(
-      build((candidateManifest) => {
-        const dimension = candidateManifest.dimensions[0] as unknown as Record<
-          string,
-          unknown
-        >;
-        dimension.state = 'pending';
+        dimension.outcome = 'accepted';
       }),
     ).rejects.toThrow(
-      /dimension 'natural-taiwan-mandarin' has unknown field 'state'/,
+      /dimension 'natural-taiwan-mandarin' has unknown field 'outcome'/,
     );
   });
 
@@ -267,23 +257,15 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-japanese-explanation'/);
   });
 
-  it('retains complete per-role evidence and requires every authorized role before acceptance', async () => {
+  it('binds each role outcome to complete evidence while keeping promotion separate', async () => {
     const manifest = loadManifest();
     for (const dimension of manifest.dimensions) {
-      const evidence = (
-        dimension as unknown as {
-          reviewerEvidence: Array<{
-            role: string;
-            reviewerIdentity: string | null;
-            reviewDate: string | null;
-            findings: string | null;
-          }>;
-        }
-      ).reviewerEvidence;
+      const evidence = dimension.reviewerEvidence;
       expect(evidence.map(({ role }) => role)).toEqual(dimension.reviewerRoles);
       expect(
         evidence.every(
-          ({ reviewerIdentity, reviewDate, findings }) =>
+          ({ outcome, reviewerIdentity, reviewDate, findings }) =>
+            outcome === 'not-reviewed' &&
             reviewerIdentity === null && reviewDate === null && findings === null,
         ),
       ).toBe(true);
@@ -293,36 +275,36 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       const dimension = candidateManifest.dimensions[0];
       dimension.reviewerEvidence[0] = {
         ...dimension.reviewerEvidence[0],
+        outcome: 'accepted',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
         findings: 'Language review accepted; regional review remains pending.',
       };
     });
-    expect(partiallyReviewed.dimensions[0].outcome).toBe('not-reviewed');
-    expect(partiallyReviewed.dimensions[0].reviewerEvidence[0].reviewerIdentity).toBe(
-      '@language-reviewer',
-    );
-    expect(partiallyReviewed.dimensions[0].reviewerEvidence[1].reviewerIdentity).toBeNull();
+    expect(
+      partiallyReviewed.dimensions[0].reviewerEvidence.map(({ outcome }) => outcome),
+    ).toEqual(['accepted', 'not-reviewed']);
+    expect(partiallyReviewed.promotionAllowed).toBe(false);
 
     const rejectedByOneRole = await build((candidateManifest) => {
       const dimension = candidateManifest.dimensions[0];
-      dimension.outcome = 'rejected';
       dimension.reviewerEvidence[0] = {
         ...dimension.reviewerEvidence[0],
+        outcome: 'rejected',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
         findings: 'Blocking language finding.',
       };
     });
-    expect(rejectedByOneRole.dimensions[0].outcome).toBe('rejected');
+    expect(rejectedByOneRole.dimensions[0].reviewerEvidence[0].outcome).toBe('rejected');
     expect(rejectedByOneRole.promotionAllowed).toBe(false);
 
     await expect(
       build((candidateManifest) => {
-        candidateManifest.dimensions[0].outcome = 'rejected';
+        candidateManifest.dimensions[0].reviewerEvidence[0].outcome = 'rejected';
       }),
     ).rejects.toThrow(
-      /rejected dimension 'natural-taiwan-mandarin' requires evidence from at least one authorized reviewer role/,
+      /rejected reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' requires complete reviewer evidence/,
     );
 
     await expect(
@@ -331,75 +313,73 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '@language-reviewer';
       }),
     ).rejects.toThrow(
-      /reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' must be entirely empty or complete/,
+      /not-reviewed reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' must remain empty/,
     );
 
     await expect(
       build((candidateManifest) => {
-        candidateManifest.dimensions[0].outcome = 'accepted';
+        const evidence = candidateManifest.dimensions[0].reviewerEvidence[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        evidence.outcome = 'pending';
       }),
     ).rejects.toThrow(
-      /accepted dimension 'natural-taiwan-mandarin'.*human-language-reviewer.*complete reviewer evidence/,
+      /reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' has invalid outcome 'pending'/,
     );
 
     await expect(
       build((candidateManifest) => {
-        const dimension = candidateManifest.dimensions[0] as unknown as {
-          outcome: string;
-          reviewerEvidence: Array<{
-            role: string;
-            reviewerIdentity: string | null;
-            reviewDate: string | null;
-            findings: string | null;
-          }>;
-        };
-        dimension.outcome = 'accepted';
-        dimension.reviewerEvidence[0] = {
-          ...dimension.reviewerEvidence[0],
-          reviewerIdentity: '@language-reviewer',
-          reviewDate: '2026-08-29',
-          findings: 'None.',
-        };
+        const evidence = candidateManifest.dimensions[0].reviewerEvidence[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        delete evidence.outcome;
       }),
     ).rejects.toThrow(
-      /accepted dimension 'natural-taiwan-mandarin'.*human-regional-reviewer.*complete reviewer evidence/,
+      /reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' has invalid outcome 'undefined'/,
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].reviewerEvidence[0].outcome = 'accepted';
+      }),
+    ).rejects.toThrow(
+      /accepted reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' requires complete reviewer evidence/,
     );
 
     const accepted = await build((candidateManifest) => {
-      const dimension = candidateManifest.dimensions[0] as unknown as {
-        outcome: string;
-        reviewerEvidence: Array<{
-          role: string;
-          reviewerIdentity: string | null;
-          reviewDate: string | null;
-          findings: string | null;
-        }>;
-      };
-      dimension.outcome = 'accepted';
-      dimension.reviewerEvidence = dimension.reviewerEvidence.map((evidence) => ({
-        ...evidence,
-        reviewerIdentity: `@${evidence.role}`,
-        reviewDate: '2026-08-29',
-        findings: 'None.',
-      }));
+      candidateManifest.dimensions.forEach((dimension) => {
+        dimension.reviewerEvidence = dimension.reviewerEvidence.map((evidence) => ({
+          ...evidence,
+          outcome: 'accepted',
+          reviewerIdentity: `@${evidence.role}`,
+          reviewDate: '2026-08-29',
+          findings: 'None.',
+        }));
+      });
     });
-    expect(accepted.dimensions[0].outcome).toBe('accepted');
+    expect(
+      accepted.dimensions.every((dimension) =>
+        dimension.reviewerEvidence.every(({ outcome }) => outcome === 'accepted'),
+      ),
+    ).toBe(true);
     expect(accepted.overallDecision).toBeNull();
     expect(accepted.promotionAllowed).toBe(false);
 
     await expect(
       build((candidateManifest) => {
-        const dimension = candidateManifest.dimensions[1];
-        dimension.outcome = 'accepted';
-        dimension.reviewerEvidence[0] = {
-          ...dimension.reviewerEvidence[0],
+        const evidence = candidateManifest.dimensions[1].reviewerEvidence[0];
+        candidateManifest.dimensions[1].reviewerEvidence[0] = {
+          ...evidence,
+          outcome: 'accepted',
           reviewerIdentity: '@language-reviewer',
           reviewDate: '2026-02-30',
           findings: 'None.',
         };
       }),
     ).rejects.toThrow(
-      /accepted dimension 'natural-japanese-explanation'.*valid ISO review date/,
+      /accepted reviewer evidence 'natural-japanese-explanation:human-language-reviewer' requires a valid ISO review date/,
     );
   });
 
@@ -847,23 +827,22 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | not-reviewed |',
+      '| Natural Taiwan Mandarin | human-language-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} |',
     );
     expect(rendered).not.toContain('**Reviewer identity:**');
     expect(rendered).not.toContain('**Reviewer role:**');
     expect(rendered).not.toContain('**Review date:**');
-    expect(rendered).toContain('## Per-role review evidence');
     expect(rendered).toContain(
-      'A dimension may be accepted only after every required role has its own complete identity, ISO date, and findings evidence; a global reviewer identity is not sufficient.',
+      'Each required role records its own outcome independently.',
     );
     expect(rendered).toContain(
-      'A completed role row may be retained while other required roles remain pending; one authorized role may record rejected or needs-changes with its own complete evidence.',
+      'Mixed outcomes in a multi-role dimension are retained and remain non-promotable',
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-language-reviewer | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |',
+      '| Natural Taiwan Mandarin | human-language-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |',
     );
     expect(rendered).toContain(
-      '| Natural Taiwan Mandarin | human-regional-reviewer | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |',
+      '| Natural Taiwan Mandarin | human-regional-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |',
     );
     expect(rendered).toContain('human language, teaching, and regional review remain pending');
     for (const record of packet.records) {
@@ -1001,7 +980,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     }
   });
 
-  it('rebuild command rejects reviewer-role and dual-role evidence drift without replacing output', () => {
+  it('rebuild command rejects reviewer-role and outcome-contract drift without replacing output', () => {
     const cases: Array<{
       name: string;
       mutate: (manifest: TaiwanTravelWave1ReviewScopeManifest) => void;
@@ -1022,19 +1001,29 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         expectedError: /reviewer roles drifted for dimension 'natural-taiwan-mandarin'/,
       },
       {
-        name: 'accepted dual-role dimension with one role missing evidence',
+        name: 'accepted role with incomplete evidence',
         mutate: (manifest) => {
-          const dimension = manifest.dimensions[0];
-          dimension.outcome = 'accepted';
-          dimension.reviewerEvidence[0] = {
-            ...dimension.reviewerEvidence[0],
-            reviewerIdentity: '@language-reviewer',
-            reviewDate: '2026-08-29',
-            findings: 'None.',
-          };
+          manifest.dimensions[0].reviewerEvidence[0].outcome = 'accepted';
         },
         expectedError:
-          /accepted dimension 'natural-taiwan-mandarin'.*human-regional-reviewer.*complete reviewer evidence/,
+          /accepted reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' requires complete reviewer evidence/,
+      },
+      {
+        name: 'conflicting legacy shared outcome',
+        mutate: (manifest) => {
+          const dimension = manifest.dimensions[7];
+          dimension.reviewerEvidence[0] = {
+            ...dimension.reviewerEvidence[0],
+            outcome: 'accepted',
+            reviewerIdentity: '@source-reviewer',
+            reviewDate: '2026-08-29',
+            findings: 'Source metadata accepted.',
+          };
+          const legacyDimension = dimension as unknown as Record<string, unknown>;
+          legacyDimension.outcome = 'rejected';
+        },
+        expectedError:
+          /dimension 'source-and-script-provenance' has unknown field 'outcome'/,
       },
     ];
 

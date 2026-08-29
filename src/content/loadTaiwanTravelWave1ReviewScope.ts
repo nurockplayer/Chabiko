@@ -74,7 +74,7 @@ const REVIEWER_ROLE_MATRIX = {
   ReviewDimensionId,
   readonly TaiwanTravelWave1ReviewerRole[]
 >;
-const REVIEW_DIMENSION_OUTCOMES = [
+const REVIEW_OUTCOMES = [
   'accepted',
   'rejected',
   'needs-changes',
@@ -89,8 +89,7 @@ const REVIEWER_ROLES = new Set<TaiwanTravelWave1ReviewerRole>([
   'maintainer',
 ]);
 
-export type TaiwanTravelWave1ReviewDimensionOutcome =
-  (typeof REVIEW_DIMENSION_OUTCOMES)[number];
+export type TaiwanTravelWave1ReviewOutcome = (typeof REVIEW_OUTCOMES)[number];
 
 export interface TaiwanTravelWave1ScopeRecord {
   collection: 'lessons';
@@ -104,11 +103,11 @@ export interface TaiwanTravelWave1ReviewDimension {
   label: string;
   reviewerRoles: TaiwanTravelWave1ReviewerRole[];
   reviewerEvidence: TaiwanTravelWave1ReviewerEvidence[];
-  outcome: TaiwanTravelWave1ReviewDimensionOutcome;
 }
 
 export interface TaiwanTravelWave1ReviewerEvidence {
   role: TaiwanTravelWave1ReviewerRole;
+  outcome: TaiwanTravelWave1ReviewOutcome;
   reviewerIdentity: string | null;
   reviewDate: string | null;
   findings: string | null;
@@ -158,7 +157,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   dimensions: TaiwanTravelWave1ReviewDimension[];
   records: TaiwanTravelWave1ReviewRecord[];
   scenarioDistribution: typeof TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION;
-  overallDecision: Exclude<TaiwanTravelWave1ReviewDimensionOutcome, 'not-reviewed'> | null;
+  overallDecision: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'> | null;
   decisionCount: 0;
   promotionAllowed: false;
   productionLinked: false;
@@ -274,15 +273,11 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
     const dimension = manifest.dimensions[index];
     validateExactKeys(
       dimension,
-      ['id', 'label', 'reviewerRoles', 'reviewerEvidence', 'outcome'],
+      ['id', 'label', 'reviewerRoles', 'reviewerEvidence'],
       `dimension '${expectedId}'`,
     );
     assert(dimension?.id === expectedId, `review dimension order drifted at '${expectedId}'`);
     assert(isNonEmptyString(dimension.label), `dimension '${expectedId}' has no label`);
-    assert(
-      (REVIEW_DIMENSION_OUTCOMES as readonly unknown[]).includes(dimension.outcome),
-      `dimension '${expectedId}' has invalid outcome '${String(dimension.outcome)}'`,
-    );
     assert(
       Array.isArray(dimension.reviewerRoles) && dimension.reviewerRoles.length > 0,
       `dimension '${expectedId}' has no reviewer roles`,
@@ -301,17 +296,20 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
         dimension.reviewerEvidence.length === expectedRoles.length,
       `reviewer evidence roles drifted for dimension '${expectedId}'`,
     );
-    let completeEvidenceCount = 0;
     for (const [evidenceIndex, expectedRole] of expectedRoles.entries()) {
       const evidence = dimension.reviewerEvidence[evidenceIndex];
       validateExactKeys(
         evidence,
-        ['role', 'reviewerIdentity', 'reviewDate', 'findings'],
+        ['role', 'outcome', 'reviewerIdentity', 'reviewDate', 'findings'],
         `reviewer evidence '${expectedId}:${expectedRole}'`,
       );
       assert(
         evidence.role === expectedRole,
         `reviewer evidence roles drifted for dimension '${expectedId}'`,
+      );
+      assert(
+        (REVIEW_OUTCOMES as readonly unknown[]).includes(evidence.outcome),
+        `reviewer evidence '${expectedId}:${expectedRole}' has invalid outcome '${String(evidence.outcome)}'`,
       );
       const hasCompleteFields =
         isNonEmptyString(evidence.reviewerIdentity) &&
@@ -321,29 +319,21 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
         evidence.reviewerIdentity === null &&
         evidence.reviewDate === null &&
         evidence.findings === null;
-      assert(
-        isEmpty || hasCompleteFields,
-        `reviewer evidence '${expectedId}:${expectedRole}' must be entirely empty or complete`,
-      );
-      if (hasCompleteFields) {
-        completeEvidenceCount += 1;
+      if (evidence.outcome === 'not-reviewed') {
         assert(
-          isIsoCalendarDate(evidence.reviewDate ?? ''),
-          `${dimension.outcome} dimension '${expectedId}' role '${expectedRole}' requires a valid ISO review date`,
+          isEmpty,
+          `not-reviewed reviewer evidence '${expectedId}:${expectedRole}' must remain empty`,
         );
-      }
-      if (dimension.outcome === 'accepted') {
+      } else {
         assert(
           hasCompleteFields,
-          `${dimension.outcome} dimension '${expectedId}' role '${expectedRole}' requires complete reviewer evidence`,
+          `${evidence.outcome} reviewer evidence '${expectedId}:${expectedRole}' requires complete reviewer evidence`,
+        );
+        assert(
+          isIsoCalendarDate(evidence.reviewDate ?? ''),
+          `${evidence.outcome} reviewer evidence '${expectedId}:${expectedRole}' requires a valid ISO review date`,
         );
       }
-    }
-    if (dimension.outcome === 'rejected' || dimension.outcome === 'needs-changes') {
-      assert(
-        completeEvidenceCount > 0,
-        `${dimension.outcome} dimension '${expectedId}' requires evidence from at least one authorized reviewer role`,
-      );
     }
   }
 
@@ -665,12 +655,6 @@ function markdownCell(value: string): string {
 export function renderTaiwanTravelWave1ReviewPacket(
   packet: TaiwanTravelWave1ReviewPacket,
 ): string {
-  const dimensionRows = packet.dimensions
-    .map(
-      (dimension) =>
-        `| ${markdownCell(dimension.label)} | ${dimension.reviewerRoles.join(', ')} | ${dimension.outcome} |`,
-    )
-    .join('\n');
   const evidenceRows = packet.dimensions
     .flatMap((dimension) =>
       dimension.reviewerEvidence.map((evidence) => {
@@ -687,7 +671,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
           evidence.findings === null
             ? `{{${placeholderPrefix}__FINDINGS_OR_None.}}`
             : markdownCell(evidence.findings);
-        return `| ${markdownCell(dimension.label)} | ${evidence.role} | ${reviewerIdentity} | ${reviewDate} | ${findings} |`;
+        return `| ${markdownCell(dimension.label)} | ${evidence.role} | ${evidence.outcome} | ${reviewerIdentity} | ${reviewDate} | ${findings} |`;
       }),
     )
     .join('\n');
@@ -723,19 +707,12 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '',
     '## Approval Scope',
     '',
-    'Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`. The committed manifest starts at `not-reviewed`; a per-dimension outcome does not set the separate overall decision or authorize promotion.',
+    'Each required role records its own outcome independently. Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`. The committed manifest starts with every role at `not-reviewed`; role outcomes do not set the separate overall decision or authorize promotion.',
     '',
-    '| Dimension | Reviewer roles | Outcome |',
-    '|---|---|---|',
-    dimensionRows,
+    'Every accepted, rejected, or needs-changes role outcome requires complete identity, valid ISO date, and findings evidence. A not-reviewed role must keep all evidence fields empty. Mixed outcomes in a multi-role dimension are retained and remain non-promotable; a global reviewer identity is not sufficient.',
     '',
-    '## Per-role review evidence',
-    '',
-    'A dimension may be accepted only after every required role has its own complete identity, ISO date, and findings evidence; a global reviewer identity is not sufficient.',
-    'A completed role row may be retained while other required roles remain pending; one authorized role may record rejected or needs-changes with its own complete evidence.',
-    '',
-    '| Dimension | Reviewer role | Reviewer identity | Review date | Findings |',
-    '|---|---|---|---|---|',
+    '| Dimension | Reviewer role | Outcome | Reviewer identity | Review date | Findings |',
+    '|---|---|---|---|---|---|',
     evidenceRows,
     '',
     '## Exact lesson versions',
@@ -749,7 +726,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '- All 14 lessons remain `reviewStatus: "draft"`.',
     '- Script provenance for the candidate examples remains `generated`.',
     '- Technical validation does not constitute a human content decision.',
-    '- Rejected, needs-changes, and not-reviewed dimensions remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, all required dimensions accepted, an overall accepted outcome, and a separate maintainer action.',
+    '- Rejected, needs-changes, and not-reviewed role outcomes remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, every required role accepted with complete evidence, an independent overall accepted outcome, and a separate maintainer action.',
     '- The human language, teaching, and regional review remain pending, as do source/provenance and script verification.',
     '',
     '## Unresolved Issues',

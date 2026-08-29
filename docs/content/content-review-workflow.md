@@ -203,16 +203,18 @@ manifest and generated packet must keep the exact required role set for each
 dimension. Missing, extra, duplicated, or reordered roles are validation
 failures.
 
-Each required role has its own evidence row with reviewer identity, ISO 8601
-review date, and findings. A person acting in two roles must fill and retain
-both role rows; top-level or global reviewer identity fields cannot substitute
-for either row. Every populated role row must be complete. A dimension may use
-`accepted` only when every required role has complete evidence. One authorized
-role may record `rejected` or `needs-changes` with its complete evidence while
-other required roles remain pending; likewise, a `not-reviewed` dimension may
-retain completed individual role rows while it awaits the rest. The checked-in
-initial state keeps every outcome `not-reviewed` and every evidence value null;
-it remains non-promotable.
+Each required role has its own evidence row with an independent outcome,
+reviewer identity, ISO 8601 review date, and findings. A person acting in two
+roles must fill and retain both role rows; top-level or global reviewer
+identity fields cannot substitute for either row. There is no shared dimension
+outcome: multi-role dimensions may retain mixed role outcomes without one role
+overwriting another. An `accepted`, `rejected`, or `needs-changes` role outcome
+requires complete identity, a valid review date, and findings. A `not-reviewed`
+role must keep all evidence fields empty. Any pending or negative role keeps
+the package non-promotable. Even when every required role is accepted,
+promotion still requires a separate overall accepted decision and maintainer
+action. The checked-in initial state keeps every role outcome `not-reviewed`
+and every evidence value null.
 
 ---
 

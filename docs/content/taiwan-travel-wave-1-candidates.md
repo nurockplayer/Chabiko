@@ -113,7 +113,7 @@ fingerprints.
 The resolver fails closed on wrong count/order/scenario coverage, duplicate or
 stale references, production ID overlap, non-draft records, malformed rich
 lesson sections, unusable prompts, source-path drift, unsupported review
-dimension outcomes, and generated packet drift. Per-dimension outcomes use the
+role outcomes, and generated packet drift. Per-role outcomes use the
 canonical `accepted`, `rejected`, `needs-changes`, and `not-reviewed` values.
 They remain separate from the packet's top-level overall decision and cannot
 independently authorize promotion.
@@ -136,15 +136,17 @@ closed.
 | Source and script provenance correctness | `human-source-reviewer`, `human-script-verifier` |
 
 Every dimension also carries one `reviewerEvidence` entry per required role,
-in the same order. Checked-in entries have null identity, date, and findings
-because no human review has occurred. The generated packet expands them into
-separate fillable rows. Every populated role row requires complete identity,
-ISO date, and findings evidence. A dual-role dimension cannot be accepted after
-only one role signs, but it may retain one role's complete evidence while the
-other role is pending, and one authorized role may record a blocking
-`rejected` or `needs-changes` result. A global reviewer identity does not
-substitute for per-role evidence. These fields participate in the packet
-`reviewVersion`; they do not change lesson fingerprints.
+in the same order. Each row owns its outcome independently; there is no shared
+dimension outcome that can contradict the required roles. Checked-in entries
+use `not-reviewed` with null identity, date, and findings because no human
+review has occurred. An `accepted`, `rejected`, or `needs-changes` row requires
+complete identity, a valid ISO date, and findings; a `not-reviewed` row must
+remain empty. Mixed outcomes in a multi-role dimension are retained and remain
+non-promotable. Even when every required role is accepted, promotion still
+requires a separate overall accepted decision and maintainer action. A global
+reviewer identity does not substitute for per-role evidence. These fields
+participate in the packet `reviewVersion`; they do not change lesson
+fingerprints.
 
 ## Canonical rebuild
 
@@ -168,5 +170,5 @@ uv run python scripts/validate-content-schema.py --check data/content-pilots/tai
 
 Technical validation is not human approval. All records stay `draft`, example
 script forms stay `generated`, and the generated packet keeps every review
-dimension truthfully `not-reviewed` while providing fillable per-dimension and
-overall outcome fields for humans reviewing its exact versions.
+role truthfully `not-reviewed` while providing fillable per-role and overall
+outcome fields for humans reviewing its exact versions.

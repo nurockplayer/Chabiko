@@ -16,75 +16,67 @@
       "label": "Natural Taiwan Mandarin",
       "reviewerRoles": ["human-language-reviewer", "human-regional-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-language-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null },
-        { "role": "human-regional-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-language-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null },
+        { "role": "human-regional-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "natural-japanese-explanation",
       "label": "Natural Japanese explanation",
       "reviewerRoles": ["human-language-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-language-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-language-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "lesson-loop-usefulness",
       "label": "Lesson loop and travel usefulness",
       "reviewerRoles": ["human-teaching-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-teaching-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-teaching-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "pronunciation-guidance",
       "label": "Pinyin and pronunciation guidance",
       "reviewerRoles": ["human-language-reviewer", "human-teaching-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-language-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null },
-        { "role": "human-teaching-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-language-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null },
+        { "role": "human-teaching-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "kanji-bridge-accuracy",
       "label": "Kanji bridge accuracy",
       "reviewerRoles": ["human-teaching-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-teaching-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-teaching-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "exercise-quality",
       "label": "Review prompt quality",
       "reviewerRoles": ["human-teaching-reviewer"],
       "reviewerEvidence": [
-        { "role": "human-teaching-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-teaching-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "graph-and-scope-correctness",
       "label": "Graph, identity, order, and scope correctness",
       "reviewerRoles": ["maintainer"],
       "reviewerEvidence": [
-        { "role": "maintainer", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "maintainer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     },
     {
       "id": "source-and-script-provenance",
       "label": "Source and script provenance correctness",
       "reviewerRoles": ["human-source-reviewer", "human-script-verifier"],
       "reviewerEvidence": [
-        { "role": "human-source-reviewer", "reviewerIdentity": null, "reviewDate": null, "findings": null },
-        { "role": "human-script-verifier", "reviewerIdentity": null, "reviewDate": null, "findings": null }
-      ],
-      "outcome": "not-reviewed"
+        { "role": "human-source-reviewer", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null },
+        { "role": "human-script-verifier", "outcome": "not-reviewed", "reviewerIdentity": null, "reviewDate": null, "findings": null }
+      ]
     }
   ],
   "records": [
