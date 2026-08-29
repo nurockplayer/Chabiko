@@ -611,16 +611,46 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
       `lesson '${lesson.id}'.reviewHookJa must be distinct within the candidate package`,
     );
     reviewHooks.add(reviewHook);
-    const targetMatch = /第(\d+)課/.exec(reviewHook);
-    assert(
-      targetMatch !== null,
-      `lesson '${lesson.id}'.reviewHookJa must name a concrete 第N課 review target`,
+    const lessonNumber = Number(lesson.id.slice(-3));
+    const targetNumbers = [...reviewHook.matchAll(/第(\d+)課/g)].map((match) =>
+      Number(match[1]),
     );
-    const targetId = `lesson-${String(Number(targetMatch[1])).padStart(3, '0')}`;
-    assert(
-      targetId !== lesson.id && knownLessonIds.has(targetId),
-      `lesson '${lesson.id}'.reviewHookJa has unresolved review target '${targetId}'`,
+    const postReviewMarker = /^【第(\d+)課後の(?:場面|コース)復習】/.exec(
+      reviewHook,
     );
+    if (postReviewMarker !== null) {
+      assert(
+        Number(postReviewMarker[1]) === lessonNumber,
+        `lesson '${lesson.id}'.reviewHookJa post-review marker must name its own lesson`,
+      );
+      for (const targetNumber of targetNumbers.slice(1)) {
+        const targetId = `lesson-${String(targetNumber).padStart(3, '0')}`;
+        assert(
+          knownLessonIds.has(targetId),
+          `lesson '${lesson.id}'.reviewHookJa has unresolved review target '${targetId}'`,
+        );
+      }
+      assert(
+        targetNumbers.length === 1,
+        `lesson '${lesson.id}'.reviewHookJa post-review marker must not name another lesson`,
+      );
+      continue;
+    }
+    assert(
+      targetNumbers.length > 0,
+      `lesson '${lesson.id}'.reviewHookJa must name a concrete later 第N課 review target`,
+    );
+    for (const targetNumber of targetNumbers) {
+      const targetId = `lesson-${String(targetNumber).padStart(3, '0')}`;
+      assert(
+        knownLessonIds.has(targetId),
+        `lesson '${lesson.id}'.reviewHookJa has unresolved review target '${targetId}'`,
+      );
+      assert(
+        targetNumber > lessonNumber,
+        `lesson '${lesson.id}'.reviewHookJa must point to a later candidate lesson`,
+      );
+    }
   }
 
   const productionCanDos = new Set(

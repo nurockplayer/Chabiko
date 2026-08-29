@@ -93,13 +93,17 @@ the matching full-file blob IDs additionally cover fields outside it.
 | `lesson-024` | social (1) | Give a short name-and-origin introduction |
 
 Every candidate includes the canonical lesson-loop step 9 as a short Japanese
-`reviewHookJa`. Each hook names a real `第N課` in the production or Wave-1
-package and says which phrase or contrast will return there. The Wave loader
-requires all 14 hooks to be non-empty and distinct, and the focused test
-resolves every referenced lesson ID before packet construction. The shared
-lesson contract keeps this field optional for the existing production lessons;
-when present, the shared TypeScript loader and Python schema both reject an
-empty or malformed value.
+`reviewHookJa`. A lesson-reference hook names a strictly later Wave-1 `第N課`
+and says which phrase, situation, or contrast will return there. When no later
+lesson provides a truthful return point, the hook starts with the explicit
+`【第N課後の場面復習】` or `【第N課後のコース復習】` marker and describes a
+post-lesson review activity without claiming that a new route or Travel Quest
+artifact exists. The Wave loader requires all 14 hooks to be non-empty and
+distinct, rejects self/backward/unresolved/out-of-range lesson references, and
+allows a post-review marker only for its own lesson with no second lesson
+reference. The shared lesson contract keeps this field optional for the
+existing production lessons; when present, the shared TypeScript loader and
+Python schema both reject an empty or malformed value.
 
 The lesson-only `social` scenario is intentionally not added to phrasebook,
 dialog, roleplay, vocabulary, sentence, or practice scenario vocabularies.

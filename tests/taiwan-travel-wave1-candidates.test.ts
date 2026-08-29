@@ -111,23 +111,65 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.decisionCount).toBe(0);
   });
 
-  it('completes lesson-loop step 9 with distinct review hooks that resolve to real lessons', async () => {
+  it('completes lesson-loop step 9 with distinct future review hooks', async () => {
     const sources = loadSourceBundle();
-    const knownLessonIds = new Set(
-      [...sources.productionLessons, ...sources.lessons].map((lesson) => lesson.id),
-    );
+    const candidateLessonIds = new Set(sources.lessons.map((lesson) => lesson.id));
+    const correctedHooks = new Map([
+      [
+        'lesson-014',
+        '第18課では、店員への声かけで同じ「請問」をもう一度使います。',
+      ],
+      [
+        'lesson-016',
+        '第17課では、同じ飲食店の場面で「請問」から始め、持ち帰りの包装を頼みます。',
+      ],
+      [
+        'lesson-019',
+        '第20課では、同じ「請問，可以〜嗎？」で荷物を預けられるか尋ねます。',
+      ],
+      [
+        'lesson-021',
+        '第22課では、困った状況を伝えたあと、「可以幫我嗎？」で助けを求めます。',
+      ],
+      [
+        'lesson-023',
+        '【第23課後の場面復習】「可以幫我嗎？」と「請幫我叫救護車」を使い分け、必要な助けを具体的に頼む練習をします。',
+      ],
+      [
+        'lesson-024',
+        '【第24課後のコース復習】自己紹介の「我叫〜，從日本來」に、聞き取れないときの「可以再說慢一點嗎？」を続けて使う練習をします。',
+      ],
+    ]);
     const reviewHooks = sources.lessons.map((lesson) => {
       const reviewHookJa = (lesson as unknown as { reviewHookJa?: unknown })
         .reviewHookJa;
       expect(reviewHookJa).toEqual(expect.any(String));
       expect(String(reviewHookJa).trim().length).toBeGreaterThan(0);
-      const target = /第(\d+)課/.exec(String(reviewHookJa));
-      expect(target).not.toBeNull();
-      const targetId = `lesson-${String(Number(target?.[1])).padStart(3, '0')}`;
-      expect(knownLessonIds).toContain(targetId);
-      expect(targetId).not.toBe(lesson.id);
+      if (correctedHooks.has(lesson.id)) {
+        expect(reviewHookJa).toBe(correctedHooks.get(lesson.id));
+      }
+      const currentNumber = Number(lesson.id.slice(-3));
+      const targets = [...String(reviewHookJa).matchAll(/第(\d+)課/g)].map(
+        (match) => Number(match[1]),
+      );
+      const postReview = /^【第(\d+)課後の(?:場面|コース)復習】/.exec(
+        String(reviewHookJa),
+      );
+      if (postReview === null) {
+        expect(targets.length).toBeGreaterThan(0);
+        for (const target of targets) {
+          expect(target).toBeGreaterThan(currentNumber);
+          expect(candidateLessonIds).toContain(
+            `lesson-${String(target).padStart(3, '0')}`,
+          );
+        }
+      } else {
+        expect(Number(postReview[1])).toBe(currentNumber);
+        expect(targets).toEqual([currentNumber]);
+      }
       return String(reviewHookJa);
     });
+    expect(correctedHooks.size).toBe(6);
     expect(new Set(reviewHooks).size).toBe(14);
     const sharedLoaderLessons = loadAllRenderableLessons(
       resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
@@ -173,6 +215,33 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       }),
     ).rejects.toThrow(
       /lesson 'lesson-011'\.reviewHookJa has unresolved review target 'lesson-025'/,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.lessons[3].reviewHookJa =
+          '第13課で同じ表現をもう一度使います。';
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-014'\.reviewHookJa must point to a later candidate lesson/,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.lessons[0].reviewHookJa =
+          '第11課で同じ表現をもう一度使います。';
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-011'\.reviewHookJa must point to a later candidate lesson/,
+    );
+
+    await expect(
+      build(undefined, (candidateSources) => {
+        candidateSources.lessons[12].reviewHookJa =
+          '【第23課後の場面復習】第22課の依頼表現も比べます。';
+      }),
+    ).rejects.toThrow(
+      /lesson 'lesson-023'\.reviewHookJa post-review marker must not name another lesson/,
     );
 
     await expect(

@@ -144,7 +144,7 @@
         { "promptJa": "「どの駅で」に当たる部分は？", "answerJa": "在哪一站", "distractorsJa": ["我要", "請問"] }
       ],
       "travelTask": "路線図で目的地を示し、「請問，我要在哪一站轉車？」と尋ね、相手が示した駅名を画面や表示でも確認しよう。",
-      "reviewHookJa": "第13課の目的地確認に戻り、乗る便と乗換駅を続けて確かめます。",
+      "reviewHookJa": "第18課では、店員への声かけで同じ「請問」をもう一度使います。",
       "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
       "reviewStatus": "draft"
     },
@@ -218,7 +218,7 @@
         { "promptJa": "「這道菜」の「道」は何のため？", "answerJa": "料理を数えるため", "distractorsJa": ["人を数えるため", "乗り物を数えるため"] }
       ],
       "travelTask": "避けたい食材を文字でも示し、料理を指して「請問，這道菜有花生嗎？」と尋ねよう。重要な食事制限では別の確認手段も併用する。",
-      "reviewHookJa": "第15課の「有位子嗎？」に戻り、「有〜嗎？」で有無を聞く型を比べます。",
+      "reviewHookJa": "第17課では、同じ飲食店の場面で「請問」から始め、持ち帰りの包装を頼みます。",
       "painPointTags": ["measure-word", "tone", "same-kanji-different-usage"],
       "reviewStatus": "draft"
     },
@@ -329,7 +329,7 @@
         { "promptJa": "「私にください」に当たる部分は？", "answerJa": "給我", "distractorsJa": ["請問", "收據"] }
       ],
       "travelTask": "支払い後、必要なら「請問，可以給我收據嗎？」と頼み、書類名が伝わりにくければ文字も見せよう。",
-      "reviewHookJa": "第18課の「可以〜嗎？」に戻り、許可と依頼の使い方を比べます。",
+      "reviewHookJa": "第20課では、同じ「請問，可以〜嗎？」で荷物を預けられるか尋ねます。",
       "painPointTags": ["word-order", "tone", "same-kanji-different-usage"],
       "reviewStatus": "draft"
     },
@@ -403,7 +403,7 @@
         { "promptJa": "「使えません」に当たる部分は？", "answerJa": "不能用", "distractorsJa": ["我的", "可以"] }
       ],
       "travelTask": "カードキーと部屋番号を確認できるものを持って受付へ行き、「我的房卡不能用。可以幫我看看嗎？」と状況確認を頼もう。",
-      "reviewHookJa": "第20課のホテル場面に戻り、受付で「可以〜嗎？」と「不能用」を使い分けます。",
+      "reviewHookJa": "第22課では、困った状況を伝えたあと、「可以幫我嗎？」で助けを求めます。",
       "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
       "reviewStatus": "draft"
     },
@@ -477,7 +477,7 @@
         { "promptJa": "「呼んでください」に当たる部分は？", "answerJa": "請幫我叫", "distractorsJa": ["有人", "受傷了"] }
       ],
       "travelTask": "緊急時に周囲へ向けて「請幫我叫救護車」とはっきり言う練習をし、可能なら現在地や誰が助けを必要としているかも示せるよう準備しよう。",
-      "reviewHookJa": "第22課の「可以幫我嗎？」に戻り、一般的な助けと具体的な依頼を比べます。",
+      "reviewHookJa": "【第23課後の場面復習】「可以幫我嗎？」と「請幫我叫救護車」を使い分け、必要な助けを具体的に頼む練習をします。",
       "painPointTags": ["tone", "pinyin-pronunciation", "word-order"],
       "reviewStatus": "draft"
     },
@@ -514,7 +514,7 @@
         { "promptJa": "「從日本來」は何を伝える？", "answerJa": "日本から来たこと", "distractorsJa": ["日本へ帰ること", "日本語を教えること"] }
       ],
       "travelTask": "自分の名前に差し替えて「你好，我叫〜，從日本來」と声に出し、相手の名前を聞き返す前の短い自己紹介を練習しよう。",
-      "reviewHookJa": "第9課では、自己紹介の返事が聞き取れないときに「可以再說慢一點嗎？」をもう一度使います。",
+      "reviewHookJa": "【第24課後のコース復習】自己紹介の「我叫〜，從日本來」に、聞き取れないときの「可以再說慢一點嗎？」を続けて使う練習をします。",
       "painPointTags": ["word-order", "tone", "pinyin-pronunciation"],
       "reviewStatus": "draft"
     }
