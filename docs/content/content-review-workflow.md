@@ -195,6 +195,25 @@ Each human review must be performed under one or more of the following roles. A 
 
 **Important:** A single person performing multiple roles must record each role separately in the artifact (e.g., `human-language-reviewer` and `human-script-verifier` both performed by `@nurockplayer`). The `maintainer` role cannot approve language accuracy; that requires `human-language-reviewer`.
 
+### 4.1 Per-dimension role evidence for Taiwan Travel Wave 1
+
+The Taiwan Travel Wave 1 scope treats each dimension's ordered
+`reviewerRoles` list as an authorization allowlist, not a suggestion. The
+manifest and generated packet must keep the exact required role set for each
+dimension. Missing, extra, duplicated, or reordered roles are validation
+failures.
+
+Each required role has its own evidence row with reviewer identity, ISO 8601
+review date, and findings. A person acting in two roles must fill and retain
+both role rows; top-level or global reviewer identity fields cannot substitute
+for either row. Every populated role row must be complete. A dimension may use
+`accepted` only when every required role has complete evidence. One authorized
+role may record `rejected` or `needs-changes` with its complete evidence while
+other required roles remain pending; likewise, a `not-reviewed` dimension may
+retain completed individual role rows while it awaits the rest. The checked-in
+initial state keeps every outcome `not-reviewed` and every evidence value null;
+it remains non-promotable.
+
 ---
 
 ## 5. Review Checklists

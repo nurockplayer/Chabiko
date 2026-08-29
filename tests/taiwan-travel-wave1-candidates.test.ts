@@ -151,6 +151,16 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     const packet = await build((candidateManifest) => {
       candidateManifest.dimensions.forEach((dimension, index) => {
         dimension.outcome = dimensionOutcomes[index % dimensionOutcomes.length];
+        if (dimension.outcome !== 'not-reviewed') {
+          dimension.reviewerEvidence = dimension.reviewerEvidence.map(
+            (evidence) => ({
+              ...evidence,
+              reviewerIdentity: `@${evidence.role}`,
+              reviewDate: '2026-08-29',
+              findings: 'None.',
+            }),
+          );
+        }
       });
     });
 
@@ -216,6 +226,183 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     );
   });
 
+  it('authorizes each review dimension through its exact ordered reviewer-role set', async () => {
+    const expectedRoles = new Map([
+      ['natural-taiwan-mandarin', ['human-language-reviewer', 'human-regional-reviewer']],
+      ['natural-japanese-explanation', ['human-language-reviewer']],
+      ['lesson-loop-usefulness', ['human-teaching-reviewer']],
+      ['pronunciation-guidance', ['human-language-reviewer', 'human-teaching-reviewer']],
+      ['kanji-bridge-accuracy', ['human-teaching-reviewer']],
+      ['exercise-quality', ['human-teaching-reviewer']],
+      ['graph-and-scope-correctness', ['maintainer']],
+      ['source-and-script-provenance', ['human-source-reviewer', 'human-script-verifier']],
+    ]);
+    const manifest = loadManifest();
+
+    expect(
+      manifest.dimensions.map((dimension) => [dimension.id, dimension.reviewerRoles]),
+    ).toEqual([...expectedRoles]);
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].reviewerRoles.pop();
+      }),
+    ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-taiwan-mandarin'/);
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].reviewerRoles.push(
+          'human-language-reviewer',
+        );
+      }),
+    ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-taiwan-mandarin'/);
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].reviewerRoles.reverse();
+      }),
+    ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-taiwan-mandarin'/);
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[1].reviewerRoles.push('maintainer');
+      }),
+    ).rejects.toThrow(/reviewer roles drifted for dimension 'natural-japanese-explanation'/);
+  });
+
+  it('retains complete per-role evidence and requires every authorized role before acceptance', async () => {
+    const manifest = loadManifest();
+    for (const dimension of manifest.dimensions) {
+      const evidence = (
+        dimension as unknown as {
+          reviewerEvidence: Array<{
+            role: string;
+            reviewerIdentity: string | null;
+            reviewDate: string | null;
+            findings: string | null;
+          }>;
+        }
+      ).reviewerEvidence;
+      expect(evidence.map(({ role }) => role)).toEqual(dimension.reviewerRoles);
+      expect(
+        evidence.every(
+          ({ reviewerIdentity, reviewDate, findings }) =>
+            reviewerIdentity === null && reviewDate === null && findings === null,
+        ),
+      ).toBe(true);
+    }
+
+    const partiallyReviewed = await build((candidateManifest) => {
+      const dimension = candidateManifest.dimensions[0];
+      dimension.reviewerEvidence[0] = {
+        ...dimension.reviewerEvidence[0],
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Language review accepted; regional review remains pending.',
+      };
+    });
+    expect(partiallyReviewed.dimensions[0].outcome).toBe('not-reviewed');
+    expect(partiallyReviewed.dimensions[0].reviewerEvidence[0].reviewerIdentity).toBe(
+      '@language-reviewer',
+    );
+    expect(partiallyReviewed.dimensions[0].reviewerEvidence[1].reviewerIdentity).toBeNull();
+
+    const rejectedByOneRole = await build((candidateManifest) => {
+      const dimension = candidateManifest.dimensions[0];
+      dimension.outcome = 'rejected';
+      dimension.reviewerEvidence[0] = {
+        ...dimension.reviewerEvidence[0],
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Blocking language finding.',
+      };
+    });
+    expect(rejectedByOneRole.dimensions[0].outcome).toBe('rejected');
+    expect(rejectedByOneRole.promotionAllowed).toBe(false);
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].outcome = 'rejected';
+      }),
+    ).rejects.toThrow(
+      /rejected dimension 'natural-taiwan-mandarin' requires evidence from at least one authorized reviewer role/,
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].reviewerEvidence[0].reviewerIdentity =
+          '@language-reviewer';
+      }),
+    ).rejects.toThrow(
+      /reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' must be entirely empty or complete/,
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        candidateManifest.dimensions[0].outcome = 'accepted';
+      }),
+    ).rejects.toThrow(
+      /accepted dimension 'natural-taiwan-mandarin'.*human-language-reviewer.*complete reviewer evidence/,
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions[0] as unknown as {
+          outcome: string;
+          reviewerEvidence: Array<{
+            role: string;
+            reviewerIdentity: string | null;
+            reviewDate: string | null;
+            findings: string | null;
+          }>;
+        };
+        dimension.outcome = 'accepted';
+        dimension.reviewerEvidence[0] = {
+          ...dimension.reviewerEvidence[0],
+          reviewerIdentity: '@language-reviewer',
+          reviewDate: '2026-08-29',
+          findings: 'None.',
+        };
+      }),
+    ).rejects.toThrow(
+      /accepted dimension 'natural-taiwan-mandarin'.*human-regional-reviewer.*complete reviewer evidence/,
+    );
+
+    const accepted = await build((candidateManifest) => {
+      const dimension = candidateManifest.dimensions[0] as unknown as {
+        outcome: string;
+        reviewerEvidence: Array<{
+          role: string;
+          reviewerIdentity: string | null;
+          reviewDate: string | null;
+          findings: string | null;
+        }>;
+      };
+      dimension.outcome = 'accepted';
+      dimension.reviewerEvidence = dimension.reviewerEvidence.map((evidence) => ({
+        ...evidence,
+        reviewerIdentity: `@${evidence.role}`,
+        reviewDate: '2026-08-29',
+        findings: 'None.',
+      }));
+    });
+    expect(accepted.dimensions[0].outcome).toBe('accepted');
+    expect(accepted.overallDecision).toBeNull();
+    expect(accepted.promotionAllowed).toBe(false);
+
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions[1];
+        dimension.outcome = 'accepted';
+        dimension.reviewerEvidence[0] = {
+          ...dimension.reviewerEvidence[0],
+          reviewerIdentity: '@language-reviewer',
+          reviewDate: '2026-02-30',
+          findings: 'None.',
+        };
+      }),
+    ).rejects.toThrow(
+      /accepted dimension 'natural-japanese-explanation'.*valid ISO review date/,
+    );
+  });
+
   it('rejects unknown review-manifest root fields before packet construction', async () => {
     await expect(
       build((manifest) => {
@@ -243,6 +430,17 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       }),
     ).rejects.toThrow(
       /dimension 'natural-taiwan-mandarin' has unknown field 'reviewerRole'/,
+    );
+    await expect(
+      build((manifest) => {
+        const evidence = manifest.dimensions[0].reviewerEvidence[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        evidence.reviewer = evidence.role;
+      }),
+    ).rejects.toThrow(
+      /reviewer evidence 'natural-taiwan-mandarin:human-language-reviewer' has unknown field 'reviewer'/,
     );
   });
 
@@ -643,7 +841,22 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(rendered).toContain(
       '| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | not-reviewed |',
     );
-    expect(rendered).toContain('**Reviewer identity:** {{HUMAN_REVIEWER_IDENTITY}}');
+    expect(rendered).not.toContain('**Reviewer identity:**');
+    expect(rendered).not.toContain('**Reviewer role:**');
+    expect(rendered).not.toContain('**Review date:**');
+    expect(rendered).toContain('## Per-role review evidence');
+    expect(rendered).toContain(
+      'A dimension may be accepted only after every required role has its own complete identity, ISO date, and findings evidence; a global reviewer identity is not sufficient.',
+    );
+    expect(rendered).toContain(
+      'A completed role row may be retained while other required roles remain pending; one authorized role may record rejected or needs-changes with its own complete evidence.',
+    );
+    expect(rendered).toContain(
+      '| Natural Taiwan Mandarin | human-language-reviewer | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |',
+    );
+    expect(rendered).toContain(
+      '| Natural Taiwan Mandarin | human-regional-reviewer | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |',
+    );
     expect(rendered).toContain('human language, teaching, and regional review remain pending');
     for (const record of packet.records) {
       expect(rendered).toContain(record.lesson.id);
@@ -777,6 +990,92 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
     } finally {
       rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuild command rejects reviewer-role and dual-role evidence drift without replacing output', () => {
+    const cases: Array<{
+      name: string;
+      mutate: (manifest: TaiwanTravelWave1ReviewScopeManifest) => void;
+      expectedError: RegExp;
+    }> = [
+      {
+        name: 'missing required role',
+        mutate: (manifest) => {
+          manifest.dimensions[0].reviewerRoles.pop();
+        },
+        expectedError: /reviewer roles drifted for dimension 'natural-taiwan-mandarin'/,
+      },
+      {
+        name: 'duplicate required role',
+        mutate: (manifest) => {
+          manifest.dimensions[0].reviewerRoles[1] = 'human-language-reviewer';
+        },
+        expectedError: /reviewer roles drifted for dimension 'natural-taiwan-mandarin'/,
+      },
+      {
+        name: 'accepted dual-role dimension with one role missing evidence',
+        mutate: (manifest) => {
+          const dimension = manifest.dimensions[0];
+          dimension.outcome = 'accepted';
+          dimension.reviewerEvidence[0] = {
+            ...dimension.reviewerEvidence[0],
+            reviewerIdentity: '@language-reviewer',
+            reviewDate: '2026-08-29',
+            findings: 'None.',
+          };
+        },
+        expectedError:
+          /accepted dimension 'natural-taiwan-mandarin'.*human-regional-reviewer.*complete reviewer evidence/,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-role-'));
+      const outputPath = join(temporaryRoot, 'packet.md');
+      const sentinel = `${testCase.name}: preexisting packet must remain byte-identical\n`;
+      const requiredPaths = [
+        TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
+        TAIWAN_TRAVEL_WAVE1_GRAPH_PATH,
+        TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
+        'data/examples/valid/lessons.json',
+      ];
+
+      try {
+        for (const path of requiredPaths) {
+          const destination = resolve(temporaryRoot, path);
+          mkdirSync(dirname(destination), { recursive: true });
+          copyFileSync(resolve(root, path), destination);
+        }
+        const manifest = readJson<TaiwanTravelWave1ReviewScopeManifest>(
+          resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_SCOPE_PATH),
+        );
+        testCase.mutate(manifest);
+        writeFileSync(
+          resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_SCOPE_PATH),
+          `${JSON.stringify(manifest, null, 2)}\n`,
+          'utf8',
+        );
+        writeFileSync(outputPath, sentinel, 'utf8');
+
+        const result = spawnSync(
+          process.execPath,
+          [
+            'scripts/render-taiwan-travel-wave1-review-packet.ts',
+            '--root',
+            temporaryRoot,
+            '--output',
+            outputPath,
+          ],
+          { cwd: root, encoding: 'utf8' },
+        );
+
+        expect(result.status, testCase.name).not.toBe(0);
+        expect(result.stderr, testCase.name).toMatch(testCase.expectedError);
+        expect(readFileSync(outputPath, 'utf8'), testCase.name).toBe(sentinel);
+      } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+      }
     }
   });
 });

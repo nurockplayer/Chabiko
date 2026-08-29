@@ -2,11 +2,8 @@
 
 **Scope:** taiwan-travel-wave-1-v1
 **Package state:** isolated candidate content; not linked to the production Taiwan path
-**Reviewer identity:** {{HUMAN_REVIEWER_IDENTITY}}
-**Reviewer role:** {{HUMAN_REVIEWER_ROLE}}
-**Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** fb86f8bdfb20c297ba7c3c14db4401e4e08421e1632ed42768e8b0e233fc42b4
+**Review version:** 348a2264b76ca7503090893cae7119c95a1f327a4b9daf550aca2fe861480632
 **Overall review outcome:** {{accepted | rejected | needs-changes}}
 **Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
@@ -38,6 +35,25 @@ Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `n
 | Review prompt quality | human-teaching-reviewer | not-reviewed |
 | Graph, identity, order, and scope correctness | maintainer | not-reviewed |
 | Source and script provenance correctness | human-source-reviewer, human-script-verifier | not-reviewed |
+
+## Per-role review evidence
+
+A dimension may be accepted only after every required role has its own complete identity, ISO date, and findings evidence; a global reviewer identity is not sufficient.
+A completed role row may be retained while other required roles remain pending; one authorized role may record rejected or needs-changes with its own complete evidence.
+
+| Dimension | Reviewer role | Reviewer identity | Review date | Findings |
+|---|---|---|---|---|
+| Natural Taiwan Mandarin | human-language-reviewer | {{natural-taiwan-mandarin__human-language-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-language-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-language-reviewer__FINDINGS_OR_None.}} |
+| Natural Taiwan Mandarin | human-regional-reviewer | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |
+| Natural Japanese explanation | human-language-reviewer | {{natural-japanese-explanation__human-language-reviewer__IDENTITY}} | {{natural-japanese-explanation__human-language-reviewer__YYYY-MM-DD}} | {{natural-japanese-explanation__human-language-reviewer__FINDINGS_OR_None.}} |
+| Lesson loop and travel usefulness | human-teaching-reviewer | {{lesson-loop-usefulness__human-teaching-reviewer__IDENTITY}} | {{lesson-loop-usefulness__human-teaching-reviewer__YYYY-MM-DD}} | {{lesson-loop-usefulness__human-teaching-reviewer__FINDINGS_OR_None.}} |
+| Pinyin and pronunciation guidance | human-language-reviewer | {{pronunciation-guidance__human-language-reviewer__IDENTITY}} | {{pronunciation-guidance__human-language-reviewer__YYYY-MM-DD}} | {{pronunciation-guidance__human-language-reviewer__FINDINGS_OR_None.}} |
+| Pinyin and pronunciation guidance | human-teaching-reviewer | {{pronunciation-guidance__human-teaching-reviewer__IDENTITY}} | {{pronunciation-guidance__human-teaching-reviewer__YYYY-MM-DD}} | {{pronunciation-guidance__human-teaching-reviewer__FINDINGS_OR_None.}} |
+| Kanji bridge accuracy | human-teaching-reviewer | {{kanji-bridge-accuracy__human-teaching-reviewer__IDENTITY}} | {{kanji-bridge-accuracy__human-teaching-reviewer__YYYY-MM-DD}} | {{kanji-bridge-accuracy__human-teaching-reviewer__FINDINGS_OR_None.}} |
+| Review prompt quality | human-teaching-reviewer | {{exercise-quality__human-teaching-reviewer__IDENTITY}} | {{exercise-quality__human-teaching-reviewer__YYYY-MM-DD}} | {{exercise-quality__human-teaching-reviewer__FINDINGS_OR_None.}} |
+| Graph, identity, order, and scope correctness | maintainer | {{graph-and-scope-correctness__maintainer__IDENTITY}} | {{graph-and-scope-correctness__maintainer__YYYY-MM-DD}} | {{graph-and-scope-correctness__maintainer__FINDINGS_OR_None.}} |
+| Source and script provenance correctness | human-source-reviewer | {{source-and-script-provenance__human-source-reviewer__IDENTITY}} | {{source-and-script-provenance__human-source-reviewer__YYYY-MM-DD}} | {{source-and-script-provenance__human-source-reviewer__FINDINGS_OR_None.}} |
+| Source and script provenance correctness | human-script-verifier | {{source-and-script-provenance__human-script-verifier__IDENTITY}} | {{source-and-script-provenance__human-script-verifier__YYYY-MM-DD}} | {{source-and-script-provenance__human-script-verifier__FINDINGS_OR_None.}} |
 
 ## Exact lesson versions
 

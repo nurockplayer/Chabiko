@@ -44,13 +44,43 @@ const REVIEW_DIMENSION_IDS = [
   'graph-and-scope-correctness',
   'source-and-script-provenance',
 ] as const;
+type ReviewDimensionId = (typeof REVIEW_DIMENSION_IDS)[number];
+export type TaiwanTravelWave1ReviewerRole =
+  | 'human-language-reviewer'
+  | 'human-script-verifier'
+  | 'human-regional-reviewer'
+  | 'human-source-reviewer'
+  | 'human-teaching-reviewer'
+  | 'maintainer';
+const REVIEWER_ROLE_MATRIX = {
+  'natural-taiwan-mandarin': [
+    'human-language-reviewer',
+    'human-regional-reviewer',
+  ],
+  'natural-japanese-explanation': ['human-language-reviewer'],
+  'lesson-loop-usefulness': ['human-teaching-reviewer'],
+  'pronunciation-guidance': [
+    'human-language-reviewer',
+    'human-teaching-reviewer',
+  ],
+  'kanji-bridge-accuracy': ['human-teaching-reviewer'],
+  'exercise-quality': ['human-teaching-reviewer'],
+  'graph-and-scope-correctness': ['maintainer'],
+  'source-and-script-provenance': [
+    'human-source-reviewer',
+    'human-script-verifier',
+  ],
+} as const satisfies Record<
+  ReviewDimensionId,
+  readonly TaiwanTravelWave1ReviewerRole[]
+>;
 const REVIEW_DIMENSION_OUTCOMES = [
   'accepted',
   'rejected',
   'needs-changes',
   'not-reviewed',
 ] as const;
-const REVIEWER_ROLES = new Set([
+const REVIEWER_ROLES = new Set<TaiwanTravelWave1ReviewerRole>([
   'human-language-reviewer',
   'human-script-verifier',
   'human-regional-reviewer',
@@ -59,7 +89,6 @@ const REVIEWER_ROLES = new Set([
   'maintainer',
 ]);
 
-type ReviewDimensionId = (typeof REVIEW_DIMENSION_IDS)[number];
 export type TaiwanTravelWave1ReviewDimensionOutcome =
   (typeof REVIEW_DIMENSION_OUTCOMES)[number];
 
@@ -73,8 +102,16 @@ export interface TaiwanTravelWave1ScopeRecord {
 export interface TaiwanTravelWave1ReviewDimension {
   id: ReviewDimensionId;
   label: string;
-  reviewerRoles: string[];
+  reviewerRoles: TaiwanTravelWave1ReviewerRole[];
+  reviewerEvidence: TaiwanTravelWave1ReviewerEvidence[];
   outcome: TaiwanTravelWave1ReviewDimensionOutcome;
+}
+
+export interface TaiwanTravelWave1ReviewerEvidence {
+  role: TaiwanTravelWave1ReviewerRole;
+  reviewerIdentity: string | null;
+  reviewDate: string | null;
+  findings: string | null;
 }
 
 export interface TaiwanTravelWave1DecisionContract {
@@ -133,6 +170,17 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isIsoCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
 }
 
 function validateExactKeys(
@@ -226,7 +274,7 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
     const dimension = manifest.dimensions[index];
     validateExactKeys(
       dimension,
-      ['id', 'label', 'reviewerRoles', 'outcome'],
+      ['id', 'label', 'reviewerRoles', 'reviewerEvidence', 'outcome'],
       `dimension '${expectedId}'`,
     );
     assert(dimension?.id === expectedId, `review dimension order drifted at '${expectedId}'`);
@@ -241,6 +289,61 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
     );
     for (const role of dimension.reviewerRoles) {
       assert(REVIEWER_ROLES.has(role), `dimension '${expectedId}' has unsupported role '${role}'`);
+    }
+    const expectedRoles = REVIEWER_ROLE_MATRIX[expectedId];
+    assert(
+      dimension.reviewerRoles.length === expectedRoles.length &&
+        dimension.reviewerRoles.every((role, roleIndex) => role === expectedRoles[roleIndex]),
+      `reviewer roles drifted for dimension '${expectedId}'`,
+    );
+    assert(
+      Array.isArray(dimension.reviewerEvidence) &&
+        dimension.reviewerEvidence.length === expectedRoles.length,
+      `reviewer evidence roles drifted for dimension '${expectedId}'`,
+    );
+    let completeEvidenceCount = 0;
+    for (const [evidenceIndex, expectedRole] of expectedRoles.entries()) {
+      const evidence = dimension.reviewerEvidence[evidenceIndex];
+      validateExactKeys(
+        evidence,
+        ['role', 'reviewerIdentity', 'reviewDate', 'findings'],
+        `reviewer evidence '${expectedId}:${expectedRole}'`,
+      );
+      assert(
+        evidence.role === expectedRole,
+        `reviewer evidence roles drifted for dimension '${expectedId}'`,
+      );
+      const hasCompleteFields =
+        isNonEmptyString(evidence.reviewerIdentity) &&
+        isNonEmptyString(evidence.reviewDate) &&
+        isNonEmptyString(evidence.findings);
+      const isEmpty =
+        evidence.reviewerIdentity === null &&
+        evidence.reviewDate === null &&
+        evidence.findings === null;
+      assert(
+        isEmpty || hasCompleteFields,
+        `reviewer evidence '${expectedId}:${expectedRole}' must be entirely empty or complete`,
+      );
+      if (hasCompleteFields) {
+        completeEvidenceCount += 1;
+        assert(
+          isIsoCalendarDate(evidence.reviewDate ?? ''),
+          `${dimension.outcome} dimension '${expectedId}' role '${expectedRole}' requires a valid ISO review date`,
+        );
+      }
+      if (dimension.outcome === 'accepted') {
+        assert(
+          hasCompleteFields,
+          `${dimension.outcome} dimension '${expectedId}' role '${expectedRole}' requires complete reviewer evidence`,
+        );
+      }
+    }
+    if (dimension.outcome === 'rejected' || dimension.outcome === 'needs-changes') {
+      assert(
+        completeEvidenceCount > 0,
+        `${dimension.outcome} dimension '${expectedId}' requires evidence from at least one authorized reviewer role`,
+      );
     }
   }
 
@@ -565,6 +668,26 @@ export function renderTaiwanTravelWave1ReviewPacket(
         `| ${markdownCell(dimension.label)} | ${dimension.reviewerRoles.join(', ')} | ${dimension.outcome} |`,
     )
     .join('\n');
+  const evidenceRows = packet.dimensions
+    .flatMap((dimension) =>
+      dimension.reviewerEvidence.map((evidence) => {
+        const placeholderPrefix = `${dimension.id}__${evidence.role}`;
+        const reviewerIdentity =
+          evidence.reviewerIdentity === null
+            ? `{{${placeholderPrefix}__IDENTITY}}`
+            : markdownCell(evidence.reviewerIdentity);
+        const reviewDate =
+          evidence.reviewDate === null
+            ? `{{${placeholderPrefix}__YYYY-MM-DD}}`
+            : evidence.reviewDate;
+        const findings =
+          evidence.findings === null
+            ? `{{${placeholderPrefix}__FINDINGS_OR_None.}}`
+            : markdownCell(evidence.findings);
+        return `| ${markdownCell(dimension.label)} | ${evidence.role} | ${reviewerIdentity} | ${reviewDate} | ${findings} |`;
+      }),
+    )
+    .join('\n');
   const recordRows = packet.records
     .map(
       (record) =>
@@ -580,9 +703,6 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '',
     `**Scope:** ${packet.scopeId}`,
     '**Package state:** isolated candidate content; not linked to the production Taiwan path',
-    '**Reviewer identity:** {{HUMAN_REVIEWER_IDENTITY}}',
-    '**Reviewer role:** {{HUMAN_REVIEWER_ROLE}}',
-    '**Review date:** {{YYYY-MM-DD}}',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
     '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
@@ -605,6 +725,15 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '| Dimension | Reviewer roles | Outcome |',
     '|---|---|---|',
     dimensionRows,
+    '',
+    '## Per-role review evidence',
+    '',
+    'A dimension may be accepted only after every required role has its own complete identity, ISO date, and findings evidence; a global reviewer identity is not sufficient.',
+    'A completed role row may be retained while other required roles remain pending; one authorized role may record rejected or needs-changes with its own complete evidence.',
+    '',
+    '| Dimension | Reviewer role | Reviewer identity | Review date | Findings |',
+    '|---|---|---|---|---|',
+    evidenceRows,
     '',
     '## Exact lesson versions',
     '',

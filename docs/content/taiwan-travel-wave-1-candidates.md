@@ -118,6 +118,34 @@ canonical `accepted`, `rejected`, `needs-changes`, and `not-reviewed` values.
 They remain separate from the packet's top-level overall decision and cannot
 independently authorize promotion.
 
+## Reviewer role authorization
+
+The manifest freezes the following ordered required-role matrix from the
+canonical workflow. Missing, extra, duplicated, or reordered roles fail
+closed.
+
+| Dimension | Required reviewer roles, in order |
+|---|---|
+| Natural Taiwan Mandarin | `human-language-reviewer`, `human-regional-reviewer` |
+| Natural Japanese explanation | `human-language-reviewer` |
+| Lesson loop and travel usefulness | `human-teaching-reviewer` |
+| Pinyin and pronunciation guidance | `human-language-reviewer`, `human-teaching-reviewer` |
+| Kanji bridge accuracy | `human-teaching-reviewer` |
+| Review prompt quality | `human-teaching-reviewer` |
+| Graph, identity, order, and scope correctness | `maintainer` |
+| Source and script provenance correctness | `human-source-reviewer`, `human-script-verifier` |
+
+Every dimension also carries one `reviewerEvidence` entry per required role,
+in the same order. Checked-in entries have null identity, date, and findings
+because no human review has occurred. The generated packet expands them into
+separate fillable rows. Every populated role row requires complete identity,
+ISO date, and findings evidence. A dual-role dimension cannot be accepted after
+only one role signs, but it may retain one role's complete evidence while the
+other role is pending, and one authorized role may record a blocking
+`rejected` or `needs-changes` result. A global reviewer identity does not
+substitute for per-role evidence. These fields participate in the packet
+`reviewVersion`; they do not change lesson fingerprints.
+
 ## Canonical rebuild
 
 From the repository root:
