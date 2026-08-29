@@ -211,7 +211,48 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         >;
         dimension.state = 'pending';
       }),
-    ).rejects.toThrow(/legacy state/);
+    ).rejects.toThrow(
+      /dimension 'natural-taiwan-mandarin' has unknown field 'state'/,
+    );
+  });
+
+  it('rejects unknown review-manifest root fields before packet construction', async () => {
+    await expect(
+      build((manifest) => {
+        const value = manifest as unknown as Record<string, unknown>;
+        value.reviewStat = value.reviewState;
+        delete value.reviewState;
+      }),
+    ).rejects.toThrow(/manifest has unknown field 'reviewStat'/);
+  });
+
+  it('rejects unknown review decision-contract fields before packet construction', async () => {
+    await expect(
+      build((manifest) => {
+        const contract = manifest.decisionContract as unknown as Record<string, unknown>;
+        contract.approvedOutcomes = ['accepted'];
+      }),
+    ).rejects.toThrow(/decisionContract has unknown field 'approvedOutcomes'/);
+  });
+
+  it('rejects unknown review-dimension fields before packet construction', async () => {
+    await expect(
+      build((manifest) => {
+        const dimension = manifest.dimensions[0] as unknown as Record<string, unknown>;
+        dimension.reviewerRole = dimension.reviewerRoles;
+      }),
+    ).rejects.toThrow(
+      /dimension 'natural-taiwan-mandarin' has unknown field 'reviewerRole'/,
+    );
+  });
+
+  it('rejects unknown review-record fields before packet construction', async () => {
+    await expect(
+      build((manifest) => {
+        const record = manifest.records[0] as unknown as Record<string, unknown>;
+        record.source = record.sourcePath;
+      }),
+    ).rejects.toThrow(/record 'lesson-011' has unknown field 'source'/);
   });
 
   it('keeps every rich lesson complete and every prompt mechanically unambiguous', async () => {
@@ -565,6 +606,28 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).rejects.toThrow(/graph member order/);
   });
 
+  it('rejects unknown candidate graph-path fields before normalization', async () => {
+    await expect(
+      build(undefined, ({ paths }) => {
+        const path = paths[0] as unknown as Record<string, unknown>;
+        path.reviewVersion = 'ignored-by-normalizer';
+      }),
+    ).rejects.toThrow(
+      /candidate graph path 'candidate-taiwan-travel-wave-1' has unknown field 'reviewVersion'/,
+    );
+  });
+
+  it('rejects unknown candidate graph-member fields before normalization', async () => {
+    await expect(
+      build(undefined, ({ paths }) => {
+        const member = paths[0].members[0] as unknown as Record<string, unknown>;
+        member.sourcePath = TAIWAN_TRAVEL_WAVE1_LESSONS_PATH;
+      }),
+    ).rejects.toThrow(
+      /candidate graph member 'lesson-011' has unknown field 'sourcePath'/,
+    );
+  });
+
   it('renders the exact committed pending-human-review packet', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
     const rendered = renderTaiwanTravelWave1ReviewPacket(packet);
@@ -660,6 +723,57 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
 
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain("level: 'advanced' is not valid");
+      expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuild command rejects unknown graph-root fields without replacing output', () => {
+    const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-unknown-'));
+    const outputPath = join(temporaryRoot, 'packet.md');
+    const sentinel = 'preexisting packet must remain byte-identical\n';
+    const requiredPaths = [
+      TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
+      TAIWAN_TRAVEL_WAVE1_GRAPH_PATH,
+      TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
+      'data/examples/valid/lessons.json',
+    ];
+
+    try {
+      for (const path of requiredPaths) {
+        const destination = resolve(temporaryRoot, path);
+        mkdirSync(dirname(destination), { recursive: true });
+        copyFileSync(resolve(root, path), destination);
+      }
+
+      const invalidGraph = readJson<Record<string, unknown>>(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_GRAPH_PATH),
+      );
+      invalidGraph.graphVersion = 'ignored-by-loader';
+      writeFileSync(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_GRAPH_PATH),
+        `${JSON.stringify(invalidGraph, null, 2)}\n`,
+        'utf8',
+      );
+      writeFileSync(outputPath, sentinel, 'utf8');
+
+      const result = spawnSync(
+        process.execPath,
+        [
+          'scripts/render-taiwan-travel-wave1-review-packet.ts',
+          '--root',
+          temporaryRoot,
+          '--output',
+          outputPath,
+        ],
+        { cwd: root, encoding: 'utf8' },
+      );
+
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain(
+        "candidate graph has unknown field 'graphVersion'",
+      );
       expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
     } finally {
       rmSync(temporaryRoot, { recursive: true, force: true });

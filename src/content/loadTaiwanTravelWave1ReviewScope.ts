@@ -135,6 +135,23 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function validateExactKeys(
+  value: unknown,
+  expectedKeys: readonly string[],
+  label: string,
+): asserts value is Record<string, unknown> {
+  assert(
+    value !== null && typeof value === 'object' && !Array.isArray(value),
+    `${label} must be an object`,
+  );
+  const expected = new Set(expectedKeys);
+  const unknownKeys = Object.keys(value).filter((key) => !expected.has(key)).sort();
+  assert(
+    unknownKeys.length === 0,
+    `${label} has unknown field '${unknownKeys[0]}'`,
+  );
+}
+
 function readJson<T>(path: string): T {
   try {
     return JSON.parse(readFileSync(path, 'utf8')) as T;
@@ -149,13 +166,35 @@ function refKey(ref: ContentRef<'lesson'>): string {
 }
 
 function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void {
-  assert(manifest !== null && typeof manifest === 'object', 'manifest must be an object');
+  validateExactKeys(
+    manifest,
+    [
+      'schemaVersion',
+      'scopeId',
+      'reviewState',
+      'decisionContract',
+      'dimensions',
+      'records',
+    ],
+    'manifest',
+  );
   assert(manifest.schemaVersion === 1, 'schemaVersion must be 1');
   assert(manifest.scopeId === TAIWAN_TRAVEL_WAVE1_SCOPE_ID, 'scopeId drifted');
   assert(manifest.reviewState === 'pending-human-review', 'reviewState must remain pending-human-review');
 
   const contract = manifest.decisionContract;
-  assert(contract !== null && typeof contract === 'object', 'decisionContract must be an object');
+  validateExactKeys(
+    contract,
+    [
+      'outcomes',
+      'promotableOutcomes',
+      'nonPromotableOutcomes',
+      'fingerprint',
+      'separateDecisionNamespace',
+      'productionUnlinked',
+    ],
+    'decisionContract',
+  );
   assert(
     Array.isArray(contract.outcomes) &&
       contract.outcomes.length === 3 &&
@@ -185,11 +224,12 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   assert(manifest.dimensions.length === REVIEW_DIMENSION_IDS.length, 'review dimension count drifted');
   for (const [index, expectedId] of REVIEW_DIMENSION_IDS.entries()) {
     const dimension = manifest.dimensions[index];
-    assert(dimension?.id === expectedId, `review dimension order drifted at '${expectedId}'`);
-    assert(
-      !Object.hasOwn(dimension as unknown as object, 'state'),
-      `dimension '${expectedId}' contains legacy state metadata`,
+    validateExactKeys(
+      dimension,
+      ['id', 'label', 'reviewerRoles', 'outcome'],
+      `dimension '${expectedId}'`,
     );
+    assert(dimension?.id === expectedId, `review dimension order drifted at '${expectedId}'`);
     assert(isNonEmptyString(dimension.label), `dimension '${expectedId}' has no label`);
     assert(
       (REVIEW_DIMENSION_OUTCOMES as readonly unknown[]).includes(dimension.outcome),
@@ -207,7 +247,12 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   assert(Array.isArray(manifest.records), 'records must be an array');
   assert(manifest.records.length === TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS.length, 'record count must be 14');
   const seen = new Set<string>();
-  for (const record of manifest.records) {
+  for (const [index, record] of manifest.records.entries()) {
+    validateExactKeys(
+      record,
+      ['collection', 'type', 'id', 'sourcePath'],
+      `record '${TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS[index] ?? index}'`,
+    );
     const key = refKey(record);
     assert(!seen.has(key), `duplicate record '${key}'`);
     seen.add(key);
@@ -314,6 +359,22 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
   assert(Array.isArray(sourceBundle.lessons), 'candidate lessons must be an array');
   assert(Array.isArray(sourceBundle.paths), 'candidate paths must be an array');
   assert(Array.isArray(sourceBundle.productionLessons), 'production lessons must be an array');
+  sourceBundle.paths.forEach((path, index) => {
+    validateExactKeys(
+      path,
+      ['id', 'members'],
+      `candidate graph path '${index === 0 ? TAIWAN_TRAVEL_WAVE1_PATH_ID : index}'`,
+    );
+    if (Array.isArray(path.members)) {
+      path.members.forEach((member, memberIndex) =>
+        validateExactKeys(
+          member,
+          ['collection', 'type', 'id'],
+          `candidate graph member '${TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS[memberIndex] ?? memberIndex}'`,
+        ),
+      );
+    }
+  });
 
   const graph = buildLearningContentGraph({
     lessons: sourceBundle.lessons,
@@ -405,6 +466,7 @@ function loadSourceBundle(root: string): TaiwanTravelWave1SourceBundle {
   const graphBundle = readJson<{ schemaVersion: number; paths: MutableCandidatePath[] }>(
     resolve(root, TAIWAN_TRAVEL_WAVE1_GRAPH_PATH),
   );
+  validateExactKeys(graphBundle, ['schemaVersion', 'paths'], 'candidate graph');
   assert(graphBundle.schemaVersion === 1, 'candidate graph schemaVersion must be 1');
   const productionLessons = loadLessons(resolve(root, 'data/examples/valid/lessons.json'));
   return {
