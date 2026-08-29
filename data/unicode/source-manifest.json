@@ -17,6 +17,7 @@
         { "field": "contentJa", "language": "ja" },
         { "field": "headingJa", "language": "ja" },
         { "field": "hookJa", "language": "ja" },
+        { "field": "reviewHookJa", "language": "ja" },
         { "field": "item", "language": "mixed" },
         { "field": "japanese", "language": "ja" },
         { "field": "jpReading", "language": "ja" },
