@@ -25,6 +25,11 @@ for f in data/examples/valid/*.json; do
   uv run --locked python scripts/validate-content-schema.py --check "$f"
 done
 
+# Wave-1 lessons remain isolated candidate content, but their exact bundle is
+# still schema-gated by CI before it can feed the canonical review packet.
+uv run --locked python scripts/validate-content-schema.py \
+  --check data/content-pilots/taiwan-travel-wave-1/lessons.json
+
 # Roleplay card per-scenario files (Issue #243): the ownership boundary
 # (file name → card scenario) is enforced by --check.
 for f in data/roleplay/*.json; do

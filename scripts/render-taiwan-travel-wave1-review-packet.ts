@@ -1,6 +1,8 @@
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { dirname, extname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // This command runs under the repository's Node 24 type-stripping contract.
 // Application modules use bundler-style extensionless imports and JSON imports;
@@ -32,8 +34,11 @@ registerHooks({
 const {
   loadTaiwanTravelWave1ReviewPacket,
   renderTaiwanTravelWave1ReviewPacket,
+  TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
   TAIWAN_TRAVEL_WAVE1_PACKET_PATH,
 } = await import('../src/content/loadTaiwanTravelWave1ReviewScope.ts');
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function optionValue(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -50,6 +55,32 @@ async function main(): Promise<void> {
   const outputPath = resolve(
     optionValue('--output') ?? resolve(root, TAIWAN_TRAVEL_WAVE1_PACKET_PATH),
   );
+  const candidateLessonsPath = resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH);
+  const schemaValidation = spawnSync(
+    'uv',
+    [
+      'run',
+      '--locked',
+      'python',
+      'scripts/validate-content-schema.py',
+      '--check',
+      candidateLessonsPath,
+    ],
+    { cwd: repositoryRoot, encoding: 'utf8' },
+  );
+  if (schemaValidation.error) {
+    throw new Error(
+      `Failed to run shared schema validation: ${schemaValidation.error.message}`,
+    );
+  }
+  if (schemaValidation.status !== 0) {
+    const diagnostics = `${schemaValidation.stdout}${schemaValidation.stderr}`.trim();
+    throw new Error(
+      `Taiwan Travel Wave 1 candidate schema validation failed${
+        diagnostics ? `:\n${diagnostics}` : ''
+      }`,
+    );
+  }
   const packet = await loadTaiwanTravelWave1ReviewPacket(root);
   const rendered = renderTaiwanTravelWave1ReviewPacket(packet);
 

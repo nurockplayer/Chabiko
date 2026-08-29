@@ -1,7 +1,14 @@
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildTaiwanTravelWave1ReviewPacket,
@@ -270,6 +277,55 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       );
     } finally {
       rmSync(temporaryDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuild command fails closed before replacing output when shared schema validation fails', () => {
+    const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-invalid-'));
+    const outputPath = join(temporaryRoot, 'packet.md');
+    const sentinel = 'preexisting packet must remain byte-identical\n';
+    const requiredPaths = [
+      TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
+      TAIWAN_TRAVEL_WAVE1_GRAPH_PATH,
+      TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
+      'data/examples/valid/lessons.json',
+    ];
+
+    try {
+      for (const path of requiredPaths) {
+        const destination = resolve(temporaryRoot, path);
+        mkdirSync(dirname(destination), { recursive: true });
+        copyFileSync(resolve(root, path), destination);
+      }
+
+      const invalidBundle = readJson<{ lessons: Lesson[] }>(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
+      );
+      invalidBundle.lessons[0].level = 'advanced';
+      writeFileSync(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
+        `${JSON.stringify(invalidBundle, null, 2)}\n`,
+        'utf8',
+      );
+      writeFileSync(outputPath, sentinel, 'utf8');
+
+      const result = spawnSync(
+        process.execPath,
+        [
+          'scripts/render-taiwan-travel-wave1-review-packet.ts',
+          '--root',
+          temporaryRoot,
+          '--output',
+          outputPath,
+        ],
+        { cwd: root, encoding: 'utf8' },
+      );
+
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("level: 'advanced' is not valid");
+      expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
     }
   });
 });
