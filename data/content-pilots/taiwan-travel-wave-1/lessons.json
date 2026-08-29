@@ -45,32 +45,32 @@
       "learnerOutcomeJa": "「還沒出來」を使って、待っている荷物がまだ出てこないと説明できる",
       "hookJa": "荷物を待っているのに、自分のスーツケースが見当たらない。決めつけず、今の状況を伝えよう。",
       "travelScenario": "airport",
-      "coreSentence": "我的托運行李還沒出來。",
+      "coreSentence": "我的託運行李還沒出來。",
       "sections": [
         { "headingJa": "状況をそのまま述べる", "contentJa": "「還沒＋動詞」で「まだ〜していない」。紛失と断定せず、荷物がまだ出てこないことを伝える。" },
         { "headingJa": "確認をお願いする", "contentJa": "状況を言った後に「可以幫我看看嗎？」を添えると、確認を頼める。" }
       ],
       "chunks": [
         { "chunk": "我的", "meaning": "私の", "notesJa": "後ろの名詞が自分のものだと示す。" },
-        { "chunk": "托運行李", "meaning": "預けた荷物", "notesJa": "搭乗時に預けた荷物を指すまとまり。" },
+        { "chunk": "託運行李", "meaning": "預けた荷物", "notesJa": "搭乗時に預けた荷物を指すまとまり。" },
         { "chunk": "還沒出來", "meaning": "まだ出てきていません", "notesJa": "「還沒」で未完了の状態を表す。" }
       ],
       "kanjiBridgeNotes": [
-        { "kanji": "運", "jpReading": "うん", "noteJa": "運ぶ意味の手がかりにはなるが、「托運」は tuōyùn と読み、語全体で「預けて運んでもらう」と覚える。" }
+        { "kanji": "運", "jpReading": "うん", "noteJa": "運ぶ意味の手がかりにはなるが、「託運」は tuōyùn と読み、語全体で「預けて運んでもらう」と覚える。" }
       ],
       "soundFocus": [
-        { "item": "托運 tuōyùn", "noteJa": "第一声から第四声。tuō を高く保ち、yùn を下げる。" },
+        { "item": "託運 tuōyùn", "noteJa": "第一声から第四声。tuō を高く保ち、yùn を下げる。" },
         { "item": "還沒 hái méi", "noteJa": "どちらも第二声。二つを平らにせず、それぞれ上げる。" }
       ],
       "examples": [
-        { "traditional": "我的托運行李還沒出來。", "traditionalStatus": "generated", "simplified": "我的托运行李还没出来。", "simplifiedStatus": "generated", "pinyin": "wǒ de tuōyùn xínglǐ hái méi chūlái.", "japanese": "私の預けた荷物がまだ出てきません。" },
+        { "traditional": "我的託運行李還沒出來。", "traditionalStatus": "generated", "simplified": "我的托运行李还没出来。", "simplifiedStatus": "generated", "pinyin": "wǒ de tuōyùn xínglǐ hái méi chūlái.", "japanese": "私の預けた荷物がまだ出てきません。" },
         { "traditional": "可以幫我看看嗎？", "traditionalStatus": "generated", "simplified": "可以帮我看看吗？", "simplifiedStatus": "generated", "pinyin": "kěyǐ bāng wǒ kànkan ma?", "japanese": "確認してもらえますか？" }
       ],
       "reviewPrompts": [
         { "promptJa": "「還沒出來」はどんな状態？", "answerJa": "まだ出てきていない", "distractorsJa": ["すでに受け取った", "荷物を預けたくない"] },
         { "promptJa": "確認を頼む表現はどれ？", "answerJa": "可以幫我看看嗎？", "distractorsJa": ["我的行李很重。", "我要去登機門。"] }
       ],
-      "travelTask": "荷物の引換証とスーツケースの特徴を確認できるようにし、「我的托運行李還沒出來。可以幫我看看嗎？」と係員に状況確認を頼もう。",
+      "travelTask": "荷物の引換証とスーツケースの特徴を確認できるようにし、「我的託運行李還沒出來。可以幫我看看嗎？」と係員に状況確認を頼もう。",
       "painPointTags": ["word-order", "tone"],
       "reviewStatus": "draft"
     },
@@ -153,18 +153,18 @@
       "titleJa": "人数を伝えて席があるか尋ねよう",
       "level": "beginner",
       "canDoJa": "飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる",
-      "learnerOutcomeJa": "「有兩位的位子嗎？」を使って、二人分の席があるか確認できる",
+      "learnerOutcomeJa": "「兩位有位子嗎？」を使って、二人分の席があるか確認できる",
       "hookJa": "店に入ったら、注文の前に何人で利用したいかを伝える必要がある。入口で短く聞いてみよう。",
       "travelScenario": "food",
-      "coreSentence": "請問，有兩位的位子嗎？",
+      "coreSentence": "請問，兩位有位子嗎？",
       "sections": [
         { "headingJa": "人数には位を使う", "contentJa": "「兩位」で二人。人を丁寧に数える量詞として使う。" },
-        { "headingJa": "席の有無を質問する", "contentJa": "「有＋人数＋的位子＋嗎？」で、その人数向けの席があるか尋ねる。" }
+        { "headingJa": "席の有無を質問する", "contentJa": "「人数＋位＋有位子嗎？」で、人数を伝えて席があるか尋ねる。" }
       ],
       "chunks": [
         { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "店員への呼びかけ。" },
-        { "chunk": "有兩位的", "meaning": "二人用の〜がありますか", "notesJa": "人数を変えて使える。" },
-        { "chunk": "位子嗎", "meaning": "席はありますか", "notesJa": "「嗎」でYes/Noの質問にする。" }
+        { "chunk": "兩位", "meaning": "二人です", "notesJa": "人数を変えて使える。" },
+        { "chunk": "有位子嗎", "meaning": "席はありますか", "notesJa": "「嗎」でYes/Noの質問にする。" }
       ],
       "kanjiBridgeNotes": [
         { "kanji": "位", "jpReading": "い", "noteJa": "人を丁寧に数える働きは日本語の「〜名様」に近いが、使い方が同一とは限らない。" }
@@ -174,14 +174,14 @@
         { "item": "位子 wèizi", "noteJa": "wèi は第四声、zi は軽く添える。" }
       ],
       "examples": [
-        { "traditional": "請問，有兩位的位子嗎？", "traditionalStatus": "generated", "simplified": "请问，有两位的位子吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, yǒu liǎng wèi de wèizi ma?", "japanese": "すみません、二人用の席はありますか？" },
+        { "traditional": "請問，兩位有位子嗎？", "traditionalStatus": "generated", "simplified": "请问，两位有位子吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, liǎng wèi yǒu wèizi ma?", "japanese": "すみません、二人用の席はありますか？" },
         { "traditional": "我們有三位。", "traditionalStatus": "generated", "simplified": "我们有三位。", "simplifiedStatus": "generated", "pinyin": "wǒmen yǒu sān wèi.", "japanese": "私たちは三人です。" }
       ],
       "reviewPrompts": [
         { "promptJa": "「兩位」は何人？", "answerJa": "二人", "distractorsJa": ["一人", "三人"] },
-        { "promptJa": "席があるか尋ねる語尾は？", "answerJa": "位子嗎？", "distractorsJa": ["轉車？", "行李？"] }
+        { "promptJa": "席があるか尋ねる部分は？", "answerJa": "有位子嗎？", "distractorsJa": ["轉車？", "行李？"] }
       ],
-      "travelTask": "店の入口で自分たちの人数を確認し、「請問，有＋人数＋位的位子嗎？」または「我們有＋人数＋位」と伝えよう。",
+      "travelTask": "店の入口で自分たちの人数を確認し、「請問，＋人数＋位有位子嗎？」または「我們有＋人数＋位」と伝えよう。",
       "painPointTags": ["measure-word", "word-order", "tone"],
       "reviewStatus": "draft"
     },
@@ -244,7 +244,7 @@
         { "kanji": "包", "jpReading": "ほう", "noteJa": "包む意味は手がかりになるが、「打包」は二字で一つの動作として覚える。" }
       ],
       "soundFocus": [
-        { "item": "可以 kěyǐ", "noteJa": "第三声が続く。まずゆっくり区切り、会話では滑らかにつなぐ。" },
+        { "item": "可以 kěyǐ", "noteJa": "第三声が二つ続くため、表記は kěyǐ のままでも、発音では最初の kě が第二声のように上がって kéyǐ となる。" },
         { "item": "打包 dǎbāo", "noteJa": "第三声から第一声。bāo を高く平らに保つ。" }
       ],
       "examples": [
@@ -503,7 +503,7 @@
         { "kanji": "日本", "jpReading": "にほん／にっぽん", "noteJa": "字形は同じでも中国語では Rìběn と読む。日本語の読みをそのまま使わない。" }
       ],
       "soundFocus": [
-        { "item": "你好 nǐ hǎo", "noteJa": "第三声が続く。最初の nǐ は会話で上がるように聞こえることがあるが、まず拼音の声調を意識する。" },
+        { "item": "你好 nǐ hǎo", "noteJa": "第三声が二つ続くため、表記は nǐ hǎo のままでも、発音では最初の nǐ が第二声のように上がって ní hǎo となる。" },
         { "item": "從 cóng", "noteJa": "第二声。低めから上げ、平らに伸ばさない。" }
       ],
       "examples": [

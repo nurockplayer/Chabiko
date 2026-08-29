@@ -202,6 +202,89 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).toBe(false);
   });
 
+  it('uses Taiwan Traditional 託運 while preserving Simplified and lexical pinyin', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const baggageLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-012',
+    )?.lesson;
+    const baggageExample = baggageLesson?.examples?.find((example) =>
+      example.traditional.includes('行李還沒出來'),
+    );
+
+    expect(JSON.stringify(baggageLesson)).not.toContain('托運');
+    expect(baggageLesson?.coreSentence).toBe('我的託運行李還沒出來。');
+    expect(baggageExample).toMatchObject({
+      traditional: '我的託運行李還沒出來。',
+      simplified: '我的托运行李还没出来。',
+      pinyin: 'wǒ de tuōyùn xínglǐ hái méi chūlái.',
+    });
+  });
+
+  it('uses a natural Taiwan restaurant pattern for asking about a party of two', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const seatingLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-015',
+    )?.lesson;
+    const seatingExample = seatingLesson?.examples?.[0];
+
+    expect(JSON.stringify(seatingLesson)).not.toContain('有兩位的位子嗎');
+    expect(seatingLesson?.learnerOutcomeJa).toContain('「兩位有位子嗎？」');
+    expect(seatingLesson?.coreSentence).toBe('請問，兩位有位子嗎？');
+    expect(seatingLesson?.sections?.[1].contentJa).toContain(
+      '「人数＋位＋有位子嗎？」',
+    );
+    expect(seatingLesson?.chunks.map((chunk) => chunk.chunk)).toEqual([
+      '請問',
+      '兩位',
+      '有位子嗎',
+    ]);
+    expect(seatingExample).toMatchObject({
+      traditional: '請問，兩位有位子嗎？',
+      simplified: '请问，两位有位子吗？',
+      pinyin: 'qǐngwèn, liǎng wèi yǒu wèizi ma?',
+    });
+    expect(seatingLesson?.reviewPrompts[1].answerJa).toBe('有位子嗎？');
+    expect(seatingLesson?.travelTask).toContain('請問，＋人数＋位有位子嗎？');
+  });
+
+  it('explains required 可以 third-tone sandhi while preserving lexical pinyin', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const takeawayLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-017',
+    )?.lesson;
+
+    expect(
+      takeawayLesson?.soundFocus.find((focus) => focus.item === '可以 kěyǐ'),
+    ).toEqual({
+      item: '可以 kěyǐ',
+      noteJa:
+        '第三声が二つ続くため、表記は kěyǐ のままでも、発音では最初の kě が第二声のように上がって kéyǐ となる。',
+    });
+    expect(
+      takeawayLesson?.examples
+        ?.filter((example) => example.traditional.includes('可以'))
+        .every((example) => example.pinyin.includes('kěyǐ')),
+    ).toBe(true);
+  });
+
+  it('explains required 你好 third-tone sandhi while preserving lexical pinyin', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const socialLesson = packet.records.find(
+      (record) => record.lesson.id === 'lesson-024',
+    )?.lesson;
+
+    expect(
+      socialLesson?.soundFocus.find((focus) => focus.item === '你好 nǐ hǎo'),
+    ).toEqual({
+      item: '你好 nǐ hǎo',
+      noteJa:
+        '第三声が二つ続くため、表記は nǐ hǎo のままでも、発音では最初の nǐ が第二声のように上がって ní hǎo となる。',
+    });
+    expect(socialLesson?.examples?.[0].pinyin).toBe(
+      'nǐ hǎo, wǒ jiào Tiánzhōng, cóng Rìběn lái.',
+    );
+  });
+
   it('fails closed on wrong order, duplicate source IDs, stale graph refs, and production overlap', async () => {
     await expect(
       build(undefined, ({ lessons }) => lessons.reverse()),
