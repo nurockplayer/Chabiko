@@ -1,0 +1,1088 @@
+---
+import type { DesignLabFixture } from '../../content/designLabFixture';
+
+export interface Props {
+  fixture: DesignLabFixture;
+}
+
+const { fixture } = Astro.props;
+const vocabularyExample = fixture.vocabulary.examples?.[0];
+const [reviewPrompt] = fixture.lesson.reviewPrompts;
+---
+
+<main class="notion-prototype" data-design-lab>
+  <header class="document-bar">
+    <div class="document-brand">
+      <span class="document-mark" aria-hidden="true">C</span>
+      <span>Chabiko 学習ノート</span>
+    </div>
+    <span class="document-state">閲覧用プロトタイプ</span>
+  </header>
+
+  <div class="workspace">
+    <aside class="page-index" aria-label="学習ノートのページ一覧">
+      <p class="index-title">ページ一覧</p>
+      <nav class="index-list" role="tablist" aria-label="表示するページ">
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="home"
+          aria-controls="notion-view-home"
+          aria-selected="true"
+        >
+          <span class="index-glyph" aria-hidden="true">⌂</span>
+          <span>ホーム</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="vocabulary"
+          aria-controls="notion-view-vocabulary"
+          aria-selected="false"
+        >
+          <span class="index-glyph" aria-hidden="true">字</span>
+          <span>単語</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="lesson"
+          aria-controls="notion-view-lesson"
+          aria-selected="false"
+        >
+          <span class="index-glyph" aria-hidden="true">文</span>
+          <span>レッスン</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="travel"
+          aria-controls="notion-view-travel"
+          aria-selected="false"
+        >
+          <span class="index-glyph" aria-hidden="true">旅</span>
+          <span>旅行クエスト</span>
+        </button>
+      </nav>
+      <p class="index-note">すべての内容はこのページ内だけで切り替わります。</p>
+    </aside>
+
+    <div class="document-canvas">
+      <section
+        id="notion-view-home"
+        class="document-page home-page"
+        role="tabpanel"
+        aria-label="ホーム"
+        data-lab-view="home"
+      >
+        <header class="page-heading">
+          <p class="breadcrumb">学習ノート / ホーム</p>
+          <h1>{fixture.lesson.titleJa}</h1>
+          <p class="page-summary">{fixture.lesson.canDoJa}</p>
+        </header>
+
+        <blockquote>{fixture.lesson.hookJa}</blockquote>
+
+        <section class="document-section" aria-labelledby="notion-continue-heading">
+          <h2 id="notion-continue-heading">続きから学ぶ</h2>
+          <dl class="property-list">
+            <div>
+              <dt>中心表現</dt>
+              <dd lang="zh-Hant">{fixture.lesson.coreSentence}</dd>
+            </div>
+            <div>
+              <dt>できること</dt>
+              <dd>{fixture.lesson.canDoJa}</dd>
+            </div>
+          </dl>
+          <div class="document-continuation">
+            <a
+              class="text-action"
+              data-lab-continuation
+              href="?view=lesson"
+            >
+              レッスンを続ける
+            </a>
+          </div>
+        </section>
+
+        <section class="document-section" aria-labelledby="notion-path-heading">
+          <h2 id="notion-path-heading">学習パス</h2>
+          <ul class="page-links">
+            {fixture.pathLabels.map((path) => (
+              <li>
+                <span class="page-link-icon" aria-hidden="true">□</span>
+                <span>{path.labelJa}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </section>
+
+      <section
+        id="notion-view-vocabulary"
+        class="document-page vocabulary-page"
+        role="tabpanel"
+        aria-label="単語"
+        data-lab-view="vocabulary"
+        hidden
+      >
+        <header class="page-heading definition-heading">
+          <p class="breadcrumb">学習ノート / 単語</p>
+          <h1 lang="zh-Hant">{fixture.vocabulary.traditional}</h1>
+          <p class="pronunciation">{fixture.vocabulary.pinyin}</p>
+        </header>
+
+        <dl class="property-list vocabulary-properties">
+          <div>
+            <dt>簡体字</dt>
+            <dd lang="zh-Hans">{fixture.vocabulary.simplified}</dd>
+          </div>
+          <div>
+            <dt>かな</dt>
+            <dd>{fixture.vocabulary.kana}</dd>
+          </div>
+          <div>
+            <dt>分類</dt>
+            <dd>{fixture.vocabulary.category}</dd>
+          </div>
+        </dl>
+
+        <section class="document-section reveal-section" aria-labelledby="notion-meaning-heading">
+          <h2 id="notion-meaning-heading">意味を確認</h2>
+          <button
+            class="text-action"
+            type="button"
+            data-lab-reveal
+            aria-controls="notion-vocabulary-answer"
+            aria-expanded="false"
+          >
+            答えを表示
+          </button>
+          <div id="notion-vocabulary-answer" class="answer-block" data-lab-answer hidden>
+            <p class="answer-label">日本語</p>
+            <p class="answer-text">{fixture.vocabulary.japanese}</p>
+            <div class="rating-row" aria-label="覚え具合">
+              <button
+                type="button"
+                data-lab-rating="again"
+                aria-pressed="false"
+              >もう一度</button>
+              <button
+                type="button"
+                data-lab-rating="known"
+                aria-pressed="false"
+              >覚えた</button>
+            </div>
+          </div>
+        </section>
+
+        {fixture.vocabulary.toneNote && (
+          <details class="document-disclosure">
+            <summary>声調メモ</summary>
+            <p>{fixture.vocabulary.toneNote}</p>
+          </details>
+        )}
+        {fixture.vocabulary.caution && (
+          <details class="document-disclosure">
+            <summary>発音の注意</summary>
+            <p>{fixture.vocabulary.caution}</p>
+          </details>
+        )}
+        {vocabularyExample && (
+          <section class="document-section example-section" aria-labelledby="notion-example-heading">
+            <h2 id="notion-example-heading">使用例</h2>
+            <p class="example-chinese" lang="zh-Hant">{vocabularyExample.traditional}</p>
+            <p class="pronunciation">{vocabularyExample.pinyin}</p>
+            <p>{vocabularyExample.japanese}</p>
+          </section>
+        )}
+      </section>
+
+      <section
+        id="notion-view-lesson"
+        class="document-page lesson-page"
+        role="tabpanel"
+        aria-label="レッスン"
+        data-lab-view="lesson"
+        hidden
+      >
+        <header class="page-heading">
+          <p class="breadcrumb">学習ノート / レッスン</p>
+          <h1>{fixture.lesson.titleJa}</h1>
+          <p class="page-summary">{fixture.lesson.canDoJa}</p>
+        </header>
+
+        <dl class="property-list lesson-properties">
+          <div>
+            <dt>レベル</dt>
+            <dd>{fixture.lesson.level}</dd>
+          </div>
+          <div>
+            <dt>旅行場面</dt>
+            <dd>{fixture.lesson.travelScenario}</dd>
+          </div>
+          <div>
+            <dt>到達目標</dt>
+            <dd>{fixture.lesson.learnerOutcomeJa}</dd>
+          </div>
+        </dl>
+
+        <blockquote>{fixture.lesson.hookJa}</blockquote>
+
+        <section class="document-section core-section" aria-labelledby="notion-core-heading">
+          <h2 id="notion-core-heading">中心表現</h2>
+          <p class="core-sentence" lang="zh-Hant">{fixture.lesson.coreSentence}</p>
+          <div class="lesson-examples">
+            {fixture.lesson.examples?.map((example, index) => (
+              <article>
+                <p class="example-index">使用例 {index + 1}</p>
+                <p class="example-chinese" lang="zh-Hant">{example.traditional}</p>
+                <p class="pronunciation">{example.pinyin}</p>
+                <p>{example.japanese}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {fixture.lesson.sections?.map((section) => (
+          <section class="document-section">
+            <h2>{section.headingJa}</h2>
+            <p>{section.contentJa}</p>
+          </section>
+        ))}
+
+        <section class="document-section" aria-labelledby="notion-chunks-heading">
+          <h2 id="notion-chunks-heading">チャンク分解</h2>
+          <ol class="block-list">
+            {fixture.lesson.chunks.map((chunk) => (
+              <li>
+                <p class="block-title" lang="zh-Hant">{chunk.chunk}</p>
+                <p>{chunk.meaning}</p>
+                {chunk.notesJa && <p class="muted-note">{chunk.notesJa}</p>}
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <details class="document-disclosure">
+          <summary>漢字ブリッジ</summary>
+          <ul class="detail-list">
+            {fixture.lesson.kanjiBridgeNotes.map((note) => (
+              <li>
+                <strong>{note.kanji}（{note.jpReading}）</strong>
+                <span>{note.noteJa}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <details class="document-disclosure">
+          <summary>音のポイント</summary>
+          <ul class="detail-list">
+            {fixture.lesson.soundFocus.map((focus) => (
+              <li>
+                <strong>{focus.item}</strong>
+                <span>{focus.noteJa}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        {reviewPrompt && (
+          <section class="document-section practice-section" aria-labelledby="notion-practice-heading">
+            <h2 id="notion-practice-heading">ミニ練習</h2>
+            <p class="practice-prompt">{reviewPrompt.promptJa}</p>
+            <div class="choice-list" aria-label="回答を選択">
+              <button
+                type="button"
+                data-lab-quiz-choice
+                data-lab-correct="true"
+                aria-pressed="false"
+              >{reviewPrompt.answerJa}</button>
+              {reviewPrompt.distractorsJa?.map((choice) => (
+                <button
+                  type="button"
+                  data-lab-quiz-choice
+                  data-lab-correct="false"
+                  aria-pressed="false"
+                >{choice}</button>
+              ))}
+            </div>
+            <p class="quiz-feedback" data-lab-quiz-feedback aria-atomic="true"></p>
+          </section>
+        )}
+
+        <section class="document-section travel-task" aria-labelledby="notion-task-heading">
+          <h2 id="notion-task-heading">旅行タスク</h2>
+          <p>{fixture.lesson.travelTask}</p>
+        </section>
+      </section>
+
+      <section
+        id="notion-view-travel"
+        class="document-page travel-page"
+        role="tabpanel"
+        aria-label="旅行クエスト"
+        data-lab-view="travel"
+        hidden
+      >
+        <header class="page-heading">
+          <p class="breadcrumb">学習ノート / 旅行クエスト</p>
+          <h1>台湾旅行の準備</h1>
+          <p class="page-summary">{fixture.lesson.travelTask}</p>
+        </header>
+
+        <div class="image-blocks" aria-label="台湾旅行の場面">
+          <figure>
+            <img
+              src="/assets/design-lab/night-market-ordering.webp"
+              alt="台湾の夜市で注文する旅行者"
+              width="1536"
+              height="1024"
+            />
+            <figcaption>{fixture.lesson.titleJa}</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="/assets/design-lab/rainy-taiwan-street.webp"
+              alt="雨の台湾の街路"
+              width="1536"
+              height="1024"
+            />
+            <figcaption>{fixture.lesson.canDoJa}</figcaption>
+          </figure>
+        </div>
+
+        <section class="document-section" aria-labelledby="notion-readiness-heading">
+          <h2 id="notion-readiness-heading">旅行クエスト一覧</h2>
+          <div class="target-list">
+            {fixture.travelTargets.map((target) => (
+              <details class="target-disclosure">
+                <summary>
+                  <span>{target.labelJa}</span>
+                  <small>{target.evidence.length}項目</small>
+                </summary>
+                <p>{target.goalJa}</p>
+                <ul>
+                  {target.evidence.map((evidence) => (
+                    <li>{evidence.labelJa}</li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+        </section>
+      </section>
+    </div>
+  </div>
+</main>
+
+<style>
+  .notion-prototype {
+    --paper: #fbfbfa;
+    --surface: #f4f4f2;
+    --hover: #eeeeeb;
+    --selected: #e7e7e3;
+    --ink: #272724;
+    --muted: #686762;
+    --faint: #66655f;
+    --line: #deded9;
+    --focus: #1769aa;
+    min-height: 100dvh;
+    width: 100%;
+    overflow-x: clip;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .notion-prototype [hidden] {
+    display: none !important;
+  }
+
+  .document-bar {
+    min-height: 52px;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(251, 251, 250, 0.96);
+  }
+
+  .document-brand {
+    min-height: 44px;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .document-mark {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border: 1px solid var(--ink);
+    display: grid;
+    place-items: center;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+  }
+
+  .document-state {
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .workspace,
+  .document-canvas,
+  .document-page {
+    min-width: 0;
+  }
+
+  .page-index {
+    padding: 10px 12px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .index-title {
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .index-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .index-list button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 7px 9px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--muted);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 130ms ease, color 130ms ease, border-color 130ms ease, transform 80ms ease;
+  }
+
+  .index-list button:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
+
+  .index-list button:active {
+    transform: translateY(1px);
+  }
+
+  .index-list button[aria-selected="true"] {
+    border-color: #d2d2cc;
+    background: var(--selected);
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .index-list button[aria-selected="true"]::after {
+    content: "✓";
+    margin-left: auto;
+    font-size: 12px;
+  }
+
+  .index-glyph {
+    width: 22px;
+    flex: 0 0 22px;
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    text-align: center;
+  }
+
+  .index-note {
+    display: none;
+  }
+
+  .document-canvas {
+    width: 100%;
+  }
+
+  .document-page {
+    width: min(100%, 790px);
+    margin: 0 auto;
+    padding: 42px 20px 88px;
+  }
+
+  .page-heading {
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .breadcrumb {
+    margin: 0 0 18px;
+    color: var(--faint);
+    font-size: 12px;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  blockquote,
+  figure,
+  dl,
+  dd {
+    margin-top: 0;
+  }
+
+  h1 {
+    max-width: 18ch;
+    margin-bottom: 10px;
+    font-size: clamp(2rem, 9vw, 3.65rem);
+    font-weight: 720;
+    line-height: 1.16;
+    letter-spacing: -0.045em;
+  }
+
+  .definition-heading h1 {
+    font-size: clamp(3.75rem, 20vw, 7.5rem);
+    font-weight: 690;
+    letter-spacing: -0.06em;
+  }
+
+  .page-summary {
+    max-width: 58ch;
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .pronunciation {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  blockquote {
+    margin: 30px 0;
+    padding: 11px 0 11px 18px;
+    border-left: 3px solid var(--ink);
+    font-size: 17px;
+  }
+
+  .document-section {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .document-section h2 {
+    margin-bottom: 14px;
+    font-size: 20px;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+
+  .property-list {
+    margin: 0;
+  }
+
+  .property-list > div {
+    min-height: 48px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: minmax(86px, 0.32fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+  }
+
+  .property-list > div:last-child {
+    border-bottom: 0;
+  }
+
+  .property-list dt {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .property-list dd {
+    margin-bottom: 0;
+  }
+
+  .property-list dd[lang="zh-Hant"] {
+    font-size: 23px;
+    font-weight: 650;
+  }
+
+  .vocabulary-properties {
+    padding: 16px 0 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lesson-properties {
+    padding-top: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lesson-examples {
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+
+  .lesson-examples article {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lesson-examples article:last-child {
+    border-bottom: 0;
+  }
+
+  .lesson-examples .example-index {
+    margin-bottom: 7px;
+    color: var(--faint);
+    font-size: 11px;
+  }
+
+  .lesson-examples .example-chinese {
+    margin-bottom: 3px;
+    font-size: 25px;
+  }
+
+  .page-links,
+  .block-list,
+  .detail-list,
+  .target-disclosure ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .page-links li {
+    min-height: 44px;
+    padding: 9px 4px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-links li:last-child {
+    border-bottom: 0;
+  }
+
+  .page-link-icon {
+    color: var(--faint);
+    font-size: 13px;
+  }
+
+  .text-action,
+  .rating-row button,
+  .choice-list button {
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 130ms ease, border-color 130ms ease, transform 80ms ease;
+  }
+
+  .text-action {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 9px 12px;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .document-continuation {
+    margin-top: 16px;
+  }
+
+  .text-action::before {
+    content: "+";
+    margin-right: 9px;
+    color: var(--muted);
+  }
+
+  .text-action:hover,
+  .rating-row button:hover,
+  .choice-list button:hover {
+    border-color: #bdbdb6;
+    background: var(--hover);
+  }
+
+  .text-action:active,
+  .rating-row button:active,
+  .choice-list button:active {
+    transform: translateY(1px);
+  }
+
+  .answer-block {
+    margin-top: 12px;
+    padding: 18px;
+    border-left: 3px solid var(--ink);
+    background: var(--surface);
+  }
+
+  .answer-label {
+    margin-bottom: 3px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .answer-text {
+    margin-bottom: 18px;
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .rating-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .rating-row button {
+    padding: 8px 12px;
+  }
+
+  .rating-row button[aria-pressed="true"],
+  .choice-list button[aria-pressed="true"] {
+    border-color: var(--ink);
+    background: var(--selected);
+    font-weight: 700;
+  }
+
+  .rating-row button[aria-pressed="true"]::before,
+  .choice-list button[aria-pressed="true"]::before {
+    content: "✓ ";
+  }
+
+  .rating-row button:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  .rating-row button:disabled:not([aria-pressed="true"]) {
+    color: var(--faint);
+  }
+
+  .document-disclosure,
+  .target-disclosure {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .document-disclosure summary,
+  .target-disclosure summary {
+    min-height: 48px;
+    padding: 10px 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 650;
+    transition: background-color 130ms ease, color 130ms ease, transform 80ms ease;
+  }
+
+  .document-disclosure summary:hover,
+  .target-disclosure summary:hover {
+    background: var(--hover);
+    color: var(--focus);
+  }
+
+  .document-disclosure summary:active,
+  .target-disclosure summary:active {
+    transform: translateY(1px);
+  }
+
+  .document-disclosure summary::marker,
+  .target-disclosure summary::marker {
+    color: var(--muted);
+  }
+
+  .document-disclosure > p,
+  .document-disclosure > .detail-list,
+  .target-disclosure > p,
+  .target-disclosure > ul {
+    margin: 0 0 18px 22px;
+  }
+
+  .detail-list li {
+    margin-bottom: 14px;
+    display: grid;
+    gap: 3px;
+  }
+
+  .example-chinese,
+  .core-sentence {
+    margin-bottom: 2px;
+    font-size: clamp(2.5rem, 14vw, 5.5rem);
+    font-weight: 680;
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+  }
+
+  .example-section > p:last-child {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .block-list {
+    counter-reset: chunks;
+  }
+
+  .block-list li {
+    position: relative;
+    padding: 17px 0 17px 36px;
+    border-bottom: 1px solid var(--line);
+    counter-increment: chunks;
+  }
+
+  .block-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .block-list li::before {
+    content: counter(chunks);
+    position: absolute;
+    top: 20px;
+    left: 2px;
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+  }
+
+  .block-title {
+    margin-bottom: 3px;
+    font-size: 25px;
+    font-weight: 680;
+  }
+
+  .block-list p:not(.block-title) {
+    margin-bottom: 3px;
+  }
+
+  .muted-note {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .practice-prompt {
+    margin-bottom: 14px;
+    font-size: 17px;
+    font-weight: 650;
+  }
+
+  .choice-list {
+    display: grid;
+    gap: 7px;
+  }
+
+  .choice-list button {
+    padding: 9px 12px;
+    text-align: left;
+  }
+
+  .quiz-feedback {
+    min-height: 27px;
+    margin: 12px 0 0;
+    font-weight: 700;
+  }
+
+  .quiz-feedback:not(:empty)::before {
+    content: "結果: ";
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .travel-task {
+    border-left: 3px solid var(--ink);
+    padding-left: 18px;
+  }
+
+  .image-blocks {
+    padding: 28px 0 8px;
+    display: grid;
+    gap: 22px;
+  }
+
+  .image-blocks figure {
+    margin-bottom: 0;
+  }
+
+  .image-blocks img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    border: 1px solid var(--line);
+    object-fit: cover;
+  }
+
+  .image-blocks figcaption {
+    padding-top: 7px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .target-list {
+    border-top: 1px solid var(--line);
+  }
+
+  .target-disclosure summary {
+    justify-content: space-between;
+  }
+
+  .target-disclosure summary small {
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .target-disclosure li {
+    position: relative;
+    margin: 8px 0;
+    padding-left: 18px;
+    color: var(--muted);
+  }
+
+  .target-disclosure li::before {
+    content: "□";
+    position: absolute;
+    left: 0;
+    color: var(--faint);
+  }
+
+  .notion-prototype :is(a, button, summary):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 320px) {
+    .document-bar {
+      padding-inline: 8px;
+    }
+
+    .document-state {
+      display: none;
+    }
+
+    .page-index {
+      padding-inline: 8px;
+    }
+
+    .index-list {
+      grid-template-columns: 1fr;
+    }
+
+    .document-page {
+      padding: 30px 14px 72px;
+    }
+
+    h1 {
+      font-size: 1.85rem;
+    }
+
+    .definition-heading h1 {
+      font-size: 3.5rem;
+    }
+
+    .property-list > div {
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .rating-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 720px) {
+    .document-page {
+      padding: 62px 44px 112px;
+    }
+
+    .image-blocks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .image-blocks figure:nth-child(2) {
+      margin-top: 42px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .document-bar {
+      position: relative;
+      z-index: 1;
+      padding-inline: 18px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+    }
+
+    .page-index {
+      position: sticky;
+      top: 0;
+      height: calc(100dvh - 52px);
+      padding: 22px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+      overflow-y: auto;
+    }
+
+    .index-list {
+      grid-template-columns: 1fr;
+    }
+
+    .index-note {
+      display: block;
+      margin: 22px 8px 0;
+      color: var(--faint);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .document-page {
+      min-height: calc(100dvh - 52px);
+      padding-top: 76px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .notion-prototype *,
+    .notion-prototype *::before,
+    .notion-prototype *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

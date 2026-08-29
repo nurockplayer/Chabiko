@@ -1,0 +1,21 @@
+---
+import DesignLabLayout from '../../../layouts/DesignLabLayout.astro';
+import { buildDesignLabFixture } from '../../../content/designLabFixture';
+import NotionPrototype from '../../../components/design-lab/NotionPrototype.astro';
+
+const fixture = buildDesignLabFixture();
+---
+
+<DesignLabLayout
+  title="Notion grammar"
+  description="Chabikoの学習内容を文書型の構造で比較するデザインラボ"
+>
+  <NotionPrototype fixture={fixture} />
+</DesignLabLayout>
+
+<script>
+  import { initDesignLabPrototype } from '../../../client/designLabPrototype';
+
+  const root = document.querySelector<HTMLElement>('[data-design-lab]');
+  if (root) initDesignLabPrototype(root);
+</script>

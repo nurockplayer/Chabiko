@@ -1,0 +1,21 @@
+---
+import DesignLabLayout from '../../../layouts/DesignLabLayout.astro';
+import { buildDesignLabFixture } from '../../../content/designLabFixture';
+import ApplePrototype from '../../../components/design-lab/ApplePrototype.astro';
+
+const fixture = buildDesignLabFixture();
+---
+
+<DesignLabLayout
+  title="Apple-inspired prototype"
+  description="Apple-inspired Chabiko learning prototype"
+>
+  <ApplePrototype fixture={fixture} />
+</DesignLabLayout>
+
+<script>
+  import { initDesignLabPrototype } from '../../../client/designLabPrototype';
+
+  const root = document.querySelector<HTMLElement>('[data-design-lab]');
+  if (root) initDesignLabPrototype(root);
+</script>

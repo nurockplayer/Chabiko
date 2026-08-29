@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "scope": "prototype-only",
+  "generator": {
+    "provider": "OpenAI",
+    "product": "built-in image generation",
+    "outputKind": "generated",
+    "generatedAt": "2026-08-24"
+  },
+  "rightsDecision": {
+    "decision": "approved-for-prototype-only-use",
+    "accountContext": "The task used OpenAI built-in image generation under the requester account context.",
+    "requesterAuthorization": "The task requester authorized generation and use within the Design Lab prototype scope.",
+    "rightsBasis": [
+      {
+        "document": "OpenAI Terms of Use",
+        "url": "https://openai.com/policies/terms-of-use/",
+        "effectiveDate": "2026-01-01",
+        "section": "Content ownership",
+        "basis": "Records OpenAI's allocation of Output ownership to the user, subject to the agreement."
+      },
+      {
+        "document": "OpenAI Services Agreement",
+        "url": "https://openai.com/policies/services-agreement/",
+        "effectiveDate": "2026-01-01",
+        "section": "§4.1",
+        "basis": "Records OpenAI's allocation of Output ownership to the customer, subject to the agreement."
+      }
+    ],
+    "limitations": "This provenance record documents rights allocation and project scope; it is not a non-infringement guarantee.",
+    "humanReview": {
+      "reviewed": true,
+      "findings": [
+        "No readable text",
+        "No visible logo",
+        "No identifiable specific person"
+      ]
+    },
+    "attribution": {
+      "uiDisplay": "none",
+      "repositoryRecord": "required",
+      "rationale": "Generated imagery carries no third-party source credit in the prototype UI; repository metadata remains required so the generation context, rights basis, scope, review, and hashes stay auditable."
+    }
+  },
+  "assets": [
+    {
+      "path": "/assets/design-lab/night-market-ordering.webp",
+      "sourceArtifact": {
+        "id": "openai-imagegen:exec-11450f1e-8d34-44c3-9c88-2b7c9ee0404f",
+        "kind": "generated-png",
+        "format": "png",
+        "sha256": "08ddefd1e012095c0a38bb113d10d9e6d4edbc5a2c3609a1c3e8838245a62049"
+      },
+      "committedArtifact": {
+        "kind": "optimized-webp",
+        "format": "webp",
+        "width": 1536,
+        "height": 1024,
+        "sha256": "78d3ad47f0496871f0dca8f99bec57c77911ec182b26bc3696490a512ea6a9bf"
+      },
+      "useCase": "photorealistic-natural",
+      "promptSummary": "Adult traveler pointing at food at an authentic Taiwan night-market counter; mature editorial documentary photography; no text, logos, landmarks, or tourist-poster styling.",
+      "allowedUse": "prototype-only",
+      "consumers": [
+        "src/components/design-lab/AirbnbPrototype.astro",
+        "src/components/design-lab/ApplePrototype.astro",
+        "src/components/design-lab/DuolingoPrototype.astro",
+        "src/components/design-lab/LinearPrototype.astro",
+        "src/components/design-lab/NotionPrototype.astro"
+      ]
+    },
+    {
+      "path": "/assets/design-lab/rainy-taiwan-street.webp",
+      "sourceArtifact": {
+        "id": "openai-imagegen:exec-474550a5-ab9f-4492-a557-ee263344e068",
+        "kind": "generated-png",
+        "format": "png",
+        "sha256": "96ec3e60f15cc0332fcabfd4c65fc17a8cd61395ea6cb24a635ac70afa2c4825"
+      },
+      "committedArtifact": {
+        "kind": "optimized-webp",
+        "format": "webp",
+        "width": 1536,
+        "height": 1024,
+        "sha256": "c1a704d3b8a427f387daed04f9318462bac5d424ac4871330a699f24107069e4"
+      },
+      "useCase": "photorealistic-natural",
+      "promptSummary": "Quiet rainy Taiwan neighborhood street seen by an adult traveler; mature editorial documentary photography; no text, logos, landmarks, or tourist-poster styling.",
+      "allowedUse": "prototype-only",
+      "consumers": [
+        "src/components/design-lab/AirbnbPrototype.astro",
+        "src/components/design-lab/ApplePrototype.astro",
+        "src/components/design-lab/DuolingoPrototype.astro",
+        "src/components/design-lab/LinearPrototype.astro",
+        "src/components/design-lab/NotionPrototype.astro"
+      ]
+    }
+  ]
+}

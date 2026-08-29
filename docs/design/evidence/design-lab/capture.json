@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "contract": {
+    "individualViewport": {
+      "width": 390,
+      "height": 844
+    },
+    "comparisonViewport": {
+      "width": 2000,
+      "height": 934
+    },
+    "minimumGrayscaleDistance": 0.035
+  },
+  "validation": {
+    "interactionScenarios": 5,
+    "responsiveStates": 120,
+    "axeScans": 20,
+    "focusVisibleChecks": 20,
+    "reducedMotionChecks": 20
+  },
+  "entries": [
+    {
+      "kind": "individual",
+      "grammar": "apple",
+      "view": "home",
+      "filename": "apple-home.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "a9dd1613aad189caae724b06565434062faf1a49dfa41f18b9bbb358502bf4e5",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "airbnb",
+      "view": "home",
+      "filename": "airbnb-home.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "39ae1e841fd0982a8e6e7c3f7987a3ca51e0cac9da4cc4f2fc81155e6ffbec02",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "notion",
+      "view": "home",
+      "filename": "notion-home.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "b58705361ad66e668538769892efb1d96df9d56ab790ac01a5df9c79139f7830",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "linear",
+      "view": "home",
+      "filename": "linear-home.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "44e7c2c6717b6c07f337728d094be77fee88c57a6c6c1ae2bf6b81e060b62f8b",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "duolingo",
+      "view": "home",
+      "filename": "duolingo-home.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "6f0ab9b30bfe1baf871bfaf72a98fa6d94f6d8182f3864b55ad46ec5210d48b7",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "apple",
+      "view": "vocabulary",
+      "filename": "apple-vocabulary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "e9c4bc1d3531ff25ad05e9386a525f33ede0eca8bd9cda6bd6716527e33e095e",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "airbnb",
+      "view": "vocabulary",
+      "filename": "airbnb-vocabulary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "54e3a89d4d138a7a2e13cff266963b5444b1a56787083f4a409e5a8b5efdadac",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "notion",
+      "view": "vocabulary",
+      "filename": "notion-vocabulary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "a6bc5275fdd47c8705594ea20d8ecfe3a00c883804e9f64550fa59379ef64855",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "linear",
+      "view": "vocabulary",
+      "filename": "linear-vocabulary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "4e7bac1adbc3d7e85a2a920871e1a43819e9e7629c24ca5718190b5997803d35",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "duolingo",
+      "view": "vocabulary",
+      "filename": "duolingo-vocabulary.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "8bb36ddddee79a60d65f6e09697cfd740c9d027da90d070628594e604e04caf5",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "apple",
+      "view": "lesson",
+      "filename": "apple-lesson.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "d40bddc32a1c929967540a6437a960044b3bfe42b09d02a5d008c6b62a99f519",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "airbnb",
+      "view": "lesson",
+      "filename": "airbnb-lesson.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "db7ebab6a79ee5249ea3b2e9cd0a2769b7294eafa64ff95b9ed66326fdd6d4e1",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "notion",
+      "view": "lesson",
+      "filename": "notion-lesson.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "8164d8f94f83973c0f995cb36e413adc51f1bf067e78df6151a00e301c61436a",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "linear",
+      "view": "lesson",
+      "filename": "linear-lesson.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "06dfb7ddcfc3c2527625aa328bcc37639a8acc48fd988c3949b5b6cab0898d17",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "duolingo",
+      "view": "lesson",
+      "filename": "duolingo-lesson.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "3cd385be1a140ecfa7eee45e0502f4eaf6cedd6aad869669d22a807d258e8fed",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "apple",
+      "view": "travel",
+      "filename": "apple-travel.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "0753e366a90e5136e2631989833e9b9d9216362b1027b0551ddd19b572c20dd3",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "airbnb",
+      "view": "travel",
+      "filename": "airbnb-travel.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "8d8369f2e7b556c36f0f2be33372521d4394539c45947b3dda8a0b882a169393",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "notion",
+      "view": "travel",
+      "filename": "notion-travel.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "ef7d811d13f54c920045327c0de299997de8f1d09ad45f5f47b489da93be34b4",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "linear",
+      "view": "travel",
+      "filename": "linear-travel.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "bb56827a6abf1bb77769c68f44b70c0a3a680f4982364ce83f55df54b76ebafe",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "individual",
+      "grammar": "duolingo",
+      "view": "travel",
+      "filename": "duolingo-travel.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "3182af55fa97f311312ab7e7c74437fa2fb63549ad4bbe7edf6e2173e598284e",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "comparison",
+      "view": "home",
+      "filename": "comparison-home.png",
+      "width": 2000,
+      "height": 934,
+      "sha256": "ec7cc94fabf6d534f60f6ee62ea3118a63507bfaea22ae126e7875f34793632d",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "comparison",
+      "view": "vocabulary",
+      "filename": "comparison-vocabulary.png",
+      "width": 2000,
+      "height": 934,
+      "sha256": "4174ca79b2a96fc542aabd8372834e5f8b6df6ac92ba4067fa2aec17b96fe1e9",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "comparison",
+      "view": "lesson",
+      "filename": "comparison-lesson.png",
+      "width": 2000,
+      "height": 934,
+      "sha256": "a7e2b6b2fe30c888acfdea954e1caaef33ce0bb9bb08016ac3a75238c8ab7e26",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    },
+    {
+      "kind": "comparison",
+      "view": "travel",
+      "filename": "comparison-travel.png",
+      "width": 2000,
+      "height": 934,
+      "sha256": "3e7c5828f43e2bb06d974d41ec0b22d17e2b51f786b8738a8c24100d78b76cde",
+      "checks": {
+        "renderedContract": "passed",
+        "browserDiagnostics": "clean",
+        "stableFrame": "byte-identical"
+      }
+    }
+  ],
+  "grayscale": {
+    "signatures": {
+      "apple": {
+        "home": "eeeeeeeeeeeeeeeee3e9ee2eeeeeeeeeeeeeeeee972333962253d28322dddddd",
+        "lesson": "eeeeeeeeeeeeeeeeeeeeeeee98beeeee35ddaebeeeeeeeeeeeeeeeeedddd22dd"
+      },
+      "airbnb": {
+        "home": "ffffffff2121222122542377e8edb8ee292f22ffeb9bdeeeffffffff55555555",
+        "lesson": "ffffffff322113225664426a1157244322ffffffeeeeeeeeeeeeeeeeffffffff"
+      },
+      "notion": {
+        "home": "ddddddddeeeedeaefffffffffffffffffffffffffffffffffff8efffffffffff",
+        "lesson": "ddddddddeeeedeaeffffffffffffffffffffffffffffffffffffffff2f226fff"
+      },
+      "linear": {
+        "home": "22222222111111111eeeee111111111111111111151111111111111111111111",
+        "lesson": "2222222211111111e11b11111111111111111111111111111111111141111111"
+      },
+      "duolingo": {
+        "home": "fffffffff2229f2ffffffffffffffffffd98effff8ffffffffffffffffffffff",
+        "lesson": "ffffffffffffafffffffffffdeeeeeeefffffffffebfd99fffffffffffffffff"
+      }
+    },
+    "distances": {
+      "home": {
+        "distance": 0.10208333333333329,
+        "pair": [
+          "notion",
+          "duolingo"
+        ]
+      },
+      "lesson": {
+        "distance": 0.10441176470588227,
+        "pair": [
+          "notion",
+          "duolingo"
+        ]
+      }
+    }
+  },
+  "manifestDigest": "9ff613552937f607cec81e8ec6b0bfd1de51ed0ec404b65dbefea4c5fb99f08e"
+}

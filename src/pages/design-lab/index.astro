@@ -1,0 +1,181 @@
+---
+import DesignLabLayout from '../../layouts/DesignLabLayout.astro';
+
+const grammars = [
+  { slug: 'apple', label: 'Apple', route: '/design-lab/apple/', labelId: 'apple-comparison-label' },
+  { slug: 'airbnb', label: 'Airbnb', route: '/design-lab/airbnb/', labelId: 'airbnb-comparison-label' },
+  { slug: 'notion', label: 'Notion', route: '/design-lab/notion/', labelId: 'notion-comparison-label' },
+  { slug: 'linear', label: 'Linear', route: '/design-lab/linear/', labelId: 'linear-comparison-label' },
+  { slug: 'duolingo', label: 'Duolingo', route: '/design-lab/duolingo/', labelId: 'duolingo-comparison-label' },
+] as const;
+const views = ['home', 'vocabulary', 'lesson', 'travel'] as const;
+const requestedView = Astro.url.searchParams.get('view');
+const selectedView = views.includes(requestedView as (typeof views)[number]) ? requestedView : 'home';
+---
+
+<DesignLabLayout
+  title="Prototype comparison"
+  description="Compare all five Chabiko design-lab grammars at one shared learner view"
+>
+  <main class="comparison-tool" data-design-lab-comparison data-active-view={selectedView}>
+    <header class="comparison-header" data-comparison-toolbar>
+      <h1>Design Lab comparison</h1>
+      <nav aria-label="Shared learner view">
+        {
+          views.map((view) => (
+            <a href={`?view=${view}`} data-comparison-view={view} aria-current={view === selectedView ? 'page' : undefined}>
+              {view}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <div class="comparison-row">
+      {
+        grammars.map(({ slug, label, route, labelId }) => (
+          <section class="comparison-column" aria-labelledby={labelId}>
+            <h2 id={labelId}>{label}</h2>
+            <iframe
+              src={`${route}?view=${selectedView}`}
+              data-comparison-frame={slug}
+              data-route={route}
+              aria-labelledby={labelId}
+              title={`${label} design-lab prototype`}
+              width="390"
+              height="844"
+              loading="eager"
+            />
+          </section>
+        ))
+      }
+    </div>
+  </main>
+
+  <script>
+    const views = ['home', 'vocabulary', 'lesson', 'travel'];
+    const requestedView = new URLSearchParams(window.location.search).get('view');
+    const selectedView = requestedView && views.includes(requestedView) ? requestedView : 'home';
+    const root = document.querySelector<HTMLElement>('[data-design-lab-comparison]');
+
+    if (root) {
+      root.dataset.activeView = selectedView;
+      root.querySelectorAll<HTMLAnchorElement>('[data-comparison-view]').forEach((link) => {
+        if (link.dataset.comparisonView === selectedView) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+      root.querySelectorAll<HTMLIFrameElement>('[data-comparison-frame]').forEach((frame) => {
+        frame.src = `${frame.dataset.route}?view=${selectedView}`;
+      });
+    }
+  </script>
+</DesignLabLayout>
+
+<style>
+  .comparison-tool {
+    width: max-content;
+    min-width: 100%;
+    padding: 8px;
+    color: #171714;
+    background: #f4f2eb;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .comparison-header {
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  nav {
+    display: flex;
+    gap: 0;
+    padding-right: 4px;
+    border-bottom: 1px solid #cbc7bc;
+  }
+
+  nav a {
+    min-width: 80px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border-bottom: 2px solid transparent;
+    color: inherit;
+    background: transparent;
+    font-size: 13px;
+    text-decoration: none;
+    transition:
+      color 120ms ease,
+      background-color 120ms ease,
+      transform 80ms ease;
+  }
+
+  nav a:hover {
+    color: #050504;
+    background: #e8e4da;
+  }
+
+  nav a:active {
+    color: #fff;
+    background: #3b3933;
+    transform: translateY(1px);
+  }
+
+  nav a[aria-current='page'] {
+    border-bottom-color: currentColor;
+    font-weight: 700;
+  }
+
+  nav a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -3px;
+  }
+
+  .comparison-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .comparison-column {
+    width: 390px;
+    margin: 0;
+  }
+
+  .comparison-column h2 {
+    height: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  iframe {
+    display: block;
+    width: 390px;
+    height: 844px;
+    border: 0;
+    background: white;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav a {
+      transition: none;
+    }
+  }
+</style>

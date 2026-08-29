@@ -1,0 +1,1345 @@
+---
+import type { DesignLabFixture } from '../../content/designLabFixture';
+
+export interface Props {
+  fixture: DesignLabFixture;
+}
+
+const { fixture } = Astro.props;
+---
+
+<main class="airbnb-lab" data-design-lab>
+  <header class="airbnb-header">
+    <div class="airbnb-brand" aria-label="Chabiko Design Lab">
+      <span class="airbnb-brand__mark" aria-hidden="true">旅</span>
+      <span>
+        <strong>Chabiko</strong>
+        <small>台湾で話すための旅程</small>
+      </span>
+    </div>
+
+    <nav class="airbnb-navigation" aria-label="学習ビュー" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        data-lab-nav
+        data-lab-target="home"
+        aria-controls="airbnb-home"
+        aria-selected="true"
+      >
+        ホーム
+      </button>
+      <button
+        type="button"
+        role="tab"
+        data-lab-nav
+        data-lab-target="vocabulary"
+        aria-controls="airbnb-vocabulary"
+        aria-selected="false"
+      >
+        単語
+      </button>
+      <button
+        type="button"
+        role="tab"
+        data-lab-nav
+        data-lab-target="lesson"
+        aria-controls="airbnb-lesson"
+        aria-selected="false"
+      >
+        レッスン
+      </button>
+      <button
+        type="button"
+        role="tab"
+        data-lab-nav
+        data-lab-target="travel"
+        aria-controls="airbnb-travel"
+        aria-selected="false"
+      >
+        旅クエスト
+      </button>
+    </nav>
+  </header>
+
+  <section
+    class="airbnb-view airbnb-home"
+    data-lab-view="home"
+    id="airbnb-home"
+    role="tabpanel"
+    aria-labelledby="airbnb-home-title"
+  >
+    <div class="airbnb-home__story">
+      <figure class="airbnb-photo airbnb-home__photo">
+        <img
+          src="/assets/design-lab/night-market-ordering.webp"
+          alt={`${fixture.lesson.titleJa}の場面`}
+          width="1536"
+          height="1024"
+        />
+        <figcaption>{fixture.lesson.travelTask}</figcaption>
+      </figure>
+
+      <div class="airbnb-home__content">
+        <p class="airbnb-kicker">今夜の学習プラン</p>
+        <h1 id="airbnb-home-title">{fixture.lesson.titleJa}</h1>
+        <div class="airbnb-home__phrase">
+          <span>現地で使うフレーズ</span>
+          <strong lang="zh-Hant">{fixture.lesson.coreSentence}</strong>
+        </div>
+        <p class="airbnb-home__goal">{fixture.lesson.canDoJa}</p>
+        <p class="airbnb-home__hook">{fixture.lesson.hookJa}</p>
+        <div class="airbnb-continuation">
+          <a
+            class="airbnb-primary-button"
+            data-lab-continuation
+            href="?view=lesson"
+          >
+            レッスンを続ける
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <section class="airbnb-paths" aria-labelledby="airbnb-paths-title">
+      <h2 id="airbnb-paths-title">旅に合わせた学び方</h2>
+      <ul>
+        {fixture.pathLabels.map((path, index) => (
+          <li class:list={[{ "airbnb-path--active": index === 0 }]} data-path-id={path.id}>
+            <span>{index === 0 ? '今回の旅程' : '別の学習パス'}</span>
+            <strong>{path.labelJa}</strong>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </section>
+
+  <section
+    class="airbnb-view airbnb-vocabulary"
+    data-lab-view="vocabulary"
+    id="airbnb-vocabulary"
+    role="tabpanel"
+    aria-labelledby="airbnb-vocabulary-title"
+    hidden
+  >
+    <div class="airbnb-vocabulary__layout">
+      <figure class="airbnb-photo airbnb-vocabulary__photo">
+        <img
+          src="/assets/design-lab/night-market-ordering.webp"
+          alt={`${fixture.lesson.titleJa}の場面`}
+          width="1536"
+          height="1024"
+        />
+        <figcaption>{fixture.vocabulary.examples?.[0]?.japanese}</figcaption>
+      </figure>
+
+      <div class="airbnb-word-card">
+        <p class="airbnb-kicker">この場所で使うことば</p>
+        <h1 id="airbnb-vocabulary-title" lang="zh-Hant">{fixture.vocabulary.traditional}</h1>
+        <p class="airbnb-word-card__pinyin">{fixture.vocabulary.pinyin}</p>
+        <button
+          class="airbnb-primary-button"
+          type="button"
+          data-lab-reveal
+          aria-expanded="false"
+          aria-controls="airbnb-vocabulary-answer"
+        >
+          意味を確認する
+        </button>
+
+        <div class="airbnb-word-answer" id="airbnb-vocabulary-answer" data-lab-answer hidden>
+          <p class="airbnb-word-answer__meaning">{fixture.vocabulary.japanese}</p>
+          <dl class="airbnb-word-answer__facts">
+            <div>
+              <dt>簡体字</dt>
+              <dd lang="zh-Hans">{fixture.vocabulary.simplified}</dd>
+            </div>
+            <div>
+              <dt>かな</dt>
+              <dd>{fixture.vocabulary.kana}</dd>
+            </div>
+            <div>
+              <dt>カテゴリー</dt>
+              <dd>{fixture.vocabulary.category}</dd>
+            </div>
+          </dl>
+
+          {fixture.vocabulary.toneNote && (
+            <section class="airbnb-tip">
+              <h2>声に出すコツ</h2>
+              <p>{fixture.vocabulary.toneNote}</p>
+            </section>
+          )}
+          {fixture.vocabulary.caution && (
+            <section class="airbnb-tip">
+              <h2>気をつける音</h2>
+              <p>{fixture.vocabulary.caution}</p>
+            </section>
+          )}
+          {fixture.vocabulary.examples && fixture.vocabulary.examples.length > 0 && (
+            <section class="airbnb-vocabulary-examples">
+              <h2>夜市での使い方</h2>
+              {fixture.vocabulary.examples.map((example) => (
+                <article>
+                  <p class="airbnb-vocabulary-examples__han" lang="zh-Hant">{example.traditional}</p>
+                  <p class="airbnb-vocabulary-examples__pinyin">{example.pinyin}</p>
+                  <p>{example.japanese}</p>
+                </article>
+              ))}
+            </section>
+          )}
+
+          <div class="airbnb-rating" aria-label="自己評価">
+            <p>現地で思い出せそうですか？</p>
+            <div>
+              <button type="button" data-lab-rating="again" aria-pressed="false">もう一度</button>
+              <button type="button" data-lab-rating="known" aria-pressed="false">使えそう</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="airbnb-view airbnb-lesson"
+    data-lab-view="lesson"
+    id="airbnb-lesson"
+    role="tabpanel"
+    aria-labelledby="airbnb-lesson-title"
+    hidden
+  >
+    <header class="airbnb-lesson__hero">
+      <figure class="airbnb-photo">
+        <img
+          src="/assets/design-lab/night-market-ordering.webp"
+          alt={`${fixture.lesson.titleJa}の場面`}
+          width="1536"
+          height="1024"
+        />
+      </figure>
+      <div>
+        <p class="airbnb-kicker">{fixture.lesson.level}</p>
+        <h1 id="airbnb-lesson-title">{fixture.lesson.titleJa}</h1>
+        <p class="airbnb-lesson__hook">{fixture.lesson.hookJa}</p>
+        <dl class="airbnb-lesson__outcomes">
+          <div>
+            <dt>できるようになること</dt>
+            <dd>{fixture.lesson.canDoJa}</dd>
+          </div>
+          <div>
+            <dt>旅先でのゴール</dt>
+            <dd>{fixture.lesson.learnerOutcomeJa}</dd>
+          </div>
+        </dl>
+      </div>
+    </header>
+
+    <div class="airbnb-itinerary">
+      <section class="airbnb-itinerary__phrase" aria-labelledby="airbnb-core-title">
+        <div class="airbnb-itinerary__label">最初に覚えるフレーズ</div>
+        <h2 id="airbnb-core-title" lang="zh-Hant">{fixture.lesson.coreSentence}</h2>
+      </section>
+
+      {fixture.lesson.sections && fixture.lesson.sections.map((section) => (
+        <section class="airbnb-itinerary__stop">
+          <h2>{section.headingJa}</h2>
+          <p>{section.contentJa}</p>
+        </section>
+      ))}
+
+      <section class="airbnb-itinerary__stop" aria-labelledby="airbnb-chunks-title">
+        <h2 id="airbnb-chunks-title">フレーズを組み立てる</h2>
+        <div class="airbnb-chunk-grid">
+          {fixture.lesson.chunks.map((chunk) => (
+            <article>
+              <p class="airbnb-chunk-grid__han" lang="zh-Hant">{chunk.chunk}</p>
+              <p class="airbnb-chunk-grid__meaning">{chunk.meaning}</p>
+              {chunk.notesJa && <p class="airbnb-chunk-grid__note">{chunk.notesJa}</p>}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="airbnb-itinerary__stop" aria-labelledby="airbnb-bridge-title">
+        <h2 id="airbnb-bridge-title">漢字から近づく</h2>
+        <div class="airbnb-bridge-list">
+          {fixture.lesson.kanjiBridgeNotes.map((note) => (
+            <article>
+              <p class="airbnb-bridge-list__kanji" lang="zh-Hant">{note.kanji}</p>
+              <div>
+                <p class="airbnb-bridge-list__reading">日本語の読み: {note.jpReading}</p>
+                <p>{note.noteJa}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="airbnb-itinerary__stop" aria-labelledby="airbnb-sound-title">
+        <h2 id="airbnb-sound-title">現地で伝わる音</h2>
+        <div class="airbnb-sound-list">
+          {fixture.lesson.soundFocus.map((focus) => (
+            <article>
+              <strong>{focus.item}</strong>
+              <p>{focus.noteJa}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {fixture.lesson.examples && fixture.lesson.examples.length > 0 && (
+        <section class="airbnb-itinerary__stop" aria-labelledby="airbnb-examples-title">
+          <h2 id="airbnb-examples-title">注文を変えてみる</h2>
+          <div class="airbnb-example-list">
+            {fixture.lesson.examples.map((example) => (
+              <article>
+                <p class="airbnb-example-list__han" lang="zh-Hant">{example.traditional}</p>
+                <p class="airbnb-example-list__pinyin">{example.pinyin}</p>
+                <p>{example.japanese}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section class="airbnb-itinerary__stop airbnb-practice" aria-labelledby="airbnb-practice-title">
+        <h2 id="airbnb-practice-title">出発前に確認する</h2>
+        {fixture.lesson.reviewPrompts.map((prompt) => (
+          <article>
+            <p class="airbnb-practice__prompt">{prompt.promptJa}</p>
+            <div class="airbnb-practice__choices">
+              <button
+                type="button"
+                data-lab-quiz-choice
+                data-lab-correct="true"
+                aria-pressed="false"
+              >
+                {prompt.answerJa}
+              </button>
+              {prompt.distractorsJa?.map((answer) => (
+                <button
+                  type="button"
+                  data-lab-quiz-choice
+                  data-lab-correct="false"
+                  aria-pressed="false"
+                >
+                  {answer}
+                </button>
+              ))}
+            </div>
+          </article>
+        ))}
+        <p class="airbnb-practice__feedback" data-lab-quiz-feedback></p>
+      </section>
+
+      <footer class="airbnb-lesson__task">
+        <span>現地で試すこと</span>
+        <strong>{fixture.lesson.travelTask}</strong>
+        <small>{fixture.lesson.travelScenario}</small>
+      </footer>
+    </div>
+  </section>
+
+  <section
+    class="airbnb-view airbnb-travel"
+    data-lab-view="travel"
+    id="airbnb-travel"
+    role="tabpanel"
+    aria-labelledby="airbnb-travel-title"
+    hidden
+  >
+    <header class="airbnb-travel__hero">
+      <figure class="airbnb-photo">
+        <img
+          src="/assets/design-lab/rainy-taiwan-street.webp"
+          alt="雨の台湾の街を歩く旅行者"
+          width="1536"
+          height="1024"
+        />
+      </figure>
+      <div>
+        <p class="airbnb-kicker">Travel Quest</p>
+        <h1 id="airbnb-travel-title">{fixture.pathLabels[0]?.labelJa}</h1>
+        <p>使う場面から、旅の準備を選びましょう。</p>
+      </div>
+    </header>
+
+    <div class="airbnb-target-grid">
+      {fixture.travelTargets.map((target) => (
+        <article class="airbnb-target-card" data-target-id={target.id}>
+          <h2>{target.labelJa}</h2>
+          <p>{target.goalJa}</p>
+          <details>
+            <summary>準備すること</summary>
+            <ul>
+              {target.evidence.map((evidence) => (
+                <li data-evidence-id={evidence.id}>{evidence.labelJa}</li>
+              ))}
+            </ul>
+          </details>
+        </article>
+      ))}
+    </div>
+
+    <figure class="airbnb-photo airbnb-travel__night-market">
+      <img
+        src="/assets/design-lab/night-market-ordering.webp"
+        alt={`${fixture.lesson.titleJa}の場面`}
+        width="1536"
+        height="1024"
+        loading="lazy"
+      />
+      <figcaption>{fixture.lesson.travelTask}</figcaption>
+    </figure>
+  </section>
+</main>
+
+<style>
+  .airbnb-lab {
+    --airbnb-ink: #252426;
+    --airbnb-muted: #686568;
+    --airbnb-base: #fafaf9;
+    --airbnb-panel: #efeeec;
+    --airbnb-accent: #b83252;
+    --airbnb-accent-dark: #8f263f;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    color: var(--airbnb-ink);
+    background: var(--airbnb-base);
+    font-family: "Avenir Next", Avenir, "Hiragino Sans", "Yu Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .airbnb-lab :where(h1, h2, p, figure, figcaption, dl, dd, ul) {
+    margin: 0;
+  }
+
+  .airbnb-lab :where(ul) {
+    padding: 0;
+    list-style: none;
+  }
+
+  .airbnb-lab :where(a, button, summary) {
+    min-height: 44px;
+    cursor: pointer;
+  }
+
+  .airbnb-lab :where(a):focus-visible,
+  .airbnb-lab :where(button):focus-visible,
+  .airbnb-lab :where(summary):focus-visible {
+    outline: 3px solid var(--airbnb-accent);
+    outline-offset: 3px;
+  }
+
+  .airbnb-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    gap: 8px;
+    padding: 10px 16px 0;
+    border-bottom: 1px solid rgb(37 36 38 / 10%);
+    background: var(--airbnb-base);
+  }
+
+  .airbnb-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .airbnb-brand__mark {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 13px;
+    color: #fafaf9;
+    background: var(--airbnb-accent);
+    font-weight: 800;
+  }
+
+  .airbnb-brand > span:last-child {
+    display: grid;
+    min-width: 0;
+  }
+
+  .airbnb-brand strong {
+    font-size: 0.88rem;
+    letter-spacing: -0.02em;
+  }
+
+  .airbnb-brand small {
+    overflow: hidden;
+    color: var(--airbnb-muted);
+    font-size: 0.64rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .airbnb-navigation {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .airbnb-navigation button {
+    min-width: 0;
+    min-height: 46px;
+    padding: 6px 2px 9px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    color: var(--airbnb-muted);
+    background: transparent;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .airbnb-navigation button:hover {
+    color: var(--airbnb-ink);
+    background: #f0efed;
+  }
+
+  .airbnb-navigation button:active {
+    transform: scale(0.97);
+  }
+
+  .airbnb-navigation button[aria-selected="true"] {
+    border-bottom-color: var(--airbnb-accent);
+    color: var(--airbnb-ink);
+  }
+
+  .airbnb-view[hidden] {
+    display: none;
+  }
+
+  .airbnb-view {
+    width: min(100%, 1220px);
+    min-height: calc(100dvh - 106px);
+    margin-inline: auto;
+    padding: 22px 16px 80px;
+  }
+
+  .airbnb-kicker {
+    color: var(--airbnb-accent-dark);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+  }
+
+  .airbnb-photo {
+    overflow: hidden;
+    border-radius: 24px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .airbnb-photo figcaption {
+    padding: 13px 16px 15px;
+    color: var(--airbnb-muted);
+    background: var(--airbnb-panel);
+    font-size: 0.72rem;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+
+  .airbnb-home__story {
+    display: grid;
+    gap: 30px;
+  }
+
+  .airbnb-home__photo img {
+    height: clamp(220px, 56vw, 390px);
+    object-position: 47% center;
+  }
+
+  .airbnb-home__content h1,
+  .airbnb-lesson__hero h1,
+  .airbnb-travel__hero h1 {
+    margin-top: 12px;
+    font-size: clamp(1.9rem, 8.2vw, 4.8rem);
+    font-weight: 750;
+    letter-spacing: -0.055em;
+    line-height: 1.06;
+  }
+
+  .airbnb-home__phrase {
+    display: grid;
+    gap: 8px;
+    margin-top: 28px;
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-home__phrase span {
+    color: var(--airbnb-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .airbnb-home__phrase strong {
+    font-size: clamp(2.5rem, 13vw, 5.5rem);
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .airbnb-home__goal {
+    margin-top: 22px !important;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.65;
+  }
+
+  .airbnb-home__hook {
+    margin-top: 12px !important;
+    color: var(--airbnb-muted);
+    font-size: 0.86rem;
+    line-height: 1.75;
+  }
+
+  .airbnb-paths {
+    margin-top: 68px;
+  }
+
+  .airbnb-paths > h2 {
+    font-size: clamp(1.55rem, 6vw, 2.4rem);
+    letter-spacing: -0.04em;
+  }
+
+  .airbnb-paths ul {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .airbnb-paths li {
+    display: grid;
+    gap: 7px;
+    min-height: 92px;
+    padding: 20px;
+    border: 1px solid rgb(37 36 38 / 12%);
+    border-radius: 20px;
+    background: #f6f5f3;
+  }
+
+  .airbnb-paths li span {
+    color: var(--airbnb-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .airbnb-paths li strong {
+    align-self: end;
+    font-size: 1rem;
+  }
+
+  .airbnb-paths .airbnb-path--active {
+    border-color: var(--airbnb-accent);
+    box-shadow: inset 5px 0 0 var(--airbnb-accent);
+  }
+
+  .airbnb-vocabulary__layout {
+    display: grid;
+    gap: 30px;
+  }
+
+  .airbnb-vocabulary__photo img {
+    height: clamp(240px, 70vw, 430px);
+    object-position: 45% center;
+  }
+
+  .airbnb-word-card {
+    align-self: center;
+    min-width: 0;
+    padding: 8px 2px;
+  }
+
+  .airbnb-word-card > h1 {
+    margin-top: 28px;
+    font-size: clamp(5.7rem, 30vw, 10rem);
+    font-weight: 760;
+    letter-spacing: -0.075em;
+    line-height: 0.86;
+  }
+
+  .airbnb-word-card__pinyin {
+    margin-top: 24px !important;
+    color: var(--airbnb-muted);
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
+  }
+
+  .airbnb-primary-button {
+    display: flex;
+    width: 100%;
+    min-height: 52px !important;
+    align-items: center;
+    justify-content: center;
+    margin-top: 32px;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 16px;
+    color: #fafaf9;
+    background: var(--airbnb-accent);
+    font-weight: 800;
+    text-decoration: none;
+    transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .airbnb-primary-button:hover {
+    background: var(--airbnb-accent-dark);
+    box-shadow: 0 10px 24px rgb(143 38 63 / 20%);
+  }
+
+  .airbnb-primary-button:active {
+    transform: scale(0.98);
+  }
+
+  .airbnb-word-answer {
+    margin-top: 36px;
+    padding-top: 32px;
+    border-top: 1px solid rgb(37 36 38 / 13%);
+  }
+
+  .airbnb-word-answer__meaning {
+    font-size: clamp(2.2rem, 11vw, 4rem);
+    font-weight: 760;
+    letter-spacing: -0.05em;
+  }
+
+  .airbnb-word-answer__facts {
+    display: grid;
+    gap: 10px;
+    margin-top: 30px;
+  }
+
+  .airbnb-word-answer__facts > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-word-answer__facts dt {
+    color: var(--airbnb-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .airbnb-word-answer__facts dd {
+    font-weight: 750;
+  }
+
+  .airbnb-tip,
+  .airbnb-vocabulary-examples,
+  .airbnb-rating {
+    margin-top: 38px;
+  }
+
+  .airbnb-tip h2,
+  .airbnb-vocabulary-examples h2 {
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+  }
+
+  .airbnb-tip p {
+    margin-top: 10px;
+    color: var(--airbnb-muted);
+    font-size: 0.88rem;
+    line-height: 1.85;
+  }
+
+  .airbnb-vocabulary-examples article {
+    margin-top: 16px;
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-vocabulary-examples__han {
+    font-size: 1.45rem;
+    font-weight: 750;
+  }
+
+  .airbnb-vocabulary-examples__pinyin {
+    margin-top: 6px !important;
+    color: var(--airbnb-accent-dark);
+    font-size: 0.84rem;
+  }
+
+  .airbnb-vocabulary-examples article p:last-child {
+    margin-top: 6px;
+    color: var(--airbnb-muted);
+    font-size: 0.84rem;
+  }
+
+  .airbnb-rating {
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-rating > p {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .airbnb-rating > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .airbnb-rating button,
+  .airbnb-practice__choices button {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid rgb(37 36 38 / 16%);
+    border-radius: 14px;
+    background: #fafaf9;
+    font-weight: 750;
+    transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .airbnb-rating button:hover,
+  .airbnb-practice__choices button:hover {
+    border-color: var(--airbnb-accent);
+    color: var(--airbnb-accent-dark);
+  }
+
+  .airbnb-rating button:active,
+  .airbnb-practice__choices button:active {
+    transform: scale(0.98);
+  }
+
+  .airbnb-rating button[aria-pressed="true"],
+  .airbnb-practice__choices button[aria-pressed="true"] {
+    border-color: var(--airbnb-accent);
+    color: #fafaf9;
+    background: var(--airbnb-accent);
+  }
+
+  .airbnb-rating button:disabled {
+    cursor: default;
+    opacity: 0.8;
+  }
+
+  .airbnb-lesson__hero,
+  .airbnb-travel__hero {
+    display: grid;
+    gap: 30px;
+  }
+
+  .airbnb-lesson__hero figure img,
+  .airbnb-travel__hero figure img {
+    height: clamp(260px, 72vw, 440px);
+  }
+
+  .airbnb-lesson__hero figure img {
+    object-position: 45% center;
+  }
+
+  .airbnb-travel__hero figure img {
+    object-position: center;
+  }
+
+  .airbnb-lesson__hook,
+  .airbnb-travel__hero > div > p:last-child {
+    margin-top: 18px !important;
+    color: var(--airbnb-muted);
+    line-height: 1.75;
+  }
+
+  .airbnb-lesson__outcomes {
+    display: grid;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .airbnb-lesson__outcomes > div {
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-lesson__outcomes dt {
+    color: var(--airbnb-muted);
+    font-size: 0.7rem;
+    font-weight: 750;
+  }
+
+  .airbnb-lesson__outcomes dd {
+    margin-top: 7px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .airbnb-itinerary {
+    width: min(100%, 880px);
+    margin: 72px auto 0;
+  }
+
+  .airbnb-itinerary__phrase {
+    padding: 38px 24px;
+    border-radius: 24px;
+    color: #fafaf9;
+    background: var(--airbnb-ink);
+    text-align: center;
+  }
+
+  .airbnb-itinerary__label {
+    color: #c9c6c9;
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
+
+  .airbnb-itinerary__phrase h2 {
+    margin-top: 18px;
+    font-size: clamp(3.4rem, 16vw, 7.5rem);
+    letter-spacing: -0.07em;
+    line-height: 0.94;
+  }
+
+  .airbnb-itinerary__stop {
+    position: relative;
+    margin-top: 18px;
+    padding: 34px 22px;
+    border: 1px solid rgb(37 36 38 / 11%);
+    border-radius: 24px;
+    background: #f6f5f3;
+  }
+
+  .airbnb-itinerary__stop > h2 {
+    font-size: clamp(1.4rem, 5vw, 2.15rem);
+    letter-spacing: -0.04em;
+  }
+
+  .airbnb-itinerary__stop > h2 + p {
+    margin-top: 14px;
+    color: var(--airbnb-muted);
+    line-height: 1.85;
+  }
+
+  .airbnb-chunk-grid,
+  .airbnb-example-list,
+  .airbnb-sound-list,
+  .airbnb-bridge-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 26px;
+  }
+
+  .airbnb-chunk-grid article,
+  .airbnb-example-list article,
+  .airbnb-sound-list article,
+  .airbnb-bridge-list article {
+    padding: 20px;
+    border-radius: 18px;
+    background: var(--airbnb-panel);
+  }
+
+  .airbnb-chunk-grid__han,
+  .airbnb-example-list__han {
+    font-size: 2rem;
+    font-weight: 760;
+    letter-spacing: -0.045em;
+  }
+
+  .airbnb-chunk-grid__meaning {
+    margin-top: 10px !important;
+    font-weight: 750;
+  }
+
+  .airbnb-chunk-grid__note,
+  .airbnb-sound-list p,
+  .airbnb-bridge-list article div p:last-child {
+    margin-top: 8px !important;
+    color: var(--airbnb-muted);
+    font-size: 0.86rem;
+    line-height: 1.75;
+  }
+
+  .airbnb-bridge-list article {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
+
+  .airbnb-bridge-list__kanji {
+    font-size: 3.4rem;
+    font-weight: 760;
+    line-height: 1;
+  }
+
+  .airbnb-bridge-list__reading,
+  .airbnb-sound-list strong {
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .airbnb-example-list__pinyin {
+    margin-top: 7px !important;
+    color: var(--airbnb-accent-dark);
+    font-size: 0.84rem;
+  }
+
+  .airbnb-example-list article > p:last-child {
+    margin-top: 6px;
+    color: var(--airbnb-muted);
+    font-size: 0.84rem;
+  }
+
+  .airbnb-practice__prompt {
+    margin-top: 24px !important;
+    font-weight: 800;
+    line-height: 1.65;
+  }
+
+  .airbnb-practice__choices {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .airbnb-practice__choices button {
+    min-height: 54px;
+    text-align: left;
+  }
+
+  .airbnb-practice__feedback {
+    min-height: 1.6em;
+    margin-top: 18px !important;
+    color: var(--airbnb-accent-dark);
+    font-weight: 800;
+  }
+
+  .airbnb-lesson__task {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 34px 24px;
+    border-radius: 24px;
+    color: #fafaf9;
+    background: var(--airbnb-accent-dark);
+  }
+
+  .airbnb-lesson__task span,
+  .airbnb-lesson__task small {
+    color: #f1cbd5;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .airbnb-lesson__task strong {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    line-height: 1.55;
+  }
+
+  .airbnb-target-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 60px;
+  }
+
+  .airbnb-target-card {
+    min-width: 0;
+    padding: 26px 22px;
+    border: 1px solid rgb(37 36 38 / 11%);
+    border-radius: 24px;
+    background: #f6f5f3;
+  }
+
+  .airbnb-target-card h2 {
+    font-size: 1.35rem;
+    letter-spacing: -0.035em;
+  }
+
+  .airbnb-target-card > p {
+    margin-top: 12px;
+    color: var(--airbnb-muted);
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+
+  .airbnb-target-card details {
+    margin-top: 20px;
+    border-top: 1px solid rgb(37 36 38 / 12%);
+  }
+
+  .airbnb-target-card summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--airbnb-accent-dark);
+    font-size: 0.82rem;
+    font-weight: 800;
+    list-style: none;
+    transition: color 150ms ease, transform 90ms ease;
+  }
+
+  .airbnb-target-card summary:hover {
+    color: var(--airbnb-accent);
+  }
+
+  .airbnb-target-card summary:active {
+    transform: translateY(1px);
+  }
+
+  .airbnb-target-card summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .airbnb-target-card summary::after {
+    content: "+";
+    font-size: 1.3rem;
+  }
+
+  .airbnb-target-card details[open] summary::after {
+    content: "−";
+  }
+
+  .airbnb-target-card ul {
+    display: grid;
+    gap: 0;
+    padding-top: 4px;
+  }
+
+  .airbnb-target-card li {
+    position: relative;
+    padding: 13px 4px 13px 22px;
+    border-top: 1px solid rgb(37 36 38 / 11%);
+    background: transparent;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  .airbnb-target-card li::before {
+    position: absolute;
+    top: 12px;
+    left: 3px;
+    color: var(--airbnb-accent-dark);
+    content: "›";
+    font-size: 1rem;
+    font-weight: 800;
+  }
+
+  .airbnb-travel__night-market {
+    margin-top: 60px;
+  }
+
+  .airbnb-travel__night-market img {
+    height: clamp(260px, 68vw, 520px);
+    object-position: 46% center;
+  }
+
+  @media (min-width: 860px) {
+    .airbnb-header {
+      grid-template-columns: minmax(220px, 1fr) auto;
+      align-items: center;
+      gap: 30px;
+      min-height: 76px;
+      padding: 0 34px;
+    }
+
+    .airbnb-navigation {
+      gap: 8px;
+    }
+
+    .airbnb-navigation button {
+      min-width: 92px;
+      min-height: 54px;
+      padding-inline: 12px;
+    }
+
+    .airbnb-view {
+      min-height: calc(100dvh - 76px);
+      padding: 42px 34px 110px;
+    }
+
+    .airbnb-home__story,
+    .airbnb-vocabulary__layout,
+    .airbnb-lesson__hero,
+    .airbnb-travel__hero {
+      grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.72fr);
+      align-items: center;
+      gap: clamp(38px, 6vw, 84px);
+    }
+
+    .airbnb-home__photo img,
+    .airbnb-vocabulary__photo img,
+    .airbnb-lesson__hero figure img,
+    .airbnb-travel__hero figure img {
+      height: min(68vh, 680px);
+    }
+
+    .airbnb-home__content h1,
+    .airbnb-lesson__hero h1,
+    .airbnb-travel__hero h1 {
+      font-size: clamp(3rem, 5.4vw, 5.5rem);
+    }
+
+    .airbnb-paths {
+      margin-top: 90px;
+    }
+
+    .airbnb-paths ul {
+      grid-template-columns: 1.25fr 0.88fr 0.88fr;
+      gap: 16px;
+    }
+
+    .airbnb-paths li {
+      min-height: 132px;
+      padding: 24px;
+    }
+
+    .airbnb-word-card > h1 {
+      font-size: clamp(7rem, 11vw, 11rem);
+    }
+
+    .airbnb-lesson__outcomes,
+    .airbnb-chunk-grid,
+    .airbnb-example-list,
+    .airbnb-sound-list,
+    .airbnb-practice__choices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .airbnb-itinerary__stop {
+      padding: 48px;
+    }
+
+    .airbnb-target-grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .airbnb-target-card {
+      grid-column: span 5;
+      min-height: 260px;
+      padding: 32px;
+    }
+
+    .airbnb-target-card:nth-child(4n + 1),
+    .airbnb-target-card:nth-child(4n + 4) {
+      grid-column: span 7;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .airbnb-header {
+      padding-inline: 10px;
+    }
+
+    .airbnb-brand__mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+    }
+
+    .airbnb-brand small {
+      max-width: 180px;
+    }
+
+    .airbnb-navigation button {
+      font-size: 0.62rem;
+    }
+
+    .airbnb-view {
+      padding-inline: 12px;
+    }
+
+    .airbnb-photo,
+    .airbnb-home__phrase,
+    .airbnb-paths li,
+    .airbnb-itinerary__phrase,
+    .airbnb-itinerary__stop,
+    .airbnb-lesson__task,
+    .airbnb-target-card {
+      border-radius: 18px;
+    }
+
+    .airbnb-home__photo img,
+    .airbnb-vocabulary__photo img,
+    .airbnb-lesson__hero figure img,
+    .airbnb-travel__hero figure img {
+      height: 230px;
+    }
+
+    .airbnb-home__phrase {
+      padding-inline: 16px;
+    }
+
+    .airbnb-home__phrase strong {
+      font-size: 2.35rem;
+    }
+
+    .airbnb-word-card > h1 {
+      font-size: 5rem;
+    }
+
+    .airbnb-rating {
+      padding-inline: 14px;
+    }
+
+    .airbnb-rating button,
+    .airbnb-practice__choices button {
+      padding-inline: 8px;
+      font-size: 0.76rem;
+    }
+
+    .airbnb-bridge-list article {
+      grid-template-columns: 48px minmax(0, 1fr);
+      padding-inline: 14px;
+    }
+
+    .airbnb-bridge-list__kanji {
+      font-size: 2.8rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .airbnb-view:not([hidden]) {
+      animation: airbnb-arrive 460ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes airbnb-arrive {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .airbnb-lab *,
+    .airbnb-lab *::before,
+    .airbnb-lab *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+</style>

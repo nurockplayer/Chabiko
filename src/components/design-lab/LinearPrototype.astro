@@ -1,0 +1,1576 @@
+---
+import type { DesignLabFixture } from '../../content/designLabFixture';
+
+export interface Props {
+  fixture: DesignLabFixture;
+}
+
+const { fixture } = Astro.props;
+const vocabularyExample = fixture.vocabulary.examples?.[0];
+const [reviewPrompt] = fixture.lesson.reviewPrompts;
+---
+
+<main class="linear-prototype" data-design-lab>
+  <div class="command-frame">
+    <aside class="command-rail" aria-label="学習コマンド">
+      <div class="rail-heading">
+        <div class="rail-brand">
+          <span class="brand-symbol" aria-hidden="true">C</span>
+          <span>
+            <strong>Chabiko</strong>
+            <small>学習コマンド</small>
+          </span>
+        </div>
+        <span class="rail-mode">台湾編</span>
+      </div>
+
+      <nav class="rail-navigation" role="tablist" aria-label="表示する学習画面">
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="home"
+          aria-controls="linear-view-home"
+          aria-selected="true"
+        >
+          <kbd>H</kbd>
+          <span>ホーム</span>
+          <small class="selected-cue" aria-hidden="true">選択</small>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="vocabulary"
+          aria-controls="linear-view-vocabulary"
+          aria-selected="false"
+        >
+          <kbd>V</kbd>
+          <span>単語</span>
+          <small class="selected-cue" aria-hidden="true">選択</small>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="lesson"
+          aria-controls="linear-view-lesson"
+          aria-selected="false"
+        >
+          <kbd>L</kbd>
+          <span>レッスン</span>
+          <small class="selected-cue" aria-hidden="true">選択</small>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-lab-nav
+          data-lab-target="travel"
+          aria-controls="linear-view-travel"
+          aria-selected="false"
+        >
+          <kbd>T</kbd>
+          <span>旅行クエスト</span>
+          <small class="selected-cue" aria-hidden="true">選択</small>
+        </button>
+      </nav>
+
+      <div class="rail-footer">
+        <span>繁体字</span>
+        <strong>初級</strong>
+      </div>
+    </aside>
+
+    <section class="operation-shell" aria-label="学習ステージ">
+      <header class="operation-bar">
+        <span>学習ステージ</span>
+        <span class="operation-context">台湾旅行 / 入門</span>
+      </header>
+
+      <section
+        id="linear-view-home"
+        class="stage-view home-stage"
+        role="tabpanel"
+        aria-label="ホーム"
+        data-lab-view="home"
+      >
+        <header class="stage-heading">
+          <div>
+            <p class="stage-code">ホーム / 続き</p>
+            <h1 lang="zh-Hant">{fixture.lesson.coreSentence}</h1>
+            <p class="stage-hook">{fixture.lesson.hookJa}</p>
+          </div>
+          <div class="stage-status" aria-label="現在の学習状態">
+            <span>次の操作</span>
+            <strong>{fixture.lesson.titleJa}</strong>
+          </div>
+        </header>
+
+        <div class="home-grid">
+          <section class="primary-operation" aria-labelledby="linear-current-heading">
+            <div class="section-heading">
+              <h2 id="linear-current-heading">現在のレッスン</h2>
+              <span class="meta-token">{fixture.lesson.level}</span>
+            </div>
+            <p class="operation-title">{fixture.lesson.canDoJa}</p>
+            <dl class="operation-metadata">
+              <div>
+                <dt>できること</dt>
+                <dd>{fixture.lesson.learnerOutcomeJa}</dd>
+              </div>
+              <div>
+                <dt>使う場面</dt>
+                <dd>{fixture.lesson.travelScenario}</dd>
+              </div>
+            </dl>
+            <div class="linear-continuation">
+              <a
+                class="command-action"
+                data-lab-continuation
+                href="?view=lesson"
+              >
+                <span>レッスンを開く</span>
+                <kbd aria-hidden="true">L</kbd>
+              </a>
+            </div>
+          </section>
+
+          <section class="path-queue" aria-labelledby="linear-path-heading">
+            <div class="section-heading">
+              <h2 id="linear-path-heading">学習パス</h2>
+              <span class="meta-token">{fixture.pathLabels.length} コース</span>
+            </div>
+            <ol>
+              {fixture.pathLabels.map((path, index) => (
+                <li>
+                  <span class="queue-index">{String(index + 1).padStart(2, '0')}</span>
+                  <span>{path.labelJa}</span>
+                  <span class="queue-state">待機</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+      </section>
+
+      <section
+        id="linear-view-vocabulary"
+        class="stage-view vocabulary-stage"
+        role="tabpanel"
+        aria-label="単語"
+        data-lab-view="vocabulary"
+        hidden
+      >
+        <header class="stage-heading vocabulary-heading">
+          <div>
+            <p class="stage-code">単語 / {fixture.vocabulary.id}</p>
+            <h1 lang="zh-Hant">{fixture.vocabulary.traditional}</h1>
+            <p class="pinyin-line">{fixture.vocabulary.pinyin}</p>
+          </div>
+          <dl class="compact-facts">
+            <div>
+              <dt>簡体字</dt>
+              <dd lang="zh-Hans">{fixture.vocabulary.simplified}</dd>
+            </div>
+            <div>
+              <dt>日本語</dt>
+              <dd>{fixture.vocabulary.kana}</dd>
+            </div>
+            <div class="category-fact">
+              <dt>分類</dt>
+              <dd>{fixture.vocabulary.category}</dd>
+            </div>
+          </dl>
+        </header>
+
+        <div class="vocabulary-grid">
+          <section class="reveal-operation" aria-labelledby="linear-reveal-heading">
+            <div class="section-heading">
+              <h2 id="linear-reveal-heading">意味を確認</h2>
+              <span class="meta-token">復習</span>
+            </div>
+            <button
+              class="command-action"
+              type="button"
+              data-lab-reveal
+              aria-controls="linear-vocabulary-answer"
+              aria-expanded="false"
+            >
+              <span>答えを表示</span>
+              <kbd>ENTER</kbd>
+            </button>
+            <div id="linear-vocabulary-answer" class="answer-panel" data-lab-answer hidden>
+              <span class="answer-code">答え</span>
+              <p>{fixture.vocabulary.japanese}</p>
+              <div class="rating-controls" aria-label="覚え具合">
+                <button
+                  type="button"
+                  data-lab-rating="again"
+                  aria-pressed="false"
+                >
+                  <span>もう一度</span>
+                  <small>再確認</small>
+                </button>
+                <button
+                  type="button"
+                  data-lab-rating="known"
+                  aria-pressed="false"
+                >
+                  <span>覚えた</span>
+                  <small>完了</small>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <aside class="vocabulary-inspector" aria-label="単語の詳細">
+            {fixture.vocabulary.toneNote && (
+              <details open>
+                <summary>声調</summary>
+                <p>{fixture.vocabulary.toneNote}</p>
+              </details>
+            )}
+            {fixture.vocabulary.caution && (
+              <details>
+                <summary>発音の注意</summary>
+                <p>{fixture.vocabulary.caution}</p>
+              </details>
+            )}
+            {vocabularyExample && (
+              <details open>
+                <summary>使用例</summary>
+                <p class="inspector-chinese" lang="zh-Hant">{vocabularyExample.traditional}</p>
+                <p class="inspector-pinyin">{vocabularyExample.pinyin}</p>
+                <p>{vocabularyExample.japanese}</p>
+              </details>
+            )}
+          </aside>
+        </div>
+      </section>
+
+      <section
+        id="linear-view-lesson"
+        class="stage-view lesson-stage"
+        role="tabpanel"
+        aria-label="レッスン"
+        data-lab-view="lesson"
+        hidden
+      >
+        <header class="stage-heading lesson-heading">
+          <div>
+            <p class="stage-code">レッスン / {fixture.lesson.id}</p>
+            <h1>{fixture.lesson.titleJa}</h1>
+            <p class="stage-hook">{fixture.lesson.hookJa}</p>
+          </div>
+          <div class="stage-status">
+            <span>できること</span>
+            <strong>{fixture.lesson.canDoJa}</strong>
+          </div>
+        </header>
+
+        <div class="lesson-grid">
+          <aside class="sequence-rail" aria-label="レッスン構成">
+            <ol>
+              <li class="is-current"><span>01</span>中心表現</li>
+              <li><span>02</span>チャンク</li>
+              <li><span>03</span>漢字</li>
+              <li><span>04</span>音</li>
+              <li><span>05</span>練習</li>
+              <li><span>06</span>旅行タスク</li>
+            </ol>
+          </aside>
+
+          <div class="lesson-operation">
+            <section class="lesson-block core-block" aria-labelledby="linear-core-heading">
+              <div class="block-label">
+                <span>中心</span>
+                <h2 id="linear-core-heading">中心表現</h2>
+              </div>
+              <div>
+                <p class="core-phrase" lang="zh-Hant">{fixture.lesson.coreSentence}</p>
+                <div class="core-examples">
+                  {fixture.lesson.examples?.map((example, index) => (
+                    <article>
+                      <span class="row-index">{String(index + 1).padStart(2, '0')}</span>
+                      <div>
+                        <p class="example-script" lang="zh-Hant">{example.traditional}</p>
+                        <p class="pinyin-line">{example.pinyin}</p>
+                        <p>{example.japanese}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {fixture.lesson.sections?.map((section) => (
+              <section class="lesson-block">
+                <div class="block-label">
+                  <span>解説</span>
+                  <h2>{section.headingJa}</h2>
+                </div>
+                <p>{section.contentJa}</p>
+              </section>
+            ))}
+
+            <section class="lesson-block" aria-labelledby="linear-chunks-heading">
+              <div class="block-label">
+                <span>分解</span>
+                <h2 id="linear-chunks-heading">チャンク分解</h2>
+              </div>
+              <div class="chunk-table">
+                {fixture.lesson.chunks.map((chunk, index) => (
+                  <article>
+                    <span class="row-index">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h3 lang="zh-Hant">{chunk.chunk}</h3>
+                      <p>{chunk.meaning}</p>
+                      {chunk.notesJa && <small>{chunk.notesJa}</small>}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section class="lesson-block" aria-labelledby="linear-bridge-heading">
+              <div class="block-label">
+                <span>漢字</span>
+                <h2 id="linear-bridge-heading">漢字ブリッジ</h2>
+              </div>
+              <div class="inspection-list">
+                {fixture.lesson.kanjiBridgeNotes.map((note) => (
+                  <article>
+                    <strong>{note.kanji}</strong>
+                    <span>{note.jpReading}</span>
+                    <p>{note.noteJa}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section class="lesson-block" aria-labelledby="linear-sound-heading">
+              <div class="block-label">
+                <span>発音</span>
+                <h2 id="linear-sound-heading">音のポイント</h2>
+              </div>
+              <div class="inspection-list">
+                {fixture.lesson.soundFocus.map((focus) => (
+                  <article>
+                    <strong>{focus.item}</strong>
+                    <p>{focus.noteJa}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {reviewPrompt && (
+              <section class="lesson-block practice-block" aria-labelledby="linear-practice-heading">
+                <div class="block-label">
+                  <span>練習</span>
+                  <h2 id="linear-practice-heading">ミニ練習</h2>
+                </div>
+                <div>
+                  <p class="practice-prompt">{reviewPrompt.promptJa}</p>
+                  <div class="precision-choices" aria-label="回答を選択">
+                    <button
+                      type="button"
+                      data-lab-quiz-choice
+                      data-lab-correct="true"
+                      aria-pressed="false"
+                    >
+                      <kbd>A</kbd>
+                      <span>{reviewPrompt.answerJa}</span>
+                    </button>
+                    {reviewPrompt.distractorsJa?.map((choice, index) => (
+                      <button
+                        type="button"
+                        data-lab-quiz-choice
+                        data-lab-correct="false"
+                        aria-pressed="false"
+                      >
+                        <kbd>{String.fromCharCode(66 + index)}</kbd>
+                        <span>{choice}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p class="quiz-feedback" data-lab-quiz-feedback aria-atomic="true"></p>
+                </div>
+              </section>
+            )}
+
+            <section class="lesson-block task-block" aria-labelledby="linear-task-heading">
+              <div class="block-label">
+                <span>旅の課題</span>
+                <h2 id="linear-task-heading">旅行タスク</h2>
+              </div>
+              <p>{fixture.lesson.travelTask}</p>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="linear-view-travel"
+        class="stage-view travel-stage"
+        role="tabpanel"
+        aria-label="旅行クエスト"
+        data-lab-view="travel"
+        hidden
+      >
+        <header class="stage-heading travel-heading">
+          <div>
+            <p class="stage-code">旅行 / 準備度</p>
+            <h1>台湾旅行の準備</h1>
+            <p class="stage-hook">{fixture.lesson.travelTask}</p>
+          </div>
+          <div class="stage-status">
+            <span>目標数</span>
+            <strong>{fixture.travelTargets.length}件</strong>
+          </div>
+        </header>
+
+        <div class="travel-media" aria-label="台湾旅行の場面">
+          <figure class="media-primary">
+            <img
+              src="/assets/design-lab/night-market-ordering.webp"
+              alt="台湾の夜市で注文する旅行者"
+              width="1536"
+              height="1024"
+            />
+            <figcaption>
+              <span>夜市</span>
+              <strong>{fixture.lesson.titleJa}</strong>
+            </figcaption>
+          </figure>
+          <figure>
+            <img
+              src="/assets/design-lab/rainy-taiwan-street.webp"
+              alt="雨の台湾の街路"
+              width="1536"
+              height="1024"
+            />
+            <figcaption>
+              <span>街歩き</span>
+              <strong>{fixture.lesson.canDoJa}</strong>
+            </figcaption>
+          </figure>
+        </div>
+
+        <section class="readiness-table" aria-labelledby="linear-readiness-heading">
+          <div class="section-heading">
+            <h2 id="linear-readiness-heading">旅行クエスト</h2>
+            <span class="meta-token">必要な行動</span>
+          </div>
+          <div class="target-rows">
+            {fixture.travelTargets.map((target, index) => (
+              <details>
+                <summary>
+                  <span class="row-index">{String(index + 1).padStart(2, '0')}</span>
+                  <span class="target-copy">
+                    <strong>{target.labelJa}</strong>
+                    <small>{target.goalJa}</small>
+                  </span>
+                  <span class="target-state">未着手</span>
+                </summary>
+                <ul>
+                  {target.evidence.map((evidence) => (
+                    <li>
+                      <span aria-hidden="true">□</span>
+                      <span>{evidence.labelJa}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+        </section>
+      </section>
+    </section>
+  </div>
+</main>
+
+<style>
+  .linear-prototype {
+    --base: #101115;
+    --rail: #131419;
+    --surface: #17181e;
+    --surface-strong: #1d1e25;
+    --hover: #202129;
+    --selected: #252632;
+    --ink: #f0f0f2;
+    --muted: #a3a3ad;
+    --faint: #85868f;
+    --line: #2b2c34;
+    --line-strong: #3b3c47;
+    --accent: #aaa7df;
+    --focus: #cac8ff;
+    min-height: 100dvh;
+    width: 100%;
+    overflow-x: clip;
+    background: var(--base);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .linear-prototype [hidden] {
+    display: none !important;
+  }
+
+  .command-frame,
+  .operation-shell,
+  .stage-view,
+  .home-grid,
+  .vocabulary-grid,
+  .lesson-grid,
+  .lesson-operation {
+    min-width: 0;
+  }
+
+  .command-rail {
+    border-bottom: 1px solid var(--line);
+    background: var(--rail);
+  }
+
+  .rail-heading {
+    min-height: 52px;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .rail-brand {
+    min-height: 44px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .rail-brand > span:last-child {
+    min-width: 0;
+    display: grid;
+    line-height: 1.25;
+  }
+
+  .rail-brand strong {
+    font-size: 13px;
+    letter-spacing: -0.01em;
+  }
+
+  .rail-brand small {
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .brand-symbol {
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .rail-mode,
+  .rail-footer,
+  .operation-bar,
+  .stage-code,
+  .meta-token,
+  .queue-index,
+  .row-index,
+  .answer-code,
+  .block-label > span,
+  .travel-media figcaption > span {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .rail-mode {
+    color: var(--accent);
+  }
+
+  .rail-navigation {
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .rail-navigation button {
+    position: relative;
+    min-width: 0;
+    min-height: 48px;
+    padding: 7px 5px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease, transform 80ms ease;
+  }
+
+  .rail-navigation button:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
+
+  .rail-navigation button:active {
+    transform: translateY(1px);
+  }
+
+  .rail-navigation button[aria-selected="true"] {
+    border-color: var(--line-strong);
+    background: var(--selected);
+    color: var(--ink);
+  }
+
+  .rail-navigation kbd {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+  }
+
+  .rail-navigation button > span {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .selected-cue {
+    display: none;
+    color: var(--accent);
+    font-size: 9px;
+  }
+
+  .rail-navigation button[aria-selected="true"] .selected-cue {
+    display: block;
+  }
+
+  .rail-footer {
+    display: none;
+  }
+
+  .operation-shell {
+    background: var(--base);
+  }
+
+  .operation-bar {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--faint);
+  }
+
+  .operation-context {
+    display: none;
+  }
+
+  .stage-view {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    padding: 28px 16px 72px;
+  }
+
+  .stage-heading {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line-strong);
+    display: grid;
+    gap: 20px;
+  }
+
+  .stage-code {
+    margin: 0 0 12px;
+    color: var(--accent);
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  dl,
+  dd,
+  figure {
+    margin-top: 0;
+  }
+
+  h1 {
+    max-width: 18ch;
+    margin-bottom: 10px;
+    font-size: clamp(2.2rem, 11vw, 5rem);
+    font-weight: 650;
+    line-height: 1.04;
+    letter-spacing: -0.055em;
+  }
+
+  .home-stage h1,
+  .vocabulary-stage h1 {
+    font-size: clamp(4.1rem, 22vw, 9.5rem);
+    letter-spacing: -0.07em;
+  }
+
+  .stage-hook {
+    max-width: 58ch;
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .pinyin-line {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 0.015em;
+  }
+
+  .stage-status {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    background: var(--surface);
+  }
+
+  .stage-status span {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  .stage-status strong {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .home-grid,
+  .vocabulary-grid {
+    display: grid;
+  }
+
+  .primary-operation,
+  .path-queue,
+  .reveal-operation,
+  .vocabulary-inspector,
+  .readiness-table {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-heading {
+    min-height: 32px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .section-heading h2 {
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  .meta-token {
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .operation-title {
+    max-width: 32ch;
+    margin-bottom: 26px;
+    font-size: clamp(1.35rem, 6vw, 2.2rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+  }
+
+  .operation-metadata {
+    margin: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .operation-metadata > div {
+    padding: 11px 12px;
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 12px;
+    background: var(--surface);
+  }
+
+  .operation-metadata dt,
+  .compact-facts dt {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .operation-metadata dd,
+  .compact-facts dd {
+    margin: 0;
+  }
+
+  .path-queue ol,
+  .sequence-rail ol,
+  .target-rows ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .path-queue li {
+    min-height: 49px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .path-queue li:last-child {
+    border-bottom: 0;
+  }
+
+  .queue-index {
+    color: var(--faint);
+  }
+
+  .queue-state {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .compact-facts {
+    margin: 0;
+    display: grid;
+    grid-template-columns:
+      minmax(68px, 0.7fr)
+      minmax(68px, 0.7fr)
+      minmax(118px, 1.35fr);
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .compact-facts > div {
+    min-width: 0;
+    padding: 10px;
+    display: grid;
+    gap: 2px;
+    background: var(--surface);
+  }
+
+  .compact-facts dd {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .command-action,
+  .rating-controls button,
+  .precision-choices button {
+    min-height: 48px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 130ms ease, border-color 130ms ease, transform 80ms ease;
+  }
+
+  .command-action {
+    width: 100%;
+    padding: 11px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+    text-decoration: none;
+  }
+
+  .linear-continuation {
+    margin-top: 16px;
+  }
+
+  .command-action kbd,
+  .precision-choices kbd {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+  }
+
+  .command-action:hover,
+  .rating-controls button:hover,
+  .precision-choices button:hover {
+    border-color: var(--accent);
+    background: var(--hover);
+  }
+
+  .command-action:active,
+  .rating-controls button:active,
+  .precision-choices button:active {
+    transform: translateY(1px);
+  }
+
+  .answer-panel {
+    margin-top: 8px;
+    padding: 16px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: var(--selected);
+  }
+
+  .answer-code {
+    color: var(--accent);
+  }
+
+  .answer-panel > p {
+    margin: 8px 0 22px;
+    font-size: 31px;
+    font-weight: 650;
+    letter-spacing: -0.035em;
+  }
+
+  .rating-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .rating-controls button {
+    padding: 8px 10px;
+    display: grid;
+    gap: 1px;
+    text-align: left;
+  }
+
+  .rating-controls button small {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+  }
+
+  .rating-controls button[aria-pressed="true"],
+  .precision-choices button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--selected);
+  }
+
+  .rating-controls button[aria-pressed="true"]::after,
+  .precision-choices button[aria-pressed="true"]::after {
+    content: "✓ 選択済";
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+  }
+
+  .rating-controls button:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  .rating-controls button:disabled:not([aria-pressed="true"]) {
+    color: var(--faint);
+  }
+
+  .vocabulary-inspector details {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .vocabulary-inspector details:first-child {
+    border-top: 1px solid var(--line);
+  }
+
+  .vocabulary-inspector summary,
+  .target-rows summary {
+    min-height: 48px;
+    cursor: pointer;
+    transition: background-color 130ms ease, color 130ms ease, transform 80ms ease;
+  }
+
+  .vocabulary-inspector summary {
+    padding: 10px 2px;
+    display: flex;
+    align-items: center;
+    font-weight: 650;
+  }
+
+  .vocabulary-inspector summary:hover,
+  .target-rows summary:hover {
+    background: var(--hover);
+    color: var(--accent);
+  }
+
+  .vocabulary-inspector summary:active,
+  .target-rows summary:active {
+    transform: translateY(1px);
+  }
+
+  .vocabulary-inspector details > p {
+    margin: 0 0 16px 20px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .vocabulary-inspector .inspector-chinese {
+    margin-bottom: 1px;
+    color: var(--ink);
+    font-size: 23px;
+    font-weight: 650;
+  }
+
+  .vocabulary-inspector .inspector-pinyin {
+    margin-bottom: 4px;
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+  }
+
+  .lesson-grid {
+    display: grid;
+  }
+
+  .sequence-rail {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sequence-rail ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .sequence-rail li {
+    min-width: 0;
+    min-height: 44px;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .sequence-rail li span {
+    color: var(--faint);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+  }
+
+  .sequence-rail li.is-current {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+
+  .sequence-rail li.is-current::after {
+    content: "現在";
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 8px;
+  }
+
+  .lesson-block {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 18px;
+  }
+
+  .block-label {
+    align-self: start;
+  }
+
+  .block-label > span {
+    color: var(--faint);
+  }
+
+  .block-label h2 {
+    margin: 4px 0 0;
+    font-size: 13px;
+  }
+
+  .core-phrase {
+    margin-bottom: 3px;
+    font-size: clamp(2.8rem, 15vw, 6.5rem);
+    font-weight: 620;
+    line-height: 1.08;
+    letter-spacing: -0.06em;
+  }
+
+  .core-examples {
+    margin-top: 18px;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .core-examples article {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .core-examples article:last-child {
+    border-bottom: 0;
+  }
+
+  .core-examples .example-script {
+    margin-bottom: 2px;
+    font-size: 20px;
+    font-weight: 620;
+  }
+
+  .core-examples .pinyin-line {
+    margin-bottom: 2px;
+  }
+
+  .chunk-table {
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .chunk-table article {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .chunk-table article:last-child {
+    border-bottom: 0;
+  }
+
+  .row-index {
+    color: var(--faint);
+  }
+
+  .chunk-table h3 {
+    margin-bottom: 2px;
+    font-size: 23px;
+    font-weight: 620;
+  }
+
+  .chunk-table p {
+    margin-bottom: 3px;
+  }
+
+  .chunk-table small {
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .inspection-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .inspection-list article {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+  }
+
+  .inspection-list strong {
+    margin-right: 8px;
+    color: var(--ink);
+    font-size: 18px;
+  }
+
+  .inspection-list span {
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+  }
+
+  .inspection-list p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .practice-prompt {
+    margin-bottom: 14px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .precision-choices {
+    display: grid;
+    gap: 5px;
+  }
+
+  .precision-choices button {
+    width: 100%;
+    padding: 9px 11px;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 9px;
+    align-items: center;
+    text-align: left;
+  }
+
+  .quiz-feedback {
+    min-height: 23px;
+    margin: 12px 0 0;
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .quiz-feedback:not(:empty)::before {
+    content: "判定 / ";
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 10px;
+  }
+
+  .task-block > p {
+    margin-bottom: 0;
+    padding-left: 13px;
+    border-left: 2px solid var(--accent);
+    font-size: 16px;
+  }
+
+  .travel-media {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 8px;
+  }
+
+  .travel-media figure {
+    margin-bottom: 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .travel-media img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    filter: saturate(0.78) contrast(1.03);
+  }
+
+  .travel-media figcaption {
+    min-height: 58px;
+    padding: 9px 11px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    align-content: center;
+    gap: 3px;
+  }
+
+  .travel-media figcaption > span {
+    color: var(--faint);
+  }
+
+  .travel-media figcaption strong {
+    font-size: 12px;
+  }
+
+  .target-rows {
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .target-rows details {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .target-rows summary {
+    padding: 11px 0;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .target-copy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .target-copy strong {
+    font-size: 13px;
+  }
+
+  .target-copy small {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .target-state {
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .target-rows ul {
+    margin: 0 0 14px 40px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+  }
+
+  .target-rows li {
+    min-height: 36px;
+    padding: 6px 0;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 7px;
+    align-items: start;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .target-rows li span:first-child {
+    color: var(--accent);
+  }
+
+  .linear-prototype :is(a, button, summary):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 320px) {
+    .rail-heading {
+      padding-inline: 8px;
+    }
+
+    .rail-navigation {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rail-navigation button {
+      min-height: 44px;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      place-items: center start;
+      padding-inline: 8px;
+    }
+
+    .stage-view {
+      padding: 24px 12px 64px;
+    }
+
+    .home-stage h1,
+    .vocabulary-stage h1 {
+      font-size: 3.65rem;
+    }
+
+    .compact-facts {
+      grid-template-columns: 1fr;
+    }
+
+    .rating-controls {
+      grid-template-columns: 1fr;
+    }
+
+    .sequence-rail ol {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .target-rows summary {
+      grid-template-columns: 24px minmax(0, 1fr);
+    }
+
+    .target-state {
+      grid-column: 2;
+    }
+
+    .target-rows ul {
+      margin-left: 0;
+    }
+  }
+
+  @media (min-width: 680px) {
+    .operation-context {
+      display: inline;
+    }
+
+    .stage-view {
+      padding: 38px 28px 88px;
+    }
+
+    .stage-heading {
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 0.32fr);
+      align-items: end;
+    }
+
+    .vocabulary-heading {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.56fr);
+    }
+
+    .home-grid,
+    .vocabulary-grid {
+      grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.75fr);
+    }
+
+    .primary-operation,
+    .reveal-operation {
+      padding-right: 26px;
+      border-right: 1px solid var(--line);
+    }
+
+    .path-queue,
+    .vocabulary-inspector {
+      padding-left: 26px;
+    }
+
+    .lesson-block {
+      grid-template-columns: 118px minmax(0, 1fr);
+    }
+
+    .travel-media {
+      grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.75fr);
+    }
+
+    .travel-media .media-primary img {
+      aspect-ratio: 16 / 10;
+    }
+
+    .travel-media figure:not(.media-primary) img {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .command-frame {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 218px minmax(0, 1fr);
+    }
+
+    .command-rail {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow-y: auto;
+    }
+
+    .rail-heading {
+      padding-inline: 14px;
+    }
+
+    .rail-navigation {
+      grid-template-columns: 1fr;
+      align-content: start;
+      padding: 12px 8px;
+    }
+
+    .rail-navigation button {
+      min-height: 44px;
+      padding: 7px 9px;
+      grid-template-columns: 22px minmax(0, 1fr) auto;
+      place-items: center start;
+      text-align: left;
+    }
+
+    .rail-navigation button > span {
+      font-size: 12px;
+    }
+
+    .rail-footer {
+      min-height: 48px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--faint);
+    }
+
+    .rail-footer strong {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .operation-bar {
+      padding-inline: 20px;
+    }
+
+    .stage-view {
+      padding: 48px 42px 104px;
+    }
+
+    .lesson-grid {
+      grid-template-columns: 142px minmax(0, 1fr);
+    }
+
+    .sequence-rail {
+      padding: 24px 22px 0 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+    }
+
+    .sequence-rail ol {
+      position: sticky;
+      top: 58px;
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-operation {
+      padding-left: 30px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .stage-view {
+      padding-inline: 58px;
+    }
+
+    .home-grid,
+    .vocabulary-grid {
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.7fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .linear-prototype *,
+    .linear-prototype *::before,
+    .linear-prototype *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
