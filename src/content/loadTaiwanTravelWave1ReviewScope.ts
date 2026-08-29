@@ -369,26 +369,53 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   }
 }
 
-function validateNonEmptyObjectFields(
+function validateStringObjectShape(
   value: unknown,
-  fields: readonly string[],
+  requiredFields: readonly string[],
+  optionalFields: readonly string[],
   label: string,
-): void {
-  assert(value !== null && typeof value === 'object', `${label} must be an object`);
+): Record<string, unknown> {
+  validateExactKeys(value, [...requiredFields, ...optionalFields], label);
   const record = value as Record<string, unknown>;
-  for (const field of fields) {
+  for (const field of requiredFields) {
     assert(isNonEmptyString(record[field]), `${label}.${field} must be a non-empty string`);
   }
+  for (const field of optionalFields) {
+    assert(
+      record[field] === undefined || typeof record[field] === 'string',
+      `${label}.${field} must be a string when present`,
+    );
+  }
+  return record;
+}
+
+function validateOptionalStringArray(
+  record: Record<string, unknown>,
+  field: string,
+  label: string,
+): void {
+  if (record[field] === undefined) return;
+  assert(Array.isArray(record[field]), `${label}.${field} must be an array when present`);
+  record[field].forEach((item, index) =>
+    assert(
+      typeof item === 'string',
+      `${label}.${field}[${index}] must be a string`,
+    ),
+  );
 }
 
 function validatePrompt(prompt: unknown, label: string): void {
-  validateNonEmptyObjectFields(prompt, ['promptJa', 'answerJa'], label);
+  validateExactKeys(prompt, ['promptJa', 'answerJa', 'distractorsJa'], label);
   const record = prompt as Record<string, unknown>;
-  assert(Array.isArray(record.distractorsJa), `${label} must have distractorsJa`);
+  for (const field of ['promptJa', 'answerJa']) {
+    assert(isNonEmptyString(record[field]), `${label}.${field} must be a non-empty string`);
+  }
+  assert(Array.isArray(record.distractorsJa), `${label}.distractorsJa must be an array`);
   const answer = String(record.answerJa).trim();
-  const distractors = record.distractorsJa.map((value) =>
-    typeof value === 'string' ? value.trim() : '',
-  );
+  const distractors = record.distractorsJa.map((value, index) => {
+    assert(typeof value === 'string', `${label}.distractorsJa[${index}] must be a string`);
+    return value.trim();
+  });
   assert(
     distractors.length >= 2 &&
       distractors.every((value) => value.length > 0 && value !== answer) &&
@@ -400,6 +427,31 @@ function validatePrompt(prompt: unknown, label: string): void {
 function validateLesson(lesson: Lesson, index: number): void {
   const label = `lesson '${lesson.id || index}'`;
   const value = lesson as unknown as Record<string, unknown>;
+  validateExactKeys(
+    value,
+    [
+      'id',
+      'titleJa',
+      'level',
+      'canDoJa',
+      'learnerOutcomeJa',
+      'hookJa',
+      'travelScenario',
+      'coreSentence',
+      'sections',
+      'chunks',
+      'kanjiBridgeNotes',
+      'soundFocus',
+      'examples',
+      'reviewPrompts',
+      'travelTask',
+      'reviewHookJa',
+      'relatedVocabulary',
+      'painPointTags',
+      'reviewStatus',
+    ],
+    label,
+  );
   for (const field of [
     'id',
     'titleJa',
@@ -414,38 +466,61 @@ function validateLesson(lesson: Lesson, index: number): void {
   ]) {
     assert(isNonEmptyString(value[field]), `${label}.${field} must be a non-empty string`);
   }
+  validateOptionalStringArray(value, 'relatedVocabulary', label);
+  validateOptionalStringArray(value, 'painPointTags', label);
   assert(lesson.reviewStatus === 'draft', `${label} must remain draft`);
   assert(Array.isArray(lesson.sections) && lesson.sections.length >= 2, `${label} must have at least two sections`);
   lesson.sections.forEach((section, itemIndex) =>
-    validateNonEmptyObjectFields(section, ['headingJa', 'contentJa'], `${label}.sections[${itemIndex}]`),
+    validateStringObjectShape(
+      section,
+      ['headingJa', 'contentJa'],
+      [],
+      `${label}.sections[${itemIndex}]`,
+    ),
   );
   assert(Array.isArray(lesson.chunks) && lesson.chunks.length >= 3, `${label} must have at least three chunks`);
   lesson.chunks.forEach((chunk, itemIndex) =>
-    validateNonEmptyObjectFields(chunk, ['chunk', 'meaning'], `${label}.chunks[${itemIndex}]`),
+    validateStringObjectShape(
+      chunk,
+      ['chunk', 'meaning'],
+      ['notesJa'],
+      `${label}.chunks[${itemIndex}]`,
+    ),
   );
   assert(
     Array.isArray(lesson.kanjiBridgeNotes) && lesson.kanjiBridgeNotes.length >= 1,
     `${label}.kanjiBridgeNotes must have at least one kanji bridge note`,
   );
   lesson.kanjiBridgeNotes.forEach((note, itemIndex) =>
-    validateNonEmptyObjectFields(note, ['kanji', 'jpReading', 'noteJa'], `${label}.kanjiBridgeNotes[${itemIndex}]`),
+    validateStringObjectShape(
+      note,
+      ['kanji', 'jpReading', 'noteJa'],
+      [],
+      `${label}.kanjiBridgeNotes[${itemIndex}]`,
+    ),
   );
   assert(
     Array.isArray(lesson.soundFocus) && lesson.soundFocus.length === 1,
     `${label} must have exactly one sound-focus item`,
   );
   lesson.soundFocus.forEach((item, itemIndex) =>
-    validateNonEmptyObjectFields(item, ['item', 'noteJa'], `${label}.soundFocus[${itemIndex}]`),
+    validateStringObjectShape(
+      item,
+      ['item', 'noteJa'],
+      [],
+      `${label}.soundFocus[${itemIndex}]`,
+    ),
   );
   assert(Array.isArray(lesson.examples) && lesson.examples.length >= 2, `${label} must have at least two examples`);
   lesson.examples.forEach((example, itemIndex) => {
-    validateNonEmptyObjectFields(
+    const exampleValue = validateStringObjectShape(
       example,
-      ['traditional', 'simplified', 'pinyin', 'japanese'],
+      ['traditional', 'pinyin', 'japanese'],
+      ['traditionalStatus', 'simplified', 'simplifiedStatus'],
       `${label}.examples[${itemIndex}]`,
     );
-    const exampleValue = example as unknown as Record<string, unknown>;
     assert(
+      isNonEmptyString(exampleValue.simplified) &&
       exampleValue.traditionalStatus === 'generated' &&
         exampleValue.simplifiedStatus === 'generated',
       `${label}.examples[${itemIndex}] script provenance must remain generated`,

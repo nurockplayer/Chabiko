@@ -553,6 +553,92 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(busExample?.pinyin).toContain('gōngchē');
   });
 
+  it('rejects unknown fields and invalid optional types in every nested lesson shape', async () => {
+    const cases: Array<{
+      name: string;
+      mutate: (lesson: Lesson) => void;
+      expectedError: RegExp;
+    }> = [
+      {
+        name: 'section unknown field',
+        mutate: (lesson) => {
+          (lesson.sections?.[0] as unknown as Record<string, unknown>).heading =
+            lesson.sections?.[0].headingJa;
+        },
+        expectedError: /sections\[0\] has unknown field 'heading'/,
+      },
+      {
+        name: 'chunk unknown field',
+        mutate: (lesson) => {
+          (lesson.chunks[0] as unknown as Record<string, unknown>).noteJa =
+            lesson.chunks[0].notesJa;
+        },
+        expectedError: /chunks\[0\] has unknown field 'noteJa'/,
+      },
+      {
+        name: 'chunk invalid optional type',
+        mutate: (lesson) => {
+          (lesson.chunks[0] as unknown as Record<string, unknown>).notesJa = 7;
+        },
+        expectedError: /chunks\[0\]\.notesJa must be a string/,
+      },
+      {
+        name: 'kanji bridge unknown field',
+        mutate: (lesson) => {
+          (lesson.kanjiBridgeNotes[0] as unknown as Record<string, unknown>).reading =
+            lesson.kanjiBridgeNotes[0].jpReading;
+        },
+        expectedError: /kanjiBridgeNotes\[0\] has unknown field 'reading'/,
+      },
+      {
+        name: 'sound focus unknown field',
+        mutate: (lesson) => {
+          (lesson.soundFocus[0] as unknown as Record<string, unknown>).pinyin =
+            lesson.soundFocus[0].item;
+        },
+        expectedError: /soundFocus\[0\] has unknown field 'pinyin'/,
+      },
+      {
+        name: 'example unknown field',
+        mutate: (lesson) => {
+          (lesson.examples?.[0] as unknown as Record<string, unknown>).translationJa =
+            lesson.examples?.[0].japanese;
+        },
+        expectedError: /examples\[0\] has unknown field 'translationJa'/,
+      },
+      {
+        name: 'example invalid optional type',
+        mutate: (lesson) => {
+          (lesson.examples?.[0] as unknown as Record<string, unknown>).simplified = 7;
+        },
+        expectedError: /examples\[0\]\.simplified must be a string/,
+      },
+      {
+        name: 'review prompt unknown field',
+        mutate: (lesson) => {
+          (lesson.reviewPrompts[0] as unknown as Record<string, unknown>).optionsJa =
+            lesson.reviewPrompts[0].distractorsJa;
+        },
+        expectedError: /reviewPrompts\[0\] has unknown field 'optionsJa'/,
+      },
+      {
+        name: 'review prompt invalid optional type',
+        mutate: (lesson) => {
+          (lesson.reviewPrompts[0] as unknown as Record<string, unknown>)
+            .distractorsJa = 'not-an-array';
+        },
+        expectedError: /reviewPrompts\[0\]\.distractorsJa must be an array/,
+      },
+    ];
+
+    for (const testCase of cases) {
+      await expect(
+        build(undefined, ({ lessons }) => testCase.mutate(lessons[0])),
+        testCase.name,
+      ).rejects.toThrow(testCase.expectedError);
+    }
+  });
+
   it('fails closed when a candidate lesson has no kanji bridge note', async () => {
     await expect(
       build(undefined, ({ lessons }) => {
@@ -1009,6 +1095,58 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
 
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain("level: 'advanced' is not valid");
+      expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuild command rejects malformed nested lesson fields without replacing output', () => {
+    const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-nested-'));
+    const outputPath = join(temporaryRoot, 'packet.md');
+    const sentinel = 'nested drift must not replace this packet\n';
+    const requiredPaths = [
+      TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
+      TAIWAN_TRAVEL_WAVE1_GRAPH_PATH,
+      TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
+      'data/examples/valid/lessons.json',
+    ];
+
+    try {
+      for (const path of requiredPaths) {
+        const destination = resolve(temporaryRoot, path);
+        mkdirSync(dirname(destination), { recursive: true });
+        copyFileSync(resolve(root, path), destination);
+      }
+
+      const invalidBundle = readJson<{ lessons: Lesson[] }>(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
+      );
+      (invalidBundle.lessons[0].chunks[0] as unknown as Record<string, unknown>)
+        .notesJa = 7;
+      writeFileSync(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH),
+        `${JSON.stringify(invalidBundle, null, 2)}\n`,
+        'utf8',
+      );
+      writeFileSync(outputPath, sentinel, 'utf8');
+
+      const result = spawnSync(
+        process.execPath,
+        [
+          'scripts/render-taiwan-travel-wave1-review-packet.ts',
+          '--root',
+          temporaryRoot,
+          '--output',
+          outputPath,
+        ],
+        { cwd: root, encoding: 'utf8' },
+      );
+
+      expect(result.status).not.toBe(0);
+      expect(`${result.stdout}${result.stderr}`).toContain(
+        'root.lessons[0].chunks[0].notesJa must be str, got int',
+      );
       expect(readFileSync(outputPath, 'utf8')).toBe(sentinel);
     } finally {
       rmSync(temporaryRoot, { recursive: true, force: true });

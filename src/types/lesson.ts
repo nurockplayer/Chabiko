@@ -20,12 +20,21 @@ export interface SoundFocus {
   noteJa: string;
 }
 
-export interface LessonExample {
+export type LessonExampleScriptStatus = 'authored' | 'verified' | 'generated';
+
+interface LessonExampleBase {
   traditional: string;
-  simplified?: string;
+  traditionalStatus: LessonExampleScriptStatus;
   pinyin: string;
   japanese: string;
 }
+
+export type LessonExample = LessonExampleBase &
+  (
+    | { simplified?: never; simplifiedStatus?: never }
+    | { simplified?: never; simplifiedStatus: 'unavailable' }
+    | { simplified: string; simplifiedStatus: LessonExampleScriptStatus }
+  );
 
 export interface ReviewPrompt {
   promptJa: string;
