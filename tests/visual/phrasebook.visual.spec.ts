@@ -7,6 +7,9 @@ import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 
 const BASE_URL = 'http://127.0.0.1:4321';
 const FONT_FAMILY = 'Noto Sans JP Variable';
+const EMERGENCY_SCENARIO =
+  '[data-phrasebook-scenario][data-scenario="emergency"]';
+const VIEWPORT_EPSILON = 1;
 
 const require = createRequire(import.meta.url);
 const fontCssPath = require.resolve(
@@ -113,6 +116,105 @@ async function assertCaptureContract(
   expect([...externalRequests]).toEqual([]);
 }
 
+/** Position one deterministic capture anchor below the sticky header without
+ * changing the URL or filter state. Aligning on a block boundary avoids
+ * cutting preceding learner text through the viewport's top edge. */
+async function positionCaptureBelowHeader(
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const anchor = page.locator(selector);
+  await expect(anchor).toBeVisible();
+  await anchor.evaluate((element) => {
+    const header = document.querySelector('header');
+    const headerHeight = header?.getBoundingClientRect().height ?? 0;
+    const absoluteTop = element.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: Math.max(0, absoluteTop - headerHeight - 24),
+      left: 0,
+      behavior: 'auto',
+    });
+  });
+}
+
+/** Assert that every required evidence element is fully inside the *current*
+ * captured viewport. This deliberately does not scroll between selectors, so
+ * all asserted boxes describe the same PNG state. */
+async function assertCurrentViewportContains(
+  page: Page,
+  selectors: readonly string[],
+): Promise<void> {
+  const viewport = await page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    await expect(locator).toBeVisible();
+    const box = await locator.boundingBox();
+    expect(box, `missing element for '${selector}'`).not.toBeNull();
+    expect(box!.x, `${selector} left`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.x + box!.width, `${selector} right`).toBeLessThanOrEqual(
+      viewport.width + VIEWPORT_EPSILON,
+    );
+    expect(box!.y, `${selector} top`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.y + box!.height, `${selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + VIEWPORT_EPSILON,
+    );
+  }
+}
+
+async function prepareCaptureState(
+  page: Page,
+  capture: (typeof PHRASEBOOK_VISUAL_CASES)[number]['capture'],
+): Promise<void> {
+  if (capture === 'overview') return;
+
+  const emergency = page.locator(EMERGENCY_SCENARIO);
+  await expect(emergency).toBeVisible();
+  for (const scenario of [
+    'airport',
+    'transport',
+    'food',
+    'shopping',
+    'hotel',
+  ]) {
+    await expect(
+      page.locator(
+        `[data-phrasebook-scenario][data-scenario="${scenario}"]`,
+      ),
+    ).toBeHidden();
+  }
+
+  if (capture === 'emergency-heading') {
+    const heading = `${EMERGENCY_SCENARIO} .phrasebook-scenario__heading`;
+    await positionCaptureBelowHeader(page, heading);
+    await assertCurrentViewportContains(page, [heading]);
+    return;
+  }
+
+  if (capture === 'emergency-dialog') {
+    const dialogHeading = `${EMERGENCY_SCENARIO} .phrasebook-dialog__heading`;
+    const firstTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:first-child`;
+    await positionCaptureBelowHeader(page, dialogHeading);
+    await assertCurrentViewportContains(page, [dialogHeading, firstTurn]);
+    return;
+  }
+
+  const fourthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(4)`;
+  const fifthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(5)`;
+  const sixthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(6)`;
+  const references = `${EMERGENCY_SCENARIO} .phrasebook-dialog__references`;
+  await positionCaptureBelowHeader(page, fourthTurn);
+  await assertCurrentViewportContains(page, [
+    fourthTurn,
+    fifthTurn,
+    sixthTurn,
+    references,
+  ]);
+}
+
 test.describe('/phrasebook/ visual baselines (exact prelaunch corpus)', () => {
   for (const visualCase of PHRASEBOOK_VISUAL_CASES) {
     test(`${visualCase.snapshotName}`, async ({ page }) => {
@@ -137,11 +239,16 @@ test.describe('/phrasebook/ visual baselines (exact prelaunch corpus)', () => {
         const group = page.locator(
           `[data-phrasebook-scenario][data-scenario="${scenario}"]`,
         );
-        await expect(group).toBeVisible();
+        if (visualCase.capture === 'overview' || scenario === 'emergency') {
+          await expect(group).toBeVisible();
+        } else {
+          await expect(group).toBeHidden();
+        }
         await expect(group.locator('[data-phrasebook-entry]')).toHaveCount(5);
         await expect(group.locator('[data-phrasebook-dialog]')).toHaveCount(1);
       }
 
+      await prepareCaptureState(page, visualCase.capture);
       await assertCaptureContract(page, visualCase.viewport, externalRequests);
       await expect(page).toHaveScreenshot(visualCase.snapshotName, {
         fullPage: false,
