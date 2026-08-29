@@ -133,6 +133,45 @@ class UnicodeContractTests(unittest.TestCase):
         }
         self.assertEqual(required - actual, set())
 
+    def test_production_practice_answer_evidence_uses_explicit_languages(self) -> None:
+        inventory, _ = extract_dataset(
+            REPO_ROOT / 'data/unicode/source-manifest.json',
+            repo_root=REPO_ROOT,
+        )
+        evidence = [
+            item for item in inventory['evidence']
+            if item['sourceId'] == 'practice-v1'
+        ]
+        by_field: dict[str, list[dict]] = {}
+        for item in evidence:
+            by_field.setdefault(item['field'], []).append(item)
+
+        self.assertNotIn('correctAnswer', by_field)
+        self.assertNotIn('distractors', by_field)
+        self.assertTrue(by_field['correctAnswerTraditional'])
+        self.assertTrue(by_field['distractorsTraditional'])
+        self.assertTrue(by_field['correctAnswerJa'])
+        self.assertTrue(by_field['distractorsJa'])
+        self.assertTrue(all(
+            item['language'] == 'zh-Hant'
+            for field in ('correctAnswerTraditional', 'distractorsTraditional')
+            for item in by_field[field]
+        ))
+        self.assertTrue(all(
+            item['language'] == 'ja'
+            for field in ('correctAnswerJa', 'distractorsJa')
+            for item in by_field[field]
+        ))
+        target = next(
+            item for item in by_field['correctAnswerTraditional']
+            if item['text'] == '我要這個'
+        )
+        self.assertEqual(target['language'], 'zh-Hant')
+        self.assertFalse(any(
+            item['language'] == 'ja' and item['text'] == target['text']
+            for item in evidence
+        ))
+
     def test_rendering_environment_registry_refs_resolve_to_stable_document_anchors(self) -> None:
         self.assertNotEqual(RENDERING_ENVIRONMENT_REFS, frozenset())
         for ref in RENDERING_ENVIRONMENT_REFS:

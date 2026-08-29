@@ -11,8 +11,8 @@ const VALID_WORD_ORDER = {
   id: 'practice-word-001',
   type: 'word-order',
   promptJa: '正しい語順に並べ替えてください',
-  correctAnswer: '我明天去台北',
-  distractors: ['我去台北明天'],
+  correctAnswerTraditional: '我明天去台北',
+  distractorsTraditional: ['我去台北明天'],
   painPointTags: ['word-order'],
   reviewStatus: 'reviewed',
 };
@@ -21,8 +21,8 @@ const VALID_WORD_ORDER_2 = {
   id: 'practice-word-002',
   type: 'word-order',
   promptJa: '正しい語順に並べ替えてください',
-  correctAnswer: '請坐這裡',
-  distractors: ['請這裡坐'],
+  correctAnswerTraditional: '請坐這裡',
+  distractorsTraditional: ['請這裡坐'],
   painPointTags: ['word-order'],
   reviewStatus: 'reviewed',
 };
@@ -53,6 +53,18 @@ afterEach(() => {
 // ─── Loader: source order and validity ─────────────────────────────────────
 
 describe('loadWordOrderPractice — source order and validity', () => {
+  it('normalizes Traditional answer fields into the existing domain shape', () => {
+    const file = tempBundle([{
+      ...VALID_WORD_ORDER,
+    }]);
+    const items = loadWordOrderPractice(file);
+
+    expect(items).toHaveLength(1);
+    expect(items[0].chunks.map((chunk) => chunk.text).join(items[0].separator)).toBe(
+      '我明天去台北',
+    );
+  });
+
   it('loads only word-order records in source order', () => {
     const file = tempBundle([
       { ...VALID_WORD_ORDER, id: 'practice-word-001' },
@@ -63,10 +75,37 @@ describe('loadWordOrderPractice — source order and validity', () => {
     expect(items.map((i) => i.recordId)).toEqual(['practice-word-001', 'practice-word-002']);
   });
 
+  it('rejects generic, Japanese, or mixed answer fields for a word-order record', () => {
+    const { correctAnswerTraditional, distractorsTraditional, ...base } = VALID_WORD_ORDER;
+    const file = tempBundle([
+      {
+        ...base,
+        id: 'generic',
+        correctAnswer: correctAnswerTraditional,
+        distractors: distractorsTraditional,
+      },
+      {
+        ...base,
+        id: 'japanese',
+        correctAnswerJa: correctAnswerTraditional,
+        distractorsJa: distractorsTraditional,
+      },
+      {
+        ...VALID_WORD_ORDER,
+        id: 'mixed',
+        correctAnswer: correctAnswerTraditional,
+        distractors: distractorsTraditional,
+      },
+      { ...VALID_WORD_ORDER, id: 'valid' },
+    ]);
+
+    expect(loadWordOrderPractice(file).map((item) => item.recordId)).toEqual(['valid']);
+  });
+
   it('rejects records that cannot be tokenized unambiguously instead of inventing tokens', () => {
     const file = tempBundle([
       { ...VALID_WORD_ORDER, id: 'practice-word-001' },
-      { ...VALID_WORD_ORDER, id: 'practice-word-bad', correctAnswer: '台' },
+      { ...VALID_WORD_ORDER, id: 'practice-word-bad', correctAnswerTraditional: '台' },
       { ...VALID_WORD_ORDER_2, id: 'practice-word-002' },
     ]);
     // The single-code-point record is rejected; surrounding valid records survive.
@@ -89,8 +128,8 @@ describe('loadWordOrderPractice — source order and validity', () => {
     const file = tempBundle([
       { ...VALID_WORD_ORDER, id: 'practice-good' },
       { id: 'practice-no-answer', type: 'word-order', promptJa: 'x' },
-      { id: 'practice-null', type: 'word-order', promptJa: 'x', correctAnswer: null },
-      { id: 42, type: 'word-order', promptJa: 'x', correctAnswer: 'a b' },
+      { id: 'practice-null', type: 'word-order', promptJa: 'x', correctAnswerTraditional: null },
+      { id: 42, type: 'word-order', promptJa: 'x', correctAnswerTraditional: 'a b' },
       null,
       'not-an-object',
     ]);

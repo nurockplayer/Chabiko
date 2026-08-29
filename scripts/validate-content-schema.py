@@ -289,7 +289,7 @@ def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
     practice_type = record.get("type")
     requirements = {
         "tone-discrimination": (
-            "correctAnswer", "distractors", "contrastId", "toneContourId",
+            "contrastId", "toneContourId",
             "toneContourHintJa", "interferenceJa",
         ),
         "pinyin-contrast": (
@@ -304,6 +304,8 @@ def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
     }
     required_fields = requirements.get(practice_type)
     if required_fields is None:
+        if practice_type == "word-order":
+            return []
         if record.get("correctAnswer") is None:
             return [f"{path}: 'correctAnswer' is required for type '{practice_type}'"]
         return []
@@ -318,6 +320,38 @@ def _check_pronunciation_practice_fields(record: dict, path: str) -> list[str]:
             errors.append(
                 f"{path}.correctAnswer must be null for type 'guided-shadowing'"
             )
+    return errors
+
+
+def _check_practice_answer_language_fields(record: dict, path: str) -> list[str]:
+    """Keep raw answer fields unambiguous before loaders normalize them."""
+    practice_type = record.get("type")
+    language_fields = {
+        "correctAnswerJa", "distractorsJa",
+        "correctAnswerTraditional", "distractorsTraditional",
+    }
+    if practice_type == "tone-discrimination":
+        required = {"correctAnswerJa", "distractorsJa"}
+        forbidden = {"correctAnswer", "distractors"} | (
+            language_fields - required
+        )
+    elif practice_type == "word-order":
+        required = {"correctAnswerTraditional"}
+        forbidden = {"correctAnswer", "distractors", "correctAnswerJa", "distractorsJa"}
+    else:
+        required = set()
+        forbidden = language_fields
+
+    errors = [
+        f"{path}: '{field}' is required for type '{practice_type}'"
+        for field in sorted(required)
+        if record.get(field) is None
+    ]
+    errors.extend(
+        f"{path}: '{field}' is not valid for type '{practice_type}'"
+        for field in sorted(forbidden)
+        if field in record
+    )
     return errors
 
 
@@ -1279,6 +1313,8 @@ def _build_schemas():
         ],
         "optional": [
             "correctAnswer", "distractors", "painPointTags", "relatedVocabulary",
+            "correctAnswerJa", "distractorsJa",
+            "correctAnswerTraditional", "distractorsTraditional",
             "contrastId", "toneContourId", "toneContourHintJa", "interferenceJa",
             "audioRef", "contrastNoteJa", "articulationJa", "targetTraditional",
             "targetTraditionalStatus", "targetSimplified", "targetSimplifiedStatus",
@@ -1289,6 +1325,8 @@ def _build_schemas():
             "id": str, "type": str, "promptJa": str,
             "correctAnswer": str, "reviewStatus": str,
             "distractors": list, "relatedVocabulary": list,
+            "correctAnswerJa": str, "distractorsJa": list,
+            "correctAnswerTraditional": str, "distractorsTraditional": list,
             "painPointTags": list, "contrastId": str, "toneContourId": str,
             "toneContourHintJa": str, "interferenceJa": str, "audioRef": str,
             "contrastNoteJa": str, "articulationJa": str, "targetTraditional": str,
@@ -1306,6 +1344,7 @@ def _build_schemas():
         "extra_validators": [
             _check_review_status,
             _check_generated_not_production,
+            _check_practice_answer_language_fields,
             _check_pronunciation_practice_fields,
             _check_word_order_source_lesson,
         ],
@@ -3286,6 +3325,7 @@ def run_tests():
         test_legacy_word_order_forbids_source_lesson,
         test_word_order_source_lesson_rejects_stale_or_malformed_metadata,
         test_tone_discrimination_practice_contract,
+        test_practice_answer_language_fields_fail_closed,
         test_pinyin_contrast_practice_contract,
         test_guided_shadowing_practice_contract,
         test_pronunciation_practice_contract_missing_field,
@@ -5271,18 +5311,26 @@ def test_roleplay_file_non_controlled_scenario_name_rejected():
 # ─── Practice tests ────────────────────────────────────────────────────────
 
 def _minimal_practice(**overrides):
+    practice_type = overrides.pop("type", "tone-discrimination")
     data = {
         "id": "practice-001",
-        "type": "tone-discrimination",
+        "type": practice_type,
         "promptJa": "次の音声を聴いて、正しい声調を選んでください",
-        "correctAnswer": "mā",
-        "distractors": ["mà"],
-        "contrastId": "tone-t1-vs-t4",
-        "toneContourId": "t1-high-flat",
-        "toneContourHintJa": "第一声は高く平ら。",
-        "interferenceJa": "日本語話者は平らに伸ばしやすい。",
         "reviewStatus": "draft",
     }
+    if practice_type == "tone-discrimination":
+        data.update({
+            "correctAnswerJa": "第一声",
+            "distractorsJa": ["第二声", "第三声", "第四声"],
+            "contrastId": "tone-t1-vs-t2-t3-t4",
+            "toneContourId": "t1-high-flat",
+            "toneContourHintJa": "第一声は高く平ら。",
+            "interferenceJa": "日本語話者は平らに伸ばしやすい。",
+        })
+    elif practice_type == "word-order":
+        data["correctAnswerTraditional"] = "我要這個"
+    else:
+        data["correctAnswer"] = "mā"
     data.update(overrides)
     return data
 
@@ -5311,7 +5359,7 @@ def test_word_order_source_lesson_contract():
     errs = validate_single(_minimal_practice(
         id="practice-006",
         type="word-order",
-        correctAnswer="我要去廁所。",
+        correctAnswerTraditional="我要去廁所。",
         sourceLesson=source,
     ), "practice")
     _assert_no_errors(errs, "word_order_source_lesson_contract")
@@ -5319,7 +5367,7 @@ def test_word_order_source_lesson_contract():
 
 def test_new_word_order_requires_source_lesson():
     errs = validate_single(_minimal_practice(
-        id="practice-006", type="word-order", correctAnswer="我要這個"
+        id="practice-006", type="word-order", correctAnswerTraditional="我要這個"
     ), "practice")
     _assert_has_error(errs, "sourceLesson", "word_order_source_required")
 
@@ -5328,7 +5376,7 @@ def test_legacy_word_order_forbids_source_lesson():
     errs = validate_single(_minimal_practice(
         id="practice-002",
         type="word-order",
-        correctAnswer="我明天去台北",
+        correctAnswerTraditional="我明天去台北",
         sourceLesson={
             "lessonId": "lesson-001",
             "field": "coreSentence",
@@ -5342,7 +5390,7 @@ def test_word_order_source_lesson_rejects_stale_or_malformed_metadata():
     errs = validate_single(_minimal_practice(
         id="practice-006",
         type="word-order",
-        correctAnswer="我要這個",
+        correctAnswerTraditional="我要這個",
         sourceLesson={
             "lessonId": "lesson-011",
             "field": "examples[-1].traditional",
@@ -5358,13 +5406,44 @@ def test_word_order_source_lesson_rejects_stale_or_malformed_metadata():
 
 def test_tone_discrimination_practice_contract():
     errs = validate_single(_minimal_practice(
-        distractors=["mà"],
+        distractorsJa=["第二声", "第三声", "第四声"],
         contrastId="tone-t1-vs-t4",
         toneContourId="t1-high-flat",
         toneContourHintJa="第一声は高く平ら。",
         interferenceJa="日本語話者は平らに伸ばしやすい。",
     ), "practice")
     _assert_no_errors(errs, "tone_discrimination_practice_contract")
+
+
+def test_practice_answer_language_fields_fail_closed():
+    tone_generic = _minimal_practice(correctAnswer="第一声", distractors=["第二声"])
+    errs = validate_single(tone_generic, "practice")
+    _assert_has_error(errs, "not valid for type 'tone-discrimination'", "tone_generic_answer")
+
+    tone_traditional = _minimal_practice(
+        correctAnswerTraditional="第一声",
+        distractorsTraditional=["第二声"],
+    )
+    errs = validate_single(tone_traditional, "practice")
+    _assert_has_error(errs, "not valid for type 'tone-discrimination'", "tone_traditional_answer")
+
+    word_generic = _minimal_practice(
+        id="practice-002",
+        type="word-order",
+        correctAnswer="我明天去台北",
+        distractors=["我去台北明天"],
+    )
+    errs = validate_single(word_generic, "practice")
+    _assert_has_error(errs, "not valid for type 'word-order'", "word_generic_answer")
+
+    word_japanese = _minimal_practice(
+        id="practice-002",
+        type="word-order",
+        correctAnswerJa="我明天去台北",
+        distractorsJa=["我去台北明天"],
+    )
+    errs = validate_single(word_japanese, "practice")
+    _assert_has_error(errs, "not valid for type 'word-order'", "word_japanese_answer")
 
 
 def test_pinyin_contrast_practice_contract():

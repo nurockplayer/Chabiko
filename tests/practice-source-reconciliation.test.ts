@@ -61,7 +61,9 @@ describe('production word-order source reconciliation', () => {
     expect(items).toHaveLength(22);
     expect(items[0].recordId).toBe('practice-002');
     expect(sourceRecords).toHaveLength(21);
-    expect(new Set(sourceRecords.map((record) => record.correctAnswer)).size).toBe(21);
+    expect(
+      new Set(sourceRecords.map((record) => record.correctAnswerTraditional)).size,
+    ).toBe(21);
     expect(items.map((item) => item.recordId)).toEqual(
       productionPractice.practice
         .filter((record) => record.type === 'word-order')
@@ -139,7 +141,7 @@ describe('production word-order source reconciliation', () => {
     const practice = clone(productionPractice);
     const lessons = clone(productionLessons);
     const record = sourceBackedRecords(practice)[0];
-    record.correctAnswer = '台';
+    record.correctAnswerTraditional = '台';
     const source = sourceLesson(record);
     const lesson = lessons.lessons.find((item) => item.id === source.lessonId)!;
     lesson.coreSentence = '台';
@@ -154,7 +156,7 @@ describe('production word-order source reconciliation', () => {
     const practice = clone(productionPractice);
     const lessons = clone(productionLessons);
     const record = sourceBackedRecords(practice)[0];
-    record.correctAnswer = '哈哈';
+    record.correctAnswerTraditional = '哈哈';
     const source = sourceLesson(record);
     const lesson = lessons.lessons.find((item) => item.id === source.lessonId)!;
     lesson.coreSentence = '哈哈';

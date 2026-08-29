@@ -93,13 +93,27 @@ function parseSourceLesson(value: unknown): WordOrderSourceLesson | undefined {
 }
 
 function parseWordOrderRecord(value: unknown): WordOrderRecord | undefined {
-  if (!value || typeof value !== 'object') return undefined;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const record = value as Record<string, unknown>;
+  if (
+    ['correctAnswer', 'distractors', 'correctAnswerJa', 'distractorsJa']
+      .some((field) => field in record)
+  ) {
+    return undefined;
+  }
+  const correctAnswer = record.correctAnswerTraditional;
   if (
     record.type !== WORD_ORDER_TYPE ||
     !isNonEmptyString(record.id) ||
     !isNonEmptyString(record.promptJa) ||
-    !isNonEmptyString(record.correctAnswer)
+    !isNonEmptyString(correctAnswer)
+  ) {
+    return undefined;
+  }
+  if (
+    record.distractorsTraditional !== undefined &&
+    (!Array.isArray(record.distractorsTraditional) ||
+      !record.distractorsTraditional.every(isNonEmptyString))
   ) {
     return undefined;
   }
@@ -110,7 +124,7 @@ function parseWordOrderRecord(value: unknown): WordOrderRecord | undefined {
   return {
     id: record.id,
     promptJa: record.promptJa,
-    correctAnswer: record.correctAnswer,
+    correctAnswer,
     sourceLesson,
   };
 }
