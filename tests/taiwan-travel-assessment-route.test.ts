@@ -11,6 +11,7 @@ import {
 import { initTaiwanTravelQuiz } from '../src/client/taiwanTravelQuiz';
 import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
+  TAIWAN_TRAVEL_ASSESSMENT_VERSION,
   TaiwanTravelAssessmentStore,
 } from '../src/lib/taiwanTravelAssessmentStore';
 import { TAIWAN_TRAVEL_PATH_ROUTE } from '../src/domain/taiwanTravelQuizNavigation';
@@ -301,7 +302,7 @@ describe('taiwan travel assessment client', () => {
     expect(recordSpy).toHaveBeenCalledWith(24);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 24 });
+    ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 24 });
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
     recordSpy.mockRestore();
   });
@@ -315,7 +316,7 @@ describe('taiwan travel assessment client', () => {
     driveFullAttempt(root, false);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 0 });
+    ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 0 });
 
     // Restart keeps the best score (0 is already stored).
     const restart = root.querySelector<HTMLButtonElement>('[data-action="restart"]')!;
@@ -324,13 +325,13 @@ describe('taiwan travel assessment client', () => {
     expect(root.querySelectorAll<HTMLButtonElement>('[data-action="select"]').length).toBeGreaterThanOrEqual(2);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 0 });
+    ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 0 });
 
     // Second attempt: all correct → best score rises to 24, never decreases.
     driveFullAttempt(root, true);
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
-    ).toEqual({ version: 1, bestScore: 24 });
+    ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 24 });
     expect(root.querySelector<HTMLElement>('[data-quiz-card]')!.textContent).toContain('ベストスコア 24 / 24');
   });
 

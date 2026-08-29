@@ -7,14 +7,19 @@ import {
  *  Taiwan Travel comprehensive test (#376) and must never become a global
  *  cross-track store/reset API. */
 export const TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY =
+  'chabiko.taiwan-travel-assessment.v2';
+
+/** Retained only as a documented compatibility boundary: V1 evidence is not
+ * comparable with the 24-question assessment and is intentionally ignored. */
+export const TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY =
   'chabiko.taiwan-travel-assessment.v1';
 
 /** Current document version for the isolated assessment evidence. */
-export const TAIWAN_TRAVEL_ASSESSMENT_VERSION = 1;
+export const TAIWAN_TRAVEL_ASSESSMENT_VERSION = 2;
 
 /** Minimal persisted document: version + best score only. */
 export interface TaiwanTravelAssessmentDocument {
-  readonly version: 1;
+  readonly version: 2;
   readonly bestScore: number;
 }
 
@@ -44,13 +49,13 @@ function getDefaultStorage(): StorageLike | null {
 /**
  * Isolated Taiwan Travel assessment evidence store.
  *
- * Rules (frozen V1 contract):
+ * Rules (frozen V2 contract):
  * - nothing is written before a full 24-question attempt completes;
  * - a completed attempt writes at most once (caller transitions to completed
  *   exactly once and calls {@link recordCompletedAttempt} once);
  * - stored bestScore is max(previousBest, completedScore), bounded 0–24;
- * - malformed/unknown-version/unavailable storage falls back safely without
- *   touching lesson progress;
+ * - V1, malformed, unknown-version, or unavailable storage falls back safely
+ *   without touching lesson progress; V1 is never migrated or compared;
  * - restart does not erase the best score (restart never calls the store).
  */
 export class TaiwanTravelAssessmentStore {

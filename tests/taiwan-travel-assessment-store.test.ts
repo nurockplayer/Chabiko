@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { StorageLike } from '../src/lib/progress';
 import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
+  TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_VERSION,
   TaiwanTravelAssessmentStore,
   normalizeBestScore,
@@ -86,6 +87,24 @@ describe('TaiwanTravelAssessmentStore', () => {
     });
   });
 
+  it('ignores the legacy 10-question V1 document without migrating or comparing it', () => {
+    const legacy = JSON.stringify({ version: 1, bestScore: 10 });
+    const storage = createMemoryStorage({
+      [TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY]: legacy,
+    });
+    const store = new TaiwanTravelAssessmentStore(storage);
+
+    expect(store.readBestScore()).toBe(0);
+    expect(store.hasCompletedAttempt()).toBe(false);
+
+    expect(store.recordCompletedAttempt(8)).toEqual({ bestScore: 8, wrote: true });
+    expect(storage.getItem(TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY)).toBe(legacy);
+    expect(JSON.parse(storage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!)).toEqual({
+      version: 2,
+      bestScore: 8,
+    });
+  });
+
   it('never writes or reads the lesson-progress key', () => {
     const storage = createMemoryStorage({ [LESSON_PROGRESS_KEY]: '["lesson-001"]' });
     const store = new TaiwanTravelAssessmentStore(storage);
@@ -105,7 +124,7 @@ describe('TaiwanTravelAssessmentStore', () => {
 
   it('fails safe on an unknown-version document', () => {
     const storage = createMemoryStorage({
-      [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: JSON.stringify({ version: 2, bestScore: 9 }),
+      [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: JSON.stringify({ version: 3, bestScore: 9 }),
     });
     const store = new TaiwanTravelAssessmentStore(storage);
     expect(store.readBestScore()).toBe(0);
@@ -114,9 +133,9 @@ describe('TaiwanTravelAssessmentStore', () => {
 
   it('fails safe on a structurally invalid document', () => {
     for (const raw of [
-      JSON.stringify({ version: 1 }),
-      JSON.stringify({ version: 1, bestScore: '9' }),
-      JSON.stringify({ version: 1, bestScore: null }),
+      JSON.stringify({ version: 2 }),
+      JSON.stringify({ version: 2, bestScore: '9' }),
+      JSON.stringify({ version: 2, bestScore: null }),
       JSON.stringify('not an object'),
     ]) {
       const storage = createMemoryStorage({ [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: raw });
