@@ -317,6 +317,58 @@ describe('phrasebook script preference — exact prelaunch corpus', () => {
     },
   );
 
+  it.each(PREFERENCES)(
+    'keeps exactly two related-phrase separators outside replaceable text under %s',
+    (preference) => {
+      setPreference(preference);
+      const root = buildPrelaunchPage();
+      document.body.append(root);
+      init(root);
+
+      const assertReferences = (activePreference: ScriptPreference): void => {
+        const references = Array.from(
+          root.querySelectorAll<HTMLElement>('.phrasebook-dialog__references'),
+        );
+        expect(references).toHaveLength(6);
+        for (const referenceBlock of references) {
+          const fields = Array.from(
+            referenceBlock.querySelectorAll<HTMLElement>(
+              '[data-script-annotation-host]',
+            ),
+          ).map(
+            (field) =>
+              ALL_DIALOG_REFERENCE_FIELDS.find(
+                (candidate) => candidate.id === field.dataset.fieldId,
+              )!,
+          );
+          expect(fields).toHaveLength(3);
+          for (const [index, fieldElement] of Array.from(
+            referenceBlock.querySelectorAll<HTMLElement>(
+              '[data-script-annotation-host]',
+            ),
+          ).entries()) {
+            const field = fields[index];
+            const result = expected(field, activePreference);
+            expect(frontText(fieldElement)).toBe(
+              result.status === 'unavailable' ? field.traditional : result.script,
+            );
+          }
+          expect(
+            Array.from(referenceBlock.childNodes)
+              .filter((node) => node.nodeType === Node.TEXT_NODE)
+              .map((node) => node.textContent),
+          ).toEqual(['、', '、']);
+        }
+      };
+
+      assertReferences(preference);
+      changePreference('traditional');
+      assertReferences('traditional');
+      changePreference('simplified');
+      assertReferences('simplified');
+    },
+  );
+
   it('renders no fallback annotation under 簡体字 because every canonical form is verified', () => {
     setPreference('simplified');
     const root = buildPrelaunchPage();
