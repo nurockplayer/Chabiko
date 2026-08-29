@@ -7,6 +7,9 @@ import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 
 const BASE_URL = 'http://127.0.0.1:4321';
 const FONT_FAMILY = 'Noto Sans JP Variable';
+const EMERGENCY_SCENARIO =
+  '[data-phrasebook-scenario][data-scenario="emergency"]';
+const VIEWPORT_EPSILON = 1;
 
 const require = createRequire(import.meta.url);
 const fontCssPath = require.resolve(
@@ -113,20 +116,139 @@ async function assertCaptureContract(
   expect([...externalRequests]).toEqual([]);
 }
 
-test.describe('/phrasebook/ visual baselines (eligible surface + pending notice)', () => {
+/** Position one deterministic capture anchor below the sticky header without
+ * changing the URL or filter state. Aligning on a block boundary avoids
+ * cutting preceding learner text through the viewport's top edge. */
+async function positionCaptureBelowHeader(
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const anchor = page.locator(selector);
+  await expect(anchor).toBeVisible();
+  await anchor.evaluate((element) => {
+    const header = document.querySelector('header');
+    const headerHeight = header?.getBoundingClientRect().height ?? 0;
+    const absoluteTop = element.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: Math.max(0, absoluteTop - headerHeight - 24),
+      left: 0,
+      behavior: 'auto',
+    });
+  });
+}
+
+/** Assert that every required evidence element is fully inside the *current*
+ * captured viewport. This deliberately does not scroll between selectors, so
+ * all asserted boxes describe the same PNG state. */
+async function assertCurrentViewportContains(
+  page: Page,
+  selectors: readonly string[],
+): Promise<void> {
+  const viewport = await page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    await expect(locator).toBeVisible();
+    const box = await locator.boundingBox();
+    expect(box, `missing element for '${selector}'`).not.toBeNull();
+    expect(box!.x, `${selector} left`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.x + box!.width, `${selector} right`).toBeLessThanOrEqual(
+      viewport.width + VIEWPORT_EPSILON,
+    );
+    expect(box!.y, `${selector} top`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.y + box!.height, `${selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + VIEWPORT_EPSILON,
+    );
+  }
+}
+
+async function prepareCaptureState(
+  page: Page,
+  capture: (typeof PHRASEBOOK_VISUAL_CASES)[number]['capture'],
+): Promise<void> {
+  if (capture === 'overview') return;
+
+  const emergency = page.locator(EMERGENCY_SCENARIO);
+  await expect(emergency).toBeVisible();
+  for (const scenario of [
+    'airport',
+    'transport',
+    'food',
+    'shopping',
+    'hotel',
+  ]) {
+    await expect(
+      page.locator(
+        `[data-phrasebook-scenario][data-scenario="${scenario}"]`,
+      ),
+    ).toBeHidden();
+  }
+
+  if (capture === 'emergency-heading') {
+    const heading = `${EMERGENCY_SCENARIO} .phrasebook-scenario__heading`;
+    await positionCaptureBelowHeader(page, heading);
+    await assertCurrentViewportContains(page, [heading]);
+    return;
+  }
+
+  if (capture === 'emergency-dialog') {
+    const dialogHeading = `${EMERGENCY_SCENARIO} .phrasebook-dialog__heading`;
+    const firstTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:first-child`;
+    await positionCaptureBelowHeader(page, dialogHeading);
+    await assertCurrentViewportContains(page, [dialogHeading, firstTurn]);
+    return;
+  }
+
+  const fourthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(4)`;
+  const fifthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(5)`;
+  const sixthTurn = `${EMERGENCY_SCENARIO} [data-phrasebook-dialog-turn]:nth-child(6)`;
+  const references = `${EMERGENCY_SCENARIO} .phrasebook-dialog__references`;
+  await positionCaptureBelowHeader(page, fourthTurn);
+  await assertCurrentViewportContains(page, [
+    fourthTurn,
+    fifthTurn,
+    sixthTurn,
+    references,
+  ]);
+}
+
+test.describe('/phrasebook/ visual baselines (exact prelaunch corpus)', () => {
   for (const visualCase of PHRASEBOOK_VISUAL_CASES) {
     test(`${visualCase.snapshotName}`, async ({ page }) => {
       await page.setViewportSize(visualCase.viewport);
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       const externalRequests = await openPhrasebook(page, visualCase.search);
 
-      // The fail-closed surface renders: 6 eligible entries, no dialogs, and
-      // the truthful pending notice for the rest.
-      await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(6);
-      await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(0);
-      await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(0);
-      await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(1);
+      // The bounded prelaunch surface renders the exact canonical corpus.
+      await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(30);
+      await expect(page.locator('[data-phrasebook-dialog]')).toHaveCount(6);
+      await expect(page.locator('[data-phrasebook-dialog-turn]')).toHaveCount(36);
+      await expect(page.locator('[data-phrasebook-pending]')).toHaveCount(0);
+      await expect(page.locator('[data-phrasebook-no-match]')).toBeHidden();
+      for (const scenario of [
+        'airport',
+        'transport',
+        'food',
+        'shopping',
+        'hotel',
+        'emergency',
+      ]) {
+        const group = page.locator(
+          `[data-phrasebook-scenario][data-scenario="${scenario}"]`,
+        );
+        if (visualCase.capture === 'overview' || scenario === 'emergency') {
+          await expect(group).toBeVisible();
+        } else {
+          await expect(group).toBeHidden();
+        }
+        await expect(group.locator('[data-phrasebook-entry]')).toHaveCount(5);
+        await expect(group.locator('[data-phrasebook-dialog]')).toHaveCount(1);
+      }
 
+      await prepareCaptureState(page, visualCase.capture);
       await assertCaptureContract(page, visualCase.viewport, externalRequests);
       await expect(page).toHaveScreenshot(visualCase.snapshotName, {
         fullPage: false,
@@ -146,22 +268,21 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     );
 
   for (const viewport of VIEWPORTS) {
-    test(`pending notice + toolbar + first scenario inside the ${viewport.width}px viewport`, async ({
+    test(`toolbar + first scenario inside the ${viewport.width}px viewport`, async ({
       page,
     }) => {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
       const externalRequests = await openPhrasebook(page, '');
 
-      // The header, the pending notice, the filter toolbar, and the first
-      // scenario's heading are all horizontally contained (no horizontal
+      // The header, filter toolbar, and first scenario's heading are all
+      // horizontally contained (no horizontal
       // overflow at any Issue #205 viewport), including the native select and
       // the count status line. The whole scenario section is intentionally
       // taller than the viewport, so a single short heading is the
       // horizontal-containment probe.
       await assertElementsWithinViewport(page, [
         'header',
-        '[data-phrasebook-pending]',
         '[data-phrasebook-toolbar]',
         '[data-phrasebook-scenario][data-scenario="airport"] .phrasebook-scenario__heading',
       ]);
@@ -175,7 +296,7 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     });
   }
 
-  test('console: no errors for the eligible phrasebook surface', async ({
+  test('console: no errors for the canonical prelaunch phrasebook surface', async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -187,7 +308,7 @@ test.describe('/phrasebook/ behavior, viewport, console', () => {
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
 
     await openPhrasebook(page, '');
-    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(6);
+    await expect(page.locator('[data-phrasebook-entry]')).toHaveCount(30);
     expect(errors).toEqual([]);
   });
 });

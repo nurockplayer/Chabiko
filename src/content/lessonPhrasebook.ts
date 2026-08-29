@@ -5,11 +5,12 @@ import {
 } from './loadPhrasebook';
 
 /**
- * The set of phrasebook scenarios that currently have learner-visible eligible
- * content — determined exactly as the `/phrasebook/` route does (Issue #236):
- * `loadEligiblePhrasebook()` (record-level `reviewed`/`published` review status
- * AND authored/verified script forms) grouped by scenario, keeping only
- * scenarios with eligible phrases or an eligible dialog.
+ * The set of phrasebook scenarios that currently have formal production-
+ * eligible content — intentionally derived from `loadEligiblePhrasebook()`
+ * (record-level `reviewed`/`published` review status AND authored/verified
+ * script forms), not from the #440 prelaunch projection used by `/phrasebook/`.
+ * The result is grouped by scenario, keeping only scenarios with eligible
+ * phrases or an eligible dialog.
  *
  * This is the production-eligibility contract behind the lesson → phrasebook
  * related link (Issue #239): a lesson is linked ONLY to a scenario that has
