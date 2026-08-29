@@ -17,6 +17,7 @@ const ROUTE_SOURCE = resolve(
 );
 const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-taiwan-path-route-'));
 const BUILT_ROUTE = join(BUILD_DIR, 'paths/taiwan-travel/index.html');
+const BUILD_COMMAND = `pnpm astro build --outDir ${BUILD_DIR}`;
 
 let routeSource = '';
 let builtRouteHtml = '';
@@ -24,7 +25,7 @@ let builtRouteHtml = '';
 describe('/paths/taiwan-travel/ direct-refresh landing', () => {
   beforeAll(() => {
     routeSource = readFileSync(ROUTE_SOURCE, 'utf8');
-    execSync(`corepack pnpm@10.33.0 astro build --outDir ${BUILD_DIR}`, {
+    execSync(BUILD_COMMAND, {
       cwd: REPO_ROOT,
       stdio: 'pipe',
       timeout: 120_000,
@@ -36,6 +37,13 @@ describe('/paths/taiwan-travel/ direct-refresh landing', () => {
     if (existsSync(BUILD_DIR)) {
       rmSync(BUILD_DIR, { recursive: true, force: true });
     }
+  });
+
+  it('uses the installed pnpm build command without a Corepack or version fallback', () => {
+    expect(BUILD_COMMAND).toMatch(/^pnpm astro build --outDir /);
+    expect(BUILD_COMMAND).not.toMatch(/corepack|pnpm@/);
+    expect(existsSync(BUILT_ROUTE)).toBe(true);
+    expect(builtRouteHtml).toContain('<html lang="ja"');
   });
 
   it('builds a direct-refreshable static route from the narrow adapter only', () => {
