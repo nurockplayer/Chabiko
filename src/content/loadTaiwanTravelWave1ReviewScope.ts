@@ -283,7 +283,10 @@ function validateLesson(lesson: Lesson, index: number): void {
   lesson.kanjiBridgeNotes.forEach((note, itemIndex) =>
     validateNonEmptyObjectFields(note, ['kanji', 'jpReading', 'noteJa'], `${label}.kanjiBridgeNotes[${itemIndex}]`),
   );
-  assert(Array.isArray(lesson.soundFocus) && lesson.soundFocus.length >= 2, `${label} must have at least two sound-focus items`);
+  assert(
+    Array.isArray(lesson.soundFocus) && lesson.soundFocus.length === 1,
+    `${label} must have exactly one sound-focus item`,
+  );
   lesson.soundFocus.forEach((item, itemIndex) =>
     validateNonEmptyObjectFields(item, ['item', 'noteJa'], `${label}.soundFocus[${itemIndex}]`),
   );

@@ -220,7 +220,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     for (const { lesson } of packet.records) {
       expect(lesson.sections?.length).toBeGreaterThanOrEqual(2);
       expect(lesson.chunks.length).toBeGreaterThanOrEqual(3);
-      expect(lesson.soundFocus.length).toBeGreaterThanOrEqual(2);
+      expect(lesson.soundFocus).toHaveLength(1);
       expect(lesson.examples?.length).toBeGreaterThanOrEqual(2);
       expect(lesson.reviewPrompts.length).toBeGreaterThanOrEqual(2);
       for (const prompt of lesson.reviewPrompts) {
@@ -246,6 +246,52 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(busExample?.simplified).toContain('公车');
     expect(busExample?.simplified).not.toContain('公交车');
     expect(busExample?.pinyin).toContain('gōngchē');
+  });
+
+  it('keeps one canonical pronunciation point per lesson', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const expectedSoundFocus = new Map([
+      ['lesson-011', '壞了 huài le'],
+      ['lesson-012', '託運 tuōyùn'],
+      ['lesson-013', '這班車 zhè bān chē'],
+      ['lesson-014', '哪一站 nǎ yí zhàn'],
+      ['lesson-015', '兩位 liǎng wèi'],
+      ['lesson-016', '花生 huāshēng'],
+      ['lesson-017', '可以 kěyǐ'],
+      ['lesson-018', '試穿 shìchuān'],
+      ['lesson-019', '給我 gěi wǒ'],
+      ['lesson-020', '寄放 jìfàng'],
+      ['lesson-021', '不能用 bù néng yòng'],
+      ['lesson-022', '走散 zǒusàn'],
+      ['lesson-023', '救護車 jiùhùchē'],
+      ['lesson-024', '你好 nǐ hǎo'],
+    ]);
+
+    expect(
+      packet.records.map(({ lesson }) => ({
+        id: lesson.id,
+        soundFocus: lesson.soundFocus.map(({ item }) => item),
+      })),
+    ).toEqual(
+      [...expectedSoundFocus].map(([id, item]) => ({
+        id,
+        soundFocus: [item],
+      })),
+    );
+  });
+
+  it('fails closed when a lesson has zero or multiple sound-focus points', async () => {
+    await expect(
+      build(undefined, ({ lessons }) => {
+        lessons[0].soundFocus = [];
+      }),
+    ).rejects.toThrow(/exactly one sound-focus item/);
+
+    await expect(
+      build(undefined, ({ lessons }) => {
+        lessons[0].soundFocus.push(structuredClone(lessons[1].soundFocus[0]));
+      }),
+    ).rejects.toThrow(/exactly one sound-focus item/);
   });
 
   it('extends airport arrival coverage with damaged baggage instead of location or missing-baggage semantics', async () => {

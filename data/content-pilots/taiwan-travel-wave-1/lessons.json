@@ -22,7 +22,6 @@
         { "kanji": "箱", "jpReading": "はこ", "noteJa": "スーツケースを指す「行李箱」に含まれるが、中国語では xiāng と読み、日本語の読みをそのまま使わない。" }
       ],
       "soundFocus": [
-        { "item": "行李箱 xínglǐxiāng", "noteJa": "第二声・第三声・第一声。xíng を上げ、lǐ を低くし、xiāng を高く保つ。" },
         { "item": "壞了 huài le", "noteJa": "huài は第四声で下げ、le は軽く添える。" }
       ],
       "examples": [
@@ -59,8 +58,7 @@
         { "kanji": "運", "jpReading": "うん", "noteJa": "運ぶ意味の手がかりにはなるが、「託運」は tuōyùn と読み、語全体で「預けて運んでもらう」と覚える。" }
       ],
       "soundFocus": [
-        { "item": "託運 tuōyùn", "noteJa": "第一声から第四声。tuō を高く保ち、yùn を下げる。" },
-        { "item": "還沒 hái méi", "noteJa": "どちらも第二声。二つを平らにせず、それぞれ上げる。" }
+        { "item": "託運 tuōyùn", "noteJa": "第一声から第四声。tuō を高く保ち、yùn を下げる。" }
       ],
       "examples": [
         { "traditional": "我的託運行李還沒出來。", "traditionalStatus": "generated", "simplified": "我的托运行李还没出来。", "simplifiedStatus": "generated", "pinyin": "wǒ de tuōyùn xínglǐ hái méi chūlái.", "japanese": "私の預けた荷物がまだ出てきません。" },
@@ -96,8 +94,7 @@
         { "kanji": "班", "jpReading": "はん", "noteJa": "日本語の「班」と同じ字だが、ここでは交通の便を数える働き。日本語の意味だけで判断しない。" }
       ],
       "soundFocus": [
-        { "item": "這班車 zhè bān chē", "noteJa": "第四声・第一声・第一声。zhè を下げ、後ろ二語は高く保つ。" },
-        { "item": "到 dào", "noteJa": "第四声。日本語の長音のように伸ばさず、短く下げる。" }
+        { "item": "這班車 zhè bān chē", "noteJa": "第四声・第一声・第一声。zhè を下げ、後ろ二語は高く保つ。" }
       ],
       "examples": [
         { "traditional": "請問，這班車有到台北車站嗎？", "traditionalStatus": "generated", "simplified": "请问，这班车有到台北车站吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, zhè bān chē yǒu dào Táiběi Chēzhàn ma?", "japanese": "すみません、この便は台北駅へ行きますか？" },
@@ -133,8 +130,7 @@
         { "kanji": "轉", "jpReading": "てん", "noteJa": "「転」の繁体字。乗り換えの意味は語全体「轉車」で確認し、音は zhuǎn を基準にする。" }
       ],
       "soundFocus": [
-        { "item": "哪一站 nǎ yí zhàn", "noteJa": "「一」は後ろの第四声の前で第二声のように上げる。" },
-        { "item": "轉車 zhuǎnchē", "noteJa": "第三声から第一声。zh と ch を日本語の音に寄せすぎない。" }
+        { "item": "哪一站 nǎ yí zhàn", "noteJa": "「一」は後ろの第四声の前で第二声のように上げる。" }
       ],
       "examples": [
         { "traditional": "請問，我要在哪一站轉車？", "traditionalStatus": "generated", "simplified": "请问，我要在哪一站转车？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, wǒ yào zài nǎ yí zhàn zhuǎnchē?", "japanese": "すみません、どの駅で乗り換えればいいですか？" },
@@ -170,8 +166,7 @@
         { "kanji": "位", "jpReading": "い", "noteJa": "人を丁寧に数える働きは日本語の「〜名様」に近いが、使い方が同一とは限らない。" }
       ],
       "soundFocus": [
-        { "item": "兩位 liǎng wèi", "noteJa": "第三声から第四声。liǎng を低くし、wèi を短く下げる。" },
-        { "item": "位子 wèizi", "noteJa": "wèi は第四声、zi は軽く添える。" }
+        { "item": "兩位 liǎng wèi", "noteJa": "第三声から第四声。liǎng を低くし、wèi を短く下げる。" }
       ],
       "examples": [
         { "traditional": "請問，兩位有位子嗎？", "traditionalStatus": "generated", "simplified": "请问，两位有位子吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, liǎng wèi yǒu wèizi ma?", "japanese": "すみません、二人用の席はありますか？" },
@@ -207,7 +202,6 @@
         { "kanji": "花生", "jpReading": "か・せい", "noteJa": "日本語の字音から意味を推測しにくい語。中国語では huāshēng で「ピーナッツ」と覚える。" }
       ],
       "soundFocus": [
-        { "item": "這道菜 zhè dào cài", "noteJa": "三語とも第四声。各語を短く下げ、平らに読まない。" },
         { "item": "花生 huāshēng", "noteJa": "どちらも第一声。高く平らに保つ。" }
       ],
       "examples": [
@@ -244,8 +238,7 @@
         { "kanji": "包", "jpReading": "ほう", "noteJa": "包む意味は手がかりになるが、「打包」は二字で一つの動作として覚える。" }
       ],
       "soundFocus": [
-        { "item": "可以 kěyǐ", "noteJa": "第三声が二つ続くため、表記は kěyǐ のままでも、発音では最初の kě が第二声のように上がって kéyǐ となる。" },
-        { "item": "打包 dǎbāo", "noteJa": "第三声から第一声。bāo を高く平らに保つ。" }
+        { "item": "可以 kěyǐ", "noteJa": "第三声が二つ続くため、表記は kěyǐ のままでも、発音では最初の kě が第二声のように上がって kéyǐ となる。" }
       ],
       "examples": [
         { "traditional": "請問，可以幫我打包嗎？", "traditionalStatus": "generated", "simplified": "请问，可以帮我打包吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ bāng wǒ dǎbāo ma?", "japanese": "すみません、持ち帰り用に包んでもらえますか？" },
@@ -281,8 +274,7 @@
         { "kanji": "試", "jpReading": "し", "noteJa": "試す意味は共通の手がかりになるが、中国語では shì と発音する。" }
       ],
       "soundFocus": [
-        { "item": "試穿 shìchuān", "noteJa": "第四声から第一声。shì を短く下げ、chuān を高く保つ。" },
-        { "item": "這件 zhè jiàn", "noteJa": "どちらも第四声。二回はっきり下げる。" }
+        { "item": "試穿 shìchuān", "noteJa": "第四声から第一声。shì を短く下げ、chuān を高く保つ。" }
       ],
       "examples": [
         { "traditional": "請問，可以試穿這件嗎？", "traditionalStatus": "generated", "simplified": "请问，可以试穿这件吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ shìchuān zhè jiàn ma?", "japanese": "すみません、これを試着してもいいですか？" },
@@ -318,8 +310,7 @@
         { "kanji": "收據", "jpReading": "しゅう・きょ", "noteJa": "「收」は受け取る、「據」は記録の手がかりになるが、語の使い分けは日本語の「領収書」と完全には一致しない。" }
       ],
       "soundFocus": [
-        { "item": "給我 gěi wǒ", "noteJa": "第三声が二つ続くため、表記は gěi wǒ のままでも、発音では最初の gěi が第二声のように上がって géi wǒ となる。" },
-        { "item": "收據 shōujù", "noteJa": "第一声から第四声。shōu を高く保ち、jù を下げる。" }
+        { "item": "給我 gěi wǒ", "noteJa": "第三声が二つ続くため、表記は gěi wǒ のままでも、発音では最初の gěi が第二声のように上がって géi wǒ となる。" }
       ],
       "examples": [
         { "traditional": "請問，可以給我收據嗎？", "traditionalStatus": "generated", "simplified": "请问，可以给我收据吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ gěi wǒ shōujù ma?", "japanese": "すみません、領収書をいただけますか？" },
@@ -355,8 +346,7 @@
         { "kanji": "寄", "jpReading": "き", "noteJa": "「寄託」のように預ける意味の手がかりはあるが、会話では「寄放」をひとまとまりで覚える。" }
       ],
       "soundFocus": [
-        { "item": "寄放 jìfàng", "noteJa": "どちらも第四声。二語を続けて短く下げる。" },
-        { "item": "行李 xínglǐ", "noteJa": "第二声から第三声。xíng を上げ、lǐ を低くする。" }
+        { "item": "寄放 jìfàng", "noteJa": "どちらも第四声。二語を続けて短く下げる。" }
       ],
       "examples": [
         { "traditional": "請問，可以寄放行李嗎？", "traditionalStatus": "generated", "simplified": "请问，可以寄放行李吗？", "simplifiedStatus": "generated", "pinyin": "qǐngwèn, kěyǐ jìfàng xínglǐ ma?", "japanese": "すみません、荷物を預けられますか？" },
@@ -392,7 +382,6 @@
         { "kanji": "房", "jpReading": "ぼう", "noteJa": "部屋に関係する字だが、中国語の fáng を日本語の音読みで代用しない。" }
       ],
       "soundFocus": [
-        { "item": "房卡 fángkǎ", "noteJa": "第二声から第三声。fáng を上げ、kǎ を低くする。" },
         { "item": "不能用 bù néng yòng", "noteJa": "第四声・第二声・第四声。最後の yòng を短く下げる。" }
       ],
       "examples": [
@@ -429,7 +418,6 @@
         { "kanji": "散", "jpReading": "さん", "noteJa": "散らばる意味は手がかりになるが、「走散」は zǒusàn と読み、人とはぐれる状況で使う。" }
       ],
       "soundFocus": [
-        { "item": "朋友 péngyou", "noteJa": "péng は第二声、you は軽く添える。二字を日本語の音読みで読まない。" },
         { "item": "走散 zǒusàn", "noteJa": "第三声から第四声。zǒu を低くし、sàn を下げる。" }
       ],
       "examples": [
@@ -466,7 +454,6 @@
         { "kanji": "救護", "jpReading": "きゅうご", "noteJa": "字の意味は日本語の「救護」を手がかりにできるが、中国語では jiùhù と発音する。" }
       ],
       "soundFocus": [
-        { "item": "叫 jiào", "noteJa": "第四声。短く強く下げ、日本語の「ジャオ」と平らにしない。" },
         { "item": "救護車 jiùhùchē", "noteJa": "第四声・第四声・第一声。前二語を下げ、chē を高く保つ。" }
       ],
       "examples": [
@@ -503,8 +490,7 @@
         { "kanji": "日本", "jpReading": "にほん／にっぽん", "noteJa": "字形は同じでも中国語では Rìběn と読む。日本語の読みをそのまま使わない。" }
       ],
       "soundFocus": [
-        { "item": "你好 nǐ hǎo", "noteJa": "第三声が二つ続くため、表記は nǐ hǎo のままでも、発音では最初の nǐ が第二声のように上がって ní hǎo となる。" },
-        { "item": "從 cóng", "noteJa": "第二声。低めから上げ、平らに伸ばさない。" }
+        { "item": "你好 nǐ hǎo", "noteJa": "第三声が二つ続くため、表記は nǐ hǎo のままでも、発音では最初の nǐ が第二声のように上がって ní hǎo となる。" }
       ],
       "examples": [
         { "traditional": "你好，我叫田中，從日本來。", "traditionalStatus": "generated", "simplified": "你好，我叫田中，从日本来。", "simplifiedStatus": "generated", "pinyin": "nǐ hǎo, wǒ jiào Tiánzhōng, cóng Rìběn lái.", "japanese": "こんにちは、田中といいます。日本から来ました。" },
