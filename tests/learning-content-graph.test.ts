@@ -147,7 +147,8 @@ describe('learning content graph', () => {
       'hsk-vocabulary',
       'kanji-bridge',
     ]);
-    expect(graph.getPathContent('taiwan-travel')).toHaveLength(14);
+    // 10 canonical lessons + the existing 4 vocabulary and 7 phrase members.
+    expect(graph.getPathContent('taiwan-travel')).toHaveLength(21);
     expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(5);
     expect(graph.resolve(ref('vocabulary', 'hsk-002', 'hskVocabulary'))?.record.reviewStatus).toBe(
       'reviewed',

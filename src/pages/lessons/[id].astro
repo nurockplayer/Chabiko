@@ -9,6 +9,7 @@ import {
 } from '../../content/lessonPhrasebook';
 import { loadAllRenderableLessons } from '../../content/loadLessons';
 import type { PhrasebookScenario } from '../../content/loadPhrasebook';
+import { TAIWAN_TRAVEL_PATH_ROUTE } from '../../domain/taiwanTravelQuizNavigation';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { Lesson } from '../../types/lesson';
 
@@ -107,7 +108,7 @@ const exampleScriptAttrs = (example: {
         <Breadcrumb
           crumbs={[
             { label: 'ホーム', href: '/' },
-            { label: '台湾旅行', href: '/#taiwan-travel-path' },
+            { label: '台湾旅行', href: TAIWAN_TRAVEL_PATH_ROUTE },
             { label: `第${lessonNumber}課` },
           ]}
         />
@@ -235,7 +236,7 @@ const exampleScriptAttrs = (example: {
                 </span>
               </a>
             ) : (
-              <a class="nav-link nav-complete" href="/">
+              <a class="nav-link nav-complete" href={TAIWAN_TRAVEL_PATH_ROUTE}>
                 <span class="nav-direction">台湾旅行パスを完了</span>
                 <span class="nav-title">
                   <span class="nav-title-text">一覧に戻る</span>
