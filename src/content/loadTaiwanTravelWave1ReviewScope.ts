@@ -4,7 +4,11 @@ import { buildLearningContentGraph } from './loadLearningContentGraph';
 import { loadLessons } from './loadLessons';
 import { sha256Hex } from './loadTeacherReviewCampaign';
 import { stableStringify } from '../domain/teacherReview';
-import type { ContentRef, LearningContentPath } from '../types/learningContent';
+import type {
+  ContentRef,
+  LearningContentPath,
+  LearningContentRelation,
+} from '../types/learningContent';
 import type { Lesson } from '../types/lesson';
 
 export const TAIWAN_TRAVEL_WAVE1_SCOPE_ID = 'taiwan-travel-wave-1-v1';
@@ -156,6 +160,22 @@ export interface TaiwanTravelWave1ReviewRecord {
   sourcePath: typeof TAIWAN_TRAVEL_WAVE1_LESSONS_PATH;
   lesson: Lesson;
   fingerprint: string;
+}
+
+export interface TaiwanTravelWave1ReviewVersionInput {
+  schemaVersion: 1;
+  scopeId: typeof TAIWAN_TRAVEL_WAVE1_SCOPE_ID;
+  decisionContract: TaiwanTravelWave1DecisionContract;
+  dimensions: Array<
+    Pick<TaiwanTravelWave1ReviewDimension, 'id' | 'label' | 'reviewerRoles'>
+  >;
+  graph: {
+    pathIds: readonly string[];
+    relations: readonly LearningContentRelation[];
+  };
+  records: Array<
+    Pick<TaiwanTravelWave1ReviewRecord, 'ref' | 'sourcePath' | 'fingerprint'>
+  >;
 }
 
 export interface TaiwanTravelWave1ReviewPacket {
@@ -667,6 +687,29 @@ export async function fingerprintTaiwanTravelWave1Lesson(lesson: Lesson): Promis
   return sha256Hex(stableStringify(withoutTopLevelReviewStatus(lesson)));
 }
 
+export async function fingerprintTaiwanTravelWave1ReviewVersion(
+  input: TaiwanTravelWave1ReviewVersionInput,
+): Promise<string> {
+  return sha256Hex(
+    stableStringify({
+      schemaVersion: input.schemaVersion,
+      scopeId: input.scopeId,
+      decisionContract: input.decisionContract,
+      dimensions: input.dimensions.map(({ id, label, reviewerRoles }) => ({
+        id,
+        label,
+        reviewerRoles,
+      })),
+      graph: input.graph,
+      records: input.records.map(({ ref, sourcePath, fingerprint }) => ({
+        ref,
+        sourcePath,
+        fingerprint,
+      })),
+    }),
+  );
+}
+
 function loadSourceBundle(root: string): TaiwanTravelWave1SourceBundle {
   const lessonBundle = loadLessons(resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH));
   const graphBundle = readJson<{ schemaVersion: number; paths: MutableCandidatePath[] }>(
@@ -719,20 +762,14 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     'manifest lesson order must be exactly lesson-011 through lesson-024',
   );
 
-  const reviewVersion = await sha256Hex(
-    stableStringify({
-      schemaVersion: manifest.schemaVersion,
-      scopeId: manifest.scopeId,
-      decisionContract: manifest.decisionContract,
-      dimensions: manifest.dimensions,
-      graph: { pathIds: graph.pathIds, relations: graph.relations },
-      records: records.map((record) => ({
-        ref: record.ref,
-        sourcePath: record.sourcePath,
-        fingerprint: record.fingerprint,
-      })),
-    }),
-  );
+  const reviewVersion = await fingerprintTaiwanTravelWave1ReviewVersion({
+    schemaVersion: manifest.schemaVersion,
+    scopeId: manifest.scopeId,
+    decisionContract: manifest.decisionContract,
+    dimensions: manifest.dimensions,
+    graph: { pathIds: graph.pathIds, relations: graph.relations },
+    records,
+  });
 
   return {
     scopeId: TAIWAN_TRAVEL_WAVE1_SCOPE_ID,

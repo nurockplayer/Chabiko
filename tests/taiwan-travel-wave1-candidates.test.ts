@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildTaiwanTravelWave1ReviewPacket,
   fingerprintTaiwanTravelWave1Lesson,
+  fingerprintTaiwanTravelWave1ReviewVersion,
   loadTaiwanTravelWave1ReviewPacket,
   renderTaiwanTravelWave1ReviewPacket,
   TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS,
@@ -23,6 +24,7 @@ import {
   TAIWAN_TRAVEL_WAVE1_SCOPE_ID,
   TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
   type TaiwanTravelWave1ReviewScopeManifest,
+  type TaiwanTravelWave1ReviewVersionInput,
   type TaiwanTravelWave1SourceBundle,
 } from '../src/content/loadTaiwanTravelWave1ReviewScope';
 import { loadAllRenderableLessons } from '../src/content/loadLessons';
@@ -62,6 +64,33 @@ function build(
   mutateManifest?.(manifest);
   mutateSources?.(sources);
   return buildTaiwanTravelWave1ReviewPacket(manifest, sources);
+}
+
+async function loadReviewVersionInput(): Promise<TaiwanTravelWave1ReviewVersionInput> {
+  const manifest = loadManifest();
+  const sources = loadSourceBundle();
+  const packet = await loadTaiwanTravelWave1ReviewPacket();
+  return {
+    schemaVersion: manifest.schemaVersion,
+    scopeId: manifest.scopeId,
+    decisionContract: manifest.decisionContract,
+    dimensions: manifest.dimensions.map(({ id, label, reviewerRoles }) => ({
+      id,
+      label,
+      reviewerRoles,
+    })),
+    graph: {
+      pathIds: sources.paths.map(({ id }) => id),
+      relations: sources.paths.flatMap(({ id: pathId, members }) =>
+        members.map((ref) => ({ type: 'path-member' as const, pathId, ref })),
+      ),
+    },
+    records: packet.records.map(({ ref, sourcePath, fingerprint }) => ({
+      ref,
+      sourcePath,
+      fingerprint,
+    })),
+  };
 }
 
 describe('Taiwan Travel Wave 1 candidate package', () => {
@@ -1092,6 +1121,104 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).rejects.toThrow(/graph member order/);
   });
 
+  it('keeps review versions stable when human review evidence changes', async () => {
+    const pending = await loadTaiwanTravelWave1ReviewPacket();
+    const reviewedEvidence = {
+      outcome: 'accepted' as const,
+      reviewerIdentity: '@language-reviewer',
+      reviewDate: '2026-08-29',
+      findings: 'No blocking findings.',
+    };
+    const accepted = await build((manifest) => {
+      manifest.dimensions[0].reviewerEvidence[0] = {
+        ...manifest.dimensions[0].reviewerEvidence[0],
+        ...reviewedEvidence,
+      };
+    });
+    const mutableEvidenceVariants = [
+      { ...reviewedEvidence, outcome: 'needs-changes' as const },
+      { ...reviewedEvidence, reviewerIdentity: '@alternate-language-reviewer' },
+      { ...reviewedEvidence, reviewDate: '2026-08-30' },
+      { ...reviewedEvidence, findings: 'One follow-up note.' },
+    ];
+
+    expect(accepted.reviewVersion).toBe(pending.reviewVersion);
+    for (const evidence of mutableEvidenceVariants) {
+      const reviewed = await build((manifest) => {
+        manifest.dimensions[0].reviewerEvidence[0] = {
+          ...manifest.dimensions[0].reviewerEvidence[0],
+          ...evidence,
+        };
+      });
+      expect(reviewed.reviewVersion).toBe(pending.reviewVersion);
+    }
+    expect(renderTaiwanTravelWave1ReviewPacket(accepted)).toContain(
+      `**Review version:** ${pending.reviewVersion}`,
+    );
+
+    const immutableInput = await loadReviewVersionInput();
+    const packetStateChanged = {
+      ...immutableInput,
+      overallDecision: 'accepted',
+      decisionCount: 10,
+      promotionAllowed: true,
+    } as TaiwanTravelWave1ReviewVersionInput;
+    expect(
+      await fingerprintTaiwanTravelWave1ReviewVersion(packetStateChanged),
+    ).toBe(pending.reviewVersion);
+  });
+
+  it('changes review versions when immutable scope, graph, or record inputs change', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const input = await loadReviewVersionInput();
+    expect(await fingerprintTaiwanTravelWave1ReviewVersion(input)).toBe(
+      packet.reviewVersion,
+    );
+
+    const immutableMutations: Array<
+      (value: TaiwanTravelWave1ReviewVersionInput) => void
+    > = [
+      (value) => {
+        (value as unknown as { scopeId: string }).scopeId += '-changed';
+      },
+      (value) => {
+        (
+          value.decisionContract.outcomes as unknown as string[]
+        )[0] = 'changed-outcome';
+      },
+      (value) => {
+        value.dimensions[0].label += ' changed';
+      },
+      (value) => {
+        value.dimensions[0].reviewerRoles.reverse();
+      },
+      (value) => {
+        value.graph.pathIds = [...value.graph.pathIds, 'changed-path'];
+      },
+      (value) => {
+        const relation = value.graph.relations[0] as unknown as { pathId: string };
+        relation.pathId = 'changed-path';
+      },
+      (value) => {
+        (value.records[0].ref as unknown as { id: string }).id = 'lesson-changed';
+      },
+      (value) => {
+        (value.records[0] as unknown as { sourcePath: string }).sourcePath += '.changed';
+      },
+      (value) => {
+        value.records[0].fingerprint = '0'.repeat(64);
+      },
+    ];
+
+    for (const mutate of immutableMutations) {
+      const changed = structuredClone(input);
+      mutate(changed);
+      expect(await fingerprintTaiwanTravelWave1ReviewVersion(changed)).not.toBe(
+        packet.reviewVersion,
+      );
+    }
+  });
+
   it('rejects unknown candidate graph-path fields before normalization', async () => {
     await expect(
       build(undefined, ({ paths }) => {
@@ -1177,6 +1304,60 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       );
     } finally {
       rmSync(temporaryDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('rebuild command preserves the immutable version when writing human evidence', async () => {
+    const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-evidence-'));
+    const outputPath = join(temporaryRoot, 'packet.md');
+    const requiredPaths = [
+      TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
+      TAIWAN_TRAVEL_WAVE1_GRAPH_PATH,
+      TAIWAN_TRAVEL_WAVE1_SCOPE_PATH,
+      'data/examples/valid/lessons.json',
+    ];
+
+    try {
+      for (const path of requiredPaths) {
+        const destination = resolve(temporaryRoot, path);
+        mkdirSync(dirname(destination), { recursive: true });
+        copyFileSync(resolve(root, path), destination);
+      }
+      const baseline = await loadTaiwanTravelWave1ReviewPacket();
+      const manifest = readJson<TaiwanTravelWave1ReviewScopeManifest>(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_SCOPE_PATH),
+      );
+      manifest.dimensions[0].reviewerEvidence[0] = {
+        ...manifest.dimensions[0].reviewerEvidence[0],
+        outcome: 'accepted',
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'No blocking findings.',
+      };
+      writeFileSync(
+        resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_SCOPE_PATH),
+        `${JSON.stringify(manifest, null, 2)}\n`,
+        'utf8',
+      );
+
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/render-taiwan-travel-wave1-review-packet.ts',
+          '--root',
+          temporaryRoot,
+          '--output',
+          outputPath,
+        ],
+        { cwd: root, stdio: 'pipe' },
+      );
+      const rendered = readFileSync(outputPath, 'utf8');
+      expect(rendered).toContain(`**Review version:** ${baseline.reviewVersion}`);
+      expect(rendered).toContain(
+        '| Natural Taiwan Mandarin | human-language-reviewer | accepted | @language-reviewer | 2026-08-29 | No blocking findings. |',
+      );
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true });
     }
   });
 

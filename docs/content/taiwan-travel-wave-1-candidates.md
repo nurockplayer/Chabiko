@@ -115,9 +115,11 @@ sha256(stableStringify(recordWithoutTopLevelReviewStatus))
 Changing learner content, script provenance, teaching notes, or other semantic
 fields changes the fingerprint. The top-level workflow transition is excluded
 so a future authorized status change does not pretend to create a new content
-version. The packet review version also binds the manifest, review dimensions,
-typed graph relations, exact record references, source path, and per-record
-fingerprints.
+version. The packet review version binds only the immutable reviewed artifact
+and scope contract: schema and scope IDs, decision vocabulary, dimension IDs,
+labels and ordered required roles, typed graph relations, exact record
+references, source paths, and per-record fingerprints. A change to any of
+those inputs creates a new review version.
 
 The resolver fails closed on wrong count/order/scenario coverage, duplicate or
 stale references, production ID overlap, non-draft records, malformed rich
@@ -155,9 +157,12 @@ complete identity, a valid ISO date, and findings; a `not-reviewed` row must
 remain empty. Mixed outcomes in a multi-role dimension are retained and remain
 non-promotable. Even when every required role is accepted, promotion still
 requires a separate overall accepted decision and maintainer action. A global
-reviewer identity does not substitute for per-role evidence. These fields
-participate in the packet `reviewVersion`; they do not change lesson
-fingerprints.
+reviewer identity does not substitute for per-role evidence. Per-role outcome,
+identity, date, and findings are mutable human-review state and therefore do
+not participate in the packet `reviewVersion`; neither do the packet's overall
+decision, decision count, or promotion state. Filling or revising that evidence
+does not rename the immutable artifact being reviewed, and it does not change
+lesson fingerprints.
 
 `review-status` independently records whether the candidate package is
 truthfully still `draft`; it does not promote the package. `teaching-accuracy`
