@@ -2,7 +2,10 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { VISUAL_THEMES, VISUAL_VIEWPORTS } from './matrix';
+import {
+  TAIWAN_TRAVEL_PATH_VIEWPORTS,
+  TAIWAN_TRAVEL_PATH_VISUAL_CASES,
+} from './taiwanTravelPathCases';
 
 const BASE_URL = 'http://127.0.0.1:4321';
 const ROUTE = '/paths/taiwan-travel/';
@@ -81,87 +84,166 @@ async function installFixedFont(page: Page): Promise<void> {
   expect(state.bold).toBeGreaterThan(0);
 }
 
-async function assertControlsInsideSurface(page: Page): Promise<void> {
-  const violations = await page.locator('[data-taiwan-travel-path]').evaluate(
-    (surface) => {
-      const surfaceRect = surface.getBoundingClientRect();
-      const controls = [
-        ...surface.querySelectorAll<HTMLElement>(
-          'a[href], button, select, input:not([type="hidden"]), summary',
-        ),
-      ];
-      return controls.flatMap((control) => {
-        const rect = control.getBoundingClientRect();
-        const contained =
-          rect.top >= surfaceRect.top &&
-          rect.left >= surfaceRect.left &&
-          rect.bottom <= surfaceRect.bottom &&
-          rect.right <= surfaceRect.right;
-        return contained
-          ? []
-          : [`${control.tagName}.${control.className} ${JSON.stringify(rect.toJSON())}`];
-      });
-    },
+async function openTaiwanTravelPath(
+  page: Page,
+  theme: 'light' | 'dark',
+  viewport: { width: number; height: number },
+): Promise<{ errors: string[]; externalRequests: Set<string> }> {
+  const errors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.setViewportSize(viewport);
+  await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+  await page.addInitScript(
+    ([key, value]) => localStorage.setItem(key, value),
+    [THEME_STORAGE_KEY, theme] as const,
   );
-  expect(violations).toEqual([]);
+  const externalRequests = await installNetworkBoundary(page);
+
+  await page.goto(`${BASE_URL}${ROUTE}`, { waitUntil: 'load' });
+  await expect(page.locator('[data-taiwan-travel-path]')).toBeVisible();
+  await installFixedFont(page);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+  await expect(page.locator('[data-taiwan-lesson-link]')).toHaveCount(10);
+  await expect(
+    page.locator('a[href="/paths/taiwan-travel/quiz/"]'),
+  ).toHaveCount(1);
+
+  const dimensions = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  expect(dimensions.innerWidth).toBe(viewport.width);
+  expect(dimensions.innerHeight).toBe(viewport.height);
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  return { errors, externalRequests };
 }
 
-for (const theme of VISUAL_THEMES) {
-  for (const viewport of VISUAL_VIEWPORTS) {
-    test(`${theme} ${viewport.width}x${viewport.height}: route index capture`, async ({
-      page,
-    }, testInfo) => {
-      const errors: string[] = [];
-      page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
-      });
-      page.on('pageerror', (error) => errors.push(error.message));
-      await page.setViewportSize(viewport);
-      await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
-      await page.addInitScript(
-        ([key, value]) => localStorage.setItem(key, value),
-        [THEME_STORAGE_KEY, theme] as const,
+const VIEWPORT_EPSILON = 1;
+
+async function assertFragmentInsideViewport(
+  page: Page,
+  fragmentSelector: string,
+  evidenceSelectors: readonly string[],
+): Promise<ReturnType<Page['locator']>> {
+  const fragment = page.locator(fragmentSelector);
+  await expect(fragment).toBeVisible();
+  await fragment.evaluate((element) =>
+    element.scrollIntoView({ block: 'center', inline: 'nearest' }),
+  );
+
+  const selectors = [fragmentSelector, ...evidenceSelectors];
+  for (const selector of selectors) {
+    const locator = selector === fragmentSelector
+      ? fragment
+      : fragment.locator(selector);
+    await expect(locator).toBeVisible();
+    const box = await locator.boundingBox();
+    expect(box, `missing evidence element '${selector}'`).not.toBeNull();
+    const viewport = await page.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
+    expect(box!.x, `${selector} left`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.x + box!.width, `${selector} right`).toBeLessThanOrEqual(
+      viewport.width + VIEWPORT_EPSILON,
+    );
+    expect(box!.y, `${selector} top`).toBeGreaterThanOrEqual(-VIEWPORT_EPSILON);
+    expect(box!.y + box!.height, `${selector} bottom`).toBeLessThanOrEqual(
+      viewport.height + VIEWPORT_EPSILON,
+    );
+  }
+
+  const controlBoxes = await fragment.evaluate((element) => {
+    const controlSelector =
+      'a[href], button, select, input:not([type="hidden"]), summary';
+    const controls = [
+      ...(element.matches(controlSelector) ? [element] : []),
+      ...element.querySelectorAll<HTMLElement>(controlSelector),
+    ];
+    return controls.map((control) => ({
+      label: `${control.tagName}.${control.className}`,
+      box: control.getBoundingClientRect().toJSON(),
+    }));
+  });
+  const viewport = await page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+  for (const control of controlBoxes) {
+    expect(control.box.left, `${control.label} left`).toBeGreaterThanOrEqual(
+      -VIEWPORT_EPSILON,
+    );
+    expect(control.box.right, `${control.label} right`).toBeLessThanOrEqual(
+      viewport.width + VIEWPORT_EPSILON,
+    );
+    expect(control.box.top, `${control.label} top`).toBeGreaterThanOrEqual(
+      -VIEWPORT_EPSILON,
+    );
+    expect(control.box.bottom, `${control.label} bottom`).toBeLessThanOrEqual(
+      viewport.height + VIEWPORT_EPSILON,
+    );
+  }
+  return fragment;
+}
+
+test.describe('/paths/taiwan-travel/ visual baselines', () => {
+  for (const visualCase of TAIWAN_TRAVEL_PATH_VISUAL_CASES) {
+    test(visualCase.snapshotName, async ({ page }) => {
+      const { errors, externalRequests } = await openTaiwanTravelPath(
+        page,
+        visualCase.theme,
+        visualCase.viewport,
       );
-      const externalRequests = await installNetworkBoundary(page);
-
-      await page.goto(`${BASE_URL}${ROUTE}`, { waitUntil: 'load' });
-      await expect(page.locator('[data-taiwan-travel-path]')).toBeVisible();
-      await installFixedFont(page);
-      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-      await expect(page.locator('[data-taiwan-lesson-link]')).toHaveCount(10);
-      await expect(
-        page.locator('a[href="/paths/taiwan-travel/quiz/"]'),
-      ).toHaveCount(1);
-
-      const dimensions = await page.evaluate(() => ({
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-      }));
-      expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
-
-      const surface = page.locator('[data-taiwan-travel-path]');
-      const surfaceSize = await surface.evaluate((element) => ({
-        width: element.getBoundingClientRect().width,
-        height: element.getBoundingClientRect().height,
-      }));
-      await assertControlsInsideSurface(page);
-      const screenshot = await surface.screenshot({
-        animations: 'disabled',
-        caret: 'hide',
-      });
-      expect(
-        Math.abs(screenshot.readUInt32BE(16) - surfaceSize.width),
-      ).toBeLessThanOrEqual(1);
-      expect(
-        Math.abs(screenshot.readUInt32BE(20) - surfaceSize.height),
-      ).toBeLessThanOrEqual(2);
-      await testInfo.attach(
-        `taiwan-travel-path-${theme}-${viewport.width}x${viewport.height}.png`,
-        { body: screenshot, contentType: 'image/png' },
+      const lessonFragment = await assertFragmentInsideViewport(
+        page,
+        '[data-taiwan-lesson-link="lesson-001"]',
+        [
+          '.taiwan-path-lesson__number',
+          '.taiwan-path-lesson__title',
+          '.taiwan-path-lesson__outcome',
+          '.taiwan-path-lesson__action',
+        ],
       );
-
+      await expect(lessonFragment).toHaveScreenshot(visualCase.snapshotName);
       expect([...externalRequests]).toEqual([]);
       expect(errors).toEqual([]);
     });
   }
-}
+});
+
+test.describe('/paths/taiwan-travel/ viewport fragments', () => {
+  for (const viewport of TAIWAN_TRAVEL_PATH_VIEWPORTS) {
+    test(`${viewport.width}px lesson endpoints and assessment are fully contained`, async ({
+      page,
+    }) => {
+      const { errors, externalRequests } = await openTaiwanTravelPath(
+        page,
+        'light',
+        viewport,
+      );
+      for (const lessonId of ['lesson-001', 'lesson-010']) {
+        await assertFragmentInsideViewport(
+          page,
+          `[data-taiwan-lesson-link="${lessonId}"]`,
+          [
+            '.taiwan-path-lesson__number',
+            '.taiwan-path-lesson__title',
+            '.taiwan-path-lesson__outcome',
+            '.taiwan-path-lesson__action',
+          ],
+        );
+      }
+      await assertFragmentInsideViewport(page, '.taiwan-path-assessment', [
+        '#taiwan-path-assessment-heading',
+        '.taiwan-path-assessment__link',
+      ]);
+      expect([...externalRequests]).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
+});

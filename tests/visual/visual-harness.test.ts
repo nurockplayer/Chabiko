@@ -6,6 +6,7 @@ import { VISUAL_CASES, VISUAL_STATES, VISUAL_THEMES, VISUAL_VIEWPORTS } from './
 import { LEARNER_ROUTE_CASES } from './learnerRouteCases';
 import { KANJI_BRIDGE_VISUAL_CASES } from './kanjiBridgeCases';
 import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
+import { TAIWAN_TRAVEL_PATH_VISUAL_CASES } from './taiwanTravelPathCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
 
 const snapshotsDirectory = fileURLToPath(
@@ -70,7 +71,7 @@ describe('visual regression harness contract', () => {
     }
   });
 
-  it('commits exactly one baseline for every matrix, learner-route, kanji-bridge, and phrasebook case', () => {
+  it('commits exactly one baseline for every registered visual case', () => {
     const expectedMatrix = VISUAL_CASES.map((visualCase) => visualCase.snapshotName);
     const expectedLearner = LEARNER_ROUTE_CASES.map((learnerCase) => learnerCase.snapshotName);
     const expectedKanji = KANJI_BRIDGE_VISUAL_CASES.map(
@@ -84,6 +85,9 @@ describe('visual regression harness contract', () => {
       ...expectedLearner,
       ...expectedKanji,
       ...expectedPhrasebook,
+      ...TAIWAN_TRAVEL_PATH_VISUAL_CASES.map(
+        (visualCase) => visualCase.snapshotName,
+      ),
     ].sort();
     const actual = existsSync(snapshotsDirectory)
       ? readdirSync(snapshotsDirectory)
@@ -134,6 +138,19 @@ describe('visual regression harness contract', () => {
       );
       expect(png.readUInt32BE(16)).toBe(phrasebookCase.viewport.width);
       expect(png.readUInt32BE(20)).toBe(phrasebookCase.viewport.height);
+    }
+
+    // Taiwan Travel baselines are lesson-card fragments which are scrolled
+    // fully into the configured viewport before capture.
+    for (const visualCase of TAIWAN_TRAVEL_PATH_VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, visualCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBeGreaterThan(0);
+      expect(png.readUInt32BE(20)).toBeGreaterThanOrEqual(44);
     }
   });
 
