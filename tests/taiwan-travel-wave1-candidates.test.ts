@@ -81,6 +81,61 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.decisionCount).toBe(0);
   });
 
+  it('aligns canonical human-review outcomes and keeps non-accepted outcomes non-promotable', async () => {
+    const expectedContract = {
+      outcomes: ['accepted', 'rejected', 'needs-changes'],
+      promotableOutcomes: ['accepted'],
+      nonPromotableOutcomes: ['rejected', 'needs-changes'],
+    };
+    const manifest = loadManifest();
+    const manifestContract = manifest.decisionContract as unknown as Record<
+      string,
+      unknown
+    >;
+    expect(manifestContract).toMatchObject(expectedContract);
+
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const packetContract = (packet as unknown as Record<string, unknown>)
+      .decisionContract;
+    expect(packetContract).toMatchObject(expectedContract);
+    const rendered = renderTaiwanTravelWave1ReviewPacket(packet);
+    expect(rendered).toContain(
+      '**Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.',
+    );
+    expect(rendered).toContain('needs-changes maps to needs_changes');
+    expect(rendered).toContain(
+      'rejected remains non-promotable and is never written as an accepted decision',
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        const contract = candidateManifest.decisionContract as unknown as Record<
+          string,
+          unknown
+        >;
+        contract.outcomes = ['accepted', 'needs-changes'];
+      }),
+    ).rejects.toThrow(/decision outcomes drifted/);
+    await expect(
+      build((candidateManifest) => {
+        const contract = candidateManifest.decisionContract as unknown as Record<
+          string,
+          unknown
+        >;
+        contract.promotableOutcomes = ['accepted', 'rejected'];
+      }),
+    ).rejects.toThrow(/promotable outcomes drifted/);
+    await expect(
+      build((candidateManifest) => {
+        const contract = candidateManifest.decisionContract as unknown as Record<
+          string,
+          unknown
+        >;
+        contract.nonPromotableOutcomes = ['rejected'];
+      }),
+    ).rejects.toThrow(/non-promotable outcomes drifted/);
+  });
+
   it('keeps every rich lesson complete and every prompt mechanically unambiguous', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
 

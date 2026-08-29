@@ -69,16 +69,20 @@ export interface TaiwanTravelWave1ReviewDimension {
   state: 'pending';
 }
 
+export interface TaiwanTravelWave1DecisionContract {
+  outcomes: ['accepted', 'rejected', 'needs-changes'];
+  promotableOutcomes: ['accepted'];
+  nonPromotableOutcomes: ['rejected', 'needs-changes'];
+  fingerprint: typeof FINGERPRINT_CONTRACT;
+  separateDecisionNamespace: true;
+  productionUnlinked: true;
+}
+
 export interface TaiwanTravelWave1ReviewScopeManifest {
   schemaVersion: 1;
   scopeId: typeof TAIWAN_TRAVEL_WAVE1_SCOPE_ID;
   reviewState: 'pending-human-review';
-  decisionContract: {
-    outcomes: ['accepted', 'needs_changes'];
-    fingerprint: typeof FINGERPRINT_CONTRACT;
-    separateDecisionNamespace: true;
-    productionUnlinked: true;
-  };
+  decisionContract: TaiwanTravelWave1DecisionContract;
   dimensions: TaiwanTravelWave1ReviewDimension[];
   records: TaiwanTravelWave1ScopeRecord[];
 }
@@ -105,6 +109,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   scopeId: typeof TAIWAN_TRAVEL_WAVE1_SCOPE_ID;
   reviewState: 'pending-human-review';
   reviewVersion: string;
+  decisionContract: TaiwanTravelWave1DecisionContract;
   dimensions: TaiwanTravelWave1ReviewDimension[];
   records: TaiwanTravelWave1ReviewRecord[];
   scenarioDistribution: typeof TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION;
@@ -144,10 +149,24 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   assert(contract !== null && typeof contract === 'object', 'decisionContract must be an object');
   assert(
     Array.isArray(contract.outcomes) &&
-      contract.outcomes.length === 2 &&
+      contract.outcomes.length === 3 &&
       contract.outcomes[0] === 'accepted' &&
-      contract.outcomes[1] === 'needs_changes',
+      contract.outcomes[1] === 'rejected' &&
+      contract.outcomes[2] === 'needs-changes',
     'decision outcomes drifted',
+  );
+  assert(
+    Array.isArray(contract.promotableOutcomes) &&
+      contract.promotableOutcomes.length === 1 &&
+      contract.promotableOutcomes[0] === 'accepted',
+    'promotable outcomes drifted',
+  );
+  assert(
+    Array.isArray(contract.nonPromotableOutcomes) &&
+      contract.nonPromotableOutcomes.length === 2 &&
+      contract.nonPromotableOutcomes[0] === 'rejected' &&
+      contract.nonPromotableOutcomes[1] === 'needs-changes',
+    'non-promotable outcomes drifted',
   );
   assert(contract.fingerprint === FINGERPRINT_CONTRACT, 'fingerprint contract drifted');
   assert(contract.separateDecisionNamespace === true, 'decision namespace must remain separate');
@@ -432,6 +451,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     scopeId: TAIWAN_TRAVEL_WAVE1_SCOPE_ID,
     reviewState: 'pending-human-review',
     reviewVersion,
+    decisionContract: manifest.decisionContract,
     dimensions: manifest.dimensions,
     records,
     scenarioDistribution: TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION,
@@ -484,7 +504,8 @@ export function renderTaiwanTravelWave1ReviewPacket(
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
     '**Overall review outcome:** pending-human-review',
-    '**Decision storage:** No decisions recorded. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.',
+    `**Decision contract:** Canonical outcomes: ${packet.decisionContract.outcomes.join(', ')}. Promotable: ${packet.decisionContract.promotableOutcomes.join(', ')}. Non-promotable: ${packet.decisionContract.nonPromotableOutcomes.join(', ')}.`,
+    '**Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.',
     '',
     '## Coverage reconciliation',
     '',

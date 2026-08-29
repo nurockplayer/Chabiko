@@ -3,7 +3,9 @@
   "scopeId": "taiwan-travel-wave-1-v1",
   "reviewState": "pending-human-review",
   "decisionContract": {
-    "outcomes": ["accepted", "needs_changes"],
+    "outcomes": ["accepted", "rejected", "needs-changes"],
+    "promotableOutcomes": ["accepted"],
+    "nonPromotableOutcomes": ["rejected", "needs-changes"],
     "fingerprint": "sha256(stableStringify(recordWithoutTopLevelReviewStatus))",
     "separateDecisionNamespace": true,
     "productionUnlinked": true
