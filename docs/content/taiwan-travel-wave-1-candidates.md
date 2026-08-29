@@ -168,6 +168,18 @@ decision, decision count, or promotion state. Filling or revising that evidence
 does not rename the immutable artifact being reviewed, and it does not change
 lesson fingerprints.
 
+The same manifest persistently stores the separate `overallDecision`,
+`unresolvedIssues`, and `blockedContent` results. Checked-in values are
+truthfully null/empty. Overall decisions use only `accepted`, `rejected`, or
+`needs-changes`; unresolved entries are trimmed non-empty review notes, and
+blocked entries are exact IDs from this 14-lesson scope. The renderer preserves
+these mutable results across canonical reruns, derives its pending summary from
+the remaining `not-reviewed` role rows, and renders `None.` only for an empty
+result list. An accepted overall decision requires every required role to be
+accepted and both result lists to be empty. These fields remain outside the
+immutable `reviewVersion`, and `promotionAllowed` remains false because
+production linking requires a separate maintainer action outside this package.
+
 `review-status` independently records whether the candidate package is
 truthfully still `draft`; it does not promote the package. `teaching-accuracy`
 independently covers general grammar, tone explanations, false-friend

@@ -286,9 +286,8 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(rendered).toContain(
       '**Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.',
     );
-    expect(rendered).toContain('needs-changes maps to needs_changes');
     expect(rendered).toContain(
-      'rejected remains non-promotable and is never written as an accepted decision',
+      `The validated \`${TAIWAN_TRAVEL_WAVE1_SCOPE_PATH}\` manifest is the canonical mutable input`,
     );
 
     await expect(
@@ -373,7 +372,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).toEqual(['accepted', 'needs-changes']);
     expect(packet.reviewState).toBe('pending-human-review');
     expect(packet.overallDecision).toBeNull();
-    expect(packet.decisionCount).toBe(0);
+    expect(packet.decisionCount).toBe(2);
     expect(packet.promotionAllowed).toBe(false);
 
     const rendered = renderTaiwanTravelWave1ReviewPacket(packet);
@@ -403,6 +402,67 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       }),
     ).rejects.toThrow(
       /dimension 'natural-taiwan-mandarin' has unknown field 'outcome'/,
+    );
+  });
+
+  it('persists mutable review results and derives pending review text from role evidence', async () => {
+    const pending = await loadTaiwanTravelWave1ReviewPacket();
+    expect(pending.overallDecision).toBeNull();
+    expect(pending.unresolvedIssues).toEqual([]);
+    expect(pending.blockedContent).toEqual([]);
+
+    const completed = await build((manifest) => {
+      manifest.dimensions.forEach((dimension) => {
+        dimension.reviewerEvidence = dimension.reviewerEvidence.map((evidence) => ({
+          ...evidence,
+          outcome: 'accepted',
+          reviewerIdentity: `@${evidence.role}`,
+          reviewDate: '2026-08-29',
+          findings: 'None.',
+        }));
+      });
+      manifest.overallDecision = 'accepted';
+    });
+
+    expect(completed.overallDecision).toBe('accepted');
+    expect(completed.decisionCount).toBe(13);
+    expect(completed.promotionAllowed).toBe(false);
+    expect(completed.reviewVersion).toBe(pending.reviewVersion);
+    const completedMarkdown = renderTaiwanTravelWave1ReviewPacket(completed);
+    expect(completedMarkdown).toContain('**Overall review outcome:** accepted');
+    expect(completedMarkdown).toContain(
+      '- All required role reviews have recorded outcomes; no role review remains `not-reviewed`.',
+    );
+    expect(completedMarkdown).not.toContain(
+      'human language, teaching, and regional review remain pending',
+    );
+    expect(completedMarkdown).toContain('## Unresolved Issues\n\nNone.');
+    expect(completedMarkdown).toContain('## Blocked Content\n\nNone.');
+
+    const needsChanges = await build((manifest) => {
+      const evidence = manifest.dimensions[0].reviewerEvidence[0];
+      manifest.dimensions[0].reviewerEvidence[0] = {
+        ...evidence,
+        outcome: 'needs-changes',
+        reviewerIdentity: '@language-reviewer',
+        reviewDate: '2026-08-29',
+        findings: 'Revise one Taiwan Mandarin example.',
+      };
+      manifest.overallDecision = 'needs-changes';
+      manifest.unresolvedIssues = ['Confirm the revised example with the regional reviewer.'];
+      manifest.blockedContent = ['lesson-011'];
+    });
+    expect(needsChanges.reviewVersion).toBe(pending.reviewVersion);
+    const needsChangesMarkdown = renderTaiwanTravelWave1ReviewPacket(needsChanges);
+    expect(needsChangesMarkdown).toContain(
+      '**Overall review outcome:** needs-changes',
+    );
+    expect(needsChangesMarkdown).toContain(
+      '- Confirm the revised example with the regional reviewer.',
+    );
+    expect(needsChangesMarkdown).toContain('- lesson-011');
+    expect(needsChangesMarkdown).toContain(
+      'Natural Taiwan Mandarin (`human-regional-reviewer`)',
     );
   });
 
@@ -703,6 +763,34 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         delete value.reviewState;
       }),
     ).rejects.toThrow(/manifest has unknown field 'reviewStat'/);
+  });
+
+  it('rejects invalid or contradictory persisted review results', async () => {
+    await expect(
+      build((manifest) => {
+        (manifest as unknown as { overallDecision: string }).overallDecision =
+          'approved';
+      }),
+    ).rejects.toThrow(/overallDecision must be null or a canonical outcome/);
+    await expect(
+      build((manifest) => {
+        manifest.unresolvedIssues = [''];
+      }),
+    ).rejects.toThrow(/unresolvedIssues\[0\] must be a trimmed non-empty string/);
+    await expect(
+      build((manifest) => {
+        manifest.blockedContent = ['lesson-999'];
+      }),
+    ).rejects.toThrow(
+      /blockedContent\[0\] references unknown record 'lesson-999'/,
+    );
+    await expect(
+      build((manifest) => {
+        manifest.overallDecision = 'accepted';
+      }),
+    ).rejects.toThrow(
+      /accepted overallDecision requires every required role outcome to be accepted/,
+    );
   });
 
   it('rejects unknown review decision-contract fields before packet construction', async () => {
@@ -1340,7 +1428,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(rendered).toContain(
       '| Natural Taiwan Mandarin | human-regional-reviewer | not-reviewed | {{natural-taiwan-mandarin__human-regional-reviewer__IDENTITY}} | {{natural-taiwan-mandarin__human-regional-reviewer__YYYY-MM-DD}} | {{natural-taiwan-mandarin__human-regional-reviewer__FINDINGS_OR_None.}} |',
     );
-    expect(rendered).toContain('human language, teaching, and regional review remain pending');
+    expect(rendered).toContain(
+      'Pending required role reviews: Natural Taiwan Mandarin (`human-language-reviewer`)',
+    );
     for (const record of packet.records) {
       expect(rendered).toContain(record.lesson.id);
       expect(rendered).toContain(record.fingerprint);
@@ -1376,7 +1466,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     }
   });
 
-  it('rebuild command preserves the immutable version when writing human evidence', async () => {
+  it('rebuild command preserves mutable human results and the immutable review version', async () => {
     const temporaryRoot = mkdtempSync(join(tmpdir(), 'chabiko-wave1-evidence-'));
     const outputPath = join(temporaryRoot, 'packet.md');
     const requiredPaths = [
@@ -1398,11 +1488,14 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       );
       manifest.dimensions[0].reviewerEvidence[0] = {
         ...manifest.dimensions[0].reviewerEvidence[0],
-        outcome: 'accepted',
+        outcome: 'needs-changes',
         reviewerIdentity: '@language-reviewer',
         reviewDate: '2026-08-29',
-        findings: 'No blocking findings.',
+        findings: 'Revise lesson-011.',
       };
+      manifest.overallDecision = 'needs-changes';
+      manifest.unresolvedIssues = ['Regional confirmation remains open.'];
+      manifest.blockedContent = ['lesson-011'];
       writeFileSync(
         resolve(temporaryRoot, TAIWAN_TRAVEL_WAVE1_SCOPE_PATH),
         `${JSON.stringify(manifest, null, 2)}\n`,
@@ -1421,10 +1514,25 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         { cwd: root, stdio: 'pipe' },
       );
       const rendered = readFileSync(outputPath, 'utf8');
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/render-taiwan-travel-wave1-review-packet.ts',
+          '--root',
+          temporaryRoot,
+          '--output',
+          outputPath,
+        ],
+        { cwd: root, stdio: 'pipe' },
+      );
+      expect(readFileSync(outputPath, 'utf8')).toBe(rendered);
       expect(rendered).toContain(`**Review version:** ${baseline.reviewVersion}`);
       expect(rendered).toContain(
-        '| Natural Taiwan Mandarin | human-language-reviewer | accepted | @language-reviewer | 2026-08-29 | No blocking findings. |',
+        '| Natural Taiwan Mandarin | human-language-reviewer | needs-changes | @language-reviewer | 2026-08-29 | Revise lesson-011. |',
       );
+      expect(rendered).toContain('**Overall review outcome:** needs-changes');
+      expect(rendered).toContain('- Regional confirmation remains open.');
+      expect(rendered).toContain('- lesson-011');
     } finally {
       rmSync(temporaryRoot, { recursive: true, force: true });
     }
@@ -1628,6 +1736,30 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         },
         expectedError:
           /dimension 'source-and-script-provenance' has unknown field 'outcome'/,
+      },
+      {
+        name: 'unknown blocked record',
+        mutate: (manifest) => {
+          manifest.blockedContent = ['lesson-999'];
+        },
+        expectedError:
+          /blockedContent\[0\] references unknown record 'lesson-999'/,
+      },
+      {
+        name: 'empty unresolved issue',
+        mutate: (manifest) => {
+          manifest.unresolvedIssues = [''];
+        },
+        expectedError:
+          /unresolvedIssues\[0\] must be a trimmed non-empty string/,
+      },
+      {
+        name: 'accepted overall decision with pending roles',
+        mutate: (manifest) => {
+          manifest.overallDecision = 'accepted';
+        },
+        expectedError:
+          /accepted overallDecision requires every required role outcome to be accepted/,
       },
     ];
 

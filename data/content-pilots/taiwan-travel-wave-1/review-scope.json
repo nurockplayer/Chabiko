@@ -10,6 +10,9 @@
     "separateDecisionNamespace": true,
     "productionUnlinked": true
   },
+  "overallDecision": null,
+  "unresolvedIssues": [],
+  "blockedContent": [],
   "dimensions": [
     {
       "id": "natural-taiwan-mandarin",

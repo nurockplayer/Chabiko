@@ -141,6 +141,9 @@ export interface TaiwanTravelWave1ReviewScopeManifest {
   reviewState: 'pending-human-review';
   decisionContract: TaiwanTravelWave1DecisionContract;
   dimensions: TaiwanTravelWave1ReviewDimension[];
+  overallDecision: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'> | null;
+  unresolvedIssues: string[];
+  blockedContent: string[];
   records: TaiwanTravelWave1ScopeRecord[];
 }
 
@@ -187,7 +190,9 @@ export interface TaiwanTravelWave1ReviewPacket {
   records: TaiwanTravelWave1ReviewRecord[];
   scenarioDistribution: typeof TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION;
   overallDecision: Exclude<TaiwanTravelWave1ReviewOutcome, 'not-reviewed'> | null;
-  decisionCount: 0;
+  unresolvedIssues: string[];
+  blockedContent: string[];
+  decisionCount: number;
   promotionAllowed: false;
   productionLinked: false;
 }
@@ -250,6 +255,9 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
       'reviewState',
       'decisionContract',
       'dimensions',
+      'overallDecision',
+      'unresolvedIssues',
+      'blockedContent',
       'records',
     ],
     'manifest',
@@ -295,6 +303,38 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   assert(contract.fingerprint === FINGERPRINT_CONTRACT, 'fingerprint contract drifted');
   assert(contract.separateDecisionNamespace === true, 'decision namespace must remain separate');
   assert(contract.productionUnlinked === true, 'scope must remain production-unlinked');
+
+  assert(
+    manifest.overallDecision === null ||
+      contract.outcomes.includes(manifest.overallDecision),
+    `overallDecision must be null or a canonical outcome`,
+  );
+  assert(Array.isArray(manifest.unresolvedIssues), 'unresolvedIssues must be an array');
+  for (const [index, issue] of manifest.unresolvedIssues.entries()) {
+    assert(
+      isNonEmptyString(issue) && issue === issue.trim(),
+      `unresolvedIssues[${index}] must be a trimmed non-empty string`,
+    );
+  }
+  assert(Array.isArray(manifest.blockedContent), 'blockedContent must be an array');
+  for (const [index, recordId] of manifest.blockedContent.entries()) {
+    assert(
+      isNonEmptyString(recordId) && recordId === recordId.trim(),
+      `blockedContent[${index}] must be a trimmed non-empty record ID`,
+    );
+    assert(
+      TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS.includes(recordId),
+      `blockedContent[${index}] references unknown record '${recordId}'`,
+    );
+  }
+  assert(
+    new Set(manifest.unresolvedIssues).size === manifest.unresolvedIssues.length,
+    'unresolvedIssues must not contain duplicates',
+  );
+  assert(
+    new Set(manifest.blockedContent).size === manifest.blockedContent.length,
+    'blockedContent must not contain duplicates',
+  );
 
   assert(Array.isArray(manifest.dimensions), 'dimensions must be an array');
   assert(manifest.dimensions.length === REVIEW_DIMENSION_IDS.length, 'review dimension count drifted');
@@ -389,6 +429,20 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
     assert(
       record.sourcePath === TAIWAN_TRAVEL_WAVE1_LESSONS_PATH,
       `record '${record.id}' has an unexpected source path`,
+    );
+  }
+
+  const roleOutcomes = manifest.dimensions.flatMap((dimension) =>
+    dimension.reviewerEvidence.map(({ outcome }) => outcome),
+  );
+  if (manifest.overallDecision === 'accepted') {
+    assert(
+      roleOutcomes.every((outcome) => outcome === 'accepted'),
+      'accepted overallDecision requires every required role outcome to be accepted',
+    );
+    assert(
+      manifest.unresolvedIssues.length === 0 && manifest.blockedContent.length === 0,
+      'accepted overallDecision cannot retain unresolved issues or blocked content',
     );
   }
 }
@@ -809,8 +863,16 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     dimensions: manifest.dimensions,
     records,
     scenarioDistribution: TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION,
-    overallDecision: null,
-    decisionCount: 0,
+    overallDecision: manifest.overallDecision,
+    unresolvedIssues: manifest.unresolvedIssues,
+    blockedContent: manifest.blockedContent,
+    decisionCount: manifest.dimensions.reduce(
+      (count, dimension) =>
+        count +
+        dimension.reviewerEvidence.filter(({ outcome }) => outcome !== 'not-reviewed')
+          .length,
+      0,
+    ),
     promotionAllowed: false,
     productionLinked: false,
   };
@@ -832,6 +894,34 @@ function markdownCell(value: string): string {
 export function renderTaiwanTravelWave1ReviewPacket(
   packet: TaiwanTravelWave1ReviewPacket,
 ): string {
+  const pendingRoleReviews = packet.dimensions.flatMap((dimension) =>
+    dimension.reviewerEvidence
+      .filter(({ outcome }) => outcome === 'not-reviewed')
+      .map(
+        ({ role }) => `${markdownCell(dimension.label)} (\`${role}\`)`,
+      ),
+  );
+  const overallDecision =
+    packet.overallDecision ?? '{{accepted | rejected | needs-changes}}';
+  const repositoryReviewState =
+    packet.overallDecision === null
+      ? 'pending-human-review; no overall human decision is recorded; promotion is not allowed.'
+      : `pending-human-review; overall human decision is ${packet.overallDecision}; promotion remains disallowed until a separate maintainer action.`;
+  const pendingReviewSummary =
+    pendingRoleReviews.length > 0
+      ? `- Pending required role reviews: ${pendingRoleReviews.join(', ')}.`
+      : '- All required role reviews have recorded outcomes; no role review remains `not-reviewed`.';
+  const unresolvedIssues =
+    packet.unresolvedIssues.length > 0
+      ? packet.unresolvedIssues.map((issue) => `- ${markdownCell(issue)}`).join('\n')
+      : 'None.';
+  const blockedContent =
+    packet.blockedContent.length > 0
+      ? packet.blockedContent.map((recordId) => `- ${recordId}`).join('\n')
+      : 'None.';
+  const decisionStorage =
+    `The validated \`${TAIWAN_TRAVEL_WAVE1_SCOPE_PATH}\` manifest is the canonical mutable input for per-role evidence, the overall decision, unresolved issues, and blocked content. ${packet.decisionCount} non-pending required-role outcome(s) are recorded; ` +
+    `${packet.overallDecision === null ? 'no overall decision is recorded' : `the overall decision is ${packet.overallDecision}`}. These fields are excluded from the immutable review version and never write to the production or issue-360 review campaigns.`;
   const evidenceRows = packet.dimensions
     .flatMap((dimension) =>
       dimension.reviewerEvidence.map((evidence) => {
@@ -869,10 +959,10 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '**Package state:** isolated candidate content; not linked to the production Taiwan path',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
-    '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
-    '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
+    `**Overall review outcome:** ${overallDecision}`,
+    `**Current repository review state:** ${repositoryReviewState}`,
     `**Decision contract:** Canonical outcomes: ${packet.decisionContract.outcomes.join(', ')}. Promotable: ${packet.decisionContract.promotableOutcomes.join(', ')}. Non-promotable: ${packet.decisionContract.nonPromotableOutcomes.join(', ')}.`,
-    '**Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.',
+    `**Decision storage:** ${decisionStorage}`,
     '',
     '## Coverage reconciliation',
     '',
@@ -904,15 +994,15 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '- Script provenance for the candidate examples remains `generated`.',
     '- Technical validation does not constitute a human content decision.',
     '- Rejected, needs-changes, and not-reviewed role outcomes remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, every required role accepted with complete evidence, an independent overall accepted outcome, and a separate maintainer action.',
-    '- The human language, teaching, and regional review remain pending, as do source/provenance and script verification.',
+    pendingReviewSummary,
     '',
     '## Unresolved Issues',
     '',
-    '{{LIST_UNRESOLVED_ISSUES_OR_None.}}',
+    unresolvedIssues,
     '',
     '## Blocked Content',
     '',
-    '{{LIST_BLOCKED_CONTENT_OR_None.}}',
+    blockedContent,
     '',
   ].join('\n');
 }

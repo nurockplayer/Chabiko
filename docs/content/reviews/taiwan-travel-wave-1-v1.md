@@ -7,7 +7,7 @@
 **Overall review outcome:** {{accepted | rejected | needs-changes}}
 **Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
-**Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.
+**Decision storage:** The validated `data/content-pilots/taiwan-travel-wave-1/review-scope.json` manifest is the canonical mutable input for per-role evidence, the overall decision, unresolved issues, and blocked content. 0 non-pending required-role outcome(s) are recorded; no overall decision is recorded. These fields are excluded from the immutable review version and never write to the production or issue-360 review campaigns.
 
 ## Coverage reconciliation
 
@@ -68,12 +68,12 @@ Every accepted, rejected, or needs-changes role outcome requires complete identi
 - Script provenance for the candidate examples remains `generated`.
 - Technical validation does not constitute a human content decision.
 - Rejected, needs-changes, and not-reviewed role outcomes remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, every required role accepted with complete evidence, an independent overall accepted outcome, and a separate maintainer action.
-- The human language, teaching, and regional review remain pending, as do source/provenance and script verification.
+- Pending required role reviews: Natural Taiwan Mandarin (`human-language-reviewer`), Natural Taiwan Mandarin (`human-regional-reviewer`), Natural Japanese explanation (`human-language-reviewer`), Review status assignment (`human-language-reviewer`), Teaching accuracy and pain-point metadata (`human-teaching-reviewer`), Lesson loop and travel usefulness (`human-teaching-reviewer`), Pinyin and pronunciation guidance (`human-language-reviewer`), Pinyin and pronunciation guidance (`human-teaching-reviewer`), Kanji bridge accuracy (`human-teaching-reviewer`), Review prompt quality (`human-teaching-reviewer`), Graph, identity, order, and scope correctness (`maintainer`), Source and script provenance correctness (`human-source-reviewer`), Source and script provenance correctness (`human-script-verifier`).
 
 ## Unresolved Issues
 
-{{LIST_UNRESOLVED_ISSUES_OR_None.}}
+None.
 
 ## Blocked Content
 
-{{LIST_BLOCKED_CONTENT_OR_None.}}
+None.

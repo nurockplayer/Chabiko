@@ -216,6 +216,19 @@ promotion still requires a separate overall accepted decision and maintainer
 action. The checked-in initial state keeps every role outcome `not-reviewed`
 and every evidence value null.
 
+The Wave manifest is also the canonical mutable input for the artifact's
+separate `overallDecision`, `unresolvedIssues`, and `blockedContent` results.
+`overallDecision` is null until a human records one of `accepted`, `rejected`,
+or `needs-changes`; unresolved issues are trimmed non-empty notes, while
+blocked content is identified by an exact in-scope lesson ID. The checked-in
+initial state uses null and empty arrays. A canonical rebuild must preserve
+these values and derive its pending-role summary from the per-role outcomes;
+it must not restore placeholders or claim that completed roles remain pending.
+An overall accepted decision is invalid while any required role is not
+accepted or while unresolved/blocked entries remain. These mutable human
+results do not change the immutable review version, and none of them authorize
+production linking: promotion remains a separate maintainer action.
+
 For Taiwan Travel Wave 1, the canonical ordered dimension matrix is:
 
 | Dimension ID | What it records | Required reviewer roles, in order |
