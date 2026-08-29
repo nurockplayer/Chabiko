@@ -6,8 +6,9 @@
 **Reviewer role:** {{HUMAN_REVIEWER_ROLE}}
 **Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** c4791ab82b23dafc2c6a529ca2b54e37006d14003770bc12693039a90376b291
-**Overall review outcome:** pending-human-review
+**Review version:** 412fd6fc6094a1dafcbc270a22ffb7cd2c1b2d3868941e0e48c8fa7a061a2438
+**Overall review outcome:** {{accepted | rejected | needs-changes}}
+**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
 **Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.
 
@@ -23,18 +24,20 @@
 | emergency | 2 | 2 |
 | social | 1 | 1 |
 
-## Pending human review dimensions
+## Approval Scope
 
-| Dimension | Reviewer roles | State |
+Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`. The committed manifest starts at `not-reviewed`; a per-dimension outcome does not set the separate overall decision or authorize promotion.
+
+| Dimension | Reviewer roles | Outcome |
 |---|---|---|
-| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | pending |
-| Natural Japanese explanation | human-language-reviewer | pending |
-| Lesson loop and travel usefulness | human-teaching-reviewer | pending |
-| Pinyin and pronunciation guidance | human-language-reviewer, human-teaching-reviewer | pending |
-| Kanji bridge accuracy | human-teaching-reviewer | pending |
-| Review prompt quality | human-teaching-reviewer | pending |
-| Graph, identity, order, and scope correctness | maintainer | pending |
-| Source and script provenance correctness | human-source-reviewer, human-script-verifier | pending |
+| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | not-reviewed |
+| Natural Japanese explanation | human-language-reviewer | not-reviewed |
+| Lesson loop and travel usefulness | human-teaching-reviewer | not-reviewed |
+| Pinyin and pronunciation guidance | human-language-reviewer, human-teaching-reviewer | not-reviewed |
+| Kanji bridge accuracy | human-teaching-reviewer | not-reviewed |
+| Review prompt quality | human-teaching-reviewer | not-reviewed |
+| Graph, identity, order, and scope correctness | maintainer | not-reviewed |
+| Source and script provenance correctness | human-source-reviewer, human-script-verifier | not-reviewed |
 
 ## Exact lesson versions
 
@@ -60,8 +63,8 @@
 - All 14 lessons remain `reviewStatus: "draft"`.
 - Script provenance for the candidate examples remains `generated`.
 - Technical validation does not constitute a human content decision.
+- Rejected, needs-changes, and not-reviewed dimensions remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, all required dimensions accepted, an overall accepted outcome, and a separate maintainer action.
 - The human language, teaching, and regional review remain pending, as do source/provenance and script verification.
-- Promotion requires a complete human artifact for the exact fingerprints above and a separate maintainer action.
 
 ## Unresolved Issues
 

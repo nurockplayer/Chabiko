@@ -16,7 +16,7 @@ The package owns:
 - `data/content-pilots/taiwan-travel-wave-1/graph-paths.json` — an isolated,
   typed path that reconciles the exact lesson IDs and order;
 - `data/content-pilots/taiwan-travel-wave-1/review-scope.json` — the exact
-  pending human-review scope;
+  human-review scope, with every dimension initially `not-reviewed`;
 - `docs/content/reviews/taiwan-travel-wave-1-v1.md` — the generated packet;
 - `src/content/loadTaiwanTravelWave1ReviewScope.ts` — fail-closed package,
   graph, scope, fingerprint, and packet validation;
@@ -58,8 +58,11 @@ fingerprints.
 
 The resolver fails closed on wrong count/order/scenario coverage, duplicate or
 stale references, production ID overlap, non-draft records, malformed rich
-lesson sections, unusable prompts, source-path drift, and generated packet
-drift.
+lesson sections, unusable prompts, source-path drift, unsupported review
+dimension outcomes, and generated packet drift. Per-dimension outcomes use the
+canonical `accepted`, `rejected`, `needs-changes`, and `not-reviewed` values.
+They remain separate from the packet's top-level overall decision and cannot
+independently authorize promotion.
 
 ## Canonical rebuild
 
@@ -83,4 +86,5 @@ uv run python scripts/validate-content-schema.py --check data/content-pilots/tai
 
 Technical validation is not human approval. All records stay `draft`, example
 script forms stay `generated`, and the generated packet keeps every review
-dimension pending until humans complete the artifact for its exact versions.
+dimension truthfully `not-reviewed` while providing fillable per-dimension and
+overall outcome fields for humans reviewing its exact versions.

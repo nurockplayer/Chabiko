@@ -15,49 +15,49 @@
       "id": "natural-taiwan-mandarin",
       "label": "Natural Taiwan Mandarin",
       "reviewerRoles": ["human-language-reviewer", "human-regional-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "natural-japanese-explanation",
       "label": "Natural Japanese explanation",
       "reviewerRoles": ["human-language-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "lesson-loop-usefulness",
       "label": "Lesson loop and travel usefulness",
       "reviewerRoles": ["human-teaching-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "pronunciation-guidance",
       "label": "Pinyin and pronunciation guidance",
       "reviewerRoles": ["human-language-reviewer", "human-teaching-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "kanji-bridge-accuracy",
       "label": "Kanji bridge accuracy",
       "reviewerRoles": ["human-teaching-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "exercise-quality",
       "label": "Review prompt quality",
       "reviewerRoles": ["human-teaching-reviewer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "graph-and-scope-correctness",
       "label": "Graph, identity, order, and scope correctness",
       "reviewerRoles": ["maintainer"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     },
     {
       "id": "source-and-script-provenance",
       "label": "Source and script provenance correctness",
       "reviewerRoles": ["human-source-reviewer", "human-script-verifier"],
-      "state": "pending"
+      "outcome": "not-reviewed"
     }
   ],
   "records": [

@@ -44,6 +44,12 @@ const REVIEW_DIMENSION_IDS = [
   'graph-and-scope-correctness',
   'source-and-script-provenance',
 ] as const;
+const REVIEW_DIMENSION_OUTCOMES = [
+  'accepted',
+  'rejected',
+  'needs-changes',
+  'not-reviewed',
+] as const;
 const REVIEWER_ROLES = new Set([
   'human-language-reviewer',
   'human-script-verifier',
@@ -54,6 +60,8 @@ const REVIEWER_ROLES = new Set([
 ]);
 
 type ReviewDimensionId = (typeof REVIEW_DIMENSION_IDS)[number];
+export type TaiwanTravelWave1ReviewDimensionOutcome =
+  (typeof REVIEW_DIMENSION_OUTCOMES)[number];
 
 export interface TaiwanTravelWave1ScopeRecord {
   collection: 'lessons';
@@ -66,7 +74,7 @@ export interface TaiwanTravelWave1ReviewDimension {
   id: ReviewDimensionId;
   label: string;
   reviewerRoles: string[];
-  state: 'pending';
+  outcome: TaiwanTravelWave1ReviewDimensionOutcome;
 }
 
 export interface TaiwanTravelWave1DecisionContract {
@@ -113,6 +121,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   dimensions: TaiwanTravelWave1ReviewDimension[];
   records: TaiwanTravelWave1ReviewRecord[];
   scenarioDistribution: typeof TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION;
+  overallDecision: Exclude<TaiwanTravelWave1ReviewDimensionOutcome, 'not-reviewed'> | null;
   decisionCount: 0;
   promotionAllowed: false;
   productionLinked: false;
@@ -177,8 +186,15 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   for (const [index, expectedId] of REVIEW_DIMENSION_IDS.entries()) {
     const dimension = manifest.dimensions[index];
     assert(dimension?.id === expectedId, `review dimension order drifted at '${expectedId}'`);
+    assert(
+      !Object.hasOwn(dimension as unknown as object, 'state'),
+      `dimension '${expectedId}' contains legacy state metadata`,
+    );
     assert(isNonEmptyString(dimension.label), `dimension '${expectedId}' has no label`);
-    assert(dimension.state === 'pending', `dimension '${expectedId}' must remain pending`);
+    assert(
+      (REVIEW_DIMENSION_OUTCOMES as readonly unknown[]).includes(dimension.outcome),
+      `dimension '${expectedId}' has invalid outcome '${String(dimension.outcome)}'`,
+    );
     assert(
       Array.isArray(dimension.reviewerRoles) && dimension.reviewerRoles.length > 0,
       `dimension '${expectedId}' has no reviewer roles`,
@@ -455,6 +471,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     dimensions: manifest.dimensions,
     records,
     scenarioDistribution: TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION,
+    overallDecision: null,
     decisionCount: 0,
     promotionAllowed: false,
     productionLinked: false,
@@ -480,7 +497,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
   const dimensionRows = packet.dimensions
     .map(
       (dimension) =>
-        `| ${markdownCell(dimension.label)} | ${dimension.reviewerRoles.join(', ')} | ${dimension.state} |`,
+        `| ${markdownCell(dimension.label)} | ${dimension.reviewerRoles.join(', ')} | ${dimension.outcome} |`,
     )
     .join('\n');
   const recordRows = packet.records
@@ -503,7 +520,8 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '**Review date:** {{YYYY-MM-DD}}',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
-    '**Overall review outcome:** pending-human-review',
+    '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
+    '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
     `**Decision contract:** Canonical outcomes: ${packet.decisionContract.outcomes.join(', ')}. Promotable: ${packet.decisionContract.promotableOutcomes.join(', ')}. Non-promotable: ${packet.decisionContract.nonPromotableOutcomes.join(', ')}.`,
     '**Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.',
     '',
@@ -515,9 +533,11 @@ export function renderTaiwanTravelWave1ReviewPacket(
       ([scenario, count]) => `| ${scenario} | ${count} | ${count} |`,
     ),
     '',
-    '## Pending human review dimensions',
+    '## Approval Scope',
     '',
-    '| Dimension | Reviewer roles | State |',
+    'Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`. The committed manifest starts at `not-reviewed`; a per-dimension outcome does not set the separate overall decision or authorize promotion.',
+    '',
+    '| Dimension | Reviewer roles | Outcome |',
     '|---|---|---|',
     dimensionRows,
     '',
@@ -532,8 +552,8 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '- All 14 lessons remain `reviewStatus: "draft"`.',
     '- Script provenance for the candidate examples remains `generated`.',
     '- Technical validation does not constitute a human content decision.',
+    '- Rejected, needs-changes, and not-reviewed dimensions remain non-promotable. Promotion requires a complete human artifact for the exact fingerprints above, all required dimensions accepted, an overall accepted outcome, and a separate maintainer action.',
     '- The human language, teaching, and regional review remain pending, as do source/provenance and script verification.',
-    '- Promotion requires a complete human artifact for the exact fingerprints above and a separate maintainer action.',
     '',
     '## Unresolved Issues',
     '',

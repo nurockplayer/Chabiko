@@ -136,6 +136,84 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     ).rejects.toThrow(/non-promotable outcomes drifted/);
   });
 
+  it('represents canonical per-dimension outcomes without treating them as an overall decision', async () => {
+    const manifest = loadManifest();
+    expect(manifest.dimensions.every((dimension) => dimension.outcome === 'not-reviewed')).toBe(
+      true,
+    );
+
+    const dimensionOutcomes = [
+      'accepted',
+      'rejected',
+      'needs-changes',
+      'not-reviewed',
+    ] as const;
+    const packet = await build((candidateManifest) => {
+      candidateManifest.dimensions.forEach((dimension, index) => {
+        dimension.outcome = dimensionOutcomes[index % dimensionOutcomes.length];
+      });
+    });
+
+    expect(packet.dimensions.slice(0, 4).map((dimension) => dimension.outcome)).toEqual([
+      ...dimensionOutcomes,
+    ]);
+    expect(packet.reviewState).toBe('pending-human-review');
+    expect(packet.overallDecision).toBeNull();
+    expect(packet.decisionCount).toBe(0);
+    expect(packet.promotionAllowed).toBe(false);
+
+    const rendered = renderTaiwanTravelWave1ReviewPacket(packet);
+    expect(rendered).toContain(
+      '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
+    );
+    expect(rendered).toContain(
+      '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
+    );
+    expect(rendered).toContain(
+      'Replace each outcome with exactly `accepted`, `rejected`, `needs-changes`, or `not-reviewed`.',
+    );
+    expect(rendered).toContain(
+      '| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | accepted |',
+    );
+    expect(rendered).toContain(
+      '| Natural Japanese explanation | human-language-reviewer | rejected |',
+    );
+    expect(rendered).toContain(
+      '| Lesson loop and travel usefulness | human-teaching-reviewer | needs-changes |',
+    );
+    expect(rendered).toContain(
+      '| Pinyin and pronunciation guidance | human-language-reviewer, human-teaching-reviewer | not-reviewed |',
+    );
+
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        dimension.outcome = 'pending';
+      }),
+    ).rejects.toThrow(/invalid outcome 'pending'/);
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        dimension.outcome = 'approved';
+      }),
+    ).rejects.toThrow(/invalid outcome 'approved'/);
+    await expect(
+      build((candidateManifest) => {
+        const dimension = candidateManifest.dimensions[0] as unknown as Record<
+          string,
+          unknown
+        >;
+        dimension.state = 'pending';
+      }),
+    ).rejects.toThrow(/legacy state/);
+  });
+
   it('keeps every rich lesson complete and every prompt mechanically unambiguous', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
 
@@ -447,7 +525,15 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     const committed = readFileSync(resolve(root, TAIWAN_TRAVEL_WAVE1_PACKET_PATH), 'utf8');
 
     expect(rendered).toBe(committed);
-    expect(rendered).toContain('**Overall review outcome:** pending-human-review');
+    expect(rendered).toContain(
+      '**Overall review outcome:** {{accepted | rejected | needs-changes}}',
+    );
+    expect(rendered).toContain(
+      '**Current repository review state:** pending-human-review; no overall human decision is recorded; promotion is not allowed.',
+    );
+    expect(rendered).toContain(
+      '| Natural Taiwan Mandarin | human-language-reviewer, human-regional-reviewer | not-reviewed |',
+    );
     expect(rendered).toContain('**Reviewer identity:** {{HUMAN_REVIEWER_IDENTITY}}');
     expect(rendered).toContain('human language, teaching, and regional review remain pending');
     for (const record of packet.records) {
