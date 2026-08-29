@@ -59,11 +59,7 @@ function hasThreeNonNullDistractors(value: unknown): boolean {
   );
 }
 
-/**
- * A validated tone-discrimination record before distractor narrowing.
- * `distractors` is narrowed from unknown to string[]; `correctAnswer` and
- * `toneContourId` are validated but not yet narrowed to their union types.
- */
+/** A language-specific raw record normalized for the existing domain model. */
 interface ToneDiscriminationRecord {
   id: string;
   promptJa: string;
@@ -81,32 +77,51 @@ interface ToneDiscriminationRecord {
  * correct tone; any mismatch would show the learner an ambiguous visual, so
  * the record is rejected instead.
  */
-function isToneDiscriminationRecord(value: unknown): value is ToneDiscriminationRecord {
-  if (!value || typeof value !== 'object') return false;
+function parseToneDiscriminationRecord(
+  value: unknown,
+): ToneDiscriminationRecord | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const record = value as Record<string, unknown>;
-  if (record.type !== TONE_DISCRIMINATION_TYPE) return false;
+  if (record.type !== TONE_DISCRIMINATION_TYPE) return undefined;
+  if (
+    ['correctAnswer', 'distractors', 'correctAnswerTraditional', 'distractorsTraditional']
+      .some((field) => field in record)
+  ) {
+    return undefined;
+  }
+  const correctAnswer = record.correctAnswerJa;
+  const distractorsValue = record.distractorsJa;
   if (
     !isNonEmptyString(record.id) ||
     !isNonEmptyString(record.promptJa) ||
-    !isNonEmptyString(record.correctAnswer) ||
-    !isToneChoice(record.correctAnswer)
+    !isNonEmptyString(correctAnswer) ||
+    !isToneChoice(correctAnswer)
   ) {
-    return false;
+    return undefined;
   }
-  if (!hasThreeNonNullDistractors(record.distractors)) return false;
-  const distractors = record.distractors as string[];
-  if (!distractors.every((d: string) => isToneChoice(d))) return false;
-  if (!isNonEmptyString(record.contrastId)) return false;
-  if (!isNonEmptyString(record.toneContourHintJa)) return false;
-  if (!isNonEmptyString(record.interferenceJa)) return false;
+  if (!hasThreeNonNullDistractors(distractorsValue)) return undefined;
+  const distractors = distractorsValue as string[];
+  if (!distractors.every((d: string) => isToneChoice(d))) return undefined;
+  if (!isNonEmptyString(record.contrastId)) return undefined;
+  if (!isNonEmptyString(record.toneContourHintJa)) return undefined;
+  if (!isNonEmptyString(record.interferenceJa)) return undefined;
 
   const toneContourId = record.toneContourId;
-  if (!isToneContourId(toneContourId)) return false;
+  if (!isToneContourId(toneContourId)) return undefined;
   // The controlled contour must describe the correct tone; a mismatch would
   // present a visual that contradicts the answer, so it is rejected.
-  if (CONTOUR_BY_TONE[record.correctAnswer] !== toneContourId) return false;
+  if (CONTOUR_BY_TONE[correctAnswer] !== toneContourId) return undefined;
 
-  return true;
+  return {
+    id: record.id,
+    promptJa: record.promptJa,
+    correctAnswer,
+    distractors,
+    contrastId: record.contrastId,
+    toneContourId,
+    toneContourHintJa: record.toneContourHintJa,
+    interferenceJa: record.interferenceJa,
+  };
 }
 
 /**
@@ -122,7 +137,8 @@ export function loadTonePractice(filePath?: string): TonePracticeItem[] {
   const items: TonePracticeItem[] = [];
 
   for (const candidate of bundle.practice) {
-    if (!isToneDiscriminationRecord(candidate)) continue;
+    const record = parseToneDiscriminationRecord(candidate);
+    if (!record) continue;
 
     // Deterministic rejection instead of invention: every item needs four
     // named choices, and a duplicate correct answer would make a second
@@ -131,28 +147,28 @@ export function loadTonePractice(filePath?: string): TonePracticeItem[] {
     if (
       items.some(
         (item) =>
-          item.correctAnswer === candidate.correctAnswer &&
-          item.distractors[0] === candidate.distractors[0] &&
-          item.distractors[1] === candidate.distractors[1] &&
-          item.distractors[2] === candidate.distractors[2],
+          item.correctAnswer === record.correctAnswer &&
+          item.distractors[0] === record.distractors[0] &&
+          item.distractors[1] === record.distractors[1] &&
+          item.distractors[2] === record.distractors[2],
       )
     ) {
       continue;
     }
 
     items.push({
-      recordId: candidate.id,
-      promptJa: candidate.promptJa,
-      correctAnswer: candidate.correctAnswer,
+      recordId: record.id,
+      promptJa: record.promptJa,
+      correctAnswer: record.correctAnswer,
       distractors: [
-        candidate.distractors[0] as ToneChoice,
-        candidate.distractors[1] as ToneChoice,
-        candidate.distractors[2] as ToneChoice,
+        record.distractors[0] as ToneChoice,
+        record.distractors[1] as ToneChoice,
+        record.distractors[2] as ToneChoice,
       ],
-      contrastId: candidate.contrastId,
-      toneContourId: candidate.toneContourId,
-      toneContourHintJa: candidate.toneContourHintJa,
-      interferenceJa: candidate.interferenceJa,
+      contrastId: record.contrastId,
+      toneContourId: record.toneContourId,
+      toneContourHintJa: record.toneContourHintJa,
+      interferenceJa: record.interferenceJa,
     });
   }
 

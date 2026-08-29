@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceManifestId": "chabiko-learner-unicode-sources-v1",
-  "sourceManifestSha256": "a6fb76c6a48bbc5f5148109a9e7f2ef911f827a8d6d4209e578694f7a2bf2eaf",
+  "sourceManifestSha256": "95cacd1ebe9f655b7d288edcdc9face6d6b76fee0b649ffaf4a64a9c13cd5d37",
   "unicodeVersion": "16.0.0",
   "evidence": [
     {
@@ -77776,7 +77776,7 @@
       "id": "evidence-b42a597dc16c2051",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
       "jsonPointer": "/practice/0/promptJa",
       "field": "promptJa",
       "language": "ja",
@@ -77874,12 +77874,12 @@
       ]
     },
     {
-      "id": "evidence-3f60b607987ddadd",
+      "id": "evidence-12d91fb99b119501",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/0/correctAnswer",
-      "field": "correctAnswer",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/0/correctAnswerJa",
+      "field": "correctAnswerJa",
       "language": "ja",
       "scriptStatus": null,
       "text": "第一声",
@@ -77900,12 +77900,12 @@
       ]
     },
     {
-      "id": "evidence-e58a4d0c9ead60a5",
+      "id": "evidence-c6b869743f8f8051",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/0/distractors/0",
-      "field": "distractors",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/0/distractorsJa/0",
+      "field": "distractorsJa",
       "language": "ja",
       "scriptStatus": null,
       "text": "第二声",
@@ -77926,12 +77926,12 @@
       ]
     },
     {
-      "id": "evidence-82f3774ff010db98",
+      "id": "evidence-c293c8373ff6ad95",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/0/distractors/1",
-      "field": "distractors",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/0/distractorsJa/1",
+      "field": "distractorsJa",
       "language": "ja",
       "scriptStatus": null,
       "text": "第三声",
@@ -77952,12 +77952,12 @@
       ]
     },
     {
-      "id": "evidence-17bed1333838ea68",
+      "id": "evidence-db07fbbe5f64913c",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/0/distractors/2",
-      "field": "distractors",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/0/distractorsJa/2",
+      "field": "distractorsJa",
       "language": "ja",
       "scriptStatus": null,
       "text": "第四声",
@@ -77981,7 +77981,7 @@
       "id": "evidence-8e1040895a44b408",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
       "jsonPointer": "/practice/0/toneContourHintJa",
       "field": "toneContourHintJa",
       "language": "ja",
@@ -78040,7 +78040,7 @@
       "id": "evidence-e13f40953385ba89",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
       "jsonPointer": "/practice/0/interferenceJa",
       "field": "interferenceJa",
       "language": "ja",
@@ -78165,7 +78165,7 @@
       "id": "evidence-3b686601df1b0efd",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
       "jsonPointer": "/practice/1/promptJa",
       "field": "promptJa",
       "language": "ja",
@@ -78224,13 +78224,13 @@
       ]
     },
     {
-      "id": "evidence-5a25326aeda80749",
+      "id": "evidence-6fd35299674cd132",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/1/correctAnswer",
-      "field": "correctAnswer",
-      "language": "ja",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/1/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
       "scriptStatus": null,
       "text": "我明天去台北",
       "scalars": [
@@ -78259,13 +78259,13 @@
       ]
     },
     {
-      "id": "evidence-e90ceb9756f10b97",
+      "id": "evidence-905d189d2d15c1ee",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/1/distractors/0",
-      "field": "distractors",
-      "language": "ja",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/1/distractorsTraditional/0",
+      "field": "distractorsTraditional",
+      "language": "zh-Hant",
       "scriptStatus": null,
       "text": "我去台北明天",
       "scalars": [
@@ -78294,13 +78294,13 @@
       ]
     },
     {
-      "id": "evidence-ba049e4792bd3b45",
+      "id": "evidence-6b4f25e2b2f7fb5c",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/1/distractors/1",
-      "field": "distractors",
-      "language": "ja",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/1/distractorsTraditional/1",
+      "field": "distractorsTraditional",
+      "language": "zh-Hant",
       "scriptStatus": null,
       "text": "明天我台北去",
       "scalars": [
@@ -78329,13 +78329,13 @@
       ]
     },
     {
-      "id": "evidence-815f295b3e5e4226",
+      "id": "evidence-8dc12ee91673cd6c",
       "sourceId": "practice-v1",
       "sourcePath": "data/examples/valid/practice.json",
-      "sourceSha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
-      "jsonPointer": "/practice/1/distractors/2",
-      "field": "distractors",
-      "language": "ja",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/1/distractorsTraditional/2",
+      "field": "distractorsTraditional",
+      "language": "zh-Hant",
       "scriptStatus": null,
       "text": "台北我去明天",
       "scalars": [
@@ -78361,6 +78361,3156 @@
         21435,
         26126,
         22825
+      ]
+    },
+    {
+      "id": "evidence-c349f66ba75e5cec",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "声調の形を見て、「麻 má」に合うものを選んでください。",
+      "scalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        40635,
+        32,
+        109,
+        225,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        40635,
+        32,
+        109,
+        225,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfkcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        40635,
+        32,
+        109,
+        225,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-a0880e560ad74085",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/correctAnswerJa",
+      "field": "correctAnswerJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第二声",
+      "scalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        20108,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-6cedbb221f61211c",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/distractorsJa/0",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第一声",
+      "scalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19968,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-38552e7a07fb9c5d",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/distractorsJa/1",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第三声",
+      "scalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19977,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-6e008bc97f4d62f0",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/distractorsJa/2",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第四声",
+      "scalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        22235,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-db315537b7649cdd",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/toneContourHintJa",
+      "field": "toneContourHintJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第二声は低いところから上げます。",
+      "scalars": [
+        31532,
+        20108,
+        22768,
+        12399,
+        20302,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfcScalars": [
+        31532,
+        20108,
+        22768,
+        12399,
+        20302,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfkcScalars": [
+        31532,
+        20108,
+        22768,
+        12399,
+        20302,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-a79481ebefdcc107",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/2/interferenceJa",
+      "field": "interferenceJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "日本語の疑問イントネーションより、音の高さをはっきり上げましょう。",
+      "scalars": [
+        26085,
+        26412,
+        35486,
+        12398,
+        30097,
+        21839,
+        12452,
+        12531,
+        12488,
+        12493,
+        12540,
+        12471,
+        12519,
+        12531,
+        12424,
+        12426,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        12399,
+        12387,
+        12365,
+        12426,
+        19978,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfcScalars": [
+        26085,
+        26412,
+        35486,
+        12398,
+        30097,
+        21839,
+        12452,
+        12531,
+        12488,
+        12493,
+        12540,
+        12471,
+        12519,
+        12531,
+        12424,
+        12426,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        12399,
+        12387,
+        12365,
+        12426,
+        19978,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfkcScalars": [
+        26085,
+        26412,
+        35486,
+        12398,
+        30097,
+        21839,
+        12452,
+        12531,
+        12488,
+        12493,
+        12540,
+        12471,
+        12519,
+        12531,
+        12424,
+        12426,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        12399,
+        12387,
+        12365,
+        12426,
+        19978,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-0394e50de9a26b3f",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "声調の形を見て、「馬 mǎ」に合うものを選んでください。",
+      "scalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        39340,
+        32,
+        109,
+        462,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        39340,
+        32,
+        109,
+        462,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfkcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        39340,
+        32,
+        109,
+        462,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-09536fe77052cbf2",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/correctAnswerJa",
+      "field": "correctAnswerJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第三声",
+      "scalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19977,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-c99567a9a60965b1",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/distractorsJa/0",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第一声",
+      "scalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19968,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-01e1344e90ba7bef",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/distractorsJa/1",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第二声",
+      "scalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        20108,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-0e3422a1f51c4118",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/distractorsJa/2",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第四声",
+      "scalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        22235,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-c8fbca53cf1c97d8",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/toneContourHintJa",
+      "field": "toneContourHintJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第三声は低く下げてから上げます。",
+      "scalars": [
+        31532,
+        19977,
+        22768,
+        12399,
+        20302,
+        12367,
+        19979,
+        12370,
+        12390,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfcScalars": [
+        31532,
+        19977,
+        22768,
+        12399,
+        20302,
+        12367,
+        19979,
+        12370,
+        12390,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfkcScalars": [
+        31532,
+        19977,
+        22768,
+        12399,
+        20302,
+        12367,
+        19979,
+        12370,
+        12390,
+        12363,
+        12425,
+        19978,
+        12370,
+        12414,
+        12377,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-a09866351ad54476",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/3/interferenceJa",
+      "field": "interferenceJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "最初から高く言わず、いったん低く抑える形を意識しましょう。",
+      "scalars": [
+        26368,
+        21021,
+        12363,
+        12425,
+        39640,
+        12367,
+        35328,
+        12431,
+        12378,
+        12289,
+        12356,
+        12387,
+        12383,
+        12435,
+        20302,
+        12367,
+        25233,
+        12360,
+        12427,
+        24418,
+        12434,
+        24847,
+        35672,
+        12375,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfcScalars": [
+        26368,
+        21021,
+        12363,
+        12425,
+        39640,
+        12367,
+        35328,
+        12431,
+        12378,
+        12289,
+        12356,
+        12387,
+        12383,
+        12435,
+        20302,
+        12367,
+        25233,
+        12360,
+        12427,
+        24418,
+        12434,
+        24847,
+        35672,
+        12375,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfkcScalars": [
+        26368,
+        21021,
+        12363,
+        12425,
+        39640,
+        12367,
+        35328,
+        12431,
+        12378,
+        12289,
+        12356,
+        12387,
+        12383,
+        12435,
+        20302,
+        12367,
+        25233,
+        12360,
+        12427,
+        24418,
+        12434,
+        24847,
+        35672,
+        12375,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-28ab12cf1314a8ff",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "声調の形を見て、「罵 mà」に合うものを選んでください。",
+      "scalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        32629,
+        32,
+        109,
+        224,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        32629,
+        32,
+        109,
+        224,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ],
+      "nfkcScalars": [
+        22768,
+        35519,
+        12398,
+        24418,
+        12434,
+        35211,
+        12390,
+        12289,
+        12300,
+        32629,
+        32,
+        109,
+        224,
+        12301,
+        12395,
+        21512,
+        12358,
+        12418,
+        12398,
+        12434,
+        36984,
+        12435,
+        12391,
+        12367,
+        12384,
+        12373,
+        12356,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-b2b5fc372322688b",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/correctAnswerJa",
+      "field": "correctAnswerJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第四声",
+      "scalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        22235,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        22235,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-b9c9f7fcd1db85ea",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/distractorsJa/0",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第一声",
+      "scalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19968,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19968,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-613bdf10bf785213",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/distractorsJa/1",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第二声",
+      "scalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        20108,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        20108,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-5df0e854ea730e09",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/distractorsJa/2",
+      "field": "distractorsJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第三声",
+      "scalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfcScalars": [
+        31532,
+        19977,
+        22768
+      ],
+      "nfkcScalars": [
+        31532,
+        19977,
+        22768
+      ]
+    },
+    {
+      "id": "evidence-b7f25c99c113aabe",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/toneContourHintJa",
+      "field": "toneContourHintJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "第四声は高いところから短く下げます。",
+      "scalars": [
+        31532,
+        22235,
+        22768,
+        12399,
+        39640,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        30701,
+        12367,
+        19979,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfcScalars": [
+        31532,
+        22235,
+        22768,
+        12399,
+        39640,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        30701,
+        12367,
+        19979,
+        12370,
+        12414,
+        12377,
+        12290
+      ],
+      "nfkcScalars": [
+        31532,
+        22235,
+        22768,
+        12399,
+        39640,
+        12356,
+        12392,
+        12371,
+        12429,
+        12363,
+        12425,
+        30701,
+        12367,
+        19979,
+        12370,
+        12414,
+        12377,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-31a93771377e46ae",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/4/interferenceJa",
+      "field": "interferenceJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "長く伸ばさず、音の高さを一気に下げましょう。",
+      "scalars": [
+        38263,
+        12367,
+        20280,
+        12400,
+        12373,
+        12378,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        19968,
+        27671,
+        12395,
+        19979,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfcScalars": [
+        38263,
+        12367,
+        20280,
+        12400,
+        12373,
+        12378,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        19968,
+        27671,
+        12395,
+        19979,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ],
+      "nfkcScalars": [
+        38263,
+        12367,
+        20280,
+        12400,
+        12373,
+        12378,
+        12289,
+        38899,
+        12398,
+        39640,
+        12373,
+        12434,
+        19968,
+        27671,
+        12395,
+        19979,
+        12370,
+        12414,
+        12375,
+        12423,
+        12358,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-fbc364c1ff05a589",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/5/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-531234e9d34d26dd",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/5/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要這個",
+      "scalars": [
+        25105,
+        35201,
+        36889,
+        20491
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        36889,
+        20491
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        36889,
+        20491
+      ]
+    },
+    {
+      "id": "evidence-94800e2f3bd0c1a1",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/6/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-330e68596dc86a8e",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/6/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要那個",
+      "scalars": [
+        25105,
+        35201,
+        37027,
+        20491
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        37027,
+        20491
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        37027,
+        20491
+      ]
+    },
+    {
+      "id": "evidence-748a3ff9b16728c3",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/7/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-c532813cf5ef45fe",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/7/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "這個多少錢？",
+      "scalars": [
+        36889,
+        20491,
+        22810,
+        23569,
+        37666,
+        65311
+      ],
+      "nfcScalars": [
+        36889,
+        20491,
+        22810,
+        23569,
+        37666,
+        65311
+      ],
+      "nfkcScalars": [
+        36889,
+        20491,
+        22810,
+        23569,
+        37666,
+        63
+      ]
+    },
+    {
+      "id": "evidence-42be9b63cffa9d96",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/8/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-ad05ee81d3d63a8b",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/8/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "那個多少錢？",
+      "scalars": [
+        37027,
+        20491,
+        22810,
+        23569,
+        37666,
+        65311
+      ],
+      "nfcScalars": [
+        37027,
+        20491,
+        22810,
+        23569,
+        37666,
+        65311
+      ],
+      "nfkcScalars": [
+        37027,
+        20491,
+        22810,
+        23569,
+        37666,
+        63
+      ]
+    },
+    {
+      "id": "evidence-0ec20202dd403ad1",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/9/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-97c9a673156cd543",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/9/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "捷運站在哪裡？",
+      "scalars": [
+        25463,
+        36939,
+        31449,
+        22312,
+        21738,
+        35041,
+        65311
+      ],
+      "nfcScalars": [
+        25463,
+        36939,
+        31449,
+        22312,
+        21738,
+        35041,
+        65311
+      ],
+      "nfkcScalars": [
+        25463,
+        36939,
+        31449,
+        22312,
+        21738,
+        35041,
+        63
+      ]
+    },
+    {
+      "id": "evidence-1ffa1ff70d18aaa6",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/10/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-1a45c0ef0e2635c5",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/10/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "廁所在哪裡？",
+      "scalars": [
+        24257,
+        25152,
+        22312,
+        21738,
+        35041,
+        65311
+      ],
+      "nfcScalars": [
+        24257,
+        25152,
+        22312,
+        21738,
+        35041,
+        65311
+      ],
+      "nfkcScalars": [
+        24257,
+        25152,
+        22312,
+        21738,
+        35041,
+        63
+      ]
+    },
+    {
+      "id": "evidence-d3f01ca5fb98bf74",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/11/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-a8f9f6dd964cc428",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/11/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要去台北車站。",
+      "scalars": [
+        25105,
+        35201,
+        21435,
+        21488,
+        21271,
+        36554,
+        31449,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        21435,
+        21488,
+        21271,
+        36554,
+        31449,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        21435,
+        21488,
+        21271,
+        36554,
+        31449,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-f3ea8cef3e1dcc2d",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/12/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-933ca8f6d33aea6d",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/12/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要去廁所。",
+      "scalars": [
+        25105,
+        35201,
+        21435,
+        24257,
+        25152,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        21435,
+        24257,
+        25152,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        21435,
+        24257,
+        25152,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-15598fdba037feda",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/13/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-b0d68cac91c1bf72",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/13/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要兩個。",
+      "scalars": [
+        25105,
+        35201,
+        20841,
+        20491,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        20841,
+        20491,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        20841,
+        20491,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-67dfdd644a60206b",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/14/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-25f6bd01e9368147",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/14/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要一個。",
+      "scalars": [
+        25105,
+        35201,
+        19968,
+        20491,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        19968,
+        20491,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        19968,
+        20491,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-6e4780fec33de654",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/15/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-2a5689cff92033d6",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/15/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我要三個。",
+      "scalars": [
+        25105,
+        35201,
+        19977,
+        20491,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        35201,
+        19977,
+        20491,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        35201,
+        19977,
+        20491,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-20d47a50d50e428a",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/16/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-13f3ca3db8ed653d",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/16/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "不要辣，謝謝。",
+      "scalars": [
+        19981,
+        35201,
+        36771,
+        65292,
+        35613,
+        35613,
+        12290
+      ],
+      "nfcScalars": [
+        19981,
+        35201,
+        36771,
+        65292,
+        35613,
+        35613,
+        12290
+      ],
+      "nfkcScalars": [
+        19981,
+        35201,
+        36771,
+        44,
+        35613,
+        35613,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-7f5225a7d1e6db27",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/17/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-3bedc303d7312d15",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/17/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我不要辣。",
+      "scalars": [
+        25105,
+        19981,
+        35201,
+        36771,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        19981,
+        35201,
+        36771,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        19981,
+        35201,
+        36771,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-0a2524a92b50663a",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/18/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-98332e8003bb7df4",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/18/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "可以刷卡嗎？",
+      "scalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        21966,
+        65311
+      ],
+      "nfcScalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        21966,
+        65311
+      ],
+      "nfkcScalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        21966,
+        63
+      ]
+    },
+    {
+      "id": "evidence-93183d5d9b550f15",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/19/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-60a8a65e080f879d",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/19/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "可以刷卡。",
+      "scalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        12290
+      ],
+      "nfcScalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        12290
+      ],
+      "nfkcScalars": [
+        21487,
+        20197,
+        21047,
+        21345,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-a4041ba9d5ee0233",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/20/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-24f913eb604d9959",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/20/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "我有預約。",
+      "scalars": [
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ],
+      "nfcScalars": [
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ],
+      "nfkcScalars": [
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-e28fe57fe086c041",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/21/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-05b4956aca5bf806",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/21/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "你好，我有預約。",
+      "scalars": [
+        20320,
+        22909,
+        65292,
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ],
+      "nfcScalars": [
+        20320,
+        22909,
+        65292,
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ],
+      "nfkcScalars": [
+        20320,
+        22909,
+        44,
+        25105,
+        26377,
+        38928,
+        32004,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-1b07389842f7cbb2",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/22/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-e1ff08167395a70a",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/22/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "可以再說慢一點嗎？",
+      "scalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        24930,
+        19968,
+        40670,
+        21966,
+        65311
+      ],
+      "nfcScalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        24930,
+        19968,
+        40670,
+        21966,
+        65311
+      ],
+      "nfkcScalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        24930,
+        19968,
+        40670,
+        21966,
+        63
+      ]
+    },
+    {
+      "id": "evidence-5c62e687cb223f0a",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/23/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-0ba0af72a260104c",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/23/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "可以再說一次嗎？",
+      "scalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        19968,
+        27425,
+        21966,
+        65311
+      ],
+      "nfcScalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        19968,
+        27425,
+        21966,
+        65311
+      ],
+      "nfkcScalars": [
+        21487,
+        20197,
+        20877,
+        35498,
+        19968,
+        27425,
+        21966,
+        63
+      ]
+    },
+    {
+      "id": "evidence-059a4f625cb1757b",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/24/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-1bfe96144cefde52",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/24/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "請幫幫我。",
+      "scalars": [
+        35531,
+        24171,
+        24171,
+        25105,
+        12290
+      ],
+      "nfcScalars": [
+        35531,
+        24171,
+        24171,
+        25105,
+        12290
+      ],
+      "nfkcScalars": [
+        35531,
+        24171,
+        24171,
+        25105,
+        12290
+      ]
+    },
+    {
+      "id": "evidence-ee2b6d000443ea76",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/25/promptJa",
+      "field": "promptJa",
+      "language": "ja",
+      "scriptStatus": null,
+      "text": "正しい語順に並べ替えてください",
+      "scalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ],
+      "nfkcScalars": [
+        27491,
+        12375,
+        12356,
+        35486,
+        38918,
+        12395,
+        20006,
+        12409,
+        26367,
+        12360,
+        12390,
+        12367,
+        12384,
+        12373,
+        12356
+      ]
+    },
+    {
+      "id": "evidence-df2d67f4f8c6ed65",
+      "sourceId": "practice-v1",
+      "sourcePath": "data/examples/valid/practice.json",
+      "sourceSha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
+      "jsonPointer": "/practice/25/correctAnswerTraditional",
+      "field": "correctAnswerTraditional",
+      "language": "zh-Hant",
+      "scriptStatus": null,
+      "text": "請幫我。",
+      "scalars": [
+        35531,
+        24171,
+        25105,
+        12290
+      ],
+      "nfcScalars": [
+        35531,
+        24171,
+        25105,
+        12290
+      ],
+      "nfkcScalars": [
+        35531,
+        24171,
+        25105,
+        12290
       ]
     },
     {
@@ -156035,20 +159185,24 @@
           "scalarIndex": 6
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 4
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 3
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
           "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 3
         },
         {
           "evidenceRef": "evidence-0ed8c57da331315b",
@@ -157935,19 +161089,67 @@
           "scalarIndex": 3
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-531234e9d34d26dd",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-330e68596dc86a8e",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-933ca8f6d33aea6d",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-b0d68cac91c1bf72",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-25f6bd01e9368147",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-2a5689cff92033d6",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-3bedc303d7312d15",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-24f913eb604d9959",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-1bfe96144cefde52",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-df2d67f4f8c6ed65",
           "scalarIndex": 2
         },
         {
@@ -158763,6 +161965,10 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-f1c94b6d59ef851b",
           "scalarIndex": 48
         },
@@ -159417,6 +162623,42 @@
           "scalarIndex": 12
         },
         {
+          "evidenceRef": "evidence-531234e9d34d26dd",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-330e68596dc86a8e",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-933ca8f6d33aea6d",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-b0d68cac91c1bf72",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-25f6bd01e9368147",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-2a5689cff92033d6",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-13f3ca3db8ed653d",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-3bedc303d7312d15",
+          "scalarIndex": 2
+        },
+        {
           "evidenceRef": "evidence-78bcab78460fb633",
           "scalarIndex": 1
         },
@@ -159739,6 +162981,10 @@
           "scalarIndex": 41
         },
         {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 6
+        },
+        {
           "evidenceRef": "evidence-4f1cd7bb6c9d8db4",
           "scalarIndex": 1
         },
@@ -160003,6 +163249,34 @@
           "scalarIndex": 14
         },
         {
+          "evidenceRef": "evidence-531234e9d34d26dd",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-330e68596dc86a8e",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-c532813cf5ef45fe",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-ad05ee81d3d63a8b",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-b0d68cac91c1bf72",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-25f6bd01e9368147",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-2a5689cff92033d6",
+          "scalarIndex": 3
+        },
+        {
           "evidenceRef": "evidence-efb9706e7e3ece82",
           "scalarIndex": 1
         },
@@ -160133,6 +163407,14 @@
           "scalarIndex": 13
         },
         {
+          "evidenceRef": "evidence-531234e9d34d26dd",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-c532813cf5ef45fe",
+          "scalarIndex": 0
+        },
+        {
           "evidenceRef": "evidence-29fb09cd3c50cdfb",
           "scalarIndex": 2
         },
@@ -160208,6 +163490,18 @@
         },
         {
           "evidenceRef": "evidence-b42a597dc16c2051",
+          "scalarIndex": 15
+        },
+        {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 15
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 15
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
           "scalarIndex": 15
         },
         {
@@ -160374,6 +163668,14 @@
         },
         {
           "evidenceRef": "evidence-9d9712425c2411b1",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-330e68596dc86a8e",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-ad05ee81d3d63a8b",
           "scalarIndex": 0
         },
         {
@@ -161735,6 +165037,10 @@
           "scalarIndex": 28
         },
         {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 21
+        },
+        {
           "evidenceRef": "evidence-08f6b72f69834bc7",
           "scalarIndex": 2
         },
@@ -162234,6 +165540,10 @@
         },
         {
           "evidenceRef": "evidence-e13f40953385ba89",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a79481ebefdcc107",
           "scalarIndex": 0
         },
         {
@@ -163203,6 +166513,94 @@
           "scalarIndex": 3
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-fbc364c1ff05a589",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-94800e2f3bd0c1a1",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-748a3ff9b16728c3",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-42be9b63cffa9d96",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-0ec20202dd403ad1",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-1ffa1ff70d18aaa6",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-d3f01ca5fb98bf74",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-f3ea8cef3e1dcc2d",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-15598fdba037feda",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-67dfdd644a60206b",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-6e4780fec33de654",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-20d47a50d50e428a",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-7f5225a7d1e6db27",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-0a2524a92b50663a",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-93183d5d9b550f15",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-a4041ba9d5ee0233",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-e28fe57fe086c041",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-1b07389842f7cbb2",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-5c62e687cb223f0a",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-059a4f625cb1757b",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-ee2b6d000443ea76",
+          "scalarIndex": 3
+        },
+        {
           "evidenceRef": "evidence-0ed8c57da331315b",
           "scalarIndex": 10
         },
@@ -164055,6 +167453,18 @@
           "scalarIndex": 22
         },
         {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
+          "scalarIndex": 13
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 15
+        },
+        {
           "evidenceRef": "evidence-4b001e87dc16acad",
           "scalarIndex": 5
         },
@@ -164167,6 +167577,10 @@
         {
           "evidenceRef": "evidence-e13f40953385ba89",
           "scalarIndex": 14
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 2
         },
         {
           "evidenceRef": "evidence-5bcfd790a97d6be8",
@@ -164407,7 +167821,23 @@
           "scalarIndex": 14
         },
         {
-          "evidenceRef": "evidence-17bed1333838ea68",
+          "evidenceRef": "evidence-db07fbbe5f64913c",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-6e008bc97f4d62f0",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-0e3422a1f51c4118",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-b2b5fc372322688b",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
           "scalarIndex": 1
         },
         {
@@ -164965,19 +168395,19 @@
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-3f60b607987ddadd",
+          "evidenceRef": "evidence-12d91fb99b119501",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-e58a4d0c9ead60a5",
+          "evidenceRef": "evidence-c6b869743f8f8051",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-82f3774ff010db98",
+          "evidenceRef": "evidence-c293c8373ff6ad95",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-17bed1333838ea68",
+          "evidenceRef": "evidence-db07fbbe5f64913c",
           "scalarIndex": 2
         },
         {
@@ -164987,6 +168417,78 @@
         {
           "evidenceRef": "evidence-e13f40953385ba89",
           "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a0880e560ad74085",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-6cedbb221f61211c",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-38552e7a07fb9c5d",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-6e008bc97f4d62f0",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-db315537b7649cdd",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-09536fe77052cbf2",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-c99567a9a60965b1",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-01e1344e90ba7bef",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-0e3422a1f51c4118",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-b2b5fc372322688b",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-b9c9f7fcd1db85ea",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-613bdf10bf785213",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-5df0e854ea730e09",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
+          "scalarIndex": 2
         },
         {
           "evidenceRef": "evidence-637abd14c220f558",
@@ -165119,6 +168621,10 @@
         {
           "evidenceRef": "evidence-b4e1c7ad46b84f1e",
           "scalarIndex": 20
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
+          "scalarIndex": 11
         },
         {
           "evidenceRef": "evidence-ebd79610c497014a",
@@ -165647,23 +169153,83 @@
           "scalarIndex": 13
         },
         {
-          "evidenceRef": "evidence-3f60b607987ddadd",
+          "evidenceRef": "evidence-12d91fb99b119501",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-e58a4d0c9ead60a5",
+          "evidenceRef": "evidence-c6b869743f8f8051",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-82f3774ff010db98",
+          "evidenceRef": "evidence-c293c8373ff6ad95",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-17bed1333838ea68",
+          "evidenceRef": "evidence-db07fbbe5f64913c",
           "scalarIndex": 0
         },
         {
           "evidenceRef": "evidence-8e1040895a44b408",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a0880e560ad74085",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-6cedbb221f61211c",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-38552e7a07fb9c5d",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-6e008bc97f4d62f0",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-db315537b7649cdd",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-09536fe77052cbf2",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-c99567a9a60965b1",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-01e1344e90ba7bef",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-0e3422a1f51c4118",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-b2b5fc372322688b",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-b9c9f7fcd1db85ea",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-613bdf10bf785213",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-5df0e854ea730e09",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
           "scalarIndex": 0
         }
       ]
@@ -167065,6 +170631,14 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-c532813cf5ef45fe",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-ad05ee81d3d63a8b",
+          "scalarIndex": 2
+        },
+        {
           "evidenceRef": "evidence-efb9706e7e3ece82",
           "scalarIndex": 2
         },
@@ -167223,6 +170797,14 @@
           "scalarIndex": 2
         },
         {
+          "evidenceRef": "evidence-c532813cf5ef45fe",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-ad05ee81d3d63a8b",
+          "scalarIndex": 3
+        },
+        {
           "evidenceRef": "evidence-e86fbea6fc726810",
           "scalarIndex": 16
         },
@@ -167363,6 +170945,14 @@
         {
           "evidenceRef": "evidence-504edb867cb8e6a8",
           "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-c532813cf5ef45fe",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-ad05ee81d3d63a8b",
+          "scalarIndex": 4
         },
         {
           "evidenceRef": "evidence-efb9706e7e3ece82",
@@ -167523,6 +171113,10 @@
         {
           "evidenceRef": "evidence-3de96bb4184abde1",
           "scalarIndex": 26
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 13
         },
         {
           "evidenceRef": "evidence-c2df49f794497e0e",
@@ -168347,6 +171941,10 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 5
+        },
+        {
           "evidenceRef": "evidence-c283ad7089a5d274",
           "scalarIndex": 1
         },
@@ -168557,6 +172155,10 @@
           "scalarIndex": 29
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 4
+        },
+        {
           "evidenceRef": "evidence-def8b3798ba68cf5",
           "scalarIndex": 1
         }
@@ -168608,6 +172210,18 @@
         },
         {
           "evidenceRef": "evidence-b42a597dc16c2051",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
           "scalarIndex": 5
         },
         {
@@ -169927,6 +173541,22 @@
           "scalarIndex": 3
         },
         {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 19
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
+          "scalarIndex": 3
+        },
+        {
           "evidenceRef": "evidence-3ec270bcf445b311",
           "scalarIndex": 16
         },
@@ -170633,12 +174263,40 @@
           "scalarIndex": 6
         },
         {
-          "evidenceRef": "evidence-3f60b607987ddadd",
+          "evidenceRef": "evidence-12d91fb99b119501",
           "scalarIndex": 1
         },
         {
           "evidenceRef": "evidence-8e1040895a44b408",
           "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-6cedbb221f61211c",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-c99567a9a60965b1",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-b9c9f7fcd1db85ea",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 12
+        },
+        {
+          "evidenceRef": "evidence-25f6bd01e9368147",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 4
         },
         {
           "evidenceRef": "evidence-08f6b72f69834bc7",
@@ -170941,6 +174599,22 @@
           "scalarIndex": 25
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 19
+        },
+        {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-b7f25c99c113aabe",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 9
+        },
+        {
           "evidenceRef": "evidence-4350d4f11abcfd9f",
           "scalarIndex": 1
         },
@@ -171095,8 +174769,28 @@
           "scalarIndex": 13
         },
         {
-          "evidenceRef": "evidence-82f3774ff010db98",
+          "evidenceRef": "evidence-c293c8373ff6ad95",
           "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-38552e7a07fb9c5d",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-09536fe77052cbf2",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-5df0e854ea730e09",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-2a5689cff92033d6",
+          "scalarIndex": 2
         },
         {
           "evidenceRef": "evidence-9f1f00d7aea929ca",
@@ -171183,6 +174877,18 @@
         {
           "evidenceRef": "evidence-aae0d3b72766f2b9",
           "scalarIndex": 58
+        },
+        {
+          "evidenceRef": "evidence-db315537b7649cdd",
+          "scalarIndex": 11
+        },
+        {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 26
+        },
+        {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 11
         },
         {
           "evidenceRef": "evidence-0e5f08bf9c7fdf98",
@@ -171635,6 +175341,14 @@
           "scalarIndex": 23
         },
         {
+          "evidenceRef": "evidence-a79481ebefdcc107",
+          "scalarIndex": 17
+        },
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 7
+        },
+        {
           "evidenceRef": "evidence-0a2c49ba6f779929",
           "scalarIndex": 1
         },
@@ -171823,6 +175537,14 @@
         {
           "evidenceRef": "evidence-a449f34f7ad1c01e",
           "scalarIndex": 20
+        },
+        {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-1a45c0ef0e2635c5",
+          "scalarIndex": 3
         },
         {
           "evidenceRef": "evidence-c283ad7089a5d274",
@@ -172031,6 +175753,14 @@
           "scalarIndex": 19
         },
         {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-1a45c0ef0e2635c5",
+          "scalarIndex": 2
+        },
+        {
           "evidenceRef": "evidence-c283ad7089a5d274",
           "scalarIndex": 6
         },
@@ -172094,6 +175824,14 @@
         },
         {
           "evidenceRef": "evidence-f1316371508b50e5",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-1a45c0ef0e2635c5",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-933ca8f6d33aea6d",
           "scalarIndex": 3
         }
       ]
@@ -172169,6 +175907,14 @@
         {
           "evidenceRef": "evidence-1f1ff9c6ceb02090",
           "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-1a45c0ef0e2635c5",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-933ca8f6d33aea6d",
+          "scalarIndex": 4
         },
         {
           "evidenceRef": "evidence-7b71611f16954df1",
@@ -172307,6 +176053,14 @@
         {
           "evidenceRef": "evidence-a449f34f7ad1c01e",
           "scalarIndex": 21
+        },
+        {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-1a45c0ef0e2635c5",
+          "scalarIndex": 4
         },
         {
           "evidenceRef": "evidence-c283ad7089a5d274",
@@ -173039,6 +176793,10 @@
           "scalarIndex": 53
         },
         {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 0
+        },
+        {
           "evidenceRef": "evidence-c283ad7089a5d274",
           "scalarIndex": 4
         },
@@ -173185,6 +176943,14 @@
           "scalarIndex": 10
         },
         {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 6
+        },
+        {
           "evidenceRef": "evidence-29fb09cd3c50cdfb",
           "scalarIndex": 8
         },
@@ -173321,6 +177087,10 @@
         {
           "evidenceRef": "evidence-d00497981b841cc2",
           "scalarIndex": 54
+        },
+        {
+          "evidenceRef": "evidence-97c9a673156cd543",
+          "scalarIndex": 1
         },
         {
           "evidenceRef": "evidence-c283ad7089a5d274",
@@ -175057,6 +178827,18 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-d501281efa944379",
           "scalarIndex": 21
         },
@@ -175827,20 +179609,28 @@
           "scalarIndex": 3
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 3
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 1
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 5
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
           "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-933ca8f6d33aea6d",
+          "scalarIndex": 2
         },
         {
           "evidenceRef": "evidence-78bcab78460fb633",
@@ -176039,20 +179829,24 @@
           "scalarIndex": 12
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 5
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 3
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 4
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
           "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 4
         },
         {
           "evidenceRef": "evidence-551e227c729cdd82",
@@ -176235,6 +180029,10 @@
         {
           "evidenceRef": "evidence-4ee79dc32d029c83",
           "scalarIndex": 27
+        },
+        {
+          "evidenceRef": "evidence-a8f9f6dd964cc428",
+          "scalarIndex": 5
         },
         {
           "evidenceRef": "evidence-78bcab78460fb633",
@@ -177333,6 +181131,14 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-24f913eb604d9959",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
+          "scalarIndex": 4
+        },
+        {
           "evidenceRef": "evidence-29fb09cd3c50cdfb",
           "scalarIndex": 5
         },
@@ -177739,6 +181545,10 @@
           "scalarIndex": 24
         },
         {
+          "evidenceRef": "evidence-b0d68cac91c1bf72",
+          "scalarIndex": 2
+        },
+        {
           "evidenceRef": "evidence-0f188a8d280fe4d6",
           "scalarIndex": 5
         },
@@ -177917,7 +181727,23 @@
           "scalarIndex": 5
         },
         {
-          "evidenceRef": "evidence-e58a4d0c9ead60a5",
+          "evidenceRef": "evidence-c6b869743f8f8051",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-a0880e560ad74085",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-db315537b7649cdd",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-01e1344e90ba7bef",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-613bdf10bf785213",
           "scalarIndex": 1
         },
         {
@@ -178124,6 +181950,10 @@
         },
         {
           "evidenceRef": "evidence-4dba394240ff11ce",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
           "scalarIndex": 1
         },
         {
@@ -178957,6 +182787,10 @@
           "scalarIndex": 13
         },
         {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 0
+        },
+        {
           "evidenceRef": "evidence-0a341f5af8d7fb1f",
           "scalarIndex": 44
         },
@@ -179429,6 +183263,14 @@
           "scalarIndex": 41
         },
         {
+          "evidenceRef": "evidence-13f3ca3db8ed653d",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-3bedc303d7312d15",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-08f6b72f69834bc7",
           "scalarIndex": 0
         },
@@ -179694,6 +183536,90 @@
         },
         {
           "evidenceRef": "evidence-3b686601df1b0efd",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-fbc364c1ff05a589",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-94800e2f3bd0c1a1",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-748a3ff9b16728c3",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-42be9b63cffa9d96",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-0ec20202dd403ad1",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-1ffa1ff70d18aaa6",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-d3f01ca5fb98bf74",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-f3ea8cef3e1dcc2d",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-15598fdba037feda",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-67dfdd644a60206b",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-6e4780fec33de654",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-20d47a50d50e428a",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-7f5225a7d1e6db27",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-0a2524a92b50663a",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-93183d5d9b550f15",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-a4041ba9d5ee0233",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-e28fe57fe086c041",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-1b07389842f7cbb2",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-5c62e687cb223f0a",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-059a4f625cb1757b",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-ee2b6d000443ea76",
           "scalarIndex": 0
         },
         {
@@ -180141,6 +184067,14 @@
           "scalarIndex": 5
         },
         {
+          "evidenceRef": "evidence-13f3ca3db8ed653d",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-13f3ca3db8ed653d",
+          "scalarIndex": 5
+        },
+        {
           "evidenceRef": "evidence-72b15076df1245b9",
           "scalarIndex": 0
         },
@@ -180240,6 +184174,14 @@
         },
         {
           "evidenceRef": "evidence-af1b2767763d3fda",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-13f3ca3db8ed653d",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-3bedc303d7312d15",
           "scalarIndex": 3
         },
         {
@@ -181747,6 +185689,14 @@
         {
           "evidenceRef": "evidence-314944c3811daa0a",
           "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 2
         }
       ]
     },
@@ -182169,6 +186119,22 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-98332e8003bb7df4",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-60a8a65e080f879d",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-c6878029873ae8c2",
           "scalarIndex": 2
         },
@@ -182459,6 +186425,22 @@
           "scalarIndex": 0
         },
         {
+          "evidenceRef": "evidence-98332e8003bb7df4",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-60a8a65e080f879d",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 0
+        },
+        {
           "evidenceRef": "evidence-c6878029873ae8c2",
           "scalarIndex": 18
         },
@@ -182709,6 +186691,18 @@
           "scalarIndex": 8
         },
         {
+          "evidenceRef": "evidence-98332e8003bb7df4",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 7
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 6
+        },
+        {
           "evidenceRef": "evidence-08f6b72f69834bc7",
           "scalarIndex": 16
         },
@@ -182851,6 +186845,14 @@
           "scalarIndex": 1
         },
         {
+          "evidenceRef": "evidence-98332e8003bb7df4",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-60a8a65e080f879d",
+          "scalarIndex": 2
+        },
+        {
           "evidenceRef": "evidence-caf9ffbd1636d4c1",
           "scalarIndex": 7
         },
@@ -182939,6 +186941,14 @@
         {
           "evidenceRef": "evidence-e30ece94b68e0034",
           "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-98332e8003bb7df4",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-60a8a65e080f879d",
+          "scalarIndex": 3
         },
         {
           "evidenceRef": "evidence-caf9ffbd1636d4c1",
@@ -183681,6 +187691,90 @@
           "scalarIndex": 4
         },
         {
+          "evidenceRef": "evidence-fbc364c1ff05a589",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-94800e2f3bd0c1a1",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-748a3ff9b16728c3",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-42be9b63cffa9d96",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-0ec20202dd403ad1",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-1ffa1ff70d18aaa6",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-d3f01ca5fb98bf74",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-f3ea8cef3e1dcc2d",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-15598fdba037feda",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-67dfdd644a60206b",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-6e4780fec33de654",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-20d47a50d50e428a",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-7f5225a7d1e6db27",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-0a2524a92b50663a",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-93183d5d9b550f15",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-a4041ba9d5ee0233",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-e28fe57fe086c041",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-1b07389842f7cbb2",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-5c62e687cb223f0a",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-059a4f625cb1757b",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-ee2b6d000443ea76",
+          "scalarIndex": 4
+        },
+        {
           "evidenceRef": "evidence-f1c94b6d59ef851b",
           "scalarIndex": 28
         },
@@ -184409,6 +188503,14 @@
           "scalarIndex": 22
         },
         {
+          "evidenceRef": "evidence-24f913eb604d9959",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
+          "scalarIndex": 6
+        },
+        {
           "evidenceRef": "evidence-fab3be8f09d3ad17",
           "scalarIndex": 11
         },
@@ -184531,6 +188633,10 @@
           "scalarIndex": 14
         },
         {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-7df066f214918499",
           "scalarIndex": 0
         },
@@ -184625,6 +188731,14 @@
           "scalarIndex": 38
         },
         {
+          "evidenceRef": "evidence-24f913eb604d9959",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
+          "scalarIndex": 5
+        },
+        {
           "evidenceRef": "evidence-fab3be8f09d3ad17",
           "scalarIndex": 22
         },
@@ -184680,6 +188794,10 @@
         },
         {
           "evidenceRef": "evidence-b56073663b514100",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-05b4956aca5bf806",
           "scalarIndex": 0
         },
         {
@@ -185599,6 +189717,14 @@
           "scalarIndex": 12
         },
         {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 3
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
+          "scalarIndex": 3
+        },
+        {
           "evidenceRef": "evidence-08f6b72f69834bc7",
           "scalarIndex": 12
         },
@@ -185757,6 +189883,10 @@
           "scalarIndex": 26
         },
         {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 4
+        },
+        {
           "evidenceRef": "evidence-08f6b72f69834bc7",
           "scalarIndex": 13
         },
@@ -185849,6 +189979,10 @@
         {
           "evidenceRef": "evidence-d78d281a02e8dc54",
           "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-e1ff08167395a70a",
+          "scalarIndex": 6
         },
         {
           "evidenceRef": "evidence-08f6b72f69834bc7",
@@ -186681,19 +190815,19 @@
           "scalarIndex": 96
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 1
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 4
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 0
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
           "scalarIndex": 4
         },
         {
@@ -186772,6 +190906,10 @@
       "occurrences": [
         {
           "evidenceRef": "evidence-20271752c5be0cb3",
+          "scalarIndex": 5
+        },
+        {
+          "evidenceRef": "evidence-0ba0af72a260104c",
           "scalarIndex": 5
         },
         {
@@ -187035,6 +191173,18 @@
           "scalarIndex": 2
         },
         {
+          "evidenceRef": "evidence-1bfe96144cefde52",
+          "scalarIndex": 1
+        },
+        {
+          "evidenceRef": "evidence-1bfe96144cefde52",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-df2d67f4f8c6ed65",
+          "scalarIndex": 1
+        },
+        {
           "evidenceRef": "evidence-ae33113f5e7d99c6",
           "scalarIndex": 6
         },
@@ -187146,6 +191296,14 @@
         },
         {
           "evidenceRef": "evidence-01536ccc032f062c",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-1bfe96144cefde52",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-df2d67f4f8c6ed65",
           "scalarIndex": 0
         },
         {
@@ -188037,6 +192195,10 @@
         {
           "evidenceRef": "evidence-e13f40953385ba89",
           "scalarIndex": 29
+        },
+        {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 22
         },
         {
           "evidenceRef": "evidence-5b496594b0dc462f",
@@ -190607,6 +194769,18 @@
           "scalarIndex": 8
         },
         {
+          "evidenceRef": "evidence-db315537b7649cdd",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-c8fbca53cf1c97d8",
+          "scalarIndex": 4
+        },
+        {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 14
+        },
+        {
           "evidenceRef": "evidence-0968ff65653c4a60",
           "scalarIndex": 1
         },
@@ -192345,19 +196519,19 @@
           "scalarIndex": 7
         },
         {
-          "evidenceRef": "evidence-5a25326aeda80749",
+          "evidenceRef": "evidence-6fd35299674cd132",
           "scalarIndex": 2
         },
         {
-          "evidenceRef": "evidence-e90ceb9756f10b97",
+          "evidenceRef": "evidence-905d189d2d15c1ee",
           "scalarIndex": 5
         },
         {
-          "evidenceRef": "evidence-ba049e4792bd3b45",
+          "evidenceRef": "evidence-6b4f25e2b2f7fb5c",
           "scalarIndex": 1
         },
         {
-          "evidenceRef": "evidence-815f295b3e5e4226",
+          "evidenceRef": "evidence-8dc12ee91673cd6c",
           "scalarIndex": 5
         },
         {
@@ -203359,6 +207533,18 @@
         {
           "evidenceRef": "evidence-b42a597dc16c2051",
           "scalarIndex": 20
+        },
+        {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 20
+        },
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 20
+        },
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
+          "scalarIndex": 20
         }
       ]
     },
@@ -203372,6 +207558,90 @@
       "occurrences": [
         {
           "evidenceRef": "evidence-3b686601df1b0efd",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-fbc364c1ff05a589",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-94800e2f3bd0c1a1",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-748a3ff9b16728c3",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-42be9b63cffa9d96",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-0ec20202dd403ad1",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-1ffa1ff70d18aaa6",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-d3f01ca5fb98bf74",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-f3ea8cef3e1dcc2d",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-15598fdba037feda",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-67dfdd644a60206b",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-6e4780fec33de654",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-20d47a50d50e428a",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-7f5225a7d1e6db27",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-0a2524a92b50663a",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-93183d5d9b550f15",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-a4041ba9d5ee0233",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-e28fe57fe086c041",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-1b07389842f7cbb2",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-5c62e687cb223f0a",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-059a4f625cb1757b",
+          "scalarIndex": 6
+        },
+        {
+          "evidenceRef": "evidence-ee2b6d000443ea76",
           "scalarIndex": 6
         }
       ]
@@ -203389,6 +207659,90 @@
           "scalarIndex": 8
         },
         {
+          "evidenceRef": "evidence-fbc364c1ff05a589",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-94800e2f3bd0c1a1",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-748a3ff9b16728c3",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-42be9b63cffa9d96",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-0ec20202dd403ad1",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-1ffa1ff70d18aaa6",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-d3f01ca5fb98bf74",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-f3ea8cef3e1dcc2d",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-15598fdba037feda",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-67dfdd644a60206b",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-6e4780fec33de654",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-20d47a50d50e428a",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-7f5225a7d1e6db27",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-0a2524a92b50663a",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-93183d5d9b550f15",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-a4041ba9d5ee0233",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-e28fe57fe086c041",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-1b07389842f7cbb2",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-5c62e687cb223f0a",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-059a4f625cb1757b",
+          "scalarIndex": 8
+        },
+        {
+          "evidenceRef": "evidence-ee2b6d000443ea76",
+          "scalarIndex": 8
+        },
+        {
           "evidenceRef": "evidence-691682a07a489022",
           "scalarIndex": 6
         },
@@ -203399,6 +207753,92 @@
         {
           "evidenceRef": "evidence-ca0dbcc0b66bf515",
           "scalarIndex": 1
+        }
+      ]
+    },
+    {
+      "id": "han-u9ebb",
+      "scalar": 40635,
+      "hex": "U+9EBB",
+      "character": "麻",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-9EBB",
+      "firstOccurrenceRef": "evidence-c349f66ba75e5cec",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-c349f66ba75e5cec",
+          "scalarIndex": 9
+        },
+        {
+          "evidenceRef": "evidence-d16c2bf7a2a01e05",
+          "scalarIndex": 0
+        }
+      ]
+    },
+    {
+      "id": "han-u99ac",
+      "scalar": 39340,
+      "hex": "U+99AC",
+      "character": "馬",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-99AC",
+      "firstOccurrenceRef": "evidence-0394e50de9a26b3f",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-0394e50de9a26b3f",
+          "scalarIndex": 9
+        },
+        {
+          "evidenceRef": "evidence-9c929a890cfd9c2d",
+          "scalarIndex": 10
+        }
+      ]
+    },
+    {
+      "id": "han-u6291",
+      "scalar": 25233,
+      "hex": "U+6291",
+      "character": "抑",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-6291",
+      "firstOccurrenceRef": "evidence-a09866351ad54476",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-a09866351ad54476",
+          "scalarIndex": 16
+        }
+      ]
+    },
+    {
+      "id": "han-u7f75",
+      "scalar": 32629,
+      "hex": "U+7F75",
+      "character": "罵",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-7F75",
+      "firstOccurrenceRef": "evidence-28ab12cf1314a8ff",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-28ab12cf1314a8ff",
+          "scalarIndex": 9
+        }
+      ]
+    },
+    {
+      "id": "han-u9577",
+      "scalar": 38263,
+      "hex": "U+9577",
+      "character": "長",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-9577",
+      "firstOccurrenceRef": "evidence-31a93771377e46ae",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-31a93771377e46ae",
+          "scalarIndex": 0
+        },
+        {
+          "evidenceRef": "evidence-2cc03420c00b972f",
+          "scalarIndex": 2
+        },
+        {
+          "evidenceRef": "evidence-9e57f1e38bee836f",
+          "scalarIndex": 3
         }
       ]
     },
@@ -206527,20 +210967,6 @@
       ]
     },
     {
-      "id": "han-u99ac",
-      "scalar": 39340,
-      "hex": "U+99AC",
-      "character": "馬",
-      "unicodeName": "CJK UNIFIED IDEOGRAPH-99AC",
-      "firstOccurrenceRef": "evidence-9c929a890cfd9c2d",
-      "occurrences": [
-        {
-          "evidenceRef": "evidence-9c929a890cfd9c2d",
-          "scalarIndex": 10
-        }
-      ]
-    },
-    {
       "id": "han-u73a9",
       "scalar": 29609,
       "hex": "U+73A9",
@@ -208081,24 +212507,6 @@
         {
           "evidenceRef": "evidence-eb64df2faa3a4fc0",
           "scalarIndex": 1
-        }
-      ]
-    },
-    {
-      "id": "han-u9577",
-      "scalar": 38263,
-      "hex": "U+9577",
-      "character": "長",
-      "unicodeName": "CJK UNIFIED IDEOGRAPH-9577",
-      "firstOccurrenceRef": "evidence-2cc03420c00b972f",
-      "occurrences": [
-        {
-          "evidenceRef": "evidence-2cc03420c00b972f",
-          "scalarIndex": 2
-        },
-        {
-          "evidenceRef": "evidence-9e57f1e38bee836f",
-          "scalarIndex": 3
         }
       ]
     },
@@ -220399,20 +224807,6 @@
       ]
     },
     {
-      "id": "han-u9ebb",
-      "scalar": 40635,
-      "hex": "U+9EBB",
-      "character": "麻",
-      "unicodeName": "CJK UNIFIED IDEOGRAPH-9EBB",
-      "firstOccurrenceRef": "evidence-d16c2bf7a2a01e05",
-      "occurrences": [
-        {
-          "evidenceRef": "evidence-d16c2bf7a2a01e05",
-          "scalarIndex": 0
-        }
-      ]
-    },
-    {
       "id": "han-u8208",
       "scalar": 33288,
       "hex": "U+8208",
@@ -221971,8 +226365,8 @@
   ],
   "totals": {
     "sources": 15,
-    "evidence": 3407,
-    "uniqueHanScalars": 1724,
-    "occurrences": 12378
+    "evidence": 3470,
+    "uniqueHanScalars": 1726,
+    "occurrences": 12684
   }
 }

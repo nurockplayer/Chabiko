@@ -11,8 +11,8 @@ const VALID_TONE = {
   id: 'practice-001',
   type: 'tone-discrimination',
   promptJa: '声調の形を見て、「媽 mā」に合うものを選んでください。',
-  correctAnswer: '第一声',
-  distractors: ['第二声', '第三声', '第四声'],
+  correctAnswerJa: '第一声',
+  distractorsJa: ['第二声', '第三声', '第四声'],
   contrastId: 'tone-t1-vs-t2-t3-t4',
   toneContourId: 't1-high-flat',
   toneContourHintJa: '第一声は高く平らに保ちます。',
@@ -23,8 +23,8 @@ const VALID_TONE_2 = {
   id: 'practice-003',
   type: 'tone-discrimination',
   promptJa: '声調の形を見て、「麻 má」に合うものを選んでください。',
-  correctAnswer: '第二声',
-  distractors: ['第一声', '第三声', '第四声'],
+  correctAnswerJa: '第二声',
+  distractorsJa: ['第一声', '第三声', '第四声'],
   contrastId: 'tone-t2-vs-t1-t3-t4',
   toneContourId: 't2-rising',
   toneContourHintJa: '第二声は低くから上がります。',
@@ -57,6 +57,20 @@ afterEach(() => {
 // ─── Loader: source order and validity ─────────────────────────────────────
 
 describe('loadTonePractice — source order and validity', () => {
+  it('normalizes Japanese answer fields into the existing domain shape', () => {
+    const file = tempBundle([{
+      ...VALID_TONE,
+    }]);
+
+    expect(loadTonePractice(file)).toEqual([
+      expect.objectContaining({
+        recordId: 'practice-001',
+        correctAnswer: '第一声',
+        distractors: ['第二声', '第三声', '第四声'],
+      }),
+    ]);
+  });
+
   it('loads only tone-discrimination records in source order', () => {
     const file = tempBundle([
       { ...VALID_TONE, id: 'practice-001' },
@@ -65,6 +79,28 @@ describe('loadTonePractice — source order and validity', () => {
     ]);
     const items = loadTonePractice(file);
     expect(items.map((i) => i.recordId)).toEqual(['practice-001', 'practice-003']);
+  });
+
+  it('rejects generic, Traditional, or mixed answer fields for a tone record', () => {
+    const { correctAnswerJa, distractorsJa, ...base } = VALID_TONE;
+    const file = tempBundle([
+      { ...base, id: 'generic', correctAnswer: correctAnswerJa, distractors: distractorsJa },
+      {
+        ...base,
+        id: 'traditional',
+        correctAnswerTraditional: correctAnswerJa,
+        distractorsTraditional: distractorsJa,
+      },
+      {
+        ...VALID_TONE,
+        id: 'mixed',
+        correctAnswer: correctAnswerJa,
+        distractors: distractorsJa,
+      },
+      { ...VALID_TONE, id: 'valid' },
+    ]);
+
+    expect(loadTonePractice(file).map((item) => item.recordId)).toEqual(['valid']);
   });
 
   it('returns an empty array when no tone-discrimination records exist', () => {
@@ -82,9 +118,9 @@ describe('loadTonePractice — source order and validity', () => {
     const file = tempBundle([
       { ...VALID_TONE, id: 'practice-good' },
       { id: 'practice-no-answer', type: 'tone-discrimination', promptJa: 'x' },
-      { id: 'practice-null', type: 'tone-discrimination', promptJa: 'x', correctAnswer: null },
-      { id: 'practice-no-distractors', type: 'tone-discrimination', promptJa: 'x', correctAnswer: '第一声' },
-      { id: 42, type: 'tone-discrimination', promptJa: 'x', correctAnswer: '第一声' },
+      { id: 'practice-null', type: 'tone-discrimination', promptJa: 'x', correctAnswerJa: null },
+      { id: 'practice-no-distractors', type: 'tone-discrimination', promptJa: 'x', correctAnswerJa: '第一声' },
+      { id: 42, type: 'tone-discrimination', promptJa: 'x', correctAnswerJa: '第一声' },
       null,
       'not-an-object',
     ]);
@@ -94,8 +130,8 @@ describe('loadTonePractice — source order and validity', () => {
 
   it('rejects an unknown correctAnswer or non-choice distractors', () => {
     const file = tempBundle([
-      { ...VALID_TONE, id: 'practice-unknown-answer', correctAnswer: '軽声' },
-      { ...VALID_TONE, id: 'practice-bad-distractor', distractors: ['軽声', '第三声', '第四声'] },
+      { ...VALID_TONE, id: 'practice-unknown-answer', correctAnswerJa: '軽声' },
+      { ...VALID_TONE, id: 'practice-bad-distractor', distractorsJa: ['軽声', '第三声', '第四声'] },
       { ...VALID_TONE, id: 'practice-good' },
     ]);
     const items = loadTonePractice(file);
@@ -129,8 +165,8 @@ describe('loadTonePractice — source order and validity', () => {
         ...VALID_TONE,
         id: 'practice-004',
         promptJa: '声調の形を見て、「媽 mā」に合うものを選んでください。',
-        correctAnswer: '第一声',
-        distractors: ['第二声', '第四声', '第三声'],
+        correctAnswerJa: '第一声',
+        distractorsJa: ['第二声', '第四声', '第三声'],
         contrastId: 'tone-t1-vs-t2-t4-t3',
       },
     ]);
@@ -167,8 +203,16 @@ describe('loadTonePractice — source order and validity', () => {
 });
 
 describe('loadTonePractice — default source', () => {
-  it('loads the repository seed bundle without throwing', () => {
-    expect(() => loadTonePractice()).not.toThrow();
+  it('loads exactly one canonical item for each of the four tones', () => {
+    const items = loadTonePractice();
+    expect(items).toHaveLength(4);
+    expect(items.map((item) => item.correctAnswer)).toEqual([
+      '第一声',
+      '第二声',
+      '第三声',
+      '第四声',
+    ]);
+    expect(new Set(items.map((item) => item.toneContourId)).size).toBe(4);
   });
 });
 

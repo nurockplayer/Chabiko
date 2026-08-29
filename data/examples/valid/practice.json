@@ -4,24 +4,410 @@
       "id": "practice-001",
       "type": "tone-discrimination",
       "promptJa": "声調の形を見て、「媽 mā」に合うものを選んでください。",
-      "correctAnswer": "第一声",
-      "distractors": ["第二声", "第三声", "第四声"],
+      "correctAnswerJa": "第一声",
+      "distractorsJa": [
+        "第二声",
+        "第三声",
+        "第四声"
+      ],
       "contrastId": "tone-t1-vs-t2-t3-t4",
       "toneContourId": "t1-high-flat",
       "toneContourHintJa": "第一声は高く平らに保ちます。",
       "interferenceJa": "日本語話者は声の高さを平らに伸ばしやすいので、音の高さを意識しましょう。",
-      "painPointTags": ["tone"],
-      "relatedVocabulary": ["voc-001"],
+      "painPointTags": [
+        "tone"
+      ],
+      "relatedVocabulary": [
+        "voc-001"
+      ],
       "reviewStatus": "draft"
     },
     {
       "id": "practice-002",
       "type": "word-order",
       "promptJa": "正しい語順に並べ替えてください",
-      "correctAnswer": "我明天去台北",
-      "distractors": ["我去台北明天", "明天我台北去", "台北我去明天"],
-      "painPointTags": ["word-order"],
+      "correctAnswerTraditional": "我明天去台北",
+      "distractorsTraditional": [
+        "我去台北明天",
+        "明天我台北去",
+        "台北我去明天"
+      ],
+      "painPointTags": [
+        "word-order"
+      ],
       "reviewStatus": "draft"
+    },
+    {
+      "id": "practice-003",
+      "type": "tone-discrimination",
+      "promptJa": "声調の形を見て、「麻 má」に合うものを選んでください。",
+      "correctAnswerJa": "第二声",
+      "distractorsJa": [
+        "第一声",
+        "第三声",
+        "第四声"
+      ],
+      "contrastId": "tone-t2-vs-t1-t3-t4",
+      "toneContourId": "t2-rising",
+      "toneContourHintJa": "第二声は低いところから上げます。",
+      "interferenceJa": "日本語の疑問イントネーションより、音の高さをはっきり上げましょう。",
+      "painPointTags": [
+        "tone"
+      ],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "practice-004",
+      "type": "tone-discrimination",
+      "promptJa": "声調の形を見て、「馬 mǎ」に合うものを選んでください。",
+      "correctAnswerJa": "第三声",
+      "distractorsJa": [
+        "第一声",
+        "第二声",
+        "第四声"
+      ],
+      "contrastId": "tone-t3-vs-t1-t2-t4",
+      "toneContourId": "t3-dip-rise",
+      "toneContourHintJa": "第三声は低く下げてから上げます。",
+      "interferenceJa": "最初から高く言わず、いったん低く抑える形を意識しましょう。",
+      "painPointTags": [
+        "tone"
+      ],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "practice-005",
+      "type": "tone-discrimination",
+      "promptJa": "声調の形を見て、「罵 mà」に合うものを選んでください。",
+      "correctAnswerJa": "第四声",
+      "distractorsJa": [
+        "第一声",
+        "第二声",
+        "第三声"
+      ],
+      "contrastId": "tone-t4-vs-t1-t2-t3",
+      "toneContourId": "t4-falling",
+      "toneContourHintJa": "第四声は高いところから短く下げます。",
+      "interferenceJa": "長く伸ばさず、音の高さを一気に下げましょう。",
+      "painPointTags": [
+        "tone"
+      ],
+      "reviewStatus": "draft"
+    },
+    {
+      "id": "practice-006",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要這個",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-001",
+        "field": "coreSentence",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-007",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要那個",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-001",
+        "field": "examples[1].traditional",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-008",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "這個多少錢？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-002",
+        "field": "coreSentence",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-009",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "那個多少錢？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-002",
+        "field": "examples[1].traditional",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-010",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "捷運站在哪裡？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-003",
+        "field": "coreSentence",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-011",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "廁所在哪裡？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-003",
+        "field": "examples[1].traditional",
+        "reviewStatus": "reviewed"
+      }
+    },
+    {
+      "id": "practice-012",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要去台北車站。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-004",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-013",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要去廁所。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-004",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-014",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要兩個。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-005",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-015",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要一個。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-005",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-016",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我要三個。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-005",
+        "field": "examples[2].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-017",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "不要辣，謝謝。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-006",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-018",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我不要辣。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-006",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-019",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "可以刷卡嗎？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-007",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-020",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "可以刷卡。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-007",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-021",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "我有預約。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-008",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-022",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "你好，我有預約。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-008",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-023",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "可以再說慢一點嗎？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-009",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-024",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "可以再說一次嗎？",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-009",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-025",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "請幫幫我。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-010",
+        "field": "coreSentence",
+        "reviewStatus": "draft"
+      }
+    },
+    {
+      "id": "practice-026",
+      "type": "word-order",
+      "promptJa": "正しい語順に並べ替えてください",
+      "correctAnswerTraditional": "請幫我。",
+      "painPointTags": [
+        "word-order"
+      ],
+      "reviewStatus": "draft",
+      "sourceLesson": {
+        "lessonId": "lesson-010",
+        "field": "examples[1].traditional",
+        "reviewStatus": "draft"
+      }
     }
   ]
 }

@@ -74,11 +74,13 @@
     {
       "id": "practice-v1",
       "path": "data/examples/valid/practice.json",
-      "sha256": "2d1740a1d84695a22a08f6d83e2b9a0d5d697ca074d64f6f1deadbc9499e2067",
+      "sha256": "e5c2bd55fd9c8f3112eaa4786ba5c0854a85bd1dcf52adb8bc26d8ef1effe855",
       "format": "json",
       "textFields": [
-        { "field": "correctAnswer", "language": "ja" },
-        { "field": "distractors", "language": "ja" },
+        { "field": "correctAnswerJa", "language": "ja" },
+        { "field": "distractorsJa", "language": "ja" },
+        { "field": "correctAnswerTraditional", "language": "zh-Hant" },
+        { "field": "distractorsTraditional", "language": "zh-Hant" },
         { "field": "interferenceJa", "language": "ja" },
         { "field": "promptJa", "language": "ja" },
         { "field": "toneContourHintJa", "language": "ja" }

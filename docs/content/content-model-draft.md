@@ -247,11 +247,18 @@ Within a single `vocabulary` collection, two or more entries with the same `id` 
 - `id`
 - `type` (tone-discrimination / pinyin-contrast / guided-shadowing / pronunciation-practice / word-order / measure-word / complement / aspect-particle / script-matching / region-vocab)
 - `promptJa`
-- `correctAnswer` (required except `guided-shadowing`, where it is `null`)
-- `distractors` (where applicable)
+- `correctAnswerJa` / `distractorsJa` for `tone-discrimination` records
+- `correctAnswerTraditional` / optional `distractorsTraditional` for `word-order` records
+- `correctAnswer` / `distractors` for the remaining answer-bearing formats
+  (`correctAnswer` is `null` for `guided-shadowing`)
 - `painPointTags` (optional, string[])
 - `relatedVocabulary`
 - `reviewStatus`
+
+The language-specific tone and word-order field names are the raw authoring
+contract used by Unicode provenance extraction. Their loaders normalize these
+values into the existing runtime practice models; learner-facing state and UI
+contracts continue to use `correctAnswer` and `distractors` where applicable.
 
 ### Pronunciation Practice Extensions
 

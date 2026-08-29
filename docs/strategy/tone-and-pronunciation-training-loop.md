@@ -107,8 +107,8 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
   "type": "tone-discrimination",
   "contrastId": "tone-t1-vs-t4",
   "promptJa": "「mā」と「mà」、どちらが高い平らな声調？",
-  "correctAnswer": "mā（第一声）",
-  "distractors": ["mà（第四声）"],
+  "correctAnswerJa": "mā（第一声）",
+  "distractorsJa": ["mà（第四声）"],
   "toneContourId": "t1-high-flat",
   "toneContourHintJa": "第一声は高く平ら。日本語の平板なアクセントに近いが、最後まで下げない。第四声は急降下。",
   "interferenceJa": "日本語話者は第一声と第四声を平らに伸ばして区別しにくい。",
@@ -119,7 +119,7 @@ The existing content model (`docs/content/content-model-draft.md`) defines a `pr
 }
 ```
 
-**Structured content requirement:** Each item stores `contrastId`, `toneContourId`, `toneContourHintJa` (Japanese explanation of the correct tone's contour), `interferenceJa` (Japanese-native interference note), `correctAnswer` (the correct option), and `distractors` (wrong options). Items prompt a two-option or four-option choice between contrasting tones — both options share the same syllable and differ only by tone, and the tone‑contour graphics are part of the prompt. An optional `audioRef` field can hold a future reference‑audio file path per option.
+**Structured content requirement:** Each item stores `contrastId`, `toneContourId`, `toneContourHintJa` (Japanese explanation of the correct tone's contour), `interferenceJa` (Japanese-native interference note), `correctAnswerJa` (the correct Japanese-labelled option), and `distractorsJa` (wrong Japanese-labelled options). The tone loader normalizes these raw fields into the existing runtime `correctAnswer` and `distractors` shape. Items prompt a two-option or four-option choice between contrasting tones — both options share the same syllable and differ only by tone, and the tone‑contour graphics are part of the prompt. An optional `audioRef` field can hold a future reference‑audio file path per option.
 
 This is a contour‑identification exercise (visual mode), not a true listening‑discrimination exercise. Only auditory mode (post‑v1, using `audioRef`) qualifies as discrimination for Travel Quest readiness purposes.
 
