@@ -655,6 +655,13 @@ describe('catalog coordinator integration', () => {
       '<option value="learning">学習中</option>' +
       '<option value="learned">習得済み</option>' +
       '</select>' +
+      '<select id="basic-vocabulary-catalog-part-of-speech" data-catalog-part-of-speech>' +
+      '<option value="all">すべて</option>' +
+      '<option value="noun">名詞</option>' +
+      '<option value="verb">動詞</option>' +
+      '<option value="adjective">形容詞</option>' +
+      '<option value="adverb">副詞</option>' +
+      '</select>' +
       '</div>' +
       '<p data-catalog-summary aria-live="polite"></p>' +
       '<ol data-catalog-results></ol>' +
@@ -714,6 +721,12 @@ describe('catalog coordinator integration', () => {
 
     const root = createCatalogRoot(items);
     const cleanup = initBasicVocabularyCatalog(root);
+    const partOfSpeech = root.querySelector<HTMLSelectElement>(
+      '[data-catalog-part-of-speech]',
+    )!;
+    partOfSpeech.value = items[0].partOfSpeech;
+    partOfSpeech.dispatchEvent(new Event('change'));
+    partOfSpeech.focus();
 
     coordinator.acceptSignedIn(USER_ID);
     // Complete the initial sync so the runtime is idle and further syncs
@@ -725,6 +738,8 @@ describe('catalog coordinator integration', () => {
     // Apply a rating via the coordinator store (as the study side would).
     coordinator.applyRating(items[0].learnerId, 'known');
     expect(cardBadges(root)[0]).toBe('学習中');
+    expect(partOfSpeech.value).toBe(items[0].partOfSpeech);
+    expect(document.activeElement).toBe(partOfSpeech);
 
     // The sync completion re-renders badges; browsing state is preserved.
     expect(cardBadges(root)[0]).toBe('学習中');
