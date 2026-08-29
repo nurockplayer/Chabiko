@@ -275,7 +275,7 @@
       "chunks": [
         { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "店員への呼びかけ。" },
         { "chunk": "可以試穿", "meaning": "試着してもよいですか", "notesJa": "「可以」で許可を尋ねる。" },
-        { "chunk": "這件嗎", "meaning": "この一着をですか", "notesJa": "「件」は服を数える量詞。" }
+        { "chunk": "這件嗎", "meaning": "この一着を", "notesJa": "「件」は服を数える量詞。" }
       ],
       "kanjiBridgeNotes": [
         { "kanji": "試", "jpReading": "し", "noteJa": "試す意味は共通の手がかりになるが、中国語では shì と発音する。" }
@@ -312,13 +312,13 @@
       "chunks": [
         { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "会計後の呼びかけ。" },
         { "chunk": "可以給我", "meaning": "私にいただけますか", "notesJa": "受け取りたい物を後ろに置く。" },
-        { "chunk": "收據嗎", "meaning": "領収書をですか", "notesJa": "「收據」が欲しい物。" }
+        { "chunk": "收據嗎", "meaning": "領収書を", "notesJa": "「收據」が欲しい物。" }
       ],
       "kanjiBridgeNotes": [
         { "kanji": "收據", "jpReading": "しゅう・きょ", "noteJa": "「收」は受け取る、「據」は記録の手がかりになるが、語の使い分けは日本語の「領収書」と完全には一致しない。" }
       ],
       "soundFocus": [
-        { "item": "給我 gěi wǒ", "noteJa": "第三声が続く。各語を平らにせず、低い位置を意識する。" },
+        { "item": "給我 gěi wǒ", "noteJa": "第三声が二つ続くため、表記は gěi wǒ のままでも、発音では最初の gěi が第二声のように上がって géi wǒ となる。" },
         { "item": "收據 shōujù", "noteJa": "第一声から第四声。shōu を高く保ち、jù を下げる。" }
       ],
       "examples": [
@@ -349,7 +349,7 @@
       "chunks": [
         { "chunk": "請問", "meaning": "すみません、お尋ねします", "notesJa": "受付への呼びかけ。" },
         { "chunk": "可以寄放", "meaning": "預けられますか", "notesJa": "可能かを尋ねる。" },
-        { "chunk": "行李嗎", "meaning": "荷物をですか", "notesJa": "預けたい対象を示す。" }
+        { "chunk": "行李嗎", "meaning": "荷物を", "notesJa": "預けたい対象を示す。" }
       ],
       "kanjiBridgeNotes": [
         { "kanji": "寄", "jpReading": "き", "noteJa": "「寄託」のように預ける意味の手がかりはあるが、会話では「寄放」をひとまとまりで覚える。" }

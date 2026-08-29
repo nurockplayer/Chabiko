@@ -6,7 +6,7 @@
 **Reviewer role:** {{HUMAN_REVIEWER_ROLE}}
 **Review date:** {{YYYY-MM-DD}}
 **Reviewed items:** lessons:lesson:lesson-011 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-012 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-013 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-014 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-015 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-016 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-017 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-018 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-019 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-020 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-021 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-022 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-023 (data/content-pilots/taiwan-travel-wave-1/lessons.json), lessons:lesson:lesson-024 (data/content-pilots/taiwan-travel-wave-1/lessons.json)
-**Review version:** a0aa66dd56a378d53ee040e60fe8a164719ec7cf880ba3c5f82fa7661419001e
+**Review version:** e42e47aad8f130dcebea1fbba9737eef5ee40381b3f4097cb4ff5f4e90131822
 **Overall review outcome:** pending-human-review
 **Decision contract:** Canonical outcomes: accepted, rejected, needs-changes. Promotable: accepted. Non-promotable: rejected, needs-changes.
 **Decision storage:** No decisions recorded; if a future compatible writer is added, accepted maps to accepted and needs-changes maps to needs_changes; rejected remains non-promotable and is never written as an accepted decision. This packet has a separate decision namespace and does not write to the production or issue-360 review campaigns.
@@ -47,9 +47,9 @@
 | lesson-015 | food | 飲食店で人数を伝え、その人数で利用できる席があるか尋ねられる | draft | 91d3154c7cf8e65542cb4877d985235c15066747acfe68852087deb6b2c934cb |
 | lesson-016 | food | 料理にピーナッツが入っているか、注文前に店員へ尋ねられる | draft | 6dc493fe3c839c9a19e77c20b9e5de67e825c9900305436860c4fa41bf151d9b |
 | lesson-017 | food | 食べ切れなかった料理を持ち帰れるよう包んでもらえるか尋ねられる | draft | d738b0ef5189775012452d231838426d96669daabfe2134f02ed91db3a83ca89 |
-| lesson-018 | shopping | 店で気になる服を指し、試着してよいか尋ねられる | draft | 7b50e1ee0e305adf0d42761f470beb3498e53e0ad3748af7397462077e1d9a57 |
-| lesson-019 | shopping | 支払い後、必要な領収書を店員に頼める | draft | 6574c971772be4dd721cf4364a56d18878914d42df29fa9af94f6c17c005ad68 |
-| lesson-020 | hotel | チェックイン前やチェックアウト後に、ホテルで荷物を預けられるか尋ねられる | draft | 4120c42ee5bef54eb5bf76a19aa699ae1a05b6815fcb4999866faf1b304c6f52 |
+| lesson-018 | shopping | 店で気になる服を指し、試着してよいか尋ねられる | draft | 89d2507b69e751f6c24551f8e43a0bf3a923da77787ba25b1c5ad3fd137da65c |
+| lesson-019 | shopping | 支払い後、必要な領収書を店員に頼める | draft | c834d54cd12984db3f978cfba5f76d0cf8f0d2311457e35fe981087e6fa79597 |
+| lesson-020 | hotel | チェックイン前やチェックアウト後に、ホテルで荷物を預けられるか尋ねられる | draft | 3c25271e0b212a4b16fdec6ac6a822349926ded8942fef7bf75bbfccb8e89af1 |
 | lesson-021 | hotel | ホテルの受付で、ルームキーが使えない状況を説明できる | draft | ff5f032e418aecfeb3f44f8d4111f051b3e9c8ca4d1e1f317fab1c718758be54 |
 | lesson-022 | emergency | 同行者とはぐれた状況を伝え、周囲の人に助けを求められる | draft | 2dc909879942eb53847c97545d772e52a4a63047279c40f813a75d3d39ccaa12 |
 | lesson-023 | emergency | 緊急時に、周囲の人へ救急車を呼んでほしいと頼める | draft | 8d02d468d65ebeea6bdd664909ae2394d205b9381aa2fc01edc38c985a76055b |

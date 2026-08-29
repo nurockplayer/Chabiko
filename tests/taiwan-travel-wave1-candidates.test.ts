@@ -170,6 +170,38 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(busExample?.pinyin).toContain('gōngchē');
   });
 
+  it('explains 給我 third-tone sandhi while keeping lexical pinyin and grammatical chunk glosses', async () => {
+    const packet = await loadTaiwanTravelWave1ReviewPacket();
+    const lessons = new Map(
+      packet.records.map((record) => [record.lesson.id, record.lesson]),
+    );
+    const receiptLesson = lessons.get('lesson-019');
+    expect(
+      receiptLesson?.soundFocus.find((focus) => focus.item.startsWith('給我')),
+    ).toEqual({
+      item: '給我 gěi wǒ',
+      noteJa:
+        '第三声が二つ続くため、表記は gěi wǒ のままでも、発音では最初の gěi が第二声のように上がって géi wǒ となる。',
+    });
+
+    expect(
+      lessons.get('lesson-018')?.chunks.find((chunk) => chunk.chunk === '這件嗎')
+        ?.meaning,
+    ).toBe('この一着を');
+    expect(
+      receiptLesson?.chunks.find((chunk) => chunk.chunk === '收據嗎')?.meaning,
+    ).toBe('領収書を');
+    expect(
+      lessons.get('lesson-020')?.chunks.find((chunk) => chunk.chunk === '行李嗎')
+        ?.meaning,
+    ).toBe('荷物を');
+    expect(
+      packet.records.flatMap((record) => record.lesson.chunks).some((chunk) =>
+        chunk.meaning.includes('をですか'),
+      ),
+    ).toBe(false);
+  });
+
   it('fails closed on wrong order, duplicate source IDs, stale graph refs, and production overlap', async () => {
     await expect(
       build(undefined, ({ lessons }) => lessons.reverse()),
