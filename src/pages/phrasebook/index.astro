@@ -3,21 +3,19 @@ import Header from '../../components/Header.astro';
 import PhrasebookScenario from '../../components/PhrasebookScenario.astro';
 import {
   groupPhrasebookByScenario,
-  loadEligiblePhrasebook,
+  loadPrelaunchPhrasebook,
   loadPhrasebook,
 } from '../../content/loadPhrasebook';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// Fail-closed first-release phrasebook surface (#236, #349 kanji-bridge
-// precedent): the route shows learners ONLY records whose record-level
-// reviewStatus is reviewed/published AND whose script forms are independently
-// authored/verified. The full loader still deterministically validates the
-// COMPLETE canonical corpus (exactly 30 phrases + 6 dialogs, controlled
-// scenario order, same-scenario references) as the authoring/validation
-// contract — unchanged. The learner surface renders the eligible subset and a
-// truthful pending/under-review state for the rest (never leaking draft text).
+// Fail-closed first-release phrasebook surface (#236, #349, #440): the full
+// loader validates the exact canonical 30-phrase/6-dialog corpus, controlled
+// scenario order, and same-scenario references. The prelaunch projection then
+// exposes only that exact corpus while preserving every record's truthful
+// reviewStatus and script/source provenance; unrelated drafts and fixtures can
+// never enter the learner surface.
 const full = loadPhrasebook();
-const eligible = loadEligiblePhrasebook();
+const eligible = loadPrelaunchPhrasebook();
 const pendingPhraseCount = full.phrases.length - eligible.phrases.length;
 const pendingDialogCount = full.dialogs.length - eligible.dialogs.length;
 const eligibleEntryCount = eligible.phrases.length;

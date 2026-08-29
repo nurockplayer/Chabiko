@@ -35,6 +35,57 @@ const DEFAULT_DIALOG_PATH = 'data/examples/valid/phrasebook-dialogs.json';
 export const PHRASEBOOK_PHRASE_COUNT = 30;
 export const PHRASEBOOK_DIALOG_COUNT = 6;
 
+/**
+ * The exact first-release corpus, in canonical source order. These IDs are
+ * part of the learner projection contract: a replacement record (including a
+ * fixture or another draft corpus) must not become visible by matching only a
+ * count or a scenario.
+ */
+export const PHRASEBOOK_CANONICAL_PHRASE_IDS = [
+  'phrase-001',
+  'phrase-002',
+  'phrase-airport-001',
+  'phrase-airport-002',
+  'phrase-airport-003',
+  'phrase-airport-004',
+  'phrase-airport-005',
+  'phrase-food-002',
+  'phrase-food-003',
+  'phrase-food-004',
+  'phrase-food-005',
+  'phrase-transport-002',
+  'phrase-transport-003',
+  'phrase-transport-004',
+  'phrase-transport-005',
+  'phrase-shopping-001',
+  'phrase-shopping-002',
+  'phrase-shopping-003',
+  'phrase-shopping-004',
+  'phrase-shopping-005',
+  'phrase-hotel-001',
+  'phrase-hotel-002',
+  'phrase-hotel-003',
+  'phrase-hotel-004',
+  'phrase-hotel-005',
+  'phrase-emergency-001',
+  'phrase-emergency-002',
+  'phrase-emergency-003',
+  'phrase-emergency-004',
+  'phrase-emergency-005',
+] as const;
+
+export const PHRASEBOOK_CANONICAL_DIALOG_IDS = [
+  'dialog-transport-001',
+  'dialog-airport-001',
+  'dialog-food-001',
+  'dialog-shopping-001',
+  'dialog-hotel-001',
+  'dialog-emergency-001',
+] as const;
+
+const CANONICAL_PHRASE_IDS = new Set<string>(PHRASEBOOK_CANONICAL_PHRASE_IDS);
+const CANONICAL_DIALOG_IDS = new Set<string>(PHRASEBOOK_CANONICAL_DIALOG_IDS);
+
 const PHRASE_REQUIRED_FIELDS = [
   'traditional',
   'pinyin',
@@ -85,6 +136,18 @@ function parseRelatedVocabulary(
 
 function assert(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function assertExactCanonicalIds(
+  actualIds: readonly string[],
+  expectedIds: readonly string[],
+  label: string,
+): void {
+  assert(
+    actualIds.length === expectedIds.length &&
+      actualIds.every((id, index) => id === expectedIds[index]),
+    `${label} must match the exact canonical launch set and order`,
+  );
 }
 
 function isScenario(value: unknown): value is PhrasebookScenario {
@@ -449,6 +512,76 @@ export function loadEligiblePhrasebook(
     phrases: data.phrases.filter(isPhrasebookProductionEligible),
     dialogs: data.dialogs.filter(isPhrasebookDialogProductionEligible),
   };
+}
+
+/**
+ * Prelaunch eligibility for the exact #440 launch corpus. The #438 override
+ * changes exposure eligibility only: canonical draft records may be shown,
+ * while their reviewStatus, source, and per-form provenance remain verbatim.
+ * Script forms still need authored/verified provenance, and the exact-ID
+ * check prevents fixtures or unrelated drafts from entering this projection.
+ */
+export function isPhrasebookPrelaunchEligible(
+  phrase: PhrasebookPhrase,
+): boolean {
+  return (
+    CANONICAL_PHRASE_IDS.has(phrase.id) &&
+    (phrase.traditionalStatus === 'authored' ||
+      phrase.traditionalStatus === 'verified') &&
+    (phrase.simplified === undefined ||
+      phrase.simplifiedStatus === 'authored' ||
+      phrase.simplifiedStatus === 'verified')
+  );
+}
+
+export function isPhrasebookDialogPrelaunchEligible(
+  dialog: PhrasebookDialog,
+): boolean {
+  return (
+    CANONICAL_DIALOG_IDS.has(dialog.id) &&
+    dialog.turns.every(
+      (turn) =>
+        (turn.traditionalStatus === 'authored' ||
+          turn.traditionalStatus === 'verified') &&
+        (turn.simplified === undefined ||
+          turn.simplifiedStatus === 'authored' ||
+          turn.simplifiedStatus === 'verified'),
+    )
+  );
+}
+
+/**
+ * Project the exact canonical launch corpus for the prelaunch learner route.
+ * `loadPhrasebook` performs the count, ID/order, scenario, and reference
+ * validation before this projection, so drift fails closed rather than
+ * silently shrinking or replacing the learner surface.
+ */
+export function loadPrelaunchPhrasebook(
+  phraseFilePath?: string,
+  dialogFilePath?: string,
+): PhrasebookData {
+  const data = loadPhrasebook(phraseFilePath, dialogFilePath);
+  assertExactCanonicalIds(
+    data.phrases.map((phrase) => phrase.id),
+    PHRASEBOOK_CANONICAL_PHRASE_IDS,
+    'phrasebook phrases',
+  );
+  assertExactCanonicalIds(
+    data.dialogs.map((dialog) => dialog.id),
+    PHRASEBOOK_CANONICAL_DIALOG_IDS,
+    'phrasebook dialogs',
+  );
+  const phrases = data.phrases.filter(isPhrasebookPrelaunchEligible);
+  const dialogs = data.dialogs.filter(isPhrasebookDialogPrelaunchEligible);
+  assert(
+    phrases.length === PHRASEBOOK_PHRASE_COUNT,
+    `prelaunch phrasebook projection must contain exactly ${PHRASEBOOK_PHRASE_COUNT} canonical phrases, got ${phrases.length}`,
+  );
+  assert(
+    dialogs.length === PHRASEBOOK_DIALOG_COUNT,
+    `prelaunch phrasebook projection must contain exactly ${PHRASEBOOK_DIALOG_COUNT} canonical dialogs, got ${dialogs.length}`,
+  );
+  return { phrases, dialogs };
 }
 
 /**
