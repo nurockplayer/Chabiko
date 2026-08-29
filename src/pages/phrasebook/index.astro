@@ -19,9 +19,10 @@ const eligible = loadPrelaunchPhrasebook();
 const pendingPhraseCount = full.phrases.length - eligible.phrases.length;
 const pendingDialogCount = full.dialogs.length - eligible.dialogs.length;
 const eligibleEntryCount = eligible.phrases.length;
-// Only scenarios with eligible content render; transport/shopping/hotel/
-// emergency currently have none, so the route leaves them to the no-match
-// state of the scenario filter.
+// The #440 prelaunch projection covers all six canonical scenarios (30 phrases
+// + 6 dialogs). This filter remains defensive: if a projection ever has no
+// phrase or dialog for a controlled scenario, omit that group so the scenario
+// filter can surface its no-match state for that selection.
 const scenarioGroups = groupPhrasebookByScenario(eligible).filter(
   (group) => group.phrases.length > 0 || group.dialog !== null,
 );

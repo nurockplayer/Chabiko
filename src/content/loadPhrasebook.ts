@@ -552,9 +552,10 @@ export function isPhrasebookDialogPrelaunchEligible(
 
 /**
  * Project the exact canonical launch corpus for the prelaunch learner route.
- * `loadPhrasebook` performs the count, ID/order, scenario, and reference
- * validation before this projection, so drift fails closed rather than
- * silently shrinking or replacing the learner surface.
+ * `loadPhrasebook` performs the base schema/count, scenario, and reference
+ * validation before this projection. This function then performs the exact
+ * canonical ID/order and eligibility/count checks, so drift fails closed
+ * rather than silently shrinking or replacing the learner surface.
  */
 export function loadPrelaunchPhrasebook(
   phraseFilePath?: string,
