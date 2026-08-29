@@ -53,9 +53,19 @@ describe('basic vocabulary catalog route', () => {
     ] as const) {
       expect(component).toContain(`<option value="${value}">${label}</option>`);
     }
+    expect(component).toContain('品詞');
+    for (const [value, label] of [
+      ['all', 'すべて'],
+      ['noun', '名詞'],
+      ['verb', '動詞'],
+      ['adjective', '形容詞'],
+      ['adverb', '副詞'],
+    ] as const) {
+      expect(component).toContain(`<option value="${value}">${label}</option>`);
+    }
     expect(component).toContain('前へ');
     expect(component).toContain('次へ');
-    // Search and status are page-memory only: no URL or storage persistence.
+    // Search, status, and part of speech are page-memory only: no URL or storage persistence.
     expect(client).not.toMatch(/URLSearchParams|history\.|location\.(search|hash)/);
   });
 
@@ -72,6 +82,7 @@ describe('basic vocabulary catalog route', () => {
     const firstPage = selectBasicVocabularyCatalogPage(catalog, {}, {
       searchText: '',
       status: 'all',
+      partOfSpeech: 'all',
       page: 1,
     });
     expect(firstPage.items).toHaveLength(24);
@@ -84,6 +95,24 @@ describe('basic vocabulary catalog route', () => {
     expect(component).toContain('<li class="basic-vocabulary-catalog-card">');
     // Exactly one SSR list container holds the bounded 24-card page.
     expect(component.match(/<ol class="basic-vocabulary-catalog-results"/g)).toHaveLength(1);
+  });
+
+  it('server-renders one semantic detail link per result card', async () => {
+    const component = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
+
+    expect(component).toContain('class="basic-vocabulary-catalog-detail-link"');
+    expect(component).toContain(
+      'href={`/vocabulary/basic/words/${pageItem.item.learnerId}/`}',
+    );
+    expect(component.indexOf('basic-vocabulary-catalog-detail-link')).toBeLessThan(
+      component.indexOf('{pageItem.item.simplified}'),
+    );
+    expect(component).toMatch(
+      /\.basic-vocabulary-catalog-detail-link\s*\{[^}]*min-height:\s*2\.75rem/,
+    );
+    expect(component).toMatch(
+      /\.basic-vocabulary-catalog-detail-link:focus-visible\s*\{[^}]*outline:\s*3px solid/,
+    );
   });
 
   it('escapes every < as \\u003c in the JSON payload and keeps only catalog fields', async () => {

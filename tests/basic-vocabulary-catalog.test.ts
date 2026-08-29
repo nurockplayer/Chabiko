@@ -193,7 +193,7 @@ describe('normalizeBasicVocabularyCatalogSearch', () => {
 const PAGE_SIZE = BASIC_VOCABULARY_CATALOG_PAGE_SIZE;
 
 function defaultQuery(overrides: Partial<BasicVocabularyCatalogQuery> = {}): BasicVocabularyCatalogQuery {
-  return { searchText: '', status: 'all', page: 1, ...overrides };
+  return { searchText: '', status: 'all', partOfSpeech: 'all', page: 1, ...overrides };
 }
 
 function resultItems(result: BasicVocabularyCatalogResult): BasicVocabularyCatalogItem[] {
@@ -359,6 +359,35 @@ describe('selectBasicVocabularyCatalogPage — search', () => {
 // ─── Domain: filter + search composition ─────────────────────────────────────
 
 describe('selectBasicVocabularyCatalogPage — filter + search composition', () => {
+  it('composes search, status, and learner-approved part of speech before pagination', () => {
+    const catalog = loadBasicVocabularyCatalog();
+    const target = catalog.find(
+      (item) => item.simplified === '看' && item.partOfSpeech === 'verb',
+    )!;
+    const distractor = catalog.find(
+      (item) => item.simplified === '好看' && item.partOfSpeech === 'adjective',
+    )!;
+    const statusById = toStatusById([
+      [target.learnerId, 'learned'],
+      [distractor.learnerId, 'learned'],
+    ]);
+
+    const result = selectBasicVocabularyCatalogPage(
+      catalog,
+      statusById,
+      {
+        searchText: '看',
+        status: 'learned',
+        partOfSpeech: 'verb',
+        page: 1,
+      },
+    );
+
+    expect(result.filteredCount).toBe(1);
+    expect(result.pageCount).toBe(1);
+    expect(resultItems(result).map((item) => item.learnerId)).toEqual([target.learnerId]);
+  });
+
   it('composes status and search without reordering', () => {
     const catalog = loadBasicVocabularyCatalog();
     // 大家 (index 514) resolved learning; another item sharing no search term
@@ -397,6 +426,28 @@ describe('selectBasicVocabularyCatalogPage — filter + search composition', () 
     expect(result.filteredCount).toBe(0);
     expect(result.items).toEqual([]);
   });
+});
+
+describe('selectBasicVocabularyCatalogPage — part of speech', () => {
+  it.each(['noun', 'verb', 'adjective', 'adverb'] as const)(
+    'filters the canonical corpus to learner-approved %s entries only',
+    (partOfSpeech) => {
+      const catalog = loadBasicVocabularyCatalog();
+      const expected = catalog.filter((item) => item.partOfSpeech === partOfSpeech);
+
+      const result = selectBasicVocabularyCatalogPage(
+        catalog,
+        {},
+        defaultQuery({ partOfSpeech }),
+      );
+
+      expect(result.filteredCount).toBe(expected.length);
+      expect(result.items.every((entry) => entry.item.partOfSpeech === partOfSpeech)).toBe(true);
+      expect(resultItems(result).map((item) => item.learnerId)).toEqual(
+        expected.slice(0, PAGE_SIZE).map((item) => item.learnerId),
+      );
+    },
+  );
 });
 
 // ─── Domain: pagination ──────────────────────────────────────────────────────
@@ -496,6 +547,7 @@ describe('selectBasicVocabularyCatalogPage — immutability', () => {
     const query: BasicVocabularyCatalogQuery = {
       searchText: '  大家  ',
       status: 'all',
+      partOfSpeech: 'all',
       page: 1,
     };
     const queryBefore = { ...query };

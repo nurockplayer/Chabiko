@@ -1,5 +1,6 @@
 import type { VocabularyProgressStatus } from './vocabularyProgress';
 import type { BasicVocabularyCatalogItem } from '../content/basicVocabularyCatalog';
+import type { LearnerPartOfSpeech } from '../types/learnerManifest';
 
 /** Frozen page size for the basic-vocabulary catalog. */
 export const BASIC_VOCABULARY_CATALOG_PAGE_SIZE = 24;
@@ -10,9 +11,12 @@ export type BasicVocabularyCatalogStatusFilter =
   | 'learning'
   | 'learned';
 
+export type BasicVocabularyCatalogPartOfSpeechFilter = 'all' | LearnerPartOfSpeech;
+
 export interface BasicVocabularyCatalogQuery {
   readonly searchText: string;
   readonly status: BasicVocabularyCatalogStatusFilter;
+  readonly partOfSpeech: BasicVocabularyCatalogPartOfSpeechFilter;
   readonly page: number;
 }
 
@@ -88,6 +92,8 @@ function pageIndexFromQuery(page: number): number {
  *   ignored (their items never appear).
  * - `status: all` includes every item; controlled status filters match the
  *   resolved status exactly.
+ * - `partOfSpeech: all` includes every item; the four learner-approved values
+ *   match the canonical learner-corpus field exactly.
  * - Search covers only `simplified`, truthful `traditional`, `pinyin`, and
  *   `japanese`, using the folded substring behavior of
  *   `normalizeBasicVocabularyCatalogSearch`; an empty folded search matches
@@ -110,10 +116,13 @@ export function selectBasicVocabularyCatalogPage(
   const statusFilter = query.status;
   const matchesStatus = (status: VocabularyProgressStatus): boolean =>
     statusFilter === 'all' || status === statusFilter;
+  const partOfSpeechFilter = query.partOfSpeech ?? 'all';
 
   const filtered: BasicVocabularyCatalogPageItem[] = [];
   for (const item of items) {
-    if (foldedSearch.length === 0 || matchesSearch(item, foldedSearch)) {
+    const matchesPartOfSpeech =
+      partOfSpeechFilter === 'all' || item.partOfSpeech === partOfSpeechFilter;
+    if (matchesPartOfSpeech && (foldedSearch.length === 0 || matchesSearch(item, foldedSearch))) {
       const status = statusById[item.learnerId] ?? 'new';
       if (matchesStatus(status)) {
         filtered.push({ item, status });

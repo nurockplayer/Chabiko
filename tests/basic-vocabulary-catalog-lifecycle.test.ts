@@ -26,6 +26,7 @@ function createCatalogRoot(
   const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
     searchText: '',
     status: 'all',
+    partOfSpeech: 'all',
     page: 1,
   });
   const listItems = firstPage.items
@@ -44,6 +45,14 @@ function createCatalogRoot(
     '<option value="new">新規</option>' +
     '<option value="learning">学習中</option>' +
     '<option value="learned">習得済み</option>' +
+    '</select>' +
+    '<label for="basic-vocabulary-catalog-part-of-speech">品詞</label>' +
+    '<select id="basic-vocabulary-catalog-part-of-speech" data-catalog-part-of-speech>' +
+    '<option value="all">すべて</option>' +
+    '<option value="noun">名詞</option>' +
+    '<option value="verb">動詞</option>' +
+    '<option value="adjective">形容詞</option>' +
+    '<option value="adverb">副詞</option>' +
     '</select>' +
     '</div>' +
     `<p data-catalog-summary aria-live="polite"></p>` +
@@ -106,6 +115,9 @@ const searchInput = (root: HTMLElement): HTMLInputElement =>
 
 const statusSelect = (root: HTMLElement): HTMLSelectElement =>
   root.querySelector<HTMLSelectElement>('[data-catalog-status]')!;
+
+const partOfSpeechSelect = (root: HTMLElement): HTMLSelectElement =>
+  root.querySelector<HTMLSelectElement>('[data-catalog-part-of-speech]')!;
 
 const previousButton = (root: HTMLElement): HTMLButtonElement =>
   root.querySelector<HTMLButtonElement>('[data-catalog-page="previous"]')!;
@@ -181,6 +193,16 @@ describe('initialization renders truthful statuses with at most 24 cards', () =>
       ['learning', '学習中'],
       ['learned', '習得済み'],
     ]);
+    expect(root.querySelector('label[for="basic-vocabulary-catalog-part-of-speech"]')?.textContent)
+      .toBe('品詞');
+    const partOfSpeechOptions = [...partOfSpeechSelect(root).querySelectorAll('option')];
+    expect(partOfSpeechOptions.map((option) => [option.value, option.textContent])).toEqual([
+      ['all', 'すべて'],
+      ['noun', '名詞'],
+      ['verb', '動詞'],
+      ['adjective', '形容詞'],
+      ['adverb', '副詞'],
+    ]);
     expect(summary(root).getAttribute('aria-live')).toBe('polite');
     expect(root.querySelector('[data-catalog-results]')?.tagName).toBe('OL');
   });
@@ -190,6 +212,25 @@ describe('initialization renders truthful statuses with at most 24 cards', () =>
     const before = window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY);
     initialize(root);
     expect(window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY)).toBe(before);
+  });
+
+  it('gives every client-rendered card a semantic link to its existing detail route', () => {
+    const catalog = sliceCatalog(30);
+    const root = createCatalogRoot(catalog);
+    initialize(root);
+
+    const cards = cardsOf(root);
+    expect(cards).toHaveLength(BASIC_VOCABULARY_CATALOG_PAGE_SIZE);
+    for (let index = 0; index < cards.length; index++) {
+      const links = cards[index].querySelectorAll<HTMLAnchorElement>(
+        'a.basic-vocabulary-catalog-detail-link',
+      );
+      expect(links).toHaveLength(1);
+      expect(new URL(links[0].href).pathname).toBe(
+        `/vocabulary/basic/words/${catalog[index].learnerId}/`,
+      );
+      expect(links[0].textContent).toContain(catalog[index].simplified);
+    }
   });
 });
 
@@ -325,6 +366,31 @@ describe('status filters and composition', () => {
   });
 });
 
+// ─── Part-of-speech filter ────────────────────────────────────────────────────
+
+describe('part-of-speech filter', () => {
+  it('composes before pagination and resets to page 1 when the facet changes', () => {
+    const catalog = loadBasicVocabularyCatalog();
+    const root = createCatalogRoot(catalog);
+    initialize(root);
+
+    nextButton(root).click();
+    expect(indicator(root).textContent).toBe('2 / 66');
+
+    partOfSpeechSelect(root).value = 'verb';
+    partOfSpeechSelect(root).dispatchEvent(new Event('change'));
+
+    const expected = catalog
+      .filter((item) => item.partOfSpeech === 'verb')
+      .slice(0, BASIC_VOCABULARY_CATALOG_PAGE_SIZE)
+      .map((item) => item.simplified);
+    const filteredCount = catalog.filter((item) => item.partOfSpeech === 'verb').length;
+    expect(indicator(root).textContent?.startsWith('1 / ')).toBe(true);
+    expect(cardsOf(root).map(simplifiedOf)).toEqual(expected);
+    expect(summary(root).textContent).toBe(`全${catalog.length}語中 ${filteredCount}語を表示`);
+  });
+});
+
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
 describe('pagination', () => {
@@ -420,6 +486,8 @@ describe('pageshow and storage refresh', () => {
     const input = searchInput(root);
     input.value = catalog[0].simplified;
     input.dispatchEvent(new Event('input'));
+    partOfSpeechSelect(root).value = catalog[0].partOfSpeech;
+    partOfSpeechSelect(root).dispatchEvent(new Event('change'));
     expect(indicator(root).textContent).toBe('1 / 1');
 
     // A status change in another context is reflected on pageshow.
@@ -428,6 +496,7 @@ describe('pageshow and storage refresh', () => {
 
     // Search and filter preserved; status now truthful.
     expect(searchInput(root).value).toBe(catalog[0].simplified);
+    expect(partOfSpeechSelect(root).value).toBe(catalog[0].partOfSpeech);
     expect(indicator(root).textContent).toBe('1 / 1');
     expect(cardsOf(root).every((c) => badgeFor(c) !== null)).toBe(true);
     expect(badgeFor(cardsOf(root)[0])).toBe('学習中');
@@ -564,6 +633,7 @@ describe('malformed payload', () => {
     expect(cardsOf(root)).toHaveLength(0);
     expect(searchInput(root).disabled).toBe(true);
     expect(statusSelect(root).disabled).toBe(true);
+    expect(partOfSpeechSelect(root).disabled).toBe(true);
     expect(previousButton(root).disabled).toBe(true);
     expect(nextButton(root).disabled).toBe(true);
   });
@@ -593,6 +663,11 @@ describe('repeated initialization and cleanup', () => {
     setStatus(sliceCatalog(25)[0].learnerId, 'learning', 1);
     dispatchStorage(BASIC_VOCABULARY_PROGRESS_KEY, window.localStorage.getItem(BASIC_VOCABULARY_PROGRESS_KEY), window.localStorage);
     expect(badgeFor(cardsOf(root)[0])).toBe('新規');
+
+    const before = cardsOf(root).map(simplifiedOf);
+    partOfSpeechSelect(root).value = 'verb';
+    partOfSpeechSelect(root).dispatchEvent(new Event('change'));
+    expect(cardsOf(root).map(simplifiedOf)).toEqual(before);
   });
 });
 
@@ -606,6 +681,7 @@ describe('keyboard, focus, and live-region behavior', () => {
     // Native search + select + buttons (no simulated controls).
     expect(searchInput(root).tagName).toBe('INPUT');
     expect(statusSelect(root).tagName).toBe('SELECT');
+    expect(partOfSpeechSelect(root).tagName).toBe('SELECT');
     expect(previousButton(root).tagName).toBe('BUTTON');
     expect(nextButton(root).tagName).toBe('BUTTON');
     // Only the summary is live.
