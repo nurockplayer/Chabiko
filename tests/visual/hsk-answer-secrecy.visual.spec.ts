@@ -35,7 +35,9 @@ test.describe('/vocabulary/hsk/1/ answer secrecy', () => {
         };
 
         await assertContained('#setup-panel');
-        await page.getByRole('button', { name: 'スタート' }).click();
+        const start = page.getByRole('button', { name: 'スタート' });
+        await expect(start).toBeEnabled();
+        await start.click();
         await assertContained('#flashcard-card, .flashcard-actions, #btn-reveal');
 
         await page.getByRole('button', { name: '答えを見る' }).click();
