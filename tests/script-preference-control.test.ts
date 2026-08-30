@@ -680,4 +680,11 @@ describe('Header.astro style contract', () => {
     expect(headerSource).toContain('outline: 2px solid var(--color-focus)');
     expect(headerSource).toContain('outline-offset: 3px');
   });
+
+  it('uses the narrow-width containment geometry without changing control sizes', () => {
+    expect(headerSource).toMatch(
+      /@media \(width <= 374px\)\s*\{[\s\S]*?\.header-inner\s*\{[\s\S]*?gap:\s*var\(--sp-1\);[\s\S]*?padding-inline:\s*var\(--sp-3\);/,
+    );
+    expect(headerSource).toContain('.script-preference-select {\n    min-height: 44px;');
+  });
 });
