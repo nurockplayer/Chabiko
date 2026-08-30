@@ -1,16 +1,22 @@
-/** Deterministic /phrasebook/ visual cases (Issue #236, fail-closed rework per
- *  the #349 kanji-bridge precedent). The learner surface renders ONLY the
- *  production-eligible records (currently 6 reviewed phrases: airport 5 +
- *  food 1) grouped by scenario plus a truthful pending notice for the rest
- *  (24 phrases + 6 dialogs under review). Every case captures that eligible +
- *  pending surface as a viewport-sized top-of-page screenshot across the Issue
- *  #205 viewport set. The scenario filter is URL-only, so the default
- *  unfiltered capture is the deterministic baseline for every viewport. */
+/** Deterministic /phrasebook/ visual cases (#440 prelaunch, preserving the
+ *  #236/#349 fail-closed contracts). The learner surface renders ONLY the
+ *  exact canonical 30 phrases + 6 dialogs, preserving truthful review status
+ *  and provenance. Overview cases capture the bounded launch surface as
+ *  viewport-sized top-of-page screenshots across the Issue #205 viewport set.
+ *  Emergency cases use the fixed `?scenario=emergency` URL and separate,
+ *  viewport-sized fragment states: the later scenario heading, the dialog
+ *  heading plus first complete turn, and the related-reference line. The
+ *  dialog is intentionally not claimed to fit as a whole on mobile. */
 export interface PhrasebookVisualCase {
   /** URL query applied to the route ('' = default unfiltered surface). */
   search: string;
   viewport: { width: number; height: number };
   snapshotName: string;
+  capture:
+    | 'overview'
+    | 'emergency-heading'
+    | 'emergency-dialog'
+    | 'emergency-reference';
 }
 
 export const PHRASEBOOK_VIEWPORTS = [
@@ -21,9 +27,29 @@ export const PHRASEBOOK_VIEWPORTS = [
   { width: 1440, height: 900 },
 ] as const;
 
-export const PHRASEBOOK_VISUAL_CASES: readonly PhrasebookVisualCase[] =
-  PHRASEBOOK_VIEWPORTS.map((viewport) => ({
+export const PHRASEBOOK_VISUAL_CASES: readonly PhrasebookVisualCase[] = [
+  ...PHRASEBOOK_VIEWPORTS.map((viewport) => ({
     search: '',
     viewport,
     snapshotName: `phrasebook-${viewport.width}x${viewport.height}.png`,
-  }));
+    capture: 'overview' as const,
+  })),
+  ...PHRASEBOOK_VIEWPORTS.map((viewport) => ({
+    search: '?scenario=emergency',
+    viewport,
+    snapshotName: `phrasebook-emergency-heading-${viewport.width}x${viewport.height}.png`,
+    capture: 'emergency-heading' as const,
+  })),
+  ...PHRASEBOOK_VIEWPORTS.map((viewport) => ({
+    search: '?scenario=emergency',
+    viewport,
+    snapshotName: `phrasebook-emergency-dialog-${viewport.width}x${viewport.height}.png`,
+    capture: 'emergency-dialog' as const,
+  })),
+  ...PHRASEBOOK_VIEWPORTS.map((viewport) => ({
+    search: '?scenario=emergency',
+    viewport,
+    snapshotName: `phrasebook-emergency-reference-${viewport.width}x${viewport.height}.png`,
+    capture: 'emergency-reference' as const,
+  })),
+];

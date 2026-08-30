@@ -21,9 +21,9 @@ interface NavLesson {
 export const getStaticPaths = (() => {
   const lessons = loadAllRenderableLessons();
   // Production-eligible phrasebook scenarios (#239): computed once at build time
-  // from the same eligible surface as /phrasebook/ (loadEligiblePhrasebook +
-  // groupPhrasebookByScenario), so a lesson links ONLY to a scenario with real
-  // learner-visible content — never to a draft/pending-only scenario.
+  // from loadEligiblePhrasebook + groupPhrasebookByScenario. This intentionally
+  // differs from the #440 prelaunch projection used by /phrasebook/, so a lesson
+  // links ONLY to reviewed/published learner content, never draft-only content.
   const productionPhrasebookScenarios = loadProductionPhrasebookScenarios();
   return lessons.map((lesson, index) => ({
     params: { id: lesson.id },
