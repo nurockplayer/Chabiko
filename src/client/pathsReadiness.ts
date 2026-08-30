@@ -21,6 +21,11 @@ import {
 import { evaluateTravelQuestReadiness } from '../domain/travelQuestReadiness';
 import { BASIC_VOCABULARY_PROGRESS_KEY } from '../domain/basicVocabularyProgress';
 import { VOCABULARY_PROGRESS_KEY } from '../domain/vocabularyProgress';
+import {
+  ROLEPLAY_PROGRESS_KEY,
+  RoleplayProgressStore,
+} from '../lib/roleplayProgress';
+import { ROLEPLAY_LAUNCH_CARD_IDS } from '../content/loadRoleplayCards';
 import readinessData from '../../data/travel-quest-readiness.json';
 
 /**
@@ -48,7 +53,7 @@ type PathsIdentityScope =
 
 /**
  * Read-only browser controller for the learner-facing `/paths/` route (Issue
- * #233). Reads existing lesson, HSK, and basic-vocabulary progress stores and
+ * #233). Reads existing lesson, HSK, basic-vocabulary, and roleplay progress stores and
  * re-renders every card's path summary plus the four Travel Quest readiness
  * targets.
  *
@@ -121,6 +126,12 @@ export function initPathsReadiness(
     const completedLessons = new Set(lessonStore.getCompletedIds());
     const learnedVocabulary = new Set<string>();
     const learnedBasicVocabulary = new Set<string>();
+    const completedRoleplayCards = new Set(
+      new RoleplayProgressStore(
+        safeLocalStorage(),
+        new Set(ROLEPLAY_LAUNCH_CARD_IDS),
+      ).getCompletedCardIds(),
+    );
 
     // HSK storage is only authoritative for ids in the HSK production corpus.
     // A stale cross-source `learned` entry (e.g. `voc-001` or
@@ -169,7 +180,12 @@ export function initPathsReadiness(
     } else if (identityScope.kind === 'signed-out') {
       collectBasic(new BasicVocabularyProgressStore(safeLocalStorage()));
     }
-    return { completedLessons, learnedVocabulary, learnedBasicVocabulary };
+    return {
+      completedLessons,
+      learnedVocabulary,
+      learnedBasicVocabulary,
+      completedRoleplayCards,
+    };
   }
 
   function renderAll(): void {
@@ -398,6 +414,7 @@ export function initPathsReadiness(
     if (
       event.key === null ||
       event.key === STORAGE_KEY ||
+      event.key === ROLEPLAY_PROGRESS_KEY ||
       (basicKey !== null && event.key === basicKey) ||
       event.key === VOCABULARY_PROGRESS_KEY
     ) {
