@@ -40,7 +40,7 @@ const initialSnapshot = buildCrossTrackProgressSnapshot({
     corpusIds: new Set(payload.basicVocabularyCorpusIds),
     scope: { kind: 'guest' },
   }),
-  hsk: buildHskTrackSummary({ progress: {}, levels: payload.hskLevels }),
+  hsk: buildHskTrackSummary({ progress: {}, levels: payload.hsk.levels }),
   taiwanTravel: buildTaiwanTravelTrackSummary({
     completedLessonIds: new Set(),
     completableLessonIds: payload.taiwanCompletableLessonIds,
@@ -499,6 +499,7 @@ const initialContinuation = deriveContinuation(
     font-weight: 700;
     color: var(--ink-muted);
   }
+  .track-status[data-status='available'],
   .track-status[data-status='in-progress'],
   .track-status[data-status='completed'] {
     color: var(--jade-ink);

@@ -41,13 +41,13 @@ export interface LearningPathMemberRef {
 
 /**
  * HSK availability descriptor for the `hsk-vocabulary` path. Availability is
- * derived from current production HSK data: the path is available when every
- * declared level has at least one production-eligible entry (reviewed or
- * published). Levels are ordered ascending and unique.
+ * derived from the shared learner projection: declared levels must correspond
+ * to current learner routes. Levels are ordered ascending and unique.
  */
 export interface HskAvailabilityDescriptor {
   readonly levels: readonly number[];
-  readonly status: 'available' | 'unavailable';
+  /** Legacy schema field retained for compatibility; learner state is derived. */
+  readonly status?: 'available' | 'unavailable';
 }
 
 /**
@@ -65,6 +65,8 @@ export interface LearningPathRecord {
   readonly destination: string;
   readonly availabilityReason: LearningPathAvailabilityReason;
   readonly availability: LearningPathAvailability;
+  /** Loader-derived learner copy when a shared projection owns the state. */
+  readonly availabilityLabelJa?: string;
   readonly hsk?: HskAvailabilityDescriptor;
   readonly members: readonly LearningPathMemberRef[];
 }

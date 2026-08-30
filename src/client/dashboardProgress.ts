@@ -64,7 +64,7 @@ export function initDashboard(
     storage,
     basicVocabulary,
     basicVocabularyCorpusIds: new Set(payload.basicVocabularyCorpusIds),
-    hskLevels: payload.hskLevels,
+    hskLevels: payload.hsk.levels,
     taiwanCompletableLessonIds: payload.taiwanCompletableLessonIds,
   });
 

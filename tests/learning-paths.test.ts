@@ -6,6 +6,7 @@ import type {
   LearningPathsDocument,
 } from '../src/types/learningPath';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
+import { loadHskVocabulary } from '../src/content/loadHskVocabulary';
 
 const tempPaths: string[] = [];
 
@@ -21,6 +22,17 @@ function writeTemp(document: LearningPathsDocument): string {
     'tests',
     'fixtures',
     `tmp-learning-paths-${Date.now()}-${Math.random().toString(36).slice(2)}.json`,
+  );
+  writeFileSync(path, JSON.stringify(document), 'utf-8');
+  tempPaths.push(path);
+  return path;
+}
+
+function writeTempHsk(document: unknown): string {
+  const path = join(
+    'tests',
+    'fixtures',
+    `tmp-hsk-projection-${Date.now()}-${Math.random().toString(36).slice(2)}.json`,
   );
   writeFileSync(path, JSON.stringify(document), 'utf-8');
   tempPaths.push(path);
@@ -63,7 +75,7 @@ describe('loadLearningPaths', () => {
     const document = loadLearningPaths();
     const byId = new Map(document.learningPaths.map((path) => [path.id, path]));
     expect(byId.get('taiwan-travel')?.destination).toBe('/paths/taiwan-travel/');
-    expect(byId.get('hsk-vocabulary')?.destination).toBe('/vocabulary/hsk/');
+    expect(byId.get('hsk-vocabulary')?.destination).toBe('/vocabulary/hsk/1/');
     expect(byId.get('kanji-bridge')?.destination).toBe('/vocabulary/kanji-bridge/');
   });
 
@@ -79,8 +91,51 @@ describe('loadLearningPaths', () => {
     // hsk-vocabulary availability is derived from current production HSK data.
     expect(byId.get('hsk-vocabulary')?.availabilityReason).toBe('hsk');
     expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
-    expect(byId.get('hsk-vocabulary')?.hsk?.status).toBe('available');
+    expect(byId.get('hsk-vocabulary')?.availabilityLabelJa).toBe('利用できます');
     expect(byId.get('hsk-vocabulary')?.hsk?.levels).toEqual([1]);
+    expect(byId.get('hsk-vocabulary')?.members).toEqual([
+      ref('vocabulary', 'hsk-002'),
+      ref('vocabulary', 'hsk-005'),
+    ]);
+  });
+
+  it('fails the HSK path closed when no entry is eligible', () => {
+    const hsk = structuredClone(loadHskVocabulary()) as {
+      vocabulary: Array<{ reviewStatus: string }>;
+    };
+    for (const entry of hsk.vocabulary) entry.reviewStatus = 'draft';
+
+    const document = loadLearningPaths(undefined, writeTempHsk(hsk));
+    const path = document.learningPaths.find(
+      (candidate) => candidate.id === 'hsk-vocabulary',
+    );
+    expect(path?.availability).toBe('unavailable');
+    expect(path?.availabilityLabelJa).toBe('準備中です');
+    expect(path?.destination).toBe('/vocabulary/hsk/1/');
+    expect(path?.members).toEqual([]);
+    expect(path?.hsk?.status).toBe('unavailable');
+  });
+
+  it('does not enable the level-1 path when only another level is eligible', () => {
+    const hsk = structuredClone(loadHskVocabulary()) as {
+      vocabulary: Array<{
+        reviewStatus: string;
+        hsk: { introducedAtLevel: number };
+      }>;
+    };
+    for (const entry of hsk.vocabulary) entry.reviewStatus = 'draft';
+    hsk.vocabulary[0].reviewStatus = 'published';
+    hsk.vocabulary[0].hsk.introducedAtLevel = 2;
+
+    const document = loadLearningPaths(undefined, writeTempHsk(hsk));
+    const path = document.learningPaths.find(
+      (candidate) => candidate.id === 'hsk-vocabulary',
+    );
+    expect(path?.availability).toBe('unavailable');
+    expect(path?.availabilityLabelJa).toBe('準備中です');
+    expect(path?.destination).toBe('/vocabulary/hsk/1/');
+    expect(path?.members).toEqual([]);
+    expect(path?.hsk?.status).toBe('unavailable');
   });
 
   it('every path has Japanese label and description', () => {
@@ -183,12 +238,12 @@ describe('loadLearningPaths', () => {
     );
   });
 
-  it('throws when an hsk path declares an hsk status that contradicts production HSK data', () => {
+  it('throws when an hsk path declares a level without a current learner route', () => {
     const document = cloneDocument(loadLearningPaths());
     const path = document.learningPaths[1];
-    (path as { hsk: { status: string } }).hsk.status = 'unavailable';
+    (path as unknown as { hsk: { levels: number[] } }).hsk.levels = [2];
     expect(() => loadLearningPaths(writeTemp(document))).toThrow(
-      /contradicts production HSK data/,
+      /levels must match the current learner-route projection/,
     );
   });
 
@@ -204,7 +259,7 @@ describe('loadLearningPaths', () => {
   it('throws on a non-hsk path that declares an hsk descriptor', () => {
     const document = cloneDocument(loadLearningPaths());
     const path = document.learningPaths[0];
-    (path as { hsk: unknown }).hsk = { levels: [1], status: 'available' };
+    (path as { hsk: unknown }).hsk = { levels: [1] };
     expect(() => loadLearningPaths(writeTemp(document))).toThrow(
       /hsk descriptor but availabilityReason/,
     );

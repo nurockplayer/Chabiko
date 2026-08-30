@@ -259,7 +259,7 @@ describe('initial render', () => {
 
     // Taiwan travel has 35 members (24 lessons, 4 vocabulary, 7 phrases), none complete.
     expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 35');
-    expect(cardProgress(root, 'hsk-vocabulary')).toContain('0 / 5');
+    expect(cardProgress(root, 'hsk-vocabulary')).toContain('0 / 2');
     // kanji-bridge has no members → no progress element.
     expect(cardProgress(root, 'kanji-bridge')).toBeNull();
 
@@ -353,12 +353,12 @@ describe('progress signals', () => {
 
     expect(cardProgress(root, 'taiwan-travel')).toBe('3 / 35 進行中');
 
-    // HSK path: learn all five members → complete.
+    // HSK path: only reviewed/published level-1 members form the denominator.
     for (const id of ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-004', 'hsk-005']) {
       setHskLearned(id);
     }
     window.dispatchEvent(new Event('pageshow'));
-    expect(cardProgress(root, 'hsk-vocabulary')).toBe('5 / 5 完了');
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('2 / 2 完了');
   });
 
   it('never lets stale HSK-store learned entries advance the taiwan-travel path', async () => {
@@ -399,7 +399,7 @@ describe('progress signals', () => {
     }
     window.dispatchEvent(new Event('pageshow'));
 
-    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 2 未開始');
   });
 
   it('never accepts a basic-store learned entry that the writer cannot produce', async () => {
@@ -722,7 +722,7 @@ describe('progress signals', () => {
   it('ignores an HSK learned record whose knownStreak is inconsistent', async () => {
     // A corrupt HSK entry claiming status learned with knownStreak 0 must not
     // count (learned requires knownStreak >= 2): the hsk-vocabulary path stays
-    // 0 / 5. This asserts the HSK path so it would fail if the status/streak
+    // 0 / 2. This asserts the HSK path so it would fail if the status/streak
     // guard were removed.
     const { client } = fakeSupabaseClient(null);
     vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
@@ -730,35 +730,35 @@ describe('progress signals', () => {
     initialize(root);
     await flushAsync();
     const hskStore = new VocabularyProgressStore(window.localStorage);
-    hskStore.applyRating('hsk-001', 'known');
-    hskStore.applyRating('hsk-001', 'known');
+    hskStore.applyRating('hsk-002', 'known');
+    hskStore.applyRating('hsk-002', 'known');
     // Corrupt the record to learned with zero streak.
     const key = VOCABULARY_PROGRESS_KEY;
     const raw = JSON.parse(window.localStorage.getItem(key) ?? '{}');
-    raw.entries['hsk-001'] = { status: 'learned', knownStreak: 0 };
+    raw.entries['hsk-002'] = { status: 'learned', knownStreak: 0 };
     window.localStorage.setItem(key, JSON.stringify(raw));
     window.dispatchEvent(new Event('pageshow'));
-    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 2 未開始');
   });
 
   it('ignores an HSK learned record whose knownStreak is not an integer', async () => {
     // A corrupt HSK entry claiming status learned with a non-integer streak
     // (e.g. 2.5) must not count: `learned` requires a finite non-negative
-    // integer knownStreak >= 2. The hsk-vocabulary path stays 0 / 5.
+    // integer knownStreak >= 2. The hsk-vocabulary path stays 0 / 2.
     const { client } = fakeSupabaseClient(null);
     vi.mocked(getSupabaseBrowserClient).mockReturnValue(client as never);
     const root = createRoot();
     initialize(root);
     await flushAsync();
     const hskStore = new VocabularyProgressStore(window.localStorage);
-    hskStore.applyRating('hsk-001', 'known');
-    hskStore.applyRating('hsk-001', 'known');
+    hskStore.applyRating('hsk-002', 'known');
+    hskStore.applyRating('hsk-002', 'known');
     const key = VOCABULARY_PROGRESS_KEY;
     const raw = JSON.parse(window.localStorage.getItem(key) ?? '{}');
-    raw.entries['hsk-001'] = { status: 'learned', knownStreak: 2.5 };
+    raw.entries['hsk-002'] = { status: 'learned', knownStreak: 2.5 };
     window.localStorage.setItem(key, JSON.stringify(raw));
     window.dispatchEvent(new Event('pageshow'));
-    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 5 未開始');
+    expect(cardProgress(root, 'hsk-vocabulary')).toBe('0 / 2 未開始');
   });
 
   it('ignores a stale initial getSession after a newer auth event', async () => {
@@ -800,9 +800,9 @@ describe('storage and pageshow refresh', () => {
     dispatchStorage(STORAGE_KEY, window.localStorage);
     expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 35');
 
-    setHskLearned('hsk-001');
+    setHskLearned('hsk-002');
     dispatchStorage(VOCABULARY_PROGRESS_KEY, window.localStorage);
-    expect(cardProgress(root, 'hsk-vocabulary')).toContain('1 / 5');
+    expect(cardProgress(root, 'hsk-vocabulary')).toContain('1 / 2');
 
     setBasicLearned('teacher-star-1-bdc7865a507e');
     dispatchStorage(BASIC_VOCABULARY_PROGRESS_KEY, window.localStorage);

@@ -6,6 +6,7 @@ import {
   evaluateAchievements,
   type AchievementEvaluation,
 } from './achievements';
+import type { HskLearnerProjection } from './hskLearnerProjection';
 
 // ─── Dashboard presentation domain (Issue #374) ───────────────────────────────
 //
@@ -57,7 +58,7 @@ export interface DashboardTrackLesson {
  *  ids that exist in these production corpora. */
 export interface DashboardProgressPayload {
   readonly basicVocabularyCorpusIds: readonly string[];
-  readonly hskLevels: readonly { readonly level: number; readonly ids: readonly string[] }[];
+  readonly hsk: HskLearnerProjection;
   readonly taiwanCompletableLessonIds: readonly string[];
   readonly taiwanLessons: readonly DashboardTrackLesson[];
 }
@@ -88,9 +89,7 @@ export function trackDestinationAvailable(
   const track = snapshot.tracks[trackId];
   if (track.availability === 'unavailable') return false;
   if (trackId === 'hsk') {
-    return payload.hskLevels.some(
-      (level) => level.level === 1 && level.ids.length > 0,
-    );
+    return payload.hsk.availability === 'available' && payload.hsk.destination !== null;
   }
   return true;
 }
@@ -116,7 +115,7 @@ export function trackDestinationHref(
 ): string | null {
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return null;
   if (trackId === 'basic-vocabulary') return '/vocabulary/basic/';
-  if (trackId === 'hsk') return '/vocabulary/hsk/1/';
+  if (trackId === 'hsk') return payload.hsk.destination;
   const current = currentTaiwanLesson(payload.taiwanLessons, completedLessonIds);
   if (current) return `/lessons/${current.id}/`;
   const first = payload.taiwanLessons[0];
@@ -142,10 +141,9 @@ export function trackCardStatusKey(
   trackId: DashboardTrackId,
   snapshot: CrossTrackProgressSnapshot,
   payload: DashboardProgressPayload,
-): 'preparing' | CrossTrackStatus {
-  return trackDestinationAvailable(trackId, snapshot, payload)
-    ? snapshot.tracks[trackId].status
-    : 'preparing';
+): 'preparing' | 'available' | CrossTrackStatus {
+  if (!trackDestinationAvailable(trackId, snapshot, payload)) return 'preparing';
+  return trackId === 'hsk' ? 'available' : snapshot.tracks[trackId].status;
 }
 
 /** The card status chip label derived from {@link trackCardStatusKey}. */
@@ -154,8 +152,11 @@ export function trackCardStatusLabel(
   snapshot: CrossTrackProgressSnapshot,
   payload: DashboardProgressPayload,
 ): string {
+  if (trackId === 'hsk') return payload.hsk.statusLabelJa;
   const key = trackCardStatusKey(trackId, snapshot, payload);
-  return key === 'preparing' ? '準備中' : trackStatusLabel(key);
+  return key === 'preparing' || key === 'available'
+    ? '準備中'
+    : trackStatusLabel(key);
 }
 
 /** The compact #372 summary line for a track card. Empty for preparing tracks. */
@@ -199,10 +200,12 @@ function continuationForTrack(
     };
   }
   if (trackId === 'hsk') {
+    const destination = payload.hsk.destination;
+    if (destination === null) return null;
     return {
       kind: started ? 'continue' : 'start',
       trackId,
-      href: '/vocabulary/hsk/1/',
+      href: destination,
       actionLabel: started ? 'HSK 単語を続ける' : 'HSK 単語を始める',
       title: 'HSK 単語フラッシュカード',
       sentence: null,

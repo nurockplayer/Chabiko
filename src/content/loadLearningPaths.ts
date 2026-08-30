@@ -8,7 +8,11 @@ import type {
   LearningPathsDocument,
   LearningPathScript,
 } from '../types/learningPath';
-import { loadHskVocabulary } from './loadHskVocabulary';
+import {
+  loadHskLearnerProjection,
+  loadHskVocabulary,
+} from './loadHskVocabulary';
+import { HSK_LEVEL_ONE_DESTINATION } from '../domain/hskLearnerProjection';
 
 const DEFAULT_PATHS_PATH = 'data/learning-paths.json';
 
@@ -26,9 +30,6 @@ const VALID_AVAILABILITY_REASONS = new Set<LearningPathAvailabilityReason>([
   'unavailable',
   'hsk',
 ]);
-
-/** HSK production eligibility matches loadHskVocabulary's own rule. */
-const HSK_PRODUCTION_REVIEW_STATUSES = new Set(['reviewed', 'published']);
 
 function deepFreeze<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
@@ -105,11 +106,13 @@ function loadCollectionIds(
  * reference. The vocabulary set merges the general vocabulary collection with
  * the current production HSK vocabulary, since both are vocabulary content.
  */
-function loadMemberSets(): Map<LearningPathMemberType, ReadonlySet<string>> {
+function loadMemberSets(
+  hskFilePath?: string,
+): Map<LearningPathMemberType, ReadonlySet<string>> {
   const vocabularyIds = new Set(
     loadCollectionIds(VOCABULARY_PATH, 'vocabulary'),
   );
-  for (const entry of loadHskVocabulary().vocabulary) {
+  for (const entry of loadHskVocabulary(hskFilePath).vocabulary) {
     vocabularyIds.add(entry.id);
   }
   return new Map<LearningPathMemberType, ReadonlySet<string>>([
@@ -117,41 +120,6 @@ function loadMemberSets(): Map<LearningPathMemberType, ReadonlySet<string>> {
     ['vocabulary', vocabularyIds],
     ['phrase', loadCollectionIds(PHRASEBOOK_PATH, 'phrasebook')],
   ]);
-}
-
-/** Current production HSK entries (reviewed or published), keyed by level. */
-function loadProductionHskByLevel(): Map<number, number> {
-  const bundle = loadHskVocabulary();
-  const byLevel = new Map<number, number>();
-  for (const entry of bundle.vocabulary) {
-    if (!HSK_PRODUCTION_REVIEW_STATUSES.has(entry.reviewStatus)) continue;
-    const level = entry.hsk.introducedAtLevel;
-    byLevel.set(level, (byLevel.get(level) ?? 0) + 1);
-  }
-  return byLevel;
-}
-
-/** Effective availability for an `hsk`-derived path from current data. */
-function resolveHskAvailability(
-  record: LearningPathRecord,
-  hskByLevel: ReadonlyMap<number, number>,
-): { availability: LearningPathAvailability; hskStatus: 'available' | 'unavailable' } {
-  const descriptor = record.hsk;
-  assert(
-    descriptor !== undefined,
-    `path '${record.id}' declares availabilityReason 'hsk' without an hsk descriptor`,
-  );
-  assert(
-    descriptor.levels.length > 0,
-    `path '${record.id}' hsk descriptor declares no levels`,
-  );
-  const available = descriptor.levels.every((level) =>
-    (hskByLevel.get(level) ?? 0) > 0,
-  );
-  return {
-    availability: available ? 'available' : 'unavailable',
-    hskStatus: available ? 'available' : 'unavailable',
-  };
 }
 
 /** Effective availability for a fixed-reason path. */
@@ -171,16 +139,19 @@ function resolveFixedAvailability(
  * Deterministic and fail-closed: throws on file-not-found, invalid JSON,
  * invalid schemaVersion, unknown/invalid fields, duplicate path or member
  * IDs, missing fixed paths, out-of-fixed-order paths, invalid script or
- * destination, invalid availability descriptors, contradictions between an
- * `hsk` status and current production HSK data, or stale member references
- * that no longer exist in their production content collection. The returned
+ * destination, invalid availability descriptors or HSK route metadata, or
+ * stale member references that no longer exist in their production content
+ * collection. The returned
  * document and every nested record are deeply frozen; each call produces
  * independent references.
  *
  * The loader performs no runtime script conversion and never duplicates
  * content: paths only reference content IDs.
  */
-export function loadLearningPaths(filePath?: string): LearningPathsDocument {
+export function loadLearningPaths(
+  filePath?: string,
+  hskFilePath?: string,
+): LearningPathsDocument {
   const path = filePath ?? resolve(process.cwd(), DEFAULT_PATHS_PATH);
   const document = parseDocument(readFileSync(path, 'utf-8'), path);
 
@@ -189,8 +160,8 @@ export function loadLearningPaths(filePath?: string): LearningPathsDocument {
     `learning-paths schemaVersion must be 1, got '${document.schemaVersion}'`,
   );
 
-  const hskByLevel = loadProductionHskByLevel();
-  const memberSets = loadMemberSets();
+  const hskProjection = loadHskLearnerProjection(hskFilePath);
+  const memberSets = loadMemberSets(hskFilePath);
 
   const enrichedPaths: LearningPathRecord[] = [];
   const seenPathIds = new Set<string>();
@@ -218,11 +189,11 @@ export function loadLearningPaths(filePath?: string): LearningPathsDocument {
     assert(VALID_AVAILABILITY_REASONS.has(record.availabilityReason), `${prefix} has invalid availabilityReason '${record.availabilityReason}'`);
 
     let availability: LearningPathAvailability;
+    let hsk = record.hsk;
     if (record.availabilityReason === 'hsk') {
       const descriptor = record.hsk;
       assert(
         descriptor !== undefined &&
-          descriptor.status !== undefined &&
           Array.isArray(descriptor.levels) &&
           descriptor.levels.length > 0 &&
           descriptor.levels.every((level) => Number.isInteger(level) && level >= 1),
@@ -232,12 +203,19 @@ export function loadLearningPaths(filePath?: string): LearningPathsDocument {
       for (let i = 1; i < sorted.length; i += 1) {
         assert(sorted[i] !== sorted[i - 1], `${prefix} hsk descriptor levels must be unique`);
       }
-      const resolved = resolveHskAvailability(record, hskByLevel);
-      availability = resolved.availability;
       assert(
-        descriptor.status === resolved.hskStatus,
-        `${prefix} hsk status '${descriptor.status}' contradicts production HSK data (derived '${resolved.hskStatus}')`,
+        descriptor.levels.length === hskProjection.levels.length &&
+          descriptor.levels.every(
+            (level, levelIndex) => level === hskProjection.levels[levelIndex]?.level,
+          ),
+        `${prefix} hsk levels must match the current learner-route projection`,
       );
+      assert(
+        record.destination === HSK_LEVEL_ONE_DESTINATION,
+        `${prefix} HSK destination must match '${HSK_LEVEL_ONE_DESTINATION}'`,
+      );
+      availability = hskProjection.availability;
+      hsk = { ...descriptor, status: hskProjection.availability };
     } else {
       assert(
         record.hsk === undefined,
@@ -266,7 +244,21 @@ export function loadLearningPaths(filePath?: string): LearningPathsDocument {
       );
     }
 
-    enrichedPaths.push({ ...record, availability });
+    enrichedPaths.push({
+      ...record,
+      // Keep the legacy field readable, but never let authored availability
+      // contradict the production-derived learner projection.
+      hsk,
+      availability,
+      availabilityLabelJa:
+        record.availabilityReason === 'hsk'
+          ? hskProjection.statusLabelJa
+          : undefined,
+      members:
+        record.availabilityReason === 'hsk'
+          ? hskProjection.eligibleIds.map((id) => ({ type: 'vocabulary', id }))
+          : record.members,
+    });
   }
 
   // All three frozen paths must be present.

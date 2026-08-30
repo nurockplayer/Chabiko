@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "input": {
     "scalarInventoryPath": "data/unicode/generated/scalar-inventory.json",
-    "scalarInventorySha256": "c1bcd1d6cceb85991527cfba9e45c55588ee44fd6f8e72bf24f76d97c4f518cf",
+    "scalarInventorySha256": "ec9691f90c97349a2e1e0a86ae6559fe013c1b4dedb984eda805699460202bf2",
     "scalarCount": 1750
   },
   "renderingEnvironment": {
