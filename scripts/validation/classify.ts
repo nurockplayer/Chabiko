@@ -337,14 +337,24 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     ],
   },
   {
+    // #250 launch roleplay loader is both a graph/review adapter and the owner
+    // of the exact-six prelaunch allowlist. Keep all three contracts together
+    // in the first-win mapping.
+    match: (b) => b.includes('loadroleplaycards'),
+    testGlobs: [
+      'tests/roleplay-*.test.ts',
+      'tests/learning-content-graph.test.ts',
+      'tests/teacher-review-*.test.ts',
+    ],
+  },
+  {
     // Shared content graph foundation: the graph, vocabulary adapter, and
-    // roleplay adapter are covered by the graph contract plus the existing
+    // vocabulary adapter are covered by the graph contract plus the existing
     // teacher-review preservation suite.
     match: (b) =>
       b.includes('learningcontent') ||
       b.includes('learningpath') ||
-      b.includes('loadvocabulary') ||
-      b.includes('loadroleplaycards'),
+      b.includes('loadvocabulary'),
     testGlobs: [
       'tests/learning-content-graph.test.ts',
       'tests/teacher-review-*.test.ts',
