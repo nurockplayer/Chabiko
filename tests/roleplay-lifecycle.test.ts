@@ -73,4 +73,21 @@ describe('roleplay progress isolation', () => {
     expect(storage.getItem('other')).toBe('keep');
     expect(storage.writes.every((write) => write.startsWith(`${ROLEPLAY_PROGRESS_KEY}:`))).toBe(true);
   });
+
+  it('resets only the roleplay progress key', () => {
+    const storage = memoryStorage({
+      [ROLEPLAY_PROGRESS_KEY]: JSON.stringify({
+        version: 1,
+        completedCardIds: ['roleplay-food-001'],
+      }),
+      other: 'keep',
+    });
+    const store = new RoleplayProgressStore(storage);
+
+    store.resetAll();
+
+    expect(store.getCompletedCardIds()).toEqual([]);
+    expect(storage.getItem(ROLEPLAY_PROGRESS_KEY)).toBeNull();
+    expect(storage.getItem('other')).toBe('keep');
+  });
 });

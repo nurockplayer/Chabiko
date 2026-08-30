@@ -104,4 +104,14 @@ export class RoleplayProgressStore {
     }
     return true;
   }
+
+  /** Clear only the roleplay completion document. */
+  resetAll(): void {
+    this.completed.clear();
+    try {
+      this.storage?.removeItem(ROLEPLAY_PROGRESS_KEY);
+    } catch {
+      // Best-effort reset mirrors the existing lesson progress store.
+    }
+  }
 }
