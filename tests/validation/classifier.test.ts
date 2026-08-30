@@ -62,6 +62,14 @@ describe('shared learning-content graph coverage', () => {
     expect(domainTestGlobsFor('src/types/learningPath.ts')).toContain(expected);
   });
 
+  it('selects roleplay lifecycle plus graph/review suites for the launch loader', () => {
+    expect(domainTestGlobsFor('src/content/loadRoleplayCards.ts')).toEqual([
+      'tests/roleplay-*.test.ts',
+      'tests/learning-content-graph.test.ts',
+      'tests/teacher-review-*.test.ts',
+    ]);
+  });
+
   it('selects the golden-set review-scope suite for its loader', () => {
     expect(domainTestGlobsFor('src/content/loadGoldenSetReviewScope.ts')).toContain(
       'tests/golden-set-review-scope.test.ts',

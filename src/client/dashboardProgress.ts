@@ -1,4 +1,5 @@
 import { ProgressStore, STORAGE_KEY, type StorageLike } from '../lib/progress';
+import { RoleplayProgressStore } from '../lib/roleplayProgress';
 import type { BasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import { ensureBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import { createCrossTrackProgressCoordinator } from './crossTrackProgressCoordinator';
@@ -23,8 +24,9 @@ import {
 // reference corpora (the build-time payload), subscribes to it, and re-renders
 // the continuation, three track cards, and unlocked achievements on every
 // snapshot transition. It never writes a persistence key itself; the only write
-// is the preserved existing reset control (clears the Taiwan lesson store, the
-// same `chabiko_completed_lessons` the old home reset).
+// is the preserved existing reset control (clears the Taiwan lesson and
+// roleplay completion stores covered by its learner-facing "all progress"
+// label).
 
 export interface DashboardInitOptions {
   /** Inject the #293 coordinator (tests use a fake). Defaults to the
@@ -81,8 +83,8 @@ export function initDashboard(
     renderAchievements(root, snapshot);
   };
 
-  // Preserved reset behavior: clears the Taiwan lesson progress store only
-  // (same key and confirm flow as the old home). The synthetic storage event
+  // Preserved reset behavior: clears the Taiwan lesson progress store plus the
+  // roleplay completion store. The synthetic storage event
   // tells the cross-track coordinator (which listens for exactly this key) to
   // recompute and notify subscribers, exactly like a cross-tab clear.
   const resetBtn = root.querySelector<HTMLButtonElement>('#reset-progress-btn');
@@ -92,6 +94,7 @@ export function initDashboard(
         window.confirm('学習進捗をすべてリセットしますか？この操作は元に戻せません。')
       ) {
         new ProgressStore(storage).resetAll();
+        new RoleplayProgressStore(storage).resetAll();
         window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
       }
     });

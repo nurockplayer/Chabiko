@@ -27,13 +27,26 @@ export interface ProgressSignals {
    *  cross-source `learned` entry in the HSK store can never satisfy a
    *  basic-vocabulary evidence key. */
   readonly learnedBasicVocabulary: ReadonlySet<string>;
+  /** IDs of completed launch roleplay cards from
+   *  `chabiko.roleplay-progress.v1`. */
+  readonly completedRoleplayCards: ReadonlySet<string>;
 }
 
 /** Evidence types with no production completion source in v1. These can never
  *  count toward readiness and are reported as unavailable rather than
  *  shrinking the fixed denominator. */
 const UNAVAILABLE_EVIDENCE_TYPES: ReadonlySet<TravelQuestEvidenceSpec['type']> =
-  new Set(['completed-phrase-practice', 'completed-roleplay-rehearsal']);
+  new Set(['completed-phrase-practice']);
+
+/** Explicit projection from the exact launch roleplay card IDs to the
+ * pre-existing Travel Quest evidence IDs. Airport and shopping have no
+ * readiness evidence in the current contract and intentionally map nowhere. */
+const ROLEPLAY_CARD_EVIDENCE_IDS: Readonly<Record<string, string>> = {
+  'roleplay-transport-001': 'roleplay-transport-guide',
+  'roleplay-food-001': 'roleplay-order-food',
+  'roleplay-hotel-001': 'roleplay-hotel-checkin',
+  'roleplay-emergency-001': 'roleplay-recover-help',
+};
 
 /**
  * Derive the readiness input for the canonical targets from progress signals.
@@ -42,9 +55,9 @@ const UNAVAILABLE_EVIDENCE_TYPES: ReadonlySet<TravelQuestEvidenceSpec['type']> =
  *   production signal (a completed lesson practice, or a `learned`
  *   vocabulary item). Duplicate, stale, malformed, and missing keys are
  *   ignored.
- * - `unavailable` contains phrase-practice and roleplay-rehearsal evidence
- *   keys, which have no production completion source in v1 and can never
- *   count toward readiness.
+ * - `unavailable` contains phrase-practice evidence keys, which have no
+ *   production completion source in v1 and can never count toward readiness.
+ *   Roleplay evidence is resolved through the exact launch-card mapping.
  * - A lesson/vocabulary evidence item that is not yet complete is neither
  *   completed nor unavailable; it stays incomplete.
  *
@@ -57,6 +70,11 @@ export function buildReadinessInput(
 ): TravelQuestReadinessInput {
   const completed = new Set<string>();
   const unavailable = new Set<string>();
+  const completedRoleplayEvidence = new Set(
+    [...signals.completedRoleplayCards]
+      .map((cardId) => ROLEPLAY_CARD_EVIDENCE_IDS[cardId])
+      .filter((id): id is string => id !== undefined),
+  );
   for (const target of targets) {
     for (const spec of target.evidence) {
       const key = evidenceKey(spec);
@@ -64,7 +82,9 @@ export function buildReadinessInput(
         (spec.type === 'completed-lesson-practice' &&
           signals.completedLessons.has(spec.id)) ||
         (spec.type === 'completed-vocabulary-session' &&
-          signals.learnedBasicVocabulary.has(spec.id));
+          signals.learnedBasicVocabulary.has(spec.id)) ||
+        (spec.type === 'completed-roleplay-rehearsal' &&
+          completedRoleplayEvidence.has(spec.id));
       if (isComplete) {
         completed.add(key);
       } else if (UNAVAILABLE_EVIDENCE_TYPES.has(spec.type)) {

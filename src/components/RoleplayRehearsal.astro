@@ -1,0 +1,140 @@
+---
+import type { RoleplayCardRecord } from '../types/roleplayCard';
+
+interface Props {
+  cards: readonly RoleplayCardRecord[];
+}
+
+const { cards } = Astro.props;
+
+const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
+  airport: '空港',
+  transport: '交通',
+  food: '食事',
+  shopping: '買い物',
+  hotel: 'ホテル',
+  emergency: '緊急時',
+};
+---
+
+<div class="roleplay-rehearsal" data-roleplay-root>
+  <section class="roleplay-selection" data-roleplay-selection aria-labelledby="roleplay-selection-heading">
+    <p class="roleplay-kicker">TRAVEL REHEARSAL</p>
+    <h2 id="roleplay-selection-heading">場面を選ぶ</h2>
+    <p class="roleplay-selection__lead" lang="ja">台湾旅行で使う場面を選んで、短い会話を練習しましょう。</p>
+    <ol class="roleplay-card-list">
+      {
+        cards.map((card) => (
+          <li class="roleplay-card-list__item">
+            <button
+              class="roleplay-card-select"
+              type="button"
+              data-roleplay-card-select={card.id}
+              aria-label={`${SCENARIO_LABELS[card.scenario]}：${card.titleJa}を選ぶ`}
+            >
+              <span class="roleplay-card-select__scenario">{SCENARIO_LABELS[card.scenario]}</span>
+              <span class="roleplay-card-select__title">{card.titleJa}</span>
+              <span class="roleplay-card-select__goal">{card.goalJa}</span>
+              <span class="roleplay-card-select__status" data-roleplay-card-status={card.id}></span>
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="roleplay-guidance" data-roleplay-guidance hidden aria-labelledby="roleplay-guidance-heading">
+    <p class="roleplay-kicker">GET READY</p>
+    <h2 id="roleplay-guidance-heading" data-roleplay-guidance-title></h2>
+    <p class="roleplay-guidance__goal" data-roleplay-guidance-goal></p>
+    <p class="roleplay-guidance__copy" data-roleplay-guidance-copy></p>
+    <div class="roleplay-actions">
+      <button class="roleplay-action roleplay-action--start" type="button" data-roleplay-start>練習を始める</button>
+      <button class="roleplay-action roleplay-action--back" type="button" data-roleplay-back>場面を選び直す</button>
+    </div>
+  </section>
+
+  <section class="roleplay-active" data-roleplay-active hidden aria-labelledby="roleplay-active-heading">
+    <div class="roleplay-active__header">
+      <div>
+        <p class="roleplay-kicker">PRACTICE</p>
+        <h2 id="roleplay-active-heading" data-roleplay-active-title></h2>
+      </div>
+      <p class="roleplay-progress" data-roleplay-progress role="status"></p>
+    </div>
+    <p class="roleplay-active__hint" data-roleplay-active-hint lang="ja"></p>
+    <ol class="roleplay-lines" data-roleplay-lines></ol>
+    <div class="roleplay-feedback" data-roleplay-feedback role="status" aria-live="polite" aria-atomic="true"></div>
+    <div class="roleplay-actions">
+      <button class="roleplay-action roleplay-action--reveal" type="button" data-roleplay-reveal>自分のセリフを確認</button>
+      <button class="roleplay-action roleplay-action--next" type="button" data-roleplay-next hidden>次へ</button>
+    </div>
+  </section>
+
+  <section class="roleplay-complete" data-roleplay-complete hidden aria-labelledby="roleplay-complete-heading">
+    <p class="roleplay-kicker">DONE</p>
+    <h2 id="roleplay-complete-heading">練習完了</h2>
+    <p data-roleplay-complete-copy>すべてのセリフを確認しました。</p>
+    <button class="roleplay-action roleplay-action--restart" type="button" data-roleplay-restart>別の場面を練習する</button>
+  </section>
+
+  {
+    cards.map((card) => (
+      <template data-roleplay-card-template={card.id}>
+        {
+          card.lines.map((line, lineIndex) => (
+            <li data-roleplay-line-template data-line-index={lineIndex} data-speaker={line.speaker}>
+              <span class="roleplay-line__speaker" data-roleplay-speaker>{line.speaker === 'learner' ? 'あなた' : '相手'}</span>
+              <span class="roleplay-line__script" data-roleplay-script></span>
+              <span class="roleplay-line__pinyin" data-roleplay-pinyin lang="zh-Latn"></span>
+              <span class="roleplay-line__japanese" data-roleplay-japanese lang="ja"></span>
+              <span class="roleplay-line__fallback" data-roleplay-fallback lang="ja"></span>
+            </li>
+          ))
+        }
+      </template>
+    ))
+  }
+</div>
+
+<style>
+  .roleplay-rehearsal { --roleplay-coral-deep: #A94432; width: 100%; min-width: 0; }
+  :global(:root[data-theme-enabled='true'][data-theme='dark']) .roleplay-rehearsal { --roleplay-coral-deep: #EB8D74; }
+  .roleplay-kicker { margin: 0 0 var(--sp-2); color: var(--roleplay-coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.14em; }
+  h2 { margin: 0; font-family: var(--font-serif-ja); font-size: clamp(1.4rem, 6vw, 1.9rem); line-height: 1.3; overflow-wrap: anywhere; }
+  .roleplay-selection__lead, .roleplay-guidance__goal, .roleplay-guidance__copy, .roleplay-complete p { color: var(--ink-secondary); font-size: 0.875rem; line-height: 1.8; overflow-wrap: anywhere; }
+  .roleplay-selection__lead { margin: var(--sp-3) 0 var(--sp-6); }
+  .roleplay-card-list { display: grid; grid-template-columns: 1fr; gap: var(--sp-3); margin: 0; padding: 0; list-style: none; }
+  .roleplay-card-select { display: grid; gap: var(--sp-2); width: 100%; min-height: 7.5rem; padding: var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-card); background: var(--paper-deep); color: var(--ink); text-align: left; cursor: pointer; font: inherit; transition: border-color 0.15s, transform 0.15s, background 0.15s; }
+  .roleplay-card-select:hover { border-color: var(--jade); background: var(--jade-soft); }
+  .roleplay-card-select:active, .roleplay-action:active { transform: translateY(1px); }
+  .roleplay-card-select__scenario { color: var(--roleplay-coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; }
+  .roleplay-card-select__title { font-family: var(--font-serif-ja); font-size: 1.1rem; font-weight: 700; }
+  .roleplay-card-select__goal { color: var(--ink-secondary); font-size: 0.8125rem; line-height: 1.6; }
+  .roleplay-card-select__status { color: var(--jade-ink); font-size: 0.75rem; font-weight: 700; }
+  .roleplay-guidance, .roleplay-active, .roleplay-complete { margin-top: var(--sp-8); padding-top: var(--sp-8); border-top: 1px solid var(--hairline-strong); }
+  .roleplay-guidance__goal { margin: var(--sp-3) 0 0; font-weight: 700; color: var(--ink); }
+  .roleplay-guidance__copy { margin: var(--sp-3) 0 0; }
+  .roleplay-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-6); }
+  .roleplay-action { min-height: 2.75rem; padding: var(--sp-2) var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+  .roleplay-action:hover { border-color: var(--jade); background: var(--jade-soft); }
+  .roleplay-action--start, .roleplay-action--next { border-color: var(--jade); background: var(--jade); color: var(--color-on-primary); }
+  .roleplay-action--start:hover, .roleplay-action--next:hover { background: var(--jade-ink); }
+  .roleplay-active__header { display: flex; align-items: end; justify-content: space-between; gap: var(--sp-4); }
+  .roleplay-progress { flex: 0 0 auto; margin: 0; color: var(--ink-secondary); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+  .roleplay-active__hint { margin: var(--sp-3) 0 var(--sp-4); color: var(--ink-secondary); font-size: 0.8125rem; line-height: 1.7; }
+  .roleplay-lines { display: flex; flex-direction: column; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
+  .roleplay-line { min-width: 0; padding: var(--sp-4); border-radius: var(--radius-content); background: var(--paper-deep); }
+  .roleplay-line--partner { border-left: 3px solid var(--hairline-strong); }
+  .roleplay-line--learner { border-left: 3px solid var(--coral); background: var(--coral-soft); }
+  .roleplay-line__speaker { margin: 0 0 var(--sp-1); color: var(--ink-secondary); font-size: 0.75rem; font-weight: 700; }
+  .roleplay-line__script { margin: 0; font-family: var(--font-serif-zh); font-size: 1.25rem; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+  .roleplay-line__pinyin, .roleplay-line__japanese { margin: var(--sp-1) 0 0; color: var(--ink-secondary); font-size: 0.8125rem; line-height: 1.7; overflow-wrap: anywhere; }
+  .roleplay-line__fallback { display: block; color: var(--roleplay-coral-deep); font-size: 0.75rem; line-height: 1.6; }
+  .roleplay-line__learner-placeholder { color: var(--ink-secondary); font-size: 0.875rem; }
+  .roleplay-feedback { min-height: 1.5rem; margin-top: var(--sp-4); color: var(--jade-ink); font-weight: 700; }
+  .roleplay-complete { text-align: center; }
+  .roleplay-complete p { margin: var(--sp-3) 0 0; }
+  @media (min-width: 40rem) { .roleplay-card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 48rem) { .roleplay-card-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>

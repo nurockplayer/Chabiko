@@ -17,11 +17,13 @@ function signals(
   completedLessons: readonly string[] = [],
   learnedVocabulary: readonly string[] = [],
   learnedBasicVocabulary: readonly string[] = learnedVocabulary,
+  completedRoleplayCards: readonly string[] = [],
 ): ProgressSignals {
   return {
     completedLessons: new Set(completedLessons),
     learnedVocabulary: new Set(learnedVocabulary),
     learnedBasicVocabulary: new Set(learnedBasicVocabulary),
+    completedRoleplayCards: new Set(completedRoleplayCards),
   };
 }
 
@@ -70,7 +72,7 @@ describe('buildReadinessInput', () => {
     expect(basicOnly.completed.has('completed-vocabulary-session:teacher-star-1-bdc7865a507e')).toBe(true);
   });
 
-  it('reports phrase-practice and roleplay-rehearsal evidence as unavailable', () => {
+  it('reports only phrase-practice evidence as unavailable', () => {
     const input = buildReadinessInput(targets, signals());
     expect(input.unavailable).toEqual(
       new Set([
@@ -78,14 +80,32 @@ describe('buildReadinessInput', () => {
         'completed-phrase-practice:phrase-order-pay',
         'completed-phrase-practice:phrase-hotel-checkin',
         'completed-phrase-practice:phrase-recover-help',
+      ]),
+    );
+    // Never inflated: unavailable keys never land in `completed`.
+    expect(input.completed.size).toBe(0);
+  });
+
+  it('projects only the explicitly mapped launch roleplay cards', () => {
+    const input = buildReadinessInput(
+      targets,
+      signals([], [], [], [
+        'roleplay-transport-001',
+        'roleplay-food-001',
+        'roleplay-hotel-001',
+        'roleplay-emergency-001',
+        'roleplay-airport-001',
+        'roleplay-fixture-transport-001',
+      ]),
+    );
+    expect(input.completed).toEqual(
+      new Set([
         'completed-roleplay-rehearsal:roleplay-transport-guide',
         'completed-roleplay-rehearsal:roleplay-order-food',
         'completed-roleplay-rehearsal:roleplay-hotel-checkin',
         'completed-roleplay-rehearsal:roleplay-recover-help',
       ]),
     );
-    // Never inflated: unavailable keys never land in `completed`.
-    expect(input.completed.size).toBe(0);
   });
 
   it('ignores duplicate, stale, and malformed evidence keys', () => {

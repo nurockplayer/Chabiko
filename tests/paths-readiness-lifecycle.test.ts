@@ -28,6 +28,7 @@ import {
   BasicVocabularyProgressStore,
 } from '../src/domain/basicVocabularyProgress';
 import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
+import { ROLEPLAY_PROGRESS_KEY } from '../src/lib/roleplayProgress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
 import learnerManifest from '../data/teacher-vocabulary-preview/learner-manifest.json';
@@ -134,6 +135,13 @@ function setHskLearned(id: string): void {
   const store = new VocabularyProgressStore();
   store.applyRating(id, 'known');
   store.applyRating(id, 'known');
+}
+
+function setRoleplayCompleted(...ids: string[]): void {
+  window.localStorage.setItem(
+    ROLEPLAY_PROGRESS_KEY,
+    JSON.stringify({ version: 1, completedCardIds: ids }),
+  );
 }
 
 function dispatchStorage(key: string | null, storageArea: Storage | null): void {
@@ -256,7 +264,7 @@ describe('initial render', () => {
     expect(cardProgress(root, 'kanji-bridge')).toBeNull();
 
     // Every target is not-started with its fixed denominator, and the
-    // phrase/roleplay-only evidence shows the unavailable note.
+    // Phrase evidence still shows the unavailable note.
     const navigate = target(root, 'navigate-arrival');
     expect(navigate.querySelector('[data-readiness-status]')?.textContent).toBe('未開始');
     expect(navigate.querySelector('[data-readiness-status]')?.getAttribute('data-status')).toBe('not-started');
@@ -280,6 +288,18 @@ describe('initial render', () => {
 // ─── Lesson/vocabulary signals drive readiness and path progress ─────────────
 
 describe('progress signals', () => {
+  it('projects roleplay completion and refreshes on its storage key', () => {
+    const root = createRoot();
+    initialize(root);
+
+    setRoleplayCompleted('roleplay-transport-001');
+    dispatchStorage(ROLEPLAY_PROGRESS_KEY, window.localStorage);
+
+    const navigate = target(root, 'navigate-arrival');
+    expect(navigate.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 3');
+    expect(navigate.querySelector('[data-readiness-status]')?.textContent).toBe('進行中');
+  });
+
   it('reflects completed lessons and learned vocabulary in readiness', async () => {
     // Signed-out identity resolves the guest store, so guest progress counts.
     const { client } = fakeSupabaseClient(null);
@@ -311,7 +331,7 @@ describe('progress signals', () => {
     setHskLearned('hsk-002');
     window.dispatchEvent(new Event('pageshow'));
     const recover = target(root, 'recover-and-get-help');
-    // recover needs phrase + roleplay only → both unavailable → never ready.
+    // recover needs phrase + roleplay; neither has been completed here.
     expect(recover.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 2');
     expect(recover.querySelector('[data-readiness-status]')?.textContent).toBe('未開始');
   });
