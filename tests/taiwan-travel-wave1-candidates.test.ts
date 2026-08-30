@@ -176,6 +176,26 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.decisionCount).toBe(0);
   });
 
+  it('fails closed before reporting a missing, drifted, or promoted production link', async () => {
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons.pop();
+      }),
+    ).rejects.toThrow(/production link must contain exactly 24 lessons/);
+
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons[10].canDoJa += '（drift）';
+      }),
+    ).rejects.toThrow(/production link drifted for 'lesson-011'/);
+
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons[10].reviewStatus = 'reviewed';
+      }),
+    ).rejects.toThrow(/production-linked lesson 'lesson-011' must remain draft/);
+  });
+
   it('completes lesson-loop step 9 with distinct future review hooks', async () => {
     const sources = loadSourceBundle();
     const candidateLessonIds = new Set(sources.lessons.map((lesson) => lesson.id));
@@ -1040,8 +1060,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     await expect(
       build(
         (manifest) => bindFirstRole(manifest, reviewVersion),
-        ({ lessons }) => {
+        ({ lessons, productionLessons }) => {
           lessons[0].titleJa += '（変更）';
+          productionLessons[10].titleJa += '（変更）';
         },
       ),
     ).rejects.toThrow(/reviewer evidence .* is stale for reviewVersion/);
@@ -1639,8 +1660,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       first.records[0].fingerprint,
     );
 
-    const contentChanged = await build(undefined, ({ lessons }) => {
+    const contentChanged = await build(undefined, ({ lessons, productionLessons }) => {
       lessons[0].titleJa += '（変更）';
+      productionLessons[10].titleJa += '（変更）';
     });
     expect(contentChanged.records[0].fingerprint).not.toBe(
       first.records[0].fingerprint,

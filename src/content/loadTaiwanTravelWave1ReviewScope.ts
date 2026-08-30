@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { buildLearningContentGraph } from './loadLearningContentGraph';
 import { loadLessons } from './loadLessons';
 import { sha256Hex } from './loadTeacherReviewCampaign';
+import { TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS } from './taiwanTravelWave1Production';
 import { stableStringify } from '../domain/teacherReview';
 import type {
   ContentRef,
@@ -874,6 +875,35 @@ export async function fingerprintTaiwanTravelWave1ReviewVersion(
   );
 }
 
+async function validateBoundedProductionLink(
+  records: readonly TaiwanTravelWave1ReviewRecord[],
+  productionLessons: readonly Lesson[],
+): Promise<void> {
+  assert(
+    productionLessons.length === TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS.length,
+    `production link must contain exactly ${TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS.length} lessons`,
+  );
+  assert(
+    productionLessons.every(
+      (lesson, index) => lesson.id === TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS[index],
+    ),
+    'production link lesson order must be exactly lesson-001 through lesson-024',
+  );
+
+  for (const [index, record] of records.entries()) {
+    const productionLesson = productionLessons[index + 10];
+    assert(
+      productionLesson.reviewStatus === 'draft',
+      `production-linked lesson '${record.lesson.id}' must remain draft`,
+    );
+    assert(
+      (await fingerprintTaiwanTravelWave1Lesson(productionLesson)) ===
+        record.fingerprint,
+      `production link drifted for '${record.lesson.id}'`,
+    );
+  }
+}
+
 function loadSourceBundle(root: string): TaiwanTravelWave1SourceBundle {
   const lessonBundle = loadLessons(resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH));
   const graphBundle = readJson<{ schemaVersion: number; paths: MutableCandidatePath[] }>(
@@ -925,6 +955,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     ),
     'manifest lesson order must be exactly lesson-011 through lesson-024',
   );
+  await validateBoundedProductionLink(records, sourceBundle.productionLessons);
 
   const reviewVersion = await fingerprintTaiwanTravelWave1ReviewVersion({
     schemaVersion: manifest.schemaVersion,
