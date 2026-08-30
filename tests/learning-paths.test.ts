@@ -111,7 +111,9 @@ describe('loadLearningPaths', () => {
     );
     expect(path?.availability).toBe('unavailable');
     expect(path?.availabilityLabelJa).toBe('準備中です');
+    expect(path?.destination).toBe('/vocabulary/hsk/1/');
     expect(path?.members).toEqual([]);
+    expect(path?.hsk?.status).toBe('unavailable');
   });
 
   it('does not enable the level-1 path when only another level is eligible', () => {
@@ -130,7 +132,10 @@ describe('loadLearningPaths', () => {
       (candidate) => candidate.id === 'hsk-vocabulary',
     );
     expect(path?.availability).toBe('unavailable');
+    expect(path?.availabilityLabelJa).toBe('準備中です');
+    expect(path?.destination).toBe('/vocabulary/hsk/1/');
     expect(path?.members).toEqual([]);
+    expect(path?.hsk?.status).toBe('unavailable');
   });
 
   it('every path has Japanese label and description', () => {

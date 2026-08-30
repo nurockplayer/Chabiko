@@ -189,6 +189,7 @@ export function loadLearningPaths(
     assert(VALID_AVAILABILITY_REASONS.has(record.availabilityReason), `${prefix} has invalid availabilityReason '${record.availabilityReason}'`);
 
     let availability: LearningPathAvailability;
+    let hsk = record.hsk;
     if (record.availabilityReason === 'hsk') {
       const descriptor = record.hsk;
       assert(
@@ -214,6 +215,7 @@ export function loadLearningPaths(
         `${prefix} HSK destination must match '${HSK_LEVEL_ONE_DESTINATION}'`,
       );
       availability = hskProjection.availability;
+      hsk = { ...descriptor, status: hskProjection.availability };
     } else {
       assert(
         record.hsk === undefined,
@@ -244,6 +246,9 @@ export function loadLearningPaths(
 
     enrichedPaths.push({
       ...record,
+      // Keep the legacy field readable, but never let authored availability
+      // contradict the production-derived learner projection.
+      hsk,
       availability,
       availabilityLabelJa:
         record.availabilityReason === 'hsk'
