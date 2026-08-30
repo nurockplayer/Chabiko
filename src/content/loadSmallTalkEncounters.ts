@@ -31,6 +31,9 @@ const EVIDENCE_DIMENSIONS = new Set([
   'pragmatic-fit',
 ]);
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const SOURCE_KINDS = new Set([
+  'product-authority', 'official-date', 'official-cultural-reference',
+]);
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
@@ -65,11 +68,13 @@ function requireString(record: Record<string, unknown>, key: string, path: strin
 
 function requireIsoDate(record: Record<string, unknown>, key: string, path: string): string {
   const value = record[key];
-  if (
-    typeof value !== 'string' ||
-    !ISO_DATE.test(value) ||
-    Number.isNaN(Date.parse(`${value}T00:00:00Z`))
-  ) {
+  if (typeof value !== 'string' || !ISO_DATE.test(value)) {
+    throw new Error(`${path}.${key} must be an ISO date`);
+  }
+  const [year, month, day] = value.split('-').map(Number);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth[month - 1]) {
     throw new Error(`${path}.${key} must be an ISO date`);
   }
   return value;
@@ -178,16 +183,21 @@ function validateEvidence(value: unknown, path: string): void {
   requireString(evidence, 'nextMoveJa', path);
 }
 
-function validateSourceRefs(value: unknown, path: string): Set<string> {
+function validateSourceRefs(value: unknown, path: string): Map<string, string> {
   const sourceIds = new Set<string>();
-  const sourceKinds = new Set([
-    'product-authority', 'official-date', 'official-cultural-reference',
-  ]);
+  const sourceIndex = new Map<string, string>();
   for (const [index, sourceValue] of requireNonEmptyArray(value, path).entries()) {
     const sourcePath = `${path}[${index}]`;
     const source = requireRecord(sourceValue, sourcePath);
-    requireUniqueId(source, sourcePath, sourceIds, 'source');
-    requireOneOf(source, 'kind', sourceKinds, sourcePath, 'a known source kind');
+    const sourceId = requireUniqueId(source, sourcePath, sourceIds, 'source');
+    const sourceKind = requireOneOf(
+      source,
+      'kind',
+      SOURCE_KINDS,
+      sourcePath,
+      'a known source kind',
+    );
+    sourceIndex.set(sourceId, sourceKind);
     requireString(source, 'title', sourcePath);
     requireString(source, 'publisher', sourcePath);
     const url = requireString(source, 'url', sourcePath);
@@ -201,18 +211,28 @@ function validateSourceRefs(value: unknown, path: string): Set<string> {
       throw new Error(`${sourcePath}.rights must remain reference-only with copiedText=false`);
     }
   }
-  return sourceIds;
+  return sourceIndex;
 }
 
-function requireSourceRefsResolve(value: unknown, path: string, sourceIds: Set<string>): void {
-  for (const [index, ref] of requireStringRefs(value, path).entries()) {
-    if (!sourceIds.has(ref)) {
+function requireSourceRefsResolve(
+  value: unknown,
+  path: string,
+  sourceIndex: ReadonlyMap<string, string>,
+): string[] {
+  const refs = requireStringRefs(value, path);
+  for (const [index, ref] of refs.entries()) {
+    if (!sourceIndex.has(ref)) {
       throw new Error(`${path}[${index}] references unknown source '${ref}'`);
     }
   }
+  return refs;
 }
 
-function validateSeasonal(value: unknown, path: string, sourceIds: Set<string>): void {
+function validateSeasonal(
+  value: unknown,
+  path: string,
+  sourceIndex: ReadonlyMap<string, string>,
+): void {
   const seasonal = requireRecord(value, path);
   requireString(seasonal, 'definitionId', path);
   const occurrencePath = `${path}.occurrence`;
@@ -235,7 +255,14 @@ function validateSeasonal(value: unknown, path: string, sourceIds: Set<string>):
   if (occurrence.phase !== 'anticipation' || occurrence.dateStatus !== 'verified') {
     throw new Error(`${occurrencePath} must be a verified anticipation occurrence`);
   }
-  requireSourceRefsResolve(occurrence.sourceRefIds, `${occurrencePath}.sourceRefIds`, sourceIds);
+  const occurrenceSourceRefs = requireSourceRefsResolve(
+    occurrence.sourceRefIds,
+    `${occurrencePath}.sourceRefIds`,
+    sourceIndex,
+  );
+  if (!occurrenceSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === 'official-date')) {
+    throw new Error(`${occurrencePath}.sourceRefIds must include an official-date source`);
+  }
   const claimIds = new Set<string>();
   for (const [claimIndex, claimValue] of requireNonEmptyArray(
     seasonal.claims,
@@ -246,7 +273,7 @@ function validateSeasonal(value: unknown, path: string, sourceIds: Set<string>):
     requireUniqueId(claim, claimPath, claimIds, 'seasonal claim');
     requireString(claim, 'claimJa', claimPath);
     requireString(claim, 'scopeNoteJa', claimPath);
-    requireSourceRefsResolve(claim.sourceRefIds, `${claimPath}.sourceRefIds`, sourceIds);
+    requireSourceRefsResolve(claim.sourceRefIds, `${claimPath}.sourceRefIds`, sourceIndex);
   }
 }
 
@@ -310,10 +337,10 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
     const expectedKind = familyIndex === 0 ? 'evergreen-baseline' : 'seasonal-transfer';
     if (family.kind !== expectedKind) throw new Error(`${familyPath}.kind must be '${expectedKind}'`);
     requireString(family, 'titleJa', familyPath);
-    const sourceIds = validateSourceRefs(family.sourceRefs, `${familyPath}.sourceRefs`);
+    const sourceIndex = validateSourceRefs(family.sourceRefs, `${familyPath}.sourceRefs`);
     validateReview(family.review, `${familyPath}.review`);
     if (expectedKind === 'seasonal-transfer') {
-      validateSeasonal(family.seasonal, `${familyPath}.seasonal`, sourceIds);
+      validateSeasonal(family.seasonal, `${familyPath}.seasonal`, sourceIndex);
     } else if (family.seasonal !== undefined) {
       throw new Error(`${familyPath}.seasonal is only valid for the seasonal-transfer family`);
     }
@@ -432,7 +459,10 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             'a known fit',
           );
           if (fit === 'acceptable') acceptableCount += 1;
-          validateMovePattern(strategy.movePattern, `${strategyPath}.movePattern`);
+          const movePattern = validateMovePattern(
+            strategy.movePattern,
+            `${strategyPath}.movePattern`,
+          );
           for (const [realizationIndex, realization] of requireNonEmptyArray(
             strategy.realizations,
             `${strategyPath}.realizations`,
@@ -448,7 +478,12 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             branchPath,
             'a known outcome',
           );
-          if (outcome === 'REPAIR') repairBranches += 1;
+          if (outcome === 'REPAIR') {
+            repairBranches += 1;
+            if (!movePattern.includes('REPAIR')) {
+              throw new Error(`${strategyPath}.movePattern must include REPAIR for a REPAIR outcome`);
+            }
+          }
           if (branch.kind === 'beat') {
             const targetBeatId = requireString(branch, 'beatId', branchPath);
             const targetBeat = beats.get(targetBeatId);

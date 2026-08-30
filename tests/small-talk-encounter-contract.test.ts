@@ -152,6 +152,22 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(unknownSource)).toThrow(
       "seasonal.occurrence.sourceRefIds[0] references unknown source 'missing-source'",
     );
+
+    const impossibleDate = cloneDocument();
+    const impossibleOccurrence = impossibleDate.families[1].seasonal?.occurrence;
+    if (!impossibleOccurrence) throw new Error('test fixture must be seasonal');
+    impossibleOccurrence.startDate = '2026-02-30';
+    expect(() => validateSmallTalkEncounterDocument(impossibleDate)).toThrow(
+      'seasonal.occurrence.startDate must be an ISO date',
+    );
+
+    const nonOfficialDateSource = cloneDocument();
+    const nonOfficialOccurrence = nonOfficialDateSource.families[1].seasonal?.occurrence;
+    if (!nonOfficialOccurrence) throw new Error('test fixture must be seasonal');
+    nonOfficialOccurrence.sourceRefIds = ['issue-459-seasonal-contract'];
+    expect(() => validateSmallTalkEncounterDocument(nonOfficialDateSource)).toThrow(
+      'seasonal.occurrence.sourceRefIds must include an official-date source',
+    );
   });
 
   it('requires exactly one bounded repair and rejects cyclic branch graphs', () => {
@@ -160,6 +176,13 @@ describe('Small Talk Lab authored encounter contract', () => {
     repair.outcome = 'CONTINUE';
     expect(() => validateSmallTalkEncounterDocument(noRepair)).toThrow(
       'document must contain exactly one REPAIR branch; found 0',
+    );
+
+    const repairWithoutMove = cloneDocument();
+    const repairStrategy = repairWithoutMove.families[1].encounters[0].beats[1].strategies[0];
+    repairStrategy.movePattern = ['INVITE'];
+    expect(() => validateSmallTalkEncounterDocument(repairWithoutMove)).toThrow(
+      'movePattern must include REPAIR for a REPAIR outcome',
     );
 
     const cyclic = cloneDocument();
