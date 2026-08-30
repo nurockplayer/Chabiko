@@ -65,4 +65,13 @@ describe('basic vocabulary detail route (#342)', () => {
     expect(client).toContain('entry.example');
     expect(client).toContain('example: row.example');
   });
+
+  it('turns the existing back action and catalog breadcrumb into a safe return target', async () => {
+    const route = await readFile('src/pages/vocabulary/basic/words/[learnerId]/index.astro', 'utf8');
+    expect(route).toContain('sanitizeBasicVocabularyCatalogReturnTarget');
+    expect(route).toContain("searchParams.get('from')");
+    expect(route).toContain("'単語一覧の元の位置に戻る'");
+    expect(route).toContain("'単語一覧に戻る'");
+    expect(route).toContain('data-learner-id={item.learnerId}');
+  });
 });

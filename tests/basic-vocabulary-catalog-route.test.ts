@@ -65,8 +65,10 @@ describe('basic vocabulary catalog route', () => {
     }
     expect(component).toContain('前へ');
     expect(component).toContain('次へ');
-    // Search, status, and part of speech are page-memory only: no URL or storage persistence.
-    expect(client).not.toMatch(/URLSearchParams|history\.|location\.(search|hash)/);
+    // Browse state is URL-addressable but remains independent from storage.
+    expect(client).toContain('parseBasicVocabularyCatalogUrlState');
+    expect(client).toContain('history.replaceState');
+    expect(client).not.toMatch(/localStorage\.(setItem|removeItem|clear)|sessionStorage/);
   });
 
   it('server-renders exactly the first 24 production-order cards via the domain selector', async () => {
@@ -92,7 +94,7 @@ describe('basic vocabulary catalog route', () => {
     );
     // The component maps exactly this selector result into its SSR card list.
     expect(component).toContain('firstPage.items.map');
-    expect(component).toContain('<li class="basic-vocabulary-catalog-card">');
+    expect(component).toContain('class="basic-vocabulary-catalog-card"');
     // Exactly one SSR list container holds the bounded 24-card page.
     expect(component.match(/<ol class="basic-vocabulary-catalog-results"/g)).toHaveLength(1);
   });
@@ -101,9 +103,9 @@ describe('basic vocabulary catalog route', () => {
     const component = await readFile('src/components/vocabulary/BasicVocabularyCatalog.astro', 'utf8');
 
     expect(component).toContain('class="basic-vocabulary-catalog-detail-link"');
-    expect(component).toContain(
-      'href={`/vocabulary/basic/words/${pageItem.item.learnerId}/`}',
-    );
+    expect(component).toContain('buildBasicVocabularyCatalogDetailHref');
+    expect(component).toContain('selectedItemId: pageItem.item.learnerId');
+    expect(component).toContain('data-catalog-item-id={pageItem.item.learnerId}');
     expect(component.indexOf('basic-vocabulary-catalog-detail-link')).toBeLessThan(
       component.indexOf('{pageItem.item.simplified}'),
     );

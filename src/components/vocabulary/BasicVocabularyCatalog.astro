@@ -1,6 +1,7 @@
 ---
 import type { BasicVocabularyCatalogItem } from '../../content/basicVocabularyCatalog';
 import { selectBasicVocabularyCatalogPage } from '../../domain/basicVocabularyCatalog';
+import { buildBasicVocabularyCatalogDetailHref } from '../../domain/basicVocabularyCatalogState';
 
 export interface Props {
   items: readonly BasicVocabularyCatalogItem[];
@@ -67,7 +68,11 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
   <ol class="basic-vocabulary-catalog-results" data-catalog-results>
     {
       firstPage.items.map((pageItem) => (
-        <li class="basic-vocabulary-catalog-card">
+        <li
+          class="basic-vocabulary-catalog-card"
+          id={`word-${pageItem.item.learnerId}`}
+          data-catalog-item-id={pageItem.item.learnerId}
+        >
           <div class="basic-vocabulary-catalog-illustration">
             <img
               src={pageItem.item.illustration.assetPath}
@@ -81,7 +86,13 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
           <div class="basic-vocabulary-catalog-body">
             <a
               class="basic-vocabulary-catalog-detail-link"
-              href={`/vocabulary/basic/words/${pageItem.item.learnerId}/`}
+              href={buildBasicVocabularyCatalogDetailHref(pageItem.item.learnerId, {
+                searchText: '',
+                status: 'all',
+                partOfSpeech: 'all',
+                page: 1,
+                selectedItemId: pageItem.item.learnerId,
+              })}
             >
               <h3 class="basic-vocabulary-catalog-simplified" lang="zh-Hans">
                 {pageItem.item.simplified}

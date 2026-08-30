@@ -117,6 +117,8 @@ const json = JSON.stringify({
 <style>
   .flashcard-session-root {
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .flashcard-fallback {
     text-align: center; color: var(--ink-secondary); padding: var(--sp-8);
@@ -133,6 +135,8 @@ const json = JSON.stringify({
     border: 1px solid var(--hairline);
     border-radius: var(--radius-control);
     padding: var(--sp-6);
+    box-sizing: border-box;
+    min-width: 0;
   }
   .setup-group {
     display: flex;
@@ -147,9 +151,11 @@ const json = JSON.stringify({
   .setup-options {
     display: flex;
     gap: var(--sp-2);
+    min-width: 0;
   }
   .setup-option {
     flex: 1;
+    min-width: 0;
     padding: var(--sp-2) var(--sp-4);
     border: 2px solid var(--hairline-strong);
     border-radius: var(--radius-control);
@@ -203,6 +209,7 @@ const json = JSON.stringify({
   .flashcard-container {
     display: flex; flex-direction: column; align-items: center;
     gap: var(--sp-8); max-width: 36rem; margin: 0 auto;
+    min-width: 0;
   }
   .flashcard-card {
     width: 100%; min-height: 14rem;
@@ -210,6 +217,8 @@ const json = JSON.stringify({
     justify-content: center; gap: var(--sp-4);
     background: var(--paper-deep); border: 1px solid var(--hairline);
     border-radius: var(--radius-card); padding: var(--sp-8); text-align: center;
+    box-sizing: border-box;
+    min-width: 0;
   }
   .flashcard-front {
     font-family: var(--font-serif-zh);
@@ -235,9 +244,10 @@ const json = JSON.stringify({
   /* ── Actions ──────────────────────────────────────────────────────────── */
   .flashcard-actions {
     width: 100%; display: flex; flex-direction: column; gap: var(--sp-2);
+    min-width: 0;
   }
   .flashcard-ratings {
-    display: flex; gap: var(--sp-2); width: 100%;
+    display: flex; gap: var(--sp-2); width: 100%; min-width: 0;
   }
   .hidden { display: none !important; }
   .flashcard-ratings.hidden { display: none !important; }
@@ -248,6 +258,7 @@ const json = JSON.stringify({
     background: var(--paper); color: var(--ink);
     font-size: 1rem; font-weight: 600; cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
+    box-sizing: border-box;
   }
   .flashcard-btn:hover:not(:disabled) { background: var(--jade-soft); }
   .flashcard-btn:focus-visible {

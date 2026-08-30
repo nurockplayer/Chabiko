@@ -1,8 +1,58 @@
 import { expect, test } from '@playwright/test';
 
-const BASE_URL = 'http://127.0.0.1:4321';
+const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:4321';
 
 test.describe('/vocabulary/hsk/1/ answer secrecy', () => {
+  test('keeps every flashcard lifecycle state inside narrow viewports', async ({ page }) => {
+    const viewports = [
+      { width: 320, height: 800 },
+      { width: 390, height: 844 },
+    ];
+
+    for (const colorScheme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme });
+      for (const viewport of viewports) {
+        await page.setViewportSize(viewport);
+        await page.goto(`${BASE_URL}/vocabulary/hsk/1/`, { waitUntil: 'load' });
+
+        const assertContained = async (selector: string) => {
+          const boxes = await page.locator(selector).evaluateAll((elements) =>
+            elements
+              .filter((element) => getComputedStyle(element).display !== 'none')
+              .map((element) => {
+                const box = element.getBoundingClientRect();
+                return { left: box.left, right: box.right, width: box.width };
+              }),
+          );
+          for (const box of boxes) {
+            expect(box.left, `${selector} left`).toBeGreaterThanOrEqual(0);
+            expect(box.right, `${selector} right`).toBeLessThanOrEqual(viewport.width);
+            expect(box.width, `${selector} width`).toBeLessThanOrEqual(viewport.width);
+          }
+          expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+            await page.evaluate(() => document.documentElement.clientWidth),
+          );
+        };
+
+        await assertContained('#setup-panel');
+        const start = page.getByRole('button', { name: 'スタート' });
+        await expect(start).toBeEnabled();
+        await start.click();
+        await assertContained('#flashcard-card, .flashcard-actions, #btn-reveal');
+
+        await page.getByRole('button', { name: '答えを見る' }).click();
+        await assertContained('#flashcard-card, #rating-actions, #btn-again, #btn-unsure, #btn-known');
+        await page.getByRole('button', { name: '覚えた' }).click();
+        await page.getByRole('button', { name: '答えを見る' }).click();
+        await page.getByRole('button', { name: '覚えた' }).click();
+        await assertContained('.flashcard-completion, #btn-restart');
+
+        await page.getByRole('button', { name: 'もう一度' }).click();
+        await assertContained('#setup-panel');
+      }
+    }
+  });
+
   test('answer artifact contains exactly the production-eligible HSK 1 entries', async ({
     request,
   }) => {

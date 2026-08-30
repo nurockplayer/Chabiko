@@ -121,6 +121,7 @@ beforeEach(() => {
   document.body.replaceChildren();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  window.history.replaceState(null, '', '/vocabulary/basic/words/');
   mockedGetClient.mockReturnValue(null as never);
 });
 
@@ -131,6 +132,7 @@ afterEach(() => {
   document.body.replaceChildren();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  window.history.replaceState(null, '', '/vocabulary/basic/words/');
   vi.restoreAllMocks();
 });
 

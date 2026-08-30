@@ -20,7 +20,7 @@
 
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { initBasicVocabularySession } from '../src/client/basicVocabularySession';
 import { initBasicVocabularyCatalog } from '../src/client/basicVocabularyCatalog';
 import { loadBasicVocabularyCatalog } from '../src/content/basicVocabularyCatalog';
@@ -103,6 +103,10 @@ const catalogBadges = (root: HTMLElement): (string | null | undefined)[] =>
     (card) => card.querySelector('[data-status]')?.textContent,
   );
 
+beforeEach(() => {
+  window.history.replaceState(null, '', '/vocabulary/basic/words/');
+});
+
 // ─── selectSession spy (Issue #281 continue-vs-replay evidence) ──────────────
 
 const originalSelectSession = BasicVocabularyProgressStore.prototype.selectSession;
@@ -132,6 +136,7 @@ afterEach(() => {
   document.body.replaceChildren();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  window.history.replaceState(null, '', '/vocabulary/basic/words/');
 });
 
 // ─── Source / route contract ──────────────────────────────────────────────────
