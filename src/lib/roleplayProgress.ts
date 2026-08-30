@@ -35,9 +35,10 @@ export function parseRoleplayProgress(
     ) {
       return [];
     }
-    const ids = ((parsed as Record<string, unknown>).completedCardIds as unknown[]).filter(
-      (id: unknown): id is string => typeof id === 'string' && id.length > 0,
-    );
+    const ids = (parsed as Record<string, unknown>).completedCardIds as unknown[];
+    if (!ids.every((id): id is string => typeof id === 'string' && id.length > 0)) {
+      return [];
+    }
     const unique = [...new Set(ids)];
     return knownCardIds === undefined
       ? unique

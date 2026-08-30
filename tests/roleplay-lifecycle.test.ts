@@ -40,6 +40,21 @@ describe('roleplay rehearsal transitions', () => {
 });
 
 describe('roleplay progress isolation', () => {
+  it('rejects a mixed malformed completion document atomically', () => {
+    const storage = memoryStorage({
+      [ROLEPLAY_PROGRESS_KEY]: JSON.stringify({
+        version: 1,
+        completedCardIds: ['roleplay-airport-001', 42],
+      }),
+    });
+    const store = new RoleplayProgressStore(
+      storage,
+      new Set(['roleplay-airport-001']),
+    );
+
+    expect(store.getCompletedCardIds()).toEqual([]);
+  });
+
   it('parses safely, ignores unknown IDs, and writes once per new card', () => {
     const storage = memoryStorage({ [ROLEPLAY_PROGRESS_KEY]: '{bad' });
     const store = new RoleplayProgressStore(storage, new Set(['roleplay-airport-001']));
