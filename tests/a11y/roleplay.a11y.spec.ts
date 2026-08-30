@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -74,4 +75,40 @@ test.describe('/roleplay/ launch surface', () => {
       await expectViewportContainment(page, ['[data-roleplay-active]', '[data-roleplay-next]']);
     });
   }
+});
+
+test.describe('/roleplay/ dark-theme revealed actions', () => {
+  test.use({
+    colorScheme: 'dark',
+    storageState: fileURLToPath(
+      new URL('./fixtures/dark.storage.json', import.meta.url),
+    ),
+  });
+
+  test('start and next actions remain WCAG AA clean when visible and hovered', async ({ page }) => {
+    const expectWcagAaClean = async (): Promise<void> => {
+      const { violations } = await new AxeBuilder({ page }).analyze();
+      expect(
+        violations.filter(
+          (violation) =>
+            violation.impact === 'serious' || violation.impact === 'critical',
+        ),
+      ).toEqual([]);
+    };
+
+    await page.goto('/roleplay/', { waitUntil: 'load' });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.locator('[data-roleplay-card-select="roleplay-airport-001"]').click();
+    await expect(page.locator('[data-roleplay-start]')).toBeVisible();
+    await expectWcagAaClean();
+    await page.locator('[data-roleplay-start]').hover();
+    await expectWcagAaClean();
+
+    await page.locator('[data-roleplay-start]').click();
+    await page.locator('[data-roleplay-reveal]').click();
+    await expect(page.locator('[data-roleplay-next]')).toBeVisible();
+    await expectWcagAaClean();
+    await page.locator('[data-roleplay-next]').hover();
+    await expectWcagAaClean();
+  });
 });
