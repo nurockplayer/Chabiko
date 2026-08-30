@@ -86,8 +86,8 @@ const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
             <li data-roleplay-line-template data-line-index={lineIndex} data-speaker={line.speaker}>
               <span class="roleplay-line__speaker" data-roleplay-speaker>{line.speaker === 'learner' ? 'あなた' : '相手'}</span>
               <span class="roleplay-line__script" data-roleplay-script></span>
-              <span class="roleplay-line__pinyin" data-roleplay-pinyin></span>
-              <span class="roleplay-line__japanese" data-roleplay-japanese></span>
+              <span class="roleplay-line__pinyin" data-roleplay-pinyin lang="zh-Latn"></span>
+              <span class="roleplay-line__japanese" data-roleplay-japanese lang="ja"></span>
               <span class="roleplay-line__fallback" data-roleplay-fallback lang="ja"></span>
             </li>
           ))

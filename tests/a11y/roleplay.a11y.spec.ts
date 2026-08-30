@@ -71,6 +71,8 @@ test.describe('/roleplay/ launch surface', () => {
       await expect(page.locator('[data-roleplay-active]')).not.toContainText(FIRST_LEARNER_LINE);
       await page.locator('[data-roleplay-reveal]').click();
       await expect(page.locator('[data-roleplay-active]')).toContainText(FIRST_SIMPLIFIED_LINE);
+      await expect(page.locator('[data-roleplay-pinyin]').first()).toHaveAttribute('lang', 'zh-Latn');
+      await expect(page.locator('[data-roleplay-japanese]').first()).toHaveAttribute('lang', 'ja');
       await expect(page.locator('[data-roleplay-next]')).toBeVisible();
       await expectViewportContainment(page, ['[data-roleplay-active]', '[data-roleplay-next]']);
     });
