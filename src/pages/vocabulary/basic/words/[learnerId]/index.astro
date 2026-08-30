@@ -29,7 +29,11 @@ const { item } = Astro.props as { item: BasicVocabularyDetailItem };
     <Header themeEnabled />
   </Fragment>
 
-  <div class="basic-vocabulary-detail-page">
+  <div
+    class="basic-vocabulary-detail-page"
+    data-basic-vocabulary-detail-page
+    data-learner-id={item.learnerId}
+  >
     <Breadcrumb
       crumbs={[
         { label: 'ホーム', href: '/' },
@@ -41,6 +45,43 @@ const { item } = Astro.props as { item: BasicVocabularyDetailItem };
     <BasicVocabularyDetail item={item} />
   </div>
 </BaseLayout>
+
+<script>
+  import {
+    BASIC_VOCABULARY_CATALOG_PATH,
+    sanitizeBasicVocabularyCatalogReturnTarget,
+  } from '../../../../../domain/basicVocabularyCatalogState';
+
+  function initialiseCatalogReturn(): void {
+    const rawTarget = new URL(window.location.href).searchParams.get('from');
+    document.querySelectorAll<HTMLElement>('[data-basic-vocabulary-detail-page]')
+      .forEach((root) => {
+        const learnerId = root.dataset.learnerId;
+        if (learnerId === undefined) return;
+        const returnTarget = sanitizeBasicVocabularyCatalogReturnTarget(
+          rawTarget,
+          learnerId,
+        );
+        const explicitReturn = root.querySelector<HTMLAnchorElement>(
+          '.basic-vocabulary-detail-back a',
+        );
+        if (explicitReturn) {
+          explicitReturn.href = returnTarget;
+          explicitReturn.textContent = returnTarget === BASIC_VOCABULARY_CATALOG_PATH
+            ? '単語一覧に戻る'
+            : '単語一覧の元の位置に戻る';
+        }
+        root.querySelectorAll<HTMLAnchorElement>(
+          `a[href="${BASIC_VOCABULARY_CATALOG_PATH}"]`,
+        ).forEach((link) => {
+          link.href = returnTarget;
+        });
+      });
+  }
+
+  initialiseCatalogReturn();
+  document.addEventListener('astro:page-load', initialiseCatalogReturn);
+</script>
 
 <style>
   .basic-vocabulary-detail-page {
