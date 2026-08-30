@@ -137,6 +137,7 @@ afterEach(() => {
   document.body.replaceChildren();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  window.history.replaceState(null, '', '/vocabulary/basic/words/');
   vi.restoreAllMocks();
 });
 
@@ -445,6 +446,105 @@ describe('pagination', () => {
       nextButton(root).click();
       expect(cardsOf(root).length).toBeLessThanOrEqual(BASIC_VOCABULARY_CATALOG_PAGE_SIZE);
     }
+  });
+});
+
+// ─── URL and detail return contract ──────────────────────────────────────────
+
+describe('URL-addressable state and detail return context', () => {
+  it('restores page 2 directly from the URL and survives a fresh initialization', () => {
+    const catalog = loadBasicVocabularyCatalog();
+    window.history.replaceState(null, '', '/vocabulary/basic/words/?pos=noun&page=2');
+
+    const firstRoot = createCatalogRoot(catalog);
+    const firstCleanup = initialize(firstRoot);
+    expect(partOfSpeechSelect(firstRoot).value).toBe('noun');
+    expect(indicator(firstRoot).textContent).toMatch(/^2 \/ \d+$/);
+    const page2FirstId = cardsOf(firstRoot)[0].id;
+
+    firstCleanup();
+    cleanups.delete(firstCleanup);
+    document.body.replaceChildren();
+
+    const refreshedRoot = createCatalogRoot(catalog);
+    initialize(refreshedRoot);
+    expect(partOfSpeechSelect(refreshedRoot).value).toBe('noun');
+    expect(indicator(refreshedRoot).textContent).toMatch(/^2 \/ \d+$/);
+    expect(cardsOf(refreshedRoot)[0].id).toBe(page2FirstId);
+    expect(window.location.pathname + window.location.search)
+      .toBe('/vocabulary/basic/words/?pos=noun&page=2');
+  });
+
+  it('writes a deterministic combined search, status, and POS no-result URL', () => {
+    const root = createCatalogRoot(loadBasicVocabularyCatalog());
+    initialize(root);
+
+    statusSelect(root).value = 'learned';
+    statusSelect(root).dispatchEvent(new Event('change'));
+    partOfSpeechSelect(root).value = 'verb';
+    partOfSpeechSelect(root).dispatchEvent(new Event('change'));
+    searchInput(root).value = 'zzz-no-match-zzz';
+    searchInput(root).dispatchEvent(new Event('input'));
+
+    expect(window.location.pathname + window.location.search)
+      .toBe('/vocabulary/basic/words/?q=zzz-no-match-zzz&status=learned&pos=verb');
+    expect(summary(root).textContent).toBe('条件に一致する単語がありません');
+    expect(indicator(root).textContent).toBe('1 / 1');
+    expect(cardsOf(root)).toHaveLength(0);
+  });
+
+  it('clamps invalid and out-of-range state to one clear canonical URL', () => {
+    window.history.replaceState(
+      null,
+      '',
+      '/vocabulary/basic/words/?status=wrong&pos=other&page=999&item=missing&stale=1',
+    );
+    const root = createCatalogRoot(loadBasicVocabularyCatalog());
+    initialize(root);
+
+    expect(statusSelect(root).value).toBe('all');
+    expect(partOfSpeechSelect(root).value).toBe('all');
+    expect(indicator(root).textContent).toBe('66 / 66');
+    expect(window.location.pathname + window.location.search + window.location.hash)
+      .toBe('/vocabulary/basic/words/?page=66');
+  });
+
+  it('carries the selected card through detail navigation and restores its focus', () => {
+    const catalog = loadBasicVocabularyCatalog();
+    const selected = catalog[24];
+    window.history.replaceState(null, '', '/vocabulary/basic/words/?page=2');
+    const root = createCatalogRoot(catalog);
+    initialize(root);
+
+    const link = root.querySelector<HTMLAnchorElement>(
+      `.basic-vocabulary-catalog-detail-link[href^="/vocabulary/basic/words/${selected.learnerId}/"]`,
+    )!;
+    link.addEventListener('click', (event) => event.preventDefault());
+    link.dispatchEvent(new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+    }));
+
+    const selectedCatalogTarget =
+      `/vocabulary/basic/words/?page=2&item=${selected.learnerId}#word-${selected.learnerId}`;
+    expect(window.location.pathname + window.location.search + window.location.hash)
+      .toBe(selectedCatalogTarget);
+    expect(new URL(link.href).searchParams.get('from')).toBe(selectedCatalogTarget);
+
+    const cleanup = [...cleanups].at(-1)!;
+    cleanup();
+    cleanups.delete(cleanup);
+    document.body.replaceChildren();
+    const returnedRoot = createCatalogRoot(catalog);
+    initialize(returnedRoot);
+
+    const returnedLink = returnedRoot.querySelector<HTMLAnchorElement>(
+      `#word-${selected.learnerId} .basic-vocabulary-catalog-detail-link`,
+    );
+    expect(indicator(returnedRoot).textContent).toBe('2 / 66');
+    expect(returnedLink).not.toBeNull();
+    expect(document.activeElement).toBe(returnedLink);
   });
 });
 

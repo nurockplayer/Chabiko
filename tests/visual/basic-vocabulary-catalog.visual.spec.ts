@@ -84,7 +84,7 @@ for (const viewport of VIEWPORTS) {
     for (const href of await detailLinks.evaluateAll((links) =>
       links.map((link) => link.getAttribute('href')),
     )) {
-      expect(href).toMatch(/^\/vocabulary\/basic\/words\/[^/]+\/$/);
+      expect(href).toMatch(/^\/vocabulary\/basic\/words\/[^/]+\/\?from=/);
     }
 
     await page.locator('.basic-vocabulary-catalog-card').first().scrollIntoViewIfNeeded();

@@ -9,13 +9,17 @@ import {
 } from '../domain/basicVocabularyCatalog';
 import type { BasicVocabularyCatalogItem } from '../content/basicVocabularyCatalog';
 import type { VocabularyProgressStatus } from '../domain/vocabularyProgress';
+import {
+  buildBasicVocabularyCatalogDetailHref,
+  parseBasicVocabularyCatalogUrlState,
+  serializeBasicVocabularyCatalogUrlState,
+} from '../domain/basicVocabularyCatalogState';
 
 /** Read-only browser controller for the full-word catalog at
  * `/vocabulary/basic/words/`. Binds the #278 pure domain selection logic to
  * the DOM and to the local progress store, so every render is a truthful
- * snapshot of `store.getStatus()` — search, status filter, part-of-speech
- * filter, and page are page-memory only. The catalog is never mutated and
- * progress is never written here. */
+ * snapshot of `store.getStatus()`. Search, filters, page, and the selected
+ * return item use one deterministic URL contract; progress is never written. */
 export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   cleanups.get(root)?.();
 
@@ -50,10 +54,17 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   const nextButton = root.querySelector<HTMLButtonElement>('[data-catalog-page="next"]');
   const indicatorElement = root.querySelector<HTMLElement>('[data-catalog-page-indicator]');
 
-  let statusFilter: BasicVocabularyCatalogStatusFilter = 'all';
-  let partOfSpeechFilter: BasicVocabularyCatalogPartOfSpeechFilter = 'all';
-  let searchText = '';
-  let page = 1;
+  const initialState = parseBasicVocabularyCatalogUrlState(window.location.search);
+  let statusFilter: BasicVocabularyCatalogStatusFilter = initialState.status;
+  let partOfSpeechFilter: BasicVocabularyCatalogPartOfSpeechFilter =
+    initialState.partOfSpeech;
+  let searchText = initialState.searchText;
+  let page = initialState.page;
+  let selectedItemId = initialState.selectedItemId;
+
+  if (searchInput) searchInput.value = searchText;
+  if (statusSelect) statusSelect.value = statusFilter;
+  if (partOfSpeechSelect) partOfSpeechSelect.value = partOfSpeechFilter;
 
   function readStatusMap(): Record<string, VocabularyProgressStatus> {
     const statusById: Record<string, VocabularyProgressStatus> = {};
@@ -74,6 +85,8 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     const item = pageItem.item;
     const card = document.createElement('li');
     card.className = 'basic-vocabulary-catalog-card';
+    card.id = `word-${item.learnerId}`;
+    card.dataset.catalogItemId = item.learnerId;
 
     const illustration = document.createElement('div');
     illustration.className = 'basic-vocabulary-catalog-illustration';
@@ -92,7 +105,13 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
 
     const detailLink = document.createElement('a');
     detailLink.className = 'basic-vocabulary-catalog-detail-link';
-    detailLink.href = `/vocabulary/basic/words/${encodeURIComponent(item.learnerId)}/`;
+    detailLink.href = buildBasicVocabularyCatalogDetailHref(item.learnerId, {
+      searchText,
+      status: statusFilter,
+      partOfSpeech: partOfSpeechFilter,
+      page,
+      selectedItemId: item.learnerId,
+    });
 
     const heading = document.createElement('h3');
     heading.className = 'basic-vocabulary-catalog-simplified';
@@ -133,7 +152,34 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     return card;
   }
 
-  function render(): void {
+  function currentCatalogTarget(): string {
+    return serializeBasicVocabularyCatalogUrlState({
+      searchText,
+      status: statusFilter,
+      partOfSpeech: partOfSpeechFilter,
+      page,
+      selectedItemId,
+    });
+  }
+
+  function replaceCatalogUrl(): void {
+    const target = currentCatalogTarget();
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (target === current) return;
+    window.history.replaceState(window.history.state, '', target);
+  }
+
+  function restoreSelectedItemFocus(): void {
+    if (selectedItemId === undefined || resultsList === null) return;
+    const card = [...resultsList.querySelectorAll<HTMLElement>('[data-catalog-item-id]')]
+      .find((candidate) => candidate.dataset.catalogItemId === selectedItemId);
+    const link = card?.querySelector<HTMLAnchorElement>('.basic-vocabulary-catalog-detail-link');
+    if (card === undefined || link === null || link === undefined) return;
+    link.focus({ preventScroll: true });
+    card.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+  }
+
+  function render(restoreSelection = false): void {
     const statusById = readStatusMap();
     const result = selectBasicVocabularyCatalogPage(items, statusById, {
       searchText,
@@ -142,6 +188,10 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
       page,
     });
     page = result.page;
+    if (selectedItemId !== undefined &&
+        !result.items.some(({ item }) => item.learnerId === selectedItemId)) {
+      selectedItemId = undefined;
+    }
 
     if (summaryElement) {
       summaryElement.textContent =
@@ -161,6 +211,8 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     if (indicatorElement) {
       indicatorElement.textContent = `${result.page} / ${result.pageCount}`;
     }
+    replaceCatalogUrl();
+    if (restoreSelection) restoreSelectedItemFocus();
   }
 
   function handleSearchInput(): void {
@@ -168,6 +220,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     if (value === searchText) return;
     searchText = value;
     page = 1;
+    selectedItemId = undefined;
     render();
   }
 
@@ -176,6 +229,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     if (value === statusFilter) return;
     statusFilter = value;
     page = 1;
+    selectedItemId = undefined;
     render();
   }
 
@@ -186,6 +240,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     if (value === partOfSpeechFilter) return;
     partOfSpeechFilter = value;
     page = 1;
+    selectedItemId = undefined;
     render();
   }
 
@@ -208,24 +263,48 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     const result = selectBasicVocabularyCatalogPage(items, statusById, target);
     if (result.page === page) return;
     page = result.page;
+    selectedItemId = undefined;
     render();
   }
 
   function onClick(event: MouseEvent): void {
     const target = event.target;
     if (!(target instanceof Element)) return;
+    const detailLink = target.closest<HTMLAnchorElement>(
+      '.basic-vocabulary-catalog-detail-link',
+    );
+    if (detailLink && root.contains(detailLink) && event.button === 0 &&
+        !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      selectedItemId = detailLink.closest<HTMLElement>('[data-catalog-item-id]')
+        ?.dataset.catalogItemId;
+      replaceCatalogUrl();
+      return;
+    }
     const control = target.closest<HTMLElement>('[data-catalog-page]');
     if (!control || !root.contains(control)) return;
     handlePage(control.dataset.catalogPage as 'previous' | 'next');
   }
 
-  function refreshFromStore(): void {
+  function refreshFromStore(restoreSelection = false): void {
     store.refresh();
-    render();
+    render(restoreSelection);
   }
 
   function onPageShow(): void {
-    refreshFromStore();
+    refreshFromStore(true);
+  }
+
+  function onPopState(): void {
+    const state = parseBasicVocabularyCatalogUrlState(window.location.search);
+    searchText = state.searchText;
+    statusFilter = state.status;
+    partOfSpeechFilter = state.partOfSpeech;
+    page = state.page;
+    selectedItemId = state.selectedItemId;
+    if (searchInput) searchInput.value = searchText;
+    if (statusSelect) statusSelect.value = statusFilter;
+    if (partOfSpeechSelect) partOfSpeechSelect.value = partOfSpeechFilter;
+    render(true);
   }
 
   function onStorage(event: StorageEvent): void {
@@ -259,9 +338,10 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
   statusSelect?.addEventListener('change', handleStatusChange);
   partOfSpeechSelect?.addEventListener('change', handlePartOfSpeechChange);
   window.addEventListener('pageshow', onPageShow);
+  window.addEventListener('popstate', onPopState);
   window.addEventListener('storage', onStorage);
 
-  render();
+  render(true);
 
   const cleanup = (): void => {
     unsubscribeCoordinator();
@@ -270,6 +350,7 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     statusSelect?.removeEventListener('change', handleStatusChange);
     partOfSpeechSelect?.removeEventListener('change', handlePartOfSpeechChange);
     window.removeEventListener('pageshow', onPageShow);
+    window.removeEventListener('popstate', onPopState);
     window.removeEventListener('storage', onStorage);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };

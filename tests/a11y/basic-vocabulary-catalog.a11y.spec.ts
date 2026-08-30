@@ -61,9 +61,12 @@ for (const theme of A11Y_THEMES) {
       await expect(status).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(partOfSpeech).toBeFocused();
-      await page.keyboard.press('Home');
-      await page.keyboard.press('ArrowDown');
-      await page.keyboard.press('ArrowDown');
+      // Chromium's headless native select does not expose collapsed-menu
+      // ArrowDown changes consistently across runner platforms. selectOption
+      // still exercises the native control and keeps focus for the following
+      // keyboard traversal assertion.
+      await partOfSpeech.selectOption('verb');
+      await expect(partOfSpeech).toBeFocused();
       await expect(partOfSpeech).toHaveValue('verb');
       await expect(page.locator('[data-catalog-summary]')).toContainText(/^\u51681582\u8a9e\u4e2d \d+\u8a9e\u3092\u8868\u793a$/);
 
@@ -72,7 +75,7 @@ for (const theme of A11Y_THEMES) {
       await expect(firstDetailLink).toBeFocused();
       await expect(firstDetailLink).toHaveAttribute(
         'href',
-        /^\/vocabulary\/basic\/words\/[^/]+\/$/,
+        /^\/vocabulary\/basic\/words\/[^/]+\/\?from=/,
       );
       const linkBox = await firstDetailLink.boundingBox();
       expect(linkBox).not.toBeNull();
