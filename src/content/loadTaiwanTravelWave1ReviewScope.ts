@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { buildLearningContentGraph } from './loadLearningContentGraph';
 import { loadLessons } from './loadLessons';
 import { sha256Hex } from './loadTeacherReviewCampaign';
+import { TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS } from './taiwanTravelWave1Production';
 import { stableStringify } from '../domain/teacherReview';
 import type {
   ContentRef,
@@ -142,7 +143,7 @@ export interface TaiwanTravelWave1DecisionContract {
   nonPromotableOutcomes: ['rejected', 'needs-changes'];
   fingerprint: typeof FINGERPRINT_CONTRACT;
   separateDecisionNamespace: true;
-  productionUnlinked: true;
+  productionUnlinked: false;
 }
 
 export interface TaiwanTravelWave1ReviewScopeManifest {
@@ -204,7 +205,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   blockedContent: string[];
   decisionCount: number;
   promotionAllowed: false;
-  productionLinked: false;
+  productionLinked: true;
 }
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -312,7 +313,10 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   );
   assert(contract.fingerprint === FINGERPRINT_CONTRACT, 'fingerprint contract drifted');
   assert(contract.separateDecisionNamespace === true, 'decision namespace must remain separate');
-  assert(contract.productionUnlinked === true, 'scope must remain production-unlinked');
+  assert(
+    contract.productionUnlinked === false,
+    'scope must record the bounded production linkage',
+  );
 
   if (manifest.overallDecision !== null) {
     validateExactKeys(
@@ -723,10 +727,6 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
     actualIds.every((id, index) => id === TAIWAN_TRAVEL_WAVE1_EXPECTED_IDS[index]),
     'candidate lesson order must be exactly lesson-011 through lesson-024',
   );
-  const productionIds = new Set(sourceBundle.productionLessons.map((lesson) => lesson.id));
-  for (const id of actualIds) {
-    assert(!productionIds.has(id), `candidate lesson '${id}' overlaps production`);
-  }
   sourceBundle.lessons.forEach(validateLesson);
   const knownLessonIds = new Set([
     ...sourceBundle.productionLessons
@@ -785,10 +785,14 @@ function validateCandidateSources(sourceBundle: TaiwanTravelWave1SourceBundle): 
   }
 
   const productionCanDos = new Set(
-    sourceBundle.productionLessons.map((lesson) => lesson.canDoJa.trim()),
+    sourceBundle.productionLessons
+      .filter((lesson) => TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS.has(lesson.id))
+      .map((lesson) => lesson.canDoJa.trim()),
   );
   const productionCoreSentences = new Set(
-    sourceBundle.productionLessons.map((lesson) => lesson.coreSentence.trim()),
+    sourceBundle.productionLessons
+      .filter((lesson) => TAIWAN_TRAVEL_WAVE1_PRODUCTION_BASELINE_IDS.has(lesson.id))
+      .map((lesson) => lesson.coreSentence.trim()),
   );
   const candidateCanDos = new Set<string>();
   const candidateCoreSentences = new Set<string>();
@@ -871,6 +875,35 @@ export async function fingerprintTaiwanTravelWave1ReviewVersion(
   );
 }
 
+async function validateBoundedProductionLink(
+  records: readonly TaiwanTravelWave1ReviewRecord[],
+  productionLessons: readonly Lesson[],
+): Promise<void> {
+  assert(
+    productionLessons.length === TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS.length,
+    `production link must contain exactly ${TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS.length} lessons`,
+  );
+  assert(
+    productionLessons.every(
+      (lesson, index) => lesson.id === TAIWAN_TRAVEL_PRODUCTION_LESSON_IDS[index],
+    ),
+    'production link lesson order must be exactly lesson-001 through lesson-024',
+  );
+
+  for (const [index, record] of records.entries()) {
+    const productionLesson = productionLessons[index + 10];
+    assert(
+      productionLesson.reviewStatus === 'draft',
+      `production-linked lesson '${record.lesson.id}' must remain draft`,
+    );
+    assert(
+      (await fingerprintTaiwanTravelWave1Lesson(productionLesson)) ===
+        record.fingerprint,
+      `production link drifted for '${record.lesson.id}'`,
+    );
+  }
+}
+
 function loadSourceBundle(root: string): TaiwanTravelWave1SourceBundle {
   const lessonBundle = loadLessons(resolve(root, TAIWAN_TRAVEL_WAVE1_LESSONS_PATH));
   const graphBundle = readJson<{ schemaVersion: number; paths: MutableCandidatePath[] }>(
@@ -922,6 +955,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
     ),
     'manifest lesson order must be exactly lesson-011 through lesson-024',
   );
+  await validateBoundedProductionLink(records, sourceBundle.productionLessons);
 
   const reviewVersion = await fingerprintTaiwanTravelWave1ReviewVersion({
     schemaVersion: manifest.schemaVersion,
@@ -952,7 +986,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
       0,
     ),
     promotionAllowed: false,
-    productionLinked: false,
+    productionLinked: true,
   };
 }
 
@@ -1053,7 +1087,7 @@ export function renderTaiwanTravelWave1ReviewPacket(
     '# Taiwan Travel Wave 1 Human Review Packet',
     '',
     `**Scope:** ${packet.scopeId}`,
-    '**Package state:** isolated candidate content; not linked to the production Taiwan path',
+    '**Package state:** separate review package; production exposure uses a bounded reconciled copy',
     `**Reviewed items:** ${reviewedItems}`,
     `**Review version:** ${packet.reviewVersion}`,
     `**Overall review outcome:** ${overallDecisionOutcome}`,

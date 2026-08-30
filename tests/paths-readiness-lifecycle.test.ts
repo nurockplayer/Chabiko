@@ -249,8 +249,8 @@ describe('initial render', () => {
     const root = createRoot();
     initialize(root);
 
-    // Taiwan travel has 21 members, none complete.
-    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 21');
+    // Taiwan travel has 35 members (24 lessons, 4 vocabulary, 7 phrases), none complete.
+    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 35');
     expect(cardProgress(root, 'hsk-vocabulary')).toContain('0 / 5');
     // kanji-bridge has no members → no progress element.
     expect(cardProgress(root, 'kanji-bridge')).toBeNull();
@@ -331,7 +331,7 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
     await flushAsync();
 
-    expect(cardProgress(root, 'taiwan-travel')).toBe('3 / 21 進行中');
+    expect(cardProgress(root, 'taiwan-travel')).toBe('3 / 35 進行中');
 
     // HSK path: learn all five members → complete.
     for (const id of ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-004', 'hsk-005']) {
@@ -359,7 +359,7 @@ describe('progress signals', () => {
     }
     window.dispatchEvent(new Event('pageshow'));
 
-    expect(cardProgress(root, 'taiwan-travel')).toBe('0 / 21 未開始');
+    expect(cardProgress(root, 'taiwan-travel')).toBe('0 / 35 未開始');
   });
 
   it('never lets stale basic-store learned entries advance the HSK path', async () => {
@@ -778,7 +778,7 @@ describe('storage and pageshow refresh', () => {
 
     setLessonCompleted('lesson-001');
     dispatchStorage(STORAGE_KEY, window.localStorage);
-    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 35');
 
     setHskLearned('hsk-001');
     dispatchStorage(VOCABULARY_PROGRESS_KEY, window.localStorage);
@@ -796,7 +796,7 @@ describe('storage and pageshow refresh', () => {
     initialize(root);
     setLessonCompleted('lesson-001');
     dispatchStorage('chabiko:unrelated', window.localStorage);
-    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 35');
   });
 
   it('cleanup removes listeners; events after cleanup are no-ops', () => {
@@ -807,7 +807,7 @@ describe('storage and pageshow refresh', () => {
 
     setLessonCompleted('lesson-001');
     window.dispatchEvent(new Event('pageshow'));
-    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 35');
   });
 
   it('reinitializing runs prior cleanup and does not duplicate renders', () => {
@@ -815,11 +815,11 @@ describe('storage and pageshow refresh', () => {
     initialize(root);
     setLessonCompleted('lesson-001');
     window.dispatchEvent(new Event('pageshow'));
-    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 35');
 
     // Re-init: prior cleanup runs; the card still reflects storage exactly once.
     initialize(root);
-    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('1 / 35');
   });
 
   it('ignores a late getSession reply after cleanup (disposal-safe)', async () => {
@@ -856,7 +856,7 @@ describe('malformed storage', () => {
     const root = createRoot();
     initialize(root);
 
-    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 21');
+    expect(cardProgress(root, 'taiwan-travel')).toContain('0 / 35');
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 5');
   });

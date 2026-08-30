@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { StorageLike } from '../src/lib/progress';
 import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
+  TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_VERSION,
   TaiwanTravelAssessmentStore,
   normalizeBestScore,
@@ -28,10 +29,10 @@ function createMemoryStorage(
 }
 
 describe('normalizeBestScore', () => {
-  it('bounds a completed score to 0–10', () => {
+  it('bounds a completed score to 0–24', () => {
     expect(normalizeBestScore(0)).toBe(0);
-    expect(normalizeBestScore(10)).toBe(10);
-    expect(normalizeBestScore(11)).toBe(10);
+    expect(normalizeBestScore(24)).toBe(24);
+    expect(normalizeBestScore(25)).toBe(24);
     expect(normalizeBestScore(-1)).toBe(0);
   });
 
@@ -69,11 +70,11 @@ describe('TaiwanTravelAssessmentStore', () => {
     expect(store.readBestScore()).toBe(9);
   });
 
-  it('bounds the recorded score to 0–10', () => {
+  it('bounds the recorded score to 0–24', () => {
     const store = new TaiwanTravelAssessmentStore(createMemoryStorage());
-    expect(store.recordCompletedAttempt(42).bestScore).toBe(10);
-    expect(store.readBestScore()).toBe(10);
-    expect(store.recordCompletedAttempt(-5).bestScore).toBe(10);
+    expect(store.recordCompletedAttempt(42).bestScore).toBe(24);
+    expect(store.readBestScore()).toBe(24);
+    expect(store.recordCompletedAttempt(-5).bestScore).toBe(24);
   });
 
   it('persists the isolated document under the assessment-only key', () => {
@@ -83,6 +84,24 @@ describe('TaiwanTravelAssessmentStore', () => {
     expect(JSON.parse(storage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!)).toEqual({
       version: TAIWAN_TRAVEL_ASSESSMENT_VERSION,
       bestScore: 6,
+    });
+  });
+
+  it('ignores the legacy 10-question V1 document without migrating or comparing it', () => {
+    const legacy = JSON.stringify({ version: 1, bestScore: 10 });
+    const storage = createMemoryStorage({
+      [TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY]: legacy,
+    });
+    const store = new TaiwanTravelAssessmentStore(storage);
+
+    expect(store.readBestScore()).toBe(0);
+    expect(store.hasCompletedAttempt()).toBe(false);
+
+    expect(store.recordCompletedAttempt(8)).toEqual({ bestScore: 8, wrote: true });
+    expect(storage.getItem(TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY)).toBe(legacy);
+    expect(JSON.parse(storage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!)).toEqual({
+      version: 2,
+      bestScore: 8,
     });
   });
 
@@ -105,7 +124,7 @@ describe('TaiwanTravelAssessmentStore', () => {
 
   it('fails safe on an unknown-version document', () => {
     const storage = createMemoryStorage({
-      [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: JSON.stringify({ version: 2, bestScore: 9 }),
+      [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: JSON.stringify({ version: 3, bestScore: 9 }),
     });
     const store = new TaiwanTravelAssessmentStore(storage);
     expect(store.readBestScore()).toBe(0);
@@ -114,15 +133,21 @@ describe('TaiwanTravelAssessmentStore', () => {
 
   it('fails safe on a structurally invalid document', () => {
     for (const raw of [
-      JSON.stringify({ version: 1 }),
-      JSON.stringify({ version: 1, bestScore: '9' }),
-      JSON.stringify({ version: 1, bestScore: null }),
+      JSON.stringify({ version: 2 }),
+      JSON.stringify({ version: 2, bestScore: '9' }),
+      JSON.stringify({ version: 2, bestScore: null }),
+      JSON.stringify({ version: 2, bestScore: 3.5 }),
+      JSON.stringify({ version: 2, bestScore: -1 }),
+      JSON.stringify({ version: 2, bestScore: 25 }),
+      '{"version":2,"bestScore":NaN}',
+      '{"version":2,"bestScore":Infinity}',
       JSON.stringify('not an object'),
     ]) {
       const storage = createMemoryStorage({ [TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY]: raw });
       const store = new TaiwanTravelAssessmentStore(storage);
       expect(store.readBestScore(), raw).toBe(0);
       expect(store.hasCompletedAttempt(), raw).toBe(false);
+      expect(store.recordCompletedAttempt(4), raw).toEqual({ bestScore: 4, wrote: true });
     }
   });
 

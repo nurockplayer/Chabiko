@@ -135,7 +135,7 @@ describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
     const first = builtLessonHtml.get('lesson-001') ?? '';
     expect(first).not.toContain('前のレッスン');
     expect(first).toContain('次のレッスン');
-    const last = builtLessonHtml.get('lesson-010') ?? '';
+    const last = builtLessonHtml.get('lesson-024') ?? '';
     expect(last).toContain('前のレッスン');
     expect(last).not.toContain('次のレッスン');
     expect(last).toContain('台湾旅行パスを完了');
@@ -147,5 +147,20 @@ describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
     expect(middle).toContain('次のレッスン');
     expect(middle).toContain('href="/lessons/lesson-004/"');
     expect(middle).toContain('href="/lessons/lesson-006/"');
+  });
+
+  it('renders the candidate review hook with an accessible heading', () => {
+    const candidateLessons = loadAllRenderableLessons().filter((lesson) =>
+      lesson.id >= 'lesson-011',
+    );
+    expect(candidateLessons).toHaveLength(14);
+    for (const lesson of candidateLessons) {
+      const html = builtLessonHtml.get(lesson.id) ?? '';
+      expect(html).toContain('次の復習ポイント');
+      expect(html).toContain(lesson.reviewHookJa);
+      expect(html).toMatch(
+        /<section class="review-hook" aria-labelledby="review-hook-heading"[^>]*>[\s\S]*<h2 id="review-hook-heading"[^>]*>次の復習ポイント<\/h2>/,
+      );
+    }
   });
 });

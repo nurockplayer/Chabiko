@@ -1,8 +1,8 @@
 /**
  * Pure, deterministic Taiwan Travel comprehensive test domain (#376).
  *
- * The 台湾旅行 総合テスト is a frozen 10-question track-level assessment: exactly
- * one question per production lesson lesson-001 … lesson-010, in lesson order.
+ * The 台湾旅行 総合テスト is a frozen 24-question track-level assessment: exactly
+ * one question per production lesson lesson-001 … lesson-024, in lesson order.
  * Each question is derived ONLY from that lesson's existing production
  * `reviewPrompts` — no parallel question bank and no invented curriculum. The
  * module has no DOM, storage, timer, random, date, or network dependency:
@@ -27,15 +27,15 @@ import type { Lesson, ReviewPrompt } from '../types/lesson';
 // ─── Frozen coverage contract ───────────────────────────────────────────────
 
 /** The frozen number of questions in one assessment run. */
-export const TAIWAN_TRAVEL_QUIZ_LENGTH = 10;
+export const TAIWAN_TRAVEL_QUIZ_LENGTH = 24;
 
-/** The ten production lesson ids, in delivery order (lesson-001 … lesson-010). */
+/** The 24 production lesson ids, in delivery order (lesson-001 … lesson-024). */
 export const TAIWAN_TRAVEL_LESSON_IDS: readonly string[] = Array.from(
   { length: TAIWAN_TRAVEL_QUIZ_LENGTH },
   (_, index) => `lesson-${String(index + 1).padStart(3, '0')}`,
 );
 
-/** A completed score is bounded to the quiz length (0–10). */
+/** A completed score is bounded to the quiz length (0–24). */
 export const TAIWAN_TRAVEL_MAX_SCORE = TAIWAN_TRAVEL_QUIZ_LENGTH;
 
 // ─── Question types ─────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ export function buildTaiwanTravelQuestion(
 }
 
 /**
- * Build the frozen 10-question assessment in lesson order. Fails closed when a
+ * Build the frozen 24-question assessment in lesson order. Fails closed when a
  * required lesson is missing or lacks a usable review prompt: it throws instead
  * of silently substituting invented content.
  */
@@ -239,7 +239,7 @@ export function createTaiwanTravelQuizSession(
   };
 }
 
-/** The bounded 0–10 score of a completed attempt, or null while incomplete. */
+/** The bounded 0–24 score of a completed attempt, or null while incomplete. */
 export function scoreOfCompletedAttempt(
   state: TaiwanTravelQuizState,
 ): number | null {
