@@ -183,6 +183,25 @@ function textElement(
   return element;
 }
 
+function labeledWordElement(
+  document: Document,
+  className: string,
+  label: string,
+  value: string,
+  language: string,
+): HTMLElement {
+  const field = document.createElement('div');
+  field.className = 'basic-vocabulary-word-field';
+
+  const fieldLabel = document.createElement('p');
+  fieldLabel.className = 'basic-vocabulary-word-field-label';
+  fieldLabel.lang = 'ja';
+  fieldLabel.textContent = label;
+
+  field.append(fieldLabel, textElement(document, className, value, language));
+  return field;
+}
+
 function button(
   document: Document,
   className: string,
@@ -371,49 +390,39 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       front.script,
       front.lang,
     );
-    fragment.append(frontElement);
-    if (front.isFallback) {
-      const fallback = textElement(
+    if (state.answerRevealed) {
+      const context = document.createElement('section');
+      context.className = 'basic-vocabulary-context';
+      context.setAttribute('aria-label', '先生の中国語フレーズ');
+
+      const contextLabel = textElement(
         document,
-        'basic-vocabulary-script-fallback',
-        FALLBACK_ANNOTATION,
+        'basic-vocabulary-context-label',
+        '先生の中国語フレーズ',
         'ja',
       );
-      fragment.append(fallback);
-    }
+      context.append(contextLabel);
 
-    if (state.answerRevealed) {
-      // Only build the answer container when at least one truthful optional
-      // answer exists; a row with no pinyin/japanese/traditional must not
-      // render an empty flex item / blank gap after reveal.
-      const answerParts: Array<{ className: string; text: string; lang: string }> = [];
-      if (entry.pinyin) {
-        answerParts.push({ className: 'basic-vocabulary-pinyin', text: entry.pinyin, lang: 'zh-Latn' });
+      if (entry.example) {
+        context.append(
+          textElement(
+            document,
+            'basic-vocabulary-context-text',
+            entry.example,
+            'zh-Hans',
+          ),
+        );
+      } else {
+        context.classList.add('basic-vocabulary-context--missing');
+        contextLabel.textContent = 'フレーズ準備中';
       }
-      if (entry.japanese) {
-        answerParts.push({ className: 'basic-vocabulary-japanese', text: entry.japanese, lang: 'ja' });
-      }
-      // The revealed traditional comparison field follows the global script
-      // preference: omitted under a simplified preference, and only shown
-      // when the item has an authored traditional form (path-default and
-      // traditional keep the existing production comparison).
-      const traditional = revealedTraditional(entry, scriptPreference);
-      if (traditional) {
-        answerParts.push({ className: 'basic-vocabulary-traditional', text: traditional, lang: 'zh-Hant' });
-      }
-      if (answerParts.length > 0) {
-        const answer = document.createElement('div');
-        answer.className = 'basic-vocabulary-answer';
-        for (const part of answerParts) {
-          answer.append(textElement(document, part.className, part.text, part.lang));
-        }
-        fragment.append(answer);
-      }
+      fragment.append(context);
 
       // Recall-first reveal (#356): the illustration is answer feedback, shown
       // together with the answer in the same transition when 「答えを見る」 is
-      // pressed — never a pre-reveal hint on the unanswered card.
-      if (entry.illustration && state.answerRevealed) {
+      // pressed. In the phrase-first composition it supports the contextual
+      // language and stays ahead of the explanatory word breakdown.
+      if (entry.illustration) {
         const image = document.createElement('img');
         image.className = 'basic-vocabulary-illustration';
         image.src = entry.illustration.assetPath;
@@ -422,6 +431,80 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
         image.alt = entry.illustration.altJa;
         fragment.append(image);
       }
+
+      const wordBreakdown = document.createElement('section');
+      wordBreakdown.className = 'basic-vocabulary-word-breakdown';
+      wordBreakdown.setAttribute('aria-label', '単語の情報');
+      wordBreakdown.append(
+        textElement(document, 'basic-vocabulary-word-label', '今回の単語', 'ja'),
+        frontElement,
+      );
+      if (front.isFallback) {
+        wordBreakdown.append(
+          textElement(
+            document,
+            'basic-vocabulary-script-fallback',
+            FALLBACK_ANNOTATION,
+            'ja',
+          ),
+        );
+      }
+
+      // Only build the answer container when at least one truthful optional
+      // answer exists; a row with no pinyin/japanese/traditional must not
+      // render an empty flex item / blank gap after reveal.
+      const answerParts: Array<{
+        className: string;
+        label: string;
+        text: string;
+        lang: string;
+      }> = [];
+      if (entry.pinyin) {
+        answerParts.push({
+          className: 'basic-vocabulary-pinyin',
+          label: '単語のピンイン',
+          text: entry.pinyin,
+          lang: 'zh-Latn',
+        });
+      }
+      if (entry.japanese) {
+        answerParts.push({
+          className: 'basic-vocabulary-japanese',
+          label: '単語の意味',
+          text: entry.japanese,
+          lang: 'ja',
+        });
+      }
+      // The revealed traditional comparison field follows the global script
+      // preference: omitted under a simplified preference, and only shown
+      // when the item has an authored traditional form (path-default and
+      // traditional keep the existing production comparison).
+      const traditional = revealedTraditional(entry, scriptPreference);
+      if (traditional) {
+        answerParts.push({
+          className: 'basic-vocabulary-traditional',
+          label: '繁体字の表記',
+          text: traditional,
+          lang: 'zh-Hant',
+        });
+      }
+      if (answerParts.length > 0) {
+        const answer = document.createElement('div');
+        answer.className = 'basic-vocabulary-answer';
+        for (const part of answerParts) {
+          answer.append(
+            labeledWordElement(
+              document,
+              part.className,
+              part.label,
+              part.text,
+              part.lang,
+            ),
+          );
+        }
+        wordBreakdown.append(answer);
+      }
+      fragment.append(wordBreakdown);
 
       const ratings = document.createElement('div');
       ratings.className = 'basic-vocabulary-ratings';
@@ -435,18 +518,18 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
         ratings.append(ratingButton);
       }
       fragment.append(ratings);
-
-      // Example-sentence detail navigation (#342): a native link, shown only
-      // when the item has a truthful authored example, and kept distinct from
-      // the reveal/rating flow so card behavior stays predictable.
-      if (entry.example) {
-        const detailLink = document.createElement('a');
-        detailLink.className = 'basic-vocabulary-detail-link';
-        detailLink.href = `/vocabulary/basic/words/${encodeURIComponent(entry.id)}/`;
-        detailLink.textContent = '例文を見る';
-        fragment.append(detailLink);
-      }
     } else {
+      fragment.append(frontElement);
+      if (front.isFallback) {
+        fragment.append(
+          textElement(
+            document,
+            'basic-vocabulary-script-fallback',
+            FALLBACK_ANNOTATION,
+            'ja',
+          ),
+        );
+      }
       fragment.append(button(document, 'basic-vocabulary-action basic-vocabulary-reveal', '答えを見る', 'reveal'));
     }
 
@@ -490,13 +573,19 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     if (traditional) {
       if (!existingTraditional) {
         answer.append(
-          textElement(document, 'basic-vocabulary-traditional', traditional, 'zh-Hant'),
+          labeledWordElement(
+            document,
+            'basic-vocabulary-traditional',
+            '繁体字の表記',
+            traditional,
+            'zh-Hant',
+          ),
         );
       } else if (existingTraditional.textContent !== traditional) {
         existingTraditional.textContent = traditional;
       }
     } else {
-      existingTraditional?.remove();
+      existingTraditional?.closest('.basic-vocabulary-word-field')?.remove();
     }
   }
 

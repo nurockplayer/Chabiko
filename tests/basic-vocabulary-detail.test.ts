@@ -59,11 +59,16 @@ describe('basic vocabulary detail route (#342)', () => {
     expect(component).not.toMatch(/Math\.random|fetch\(|Date\b/);
   });
 
-  it('adds the 例文を見る action to the learning card only when an example exists', async () => {
+  it('keeps the detail route while the study card consumes approved context inline', async () => {
     const client = await readFile('src/client/basicVocabularySession.ts', 'utf8');
-    expect(client).toContain('例文を見る');
+    expect(client).not.toContain('例文を見る');
+    expect(client).not.toContain('basic-vocabulary-detail-link');
     expect(client).toContain('entry.example');
     expect(client).toContain('example: row.example');
+
+    const route = await readFile('src/pages/vocabulary/basic/words/[learnerId]/index.astro', 'utf8');
+    expect(route).toContain('getStaticPaths');
+    expect(route).toContain('BasicVocabularyDetail');
   });
 
   it('turns the existing back action and catalog breadcrumb into a safe return target', async () => {
