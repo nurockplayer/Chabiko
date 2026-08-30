@@ -5,10 +5,12 @@ teaching, regional, script-provenance, and source/provenance review are pending.
 
 ## Boundary
 
-This package contains exactly `lesson-011` through `lesson-024`. It is not read
-by the production lesson loader, `data/learning-paths.json`, the Taiwan Travel
-assessment, or any learner route. Merging the package cannot make a lesson
-learner-visible or change a production review decision.
+This package contains exactly `lesson-011` through `lesson-024`. The production
+lesson bundle now carries an exact copy of these records for the bounded
+prelaunch learner path. The production loader reconciles the copy against this
+candidate source by deterministic fingerprint and fails closed on drift. The
+review package remains independent: linking the records for prelaunch exposure
+does not change a production review decision or grant human approval.
 
 The package owns:
 
@@ -125,11 +127,16 @@ labels and ordered required roles, typed graph relations, exact record
 references, source paths, and per-record fingerprints. A change to any of
 those inputs creates a new review version.
 
-The resolver fails closed on wrong count/order/scenario coverage, duplicate or
-stale references, production ID overlap, non-draft records, malformed rich
-lesson sections, unusable prompts, source-path drift, unsupported review
-role outcomes, and generated packet drift. Per-role outcomes use the
-canonical `accepted`, `rejected`, `needs-changes`, and `not-reviewed` values.
+For the bounded prelaunch seam, only the exact allowlisted `lesson-011` through
+`lesson-024` production IDs may overlap this candidate package, and that overlap
+must pass mechanical candidate-to-production fingerprint reconciliation while
+preserving `reviewStatus: "draft"`. Any non-allowlisted overlap, missing,
+reordered, or drifted record, or any promoted/non-draft record fails closed. The
+resolver also fails closed on wrong count/order/scenario coverage, duplicate or
+stale references, malformed rich lesson sections, unusable prompts, source-path
+drift, unsupported review role outcomes, and generated packet drift. Per-role
+outcomes use the canonical `accepted`, `rejected`, `needs-changes`, and
+`not-reviewed` values.
 They remain separate from the packet's top-level overall decision and cannot
 independently authorize promotion.
 
@@ -177,8 +184,10 @@ these mutable results across canonical reruns, derives its pending summary from
 the remaining `not-reviewed` role rows, and renders `None.` only for an empty
 result list. An accepted overall decision requires every required role to be
 accepted and both result lists to be empty. These fields remain outside the
-immutable `reviewVersion`, and `promotionAllowed` remains false because
-production linking requires a separate maintainer action outside this package.
+immutable `reviewVersion`. The candidate package is now linked to production
+only through the exact 011–024 fingerprint reconciliation seam, while
+`promotionAllowed` remains false because human review is still incomplete and
+prelaunch exposure does not imply reviewed or published status.
 
 `review-status` independently records whether the candidate package is
 truthfully still `draft`; it does not promote the package. `teaching-accuracy`

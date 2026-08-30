@@ -158,7 +158,7 @@ async function loadReviewVersionInput(): Promise<TaiwanTravelWave1ReviewVersionI
 }
 
 describe('Taiwan Travel Wave 1 candidate package', () => {
-  it('reconciles exact IDs, order, draft state, scenarios, and production isolation', async () => {
+  it('reconciles exact IDs, order, draft state, scenarios, and bounded production linkage', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
 
     expect(packet.scopeId).toBe(TAIWAN_TRAVEL_WAVE1_SCOPE_ID);
@@ -170,9 +170,30 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.scenarioDistribution).toEqual(
       TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION,
     );
-    expect(packet.productionLinked).toBe(false);
+    expect(packet.decisionContract.productionUnlinked).toBe(false);
+    expect(packet.productionLinked).toBe(true);
     expect(packet.promotionAllowed).toBe(false);
     expect(packet.decisionCount).toBe(0);
+  });
+
+  it('fails closed before reporting a missing, drifted, or promoted production link', async () => {
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons.pop();
+      }),
+    ).rejects.toThrow(/production link must contain exactly 24 lessons/);
+
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons[10].canDoJa += '（drift）';
+      }),
+    ).rejects.toThrow(/production link drifted for 'lesson-011'/);
+
+    await expect(
+      build(undefined, ({ productionLessons }) => {
+        productionLessons[10].reviewStatus = 'reviewed';
+      }),
+    ).rejects.toThrow(/production-linked lesson 'lesson-011' must remain draft/);
   });
 
   it('completes lesson-loop step 9 with distinct future review hooks', async () => {
@@ -1039,8 +1060,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     await expect(
       build(
         (manifest) => bindFirstRole(manifest, reviewVersion),
-        ({ lessons }) => {
+        ({ lessons, productionLessons }) => {
           lessons[0].titleJa += '（変更）';
+          productionLessons[10].titleJa += '（変更）';
         },
       ),
     ).rejects.toThrow(/reviewer evidence .* is stale for reviewVersion/);
@@ -1537,7 +1559,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     );
   });
 
-  it('fails closed on wrong order, duplicate source IDs, stale graph refs, and production overlap', async () => {
+  it('fails closed on wrong order, duplicate source IDs, and stale graph refs', async () => {
     await expect(
       build(undefined, ({ lessons }) => lessons.reverse()),
     ).rejects.toThrow(/lesson order/);
@@ -1558,11 +1580,6 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       }),
     ).rejects.toThrow(/stale member/);
 
-    await expect(
-      build(undefined, ({ lessons, productionLessons }) => {
-        productionLessons.push(structuredClone(lessons[0]));
-      }),
-    ).rejects.toThrow(/overlaps production/);
   });
 
   it('rejects duplicate Can-Dos and core sentences within or before the wave', async () => {
@@ -1643,8 +1660,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
       first.records[0].fingerprint,
     );
 
-    const contentChanged = await build(undefined, ({ lessons }) => {
+    const contentChanged = await build(undefined, ({ lessons, productionLessons }) => {
       lessons[0].titleJa += '（変更）';
+      productionLessons[10].titleJa += '（変更）';
     });
     expect(contentChanged.records[0].fingerprint).not.toBe(
       first.records[0].fingerprint,

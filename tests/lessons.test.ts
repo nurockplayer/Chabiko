@@ -187,9 +187,9 @@ describe('learner shell uses fixture data', () => {
 });
 
 describe('loadAllRenderableLessons', () => {
-  it('returns all 10 lessons from the default fixture', () => {
+  it('returns all 24 lessons from the default fixture', () => {
     const lessons = loadAllRenderableLessons();
-    expect(lessons).toHaveLength(10);
+    expect(lessons).toHaveLength(24);
   });
 
   it('returns lessons in file order', () => {
@@ -385,10 +385,10 @@ describe('lesson order and navigation', () => {
     expect(lessons[2].id).toBe('lesson-003');
   });
 
-  it('lesson-010 is the last lesson', () => {
+  it('lesson-024 is the last lesson', () => {
     const lessons = loadAllRenderableLessons();
     const lastIndex = lessons.length - 1;
-    expect(lessons[lastIndex].id).toBe('lesson-010');
+    expect(lessons[lastIndex].id).toBe('lesson-024');
   });
 
   it('each lesson id is a valid URL path segment', () => {
@@ -410,7 +410,7 @@ describe('static paths generation', () => {
         nextLesson: i < lessons.length - 1 ? { id: lessons[i + 1].id, titleJa: lessons[i + 1].titleJa } : null,
       },
     }));
-    expect(paths).toHaveLength(10);
+    expect(paths).toHaveLength(24);
     expect(paths[0].params.id).toBe('lesson-001');
     expect(paths[0].props.prevLesson).toBeNull();
     expect(paths[0].props.nextLesson?.id).toBe('lesson-002');
@@ -431,6 +431,9 @@ describe('static paths generation', () => {
     expect(paths[8].props.prevLesson?.id).toBe('lesson-008');
     expect(paths[8].props.nextLesson?.id).toBe('lesson-010');
     expect(paths[9].props.prevLesson?.id).toBe('lesson-009');
-    expect(paths[9].props.nextLesson).toBeNull();
+    expect(paths[9].props.nextLesson?.id).toBe('lesson-011');
+    expect(paths[23].params.id).toBe('lesson-024');
+    expect(paths[23].props.prevLesson?.id).toBe('lesson-023');
+    expect(paths[23].props.nextLesson).toBeNull();
   });
 });

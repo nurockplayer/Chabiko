@@ -39,24 +39,17 @@ describe('Taiwan Travel path production reconciliation', () => {
     const lessons = canonicalLessons();
     const model = loadTaiwanTravelPathModel();
 
-    expect(lessons.map((lesson) => lesson.id)).toEqual([
-      'lesson-001',
-      'lesson-002',
-      'lesson-003',
-      'lesson-004',
-      'lesson-005',
-      'lesson-006',
-      'lesson-007',
-      'lesson-008',
-      'lesson-009',
-      'lesson-010',
-    ]);
+    expect(lessons.map((lesson) => lesson.id)).toEqual(
+      Array.from({ length: 24 }, (_, index) =>
+        `lesson-${String(index + 1).padStart(3, '0')}`,
+      ),
+    );
     expect(model.lessons.map((lesson) => lesson.id)).toEqual(
       lessons.map((lesson) => lesson.id),
     );
-    expect(model.lessons.map((lesson) => lesson.lessonNumber)).toEqual([
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    ]);
+    expect(model.lessons.map((lesson) => lesson.lessonNumber)).toEqual(
+      Array.from({ length: 24 }, (_, index) => index + 1),
+    );
     expect(model.lessons.map((lesson) => lesson.titleJa)).toEqual(
       lessons.map((lesson) => lesson.titleJa),
     );
@@ -73,7 +66,7 @@ describe('Taiwan Travel path production reconciliation', () => {
     expect(lessons.some((lesson) => lesson.reviewStatus === 'draft')).toBe(true);
 
     const model = buildTaiwanTravelPathModel(canonicalPath(), lessons);
-    expect(model.lessons).toHaveLength(10);
+    expect(model.lessons).toHaveLength(24);
     expect(model.lessons.map((lesson) => lesson.id)).toEqual(
       lessons.map((lesson) => lesson.id),
     );
@@ -97,11 +90,11 @@ describe('Taiwan Travel path production reconciliation', () => {
 
   it('fails closed on a stale or candidate-only lesson reference', () => {
     const path = withLessonIds(canonicalPath(), [
-      ...canonicalLessons().map((lesson) => lesson.id),
-      'lesson-011',
+      ...canonicalLessons().map((lesson) => lesson.id).slice(0, 23),
+      'lesson-999',
     ]);
     expect(() => buildTaiwanTravelPathModel(path, canonicalLessons())).toThrow(
-      /non-production lesson reference 'lesson-011'/,
+      /non-production lesson reference 'lesson-999'/,
     );
   });
 

@@ -79,6 +79,12 @@ describe('shared learning-content graph coverage', () => {
       'tests/taiwan-travel-path*.test.ts',
     );
   });
+
+  it('selects the production reconciliation suite for the exact allowlist guard', () => {
+    expect(
+      domainTestGlobsFor('src/content/taiwanTravelWave1Production.ts'),
+    ).toContain('tests/taiwan-travel-production-reconciliation.test.ts');
+  });
 });
 
 describe('tier selects the minimum tier as the max across changed files', () => {
@@ -198,6 +204,9 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     expect(productionLessons.affectedContent).toBe(true);
     expect(productionLessons.affectedTestGlobs).toContain(
       'tests/taiwan-travel-wave1-candidates.test.ts',
+    );
+    expect(productionLessons.affectedTestGlobs).toContain(
+      'tests/taiwan-travel-production-reconciliation.test.ts',
     );
     expect(productionLessons.runAffectedVitest).toBe(true);
     expect(productionLessons.runFullVitest).toBe(false);

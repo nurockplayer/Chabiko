@@ -8,7 +8,7 @@
     "nonPromotableOutcomes": ["rejected", "needs-changes"],
     "fingerprint": "sha256(stableStringify(recordWithoutTopLevelReviewStatus))",
     "separateDecisionNamespace": true,
-    "productionUnlinked": true
+    "productionUnlinked": false
   },
   "overallDecision": null,
   "unresolvedIssues": [],

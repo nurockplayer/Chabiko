@@ -14,7 +14,7 @@ import {
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 
 // buildTaiwanTravelAssessmentPayload fails closed: it throws at build time when
-// the production source no longer contains lesson-001…lesson-010 each with a
+// the production source no longer contains lesson-001…lesson-024 each with a
 // usable review prompt, so the assessment can never ship with invented content.
 const payload = buildTaiwanTravelAssessmentPayload();
 const payloadJson = serializeTaiwanTravelAssessmentPayload(payload);
@@ -42,7 +42,7 @@ const payloadJson = serializeTaiwanTravelAssessmentPayload(payload);
     />
     <h1>総合テスト</h1>
     <p class="taiwan-travel-quiz-page__lead">
-      台湾旅行のレッスン（1〜10）から出題される10問の総合テストです。各レッスンの内容を思い出しながら答えてください。
+      台湾旅行のレッスン（1〜24）から出題される24問の総合テストです。各レッスンの内容を思い出しながら答えてください。
     </p>
     <TaiwanTravelQuiz payload={payload} payloadJson={payloadJson} />
   </div>

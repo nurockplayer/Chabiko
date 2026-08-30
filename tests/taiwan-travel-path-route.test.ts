@@ -66,7 +66,7 @@ describe('/paths/taiwan-travel/ direct-refresh landing', () => {
         /<a[^>]*data-taiwan-lesson-link="([^"]+)"[^>]*href="([^"]+)"[^>]*>/g,
       ),
     ];
-    expect(lessonLinks).toHaveLength(10);
+    expect(lessonLinks).toHaveLength(24);
     expect(lessonLinks.map((match) => match[1])).toEqual(
       model.lessons.map((lesson) => lesson.id),
     );

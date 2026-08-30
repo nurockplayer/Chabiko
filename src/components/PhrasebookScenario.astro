@@ -175,10 +175,20 @@ const hasContent = phrases.length > 0 || dialog !== null;
               <span class="phrasebook-dialog__references-label">関連フレーズ：</span>
               {
                 relatedPhrases.map((phrase, index) => (
-                  <span
-                    class="phrasebook-dialog__reference"
-                    lang="zh-Hant"
-                  >{phrase.traditional}{index < relatedPhrases.length - 1 ? '、' : ''}</span>
+                  <>
+                    <span
+                      class="phrasebook-dialog__reference"
+                      lang="zh-Hant"
+                      data-script-path-default={phrase.traditional}
+                      data-script-path-default-status={phrase.traditionalStatus}
+                      data-script-traditional={phrase.traditional}
+                      data-script-traditional-status={phrase.traditionalStatus}
+                      data-script-simplified={phrase.simplified}
+                      data-script-simplified-status={phrase.simplifiedStatus}
+                      data-script-annotation-host
+                    >{phrase.traditional}</span>
+                    {index < relatedPhrases.length - 1 ? '、' : ''}
+                  </>
                 ))
               }
             </p>

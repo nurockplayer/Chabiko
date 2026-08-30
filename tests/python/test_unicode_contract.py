@@ -133,6 +133,34 @@ class UnicodeContractTests(unittest.TestCase):
         }
         self.assertEqual(required - actual, set())
 
+    def test_lessons_review_hooks_are_selected_and_extracted(self) -> None:
+        manifest = json.loads(
+            (REPO_ROOT / 'data/unicode/source-manifest.json').read_text(encoding='utf-8')
+        )
+        lessons_source = next(
+            source for source in manifest['sources'] if source['id'] == 'lessons-v1'
+        )
+        self.assertIn(
+            {'field': 'reviewHookJa', 'language': 'ja'},
+            lessons_source['textFields'],
+        )
+
+        inventory, _ = extract_dataset(
+            REPO_ROOT / 'data/unicode/source-manifest.json',
+            repo_root=REPO_ROOT,
+        )
+        hooks = [
+            item for item in inventory['evidence']
+            if item['sourceId'] == 'lessons-v1'
+            and item['field'] == 'reviewHookJa'
+        ]
+        self.assertEqual(len(hooks), 14)
+        self.assertTrue(all(item['language'] == 'ja' for item in hooks))
+        self.assertTrue(all(item['jsonPointer'].endswith('/reviewHookJa') for item in hooks))
+        hook_text = ''.join(item['text'] for item in hooks)
+        self.assertIn('復', hook_text)
+        self.assertIn('装', hook_text)
+
     def test_production_practice_answer_evidence_uses_explicit_languages(self) -> None:
         inventory, _ = extract_dataset(
             REPO_ROOT / 'data/unicode/source-manifest.json',

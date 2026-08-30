@@ -21,9 +21,9 @@ interface NavLesson {
 export const getStaticPaths = (() => {
   const lessons = loadAllRenderableLessons();
   // Production-eligible phrasebook scenarios (#239): computed once at build time
-  // from the same eligible surface as /phrasebook/ (loadEligiblePhrasebook +
-  // groupPhrasebookByScenario), so a lesson links ONLY to a scenario with real
-  // learner-visible content — never to a draft/pending-only scenario.
+  // from loadEligiblePhrasebook + groupPhrasebookByScenario. This intentionally
+  // differs from the #440 prelaunch projection used by /phrasebook/, so a lesson
+  // links ONLY to reviewed/published learner content, never draft-only content.
   const productionPhrasebookScenarios = loadProductionPhrasebookScenarios();
   return lessons.map((lesson, index) => ({
     params: { id: lesson.id },
@@ -199,6 +199,13 @@ const exampleScriptAttrs = (example: {
           )}
 
           <LessonPractice lesson={lesson} />
+
+          {hasText(lesson.reviewHookJa) && (
+            <section class="review-hook" aria-labelledby="review-hook-heading">
+              <h2 id="review-hook-heading">次の復習ポイント</h2>
+              <p>{lesson.reviewHookJa}</p>
+            </section>
+          )}
 
           <section class="travel-task" aria-labelledby="task-heading">
             <h2 id="task-heading">旅先でやってみよう</h2>
@@ -509,6 +516,27 @@ const exampleScriptAttrs = (example: {
     font-size: 13px;
     line-height: 1.6;
     color: var(--ink-secondary);
+    overflow-wrap: anywhere;
+  }
+  .review-hook {
+    margin-top: var(--sp-10);
+    padding: var(--sp-5);
+    border-left: 3px solid var(--jade);
+    background: var(--paper-deep);
+  }
+  .review-hook h2 {
+    margin-bottom: var(--sp-2);
+    color: var(--jade-ink);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .review-hook p {
+    max-width: 48rem;
+    color: var(--ink-secondary);
+    font-size: 13.5px;
+    line-height: 1.8;
     overflow-wrap: anywhere;
   }
   .travel-task {

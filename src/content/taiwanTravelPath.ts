@@ -37,7 +37,8 @@ function assert(condition: boolean, message: string): asserts condition {
  * Reconcile Taiwan path membership with the canonical learner-visible lesson
  * projection. Production eligibility comes from loadAllRenderableLessons()
  * over the canonical lesson bundle; reviewStatus remains truthful metadata and
- * is not rewritten or inferred here. Candidate packages are never loaded.
+ * is not rewritten or inferred here. Candidate records are reconciled at the
+ * canonical lesson-loader boundary before this projection is built.
  */
 export function buildTaiwanTravelPathModel(
   path: LearningPathRecord | undefined,
