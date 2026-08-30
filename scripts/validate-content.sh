@@ -13,6 +13,7 @@ set -euo pipefail
 uv run --locked python scripts/validate-pain-points.py
 uv run --locked python scripts/validate-script-status.py
 uv run --locked python scripts/validate-content-schema.py
+node scripts/validate-small-talk-encounters.ts --self-test
 
 # Byte-identity drift gate: fails if the committed learner manifest does not
 # match a fresh generation from the preview corpus.
@@ -35,3 +36,7 @@ uv run --locked python scripts/validate-content-schema.py \
 for f in data/roleplay/*.json; do
   uv run --locked python scripts/validate-content-schema.py --check "$f"
 done
+
+# Dev-only Small Talk Lab fixtures keep their own isolated contract and do not
+# broaden the production content schema or roleplay-card contract.
+node scripts/validate-small-talk-encounters.ts --check data/small-talk/encounters.json
