@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import {
+  buildHskLearnerProjection,
+  type HskLearnerProjection,
+} from '../domain/hskLearnerProjection';
 import type { HskVocabularyType } from '../types/vocabulary';
 
 const DEFAULT_HSK_PATH = 'data/examples/valid/hsk-vocabulary.json';
@@ -25,8 +29,6 @@ function parseHskBundle(raw: string, path: string): HskBundle {
   return parsed as HskBundle;
 }
 
-const PRODUCTION_REVIEW_STATUSES = new Set(['reviewed', 'published']);
-
 export interface HskRenderableEntry {
   id: string;
   simplified: string;
@@ -45,6 +47,13 @@ export function loadHskVocabulary(filePath?: string): HskBundle {
   return parseHskBundle(raw, path);
 }
 
+/** Load the single production-derived HSK contract used by learner indexes. */
+export function loadHskLearnerProjection(
+  filePath?: string,
+): HskLearnerProjection {
+  return buildHskLearnerProjection(loadHskVocabulary(filePath).vocabulary);
+}
+
 function hasTraditional(entry: HskVocabularyType): boolean {
   return 'traditional' in entry && typeof (entry as unknown as Record<string, unknown>).traditional === 'string';
 }
@@ -57,13 +66,17 @@ export function loadHskLevelEntries(
   filePath?: string,
 ): HskRenderableEntry[] {
   const bundle = loadHskVocabulary(filePath);
-  return bundle.vocabulary
-    .filter(
-      (entry): boolean =>
-        PRODUCTION_REVIEW_STATUSES.has(entry.reviewStatus) &&
-        entry.hsk.introducedAtLevel === level,
-    )
-    .map((entry) => ({
+  const projection = buildHskLearnerProjection(bundle.vocabulary);
+  const levelProjection = projection.levels.find(
+    (candidate) => candidate.level === level,
+  );
+  if (!levelProjection) return [];
+
+  const entriesById = new Map(bundle.vocabulary.map((entry) => [entry.id, entry]));
+  return levelProjection.ids.flatMap((id) => {
+    const entry = entriesById.get(id);
+    if (!entry) return [];
+    return [{
       id: entry.id,
       simplified: entry.simplified,
       pinyin: entry.pinyin,
@@ -71,5 +84,6 @@ export function loadHskLevelEntries(
       traditional: hasTraditional(entry)
         ? (entry as unknown as Record<string, unknown>).traditional as string
         : undefined,
-    }));
+    }];
+  });
 }

@@ -90,7 +90,7 @@
     {
       "id": "learning-paths-v1",
       "path": "data/learning-paths.json",
-      "sha256": "462aba83f90e2cddda8306fe0a3656dcecdcc18a305c6206f91614505b32856a",
+      "sha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
       "format": "json",
       "textFields": [
         { "field": "labelJa", "language": "ja" },

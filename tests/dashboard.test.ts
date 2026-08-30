@@ -58,7 +58,13 @@ const TEST_PAYLOAD: DashboardProgressPayload = {
     'teacher-star-1-b',
     'teacher-star-1-c',
   ],
-  hskLevels: [{ level: 1, ids: ['hsk-001', 'hsk-002'] }],
+  hsk: {
+    availability: 'available',
+    destination: '/vocabulary/hsk/1/',
+    statusLabelJa: '利用できます',
+    eligibleIds: ['hsk-001', 'hsk-002'],
+    levels: [{ level: 1, ids: ['hsk-001', 'hsk-002'] }],
+  },
   taiwanCompletableLessonIds: ['lesson-001', 'lesson-002', 'lesson-003'],
   taiwanLessons: TAIWAN_LESSONS,
 };
@@ -209,7 +215,7 @@ describe('dashboard build-time payload', () => {
     expect(payload.basicVocabularyCorpusIds.length).toBeGreaterThan(0);
     // The declared HSK level 1 corpus is non-empty (the published route).
     expect(
-      payload.hskLevels.some((level) => level.level === 1 && level.ids.length > 0),
+      payload.hsk.levels.some((level) => level.level === 1 && level.ids.length > 0),
     ).toBe(true);
     expect(payload.taiwanCompletableLessonIds.length).toBeGreaterThan(0);
     for (const lesson of payload.taiwanLessons) {
@@ -245,7 +251,7 @@ describe('dashboard continuation derivation', () => {
       corpusIds: new Set(TEST_PAYLOAD.basicVocabularyCorpusIds),
       scope: { kind: 'guest' },
     }),
-    hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hskLevels }),
+    hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hsk.levels }),
     taiwanTravel: buildTaiwanTravelTrackSummary({
       completedLessonIds: new Set(),
       completableLessonIds: TEST_PAYLOAD.taiwanCompletableLessonIds,
@@ -294,7 +300,7 @@ describe('dashboard continuation derivation', () => {
         corpusIds: new Set(TEST_PAYLOAD.basicVocabularyCorpusIds),
         scope: { kind: 'guest' },
       }),
-      hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hskLevels }),
+      hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hsk.levels }),
       taiwanTravel: buildTaiwanTravelTrackSummary({
         completedLessonIds: new Set(['lesson-001']),
         completableLessonIds: TEST_PAYLOAD.taiwanCompletableLessonIds,
@@ -332,7 +338,7 @@ describe('dashboard continuation derivation', () => {
           'hsk-001': { status: 'learned', knownStreak: 2 },
           'hsk-002': { status: 'learned', knownStreak: 2 },
         },
-        levels: TEST_PAYLOAD.hskLevels,
+        levels: TEST_PAYLOAD.hsk.levels,
       }),
       taiwanTravel: buildTaiwanTravelTrackSummary({
         completedLessonIds: new Set(['lesson-001']),
@@ -371,7 +377,7 @@ describe('dashboard continuation derivation', () => {
           'hsk-001': { status: 'learned', knownStreak: 2 },
           'hsk-002': { status: 'learned', knownStreak: 2 },
         },
-        levels: TEST_PAYLOAD.hskLevels,
+        levels: TEST_PAYLOAD.hsk.levels,
       }),
       taiwanTravel: buildTaiwanTravelTrackSummary({
         completedLessonIds: new Set(TEST_PAYLOAD.taiwanCompletableLessonIds),
@@ -393,7 +399,13 @@ describe('dashboard continuation derivation', () => {
     // never fabricate a /vocabulary/hsk/1/ destination.
     const partialPayload: DashboardProgressPayload = {
       ...TEST_PAYLOAD,
-      hskLevels: [{ level: 2, ids: ['hsk-999'] }],
+      hsk: {
+        availability: 'unavailable',
+        destination: null,
+        statusLabelJa: '準備中です',
+        eligibleIds: [],
+        levels: [{ level: 1, ids: [] }],
+      },
     };
     const snapshot = buildCrossTrackProgressSnapshot({
       basicVocabulary: buildBasicVocabularyTrackSummary({
@@ -408,7 +420,7 @@ describe('dashboard continuation derivation', () => {
       }),
       hsk: buildHskTrackSummary({
         progress: {},
-        levels: partialPayload.hskLevels,
+        levels: partialPayload.hsk.levels,
       }),
       taiwanTravel: buildTaiwanTravelTrackSummary({
         completedLessonIds: new Set(),
@@ -447,7 +459,13 @@ describe('dashboard continuation derivation', () => {
     const partialPayload: DashboardProgressPayload = {
       ...TEST_PAYLOAD,
       basicVocabularyCorpusIds: [],
-      hskLevels: [{ level: 2, ids: ['hsk-999'] }],
+      hsk: {
+        availability: 'unavailable',
+        destination: null,
+        statusLabelJa: '準備中です',
+        eligibleIds: [],
+        levels: [{ level: 1, ids: [] }],
+      },
       taiwanCompletableLessonIds: [],
       taiwanLessons: [],
     };
@@ -459,7 +477,7 @@ describe('dashboard continuation derivation', () => {
       }),
       hsk: buildHskTrackSummary({
         progress: {},
-        levels: partialPayload.hskLevels,
+        levels: partialPayload.hsk.levels,
       }),
       taiwanTravel: buildTaiwanTravelTrackSummary({
         completedLessonIds: new Set(),
@@ -479,7 +497,7 @@ describe('dashboard track destination + summary helpers', () => {
       corpusIds: new Set(TEST_PAYLOAD.basicVocabularyCorpusIds),
       scope: { kind: 'guest' },
     }),
-    hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hskLevels }),
+    hsk: buildHskTrackSummary({ progress: {}, levels: TEST_PAYLOAD.hsk.levels }),
     taiwanTravel: buildTaiwanTravelTrackSummary({
       completedLessonIds: new Set(),
       completableLessonIds: TEST_PAYLOAD.taiwanCompletableLessonIds,
@@ -530,12 +548,18 @@ describe('dashboard track destination + summary helpers', () => {
   it('keeps the HSK card preparing when level 1 has no published content', () => {
     const partial: DashboardProgressPayload = {
       ...TEST_PAYLOAD,
-      hskLevels: [{ level: 2, ids: ['hsk-999'] }],
+      hsk: {
+        availability: 'unavailable',
+        destination: null,
+        statusLabelJa: '準備中です',
+        eligibleIds: [],
+        levels: [{ level: 1, ids: [] }],
+      },
     };
     expect(
       trackDestinationHref('hsk', snapshot, partial, new Set()),
     ).toBeNull();
-    expect(trackCardStatusLabel('hsk', snapshot, partial)).toBe('準備中');
+    expect(trackCardStatusLabel('hsk', snapshot, partial)).toBe('準備中です');
     expect(trackCardStatusKey('hsk', snapshot, partial)).toBe('preparing');
     expect(trackSummaryText('hsk', snapshot, partial)).toBe('');
   });
@@ -720,7 +744,7 @@ describe('dashboard client hydration', () => {
     expect(trackSummary(root, 'basic-vocabulary')).toBe('1 / 3 語学習済み');
     expect(trackStatus(root, 'basic-vocabulary')).toBe('学習中');
     expect(trackSummary(root, 'hsk')).toBe('1 / 2 語学習済み');
-    expect(trackStatus(root, 'hsk')).toBe('学習中');
+    expect(trackStatus(root, 'hsk')).toBe('利用できます');
     expect(trackSummary(root, 'taiwan-travel')).toBe('1 / 3 レッスン完了');
     expect(trackStatus(root, 'taiwan-travel')).toBe('学習中');
 
@@ -831,7 +855,13 @@ describe('dashboard client hydration', () => {
   it('shows the preparing continuation when no destination is available', () => {
     const emptyPayload: DashboardProgressPayload = {
       basicVocabularyCorpusIds: [],
-      hskLevels: [{ level: 1, ids: [] }],
+      hsk: {
+        availability: 'unavailable',
+        destination: null,
+        statusLabelJa: '準備中です',
+        eligibleIds: [],
+        levels: [{ level: 1, ids: [] }],
+      },
       taiwanCompletableLessonIds: [],
       taiwanLessons: [],
     };
@@ -856,7 +886,7 @@ describe('dashboard client hydration', () => {
         root
           .querySelector(`[data-dashboard-track="${trackId}"] [data-track-status]`)
           ?.textContent,
-      ).toBe('準備中');
+      ).toBe(trackId === 'hsk' ? '準備中です' : '準備中');
     }
   });
 });

@@ -149,7 +149,9 @@ describe('learning content graph', () => {
     ]);
     // 24 canonical lessons + the existing 4 vocabulary and 7 phrase members.
     expect(graph.getPathContent('taiwan-travel')).toHaveLength(35);
-    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(5);
+    // The HSK path contains only the current production-eligible level-1
+    // projection; draft and unrouted records remain outside the learner path.
+    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(2);
     expect(graph.resolve(ref('vocabulary', 'hsk-002', 'hskVocabulary'))?.record.reviewStatus).toBe(
       'reviewed',
     );

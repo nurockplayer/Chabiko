@@ -1,13 +1,10 @@
 import type { DashboardProgressPayload } from '../domain/dashboardProgress';
 import { loadAllRenderableLessons, hasUsableLessonPractice } from './loadLessons';
-import { loadHskVocabulary } from './loadHskVocabulary';
+import { loadHskLearnerProjection } from './loadHskVocabulary';
 import type { LearnerManifest } from '../types/learnerManifest';
 import manifestData from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
 
 const manifest = manifestData as LearnerManifest;
-
-/** HSK production eligibility matches loadHskVocabulary's own rule. */
-const HSK_PRODUCTION_REVIEW_STATUSES = new Set(['reviewed', 'published']);
 
 /**
  * Build the build-time reference payload for the learner Dashboard (Issue
@@ -30,21 +27,9 @@ export function buildDashboardProgressPayload(): DashboardProgressPayload {
 
   const basicVocabularyCorpusIds = manifest.rows.map((row) => row.learnerId);
 
-  const byLevel = new Map<number, string[]>();
-  for (const entry of loadHskVocabulary().vocabulary) {
-    if (!HSK_PRODUCTION_REVIEW_STATUSES.has(entry.reviewStatus)) continue;
-    const level = entry.hsk.introducedAtLevel;
-    const ids = byLevel.get(level) ?? [];
-    ids.push(entry.id);
-    byLevel.set(level, ids);
-  }
-  const hskLevels = [...byLevel.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([level, ids]) => ({ level, ids }));
-
   return {
     basicVocabularyCorpusIds,
-    hskLevels,
+    hsk: loadHskLearnerProjection(),
     taiwanCompletableLessonIds: completableLessons.map((lesson) => lesson.id),
     taiwanLessons: completableLessons.map((lesson) => ({
       id: lesson.id,
