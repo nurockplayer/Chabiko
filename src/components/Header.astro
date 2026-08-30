@@ -268,7 +268,10 @@ const isHome = Astro.url.pathname === '/';
   }
   @media (width <= 374px) {
     .header-inner {
-      padding-inline: var(--sp-5);
+      /* Keep the full control row inside the drawable width when a vertical
+       * scrollbar reduces the layout viewport to 305px at a 320px viewport. */
+      gap: var(--sp-1);
+      padding-inline: var(--sp-3);
     }
     .script-toggle-slot label {
       font-size: 0.5625rem;
