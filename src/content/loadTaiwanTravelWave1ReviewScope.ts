@@ -142,7 +142,7 @@ export interface TaiwanTravelWave1DecisionContract {
   nonPromotableOutcomes: ['rejected', 'needs-changes'];
   fingerprint: typeof FINGERPRINT_CONTRACT;
   separateDecisionNamespace: true;
-  productionUnlinked: true;
+  productionUnlinked: false;
 }
 
 export interface TaiwanTravelWave1ReviewScopeManifest {
@@ -204,7 +204,7 @@ export interface TaiwanTravelWave1ReviewPacket {
   blockedContent: string[];
   decisionCount: number;
   promotionAllowed: false;
-  productionLinked: false;
+  productionLinked: true;
 }
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -312,7 +312,10 @@ function validateManifest(manifest: TaiwanTravelWave1ReviewScopeManifest): void 
   );
   assert(contract.fingerprint === FINGERPRINT_CONTRACT, 'fingerprint contract drifted');
   assert(contract.separateDecisionNamespace === true, 'decision namespace must remain separate');
-  assert(contract.productionUnlinked === true, 'scope must remain production-unlinked');
+  assert(
+    contract.productionUnlinked === false,
+    'scope must record the bounded production linkage',
+  );
 
   if (manifest.overallDecision !== null) {
     validateExactKeys(
@@ -952,7 +955,7 @@ export async function buildTaiwanTravelWave1ReviewPacket(
       0,
     ),
     promotionAllowed: false,
-    productionLinked: false,
+    productionLinked: true,
   };
 }
 

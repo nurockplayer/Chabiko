@@ -184,8 +184,10 @@ these mutable results across canonical reruns, derives its pending summary from
 the remaining `not-reviewed` role rows, and renders `None.` only for an empty
 result list. An accepted overall decision requires every required role to be
 accepted and both result lists to be empty. These fields remain outside the
-immutable `reviewVersion`, and `promotionAllowed` remains false because
-production linking requires a separate maintainer action outside this package.
+immutable `reviewVersion`. The candidate package is now linked to production
+only through the exact 011–024 fingerprint reconciliation seam, while
+`promotionAllowed` remains false because human review is still incomplete and
+prelaunch exposure does not imply reviewed or published status.
 
 `review-status` independently records whether the candidate package is
 truthfully still `draft`; it does not promote the package. `teaching-accuracy`

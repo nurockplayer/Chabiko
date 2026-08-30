@@ -158,7 +158,7 @@ async function loadReviewVersionInput(): Promise<TaiwanTravelWave1ReviewVersionI
 }
 
 describe('Taiwan Travel Wave 1 candidate package', () => {
-  it('reconciles exact IDs, order, draft state, scenarios, and production isolation', async () => {
+  it('reconciles exact IDs, order, draft state, scenarios, and bounded production linkage', async () => {
     const packet = await loadTaiwanTravelWave1ReviewPacket();
 
     expect(packet.scopeId).toBe(TAIWAN_TRAVEL_WAVE1_SCOPE_ID);
@@ -170,7 +170,8 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
     expect(packet.scenarioDistribution).toEqual(
       TAIWAN_TRAVEL_WAVE1_SCENARIO_DISTRIBUTION,
     );
-    expect(packet.productionLinked).toBe(false);
+    expect(packet.decisionContract.productionUnlinked).toBe(false);
+    expect(packet.productionLinked).toBe(true);
     expect(packet.promotionAllowed).toBe(false);
     expect(packet.decisionCount).toBe(0);
   });
