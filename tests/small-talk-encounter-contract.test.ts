@@ -197,6 +197,20 @@ describe('Small Talk Lab authored encounter contract', () => {
     );
   });
 
+  it('fails closed when strategy fit contradicts its deterministic outcome', () => {
+    const acceptableStall = cloneDocument();
+    acceptableStall.families[0].encounters[0].beats[0].strategies[0].branch.outcome = 'STALL';
+    expect(() => validateSmallTalkEncounterDocument(acceptableStall)).toThrow(
+      'branch.outcome must not be STALL when fit is acceptable',
+    );
+
+    const stallProneContinue = cloneDocument();
+    stallProneContinue.families[0].encounters[0].beats[0].strategies[2].branch.outcome = 'CONTINUE';
+    expect(() => validateSmallTalkEncounterDocument(stallProneContinue)).toThrow(
+      'branch.outcome must be STALL when fit is stall-prone',
+    );
+  });
+
   it('runs the canonical CLI against valid and invalid files without touching neighbours', () => {
     const valid = spawnSync(
       'node',

@@ -478,6 +478,12 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             branchPath,
             'a known outcome',
           );
+          if (fit === 'stall-prone' && outcome !== 'STALL') {
+            throw new Error(`${strategyPath}.branch.outcome must be STALL when fit is stall-prone`);
+          }
+          if (fit === 'acceptable' && outcome === 'STALL') {
+            throw new Error(`${strategyPath}.branch.outcome must not be STALL when fit is acceptable`);
+          }
           if (outcome === 'REPAIR') {
             repairBranches += 1;
             if (!movePattern.includes('REPAIR')) {
