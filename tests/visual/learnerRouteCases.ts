@@ -1,8 +1,7 @@
 /** Deterministic /vocabulary/basic/ learner-route visual cases, separate from
- * the lesson-journey matrix. Each case captures the card front after reveal for
- * a representative item: a true complete-field item (pinyin + Japanese +
- * Traditional Chinese) and a missing-all-optional item, across the Issue #205
- * viewport set. */
+ * the lesson-journey matrix. The full viewport set covers revealed items with
+ * and without context; narrow and desktop cases also freeze the unrevealed and
+ * longest approved raw-context states. */
 export interface LearnerRouteCase {
   /** Opaque learnerId whose card front is captured. */
   learnerId: string;
@@ -30,6 +29,10 @@ export const COMPLETE_FIELD_LEARNED_COUNT = 514;
 export const NO_OPTIONAL_ID = 'teacher-learner-ce0a85de48246f4b';
 export const NO_OPTIONAL_LEARNED_COUNT = 275;
 
+/** 原来 (longest approved raw example string), manifest index 1518. */
+export const LONG_EXAMPLE_ID = 'teacher-learner-156cf7b03e67d363';
+export const LONG_EXAMPLE_LEARNED_COUNT = 1518;
+
 export const LEARNER_ROUTE_CASES: readonly LearnerRouteCase[] =
   LEARNER_ROUTE_VIEWPORTS.flatMap((viewport) => [
     {
@@ -46,4 +49,22 @@ export const LEARNER_ROUTE_CASES: readonly LearnerRouteCase[] =
       revealed: true,
       snapshotName: `learner-route-no-optional-${viewport.width}x${viewport.height}.png`,
     },
+    ...([320, 1440].includes(viewport.width)
+      ? [
+          {
+            learnerId: COMPLETE_FIELD_ID,
+            learnedCount: COMPLETE_FIELD_LEARNED_COUNT,
+            viewport,
+            revealed: false,
+            snapshotName: `learner-route-unrevealed-${viewport.width}x${viewport.height}.png`,
+          },
+          {
+            learnerId: LONG_EXAMPLE_ID,
+            learnedCount: LONG_EXAMPLE_LEARNED_COUNT,
+            viewport,
+            revealed: true,
+            snapshotName: `learner-route-long-context-${viewport.width}x${viewport.height}.png`,
+          },
+        ]
+      : []),
   ]);

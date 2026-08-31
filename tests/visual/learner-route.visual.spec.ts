@@ -9,6 +9,8 @@ import {
   COMPLETE_FIELD_ID,
   COMPLETE_FIELD_LEARNED_COUNT,
   LEARNER_ROUTE_CASES,
+  LONG_EXAMPLE_ID,
+  LONG_EXAMPLE_LEARNED_COUNT,
   NO_OPTIONAL_LEARNED_COUNT,
   LEARNER_ROUTE_VIEWPORTS,
 } from './learnerRouteCases';
@@ -23,6 +25,7 @@ const manifest = JSON.parse(
     pinyin?: string;
     japanese?: string;
     traditional?: string;
+    example?: string;
     image: { assetPath: string };
   }>;
 };
@@ -38,6 +41,7 @@ function rowFor(learnerId: string) {
 }
 
 const completeRow = rowFor(COMPLETE_FIELD_ID); // 大家, all three optional fields
+const longExampleRow = rowFor(LONG_EXAMPLE_ID);
 
 test.describe('/vocabulary/basic/ learner route', () => {
   test.describe('visual baselines', () => {
@@ -55,22 +59,27 @@ test.describe('/vocabulary/basic/ learner route', () => {
             learnedIds(learnerCase.learnedCount),
           );
 
-          await page.locator('[data-action="reveal"]').click();
-          await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
-          // The illustration is answer feedback (#356): it appears with the
-          // answer on reveal, so wait for the revealed WebP to finish loading
-          // before capturing, so the shot is never a partially-loaded image.
-          await expect
-            .poll(async () =>
-              page
-                .locator('[data-card] img')
-                .evaluate((img) => {
-                  const htmlImage = img as HTMLImageElement;
-                  return htmlImage.complete && htmlImage.naturalWidth > 0;
-                })
-                .catch(() => false),
-            )
-            .toBe(true);
+          if (learnerCase.revealed) {
+            await page.locator('[data-action="reveal"]').click();
+            await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
+            // The illustration is answer feedback (#356): it appears with the
+            // answer on reveal, so wait for the revealed WebP to finish loading
+            // before capturing, so the shot is never a partially-loaded image.
+            await expect
+              .poll(async () =>
+                page
+                  .locator('[data-card] img')
+                  .evaluate((img) => {
+                    const htmlImage = img as HTMLImageElement;
+                    return htmlImage.complete && htmlImage.naturalWidth > 0;
+                  })
+                  .catch(() => false),
+              )
+              .toBe(true);
+          } else {
+            await expect(page.locator('.basic-vocabulary-context')).toHaveCount(0);
+            await expect(page.locator('[data-card] img')).toHaveCount(0);
+          }
           await assertLearnerRouteCaptureContract(
             page,
             learnerCase.viewport,
@@ -116,8 +125,9 @@ test.describe('/vocabulary/basic/ learner route', () => {
         await expect(page.locator('[data-card] img')).toHaveCount(1);
         await assertElementsWithinViewport(page, [
           '[data-card]',
+          '.basic-vocabulary-context',
           '[data-card] img',
-          '.basic-vocabulary-answer',
+          '.basic-vocabulary-word-breakdown',
           '.basic-vocabulary-ratings',
           '[data-rating="again"]',
           '[data-rating="unsure"]',
@@ -136,11 +146,17 @@ test.describe('/vocabulary/basic/ learner route', () => {
         await page.locator('[data-action="reveal"]').click();
         await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
         await assertLearnerRouteCaptureContract(page, viewport, externalRequests);
-        // No blank answer container; ratings and reset management contained.
+        // Truthful missing-context state, word breakdown, ratings, and reset
+        // management remain available without an invented phrase.
+        await expect(page.locator('.basic-vocabulary-context--missing')).toHaveText(
+          'フレーズ準備中',
+        );
         await expect(page.locator('.basic-vocabulary-answer')).toHaveCount(0);
         await assertElementsWithinViewport(page, [
           '[data-card]',
           '[data-card] img',
+          '.basic-vocabulary-context--missing',
+          '.basic-vocabulary-word-breakdown',
           '.basic-vocabulary-simplified',
           '.basic-vocabulary-ratings',
           '[data-rating="again"]',
@@ -164,6 +180,9 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await page.locator('[data-action="reveal"]').click();
       const answer = page.locator('.basic-vocabulary-answer');
       await expect(answer).toBeVisible();
+      await expect(page.locator('.basic-vocabulary-context-text')).toHaveText(
+        completeRow.example ?? '',
+      );
       const imageSrc = await page
         .locator('[data-card] img')
         .getAttribute('src');
@@ -187,7 +206,34 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('.basic-vocabulary-simplified')).toHaveText('强调');
       await page.locator('[data-action="reveal"]').click();
       await expect(page.locator('.basic-vocabulary-ratings')).toBeVisible();
+      await expect(page.locator('.basic-vocabulary-context--missing')).toHaveText(
+        'フレーズ準備中',
+      );
       await expect(page.locator('.basic-vocabulary-answer')).toHaveCount(0);
+    });
+
+    test('long raw context remains one exact learning object at narrow and desktop widths', async ({ page }) => {
+      for (const viewport of [
+        { width: 320, height: 800 },
+        { width: 1440, height: 900 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+        const { externalRequests } = await openLearnerRoute(
+          page,
+          learnedIds(LONG_EXAMPLE_LEARNED_COUNT),
+        );
+        await page.locator('[data-action="reveal"]').click();
+        const context = page.locator('.basic-vocabulary-context-text');
+        await expect(context).toHaveCount(1);
+        await expect(context).toHaveText(longExampleRow.example ?? '');
+        await assertLearnerRouteCaptureContract(page, viewport, externalRequests);
+        await assertElementsWithinViewport(page, [
+          '.basic-vocabulary-context-text',
+          '.basic-vocabulary-word-breakdown',
+          '.basic-vocabulary-ratings',
+        ]);
+      }
     });
 
     test('keyboard: reveal is auto-focused, Enter reveals 大家 and lands on the again rating', async ({ page }) => {
@@ -214,17 +260,13 @@ test.describe('/vocabulary/basic/ learner route', () => {
       await expect(page.locator('[data-rating="unsure"]')).toHaveAccessibleName('むずかしい');
       await expect(page.locator('[data-rating="known"]')).toHaveAccessibleName('できた');
 
-      // Natural Tab order continues through the ratings. 大家 has an approved
-      // example, so the example-sentence detail link (#342) is the next
-      // focusable control after the ratings; Tab continues through it to the
-      // reset management summary (which opens the native details block on
-      // Enter).
+      // Natural Tab order continues through the ratings, then directly to the
+      // reset management summary. Context is now inline, so there is no
+      // study-card detour link between learning and rating/reset controls.
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="unsure"]')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(page.locator('[data-rating="known"]')).toBeFocused();
-      await page.keyboard.press('Tab');
-      await expect(page.locator('.basic-vocabulary-detail-link')).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(resetSummary).toBeFocused();
     });

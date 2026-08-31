@@ -2,13 +2,13 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
- * #369 reveal hierarchy and mobile-ergonomics guard.
+ * #369 / #464 reveal hierarchy and mobile-ergonomics guard.
  *
  * Covers the study surface's post-reveal presentation contract: the answer +
  * illustration still appear together as recall feedback (never a pre-reveal
- * hint), the answer block reads as a clear reading → meaning → comparison
- * hierarchy, and the reveal illustration is capped on small screens so the
- * word, answer, and rating controls stay reachable. These are static-source
+ * hint), approved context leads the revealed object, the word block remains a
+ * labeled explanation layer, and the supporting illustration is capped on
+ * small screens. These are static-source
  * guards; the equivalent behavioural assertions (image hidden before reveal,
  * answer fields appear after reveal) live in basic-vocabulary-route.test.ts
  * and basic-vocabulary-session-lifecycle.test.ts.
@@ -27,9 +27,12 @@ describe('recall-first reveal stays exact (#356 / #369)', () => {
   it('builds the illustration only inside the answer-revealed gate', () => {
     // The image is answer feedback: it is emitted only when the answer is
     // revealed, so an unanswered card never carries a pre-reveal hint.
-    expect(clientSource).toContain(
-      'if (entry.illustration && state.answerRevealed) {',
-    );
+    const revealedGate = clientSource.indexOf('if (state.answerRevealed) {');
+    const illustrationGate = clientSource.indexOf('if (entry.illustration) {');
+    const unrevealedBranch = clientSource.indexOf('} else {', illustrationGate);
+    expect(revealedGate).toBeGreaterThan(0);
+    expect(illustrationGate).toBeGreaterThan(revealedGate);
+    expect(illustrationGate).toBeLessThan(unrevealedBranch);
     // The answer block (pinyin/japanese/traditional) is also reveal-gated.
     expect(clientSource).toMatch(/if \(state\.answerRevealed\) \{/);
   });
@@ -49,12 +52,16 @@ describe('recall-first reveal stays exact (#356 / #369)', () => {
   });
 });
 
-describe('reveal hierarchy CSS (Issue #369)', () => {
-  it('visually demotes the traditional comparison below the reading/meaning unit', () => {
+describe('reveal hierarchy CSS (Issue #369 / #464)', () => {
+  it('separates the explanatory word block and keeps traditional comparison muted', () => {
+    const breakdownRule = sessionCss.match(
+      /\.basic-vocabulary-word-breakdown\s*\{([\s\S]*?)\n {2}\}/,
+    )![1];
+    expect(breakdownRule).toContain('border-top: 1px solid var(--hairline)');
+
     const rule = sessionCss.match(
       /\.basic-vocabulary-traditional\s*\{([\s\S]*?)\n {2}\}/,
     )![1];
-    expect(rule).toContain('border-top: 1px solid var(--hairline)');
     expect(rule).toContain('var(--ink-muted)');
   });
 
@@ -90,7 +97,8 @@ describe('reveal mobile ergonomics (Issue #369)', () => {
       /\.basic-vocabulary-illustration\s*\{([\s\S]*?)\}/,
     );
     expect(illustrationRule).not.toBeNull();
-    expect(illustrationRule![1]).toContain('max-height: min(30vh, 240px)');
+    expect(illustrationRule![1]).toContain('max-width: 160px');
+    expect(illustrationRule![1]).toContain('max-height: min(24vh, 180px)');
   });
 
   it('keeps the reveal rating actions as 44px targets on the card', () => {
