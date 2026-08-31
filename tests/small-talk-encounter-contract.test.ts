@@ -19,6 +19,12 @@ function cloneDocument(): Mutable<SmallTalkEncounterDocument> {
   return structuredClone(loadSmallTalkEncounterDocument()) as Mutable<SmallTalkEncounterDocument>;
 }
 
+function cloneRawDocument(): Mutable<SmallTalkEncounterDocument> {
+  return JSON.parse(
+    readFileSync(join(process.cwd(), 'data/small-talk/encounters.json'), 'utf8'),
+  ) as Mutable<SmallTalkEncounterDocument>;
+}
+
 describe('Small Talk Lab authored encounter contract', () => {
   it('loads exactly the baseline and seasonal transfer families', () => {
     const document = loadSmallTalkEncounterDocument();
@@ -71,6 +77,16 @@ describe('Small Talk Lab authored encounter contract', () => {
         Object.values(family.review.dimensions).every((status) => status === 'not-reviewed'),
       ),
     ).toBe(true);
+  });
+
+  it('keeps each v0 cue-specific opportunity on its own Beat', () => {
+    const document = loadSmallTalkEncounterDocument();
+    const encounters = document.families.flatMap((family) => family.encounters);
+
+    for (const encounter of encounters) {
+      expect(encounter.replay.start.beatId).not.toBe(encounter.start.beatId);
+      expect(encounter.beats.every((beat) => beat.partnerCues.length === 1)).toBe(true);
+    }
   });
 
   it('fails closed on an unknown Move identifier', () => {
@@ -260,6 +276,43 @@ describe('Small Talk Lab authored encounter contract', () => {
 
     expect(() => validateSmallTalkEncounterDocument(replayWithoutVariation)).toThrow(
       'replay.start must differ from start',
+    );
+  });
+
+  it('uses initial and replay starts as the authorized graph roots', () => {
+    const replayRootOnly = cloneRawDocument();
+    expect(() => validateSmallTalkEncounterDocument(replayRootOnly)).not.toThrow();
+
+    const unreachable = cloneRawDocument();
+    const encounter = unreachable.families[0].encounters[0];
+    const orphan = structuredClone(encounter.beats[1]);
+    orphan.id = 'weekend-micro-orphan';
+    encounter.beats.push(orphan);
+
+    expect(() => validateSmallTalkEncounterDocument(unreachable)).toThrow(
+      "beats contains unreachable Beat 'weekend-micro-orphan'",
+    );
+  });
+
+  it('rejects initial and replay roots that bypass REPAIR entry semantics', () => {
+    const invalidInitialRoot = cloneRawDocument();
+    const initialEncounter = invalidInitialRoot.families[1].encounters[0];
+    initialEncounter.start = {
+      beatId: 'mid-autumn-repair-return',
+      cueId: 'mid-autumn-repair-explanation',
+    };
+    expect(() => validateSmallTalkEncounterDocument(invalidInitialRoot)).toThrow(
+      'start must target a conversation Beat',
+    );
+
+    const invalidReplayRoot = cloneRawDocument();
+    const replayEncounter = invalidReplayRoot.families[1].encounters[0];
+    replayEncounter.replay.start = {
+      beatId: 'mid-autumn-repair-return',
+      cueId: 'mid-autumn-repair-explanation',
+    };
+    expect(() => validateSmallTalkEncounterDocument(invalidReplayRoot)).toThrow(
+      'replay.start must target a conversation Beat',
     );
   });
 

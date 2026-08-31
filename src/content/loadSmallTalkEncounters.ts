@@ -330,6 +330,9 @@ function validateStart(
   const cueId = requireString(start, 'cueId', path);
   const beat = beats.get(beatId);
   if (!beat) throw new Error(`${path} references unknown Beat '${beatId}'`);
+  if (beat.kind !== 'conversation') {
+    throw new Error(`${path} must target a conversation Beat`);
+  }
   const cueExists = requireArray(beat.partnerCues, `${path}.partnerCues`).some(
     (cue) => requireRecord(cue, `${path}.cue`).id === cueId,
   );
@@ -569,6 +572,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
 
       const visited = new Set<string>();
       assertAllBranchesClose(start.beatId, beats, new Set(), visited, encounterPath);
+      assertAllBranchesClose(replayStart.beatId, beats, new Set(), visited, encounterPath);
       if (visited.size !== beats.size) {
         const unreachable = [...beats.keys()].find((beatId) => !visited.has(beatId));
         throw new Error(`${encounterPath}.beats contains unreachable Beat '${unreachable}'`);
