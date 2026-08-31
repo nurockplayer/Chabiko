@@ -34,6 +34,9 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const SOURCE_KINDS = new Set([
   'product-authority', 'official-date', 'official-cultural-reference',
 ]);
+const OFFICIAL_FACTUAL_SOURCE_KINDS = new Set([
+  'official-date', 'official-cultural-reference',
+]);
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
@@ -237,11 +240,18 @@ function validateSeasonal(
   requireString(seasonal, 'definitionId', path);
   const occurrencePath = `${path}.occurrence`;
   const occurrence = requireRecord(seasonal.occurrence, occurrencePath);
-  if (occurrence.year !== 2026) throw new Error(`${occurrencePath}.year must be 2026`);
+  const occurrenceYear = occurrence.year;
+  if (occurrenceYear !== 2026) throw new Error(`${occurrencePath}.year must be 2026`);
   const startDate = requireIsoDate(occurrence, 'startDate', occurrencePath);
   const endDate = requireIsoDate(occurrence, 'endDate', occurrencePath);
   const visibleFrom = requireIsoDate(occurrence, 'visibleFrom', occurrencePath);
   const visibleUntil = requireIsoDate(occurrence, 'visibleUntil', occurrencePath);
+  if (
+    !startDate.startsWith(`${occurrenceYear}-`) ||
+    !endDate.startsWith(`${occurrenceYear}-`)
+  ) {
+    throw new Error(`${occurrencePath} startDate and endDate must match occurrence.year`);
+  }
   if (startDate > endDate) throw new Error(`${occurrencePath}.startDate must not exceed endDate`);
   if (visibleFrom > startDate || visibleUntil < endDate) {
     throw new Error(`${occurrencePath} visibility must contain the occurrence`);
@@ -273,7 +283,17 @@ function validateSeasonal(
     requireUniqueId(claim, claimPath, claimIds, 'seasonal claim');
     requireString(claim, 'claimJa', claimPath);
     requireString(claim, 'scopeNoteJa', claimPath);
-    requireSourceRefsResolve(claim.sourceRefIds, `${claimPath}.sourceRefIds`, sourceIndex);
+    const claimSourceRefs = requireSourceRefsResolve(
+      claim.sourceRefIds,
+      `${claimPath}.sourceRefIds`,
+      sourceIndex,
+    );
+    if (
+      !claimSourceRefs.some((sourceRef) =>
+        OFFICIAL_FACTUAL_SOURCE_KINDS.has(sourceIndex.get(sourceRef) ?? ''))
+    ) {
+      throw new Error(`${claimPath}.sourceRefIds must include an official factual source`);
+    }
   }
 }
 
@@ -304,7 +324,7 @@ function validateStart(
   value: unknown,
   path: string,
   beats: Map<string, Record<string, unknown>>,
-): string {
+): { beatId: string; cueId: string } {
   const start = requireRecord(value, path);
   const beatId = requireString(start, 'beatId', path);
   const cueId = requireString(start, 'cueId', path);
@@ -314,7 +334,7 @@ function validateStart(
     (cue) => requireRecord(cue, `${path}.cue`).id === cueId,
   );
   if (!cueExists) throw new Error(`${path} references unknown cue '${cueId}'`);
-  return beatId;
+  return { beatId, cueId };
 }
 
 export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEncounterDocument {
@@ -484,6 +504,11 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
           if (fit === 'acceptable' && outcome === 'STALL') {
             throw new Error(`${strategyPath}.branch.outcome must not be STALL when fit is acceptable`);
           }
+          if (movePattern.includes('REPAIR') && outcome !== 'REPAIR') {
+            throw new Error(
+              `${strategyPath}.branch.outcome must be REPAIR when movePattern includes REPAIR`,
+            );
+          }
           if (outcome === 'REPAIR') {
             repairBranches += 1;
             if (!movePattern.includes('REPAIR')) {
@@ -505,6 +530,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             if (outcome === 'REPAIR' && targetBeat.kind !== 'repair-return') {
               throw new Error(`${branchPath} REPAIR must target a repair-return Beat`);
             }
+            if (targetBeat.kind === 'repair-return' && outcome !== 'REPAIR') {
+              throw new Error(`${branchPath} repair-return Beat must be entered by a REPAIR outcome`);
+            }
             if (outcome === 'CLOSE' || outcome === 'STALL') {
               throw new Error(`${branchPath} ${outcome} must be terminal`);
             }
@@ -522,10 +550,13 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         throw new Error(`${encounterPath} must expose at least two acceptable authored strategies`);
       }
 
-      const startBeatId = validateStart(encounter.start, `${encounterPath}.start`, beats);
+      const start = validateStart(encounter.start, `${encounterPath}.start`, beats);
       const replay = requireRecord(encounter.replay, `${encounterPath}.replay`);
       requireString(replay, 'modifierJa', `${encounterPath}.replay`);
-      validateStart(replay.start, `${encounterPath}.replay.start`, beats);
+      const replayStart = validateStart(replay.start, `${encounterPath}.replay.start`, beats);
+      if (replayStart.beatId === start.beatId && replayStart.cueId === start.cueId) {
+        throw new Error(`${encounterPath}.replay.start must differ from start`);
+      }
 
       const passportPath = `${encounterPath}.passportProjection`;
       const passport = requireRecord(encounter.passportProjection, passportPath);
@@ -537,7 +568,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
       }
 
       const visited = new Set<string>();
-      assertAllBranchesClose(startBeatId, beats, new Set(), visited, encounterPath);
+      assertAllBranchesClose(start.beatId, beats, new Set(), visited, encounterPath);
       if (visited.size !== beats.size) {
         const unreachable = [...beats.keys()].find((beatId) => !visited.has(beatId));
         throw new Error(`${encounterPath}.beats contains unreachable Beat '${unreachable}'`);

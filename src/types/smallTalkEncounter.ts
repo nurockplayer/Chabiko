@@ -113,6 +113,10 @@ export interface SmallTalkBeat {
   readonly opportunityJa: string;
   readonly targetMovePattern: readonly ConversationMove[];
   readonly partnerCues: readonly SmallTalkPartnerCue[];
+  /**
+   * Every strategy on a Beat is eligible for every partner cue on that Beat.
+   * Author a separate Beat when a cue needs a different legal strategy set.
+   */
   readonly strategies: readonly SmallTalkStrategy[];
 }
 

@@ -168,12 +168,35 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(nonOfficialDateSource)).toThrow(
       'seasonal.occurrence.sourceRefIds must include an official-date source',
     );
+
+    const mismatchedOccurrenceYear = cloneDocument();
+    const mismatchedOccurrence = mismatchedOccurrenceYear.families[1].seasonal?.occurrence;
+    if (!mismatchedOccurrence) throw new Error('test fixture must be seasonal');
+    mismatchedOccurrence.startDate = '2027-09-15';
+    mismatchedOccurrence.endDate = '2027-09-15';
+    mismatchedOccurrence.visibleFrom = '2027-08-16';
+    mismatchedOccurrence.visibleUntil = '2027-09-15';
+    expect(() => validateSmallTalkEncounterDocument(mismatchedOccurrenceYear)).toThrow(
+      'seasonal.occurrence startDate and endDate must match occurrence.year',
+    );
+
+    const claimWithoutFactualSource = cloneDocument();
+    const seasonalClaim = claimWithoutFactualSource.families[1].seasonal?.claims[0];
+    if (!seasonalClaim) throw new Error('test fixture must include a seasonal claim');
+    seasonalClaim.sourceRefIds = ['issue-459-seasonal-contract'];
+    expect(() => validateSmallTalkEncounterDocument(claimWithoutFactualSource)).toThrow(
+      'seasonal.claims[0].sourceRefIds must include an official factual source',
+    );
   });
 
   it('requires exactly one bounded repair and rejects cyclic branch graphs', () => {
     const noRepair = cloneDocument();
-    const repair = noRepair.families[1].encounters[0].beats[1].strategies[0].branch;
-    repair.outcome = 'CONTINUE';
+    const removedRepairStrategy = noRepair.families[1].encounters[0].beats[1].strategies[0];
+    removedRepairStrategy.movePattern = ['INVITE'];
+    removedRepairStrategy.branch = structuredClone(
+      noRepair.families[1].encounters[0].beats[1].strategies[1].branch,
+    );
+    noRepair.families[1].encounters[0].beats.splice(2, 1);
     expect(() => validateSmallTalkEncounterDocument(noRepair)).toThrow(
       'document must contain exactly one REPAIR branch; found 0',
     );
@@ -183,6 +206,25 @@ describe('Small Talk Lab authored encounter contract', () => {
     repairStrategy.movePattern = ['INVITE'];
     expect(() => validateSmallTalkEncounterDocument(repairWithoutMove)).toThrow(
       'movePattern must include REPAIR for a REPAIR outcome',
+    );
+
+    const repairMoveWithoutOutcome = cloneDocument();
+    repairMoveWithoutOutcome.families[0].encounters[0].beats[0].strategies[0].movePattern = [
+      'REPAIR',
+      'INVITE',
+    ];
+    expect(() => validateSmallTalkEncounterDocument(repairMoveWithoutOutcome)).toThrow(
+      'branch.outcome must be REPAIR when movePattern includes REPAIR',
+    );
+
+    const nonRepairIntoRepairReturn = cloneDocument();
+    const nonRepairBranch =
+      nonRepairIntoRepairReturn.families[1].encounters[0].beats[0].strategies[0].branch;
+    if (nonRepairBranch.kind !== 'beat') throw new Error('test fixture must use a Beat branch');
+    nonRepairBranch.beatId = 'mid-autumn-repair-return';
+    nonRepairBranch.cueId = 'mid-autumn-repair-explanation';
+    expect(() => validateSmallTalkEncounterDocument(nonRepairIntoRepairReturn)).toThrow(
+      'repair-return Beat must be entered by a REPAIR outcome',
     );
 
     const cyclic = cloneDocument();
@@ -208,6 +250,16 @@ describe('Small Talk Lab authored encounter contract', () => {
     stallProneContinue.families[0].encounters[0].beats[0].strategies[2].branch.outcome = 'CONTINUE';
     expect(() => validateSmallTalkEncounterDocument(stallProneContinue)).toThrow(
       'branch.outcome must be STALL when fit is stall-prone',
+    );
+  });
+
+  it('requires replay to start from a changed partner cue or Beat', () => {
+    const replayWithoutVariation = cloneDocument();
+    const encounter = replayWithoutVariation.families[0].encounters[0];
+    encounter.replay.start = { ...encounter.start };
+
+    expect(() => validateSmallTalkEncounterDocument(replayWithoutVariation)).toThrow(
+      'replay.start must differ from start',
     );
   });
 
