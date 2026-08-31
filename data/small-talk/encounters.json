@@ -859,10 +859,10 @@
                   "id": "mid-autumn-family-plan",
                   "stance": "cooperative",
                   "text": {
-                    "traditional": "下個星期就是中秋節了，我還沒決定要不要回家。",
+                    "traditional": "我還沒決定中秋節要不要回家。",
                     "simplifiedStatus": "unavailable",
-                    "pinyin": "Xià ge xīngqí jiù shì Zhōngqiū Jié le, wǒ hái méi juédìng yào bú yào huí jiā.",
-                    "japanese": "来週はもう中秋節だけど、実家に帰るかまだ決めていないんだ。",
+                    "pinyin": "Wǒ hái méi juédìng Zhōngqiū Jié yào bú yào huí jiā.",
+                    "japanese": "中秋節に実家へ帰るか、まだ決めていないんだ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
                 }

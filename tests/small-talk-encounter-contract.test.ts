@@ -48,6 +48,11 @@ describe('Small Talk Lab authored encounter contract', () => {
       displayTimeZone: 'Asia/Tokyo',
       sourceRefIds: ['dgpa-2026-calendar'],
     });
+    expect(document.families[1].encounters[0].beats[0].partnerCues[0].text).toMatchObject({
+      traditional: '我還沒決定中秋節要不要回家。',
+      pinyin: 'Wǒ hái méi juédìng Zhōngqiū Jié yào bú yào huí jiā.',
+      japanese: '中秋節に実家へ帰るか、まだ決めていないんだ。',
+    });
   });
 
   it('freezes strategy variation, one repair opportunity, and truthful draft review state', () => {
