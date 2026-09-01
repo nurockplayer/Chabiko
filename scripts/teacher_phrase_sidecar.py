@@ -155,8 +155,17 @@ def _header_columns(worksheet: Any) -> dict[str, int]:
     columns: dict[str, int] = {}
     for cell in worksheet[1]:
         if isinstance(cell.value, str):
-            columns[cell.value.strip()] = cell.column
+            header = cell.value.strip()
+            if header == SOURCE_COLUMN and header in columns:
+                raise ContractError(
+                    f"sheet '{worksheet.title}' has duplicate source header '{SOURCE_COLUMN}'"
+                )
+            columns[header] = cell.column
     return columns
+
+
+def _is_plain_text_cell(cell: Any) -> bool:
+    return isinstance(cell.value, str) and cell.data_type in {"s", "inlineStr"}
 
 
 def build_sidecar(
@@ -209,7 +218,7 @@ def build_sidecar(
                         f"source cell {sheet_name}:{source_row} is empty but manifest has example"
                     )
                 continue
-            if not isinstance(raw_cell, str) or cell.data_type == "f":
+            if not _is_plain_text_cell(cell):
                 raise ContractError(f"source cell {sheet_name}:{source_row} must be plain text")
             if not raw_cell.strip():
                 raise ContractError(f"source cell {sheet_name}:{source_row} is whitespace-only")
@@ -417,7 +426,7 @@ def validate_sidecar(
                 raise ContractError(f"sheet '{sheet_name}' is missing '{SOURCE_COLUMN}'")
             cell = worksheet.cell(source_row, headers[SOURCE_COLUMN])
             raw_cell = cell.value
-            if not isinstance(raw_cell, str) or cell.data_type == "f":
+            if not _is_plain_text_cell(cell):
                 raise ContractError(f"source cell {sheet_name}:{source_row} must be plain text")
             if source.get("rawCell") != raw_cell:
                 raise ContractError(f"learner '{learner_id}' rawCell does not match workbook")

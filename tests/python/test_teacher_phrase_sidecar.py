@@ -329,7 +329,12 @@ class TeacherPhraseSidecarTests(unittest.TestCase):
         self.assertEqual(reason, "unsupported-carriage-return")
         self.assertEqual(ranges, [(0, len(raw_crlf))])
 
-        for unsupported, example in ((42, "42"), ("   ", ""), ("=1+1", "=1+1")):
+        for unsupported, example in (
+            (42, "42"),
+            ("   ", ""),
+            ("=1+1", "=1+1"),
+            ("#N/A", "#N/A"),
+        ):
             with self.subTest(unsupported=unsupported):
                 self.write_workbook(unsupported)
                 with self.assertRaisesRegex(ContractError, "plain text|whitespace-only"):
@@ -337,6 +342,30 @@ class TeacherPhraseSidecarTests(unittest.TestCase):
                         self.manifest(example=example),
                         self.workbook_path,
                     )
+
+    def test_duplicate_source_headers_fail_closed_in_build_and_validation(self) -> None:
+        self.write_workbook("大家好")
+        manifest = self.manifest(example="大家好")
+        sidecar = build_sidecar(manifest, self.workbook_path)
+
+        workbook = load_workbook(self.workbook_path)
+        worksheet = workbook["名词1"]
+        worksheet["C1"] = "造词/造句"
+        worksheet["C2"] = "大家好"
+        workbook.save(self.workbook_path)
+        workbook.close()
+
+        duplicate_manifest = self.manifest(example="大家好")
+        with self.assertRaisesRegex(ContractError, "duplicate source header"):
+            build_sidecar(duplicate_manifest, self.workbook_path)
+
+        workbook_digest = hashlib.sha256(self.workbook_path.read_bytes()).hexdigest()
+        sidecar["base"]["workbookSha256"] = workbook_digest
+        sidecar["records"][0]["teacherPhrases"][0]["fieldProvenance"]["simplified"][
+            "sourceRef"
+        ] = f"teacher-workbook:sha256:{workbook_digest}#名词1:2:造词/造句"
+        with self.assertRaisesRegex(ContractError, "duplicate source header"):
+            validate_sidecar(sidecar, duplicate_manifest, self.workbook_path)
 
     def test_phrase_identity_is_position_independent_and_semantic_changes_invalidate_it(self) -> None:
         learner_id = "teacher-learner-test"
