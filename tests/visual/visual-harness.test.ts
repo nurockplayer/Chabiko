@@ -7,6 +7,7 @@ import { LEARNER_ROUTE_CASES } from './learnerRouteCases';
 import { KANJI_BRIDGE_VISUAL_CASES } from './kanjiBridgeCases';
 import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 import { TAIWAN_TRAVEL_PATH_VISUAL_CASES } from './taiwanTravelPathCases';
+import { SMALL_TALK_LAB_VISUAL_CASES } from './smallTalkLabCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
 
 const snapshotsDirectory = fileURLToPath(
@@ -37,6 +38,8 @@ describe('visual regression harness contract', () => {
     ]);
     expect(VISUAL_CASES).toHaveLength(60);
     expect(new Set(VISUAL_CASES.map((visualCase) => visualCase.snapshotName)).size).toBe(60);
+    expect(SMALL_TALK_LAB_VISUAL_CASES).toHaveLength(14);
+    expect(new Set(SMALL_TALK_LAB_VISUAL_CASES.map((visualCase) => visualCase.snapshotName)).size).toBe(14);
   });
 
   it('keeps verification and intentional baseline updates separate', () => {
@@ -86,6 +89,9 @@ describe('visual regression harness contract', () => {
       ...expectedKanji,
       ...expectedPhrasebook,
       ...TAIWAN_TRAVEL_PATH_VISUAL_CASES.map(
+        (visualCase) => visualCase.snapshotName,
+      ),
+      ...SMALL_TALK_LAB_VISUAL_CASES.map(
         (visualCase) => visualCase.snapshotName,
       ),
     ].sort();
@@ -154,6 +160,19 @@ describe('visual regression harness contract', () => {
       expect(png.readUInt32BE(20)).toBeLessThanOrEqual(
         visualCase.viewport.height,
       );
+    }
+
+    // Small Talk Lab evidence is a viewport-contained semantic fragment.
+    for (const visualCase of SMALL_TALK_LAB_VISUAL_CASES) {
+      const png = readFileSync(
+        join(snapshotsDirectory, visualCase.snapshotName),
+      );
+      expect(png.subarray(0, 8)).toEqual(
+        Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(png.readUInt32BE(16)).toBe(visualCase.viewport.width);
+      expect(png.readUInt32BE(20)).toBeGreaterThanOrEqual(44);
+      expect(png.readUInt32BE(20)).toBeLessThanOrEqual(visualCase.viewport.height);
     }
   });
 

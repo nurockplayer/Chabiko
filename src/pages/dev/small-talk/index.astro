@@ -1,0 +1,33 @@
+---
+import SmallTalkLab from '../../../components/SmallTalkLab.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="DEV: Small Talk Lab v0"
+  description="Small Talk Lab v0 の隔離された試作画面"
+  robots="noindex, nofollow"
+  themeEnabled
+>
+  <div class="small-talk-dev-shell">
+    <div class="small-talk-dev-note" role="note">
+      <strong>試作・非公開導線</strong>
+      <span>この内容は AI 支援で作成した下書きで、人による言語レビュー前です。実際の会話力を認定するものではありません。</span>
+    </div>
+    <SmallTalkLab />
+  </div>
+
+  <script>
+    import { mountSmallTalkLab } from '../../../client/smallTalkLab';
+
+    const root = document.querySelector<HTMLElement>('[data-small-talk-lab-root]');
+    if (root === null) throw new Error('Small Talk Lab root is missing');
+    mountSmallTalkLab(root);
+  </script>
+</BaseLayout>
+
+<style>
+  .small-talk-dev-shell { width: 100%; min-width: 0; margin: 0 auto; padding-bottom: var(--sp-12); }
+  .small-talk-dev-note { display: grid; gap: var(--sp-1); margin-bottom: var(--sp-8); padding: var(--sp-3) var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-content); background: var(--paper-deep); color: var(--ink-secondary); font-size: 0.75rem; line-height: 1.65; }
+  .small-talk-dev-note strong { color: var(--ink); }
+</style>
