@@ -65,9 +65,15 @@ Any other non-empty sheet raises `ValueError` before any output mutation.
 | `日语翻译` | `japanese` |
 | `难易度` | `difficulty_check` |
 
+### Phrase-source header
+
+- `造词/造句` is normalized into the compatible `example` field by this
+  vocabulary importer.
+- Its raw logical value is captured before normalization only by the
+  authoring-only workflow in `scripts/build-teacher-phrase-sidecar.md`.
+
 ### Ignored headers (tracked but not copied)
 
-- `造词/造句`
 - `日文字`
 - `备注`
 

@@ -18,6 +18,11 @@ uv run --locked python scripts/validate-content-schema.py
 # match a fresh generation from the preview corpus.
 uv run --locked python scripts/build-teacher-learner-manifest.py --test
 
+# Authoring-only teacher phrase contract: the self-test executes the documented
+# --write/--check workflow against a test-owned workbook and proves drift and
+# dirty-neighbor behavior without requiring the rights-restricted workbook in CI.
+uv run --locked python scripts/build-teacher-phrase-sidecar.py --test
+
 # Validate checked-in content.
 for f in data/examples/valid/*.json; do
   uv run --locked python scripts/validate-pain-points.py --check "$f"

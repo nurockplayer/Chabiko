@@ -6,10 +6,11 @@
 |---|---|
 | Source file | `单词表(带图).xlsx` |
 | SHA-256 | `3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37` |
-| Importer | `scripts/import-teacher-vocabulary-xlsx.py` |
+| Vocabulary importer | `scripts/import-teacher-vocabulary-xlsx.py` (normalizes `造词/造句` into the compatible `example` field) |
+| Raw phrase source | Authoring-only workflow: `scripts/build-teacher-phrase-sidecar.md` (captures the raw logical value before normalization) |
 | Detected sheets | 名词1, 动词1, 形容词1, 副词, 名词2, 形容词2, 动词2 |
 | Separator sheets | 難易度☆, 難易度☆☆ |
-| Ignored columns per sheet | 造词/造句, 日文字, 备注, plus the sheet's POS label (e.g. 名词) |
+| Ignored columns per sheet | 日文字, 备注, plus the sheet's POS label (e.g. 名词) |
 
 ## Inventory summary
 
