@@ -8,11 +8,14 @@ source cell from exact current human evidence plus a separate maintainer action.
 from __future__ import annotations
 
 import datetime as dt
+import copy
 import hashlib
 import json
 import os
 import re
 import tempfile
+import unicodedata
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -20,8 +23,15 @@ try:
     from scripts.teacher_phrase_sidecar import (
         CONTRACT_ID as SIDECAR_CONTRACT_ID,
         ContractError,
+        RIGHTS_REF,
+        SOURCE_COLUMN,
+        extract_source_units,
         manifest_semantic_sha256,
+        normalize_example,
+        phrase_id,
         serialize_sidecar,
+        sha256_bytes,
+        source_revision,
         validate_manifest_workbook_digest,
         validate_sidecar,
     )
@@ -29,14 +39,22 @@ except ModuleNotFoundError:  # Direct execution from the scripts directory.
     from teacher_phrase_sidecar import (  # type: ignore[no-redef]
         CONTRACT_ID as SIDECAR_CONTRACT_ID,
         ContractError,
+        RIGHTS_REF,
+        SOURCE_COLUMN,
+        extract_source_units,
         manifest_semantic_sha256,
+        normalize_example,
+        phrase_id,
         serialize_sidecar,
+        sha256_bytes,
+        source_revision,
         validate_manifest_workbook_digest,
         validate_sidecar,
     )
 
 
 REVIEW_CONTRACT_ID = "teacher-phrase-human-review-v1"
+EVIDENCE_CONTRACT_ID = "teacher-phrase-promotion-evidence-v1"
 PROJECTION_CONTRACT_ID = "teacher-phrase-promoted-v1"
 REVIEW_VERSION_DOMAIN = "teacher-phrase-review-v1"
 REQUIRED_REVIEW_ROLES = (
@@ -126,7 +144,11 @@ def serialize_projection(projection: dict[str, Any]) -> bytes:
     return (json.dumps(projection, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
-def atomic_write_projection(path: Path, projection: dict[str, Any]) -> None:
+def serialize_promotion_evidence(evidence: dict[str, Any]) -> bytes:
+    return (json.dumps(evidence, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+
+def _atomic_write_bytes(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.",
@@ -136,7 +158,7 @@ def atomic_write_projection(path: Path, projection: dict[str, Any]) -> None:
     temporary_path = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "wb") as handle:
-            handle.write(serialize_projection(projection))
+            handle.write(payload)
             handle.flush()
             os.fsync(handle.fileno())
         temporary_path.replace(path)
@@ -145,9 +167,15 @@ def atomic_write_projection(path: Path, projection: dict[str, Any]) -> None:
         raise
 
 
-def initialize_empty_projection(path: Path, projection: dict[str, Any]) -> None:
-    """Atomically create the first empty artifact without replacing a target."""
-    _require(projection.get("records") == [], "initial projection must be empty")
+def atomic_write_projection(path: Path, projection: dict[str, Any]) -> None:
+    _atomic_write_bytes(path, serialize_projection(projection))
+
+
+def atomic_write_promotion_evidence(path: Path, evidence: dict[str, Any]) -> None:
+    _atomic_write_bytes(path, serialize_promotion_evidence(evidence))
+
+
+def _initialize_bytes(path: Path, payload: bytes, label: str) -> tuple[int, int]:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.",
@@ -157,15 +185,46 @@ def initialize_empty_projection(path: Path, projection: dict[str, Any]) -> None:
     temporary_path = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "wb") as handle:
-            handle.write(serialize_projection(projection))
+            handle.write(payload)
             handle.flush()
             os.fsync(handle.fileno())
         try:
             os.link(temporary_path, path)
         except FileExistsError as error:
-            raise ContractError(f"promoted projection already exists: {path}") from error
+            raise ContractError(f"{label} already exists: {path}") from error
+        stat = path.stat()
+        return stat.st_dev, stat.st_ino
     finally:
         temporary_path.unlink(missing_ok=True)
+
+
+def initialize_empty_projection(
+    path: Path,
+    projection: dict[str, Any],
+) -> tuple[int, int]:
+    """Atomically create the first empty artifact without replacing a target."""
+    _require(projection.get("records") == [], "initial projection must be empty")
+    return _initialize_bytes(
+        path,
+        serialize_projection(projection),
+        "promoted projection",
+    )
+
+
+def initialize_empty_promotion_evidence(
+    path: Path,
+    evidence: dict[str, Any],
+) -> tuple[int, int]:
+    _require(
+        evidence.get("sidecarSnapshot") is None
+        and evidence.get("reviewSnapshot") is None,
+        "initial promotion evidence must be empty",
+    )
+    return _initialize_bytes(
+        path,
+        serialize_promotion_evidence(evidence),
+        "promotion evidence",
+    )
 
 
 def _validate_phrase_ids(value: object, expected: list[str], label: str) -> None:
@@ -353,23 +412,42 @@ def _projection_phrase(phrase: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def build_empty_projection(manifest: dict[str, Any]) -> dict[str, Any]:
-    """Build the truthful production artifact before any cell is promoted."""
+def _promotion_base(
+    manifest: dict[str, Any],
+    sidecar_digest: str | None,
+) -> dict[str, Any]:
     source = manifest.get("source")
     workbook_sha256 = source.get("workbookSha256") if isinstance(source, dict) else None
     validate_manifest_workbook_digest(manifest, workbook_sha256)
+    return {
+        "sidecarSchemaVersion": 1,
+        "sidecarContractId": SIDECAR_CONTRACT_ID,
+        "sidecarSha256": sidecar_digest,
+        "learnerManifestSemanticSha256": manifest_semantic_sha256(manifest),
+        "workbookSha256": workbook_sha256,
+    }
+
+
+def build_empty_promotion_evidence(manifest: dict[str, Any]) -> dict[str, Any]:
+    rows = manifest.get("rows")
+    _require(isinstance(rows, list), "learner manifest rows must be an array")
+    return {
+        "schemaVersion": 1,
+        "contractId": EVIDENCE_CONTRACT_ID,
+        "base": _promotion_base(manifest, None),
+        "sidecarSnapshot": None,
+        "reviewSnapshot": None,
+    }
+
+
+def build_empty_projection(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Build the truthful production artifact before any cell is promoted."""
     rows = manifest.get("rows")
     _require(isinstance(rows, list), "learner manifest rows must be an array")
     return {
         "schemaVersion": 1,
         "contractId": PROJECTION_CONTRACT_ID,
-        "base": {
-            "sidecarSchemaVersion": 1,
-            "sidecarContractId": SIDECAR_CONTRACT_ID,
-            "sidecarSha256": None,
-            "learnerManifestSemanticSha256": manifest_semantic_sha256(manifest),
-            "workbookSha256": workbook_sha256,
-        },
+        "base": _promotion_base(manifest, None),
         "records": [],
     }
 
@@ -505,52 +583,359 @@ def validate_promoted_projection(
                 _require(_is_non_empty_text(phrase["traditional"]), f"{phrase_label} traditional must be non-empty")
 
 
-def build_promoted_projection(
+def _manifest_rows_by_id(
     manifest: dict[str, Any],
-    sidecar: dict[str, Any],
-    review_artifact: dict[str, Any],
-    workbook_path: Path,
-) -> dict[str, Any]:
-    validate_sidecar(sidecar, manifest, workbook_path)
-    digest = sidecar_sha256(sidecar)
-    _require(isinstance(review_artifact, dict), "review artifact must be an object")
-    _require(
-        set(review_artifact) == {"schemaVersion", "contractId", "base", "records"},
-        "review artifact root keys do not match the teacher phrase contract",
-    )
-    _require(
-        type(review_artifact.get("schemaVersion")) is int
-        and review_artifact.get("schemaVersion") == 1
-        and review_artifact.get("contractId") == REVIEW_CONTRACT_ID,
-        "unsupported teacher phrase review contract",
-    )
-    expected_base = {
-        "sidecarContractId": SIDECAR_CONTRACT_ID,
-        "sidecarSha256": digest,
-        "learnerManifestSemanticSha256": manifest_semantic_sha256(manifest),
-        "workbookSha256": sidecar["base"]["workbookSha256"],
-    }
-    _require(isinstance(review_artifact.get("base"), dict), "review artifact base must be an object")
-    _require(review_artifact["base"] == expected_base, "review artifact sidecar digest or base is stale")
+) -> tuple[dict[str, dict[str, Any]], dict[str, int]]:
+    rows = manifest.get("rows")
+    _require(isinstance(rows, list), "learner manifest rows must be an array")
+    by_id: dict[str, dict[str, Any]] = {}
+    order: dict[str, int] = {}
+    for index, row in enumerate(rows):
+        _require(isinstance(row, dict), "learner manifest row must be an object")
+        learner_id = row.get("learnerId")
+        _require(_is_non_empty_text(learner_id), "learner manifest row needs a learner ID")
+        _require(learner_id not in by_id, f"learner manifest has duplicate learner ID '{learner_id}'")
+        by_id[learner_id] = row
+        order[learner_id] = index
+    return by_id, order
 
-    review_records = review_artifact.get("records")
-    _require(isinstance(review_records, list), "review artifact records must be an array")
-    sidecar_by_id = {record["learnerId"]: record for record in sidecar["records"]}
+
+def _validate_evidence_sidecar_record(
+    record: dict[str, Any],
+    manifest_row: dict[str, Any],
+    workbook_sha256: str,
+    seen_phrase_ids: set[str],
+) -> None:
+    learner_id = record.get("learnerId")
+    _require(
+        set(record) == {"learnerId", "source", "teacherPhrases"},
+        f"promotion evidence learner '{learner_id}' sidecar keys are invalid",
+    )
+    _require(learner_id == manifest_row.get("learnerId"), "promotion evidence learner ID mismatch")
+    source = record.get("source")
+    _require(isinstance(source, dict), f"promotion evidence learner '{learner_id}' source must be an object")
+    raw_cell = source.get("rawCell")
+    _require(
+        isinstance(raw_cell, str) and bool(raw_cell.strip()),
+        f"promotion evidence learner '{learner_id}' rawCell must be non-empty text",
+    )
+    expected_segmentation, expected_reason, expected_ranges = extract_source_units(raw_cell)
+    expected_source_keys = {
+        "sheet",
+        "row",
+        "column",
+        "rawCell",
+        "rawCellSha256",
+        "sourceRevision",
+        "segmentation",
+    }
+    if expected_reason is not None:
+        expected_source_keys.add("segmentationReason")
+    _require(
+        set(source) == expected_source_keys,
+        f"promotion evidence learner '{learner_id}' source keys are invalid",
+    )
+    sheet = manifest_row.get("sourceSheet")
+    row = manifest_row.get("sourceRow")
+    _require(
+        type(source.get("row")) is int
+        and (source.get("sheet"), source.get("row"), source.get("column"))
+        == (sheet, row, SOURCE_COLUMN),
+        f"promotion evidence learner '{learner_id}' source coordinate mismatch",
+    )
+    _require(
+        normalize_example(raw_cell) == manifest_row.get("example"),
+        f"promotion evidence learner '{learner_id}' rawCell does not match manifest example",
+    )
+    raw_digest = sha256_bytes(raw_cell.encode("utf-8"))
+    _require(
+        source.get("rawCellSha256") == raw_digest,
+        f"promotion evidence learner '{learner_id}' rawCellSha256 mismatch",
+    )
+    _require(
+        source.get("sourceRevision")
+        == source_revision(learner_id, sheet, row, raw_digest),
+        f"promotion evidence learner '{learner_id}' sourceRevision mismatch",
+    )
+    _require(
+        source.get("segmentation") == expected_segmentation
+        and source.get("segmentationReason") == expected_reason,
+        f"promotion evidence learner '{learner_id}' segmentation mismatch",
+    )
+
+    phrases = record.get("teacherPhrases")
+    _require(
+        isinstance(phrases, list) and len(phrases) == len(expected_ranges),
+        f"promotion evidence learner '{learner_id}' phrases do not cover every source unit",
+    )
+    expected_units = [
+        unicodedata.normalize("NFC", raw_cell[start:end])
+        for start, end in expected_ranges
+    ]
+    semantic_counts = Counter(unit.strip() for unit in expected_units)
+    for phrase_index, (phrase, expected_range, expected_unit) in enumerate(
+        zip(phrases, expected_ranges, expected_units, strict=True)
+    ):
+        label = f"promotion evidence learner '{learner_id}' phrase {phrase_index}"
+        _require(isinstance(phrase, dict), f"{label} must be an object")
+        allowed_keys = {
+            "phraseId",
+            "sourceRange",
+            "simplified",
+            "traditional",
+            "pinyin",
+            "japanese",
+            "fieldProvenance",
+            "duplicateDiscriminator",
+        }
+        required_keys = {"phraseId", "sourceRange", "simplified", "fieldProvenance"}
+        _require(
+            required_keys.issubset(phrase) and set(phrase).issubset(allowed_keys),
+            f"{label} keys are invalid",
+        )
+        _require(
+            phrase.get("sourceRange")
+            == {"start": expected_range[0], "end": expected_range[1]},
+            f"{label} sourceRange mismatch",
+        )
+        _require(phrase.get("simplified") == expected_unit, f"{label} source unit mismatch")
+        duplicate = semantic_counts[expected_unit.strip()] > 1
+        discriminator = phrase.get("duplicateDiscriminator", "")
+        _require(
+            not duplicate or (isinstance(discriminator, str) and bool(discriminator.strip())),
+            f"{label} duplicate source unit needs a discriminator",
+        )
+        _require(
+            duplicate or "duplicateDiscriminator" not in phrase,
+            f"{label} has an unexpected duplicate discriminator",
+        )
+        expected_phrase_id = phrase_id(learner_id, expected_unit, discriminator)
+        _require(phrase.get("phraseId") == expected_phrase_id, f"{label} phraseId mismatch")
+        _require(expected_phrase_id not in seen_phrase_ids, f"phrase ID collision '{expected_phrase_id}'")
+        seen_phrase_ids.add(expected_phrase_id)
+
+        learner_fields = {field for field in LEARNER_FIELDS if field in phrase}
+        _require(
+            all(_is_non_empty_text(phrase[field]) for field in learner_fields),
+            f"{label} learner fields must be non-empty text",
+        )
+        field_provenance = phrase.get("fieldProvenance")
+        _require(
+            isinstance(field_provenance, dict)
+            and set(field_provenance) == learner_fields,
+            f"{label} provenance must exactly cover learner fields",
+        )
+        for field, provenance in field_provenance.items():
+            _require(isinstance(provenance, dict), f"{label} '{field}' provenance must be an object")
+            _require(
+                set(provenance) == {"provenance", "sourceRef", "rightsRef"},
+                f"{label} '{field}' provenance keys are invalid",
+            )
+            _require(
+                provenance.get("provenance") in {"authored", "generated", "verified"},
+                f"{label} '{field}' provenance is invalid",
+            )
+            _require(
+                _is_non_empty_text(provenance.get("sourceRef"))
+                and _is_non_empty_text(provenance.get("rightsRef")),
+                f"{label} '{field}' provenance is incomplete",
+            )
+        expected_simplified_provenance = {
+            "provenance": "authored",
+            "sourceRef": (
+                f"teacher-workbook:sha256:{workbook_sha256}"
+                f"#{sheet}:{row}:{SOURCE_COLUMN}"
+            ),
+            "rightsRef": RIGHTS_REF,
+        }
+        _require(
+            field_provenance.get("simplified") == expected_simplified_provenance,
+            f"{label} simplified provenance is not bound to approved workbook rights",
+        )
+
+
+def _validate_sidecar_snapshot(
+    snapshot: dict[str, Any],
+    manifest: dict[str, Any],
+    workbook_sha256: str,
+) -> dict[str, dict[str, Any]]:
+    _require(
+        set(snapshot) == {"schemaVersion", "contractId", "base", "records"},
+        "promotion evidence sidecar snapshot root keys are invalid",
+    )
+    _require(
+        type(snapshot.get("schemaVersion")) is int
+        and snapshot.get("schemaVersion") == 1
+        and snapshot.get("contractId") == SIDECAR_CONTRACT_ID,
+        "promotion evidence sidecar snapshot contract is unsupported",
+    )
+    _require(
+        snapshot.get("base")
+        == {
+            "learnerManifestSemanticSha256": manifest_semantic_sha256(manifest),
+            "workbookSha256": workbook_sha256,
+        },
+        "promotion evidence sidecar snapshot base is stale",
+    )
+    manifest_by_id, _ = _manifest_rows_by_id(manifest)
+    records = snapshot.get("records")
+    _require(isinstance(records, list), "promotion evidence sidecar records must be an array")
+    by_id: dict[str, dict[str, Any]] = {}
+    seen_phrase_ids: set[str] = set()
+    for record in records:
+        _require(isinstance(record, dict), "promotion evidence sidecar record must be an object")
+        learner_id = record.get("learnerId")
+        _require(
+            isinstance(learner_id, str) and learner_id in manifest_by_id,
+            "promotion evidence sidecar has an unknown learner ID",
+        )
+        _require(learner_id not in by_id, f"promotion evidence sidecar has duplicate learner ID '{learner_id}'")
+        _validate_evidence_sidecar_record(
+            record,
+            manifest_by_id[learner_id],
+            workbook_sha256,
+            seen_phrase_ids,
+        )
+        by_id[learner_id] = record
+    expected_ids = {
+        learner_id
+        for learner_id, row in manifest_by_id.items()
+        if _is_non_empty_text(row.get("example"))
+    }
+    _require(
+        set(by_id) == expected_ids,
+        "promotion evidence sidecar record coverage mismatch",
+    )
+    return by_id
+
+
+def build_projection_from_evidence(
+    manifest: dict[str, Any],
+    evidence: dict[str, Any],
+) -> dict[str, Any]:
+    """Validate committed source/review snapshots and derive learner payload."""
+    _require(
+        set(evidence)
+        == {
+            "schemaVersion",
+            "contractId",
+            "base",
+            "sidecarSnapshot",
+            "reviewSnapshot",
+        },
+        "promotion evidence root keys are invalid",
+    )
+    _require(
+        type(evidence.get("schemaVersion")) is int
+        and evidence.get("schemaVersion") == 1
+        and evidence.get("contractId") == EVIDENCE_CONTRACT_ID,
+        "unsupported teacher phrase promotion evidence contract",
+    )
+    base = evidence.get("base")
+    _require(isinstance(base, dict), "promotion evidence base must be an object")
+    _require(
+        set(base)
+        == {
+            "sidecarSchemaVersion",
+            "sidecarContractId",
+            "sidecarSha256",
+            "learnerManifestSemanticSha256",
+            "workbookSha256",
+        },
+        "promotion evidence base keys are invalid",
+    )
+    _require(
+        type(base.get("sidecarSchemaVersion")) is int
+        and base.get("sidecarSchemaVersion") == 1,
+        "promotion evidence sidecar schema is unsupported",
+    )
+    _require(
+        base.get("sidecarContractId") == SIDECAR_CONTRACT_ID,
+        "promotion evidence sidecar contract is unsupported",
+    )
+    sidecar_digest = base.get("sidecarSha256")
+    _require(
+        sidecar_digest is None
+        or (isinstance(sidecar_digest, str) and SHA256_PATTERN.fullmatch(sidecar_digest)),
+        "promotion evidence sidecar digest is malformed",
+    )
+    _require(
+        base == _promotion_base(manifest, sidecar_digest),
+        "promotion evidence manifest or workbook base is stale",
+    )
+    sidecar_snapshot = evidence.get("sidecarSnapshot")
+    review_snapshot = evidence.get("reviewSnapshot")
+    if sidecar_digest is None:
+        _require(
+            sidecar_snapshot is None and review_snapshot is None,
+            "empty promotion evidence cannot contain source or review snapshots",
+        )
+        projection = {
+            "schemaVersion": 1,
+            "contractId": PROJECTION_CONTRACT_ID,
+            "base": copy.deepcopy(base),
+            "records": [],
+        }
+        validate_promoted_projection(projection, manifest)
+        return projection
+
+    _require(isinstance(sidecar_snapshot, dict), "promotion evidence needs a sidecar snapshot")
+    _require(isinstance(review_snapshot, dict), "promotion evidence needs a review snapshot")
+    _require(
+        sidecar_sha256(sidecar_snapshot) == sidecar_digest,
+        "promotion evidence sidecar digest does not match its canonical snapshot",
+    )
+    sidecar_by_id = _validate_sidecar_snapshot(
+        sidecar_snapshot,
+        manifest,
+        base["workbookSha256"],
+    )
+    _require(
+        set(review_snapshot) == {"schemaVersion", "contractId", "base", "records"},
+        "promotion evidence review snapshot root keys are invalid",
+    )
+    _require(
+        type(review_snapshot.get("schemaVersion")) is int
+        and review_snapshot.get("schemaVersion") == 1
+        and review_snapshot.get("contractId") == REVIEW_CONTRACT_ID,
+        "promotion evidence review snapshot contract is unsupported",
+    )
+    _require(
+        review_snapshot.get("base")
+        == {
+            "sidecarContractId": SIDECAR_CONTRACT_ID,
+            "sidecarSha256": sidecar_digest,
+            "learnerManifestSemanticSha256": base["learnerManifestSemanticSha256"],
+            "workbookSha256": base["workbookSha256"],
+        },
+        "promotion evidence review snapshot sidecar digest or base is stale",
+    )
+    review_records = review_snapshot.get("records")
+    _require(isinstance(review_records, list), "promotion evidence review records must be an array")
     reviews_by_id: dict[str, dict[str, Any]] = {}
-    for value in review_records:
-        _require(isinstance(value, dict) and isinstance(value.get("learnerId"), str), "review artifact record needs a learner ID")
-        learner_id = value["learnerId"]
-        _require(learner_id in sidecar_by_id, f"review artifact has unknown learner ID '{learner_id}'")
-        _require(learner_id not in reviews_by_id, f"review artifact has duplicate learner ID '{learner_id}'")
-        reviews_by_id[learner_id] = value
+    for review_record in review_records:
+        _require(
+            isinstance(review_record, dict)
+            and isinstance(review_record.get("learnerId"), str),
+            "promotion evidence review record needs a learner ID",
+        )
+        learner_id = review_record["learnerId"]
+        _require(
+            learner_id in sidecar_by_id,
+            f"promotion evidence review has unknown learner ID '{learner_id}'",
+        )
+        _require(
+            learner_id not in reviews_by_id,
+            f"promotion evidence review has duplicate learner ID '{learner_id}'",
+        )
+        reviews_by_id[learner_id] = review_record
 
     promoted_records: list[dict[str, Any]] = []
     for manifest_row in manifest["rows"]:
-        sidecar_record = sidecar_by_id.get(manifest_row["learnerId"])
-        if sidecar_record is None:
-            continue
-        review_record = reviews_by_id.get(sidecar_record["learnerId"])
-        if review_record is None:
+        learner_id = manifest_row["learnerId"]
+        sidecar_record = sidecar_by_id.get(learner_id)
+        review_record = reviews_by_id.get(learner_id)
+        if sidecar_record is None or review_record is None:
             continue
         approved = _validate_review_record(review_record, sidecar_record)
         if not approved or not _cell_is_learner_safe(sidecar_record):
@@ -558,7 +943,7 @@ def build_promoted_projection(
         source = sidecar_record["source"]
         promoted_records.append(
             {
-                "learnerId": sidecar_record["learnerId"],
+                "learnerId": learner_id,
                 "source": {
                     "sheet": source["sheet"],
                     "row": source["row"],
@@ -573,12 +958,45 @@ def build_promoted_projection(
             }
         )
 
-    return {
+    projection = {
         "schemaVersion": 1,
         "contractId": PROJECTION_CONTRACT_ID,
-        "base": {
-            "sidecarSchemaVersion": 1,
-            **expected_base,
-        },
+        "base": copy.deepcopy(base),
         "records": promoted_records,
     }
+    validate_promoted_projection(projection, manifest)
+    return projection
+
+
+def build_promotion_evidence(
+    manifest: dict[str, Any],
+    sidecar: dict[str, Any],
+    review_artifact: dict[str, Any],
+    workbook_path: Path,
+) -> dict[str, Any]:
+    validate_sidecar(sidecar, manifest, workbook_path)
+    digest = sidecar_sha256(sidecar)
+    evidence = {
+        "schemaVersion": 1,
+        "contractId": EVIDENCE_CONTRACT_ID,
+        "base": _promotion_base(manifest, digest),
+        "sidecarSnapshot": copy.deepcopy(sidecar),
+        "reviewSnapshot": copy.deepcopy(review_artifact),
+    }
+    build_projection_from_evidence(manifest, evidence)
+    return evidence
+
+
+def build_promoted_projection(
+    manifest: dict[str, Any],
+    sidecar: dict[str, Any],
+    review_artifact: dict[str, Any],
+    workbook_path: Path,
+) -> dict[str, Any]:
+    evidence = build_promotion_evidence(
+        manifest,
+        sidecar,
+        review_artifact,
+        workbook_path,
+    )
+    return build_projection_from_evidence(manifest, evidence)

@@ -161,6 +161,10 @@ class UnicodeContractTests(unittest.TestCase):
             'data/teacher-vocabulary-preview/teacher-phrase-authoring.json',
             {source['path'] for source in manifest['sources']},
         )
+        self.assertNotIn(
+            'data/teacher-vocabulary-preview/teacher-phrase-promotion-evidence.json',
+            {source['path'] for source in manifest['sources']},
+        )
 
         inventory, _ = extract_dataset(
             REPO_ROOT / 'data/unicode/source-manifest.json',

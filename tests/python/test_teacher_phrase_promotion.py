@@ -18,9 +18,13 @@ sys.path.insert(0, str(REPO_ROOT))
 from scripts.teacher_phrase_promotion import (
     ContractError,
     REQUIRED_REVIEW_ROLES,
+    build_empty_promotion_evidence,
     build_promoted_projection,
     build_empty_projection,
+    build_promotion_evidence,
+    build_projection_from_evidence,
     compute_review_version,
+    serialize_promotion_evidence,
     serialize_projection,
     validate_promoted_projection,
 )
@@ -282,6 +286,58 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "sidecar digest"):
             self.build(wrong_base)
 
+    def test_committed_evidence_rebuilds_exact_projection_and_rejects_tampering(self) -> None:
+        evidence = build_promotion_evidence(
+            self.manifest,
+            self.sidecar,
+            self.review_artifact(),
+            self.workbook_path,
+        )
+
+        self.assertEqual(
+            build_projection_from_evidence(self.manifest, evidence),
+            self.build(),
+        )
+        self.assertEqual(
+            set(evidence),
+            {
+                "schemaVersion",
+                "contractId",
+                "base",
+                "sidecarSnapshot",
+                "reviewSnapshot",
+            },
+        )
+
+        tampered = copy.deepcopy(evidence)
+        tampered["sidecarSnapshot"]["records"][0]["teacherPhrases"][0]["japanese"] += "。"
+        tampered_digest = hashlib.sha256(
+            (
+                json.dumps(
+                    tampered["sidecarSnapshot"],
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n"
+            ).encode("utf-8")
+        ).hexdigest()
+        tampered["base"]["sidecarSha256"] = tampered_digest
+        tampered["reviewSnapshot"]["base"]["sidecarSha256"] = tampered_digest
+        with self.assertRaisesRegex(ContractError, "reviewVersion"):
+            build_projection_from_evidence(self.manifest, tampered)
+
+    def test_committed_evidence_recomputes_the_full_sidecar_digest(self) -> None:
+        evidence = build_promotion_evidence(
+            self.manifest,
+            self.sidecar,
+            self.review_artifact(),
+            self.workbook_path,
+        )
+        evidence["base"]["sidecarSha256"] = "0" * 64
+
+        with self.assertRaisesRegex(ContractError, "sidecar digest"):
+            build_projection_from_evidence(self.manifest, evidence)
+
     def test_projection_emits_records_in_learner_manifest_order(self) -> None:
         workbook_path = self.root / "ordered.xlsx"
         workbook = Workbook()
@@ -360,9 +416,20 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
     def test_canonical_cli_writes_checks_and_preserves_dirty_neighbors(self) -> None:
         manifest_path = self.root / "learner-manifest.json"
         output_path = self.root / "teacher-phrase-promoted.json"
+        evidence_path = self.root / "teacher-phrase-promotion-evidence.json"
+        sidecar_path = self.root / "teacher-phrase-authoring.json"
+        review_path = self.root / "teacher-phrase-human-review.json"
         neighbor = self.root / "keep-me.txt"
         manifest_path.write_text(
             json.dumps(self.manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        sidecar_path.write_text(
+            json.dumps(self.sidecar, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        review_path.write_text(
+            json.dumps(self.review_artifact(), ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
         neighbor.write_text("owned by another writer\n", encoding="utf-8")
@@ -373,6 +440,8 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             str(manifest_path),
             "--output",
             str(output_path),
+            "--evidence",
+            str(evidence_path),
         ]
 
         subprocess.run(
@@ -381,12 +450,30 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             check=True,
         )
         expected = serialize_projection(build_empty_projection(self.manifest))
+        expected_evidence = serialize_promotion_evidence(
+            build_empty_promotion_evidence(self.manifest)
+        )
         self.assertEqual(output_path.read_bytes(), expected)
+        self.assertEqual(evidence_path.read_bytes(), expected_evidence)
         self.assertEqual(neighbor.read_text(encoding="utf-8"), "owned by another writer\n")
         subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
 
+        subprocess.run(
+            [
+                *command,
+                "--workbook",
+                str(self.workbook_path),
+                "--sidecar",
+                str(sidecar_path),
+                "--review",
+                str(review_path),
+                "--write",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+        )
         promoted = serialize_projection(self.build())
-        output_path.write_bytes(promoted)
+        self.assertEqual(output_path.read_bytes(), promoted)
         subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
         repeated_initialization = subprocess.run(
             [*command, "--write", "--initialize-empty"],
@@ -398,6 +485,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         self.assertNotEqual(repeated_initialization.returncode, 0)
         self.assertIn("already exists", repeated_initialization.stderr)
         self.assertEqual(output_path.read_bytes(), promoted)
+        promoted_evidence = evidence_path.read_bytes()
         unsafe_write = subprocess.run(
             [*command, "--write"],
             cwd=REPO_ROOT,
@@ -408,8 +496,11 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         self.assertNotEqual(unsafe_write.returncode, 0)
         self.assertIn("initialize-empty", unsafe_write.stderr)
         self.assertEqual(output_path.read_bytes(), promoted)
+        self.assertEqual(evidence_path.read_bytes(), promoted_evidence)
 
-        output_path.write_text("{}\n", encoding="utf-8")
+        tampered_projection = self.build()
+        tampered_projection["records"][0]["teacherPhrases"][0]["japanese"] += "。"
+        output_path.write_bytes(serialize_projection(tampered_projection))
         drift = subprocess.run(
             [*command, "--check"],
             cwd=REPO_ROOT,
@@ -418,7 +509,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             text=True,
         )
         self.assertNotEqual(drift.returncode, 0)
-        self.assertIn("failed", drift.stderr)
+        self.assertIn("not current", drift.stderr)
 
 
 if __name__ == "__main__":

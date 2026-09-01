@@ -12,18 +12,26 @@ from typing import Any
 
 from teacher_phrase_promotion import (
     ContractError,
+    atomic_write_promotion_evidence,
     atomic_write_projection,
+    build_empty_promotion_evidence,
     build_empty_projection,
-    build_promoted_projection,
+    build_promotion_evidence,
+    build_projection_from_evidence,
+    initialize_empty_promotion_evidence,
     initialize_empty_projection,
+    serialize_promotion_evidence,
     serialize_projection,
-    validate_promoted_projection,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "data/teacher-vocabulary-preview/learner-manifest.json"
 DEFAULT_OUTPUT = REPO_ROOT / "data/teacher-vocabulary-preview/teacher-phrase-promoted.json"
+DEFAULT_EVIDENCE = (
+    REPO_ROOT
+    / "data/teacher-vocabulary-preview/teacher-phrase-promotion-evidence.json"
+)
 SELF_TEST = REPO_ROOT / "tests/python/test_teacher_phrase_promotion.py"
 
 
@@ -55,6 +63,7 @@ def main() -> int:
     parser.add_argument("--sidecar", type=Path)
     parser.add_argument("--review", type=Path)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument(
         "--initialize-empty",
         action="store_true",
@@ -79,20 +88,28 @@ def main() -> int:
     try:
         manifest = read_json_object(args.manifest)
         if args.check and not has_authoring_inputs:
-            projection = read_json_object(args.output)
-            validate_promoted_projection(projection, manifest)
-            if args.output.read_bytes() != serialize_projection(projection):
-                raise ContractError(f"promoted projection is not canonical: {args.output}")
+            evidence = read_json_object(args.evidence)
+            projection = build_projection_from_evidence(manifest, evidence)
+            if args.evidence.read_bytes() != serialize_promotion_evidence(evidence):
+                raise ContractError(f"promotion evidence is not canonical: {args.evidence}")
+            if not args.output.is_file() or args.output.read_bytes() != serialize_projection(
+                projection
+            ):
+                raise ContractError(f"promoted projection is not current: {args.output}")
             print(f"Teacher phrase projection is valid: {len(projection['records'])} records")
             return 0
         if has_authoring_inputs:
-            projection = build_promoted_projection(
+            sidecar = read_json_object(args.sidecar)
+            review = read_json_object(args.review)
+            evidence = build_promotion_evidence(
                 manifest,
-                read_json_object(args.sidecar),
-                read_json_object(args.review),
+                sidecar,
+                review,
                 args.workbook,
             )
+            projection = build_projection_from_evidence(manifest, evidence)
         elif args.initialize_empty:
+            evidence = build_empty_promotion_evidence(manifest)
             projection = build_empty_projection(manifest)
         else:
             raise ContractError(
@@ -100,14 +117,38 @@ def main() -> int:
                 "or supply --workbook, --sidecar, and --review"
             )
         expected = serialize_projection(projection)
+        expected_evidence = serialize_promotion_evidence(evidence)
         if args.check:
+            if (
+                not args.evidence.is_file()
+                or args.evidence.read_bytes() != expected_evidence
+            ):
+                raise ContractError(f"promotion evidence is not current: {args.evidence}")
             if not args.output.is_file() or args.output.read_bytes() != expected:
                 raise ContractError(f"promoted projection is not current: {args.output}")
             print(f"Teacher phrase projection is current: {len(projection['records'])} records")
             return 0
         if args.initialize_empty:
-            initialize_empty_projection(args.output, projection)
+            if args.output.exists():
+                raise ContractError(f"promoted projection already exists: {args.output}")
+            if args.evidence.exists():
+                raise ContractError(f"promotion evidence already exists: {args.evidence}")
+            evidence_identity = initialize_empty_promotion_evidence(
+                args.evidence,
+                evidence,
+            )
+            try:
+                initialize_empty_projection(args.output, projection)
+            except BaseException:
+                try:
+                    current = args.evidence.stat()
+                    if (current.st_dev, current.st_ino) == evidence_identity:
+                        args.evidence.unlink()
+                except FileNotFoundError:
+                    pass
+                raise
         else:
+            atomic_write_promotion_evidence(args.evidence, evidence)
             atomic_write_projection(args.output, projection)
         print(f"Wrote teacher phrase projection: {len(projection['records'])} records")
         return 0

@@ -143,6 +143,7 @@ describe('teacher phrase promoted runtime join', () => {
     const source = readFileSync('src/content/loadProductionLearnerCorpus.ts', 'utf8');
     expect(source).toContain('teacher-phrase-promoted.json');
     expect(source).not.toContain('teacher-phrase-authoring.json');
+    expect(source).not.toContain('teacher-phrase-promotion-evidence.json');
     expect(source).not.toContain('reviewStatus');
     expect(source).not.toContain('human-review');
   });
