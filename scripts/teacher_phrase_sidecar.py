@@ -334,7 +334,12 @@ def validate_sidecar(
 ) -> None:
     if set(sidecar) != {"schemaVersion", "contractId", "base", "records"}:
         raise ContractError("sidecar root keys do not match the frozen contract")
-    if sidecar.get("schemaVersion") != 1 or sidecar.get("contractId") != CONTRACT_ID:
+    schema_version = sidecar.get("schemaVersion")
+    if (
+        type(schema_version) is not int
+        or schema_version != 1
+        or sidecar.get("contractId") != CONTRACT_ID
+    ):
         raise ContractError("unsupported teacher phrase sidecar contract")
     base = sidecar.get("base")
     if not isinstance(base, dict):
@@ -414,7 +419,7 @@ def validate_sidecar(
                 source.get("row"),
                 source.get("column"),
             )
-            if actual_coordinate != expected_coordinate:
+            if type(source.get("row")) is not int or actual_coordinate != expected_coordinate:
                 raise ContractError(f"learner '{learner_id}' source coordinate mismatch")
 
             sheet_name, source_row, _ = expected_coordinate
@@ -484,7 +489,12 @@ def validate_sidecar(
                         f"learner '{learner_id}' phrase {phrase_index} keys do not match the frozen contract"
                     )
                 source_range = phrase.get("sourceRange")
-                if not isinstance(source_range, dict) or set(source_range) != {"start", "end"}:
+                if (
+                    not isinstance(source_range, dict)
+                    or set(source_range) != {"start", "end"}
+                    or type(source_range.get("start")) is not int
+                    or type(source_range.get("end")) is not int
+                ):
                     raise ContractError(f"learner '{learner_id}' phrase {phrase_index} sourceRange is malformed")
                 expected_source_range = {
                     "start": expected_range[0],

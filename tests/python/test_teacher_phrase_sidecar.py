@@ -322,6 +322,29 @@ class TeacherPhraseSidecarTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "root keys"):
             validate_sidecar(unknown_root, manifest, self.workbook_path)
 
+    def test_validation_rejects_boolean_numeric_fields(self) -> None:
+        self.write_workbook("大家好")
+        manifest = self.manifest(example="大家好")
+        sidecar = build_sidecar(manifest, self.workbook_path)
+
+        boolean_schema = copy.deepcopy(sidecar)
+        boolean_schema["schemaVersion"] = True
+        with self.assertRaisesRegex(ContractError, "unsupported teacher phrase sidecar"):
+            validate_sidecar(boolean_schema, manifest, self.workbook_path)
+
+        boolean_source_row = copy.deepcopy(sidecar)
+        boolean_source_row["records"][0]["source"]["row"] = True
+        with self.assertRaisesRegex(ContractError, "source coordinate"):
+            validate_sidecar(boolean_source_row, manifest, self.workbook_path)
+
+        boolean_range = copy.deepcopy(sidecar)
+        boolean_range["records"][0]["teacherPhrases"][0]["sourceRange"] = {
+            "start": False,
+            "end": True,
+        }
+        with self.assertRaisesRegex(ContractError, "sourceRange is malformed"):
+            validate_sidecar(boolean_range, manifest, self.workbook_path)
+
     def test_unsupported_source_shapes_are_review_required_or_fail_closed(self) -> None:
         raw_crlf = "大家好\r\n大家请听"
         segmentation, reason, ranges = extract_source_units(raw_crlf)
@@ -421,6 +444,54 @@ class TeacherPhraseSidecarTests(unittest.TestCase):
                 self.workbook_path,
                 duplicate_discriminators={"teacher-learner-test": {0: "not-a-duplicate"}},
             )
+
+    def test_cli_rejects_boolean_duplicate_discriminator_indexes(self) -> None:
+        self.write_workbook("大家好\n大家好")
+        manifest_path = self.root / "learner-manifest.json"
+        manifest_path.write_text(
+            json.dumps(self.manifest(example="大家好 大家好"), ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        discriminators_path = self.root / "duplicate-discriminators.json"
+        discriminators_path.write_text(
+            json.dumps(
+                {
+                    "contractId": "teacher-phrase-duplicate-discriminators-v1",
+                    "records": [
+                        {
+                            "learnerId": "teacher-learner-test",
+                            "occurrences": [
+                                {"sourceUnitIndex": 0, "discriminator": "first-use"},
+                                {"sourceUnitIndex": True, "discriminator": "second-use"},
+                            ],
+                        }
+                    ],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(REPO_ROOT / "scripts/build-teacher-phrase-sidecar.py"),
+                "--manifest",
+                str(manifest_path),
+                "--workbook",
+                str(self.workbook_path),
+                "--output",
+                str(self.root / "teacher-phrases.json"),
+                "--duplicate-discriminators",
+                str(discriminators_path),
+                "--write",
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("duplicate discriminator index", result.stderr)
 
     def test_source_simplified_provenance_stays_bound_to_workbook_rights(self) -> None:
         self.write_workbook("大家好")

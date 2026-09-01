@@ -56,7 +56,7 @@ def load_discriminators(path: Path | None) -> dict[str, dict[int, str]]:
                 raise ContractError(f"duplicate discriminator occurrence for '{learner_id}' must be an object")
             index = occurrence.get("sourceUnitIndex")
             discriminator = occurrence.get("discriminator")
-            if not isinstance(index, int) or index < 0 or index in by_index:
+            if type(index) is not int or index < 0 or index in by_index:
                 raise ContractError(f"duplicate discriminator index for '{learner_id}' is invalid")
             if not isinstance(discriminator, str) or not discriminator.strip():
                 raise ContractError(f"duplicate discriminator for '{learner_id}' must be non-empty")
