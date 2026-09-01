@@ -518,7 +518,10 @@ def build_promoted_projection(
         reviews_by_id[learner_id] = value
 
     promoted_records: list[dict[str, Any]] = []
-    for sidecar_record in sidecar["records"]:
+    for manifest_row in manifest["rows"]:
+        sidecar_record = sidecar_by_id.get(manifest_row["learnerId"])
+        if sidecar_record is None:
+            continue
         review_record = reviews_by_id.get(sidecar_record["learnerId"])
         if review_record is None:
             continue

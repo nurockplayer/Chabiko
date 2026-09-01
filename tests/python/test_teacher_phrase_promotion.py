@@ -72,36 +72,29 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
 
     def review_artifact(self, sidecar: dict | None = None) -> dict:
         current = sidecar or self.sidecar
-        record = current["records"][0]
-        version = compute_review_version(record)
-        phrase_ids = [phrase["phraseId"] for phrase in record["teacherPhrases"]]
-        source_revision = record["source"]["sourceRevision"]
         sidecar_sha256 = hashlib.sha256(
             (json.dumps(current, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
         ).hexdigest()
-        role_evidence = []
-        for role in REQUIRED_REVIEW_ROLES:
-            evidence = {
-                "role": role,
-                "outcome": "accepted",
-                "reviewerIdentity": f"@{role}",
-                "reviewDate": "2026-09-01",
-                "reviewVersion": version,
-                "reviewedPhraseIds": phrase_ids,
-                "findings": "None.",
-            }
-            if role == "human-source-reviewer":
-                evidence["sourceRevision"] = source_revision
-            role_evidence.append(evidence)
-        return {
-            "schemaVersion": 1,
-            "contractId": "teacher-phrase-human-review-v1",
-            "base": {
-                "sidecarContractId": current["contractId"],
-                "sidecarSha256": sidecar_sha256,
-                **current["base"],
-            },
-            "records": [
+        records = []
+        for record in current["records"]:
+            version = compute_review_version(record)
+            phrase_ids = [phrase["phraseId"] for phrase in record["teacherPhrases"]]
+            source_revision = record["source"]["sourceRevision"]
+            role_evidence = []
+            for role in REQUIRED_REVIEW_ROLES:
+                evidence = {
+                    "role": role,
+                    "outcome": "accepted",
+                    "reviewerIdentity": f"@{role}",
+                    "reviewDate": "2026-09-01",
+                    "reviewVersion": version,
+                    "reviewedPhraseIds": phrase_ids,
+                    "findings": "None.",
+                }
+                if role == "human-source-reviewer":
+                    evidence["sourceRevision"] = source_revision
+                role_evidence.append(evidence)
+            records.append(
                 {
                     "learnerId": record["learnerId"],
                     "sourceRevision": source_revision,
@@ -127,7 +120,16 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
                         "findings": "Promote the exact accepted cell.",
                     },
                 }
-            ],
+            )
+        return {
+            "schemaVersion": 1,
+            "contractId": "teacher-phrase-human-review-v1",
+            "base": {
+                "sidecarContractId": current["contractId"],
+                "sidecarSha256": sidecar_sha256,
+                **current["base"],
+            },
+            "records": records,
         }
 
     def build(self, review: dict | None = None, sidecar: dict | None = None) -> dict:
@@ -278,6 +280,60 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         wrong_base["base"]["sidecarSha256"] = "0" * 64
         with self.assertRaisesRegex(ContractError, "sidecar digest"):
             self.build(wrong_base)
+
+    def test_projection_emits_records_in_learner_manifest_order(self) -> None:
+        workbook_path = self.root / "ordered.xlsx"
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "名词1"
+        sheet.append(["单词", "造词/造句"])
+        sheet.append(["大家", "大家好\n大家请听"])
+        sheet.append(["老师", "老师好\n老师请说"])
+        workbook.save(workbook_path)
+        workbook.close()
+        manifest = {
+            "schemaVersion": 1,
+            "source": {"workbookSha256": hashlib.sha256(workbook_path.read_bytes()).hexdigest()},
+            "rows": [
+                {
+                    "learnerId": "teacher-learner-first",
+                    "simplified": "大家",
+                    "sourceSheet": "名词1",
+                    "sourceRow": 2,
+                    "example": "大家好 大家请听",
+                },
+                {
+                    "learnerId": "teacher-learner-second",
+                    "simplified": "老师",
+                    "sourceSheet": "名词1",
+                    "sourceRow": 3,
+                    "example": "老师好 老师请说",
+                },
+            ],
+        }
+        sidecar = build_sidecar(manifest, workbook_path)
+        for record in sidecar["records"]:
+            for phrase in record["teacherPhrases"]:
+                phrase["pinyin"] = "fixture pinyin"
+                phrase["japanese"] = "fixture Japanese"
+                for field in ("pinyin", "japanese"):
+                    phrase["fieldProvenance"][field] = {
+                        "provenance": "authored",
+                        "sourceRef": f"teacher-editor:fixture:{field}",
+                        "rightsRef": "teacher-owned:fixture",
+                    }
+        sidecar["records"].reverse()
+        projection = build_promoted_projection(
+            manifest,
+            sidecar,
+            self.review_artifact(sidecar),
+            workbook_path,
+        )
+
+        self.assertEqual(
+            [record["learnerId"] for record in projection["records"]],
+            ["teacher-learner-first", "teacher-learner-second"],
+        )
 
     def test_empty_production_projection_claims_no_missing_sidecar(self) -> None:
         projection = build_empty_projection(self.manifest)
