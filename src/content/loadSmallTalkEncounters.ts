@@ -554,6 +554,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         const strategyIds = new Set<string>();
         let acceptableCount = 0;
         let qualifyingAcceptableCount = 0;
+        let hasAcceptableContinue = false;
         for (const [strategyIndex, strategyValue] of strategies.entries()) {
           const strategyPath = `${beatPath}.strategies[${strategyIndex}]`;
           const strategy = requireRecord(strategyValue, strategyPath);
@@ -593,6 +594,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             branchPath,
             'a known outcome',
           );
+          if (fit === 'acceptable' && outcome === 'CONTINUE') hasAcceptableContinue = true;
           if (outcome === 'STALL') familyStallBranches += 1;
           if (fit === 'stall-prone' && outcome !== 'STALL') {
             throw new Error(`${strategyPath}.branch.outcome must be STALL when fit is stall-prone`);
@@ -640,6 +642,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             throw new Error(`${branchPath}.kind must be 'beat' or 'terminal'`);
           }
           validateEvidence(strategy.evidence, `${strategyPath}.evidence`);
+        }
+        if (beat.kind === 'repair-return' && !hasAcceptableContinue) {
+          throw new Error(`${beatPath} repair-return Beat must expose at least one acceptable CONTINUE strategy`);
         }
         const validatedBeatId = requireString(beat, 'id', beatPath);
         acceptableCountsByBeat.set(validatedBeatId, acceptableCount);

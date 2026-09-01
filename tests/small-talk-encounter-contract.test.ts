@@ -490,6 +490,19 @@ describe('Small Talk Lab authored encounter contract', () => {
       'repair-return Beat must be entered by a REPAIR outcome',
     );
 
+    const stalledRepairReturn = cloneDocument();
+    const repairReturnBeat = stalledRepairReturn.families[1].encounters[0].beats.find(
+      (beat) => beat.kind === 'repair-return',
+    );
+    if (!repairReturnBeat) throw new Error('test fixture must include a repair-return Beat');
+    for (const strategy of repairReturnBeat.strategies) {
+      strategy.fit = 'stall-prone';
+      strategy.branch.outcome = 'STALL';
+    }
+    expect(() => validateSmallTalkEncounterDocument(stalledRepairReturn)).toThrow(
+      'repair-return Beat must expose at least one acceptable CONTINUE strategy',
+    );
+
     const cyclic = cloneDocument();
     cyclic.families[0].encounters[1].beats[1].strategies[0].branch = {
       kind: 'beat',
