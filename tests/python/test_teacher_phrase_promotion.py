@@ -380,6 +380,16 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         promoted = serialize_projection(self.build())
         output_path.write_bytes(promoted)
         subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
+        repeated_initialization = subprocess.run(
+            [*command, "--write", "--initialize-empty"],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(repeated_initialization.returncode, 0)
+        self.assertIn("already exists", repeated_initialization.stderr)
+        self.assertEqual(output_path.read_bytes(), promoted)
         unsafe_write = subprocess.run(
             [*command, "--write"],
             cwd=REPO_ROOT,

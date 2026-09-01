@@ -30,7 +30,8 @@ The no-input `--check` validates the committed artifact's canonical bytes,
 shape, and current learner-manifest/workbook base without reconstructing or
 emptying promoted records. Use `--check` with all three authoring inputs to
 prove full byte identity after a promotion. No-input `--write` is rejected;
-`--initialize-empty` is reserved for first creation only. `--write` is atomic
+`--initialize-empty` is reserved for first creation only and refuses to replace
+any existing artifact. `--write` is atomic
 and owns only `data/teacher-vocabulary-preview/teacher-phrase-promoted.json`;
 it never deletes neighboring files. `--test` runs the repository-safe contract
 self-test without the external workbook.

@@ -145,6 +145,29 @@ def atomic_write_projection(path: Path, projection: dict[str, Any]) -> None:
         raise
 
 
+def initialize_empty_projection(path: Path, projection: dict[str, Any]) -> None:
+    """Atomically create the first empty artifact without replacing a target."""
+    _require(projection.get("records") == [], "initial projection must be empty")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=path.parent,
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(serialize_projection(projection))
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary_path, path)
+        except FileExistsError as error:
+            raise ContractError(f"promoted projection already exists: {path}") from error
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
 def _validate_phrase_ids(value: object, expected: list[str], label: str) -> None:
     _require(
         isinstance(value, list) and value == expected,

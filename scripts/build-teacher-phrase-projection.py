@@ -15,6 +15,7 @@ from teacher_phrase_promotion import (
     atomic_write_projection,
     build_empty_projection,
     build_promoted_projection,
+    initialize_empty_projection,
     serialize_projection,
     validate_promoted_projection,
 )
@@ -104,7 +105,10 @@ def main() -> int:
                 raise ContractError(f"promoted projection is not current: {args.output}")
             print(f"Teacher phrase projection is current: {len(projection['records'])} records")
             return 0
-        atomic_write_projection(args.output, projection)
+        if args.initialize_empty:
+            initialize_empty_projection(args.output, projection)
+        else:
+            atomic_write_projection(args.output, projection)
         print(f"Wrote teacher phrase projection: {len(projection['records'])} records")
         return 0
     except (ContractError, OSError, UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError) as error:
