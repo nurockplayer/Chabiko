@@ -168,8 +168,15 @@ def _load_manifest(manifest_path: Path, repo_root: Path) -> tuple[dict[str, Any]
         seen_fields: set[str] = set()
         for field_index, field in enumerate(fields):
             field_label = f"{label}.textFields[{field_index}]"
-            _require(isinstance(field, dict) and set(field) == {"field", "language"},
-                     f"{field_label} must contain exactly field/language")
+            _require(isinstance(field, dict), f"{field_label} must be an object")
+            expected_field_keys = {"field", "language"}
+            if "optional" in field:
+                expected_field_keys.add("optional")
+            _require(set(field) == expected_field_keys,
+                     f"{field_label} must contain field/language and optional only when explicit")
+            if "optional" in field:
+                _require(field["optional"] is True,
+                         f"{field_label}.optional must be true when present")
             _require(isinstance(field["field"], str) and field["field"], f"{field_label}.field must be non-empty")
             _require(field["field"] not in seen_fields, f"{label} has duplicate text field '{field['field']}'")
             seen_fields.add(field["field"])
@@ -394,6 +401,11 @@ def extract_dataset(manifest_path: Path, *, repo_root: Path) -> tuple[dict[str, 
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
             raise ContractError(f"allowlisted source is invalid JSON: {source['path']}: {error}") from error
         field_languages = {entry["field"]: entry["language"] for entry in source["textFields"]}
+        required_fields = {
+            entry["field"]
+            for entry in source["textFields"]
+            if entry.get("optional") is not True
+        }
         found_fields: set[str] = set()
 
         def add_evidence(
@@ -491,7 +503,7 @@ def extract_dataset(manifest_path: Path, *, repo_root: Path) -> tuple[dict[str, 
                     walk(child, pointer_parts + (str(index),))
 
         walk(document, ())
-        missing_fields = set(field_languages) - found_fields
+        missing_fields = required_fields - found_fields
         if (
             missing_fields
             and source.get("allowEmptyRecords") is True

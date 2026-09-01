@@ -38,6 +38,12 @@ empty. As soon as one record exists, every selected field must occur and the
 normal stale-selector failure applies. This supports the repository-owned,
 currently empty teacher-phrase promoted projection without admitting its draft
 authoring sidecar or weakening other sources.
+
+A text-field selector may declare `optional: true` only when the learner data
+contract itself makes that field optional. The selector still extracts every
+occurrence when present, but its total absence is not stale drift. The teacher
+phrase projection uses this only for optional `traditional`; its required
+`simplified` and `japanese` selectors remain fail-closed once records exist.
 Evidence order is manifest order followed by JSON document order. Scalar rows
 are ordered by first evidence occurrence; record order is first evidence
 occurrence, controlled category order, then scalar sequence. IDs derive only

@@ -217,7 +217,7 @@
       "allowEmptyRecords": true,
       "textFields": [
         { "field": "simplified", "language": "zh-Hans" },
-        { "field": "traditional", "language": "zh-Hant" },
+        { "field": "traditional", "language": "zh-Hant", "optional": true },
         { "field": "japanese", "language": "ja" }
       ]
     },

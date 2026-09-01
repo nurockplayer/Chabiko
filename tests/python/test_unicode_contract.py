@@ -152,7 +152,7 @@ class UnicodeContractTests(unittest.TestCase):
             promoted['textFields'],
             [
                 {'field': 'simplified', 'language': 'zh-Hans'},
-                {'field': 'traditional', 'language': 'zh-Hant'},
+                {'field': 'traditional', 'language': 'zh-Hant', 'optional': True},
                 {'field': 'japanese', 'language': 'ja'},
             ],
         )
@@ -218,6 +218,17 @@ class UnicodeContractTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ContractError, 'stale text fields.*traditional'):
             self.extract()
+
+        manifest['sources'][0]['textFields'][1]['optional'] = True
+        self.manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
+            encoding='utf-8',
+        )
+        inventory, _ = self.extract()
+        self.assertEqual(
+            [item['field'] for item in inventory['evidence']],
+            ['simplified', 'japanese'],
+        )
 
     def test_lessons_review_hooks_are_selected_and_extracted(self) -> None:
         manifest = json.loads(
