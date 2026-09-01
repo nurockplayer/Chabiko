@@ -65,10 +65,10 @@
           },
           "depth": { "min": "D1", "max": "D3" },
           "sensitivity": "low",
-          "start": { "beatId": "weekend-micro-opening", "cueId": "weekend-micro-cooperative" },
+          "start": { "beatId": "weekend-micro-opening" },
           "replay": {
             "modifierJa": "相手が短く答える。質問だけで追わず、自分の情報を足して糸口を作る。",
-            "start": { "beatId": "weekend-micro-brief-replay", "cueId": "weekend-micro-brief" }
+            "start": { "beatId": "weekend-micro-brief-replay" }
           },
           "beats": [
             {
@@ -76,8 +76,7 @@
               "kind": "conversation",
               "opportunityJa": "内容を受け、関連する情報を一つ足して、具体的に聞き返す。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-micro-cooperative",
                   "stance": "cooperative",
                   "text": {
@@ -87,8 +86,7 @@
                     "japanese": "週末に淡水を散歩してきたよ。天気がよかった。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-micro-share-and-follow",
@@ -193,8 +191,7 @@
               "kind": "conversation",
               "opportunityJa": "短い返答を受け、自分の過ごし方を一つ足して答えやすい問いを返す。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-micro-brief",
                   "stance": "brief",
                   "text": {
@@ -204,8 +201,7 @@
                     "japanese": "週末はずっと家にいたよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-micro-home-share-and-invite",
@@ -339,10 +335,10 @@
           },
           "depth": { "min": "D1", "max": "D4" },
           "sensitivity": "low",
-          "start": { "beatId": "weekend-medium-opening", "cueId": "weekend-medium-trip" },
+          "start": { "beatId": "weekend-medium-opening" },
           "replay": {
             "modifierJa": "相手は家で過ごした。地名をなぞらず、同じ Move を別の内容で使う。",
-            "start": { "beatId": "weekend-medium-home-replay", "cueId": "weekend-medium-home" }
+            "start": { "beatId": "weekend-medium-home-replay" }
           },
           "beats": [
             {
@@ -350,8 +346,7 @@
               "kind": "conversation",
               "opportunityJa": "相手の評価に反応し、自分の情報を足して、答えを広げる問いを返す。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-medium-trip",
                   "stance": "cooperative",
                   "text": {
@@ -361,8 +356,7 @@
                     "japanese": "先週末に北投へ温泉に入りに行ったら、思ったより人が多かった。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-medium-connect-experience",
@@ -378,7 +372,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-follow-up", "cueId": "weekend-medium-relaxed" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-follow-up" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
                     "decisiveMomentJa": "『思ったより人が多い』を拾ったところ",
@@ -400,7 +394,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-weekday-follow-up", "cueId": "weekend-medium-weekday" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-weekday-follow-up" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
                     "decisiveMomentJa": "混雑を自分の好みと結びつけたところ",
@@ -447,8 +441,7 @@
               "kind": "conversation",
               "opportunityJa": "相手の返答に含まれる新しい情報を拾い、一段だけ発展させる。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-medium-relaxed",
                   "stance": "cooperative",
                   "text": {
@@ -458,8 +451,7 @@
                     "japanese": "うん。入ったあとはかなり楽になって、近くで夕食も食べたよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-medium-follow-detail",
@@ -500,8 +492,7 @@
               "kind": "conversation",
               "opportunityJa": "相手の次回の選択を受け、自分の考えを足して自然に区切る。",
               "targetMovePattern": ["REACT", "ADD", "NAVIGATE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-medium-weekday",
                   "stance": "cooperative",
                   "text": {
@@ -511,8 +502,7 @@
                     "japanese": "次は平日に行きたいな。そのほうが静かそう。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-medium-close-well",
@@ -553,8 +543,7 @@
               "kind": "conversation",
               "opportunityJa": "家で過ごした週末を受け、自分の情報を足して映画の話を広げる。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-medium-home",
                   "stance": "brief",
                   "text": {
@@ -564,8 +553,7 @@
                     "japanese": "先週末は出かけず、家で映画を見ていたよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-medium-home-share-movie",
@@ -581,7 +569,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up", "cueId": "weekend-medium-comedy" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
                     "decisiveMomentJa": "相手が出した『映画』を自分の最近の経験につないだところ",
@@ -603,7 +591,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up", "cueId": "weekend-medium-comedy" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
                     "decisiveMomentJa": "相手の映画の話に自分の好みを足したところ",
@@ -650,8 +638,7 @@
               "kind": "conversation",
               "opportunityJa": "相手が答えた映画のジャンルを拾い、感想か理由へ一段進める。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "weekend-medium-comedy",
                   "stance": "cooperative",
                   "text": {
@@ -661,8 +648,7 @@
                     "japanese": "コメディーを一本見て、午後はずっと静かに過ごしたよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "weekend-medium-home-follow-genre",
@@ -843,10 +829,10 @@
           },
           "depth": { "min": "D1", "max": "D4" },
           "sensitivity": "contextual",
-          "start": { "beatId": "mid-autumn-opening", "cueId": "mid-autumn-family-plan" },
+          "start": { "beatId": "mid-autumn-opening" },
           "replay": {
             "modifierJa": "相手は行事にあまり関心がない。家族の話を押さず、好みか別の休み方へ移る。",
-            "start": { "beatId": "mid-autumn-low-interest-replay", "cueId": "mid-autumn-low-interest" }
+            "start": { "beatId": "mid-autumn-low-interest-replay" }
           },
           "beats": [
             {
@@ -854,8 +840,7 @@
               "kind": "conversation",
               "opportunityJa": "相手の温度感を受け、自分の情報を一つ足して話す余地を返す。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "mid-autumn-family-plan",
                   "stance": "cooperative",
                   "text": {
@@ -865,8 +850,7 @@
                     "japanese": "中秋節に実家へ帰るか、まだ決めていないんだ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "mid-autumn-share-preference",
@@ -882,7 +866,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail", "cueId": "mid-autumn-barbecue-cue" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "pragmatic-fit"],
                     "decisiveMomentJa": "帰省を当然とせず、迷っている状態を受けたところ",
@@ -904,7 +888,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail", "cueId": "mid-autumn-barbecue-cue" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "pragmatic-fit"],
                     "decisiveMomentJa": "帰省の有無ではなく、まだ決めていない状態から予定の糸口を探したところ",
@@ -951,8 +935,7 @@
               "kind": "conversation",
               "opportunityJa": "知らない語があれば分かったふりをせず、意味を確認して会話へ戻る。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "mid-autumn-barbecue-cue",
                   "stance": "misunderstanding",
                   "text": {
@@ -962,8 +945,7 @@
                     "japanese": "そう。それに友達から一緒にバーベキューをしないか聞かれたんだ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "mid-autumn-repair-kaorou",
@@ -979,7 +961,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "REPAIR", "beatId": "mid-autumn-repair-return", "cueId": "mid-autumn-repair-explanation" },
+                  "branch": { "kind": "beat", "outcome": "REPAIR", "beatId": "mid-autumn-repair-return" },
                   "evidence": {
                     "dimensions": ["contingency", "repair-resilience", "continuation"],
                     "decisiveMomentJa": "知らない『烤肉』を流さなかったところ",
@@ -1058,8 +1040,7 @@
               "kind": "repair-return",
               "opportunityJa": "説明を受けた合図を出し、元の予定の話へ戻る。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "mid-autumn-repair-explanation",
                   "stance": "repair-support",
                   "text": {
@@ -1069,8 +1050,7 @@
                     "japanese": "みんなで食べ物を焼いて食べることだよ。中秋節に家族や友達とバーベキューをする人もいる。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "mid-autumn-confirm-and-return",
@@ -1143,8 +1123,7 @@
               "kind": "conversation",
               "opportunityJa": "行事への関心が低いことを受け、家族の予定を押さず別の休み方へ広げる。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "mid-autumn-low-interest",
                   "stance": "brief",
                   "text": {
@@ -1154,8 +1133,7 @@
                     "japanese": "中秋節は特に予定がないよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "mid-autumn-offer-an-angle",
@@ -1171,7 +1149,7 @@
                       "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                     }
                   ],
-                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-mooncake-detail", "cueId": "mid-autumn-mooncake-cue" },
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-mooncake-detail" },
                   "evidence": {
                     "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
                     "decisiveMomentJa": "予定がないことを否定せず別の糸口を出したところ",
@@ -1250,8 +1228,7 @@
               "kind": "conversation",
               "opportunityJa": "月餅の好みを受け、自分の好みか知識の範囲を足して話を広げる。",
               "targetMovePattern": ["REACT", "ADD", "INVITE"],
-              "partnerCues": [
-                {
+              "partnerCue": {
                   "id": "mid-autumn-mooncake-cue",
                   "stance": "cooperative",
                   "text": {
@@ -1261,8 +1238,7 @@
                     "japanese": "私は蛋黃酥が好き。でも好みは人によってかなり違うよ。",
                     "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
                   }
-                }
-              ],
+              },
               "strategies": [
                 {
                   "id": "mid-autumn-mooncake-compare-preference",

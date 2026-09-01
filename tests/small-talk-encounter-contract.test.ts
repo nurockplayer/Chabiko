@@ -48,7 +48,7 @@ describe('Small Talk Lab authored encounter contract', () => {
       displayTimeZone: 'Asia/Tokyo',
       sourceRefIds: ['dgpa-2026-calendar'],
     });
-    expect(document.families[1].encounters[0].beats[0].partnerCues[0].text).toMatchObject({
+    expect(document.families[1].encounters[0].beats[0].partnerCue.text).toMatchObject({
       traditional: '我還沒決定中秋節要不要回家。',
       pinyin: 'Wǒ hái méi juédìng Zhōngqiū Jié yào bú yào huí jiā.',
       japanese: '中秋節に実家へ帰るか、まだ決めていないんだ。',
@@ -84,13 +84,22 @@ describe('Small Talk Lab authored encounter contract', () => {
     ).toBe(true);
   });
 
-  it('keeps each v0 cue-specific opportunity on its own Beat', () => {
+  it('models each v0 Beat as one cue-specific atomic opportunity', () => {
     const document = loadSmallTalkEncounterDocument();
     const encounters = document.families.flatMap((family) => family.encounters);
 
     for (const encounter of encounters) {
       expect(encounter.replay.start.beatId).not.toBe(encounter.start.beatId);
-      expect(encounter.beats.every((beat) => beat.partnerCues.length === 1)).toBe(true);
+      expect(encounter.beats.every((beat) => beat.partnerCue.id.length > 0)).toBe(true);
+      expect(encounter.start).not.toHaveProperty('cueId');
+      expect(encounter.replay.start).not.toHaveProperty('cueId');
+      expect(
+        encounter.beats.every((beat) =>
+          beat.strategies.every((strategy) =>
+            strategy.branch.kind !== 'beat' || !('cueId' in strategy.branch),
+          ),
+        ),
+      ).toBe(true);
     }
   });
 
@@ -103,7 +112,7 @@ describe('Small Talk Lab authored encounter contract', () => {
     );
   });
 
-  it('fails closed on unknown outcomes and broken Beat or cue references', () => {
+  it('fails closed on unknown outcomes and broken Beat references', () => {
     const unknownOutcome = cloneDocument();
     const outcomeBranch = unknownOutcome.families[0].encounters[0].beats[0].strategies[0].branch;
     (outcomeBranch as { outcome: string }).outcome = 'PASS';
@@ -118,29 +127,69 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(brokenBeat)).toThrow(
       "references unknown Beat 'missing-beat'",
     );
+  });
 
-    const brokenCue = cloneDocument();
-    const cueBranch = brokenCue.families[0].encounters[1].beats[0].strategies[0].branch;
-    if (cueBranch.kind !== 'beat') throw new Error('test fixture must use a Beat branch');
-    cueBranch.cueId = 'missing-cue';
-    expect(() => validateSmallTalkEncounterDocument(brokenCue)).toThrow(
-      "references unknown cue 'missing-cue'",
+  it('rejects the legacy plural cue and cue-addressed graph shape', () => {
+    const pluralCue = cloneRawDocument() as unknown as {
+      families: Array<{ encounters: Array<{ beats: Array<Record<string, unknown>> }> }>;
+    };
+    const pluralBeat = pluralCue.families[0].encounters[0].beats[0];
+    pluralBeat.partnerCues = [pluralBeat.partnerCue];
+    delete pluralBeat.partnerCue;
+    expect(() => validateSmallTalkEncounterDocument(pluralCue)).toThrow(
+      '.partnerCues is not valid for an atomic v0 Beat',
+    );
+
+    const missingCue = cloneRawDocument() as unknown as {
+      families: Array<{ encounters: Array<{ beats: Array<Record<string, unknown>> }> }>;
+    };
+    delete missingCue.families[0].encounters[0].beats[0].partnerCue;
+    expect(() => validateSmallTalkEncounterDocument(missingCue)).toThrow(
+      '.partnerCue must be an object',
+    );
+
+    const cueAddressedRoot = cloneRawDocument() as unknown as {
+      families: Array<{ encounters: Array<{ start: Record<string, unknown> }> }>;
+    };
+    cueAddressedRoot.families[0].encounters[0].start.cueId = 'legacy-cue';
+    expect(() => validateSmallTalkEncounterDocument(cueAddressedRoot)).toThrow(
+      '.start.cueId is not valid in the Beat-only graph',
+    );
+
+    const cueAddressedBranch = cloneRawDocument() as unknown as {
+      families: Array<{
+        encounters: Array<{
+          beats: Array<{ strategies: Array<{ branch: Record<string, unknown> }> }>;
+        }>;
+      }>;
+    };
+    cueAddressedBranch.families[0].encounters[1].beats[0].strategies[0].branch.cueId =
+      'legacy-cue';
+    expect(() => validateSmallTalkEncounterDocument(cueAddressedBranch)).toThrow(
+      '.branch.cueId is not valid in the Beat-only graph',
     );
   });
 
   it('fails closed on missing learner language, provenance, review, or invalid depth', () => {
     const missingJapanese = cloneDocument();
-    missingJapanese.families[0].encounters[0].beats[0].partnerCues[0].text.japanese = '';
+    missingJapanese.families[0].encounters[0].beats[0].partnerCue.text.japanese = '';
     expect(() => validateSmallTalkEncounterDocument(missingJapanese)).toThrow(
       '.text.japanese must be a non-empty string',
     );
 
     const missingProvenance = cloneDocument();
-    delete (missingProvenance.families[0].encounters[0].beats[0].partnerCues[0].text as Partial<
-      Mutable<SmallTalkEncounterDocument['families'][number]['encounters'][number]['beats'][number]['partnerCues'][number]['text']>
+    delete (missingProvenance.families[0].encounters[0].beats[0].partnerCue.text as Partial<
+      Mutable<SmallTalkEncounterDocument['families'][number]['encounters'][number]['beats'][number]['partnerCue']['text']>
     >).provenance;
     expect(() => validateSmallTalkEncounterDocument(missingProvenance)).toThrow(
       '.text.provenance must be an object',
+    );
+
+    const unsupportedProvenance = cloneDocument();
+    unsupportedProvenance.families[0].encounters[0].beats[0].partnerCue.text.provenance.traditional =
+      'authored';
+    expect(() => validateSmallTalkEncounterDocument(unsupportedProvenance)).toThrow(
+      ".text.provenance.traditional must remain 'generated' until human review",
     );
 
     const missingReview = cloneDocument();
@@ -148,6 +197,12 @@ describe('Small Talk Lab authored encounter contract', () => {
       .review;
     expect(() => validateSmallTalkEncounterDocument(missingReview)).toThrow(
       'families[0].review must be an object',
+    );
+
+    const unsupportedReview = cloneDocument();
+    unsupportedReview.families[0].review.dimensions.japanese = 'accepted';
+    expect(() => validateSmallTalkEncounterDocument(unsupportedReview)).toThrow(
+      ".review.dimensions.japanese must remain 'not-reviewed' until human review",
     );
 
     const invertedDepth = cloneDocument();
@@ -201,12 +256,31 @@ describe('Small Talk Lab authored encounter contract', () => {
       'seasonal.occurrence startDate and endDate must match occurrence.year',
     );
 
+    const sameYearDateDrift = cloneDocument();
+    const driftedOccurrence = sameYearDateDrift.families[1].seasonal?.occurrence;
+    if (!driftedOccurrence) throw new Error('test fixture must be seasonal');
+    driftedOccurrence.startDate = '2026-09-26';
+    driftedOccurrence.endDate = '2026-09-26';
+    driftedOccurrence.visibleUntil = '2026-09-26';
+    expect(() => validateSmallTalkEncounterDocument(sameYearDateDrift)).toThrow(
+      "seasonal.occurrence startDate and endDate must remain '2026-09-25'",
+    );
+
     const claimWithoutFactualSource = cloneDocument();
     const seasonalClaim = claimWithoutFactualSource.families[1].seasonal?.claims[0];
     if (!seasonalClaim) throw new Error('test fixture must include a seasonal claim');
     seasonalClaim.sourceRefIds = ['issue-459-seasonal-contract'];
     expect(() => validateSmallTalkEncounterDocument(claimWithoutFactualSource)).toThrow(
       'seasonal.claims[0].sourceRefIds must include an official factual source',
+    );
+
+    const swappedClaimSources = cloneDocument();
+    const swappedClaims = swappedClaimSources.families[1].seasonal?.claims;
+    if (!swappedClaims) throw new Error('test fixture must include seasonal claims');
+    swappedClaims[0].sourceRefIds = ['taiwan-tourism-traditional-festivals'];
+    swappedClaims[1].sourceRefIds = ['dgpa-2026-calendar'];
+    expect(() => validateSmallTalkEncounterDocument(swappedClaimSources)).toThrow(
+      'seasonal.claims[0].sourceRefIds must include an official-date source',
     );
   });
 
@@ -243,7 +317,6 @@ describe('Small Talk Lab authored encounter contract', () => {
       nonRepairIntoRepairReturn.families[1].encounters[0].beats[0].strategies[0].branch;
     if (nonRepairBranch.kind !== 'beat') throw new Error('test fixture must use a Beat branch');
     nonRepairBranch.beatId = 'mid-autumn-repair-return';
-    nonRepairBranch.cueId = 'mid-autumn-repair-explanation';
     expect(() => validateSmallTalkEncounterDocument(nonRepairIntoRepairReturn)).toThrow(
       'repair-return Beat must be entered by a REPAIR outcome',
     );
@@ -253,7 +326,6 @@ describe('Small Talk Lab authored encounter contract', () => {
       kind: 'beat',
       outcome: 'CONTINUE',
       beatId: 'weekend-medium-opening',
-      cueId: 'weekend-medium-trip',
     };
     expect(() => validateSmallTalkEncounterDocument(cyclic)).toThrow(
       "beats contains a cycle at 'weekend-medium-opening'",
@@ -274,7 +346,25 @@ describe('Small Talk Lab authored encounter contract', () => {
     );
   });
 
-  it('requires replay to start from a changed partner cue or Beat', () => {
+  it('requires the evergreen baseline to retain a deliberate STALL contrast', () => {
+    const noBaselineStall = cloneDocument();
+    for (const encounter of noBaselineStall.families[0].encounters) {
+      for (const beat of encounter.beats) {
+        for (const strategy of beat.strategies) {
+          if (strategy.branch.outcome === 'STALL') {
+            strategy.fit = 'acceptable';
+            strategy.branch.outcome = 'CONTINUE';
+          }
+        }
+      }
+    }
+
+    expect(() => validateSmallTalkEncounterDocument(noBaselineStall)).toThrow(
+      'evergreen-baseline family must contain at least one STALL branch',
+    );
+  });
+
+  it('requires replay to start from a distinct Beat', () => {
     const replayWithoutVariation = cloneDocument();
     const encounter = replayWithoutVariation.families[0].encounters[0];
     encounter.replay.start = { ...encounter.start };
@@ -304,7 +394,6 @@ describe('Small Talk Lab authored encounter contract', () => {
     const initialEncounter = invalidInitialRoot.families[1].encounters[0];
     initialEncounter.start = {
       beatId: 'mid-autumn-repair-return',
-      cueId: 'mid-autumn-repair-explanation',
     };
     expect(() => validateSmallTalkEncounterDocument(invalidInitialRoot)).toThrow(
       'start must target a conversation Beat',
@@ -314,7 +403,6 @@ describe('Small Talk Lab authored encounter contract', () => {
     const replayEncounter = invalidReplayRoot.families[1].encounters[0];
     replayEncounter.replay.start = {
       beatId: 'mid-autumn-repair-return',
-      cueId: 'mid-autumn-repair-explanation',
     };
     expect(() => validateSmallTalkEncounterDocument(invalidReplayRoot)).toThrow(
       'replay.start must target a conversation Beat',

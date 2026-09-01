@@ -1,9 +1,7 @@
 import encounterData from '../../data/small-talk/encounters.json' with { type: 'json' };
 import type {
-  ContentProvenance,
   ConversationMove,
   ConversationOutcome,
-  ReviewDimensionStatus,
   SmallTalkEncounterDocument,
   TopicDepth,
 } from '../types/smallTalkEncounter';
@@ -15,10 +13,6 @@ const OUTCOMES = new Set<ConversationOutcome>(['CONTINUE', 'REPAIR', 'CLOSE', 'S
 const DEPTHS = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'] as const;
 const DEPTH_SET = new Set<TopicDepth>(DEPTHS);
 const CHALLENGE_BANDS = new Set(['beginner', 'intermediate', 'advanced']);
-const PROVENANCE = new Set<ContentProvenance>(['generated', 'authored', 'verified']);
-const REVIEW_DIMENSIONS = new Set<ReviewDimensionStatus>([
-  'not-reviewed', 'needs-changes', 'accepted',
-]);
 const REVIEW_KEYS = [
   'traditionalMandarin', 'pinyin', 'japanese', 'socialPragmatics', 'seasonalClaims',
 ] as const;
@@ -36,6 +30,10 @@ const SOURCE_KINDS = new Set([
 ]);
 const OFFICIAL_FACTUAL_SOURCE_KINDS = new Set([
   'official-date', 'official-cultural-reference',
+]);
+const EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS = new Map([
+  ['mid-autumn-date-2026', 'official-date'],
+  ['mid-autumn-barbecue-varies', 'official-cultural-reference'],
 ]);
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
@@ -141,7 +139,9 @@ function validateLocalizedText(value: unknown, path: string): void {
   }
   const provenance = requireRecord(text.provenance, `${path}.provenance`);
   for (const key of ['traditional', 'pinyin', 'japanese']) {
-    requireOneOf(provenance, key, PROVENANCE, `${path}.provenance`, 'known provenance');
+    if (provenance[key] !== 'generated') {
+      throw new Error(`${path}.provenance.${key} must remain 'generated' until human review`);
+    }
   }
 }
 
@@ -153,7 +153,9 @@ function validateReview(value: unknown, path: string): void {
   }
   const dimensions = requireRecord(review.dimensions, `${path}.dimensions`);
   for (const key of REVIEW_KEYS) {
-    requireOneOf(dimensions, key, REVIEW_DIMENSIONS, `${path}.dimensions`, 'a known review status');
+    if (dimensions[key] !== 'not-reviewed') {
+      throw new Error(`${path}.dimensions.${key} must remain 'not-reviewed' until human review`);
+    }
   }
 }
 
@@ -252,6 +254,9 @@ function validateSeasonal(
   ) {
     throw new Error(`${occurrencePath} startDate and endDate must match occurrence.year`);
   }
+  if (startDate !== '2026-09-25' || endDate !== '2026-09-25') {
+    throw new Error(`${occurrencePath} startDate and endDate must remain '2026-09-25'`);
+  }
   if (startDate > endDate) throw new Error(`${occurrencePath}.startDate must not exceed endDate`);
   if (visibleFrom > startDate || visibleUntil < endDate) {
     throw new Error(`${occurrencePath} visibility must contain the occurrence`);
@@ -280,7 +285,7 @@ function validateSeasonal(
   ).entries()) {
     const claimPath = `${path}.claims[${claimIndex}]`;
     const claim = requireRecord(claimValue, claimPath);
-    requireUniqueId(claim, claimPath, claimIds, 'seasonal claim');
+    const claimId = requireUniqueId(claim, claimPath, claimIds, 'seasonal claim');
     requireString(claim, 'claimJa', claimPath);
     requireString(claim, 'scopeNoteJa', claimPath);
     const claimSourceRefs = requireSourceRefsResolve(
@@ -293,6 +298,13 @@ function validateSeasonal(
         OFFICIAL_FACTUAL_SOURCE_KINDS.has(sourceIndex.get(sourceRef) ?? ''))
     ) {
       throw new Error(`${claimPath}.sourceRefIds must include an official factual source`);
+    }
+    const expectedSourceKind = EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.get(claimId);
+    if (
+      expectedSourceKind !== undefined &&
+      !claimSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === expectedSourceKind)
+    ) {
+      throw new Error(`${claimPath}.sourceRefIds must include an ${expectedSourceKind} source`);
     }
   }
 }
@@ -324,20 +336,18 @@ function validateStart(
   value: unknown,
   path: string,
   beats: Map<string, Record<string, unknown>>,
-): { beatId: string; cueId: string } {
+): { beatId: string } {
   const start = requireRecord(value, path);
   const beatId = requireString(start, 'beatId', path);
-  const cueId = requireString(start, 'cueId', path);
+  if ('cueId' in start) {
+    throw new Error(`${path}.cueId is not valid in the Beat-only graph`);
+  }
   const beat = beats.get(beatId);
   if (!beat) throw new Error(`${path} references unknown Beat '${beatId}'`);
   if (beat.kind !== 'conversation') {
     throw new Error(`${path} must target a conversation Beat`);
   }
-  const cueExists = requireArray(beat.partnerCues, `${path}.partnerCues`).some(
-    (cue) => requireRecord(cue, `${path}.cue`).id === cueId,
-  );
-  if (!cueExists) throw new Error(`${path} references unknown cue '${cueId}'`);
-  return { beatId, cueId };
+  return { beatId };
 }
 
 export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEncounterDocument {
@@ -362,6 +372,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
     requireString(family, 'titleJa', familyPath);
     const sourceIndex = validateSourceRefs(family.sourceRefs, `${familyPath}.sourceRefs`);
     validateReview(family.review, `${familyPath}.review`);
+    let familyStallBranches = 0;
     if (expectedKind === 'seasonal-transfer') {
       validateSeasonal(family.seasonal, `${familyPath}.seasonal`, sourceIndex);
     } else if (family.seasonal !== undefined) {
@@ -449,23 +460,20 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         }
         requireString(beat, 'opportunityJa', beatPath);
         validateMovePattern(beat.targetMovePattern, `${beatPath}.targetMovePattern`);
-        const cueIds = new Set<string>();
-        for (const [cueIndex, cueValue] of requireNonEmptyArray(
-          beat.partnerCues,
-          `${beatPath}.partnerCues`,
-        ).entries()) {
-          const cuePath = `${beatPath}.partnerCues[${cueIndex}]`;
-          const cue = requireRecord(cueValue, cuePath);
-          requireUniqueId(cue, cuePath, cueIds, 'cue');
-          requireOneOf(
-            cue,
-            'stance',
-            new Set(['cooperative', 'brief', 'misunderstanding', 'repair-support']),
-            cuePath,
-            'a known stance',
-          );
-          validateLocalizedText(cue.text, `${cuePath}.text`);
+        if ('partnerCues' in beat) {
+          throw new Error(`${beatPath}.partnerCues is not valid for an atomic v0 Beat`);
         }
+        const cuePath = `${beatPath}.partnerCue`;
+        const cue = requireRecord(beat.partnerCue, cuePath);
+        requireString(cue, 'id', cuePath);
+        requireOneOf(
+          cue,
+          'stance',
+          new Set(['cooperative', 'brief', 'misunderstanding', 'repair-support']),
+          cuePath,
+          'a known stance',
+        );
+        validateLocalizedText(cue.text, `${cuePath}.text`);
         const strategies = requireNonEmptyArray(beat.strategies, `${beatPath}.strategies`);
         const strategyIds = new Set<string>();
         let acceptableCount = 0;
@@ -501,6 +509,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             branchPath,
             'a known outcome',
           );
+          if (outcome === 'STALL') familyStallBranches += 1;
           if (fit === 'stall-prone' && outcome !== 'STALL') {
             throw new Error(`${strategyPath}.branch.outcome must be STALL when fit is stall-prone`);
           }
@@ -519,17 +528,12 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             }
           }
           if (branch.kind === 'beat') {
+            if ('cueId' in branch) {
+              throw new Error(`${branchPath}.cueId is not valid in the Beat-only graph`);
+            }
             const targetBeatId = requireString(branch, 'beatId', branchPath);
             const targetBeat = beats.get(targetBeatId);
             if (!targetBeat) throw new Error(`${branchPath} references unknown Beat '${targetBeatId}'`);
-            const targetCueId = requireString(branch, 'cueId', branchPath);
-            const targetCueExists = requireArray(
-              targetBeat.partnerCues,
-              `${encounterPath}.${targetBeatId}.partnerCues`,
-            ).some(
-              (cue) => requireRecord(cue, `${encounterPath}.${targetBeatId}.cue`).id === targetCueId,
-            );
-            if (!targetCueExists) throw new Error(`${branchPath} references unknown cue '${targetCueId}'`);
             if (outcome === 'REPAIR' && targetBeat.kind !== 'repair-return') {
               throw new Error(`${branchPath} REPAIR must target a repair-return Beat`);
             }
@@ -557,7 +561,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
       const replay = requireRecord(encounter.replay, `${encounterPath}.replay`);
       requireString(replay, 'modifierJa', `${encounterPath}.replay`);
       const replayStart = validateStart(replay.start, `${encounterPath}.replay.start`, beats);
-      if (replayStart.beatId === start.beatId && replayStart.cueId === start.cueId) {
+      if (replayStart.beatId === start.beatId) {
         throw new Error(`${encounterPath}.replay.start must differ from start`);
       }
 
@@ -577,6 +581,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         const unreachable = [...beats.keys()].find((beatId) => !visited.has(beatId));
         throw new Error(`${encounterPath}.beats contains unreachable Beat '${unreachable}'`);
       }
+    }
+    if (familyIndex === 0 && familyStallBranches === 0) {
+      throw new Error('evergreen-baseline family must contain at least one STALL branch');
     }
   }
 

@@ -89,7 +89,6 @@ export type SmallTalkBranch =
       readonly kind: 'beat';
       readonly outcome: ConversationOutcome;
       readonly beatId: string;
-      readonly cueId: string;
     }
   | {
       readonly kind: 'terminal';
@@ -112,10 +111,11 @@ export interface SmallTalkBeat {
   readonly kind: 'conversation' | 'repair-return';
   readonly opportunityJa: string;
   readonly targetMovePattern: readonly ConversationMove[];
-  readonly partnerCues: readonly SmallTalkPartnerCue[];
+  /** The single partner cue that defines this atomic executable opportunity. */
+  readonly partnerCue: SmallTalkPartnerCue;
   /**
-   * Every strategy on a Beat is eligible for every partner cue on that Beat.
-   * Author a separate Beat when a cue needs a different legal strategy set.
+   * Every strategy on a Beat is eligible for its partner cue.
+   * Author a separate Beat for a different cue or legal strategy set.
    */
   readonly strategies: readonly SmallTalkStrategy[];
 }
@@ -143,10 +143,10 @@ export interface SmallTalkEncounter {
     readonly max: TopicDepth;
   };
   readonly sensitivity: 'low' | 'contextual';
-  readonly start: { readonly beatId: string; readonly cueId: string };
+  readonly start: { readonly beatId: string };
   readonly replay: {
     readonly modifierJa: string;
-    readonly start: { readonly beatId: string; readonly cueId: string };
+    readonly start: { readonly beatId: string };
   };
   readonly beats: readonly SmallTalkBeat[];
   readonly passportProjection: {
