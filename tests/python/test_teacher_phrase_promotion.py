@@ -638,6 +638,48 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+        test_scripts_dir = test_repo / "scripts"
+        test_visual_dir = test_repo / "tests/visual"
+        playwright_stub_dir = test_repo / "node_modules/@playwright/test"
+        test_scripts_dir.mkdir(parents=True)
+        test_visual_dir.mkdir(parents=True)
+        playwright_stub_dir.mkdir(parents=True)
+        (test_repo / "package.json").write_text(
+            json.dumps({"type": "module"}) + "\n",
+            encoding="utf-8",
+        )
+        for source, destination in (
+            (
+                REPO_ROOT / "scripts/generate_unicode_visual_candidates.ts",
+                test_scripts_dir / "generate_unicode_visual_candidates.ts",
+            ),
+            (
+                REPO_ROOT / "scripts/unicode_visual_contract.ts",
+                test_scripts_dir / "unicode_visual_contract.ts",
+            ),
+            (
+                REPO_ROOT / "tests/visual/run.ts",
+                test_visual_dir / "run.ts",
+            ),
+        ):
+            destination.write_bytes(source.read_bytes())
+        (playwright_stub_dir / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "@playwright/test",
+                    "type": "module",
+                    "exports": "./index.js",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (playwright_stub_dir / "index.js").write_text(
+            "export const chromium = { launch: async () => { "
+            "throw new Error('test-owned renderer unavailable'); } };\n",
+            encoding="utf-8",
+        )
+
         projection_command = [
             sys.executable,
             str(REPO_ROOT / "scripts/build-teacher-phrase-projection.py"),
@@ -680,7 +722,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         ]
         visual_command = [
             "node",
-            str(REPO_ROOT / "scripts/generate_unicode_visual_candidates.ts"),
+            str((test_scripts_dir / "generate_unicode_visual_candidates.ts").resolve()),
             "--internal",
         ]
 
@@ -700,7 +742,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         )
         subprocess.run([*sync_command, "--write"], cwd=REPO_ROOT, check=True)
         subprocess.run([*extract_command, "--write"], cwd=REPO_ROOT, check=True)
-        subprocess.run([*visual_command, "--write"], cwd=test_repo, check=True)
+        subprocess.run([*visual_command, "--write"], cwd=test_repo.resolve(), check=True)
 
         projection = json.loads(projection_path.read_text(encoding="utf-8"))
         self.assertEqual(len(projection["records"]), 1)
@@ -717,7 +759,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         subprocess.run([*sync_command, "--check"], cwd=REPO_ROOT, check=True)
         subprocess.run([*extract_command, "--check"], cwd=REPO_ROOT, check=True)
         subprocess.run(validate_command, cwd=REPO_ROOT, check=True)
-        subprocess.run([*visual_command, "--check"], cwd=test_repo, check=True)
+        subprocess.run([*visual_command, "--check"], cwd=test_repo.resolve(), check=True)
 
         content_gate = (REPO_ROOT / "scripts/validate-content.sh").read_text(
             encoding="utf-8"
