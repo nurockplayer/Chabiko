@@ -274,8 +274,11 @@ test.describe('/dev/small-talk/ visual evidence', () => {
       const { externalRequests, errors } = await openSmallTalkLab(page, visualCase.viewport);
       await prepareState(page, visualCase.state);
       await page.mouse.move(0, 0);
+      await page.evaluate(() => window.scrollTo(0, 0));
       const evidence = requiredEvidence(visualCase.state);
       const clip = await prepareCapture(page, evidence);
+      expect(Math.floor(clip.height), 'frozen evidence capture height').toBe(visualCase.captureHeight);
+      expect(await page.evaluate(() => window.scrollY), 'frozen evidence scroll state').toBe(visualCase.scrollY);
       await assertCaptureContract(page, clip, evidence);
       await assertContract(page, visualCase.viewport, externalRequests, errors);
       await expect(page).toHaveScreenshot(visualCase.snapshotName, { clip });

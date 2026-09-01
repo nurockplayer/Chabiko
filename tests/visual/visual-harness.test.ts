@@ -171,8 +171,7 @@ describe('visual regression harness contract', () => {
         Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
       );
       expect(png.readUInt32BE(16)).toBe(visualCase.viewport.width);
-      expect(png.readUInt32BE(20)).toBeGreaterThanOrEqual(44);
-      expect(png.readUInt32BE(20)).toBeLessThanOrEqual(visualCase.viewport.height);
+      expect(png.readUInt32BE(20)).toBe(visualCase.captureHeight);
     }
   });
 

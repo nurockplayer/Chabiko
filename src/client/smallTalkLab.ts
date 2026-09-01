@@ -61,7 +61,6 @@ function renderStrategyButton(strategy: SmallTalkStrategy): HTMLButtonElement {
   button.type = 'button';
   button.className = 'small-talk-strategy';
   button.dataset.smallTalkStrategy = strategy.id;
-  button.setAttribute('aria-label', `${strategy.labelJa}。言い方の一例：${example.traditional}`);
   button.append(
     createTextLine('small-talk-strategy__label', strategy.labelJa),
     createTextLine('small-talk-strategy__example-label', '言い方の一例'),
@@ -146,16 +145,9 @@ export function mountSmallTalkLab(root: HTMLElement): SmallTalkLabController {
       state.mode === 'replay' ? encounterData.replay.modifierJa : encounterData.missionJa,
     );
     applyLocalizedText(root, 'cue', beat.partnerCue.text);
-    setText(
-      requireElement(root, '[data-small-talk-opportunity]'),
-      beat.kind === 'repair-return'
-        ? `聞き返しは、会話を戻すための選択です。${beat.opportunityJa}`
-        : beat.opportunityJa,
-    );
+    setText(requireElement(root, '[data-small-talk-opportunity]'), beat.opportunityJa);
     strategyList.replaceChildren(...beat.strategies.map(renderStrategyButton));
-    status.textContent = beat.kind === 'repair-return'
-      ? '相手が言い換えてくれました。確認して会話へ戻れます。'
-      : '相手の言葉を受けて、次の進め方を選びます。正解文を当てる練習ではありません。';
+    status.textContent = '自分の返し方を考えてから、会話の進め方を選びます。正解文を当てる練習ではありません。';
     if (focus) requireElement<HTMLElement>(root, '[data-small-talk-encounter-heading]').focus();
   }
 
@@ -218,11 +210,7 @@ export function mountSmallTalkLab(root: HTMLElement): SmallTalkLabController {
     renderPassport();
     replay.hidden = family !== 'baseline' || state.mode !== 'initial';
     transfer.hidden = !(family === 'baseline' && baselineReplayCompleted);
-    status.textContent = state.currentOutcome === 'STALL'
-      ? '会話はここで止まりました。これは能力判定ではなく、この進め方で起きた一回の結果です。'
-      : state.completionSummary.repairCompleted
-        ? '聞き返して会話へ戻る証拠が、この回に残りました。'
-        : '会話を続けた具体的な証拠を、この回から振り返ります。';
+    status.textContent = 'この回に残った具体的な証拠を振り返ります。能力全体の判定ではありません。';
     requireElement<HTMLElement>(root, '[data-small-talk-complete-heading]').focus();
   }
 

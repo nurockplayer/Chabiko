@@ -95,6 +95,48 @@ async function expectFocused(target: Locator, visible = false): Promise<void> {
   }
 }
 
+async function activateWithKeyboard(
+  page: Page,
+  target: Locator,
+  accessibleName: string | RegExp,
+): Promise<void> {
+  await expect(target).toHaveAccessibleName(accessibleName);
+  for (let tabs = 0; tabs < 12; tabs += 1) {
+    if (await target.evaluate((element) => element === document.activeElement)) break;
+    await page.keyboard.press('Tab');
+  }
+  await expectFocused(target, true);
+  await page.keyboard.press('Enter');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function expectStructuredStrategyName(target: Locator): Promise<void> {
+  const content = await target.evaluate((element) => ({
+    ariaLabel: element.getAttribute('aria-label'),
+    traditional: element.querySelector<HTMLElement>('[lang="zh-Hant"]')?.textContent?.trim() ?? '',
+    pinyin: element.querySelector<HTMLElement>('[lang="zh-Latn"]')?.textContent?.trim() ?? '',
+  }));
+  expect(content.ariaLabel).toBeNull();
+  expect(content.traditional).not.toBe('');
+  expect(content.pinyin).not.toBe('');
+  await expect(target).toHaveAccessibleName(
+    new RegExp(`${escapeRegExp(content.traditional)}.*${escapeRegExp(content.pinyin)}`),
+  );
+}
+
+async function activateStrategyWithKeyboard(page: Page, target: Locator): Promise<void> {
+  await expectStructuredStrategyName(target);
+  for (let tabs = 0; tabs < 12; tabs += 1) {
+    if (await target.evaluate((element) => element === document.activeElement)) break;
+    await page.keyboard.press('Tab');
+  }
+  await expectFocused(target, true);
+  await page.keyboard.press('Enter');
+}
+
 async function assertViewportAndTargets(page: Page): Promise<void> {
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
@@ -139,7 +181,7 @@ for (const theme of THEMES) {
     await page.locator('[data-small-talk-start]').click();
     const strategies = page.locator('[data-small-talk-strategy]');
     await expect(strategies).toHaveCount(3);
-    await expect(strategies.first()).toHaveAccessibleName(/言い方の一例/);
+    await expectStructuredStrategyName(strategies.first());
     await expect(page.locator('[data-small-talk-cue-zh]')).toHaveAttribute('lang', 'zh-Hant');
     await expect(page.locator('[data-small-talk-cue-pinyin]')).toHaveAttribute('lang', 'zh-Latn');
     await expect(page.locator('[data-small-talk-cue-ja]')).toHaveAttribute('lang', 'ja');
@@ -161,24 +203,45 @@ test('keyboard focus follows baseline, replay, repair, recap, and transfer contr
   await page.keyboard.press('Enter');
   await expectFocused(page.locator('[data-small-talk-encounter-heading]'), true);
 
-  await page.locator('[data-small-talk-strategy="weekend-medium-connect-experience"]').click();
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="weekend-medium-connect-experience"]'),
+  );
   await expectFocused(page.locator('[data-small-talk-encounter-heading]'));
-  await page.locator('[data-small-talk-strategy="weekend-medium-follow-detail"]').click();
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="weekend-medium-follow-detail"]'),
+  );
   await expectFocused(page.locator('[data-small-talk-complete-heading]'));
   await assertAxeClean(page);
 
-  await page.locator('[data-small-talk-replay]').click();
+  await activateWithKeyboard(page, page.locator('[data-small-talk-replay]'), '条件を変えてもう一度');
   await expectFocused(page.locator('[data-small-talk-encounter-heading]'));
-  await page.locator('[data-small-talk-strategy="weekend-medium-home-share-movie"]').click();
-  await page.locator('[data-small-talk-strategy="weekend-medium-home-follow-genre"]').click();
-  await page.locator('[data-small-talk-transfer]').click();
-  await page.locator('[data-small-talk-strategy="mid-autumn-share-preference"]').click();
-  await page.locator('[data-small-talk-strategy="mid-autumn-repair-kaorou"]').click();
-  await expect(page.locator('[data-small-talk-opportunity]')).toContainText('聞き返しは、会話を戻すための選択です');
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="weekend-medium-home-share-movie"]'),
+  );
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="weekend-medium-home-follow-genre"]'),
+  );
+  await activateWithKeyboard(page, page.locator('[data-small-talk-transfer]'), '中秋節の場面へ転用する');
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="mid-autumn-share-preference"]'),
+  );
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="mid-autumn-repair-kaorou"]'),
+  );
+  await expect(page.locator('[data-small-talk-opportunity]')).toHaveText('説明を受けた合図を出し、元の予定の話へ戻る。');
   await expectFocused(page.locator('[data-small-talk-encounter-heading]'));
   await assertAxeClean(page);
 
-  await page.locator('[data-small-talk-strategy="mid-autumn-confirm-and-return"]').click();
+  await activateStrategyWithKeyboard(
+    page,
+    page.locator('[data-small-talk-strategy="mid-autumn-confirm-and-return"]'),
+  );
   await expectFocused(page.locator('[data-small-talk-complete-heading]'));
   await expect(page.locator('[data-small-talk-evidence-item]')).toHaveCount(3);
   await expect(page.locator('[data-small-talk-passport]')).toContainText('一度の理解トラブルから戻った');

@@ -74,6 +74,10 @@ describe('Small Talk Lab learner adapter', () => {
     expect(controller.getJourney()).toBe('encounter');
     expect(document.body.textContent).toContain('我上週末去北投泡溫泉');
     expect(document.querySelectorAll('[data-small-talk-strategy]')).toHaveLength(3);
+    const firstStrategy = document.querySelector<HTMLButtonElement>('[data-small-talk-strategy]');
+    expect(firstStrategy?.hasAttribute('aria-label')).toBe(false);
+    expect(firstStrategy?.querySelector('[lang="zh-Hant"]')?.textContent).toContain('這麼多人啊');
+    expect(firstStrategy?.querySelector('[lang="zh-Latn"]')?.textContent).toContain('Zhème duō rén a');
 
     click('[data-small-talk-strategy="weekend-medium-connect-experience"]');
     expect(document.body.textContent).toContain('有，泡完以後舒服多了');
@@ -113,12 +117,17 @@ describe('Small Talk Lab learner adapter', () => {
     click('[data-small-talk-strategy="mid-autumn-repair-kaorou"]');
 
     expect(controller.getJourney()).toBe('encounter');
-    expect(document.body.textContent).toContain('聞き返しは、会話を戻すための選択です');
+    expect(document.querySelector('[data-small-talk-opportunity]')?.textContent)
+      .toBe('説明を受けた合図を出し、元の予定の話へ戻る。');
+    expect(document.querySelector('[data-small-talk-status]')?.textContent)
+      .toBe('自分の返し方を考えてから、会話の進め方を選びます。正解文を当てる練習ではありません。');
     expect(document.body.textContent).toContain('就是大家一起烤東西吃');
     click('[data-small-talk-strategy="mid-autumn-confirm-and-return"]');
     expect(controller.getJourney()).toBe('complete');
-    expect(document.body.textContent).toContain('聞き返して会話へ戻る');
+    expect(document.body.textContent).toContain('知らない『烤肉』を流さなかったところ');
     expect(document.body.textContent).toContain('中秋節前の予定と食べ物の雑談');
+    expect(document.querySelector('[data-small-talk-status]')?.textContent)
+      .toBe('この回に残った具体的な証拠を振り返ります。能力全体の判定ではありません。');
 
     controller.dispose();
   });

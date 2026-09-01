@@ -27,6 +27,9 @@
       <p class="small-talk-cue__pinyin" data-small-talk-cue-pinyin lang="zh-Latn"></p>
       <p class="small-talk-cue__ja" data-small-talk-cue-ja lang="ja"></p>
     </div>
+    <p class="small-talk-private-response" data-small-talk-private-response>
+      選ぶ前に、自分ならどう返すかを声に出すか、頭の中で一度考えてみましょう。録音も採点もしません。
+    </p>
     <p class="small-talk-opportunity" data-small-talk-opportunity></p>
     <div class="small-talk-strategies" data-small-talk-strategies role="group" aria-label="会話の進め方"></div>
   </section>
@@ -87,7 +90,8 @@
   .small-talk-cue__pinyin, .small-talk-cue__ja { margin: var(--sp-2) 0 0; color: var(--ink-secondary); line-height: 1.7; overflow-wrap: anywhere; }
   .small-talk-cue__pinyin { font-size: 0.875rem; }
   .small-talk-cue__ja { font-size: 0.8125rem; }
-  .small-talk-opportunity { margin: var(--sp-5) 0 var(--sp-3); color: var(--ink-secondary); line-height: 1.8; }
+  .small-talk-private-response { margin: var(--sp-5) 0 0; padding-left: var(--sp-3); border-left: 3px solid var(--jade); color: var(--ink); font-size: 0.875rem; line-height: 1.75; }
+  .small-talk-opportunity { margin: var(--sp-4) 0 var(--sp-3); color: var(--ink-secondary); line-height: 1.8; }
   .small-talk-strategies { display: grid; gap: var(--sp-3); }
   :global(.small-talk-strategy) { display: grid; gap: var(--sp-2); width: 100%; min-height: 48px; padding: var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); background: var(--paper); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
   :global(.small-talk-strategy:hover) { border-color: var(--jade); background: var(--jade-soft); }

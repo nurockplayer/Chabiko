@@ -7,6 +7,7 @@ const header = readFileSync('src/components/Header.astro', 'utf8');
 const dashboard = readFileSync('src/domain/dashboardProgress.ts', 'utf8');
 const learningPaths = readFileSync('data/learning-paths.json', 'utf8');
 const client = readFileSync('src/client/smallTalkLab.ts', 'utf8');
+const component = readFileSync('src/components/SmallTalkLab.astro', 'utf8');
 
 describe('/dev/small-talk/ isolation contract', () => {
   it('is non-production, noindex, and not discoverable from production navigation', () => {
@@ -25,5 +26,12 @@ describe('/dev/small-talk/ isolation contract', () => {
     expect(client).not.toMatch(/from ['"]\.\.\/(?:lib|client)\/(?:.*progress|.*account|.*auth|.*sync)/i);
     expect(client).toContain('createSmallTalkEncounterSession');
     expect(client).toContain('applySmallTalkEncounterAction');
+  });
+
+  it('invites an unrecorded private response and leaves learning semantics in the runtime output', () => {
+    expect(component).toContain('声に出すか、頭の中で一度考えてみましょう');
+    expect(component).toContain('録音も採点もしません');
+    expect(client).not.toContain('聞き返しは、会話を戻すための選択です');
+    expect(client).not.toContain('repairCompleted');
   });
 });
