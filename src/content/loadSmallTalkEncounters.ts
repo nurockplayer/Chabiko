@@ -35,6 +35,15 @@ const EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS = new Map([
   ['mid-autumn-date-2026', 'official-date'],
   ['mid-autumn-barbecue-varies', 'official-cultural-reference'],
 ]);
+const FROZEN_DGPA_2026_DATE_SOURCE = {
+  id: 'dgpa-2026-calendar',
+  kind: 'official-date',
+  title: '中華民國一百一十五年政府行政機關辦公日曆表',
+  publisher: '行政院人事行政總處',
+  url: 'https://www.dgpa.gov.tw/information?pid=12573&uid=41',
+  retrievedAt: '2026-08-31',
+  supports: '2026 Mid-Autumn Festival date and government-calendar scope',
+} as const;
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
@@ -138,6 +147,17 @@ function validateMovePattern(value: unknown, path: string): ConversationMove[] {
   });
 }
 
+function containsMovePatternInOrder(
+  candidate: readonly ConversationMove[],
+  required: readonly ConversationMove[],
+): boolean {
+  let requiredIndex = 0;
+  for (const move of candidate) {
+    if (move === required[requiredIndex]) requiredIndex += 1;
+  }
+  return requiredIndex === required.length;
+}
+
 function validateLocalizedText(value: unknown, path: string): void {
   const text = requireRecord(value, path);
   requireString(text, 'traditional', path);
@@ -220,6 +240,15 @@ function validateSourceRefs(value: unknown, path: string): Map<string, string> {
     }
     requireIsoDate(source, 'retrievedAt', sourcePath);
     requireString(source, 'supports', sourcePath);
+    if (sourceId === FROZEN_DGPA_2026_DATE_SOURCE.id) {
+      for (const [key, expectedValue] of Object.entries(FROZEN_DGPA_2026_DATE_SOURCE)) {
+        if (source[key] !== expectedValue) {
+          throw new Error(
+            `${path} entry '${sourceId}' must match the frozen official source metadata`,
+          );
+        }
+      }
+    }
     const rights = requireRecord(source.rights, `${sourcePath}.rights`);
     if (rights.allowedUse !== 'reference-only' || rights.copiedText !== false) {
       throw new Error(`${sourcePath}.rights must remain reference-only with copiedText=false`);
@@ -279,6 +308,9 @@ function validateSeasonal(
   if (occurrence.phase !== 'anticipation' || occurrence.dateStatus !== 'verified') {
     throw new Error(`${occurrencePath} must be a verified anticipation occurrence`);
   }
+  if (visibleUntil > endDate) {
+    throw new Error(`${occurrencePath} anticipation visibility must end with the occurrence`);
+  }
   const occurrenceSourceRefs = requireSourceRefsResolve(
     occurrence.sourceRefIds,
     `${occurrencePath}.sourceRefIds`,
@@ -286,6 +318,11 @@ function validateSeasonal(
   );
   if (!occurrenceSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === 'official-date')) {
     throw new Error(`${occurrencePath}.sourceRefIds must include an official-date source`);
+  }
+  if (!occurrenceSourceRefs.includes(FROZEN_DGPA_2026_DATE_SOURCE.id)) {
+    throw new Error(
+      `${occurrencePath}.sourceRefIds must include the frozen '${FROZEN_DGPA_2026_DATE_SOURCE.id}' source`,
+    );
   }
   const claimIds = new Set<string>();
   const claims = requireNonEmptyArray(
@@ -469,7 +506,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         beats.set(beatId, beat);
       }
 
-      const acceptableCountsByBeat = new Map<string, number>();
+      const qualifyingAcceptableCountsByBeat = new Map<string, number>();
       for (const [beatIndex, beatValue] of beatValues.entries()) {
         const beatPath = `${encounterPath}.beats[${beatIndex}]`;
         const beat = requireRecord(beatValue, beatPath);
@@ -477,7 +514,10 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
           throw new Error(`${beatPath}.kind must be a known Beat kind`);
         }
         requireString(beat, 'opportunityJa', beatPath);
-        validateMovePattern(beat.targetMovePattern, `${beatPath}.targetMovePattern`);
+        const beatTargetPattern = validateMovePattern(
+          beat.targetMovePattern,
+          `${beatPath}.targetMovePattern`,
+        );
         if ('partnerCues' in beat) {
           throw new Error(`${beatPath}.partnerCues is not valid for an atomic v0 Beat`);
         }
@@ -507,11 +547,17 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             strategyPath,
             'a known fit',
           );
-          if (fit === 'acceptable') acceptableCount += 1;
           const movePattern = validateMovePattern(
             strategy.movePattern,
             `${strategyPath}.movePattern`,
           );
+          if (
+            fit === 'acceptable' &&
+            containsMovePatternInOrder(movePattern, beatTargetPattern) &&
+            containsMovePatternInOrder(movePattern, targetPattern)
+          ) {
+            acceptableCount += 1;
+          }
           for (const [realizationIndex, realization] of requireNonEmptyArray(
             strategy.realizations,
             `${strategyPath}.realizations`,
@@ -569,7 +615,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
           }
           validateEvidence(strategy.evidence, `${strategyPath}.evidence`);
         }
-        acceptableCountsByBeat.set(requireString(beat, 'id', beatPath), acceptableCount);
+        qualifyingAcceptableCountsByBeat.set(requireString(beat, 'id', beatPath), acceptableCount);
       }
 
       const start = validateStart(encounter.start, `${encounterPath}.start`, beats);
@@ -587,12 +633,14 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
       ) {
         throw new Error(`${encounterPath}.start and replay.start must match the frozen v0 root Beats`);
       }
-      if ((acceptableCountsByBeat.get(start.beatId) ?? 0) < 2) {
-        throw new Error(`${encounterPath}.start Beat must expose at least two acceptable strategies`);
-      }
-      if ((acceptableCountsByBeat.get(replayStart.beatId) ?? 0) < 2) {
+      if ((qualifyingAcceptableCountsByBeat.get(start.beatId) ?? 0) < 2) {
         throw new Error(
-          `${encounterPath}.replay.start Beat must expose at least two acceptable strategies`,
+          `${encounterPath}.start Beat must expose at least two acceptable strategies that realize its target Moves`,
+        );
+      }
+      if ((qualifyingAcceptableCountsByBeat.get(replayStart.beatId) ?? 0) < 2) {
+        throw new Error(
+          `${encounterPath}.replay.start Beat must expose at least two acceptable strategies that realize its target Moves`,
         );
       }
 

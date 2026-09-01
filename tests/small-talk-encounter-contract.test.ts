@@ -245,6 +245,43 @@ describe('Small Talk Lab authored encounter contract', () => {
       'seasonal.occurrence.sourceRefIds must include an official-date source',
     );
 
+    const forgedOfficialDateSource = cloneDocument();
+    const forgedFamily = forgedOfficialDateSource.families[1];
+    const canonicalDateSource = forgedFamily.sourceRefs.find(
+      (source) => source.id === 'dgpa-2026-calendar',
+    );
+    const forgedOccurrence = forgedFamily.seasonal?.occurrence;
+    if (!canonicalDateSource || !forgedOccurrence) {
+      throw new Error('test fixture must include the verified occurrence source');
+    }
+    forgedFamily.sourceRefs.push({
+      ...structuredClone(canonicalDateSource),
+      id: 'forged-official-date',
+      title: 'Unrelated calendar',
+      publisher: 'Unrelated publisher',
+      url: 'https://example.com/unrelated-calendar',
+      supports: 'Unrelated date',
+    });
+    forgedOccurrence.sourceRefIds = ['forged-official-date'];
+    expect(() => validateSmallTalkEncounterDocument(forgedOfficialDateSource)).toThrow(
+      "seasonal.occurrence.sourceRefIds must include the frozen 'dgpa-2026-calendar' source",
+    );
+
+    const mutatedOfficialDateSource = cloneDocument();
+    const mutatedSource = mutatedOfficialDateSource.families[1].sourceRefs.find(
+      (source) => source.id === 'dgpa-2026-calendar',
+    );
+    if (!mutatedSource) throw new Error('test fixture must include the verified occurrence source');
+    Object.assign(mutatedSource, {
+      title: 'Unrelated calendar',
+      publisher: 'Unrelated publisher',
+      url: 'https://example.com/unrelated-calendar',
+      supports: 'Unrelated date',
+    });
+    expect(() => validateSmallTalkEncounterDocument(mutatedOfficialDateSource)).toThrow(
+      "sourceRefs entry 'dgpa-2026-calendar' must match the frozen official source metadata",
+    );
+
     const mismatchedOccurrenceYear = cloneDocument();
     const mismatchedOccurrence = mismatchedOccurrenceYear.families[1].seasonal?.occurrence;
     if (!mismatchedOccurrence) throw new Error('test fixture must be seasonal');
@@ -264,6 +301,14 @@ describe('Small Talk Lab authored encounter contract', () => {
     driftedOccurrence.visibleUntil = '2026-09-26';
     expect(() => validateSmallTalkEncounterDocument(sameYearDateDrift)).toThrow(
       "seasonal.occurrence startDate and endDate must remain '2026-09-25'",
+    );
+
+    const postOccurrenceAnticipation = cloneDocument();
+    const postOccurrence = postOccurrenceAnticipation.families[1].seasonal?.occurrence;
+    if (!postOccurrence) throw new Error('test fixture must be seasonal');
+    postOccurrence.visibleUntil = '2026-10-01';
+    expect(() => validateSmallTalkEncounterDocument(postOccurrenceAnticipation)).toThrow(
+      'seasonal.occurrence anticipation visibility must end with the occurrence',
     );
 
     const claimWithoutFactualSource = cloneDocument();
@@ -410,7 +455,24 @@ describe('Small Talk Lab authored encounter contract', () => {
       }
 
       expect(() => validateSmallTalkEncounterDocument(invalid)).toThrow(
-        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat must expose at least two acceptable strategies`,
+        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat must expose at least two acceptable strategies that realize its target Moves`,
+      );
+    }
+  });
+
+  it('counts only root alternatives that realize the target Moves in order', () => {
+    for (const rootKind of ['start', 'replay'] as const) {
+      const invalid = cloneDocument();
+      const encounter = invalid.families[0].encounters[0];
+      const rootBeatId = rootKind === 'start' ? encounter.start.beatId : encounter.replay.start.beatId;
+      const rootBeat = encounter.beats.find((beat) => beat.id === rootBeatId);
+      if (!rootBeat) throw new Error('test fixture must include the authorized root Beat');
+      for (const strategy of rootBeat.strategies) {
+        if (strategy.fit === 'acceptable') strategy.movePattern = ['ANSWER'];
+      }
+
+      expect(() => validateSmallTalkEncounterDocument(invalid)).toThrow(
+        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat must expose at least two acceptable strategies that realize its target Moves`,
       );
     }
   });
