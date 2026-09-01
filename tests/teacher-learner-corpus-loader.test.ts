@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import type { LearnerManifest, LearnerManifestRow } from '../src/types/learnerManifest';
 import type { ProductionLearnerItem } from '../src/types/learnerCorpus';
 import { computeDerivedLearnerId } from '../src/content/validateLearnerManifest';
+import { computeLearnerManifestSemanticSha256 } from '../src/content/validateTeacherPhraseProjection';
 
 // ─── WebP stub builders ─────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ function concat(...parts: Uint8Array[]): Uint8Array {
 
 const MANIFEST_PATH = '../data/teacher-vocabulary-preview/learner-manifest.json';
 const ILLUSTRATION_PATH = '../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json';
+const PROJECTION_PATH = '../data/teacher-vocabulary-preview/teacher-phrase-promoted.json';
 
 const realManifest: LearnerManifest = JSON.parse(
   fs.readFileSync('data/teacher-vocabulary-preview/learner-manifest.json', 'utf8'),
@@ -151,6 +153,20 @@ async function importCorpusLoader(manifestOverride?: LearnerManifest) {
   vi.resetModules();
   if (manifestOverride) {
     vi.doMock(MANIFEST_PATH, () => ({ default: structuredClone(manifestOverride) }));
+    vi.doMock(PROJECTION_PATH, () => ({
+      default: {
+        schemaVersion: 1,
+        contractId: 'teacher-phrase-promoted-v1',
+        base: {
+          sidecarSchemaVersion: 1,
+          sidecarContractId: 'teacher-phrase-authoring-v1',
+          sidecarSha256: null,
+          learnerManifestSemanticSha256: computeLearnerManifestSemanticSha256(manifestOverride),
+          workbookSha256: manifestOverride.source.workbookSha256,
+        },
+        records: [],
+      },
+    }));
   }
   const mod = await import('../src/content/loadProductionLearnerCorpus');
   return mod;
@@ -159,6 +175,7 @@ async function importCorpusLoader(manifestOverride?: LearnerManifest) {
 afterEach(() => {
   vi.doUnmock(MANIFEST_PATH);
   vi.doUnmock(ILLUSTRATION_PATH);
+  vi.doUnmock(PROJECTION_PATH);
   vi.resetModules();
 });
 

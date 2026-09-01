@@ -144,8 +144,14 @@ def _load_manifest(manifest_path: Path, repo_root: Path) -> tuple[dict[str, Any]
     for index, source in enumerate(sources):
         label = f"sources[{index}]"
         _require(isinstance(source, dict), f"{label} must be an object")
-        _require(set(source) == {"id", "path", "sha256", "format", "textFields"},
+        expected_source_keys = {"id", "path", "sha256", "format", "textFields"}
+        if "allowEmptyRecords" in source:
+            expected_source_keys.add("allowEmptyRecords")
+        _require(set(source) == expected_source_keys,
                  f"{label} has missing or unknown fields")
+        if "allowEmptyRecords" in source:
+            _require(source["allowEmptyRecords"] is True,
+                     f"{label}.allowEmptyRecords must be true when present")
         source_id = source["id"]
         _require(isinstance(source_id, str) and source_id, f"{label}.id must be non-empty")
         _require(source_id not in seen_ids, f"duplicate source id '{source_id}'")
@@ -162,8 +168,15 @@ def _load_manifest(manifest_path: Path, repo_root: Path) -> tuple[dict[str, Any]
         seen_fields: set[str] = set()
         for field_index, field in enumerate(fields):
             field_label = f"{label}.textFields[{field_index}]"
-            _require(isinstance(field, dict) and set(field) == {"field", "language"},
-                     f"{field_label} must contain exactly field/language")
+            _require(isinstance(field, dict), f"{field_label} must be an object")
+            expected_field_keys = {"field", "language"}
+            if "optional" in field:
+                expected_field_keys.add("optional")
+            _require(set(field) == expected_field_keys,
+                     f"{field_label} must contain field/language and optional only when explicit")
+            if "optional" in field:
+                _require(field["optional"] is True,
+                         f"{field_label}.optional must be true when present")
             _require(isinstance(field["field"], str) and field["field"], f"{field_label}.field must be non-empty")
             _require(field["field"] not in seen_fields, f"{label} has duplicate text field '{field['field']}'")
             seen_fields.add(field["field"])
@@ -388,6 +401,11 @@ def extract_dataset(manifest_path: Path, *, repo_root: Path) -> tuple[dict[str, 
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
             raise ContractError(f"allowlisted source is invalid JSON: {source['path']}: {error}") from error
         field_languages = {entry["field"]: entry["language"] for entry in source["textFields"]}
+        required_fields = {
+            entry["field"]
+            for entry in source["textFields"]
+            if entry.get("optional") is not True
+        }
         found_fields: set[str] = set()
 
         def add_evidence(
@@ -485,7 +503,15 @@ def extract_dataset(manifest_path: Path, *, repo_root: Path) -> tuple[dict[str, 
                     walk(child, pointer_parts + (str(index),))
 
         walk(document, ())
-        missing_fields = set(field_languages) - found_fields
+        missing_fields = required_fields - found_fields
+        if (
+            missing_fields
+            and source.get("allowEmptyRecords") is True
+            and isinstance(document, dict)
+            and isinstance(document.get("records"), list)
+            and len(document["records"]) == 0
+        ):
+            missing_fields = set()
         _require(not missing_fields, f"allowlisted source {source['path']} has stale text fields: {sorted(missing_fields)}")
 
     for scalar, occurrences in scalar_occurrences.items():

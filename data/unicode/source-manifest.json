@@ -205,6 +205,19 @@
       "textFields": [
         { "field": "traditional", "language": "zh-Hant" },
         { "field": "simplified", "language": "zh-Hans" },
+        { "field": "japanese", "language": "ja" },
+        { "field": "example", "language": "zh-Hans" }
+      ]
+    },
+    {
+      "id": "teacher-phrase-promoted-v1",
+      "path": "data/teacher-vocabulary-preview/teacher-phrase-promoted.json",
+      "sha256": "e3bfe53f327a524e0046d61ed4192ecccd75b1aeb6cce5f5ab256caf60ee0f5e",
+      "format": "json",
+      "allowEmptyRecords": true,
+      "textFields": [
+        { "field": "simplified", "language": "zh-Hans" },
+        { "field": "traditional", "language": "zh-Hant", "optional": true },
         { "field": "japanese", "language": "ja" }
       ]
     },
