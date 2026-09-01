@@ -7,6 +7,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import unittest
 from pathlib import Path
 
@@ -583,6 +584,141 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             "scripts/generate_unicode_visual_candidates.ts --check",
         ):
             self.assertIn(check_step, workflow)
+
+        test_repo = self.root / "workflow-repo"
+        preview_dir = test_repo / "data/teacher-vocabulary-preview"
+        unicode_dir = test_repo / "data/unicode"
+        generated_dir = unicode_dir / "generated"
+        preview_dir.mkdir(parents=True)
+        unicode_dir.mkdir(parents=True)
+
+        manifest_path = preview_dir / "learner-manifest.json"
+        sidecar_path = preview_dir / "teacher-phrase-authoring.json"
+        review_path = preview_dir / "teacher-phrase-human-review.json"
+        projection_path = preview_dir / "teacher-phrase-promoted.json"
+        evidence_path = preview_dir / "teacher-phrase-promotion-evidence.json"
+        unicode_manifest_path = unicode_dir / "source-manifest.json"
+        manifest_path.write_text(
+            json.dumps(self.manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        sidecar_path.write_text(
+            json.dumps(self.sidecar, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        review_path.write_text(
+            json.dumps(self.review_artifact(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        unicode_manifest = {
+            "schemaVersion": 1,
+            "manifestId": "teacher-phrase-workflow-test-v1",
+            "unicodeVersion": unicodedata.unidata_version,
+            "sources": [
+                {
+                    "id": "teacher-phrase-promoted-v1",
+                    "path": "data/teacher-vocabulary-preview/teacher-phrase-promoted.json",
+                    "sha256": "0" * 64,
+                    "format": "json",
+                    "allowEmptyRecords": True,
+                    "textFields": [
+                        {"field": "simplified", "language": "zh-Hans"},
+                        {
+                            "field": "traditional",
+                            "language": "zh-Hant",
+                            "optional": True,
+                        },
+                        {"field": "japanese", "language": "ja"},
+                    ],
+                }
+            ],
+        }
+        unicode_manifest_path.write_text(
+            json.dumps(unicode_manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        projection_command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/build-teacher-phrase-projection.py"),
+            "--manifest",
+            str(manifest_path),
+            "--output",
+            str(projection_path),
+            "--evidence",
+            str(evidence_path),
+        ]
+        sync_command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/sync-teacher-phrase-unicode-source.py"),
+            "--manifest",
+            str(unicode_manifest_path),
+            "--projection",
+            str(projection_path),
+        ]
+        extract_command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/extract_unicode_data.py"),
+            "--manifest",
+            str(unicode_manifest_path),
+            "--output-dir",
+            str(generated_dir),
+            "--repo-root",
+            str(test_repo),
+        ]
+        validate_command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/validate_unicode_data.py"),
+            "--manifest",
+            str(unicode_manifest_path),
+            "--inventory",
+            str(generated_dir / "scalar-inventory.json"),
+            "--records",
+            str(generated_dir / "mechanical-records.json"),
+            "--repo-root",
+            str(test_repo),
+        ]
+        visual_command = [
+            "node",
+            str(REPO_ROOT / "scripts/generate_unicode_visual_candidates.ts"),
+            "--internal",
+        ]
+
+        subprocess.run(
+            [
+                *projection_command,
+                "--workbook",
+                str(self.workbook_path),
+                "--sidecar",
+                str(sidecar_path),
+                "--review",
+                str(review_path),
+                "--write",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+        )
+        subprocess.run([*sync_command, "--write"], cwd=REPO_ROOT, check=True)
+        subprocess.run([*extract_command, "--write"], cwd=REPO_ROOT, check=True)
+        subprocess.run([*visual_command, "--write"], cwd=test_repo, check=True)
+
+        projection = json.loads(projection_path.read_text(encoding="utf-8"))
+        self.assertEqual(len(projection["records"]), 1)
+        self.assertGreater(
+            json.loads(
+                (generated_dir / "scalar-inventory.json").read_text(encoding="utf-8")
+            )["totals"]["uniqueHanScalars"],
+            0,
+        )
+        self.assertTrue((generated_dir / "visual-candidates.json").is_file())
+        self.assertTrue((generated_dir / "visual-review-plan.json").is_file())
+
+        subprocess.run([*projection_command, "--check"], cwd=REPO_ROOT, check=True)
+        subprocess.run([*sync_command, "--check"], cwd=REPO_ROOT, check=True)
+        subprocess.run([*extract_command, "--check"], cwd=REPO_ROOT, check=True)
+        subprocess.run(validate_command, cwd=REPO_ROOT, check=True)
+        subprocess.run([*visual_command, "--check"], cwd=test_repo, check=True)
+
         content_gate = (REPO_ROOT / "scripts/validate-content.sh").read_text(
             encoding="utf-8"
         )
