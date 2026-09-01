@@ -282,6 +282,17 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(swappedClaimSources)).toThrow(
       'seasonal.claims[0].sourceRefIds must include an official-date source',
     );
+
+    const renamedClaimSources = cloneDocument();
+    const renamedClaims = renamedClaimSources.families[1].seasonal?.claims;
+    if (!renamedClaims) throw new Error('test fixture must include seasonal claims');
+    renamedClaims[0].id = 'renamed-date-claim';
+    renamedClaims[0].sourceRefIds = ['taiwan-tourism-traditional-festivals'];
+    renamedClaims[1].id = 'renamed-cultural-claim';
+    renamedClaims[1].sourceRefIds = ['dgpa-2026-calendar'];
+    expect(() => validateSmallTalkEncounterDocument(renamedClaimSources)).toThrow(
+      'seasonal.claims must contain the exact frozen claim ID set',
+    );
   });
 
   it('requires exactly one bounded repair and rejects cyclic branch graphs', () => {
@@ -372,6 +383,36 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(replayWithoutVariation)).toThrow(
       'replay.start must differ from start',
     );
+
+    const swappedRoots = cloneDocument();
+    const swappedEncounter = swappedRoots.families[0].encounters[0];
+    [swappedEncounter.start, swappedEncounter.replay.start] = [
+      swappedEncounter.replay.start,
+      swappedEncounter.start,
+    ];
+    expect(() => validateSmallTalkEncounterDocument(swappedRoots)).toThrow(
+      'start and replay.start must match the frozen v0 root Beats',
+    );
+  });
+
+  it('requires at least two acceptable strategies on both authorized root Beats', () => {
+    for (const rootKind of ['start', 'replay'] as const) {
+      const invalid = cloneDocument();
+      const encounter = invalid.families[0].encounters[0];
+      const rootBeatId = rootKind === 'start' ? encounter.start.beatId : encounter.replay.start.beatId;
+      const rootBeat = encounter.beats.find((beat) => beat.id === rootBeatId);
+      if (!rootBeat) throw new Error('test fixture must include the authorized root Beat');
+      for (const strategy of rootBeat.strategies) {
+        if (strategy.fit === 'acceptable') {
+          strategy.fit = 'stall-prone';
+          strategy.branch.outcome = 'STALL';
+        }
+      }
+
+      expect(() => validateSmallTalkEncounterDocument(invalid)).toThrow(
+        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat must expose at least two acceptable strategies`,
+      );
+    }
   });
 
   it('uses initial and replay starts as the authorized graph roots', () => {

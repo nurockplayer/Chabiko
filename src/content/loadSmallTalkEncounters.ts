@@ -40,6 +40,15 @@ const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
   ['mid-autumn-2026-medium'],
 ] as const;
+const EXPECTED_ROOT_BEAT_IDS = [
+  [
+    { start: 'weekend-micro-opening', replay: 'weekend-micro-brief-replay' },
+    { start: 'weekend-medium-opening', replay: 'weekend-medium-home-replay' },
+  ],
+  [
+    { start: 'mid-autumn-opening', replay: 'mid-autumn-low-interest-replay' },
+  ],
+] as const;
 
 function requireRecord(value: unknown, path: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -279,13 +288,22 @@ function validateSeasonal(
     throw new Error(`${occurrencePath}.sourceRefIds must include an official-date source`);
   }
   const claimIds = new Set<string>();
-  for (const [claimIndex, claimValue] of requireNonEmptyArray(
+  const claims = requireNonEmptyArray(
     seasonal.claims,
     `${path}.claims`,
-  ).entries()) {
+  ).map((claimValue, claimIndex) => {
     const claimPath = `${path}.claims[${claimIndex}]`;
     const claim = requireRecord(claimValue, claimPath);
     const claimId = requireUniqueId(claim, claimPath, claimIds, 'seasonal claim');
+    return { claim, claimId, claimPath };
+  });
+  if (
+    claimIds.size !== EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.size ||
+    [...EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.keys()].some((claimId) => !claimIds.has(claimId))
+  ) {
+    throw new Error(`${path}.claims must contain the exact frozen claim ID set`);
+  }
+  for (const { claim, claimId, claimPath } of claims) {
     requireString(claim, 'claimJa', claimPath);
     requireString(claim, 'scopeNoteJa', claimPath);
     const claimSourceRefs = requireSourceRefsResolve(
@@ -301,7 +319,7 @@ function validateSeasonal(
     }
     const expectedSourceKind = EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.get(claimId);
     if (
-      expectedSourceKind !== undefined &&
+      expectedSourceKind === undefined ||
       !claimSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === expectedSourceKind)
     ) {
       throw new Error(`${claimPath}.sourceRefIds must include an ${expectedSourceKind} source`);
@@ -451,7 +469,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         beats.set(beatId, beat);
       }
 
-      let encounterHasVariation = false;
+      const acceptableCountsByBeat = new Map<string, number>();
       for (const [beatIndex, beatValue] of beatValues.entries()) {
         const beatPath = `${encounterPath}.beats[${beatIndex}]`;
         const beat = requireRecord(beatValue, beatPath);
@@ -551,10 +569,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
           }
           validateEvidence(strategy.evidence, `${strategyPath}.evidence`);
         }
-        if (acceptableCount >= 2) encounterHasVariation = true;
-      }
-      if (!encounterHasVariation) {
-        throw new Error(`${encounterPath} must expose at least two acceptable authored strategies`);
+        acceptableCountsByBeat.set(requireString(beat, 'id', beatPath), acceptableCount);
       }
 
       const start = validateStart(encounter.start, `${encounterPath}.start`, beats);
@@ -563,6 +578,22 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
       const replayStart = validateStart(replay.start, `${encounterPath}.replay.start`, beats);
       if (replayStart.beatId === start.beatId) {
         throw new Error(`${encounterPath}.replay.start must differ from start`);
+      }
+      const expectedRoots = EXPECTED_ROOT_BEAT_IDS[familyIndex]?.[encounterIndex];
+      if (
+        expectedRoots === undefined ||
+        start.beatId !== expectedRoots.start ||
+        replayStart.beatId !== expectedRoots.replay
+      ) {
+        throw new Error(`${encounterPath}.start and replay.start must match the frozen v0 root Beats`);
+      }
+      if ((acceptableCountsByBeat.get(start.beatId) ?? 0) < 2) {
+        throw new Error(`${encounterPath}.start Beat must expose at least two acceptable strategies`);
+      }
+      if ((acceptableCountsByBeat.get(replayStart.beatId) ?? 0) < 2) {
+        throw new Error(
+          `${encounterPath}.replay.start Beat must expose at least two acceptable strategies`,
+        );
       }
 
       const passportPath = `${encounterPath}.passportProjection`;
