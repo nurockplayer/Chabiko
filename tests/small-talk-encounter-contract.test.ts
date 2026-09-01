@@ -338,6 +338,46 @@ describe('Small Talk Lab authored encounter contract', () => {
     expect(() => validateSmallTalkEncounterDocument(renamedClaimSources)).toThrow(
       'seasonal.claims must contain the exact frozen claim ID set',
     );
+
+    const forgedCulturalSource = cloneDocument();
+    const forgedCulturalFamily = forgedCulturalSource.families[1];
+    const canonicalCulturalSource = forgedCulturalFamily.sourceRefs.find(
+      (source) => source.id === 'taiwan-tourism-traditional-festivals',
+    );
+    const culturalClaim = forgedCulturalFamily.seasonal?.claims.find(
+      (claim) => claim.id === 'mid-autumn-barbecue-varies',
+    );
+    if (!canonicalCulturalSource || !culturalClaim) {
+      throw new Error('test fixture must include the cultural claim source');
+    }
+    forgedCulturalFamily.sourceRefs.push({
+      ...structuredClone(canonicalCulturalSource),
+      id: 'forged-cultural-source',
+      title: 'Unrelated festival',
+      publisher: 'Unrelated publisher',
+      url: 'https://example.com/unrelated-festival',
+      supports: 'Unrelated custom',
+    });
+    culturalClaim.sourceRefIds = ['forged-cultural-source'];
+    expect(() => validateSmallTalkEncounterDocument(forgedCulturalSource)).toThrow(
+      "seasonal.claims[1].sourceRefIds must include the frozen 'taiwan-tourism-traditional-festivals' source",
+    );
+
+    const mutatedCulturalSource = cloneDocument();
+    const mutatedCulturalRef = mutatedCulturalSource.families[1].sourceRefs.find(
+      (source) => source.id === 'taiwan-tourism-traditional-festivals',
+    );
+    if (!mutatedCulturalRef) throw new Error('test fixture must include the cultural claim source');
+    Object.assign(mutatedCulturalRef, {
+      title: 'Unrelated festival',
+      publisher: 'Unrelated publisher',
+      url: 'https://example.com/unrelated-festival',
+      retrievedAt: '2026-09-01',
+      supports: 'Unrelated custom',
+    });
+    expect(() => validateSmallTalkEncounterDocument(mutatedCulturalSource)).toThrow(
+      "sourceRefs entry 'taiwan-tourism-traditional-festivals' must match the frozen official source metadata",
+    );
   });
 
   it('requires exactly one bounded repair and rejects cyclic branch graphs', () => {
@@ -409,6 +449,7 @@ describe('Small Talk Lab authored encounter contract', () => {
         for (const strategy of beat.strategies) {
           if (strategy.branch.outcome === 'STALL') {
             strategy.fit = 'acceptable';
+            strategy.movePattern = [...encounter.targetMovePattern];
             strategy.branch.outcome = 'CONTINUE';
           }
         }
@@ -472,9 +513,24 @@ describe('Small Talk Lab authored encounter contract', () => {
       }
 
       expect(() => validateSmallTalkEncounterDocument(invalid)).toThrow(
-        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat must expose at least two acceptable strategies that realize its target Moves`,
+        `${rootKind === 'start' ? 'start' : 'replay.start'} Beat acceptable strategies must all realize their target Moves`,
       );
     }
+  });
+
+  it('rejects every off-pattern acceptable strategy on an authorized root', () => {
+    const invalid = cloneDocument();
+    const encounter = invalid.families[0].encounters[0];
+    const rootBeat = encounter.beats.find((beat) => beat.id === encounter.start.beatId);
+    if (!rootBeat) throw new Error('test fixture must include the authorized root Beat');
+    const offPattern = structuredClone(rootBeat.strategies[0]);
+    offPattern.id = 'weekend-micro-off-pattern-acceptable';
+    offPattern.movePattern = ['ANSWER'];
+    rootBeat.strategies.push(offPattern);
+
+    expect(() => validateSmallTalkEncounterDocument(invalid)).toThrow(
+      'start Beat acceptable strategies must all realize their target Moves',
+    );
   });
 
   it('uses initial and replay starts as the authorized graph roots', () => {

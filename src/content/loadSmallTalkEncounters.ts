@@ -44,6 +44,19 @@ const FROZEN_DGPA_2026_DATE_SOURCE = {
   retrievedAt: '2026-08-31',
   supports: '2026 Mid-Autumn Festival date and government-calendar scope',
 } as const;
+const FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE = {
+  id: 'taiwan-tourism-traditional-festivals',
+  kind: 'official-cultural-reference',
+  title: 'Traditional Festivals: Mid-Autumn Festival',
+  publisher: 'Tourism Administration, Republic of China (Taiwan)',
+  url: 'https://eng.taiwan.net.tw/m1.aspx?sNo=0002020',
+  retrievedAt: '2026-08-31',
+  supports: 'Reference support for mooncakes and a non-universal family-or-friends barbecue hook',
+} as const;
+const FROZEN_OFFICIAL_SOURCES = new Map<string, Readonly<Record<string, string>>>([
+  [FROZEN_DGPA_2026_DATE_SOURCE.id, FROZEN_DGPA_2026_DATE_SOURCE],
+  [FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id, FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE],
+]);
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
@@ -240,8 +253,9 @@ function validateSourceRefs(value: unknown, path: string): Map<string, string> {
     }
     requireIsoDate(source, 'retrievedAt', sourcePath);
     requireString(source, 'supports', sourcePath);
-    if (sourceId === FROZEN_DGPA_2026_DATE_SOURCE.id) {
-      for (const [key, expectedValue] of Object.entries(FROZEN_DGPA_2026_DATE_SOURCE)) {
+    const frozenSource = FROZEN_OFFICIAL_SOURCES.get(sourceId);
+    if (frozenSource) {
+      for (const [key, expectedValue] of Object.entries(frozenSource)) {
         if (source[key] !== expectedValue) {
           throw new Error(
             `${path} entry '${sourceId}' must match the frozen official source metadata`,
@@ -360,6 +374,14 @@ function validateSeasonal(
       !claimSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === expectedSourceKind)
     ) {
       throw new Error(`${claimPath}.sourceRefIds must include an ${expectedSourceKind} source`);
+    }
+    if (
+      claimId === 'mid-autumn-barbecue-varies' &&
+      !claimSourceRefs.includes(FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id)
+    ) {
+      throw new Error(
+        `${claimPath}.sourceRefIds must include the frozen '${FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id}' source`,
+      );
     }
   }
 }
@@ -506,6 +528,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         beats.set(beatId, beat);
       }
 
+      const acceptableCountsByBeat = new Map<string, number>();
       const qualifyingAcceptableCountsByBeat = new Map<string, number>();
       for (const [beatIndex, beatValue] of beatValues.entries()) {
         const beatPath = `${encounterPath}.beats[${beatIndex}]`;
@@ -535,6 +558,7 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         const strategies = requireNonEmptyArray(beat.strategies, `${beatPath}.strategies`);
         const strategyIds = new Set<string>();
         let acceptableCount = 0;
+        let qualifyingAcceptableCount = 0;
         for (const [strategyIndex, strategyValue] of strategies.entries()) {
           const strategyPath = `${beatPath}.strategies[${strategyIndex}]`;
           const strategy = requireRecord(strategyValue, strategyPath);
@@ -551,12 +575,13 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             strategy.movePattern,
             `${strategyPath}.movePattern`,
           );
+          if (fit === 'acceptable') acceptableCount += 1;
           if (
             fit === 'acceptable' &&
             containsMovePatternInOrder(movePattern, beatTargetPattern) &&
             containsMovePatternInOrder(movePattern, targetPattern)
           ) {
-            acceptableCount += 1;
+            qualifyingAcceptableCount += 1;
           }
           for (const [realizationIndex, realization] of requireNonEmptyArray(
             strategy.realizations,
@@ -615,7 +640,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
           }
           validateEvidence(strategy.evidence, `${strategyPath}.evidence`);
         }
-        qualifyingAcceptableCountsByBeat.set(requireString(beat, 'id', beatPath), acceptableCount);
+        const validatedBeatId = requireString(beat, 'id', beatPath);
+        acceptableCountsByBeat.set(validatedBeatId, acceptableCount);
+        qualifyingAcceptableCountsByBeat.set(validatedBeatId, qualifyingAcceptableCount);
       }
 
       const start = validateStart(encounter.start, `${encounterPath}.start`, beats);
@@ -632,6 +659,22 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
         replayStart.beatId !== expectedRoots.replay
       ) {
         throw new Error(`${encounterPath}.start and replay.start must match the frozen v0 root Beats`);
+      }
+      if (
+        acceptableCountsByBeat.get(start.beatId) !==
+        qualifyingAcceptableCountsByBeat.get(start.beatId)
+      ) {
+        throw new Error(
+          `${encounterPath}.start Beat acceptable strategies must all realize their target Moves`,
+        );
+      }
+      if (
+        acceptableCountsByBeat.get(replayStart.beatId) !==
+        qualifyingAcceptableCountsByBeat.get(replayStart.beatId)
+      ) {
+        throw new Error(
+          `${encounterPath}.replay.start Beat acceptable strategies must all realize their target Moves`,
+        );
       }
       if ((qualifyingAcceptableCountsByBeat.get(start.beatId) ?? 0) < 2) {
         throw new Error(
