@@ -253,6 +253,51 @@ describe('Small Talk Encounter deterministic runtime', () => {
     expect(state.completionSummary?.repairCompleted).toBe(true);
   });
 
+  it('exposes the seasonal Passport projection only for evidence-backed repair completion', () => {
+    let direct = createSession('mid-autumn-2026-transfer', 'mid-autumn-2026-medium');
+    direct = accept(direct, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-share-preference',
+    });
+    direct = accept(direct, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-react-to-choice',
+    });
+    expect(direct.completionSummary).toMatchObject({
+      supportedCapabilities: ['KEEP_GOING'],
+      repairCompleted: false,
+      passportProjection: null,
+    });
+
+    let replay = accept(direct, { kind: 'start-replay' });
+    replay = completeWithFirstStrategy(replay);
+    expect(replay.completionSummary).toMatchObject({
+      mode: 'replay',
+      supportedCapabilities: ['KEEP_GOING'],
+      repairCompleted: false,
+      passportProjection: null,
+    });
+
+    let repaired = createSession('mid-autumn-2026-transfer', 'mid-autumn-2026-medium');
+    repaired = accept(repaired, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-share-preference',
+    });
+    repaired = accept(repaired, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-repair-kaorou',
+    });
+    repaired = accept(repaired, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-confirm-and-return',
+    });
+    expect(repaired.completionSummary).toMatchObject({
+      supportedCapabilities: ['KEEP_GOING', 'REPAIR_AND_RETURN'],
+      repairCompleted: true,
+      passportProjection: repaired.encounter.passportProjection,
+    });
+  });
+
   it('starts replay only after initial completion at the controlled alternate root', () => {
     const active = createSession();
     expect(applySmallTalkEncounterAction(active, { kind: 'start-replay' })).toMatchObject({
@@ -344,13 +389,15 @@ describe('Small Talk Encounter deterministic runtime', () => {
       ...createSession(),
       currentBeatId: 'missing-beat',
     } as SmallTalkEncounterSessionState;
-    expect(() => resolveCurrentSmallTalkBeat(corrupted)).toThrow(/causal trace.*current Beat/i);
+    expect(() => resolveCurrentSmallTalkBeat(corrupted)).toThrow(
+      /constructor-selected.*authority/i,
+    );
     expect(() =>
       applySmallTalkEncounterAction(corrupted, {
         kind: 'select-strategy',
         strategyId: 'anything',
       }),
-    ).toThrow(/causal trace.*current Beat/i);
+    ).toThrow(/constructor-selected.*authority/i);
   });
 
   it('fails closed on valid-but-unreachable Beats and injected evidence/history', () => {
@@ -364,7 +411,7 @@ describe('Small Talk Encounter deterministic runtime', () => {
         kind: 'select-strategy',
         strategyId: 'mid-autumn-confirm-and-return',
       }),
-    ).toThrow(/causal trace.*current Beat/i);
+    ).toThrow(/constructor-selected.*authority/i);
 
     const completed = completeWithFirstStrategy(createSession());
     const injectedEvidence = {
@@ -376,7 +423,7 @@ describe('Small Talk Encounter deterministic runtime', () => {
         kind: 'select-strategy',
         strategyId: 'weekend-micro-share-and-follow',
       }),
-    ).toThrow(/causal trace.*terminal/i);
+    ).toThrow(/constructor-selected.*authority/i);
 
     const injectedHistory = {
       ...createSession(),
@@ -387,7 +434,7 @@ describe('Small Talk Encounter deterministic runtime', () => {
         kind: 'select-strategy',
         strategyId: 'weekend-micro-share-and-follow',
       }),
-    ).toThrow(/completed-run history/i);
+    ).toThrow(/constructor-selected.*authority/i);
   });
 
   it('snapshots and freezes the validated Encounter against later definition drift', () => {
@@ -410,6 +457,39 @@ describe('Small Talk Encounter deterministic runtime', () => {
         strategyId: 'weekend-micro-share-and-follow',
       }).kind,
     ).toBe('accepted');
+  });
+
+  it('rejects cloned state that replaces the constructor-selected runtime authority', () => {
+    const original = createSession();
+    const other = createSession('mid-autumn-2026-transfer', 'mid-autumn-2026-medium');
+    const swappedEncounter = {
+      ...original,
+      familyId: other.familyId,
+      encounterId: other.encounterId,
+      encounter: other.encounter,
+      currentBeatId: other.currentBeatId,
+    } as SmallTalkEncounterSessionState;
+
+    expect(() =>
+      applySmallTalkEncounterAction(swappedEncounter, {
+        kind: 'select-strategy',
+        strategyId: 'mid-autumn-share-preference',
+      }),
+    ).toThrow(/constructor-selected.*authority/i);
+
+    const rewrittenDefinition = structuredClone(original) as SmallTalkEncounterSessionState;
+    const strategy = rewrittenDefinition.encounter.beats[0].strategies.find(
+      (entry) => entry.id === 'weekend-micro-share-and-follow',
+    );
+    if (!strategy) throw new Error('fixture must contain the selected strategy');
+    (strategy.branch as { outcome: string }).outcome = 'STALL';
+
+    expect(() =>
+      applySmallTalkEncounterAction(rewrittenDefinition, {
+        kind: 'select-strategy',
+        strategyId: strategy.id,
+      }),
+    ).toThrow(/constructor-selected.*authority/i);
   });
 
   it('rejects unknown or out-of-order strategy actions without mutating state', () => {

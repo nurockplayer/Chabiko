@@ -118,25 +118,37 @@ export interface SmallTalkEncounterSelection {
   readonly encounterId: string;
 }
 
+interface SmallTalkRuntimeAuthority {
+  readonly familyId: string;
+  readonly encounterId: string;
+  readonly encounter: SmallTalkEncounter;
+}
+
+const runtimeAuthorityByState = new WeakMap<
+  SmallTalkEncounterSessionState,
+  SmallTalkRuntimeAuthority
+>();
+
 function createActiveSession(
-  familyId: string,
-  encounter: SmallTalkEncounter,
+  authority: SmallTalkRuntimeAuthority,
   mode: SmallTalkRunMode,
   completedRuns: readonly SmallTalkRunSummary[],
 ): ActiveSmallTalkEncounterSession {
-  return deepFreeze({
+  return freezeAuthoritativeState({
     status: 'active',
-    familyId,
-    encounterId: encounter.id,
-    encounter,
+    familyId: authority.familyId,
+    encounterId: authority.encounterId,
+    encounter: authority.encounter,
     mode,
-    currentBeatId: mode === 'initial' ? encounter.start.beatId : encounter.replay.start.beatId,
+    currentBeatId: mode === 'initial'
+      ? authority.encounter.start.beatId
+      : authority.encounter.replay.start.beatId,
     currentOutcome: null,
     evidenceEvents: [],
     completedRuns,
     terminalPartnerReply: null,
     completionSummary: null,
-  });
+  }, authority);
 }
 
 function deepFreeze<T>(value: T, seen = new Set<object>()): T {
@@ -144,6 +156,32 @@ function deepFreeze<T>(value: T, seen = new Set<object>()): T {
   seen.add(value);
   for (const nested of Object.values(value)) deepFreeze(nested, seen);
   return Object.freeze(value);
+}
+
+function freezeAuthoritativeState<T extends SmallTalkEncounterSessionState>(
+  state: T,
+  authority: SmallTalkRuntimeAuthority,
+): T {
+  const frozen = deepFreeze(state);
+  runtimeAuthorityByState.set(frozen, authority);
+  return frozen;
+}
+
+function requireRuntimeAuthority(
+  state: SmallTalkEncounterSessionState,
+): SmallTalkRuntimeAuthority {
+  const authority = runtimeAuthorityByState.get(state);
+  if (!authority) {
+    throw new Error('Small Talk runtime state is not owned by its constructor-selected authority');
+  }
+  if (
+    state.familyId !== authority.familyId ||
+    state.encounterId !== authority.encounterId ||
+    state.encounter !== authority.encounter
+  ) {
+    throw new Error('Small Talk runtime state does not match its constructor-selected authority');
+  }
+  return authority;
 }
 
 /**
@@ -164,7 +202,12 @@ export function createSmallTalkEncounterSession(
     );
   }
   const encounterSnapshot = deepFreeze(structuredClone(encounter));
-  return createActiveSession(family.id, encounterSnapshot, 'initial', []);
+  const authority = {
+    familyId: family.id,
+    encounterId: encounterSnapshot.id,
+    encounter: encounterSnapshot,
+  };
+  return createActiveSession(authority, 'initial', []);
 }
 
 /** Resolve the current authored Beat, failing closed if runtime state drifted. */
@@ -262,6 +305,12 @@ function summarizeCompletedRun(
   }
   if (repairCompleted) supportedCapabilities.push('REPAIR_AND_RETURN');
 
+  const projectionRequiresRepair = encounter.beats.some(
+    (beat) => beat.kind === 'repair-return',
+  );
+  const projectionEvidenceSupported = supportedCapabilities.includes('KEEP_GOING') &&
+    (!projectionRequiresRepair || supportedCapabilities.includes('REPAIR_AND_RETURN'));
+
   return {
     familyId,
     encounterId: encounter.id,
@@ -270,7 +319,7 @@ function summarizeCompletedRun(
     evidenceEvents: events,
     supportedCapabilities,
     repairCompleted,
-    passportProjection: supportedCapabilities.includes('KEEP_GOING')
+    passportProjection: projectionEvidenceSupported
       ? encounter.passportProjection
       : null,
     replayAvailable: mode === 'initial',
@@ -401,7 +450,10 @@ function assertCompletedRunHistory(state: SmallTalkEncounterSessionState): void 
   }
 }
 
-function assertCausalRuntimeState(state: SmallTalkEncounterSessionState): void {
+function assertCausalRuntimeState(
+  state: SmallTalkEncounterSessionState,
+): SmallTalkRuntimeAuthority {
+  const authority = requireRuntimeAuthority(state);
   if (state.encounter.id !== state.encounterId) {
     throw new Error('Small Talk runtime state Encounter identity does not match encounterId');
   }
@@ -423,7 +475,7 @@ function assertCausalRuntimeState(state: SmallTalkEncounterSessionState): void {
     if (state.terminalPartnerReply !== null || state.completionSummary !== null) {
       throw new Error('Small Talk runtime active state must not carry terminal output');
     }
-    return;
+    return authority;
   }
 
   if (trace.currentBeatId !== null || trace.currentOutcome === null || trace.currentOutcome === 'REPAIR') {
@@ -454,11 +506,13 @@ function assertCausalRuntimeState(state: SmallTalkEncounterSessionState): void {
     state.completionSummary,
     'Small Talk runtime completed-run history is missing the current summary',
   );
+  return authority;
 }
 
 function applyStrategySelection(
   state: SmallTalkEncounterSessionState,
   strategyId: string,
+  authority: SmallTalkRuntimeAuthority,
 ): SmallTalkEncounterTransition {
   if (state.status === 'completed') {
     return { kind: 'rejected', reason: 'run-completed', state };
@@ -479,12 +533,12 @@ function applyStrategySelection(
     }
     return {
       kind: 'accepted',
-      state: deepFreeze({
+      state: freezeAuthoritativeState({
         ...state,
         currentBeatId: nextBeat.id,
         currentOutcome: strategy.branch.outcome,
         evidenceEvents,
-      }),
+      }, authority),
     };
   }
 
@@ -500,7 +554,7 @@ function applyStrategySelection(
   );
   return {
     kind: 'accepted',
-    state: deepFreeze({
+    state: freezeAuthoritativeState({
       ...state,
       status: 'completed',
       currentBeatId: null,
@@ -509,7 +563,7 @@ function applyStrategySelection(
       completedRuns: [...state.completedRuns, completionSummary],
       terminalPartnerReply: strategy.branch.partnerReply,
       completionSummary,
-    }),
+    }, authority),
   };
 }
 
@@ -518,10 +572,10 @@ export function applySmallTalkEncounterAction(
   state: SmallTalkEncounterSessionState,
   action: SmallTalkEncounterAction,
 ): SmallTalkEncounterTransition {
-  assertCausalRuntimeState(state);
+  const authority = assertCausalRuntimeState(state);
   switch (action.kind) {
     case 'select-strategy':
-      return applyStrategySelection(state, action.strategyId);
+      return applyStrategySelection(state, action.strategyId, authority);
     case 'start-replay':
       if (state.status === 'active') {
         return { kind: 'rejected', reason: 'run-active', state };
@@ -531,12 +585,12 @@ export function applySmallTalkEncounterAction(
       }
       return {
         kind: 'accepted',
-        state: createActiveSession(state.familyId, state.encounter, 'replay', state.completedRuns),
+        state: createActiveSession(authority, 'replay', state.completedRuns),
       };
     case 'reset':
       return {
         kind: 'accepted',
-        state: createActiveSession(state.familyId, state.encounter, 'initial', []),
+        state: createActiveSession(authority, 'initial', []),
       };
   }
 }
