@@ -32,6 +32,12 @@ all #260 records must have an empty rendering-environment list.
 The source manifest is an ordered allowlist of repository-relative JSON files,
 exact SHA-256 values, and reviewed field/language roles. Extraction fails before
 reading data when a path, checksum, Unicode version, or field selector is stale.
+`allowEmptyRecords: true` is the sole narrow exception: it permits selected
+fields to be absent only while that source's root `records` array is exactly
+empty. As soon as one record exists, every selected field must occur and the
+normal stale-selector failure applies. This supports the repository-owned,
+currently empty teacher-phrase promoted projection without admitting its draft
+authoring sidecar or weakening other sources.
 Evidence order is manifest order followed by JSON document order. Scalar rows
 are ordered by first evidence occurrence; record order is first evidence
 occurrence, controlled category order, then scalar sequence. IDs derive only
@@ -92,9 +98,11 @@ are read-only and require byte-identical regeneration.
 
 ### Legacy paths
 
-No prior Unicode dataset, extractor, validator, or learner loader exists. The
-manifest allowlists current loader-owned structured sources; preview-only
-corpora and non-runtime schema examples are excluded.
+The manifest allowlists current loader-owned structured sources. The production
+learner manifest includes its learner-visible normalized `example` field, and
+the teacher phrase projection contributes only promoted `simplified`,
+`traditional`, and `japanese` fields. Preview-only corpora, the teacher phrase
+draft sidecar, and non-runtime schema examples are excluded.
 
 ### Boundaries
 

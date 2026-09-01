@@ -18,6 +18,15 @@ export interface ProductionLearnerIllustration {
   readonly provenance: LearnerImageProvenance;
 }
 
+/** Complete, human-promoted phrase-level learner content for one source cell. */
+export interface ProductionTeacherPhrase {
+  readonly phraseId: string;
+  readonly simplified: string;
+  readonly traditional?: string;
+  readonly pinyin: string;
+  readonly japanese: string;
+}
+
 /** A narrow learner-facing record exposing exactly what the manifest can
  * truthfully provide. Intentionally excludes preview-only surface
  * (sourceSheet/sourceRow/reviewStatus/reconciliation evidence/missingFields/
@@ -34,5 +43,8 @@ export interface ProductionLearnerItem {
    * verbatim from the workbook `造词/造句` column. Absent when the source
    * cell is empty — a deliberate missing-example state. */
   readonly example?: string;
+  /** Present only when the entire source cell passed the exact #479 human
+   * review and maintainer promotion gate. The raw `example` remains present. */
+  readonly teacherPhrases?: readonly ProductionTeacherPhrase[];
   readonly illustration: ProductionLearnerIllustration;
 }

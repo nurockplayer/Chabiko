@@ -144,8 +144,14 @@ def _load_manifest(manifest_path: Path, repo_root: Path) -> tuple[dict[str, Any]
     for index, source in enumerate(sources):
         label = f"sources[{index}]"
         _require(isinstance(source, dict), f"{label} must be an object")
-        _require(set(source) == {"id", "path", "sha256", "format", "textFields"},
+        expected_source_keys = {"id", "path", "sha256", "format", "textFields"}
+        if "allowEmptyRecords" in source:
+            expected_source_keys.add("allowEmptyRecords")
+        _require(set(source) == expected_source_keys,
                  f"{label} has missing or unknown fields")
+        if "allowEmptyRecords" in source:
+            _require(source["allowEmptyRecords"] is True,
+                     f"{label}.allowEmptyRecords must be true when present")
         source_id = source["id"]
         _require(isinstance(source_id, str) and source_id, f"{label}.id must be non-empty")
         _require(source_id not in seen_ids, f"duplicate source id '{source_id}'")
@@ -486,6 +492,14 @@ def extract_dataset(manifest_path: Path, *, repo_root: Path) -> tuple[dict[str, 
 
         walk(document, ())
         missing_fields = set(field_languages) - found_fields
+        if (
+            missing_fields
+            and source.get("allowEmptyRecords") is True
+            and isinstance(document, dict)
+            and isinstance(document.get("records"), list)
+            and len(document["records"]) == 0
+        ):
+            missing_fields = set()
         _require(not missing_fields, f"allowlisted source {source['path']} has stale text fields: {sorted(missing_fields)}")
 
     for scalar, occurrences in scalar_occurrences.items():

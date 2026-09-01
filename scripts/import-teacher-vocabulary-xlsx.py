@@ -1275,7 +1275,7 @@ def _test_only_ignored_columns_row():
         assert _rej["row"] == 2
 
 
-def _test_ignored_column_formula():
+def _test_optional_example_formula():
     """Verify formula in the example column is not copied and does not
     trigger required-formula rejection."""
     import tempfile as _tf
@@ -1288,15 +1288,16 @@ def _test_ignored_column_formula():
         _ws.append(["爱", "ài", "愛する", "☆", ""])
         _wb.save(_path)
 
-        # Inject formula into the ignored column (造词/造句, column E = 5)
+        # Inject a formula into the optional example column. Plain text maps to
+        # `example`; formulas are not learner content and are not copied.
         _inject_formula(_path, "名词1", 2, 5, "=B2&C2")
 
         _out = os.path.join(_td, "out")
         _m = import_xlsx(_path, _out)
-        # Formula in ignored column must not cause rejection
+        # Formula in the optional example column must not cause rejection.
         assert _m["accepted"] == 1
         assert _m["rejected"] == 0
-        # Verify output record does NOT contain the ignored-column formula
+        # Verify output record does not contain the formula.
         _bp = os.path.join(_out, _m["batches"][0]["filename"])
         with open(_bp, "r", encoding="utf-8") as _f:
             _batch = json.load(_f)
@@ -1380,7 +1381,7 @@ def run_tests():
             ("Non-empty output dir fails", _test_nonempty_output_dir_fails),
             ("Empty output dir ok", _test_empty_output_dir_ok),
             ("Only example/ignored columns row", _test_only_ignored_columns_row),
-            ("Example column formula", _test_ignored_column_formula),
+            ("Example column formula", _test_optional_example_formula),
         ]
         for _label, _test_fn in tests_p3:
             print(f"  {_label} ... ", end="")

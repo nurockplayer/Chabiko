@@ -1,13 +1,15 @@
 import { readFileSync } from 'node:fs';
 import type { LearnerManifest, LearnerManifestRow } from '../types/learnerManifest';
-import type { ProductionLearnerItem } from '../types/learnerCorpus';
+import type { ProductionLearnerItem, ProductionTeacherPhrase } from '../types/learnerCorpus';
 import {
   assertOptionalFieldsAreNotFabricated,
   validateLearnerManifest,
 } from './validateLearnerManifest';
+import { validateTeacherPhraseProjection } from './validateTeacherPhraseProjection';
 import { parseWebpDimensions } from './webpDimensions';
 import manifestData from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
 import productionIllustrationData from '../../data/illustrations/teacher-core-v1/teacher-vocabulary-batch-01.json' assert { type: 'json' };
+import promotedProjectionData from '../../data/teacher-vocabulary-preview/teacher-phrase-promoted.json' assert { type: 'json' };
 
 /** Frozen #202 accessible fallback for corpus images without authored Japanese
  * alt text: the illustration is decorative and the card's simplified Chinese
@@ -19,6 +21,9 @@ export interface LoadProductionLearnerCorpusOptions {
   assetTracked?: (assetPath: string) => boolean;
   /** Read the deployed asset bytes. Defaults to `public${assetPath}` on disk. */
   readAssetBytes?: (assetPath: string) => Uint8Array;
+  /** Test/validation injection point. Production uses the committed promoted
+   * projection and never imports the draft sidecar or mutable review artifact. */
+  promotedProjection?: unknown;
 }
 
 function deepFreeze<T>(value: T): T {
@@ -42,6 +47,7 @@ function toLearnerItem(
   row: LearnerManifestRow,
   dimensions: { width: number; height: number },
   altJa: string,
+  teacherPhrases: readonly ProductionTeacherPhrase[] | undefined,
 ): ProductionLearnerItem {
   const item: ProductionLearnerItem = {
     learnerId: row.learnerId,
@@ -52,6 +58,7 @@ function toLearnerItem(
     japanese: row.japanese,
     difficulty: row.difficulty,
     example: row.example,
+    ...(teacherPhrases === undefined ? {} : { teacherPhrases }),
     illustration: {
       assetPath: row.image.assetPath,
       width: dimensions.width,
@@ -83,6 +90,10 @@ export function loadProductionLearnerCorpus(
 
   validateLearnerManifest(manifest, { assetTracked: options.assetTracked });
   assertOptionalFieldsAreNotFabricated(manifest.rows);
+  const promotedByLearnerId = validateTeacherPhraseProjection(
+    options.promotedProjection ?? promotedProjectionData,
+    manifest,
+  );
 
   const items: ProductionLearnerItem[] = [];
   for (const row of manifest.rows) {
@@ -97,7 +108,7 @@ export function loadProductionLearnerCorpus(
     } else {
       altJa = DECORATIVE_ALT_JA;
     }
-    items.push(toLearnerItem(row, dimensions, altJa));
+    items.push(toLearnerItem(row, dimensions, altJa, promotedByLearnerId.get(row.learnerId)));
   }
 
   return deepFreeze(items) as readonly ProductionLearnerItem[];

@@ -128,10 +128,96 @@ class UnicodeContractTests(unittest.TestCase):
             'data/examples/valid/practice.json',
             'data/learning-paths.json',
             'data/teacher-vocabulary-preview/learner-manifest.json',
+            'data/teacher-vocabulary-preview/teacher-phrase-promoted.json',
             'data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json',
             'data/travel-quest-readiness.json',
         }
         self.assertEqual(required - actual, set())
+
+    def test_teacher_learner_visible_sources_are_directly_allowlisted(self) -> None:
+        manifest = json.loads(
+            (REPO_ROOT / 'data/unicode/source-manifest.json').read_text(encoding='utf-8')
+        )
+        learner = next(
+            source for source in manifest['sources']
+            if source['id'] == 'production-learner-manifest-v1'
+        )
+        promoted = next(
+            source for source in manifest['sources']
+            if source['id'] == 'teacher-phrase-promoted-v1'
+        )
+
+        self.assertIn({'field': 'example', 'language': 'zh-Hans'}, learner['textFields'])
+        self.assertEqual(
+            promoted['textFields'],
+            [
+                {'field': 'simplified', 'language': 'zh-Hans'},
+                {'field': 'traditional', 'language': 'zh-Hant'},
+                {'field': 'japanese', 'language': 'ja'},
+            ],
+        )
+        self.assertIs(promoted['allowEmptyRecords'], True)
+        self.assertNotIn(
+            'data/teacher-vocabulary-preview/teacher-phrase-authoring.json',
+            {source['path'] for source in manifest['sources']},
+        )
+
+        inventory, _ = extract_dataset(
+            REPO_ROOT / 'data/unicode/source-manifest.json',
+            repo_root=REPO_ROOT,
+        )
+        example_evidence = [
+            item for item in inventory['evidence']
+            if item['sourceId'] == 'production-learner-manifest-v1'
+            and item['field'] == 'example'
+        ]
+        self.assertEqual(len(example_evidence), 532)
+        self.assertTrue(all(item['language'] == 'zh-Hans' for item in example_evidence))
+        self.assertTrue(all(item['jsonPointer'].endswith('/example') for item in example_evidence))
+        self.assertFalse(any(
+            item['sourcePath'].endswith('teacher-phrase-authoring.json')
+            for item in inventory['evidence']
+        ))
+
+    def test_explicit_empty_projection_is_allowed_but_nonempty_stale_fields_fail(self) -> None:
+        self.source_path.write_text(
+            json.dumps({'records': []}, ensure_ascii=False) + '\n',
+            encoding='utf-8',
+        )
+        manifest = json.loads(self.manifest_path.read_text(encoding='utf-8'))
+        manifest['sources'][0] = {
+            'id': 'empty-projection',
+            'path': 'data/source.json',
+            'sha256': sha256(self.source_path),
+            'format': 'json',
+            'allowEmptyRecords': True,
+            'textFields': [
+                {'field': 'simplified', 'language': 'zh-Hans'},
+                {'field': 'traditional', 'language': 'zh-Hant'},
+                {'field': 'japanese', 'language': 'ja'},
+            ],
+        }
+        self.manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
+            encoding='utf-8',
+        )
+        inventory, _ = self.extract()
+        self.assertEqual(inventory['evidence'], [])
+
+        self.source_path.write_text(
+            json.dumps(
+                {'records': [{'simplified': '大家好', 'japanese': 'こんにちは'}]},
+                ensure_ascii=False,
+            ) + '\n',
+            encoding='utf-8',
+        )
+        manifest['sources'][0]['sha256'] = sha256(self.source_path)
+        self.manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
+            encoding='utf-8',
+        )
+        with self.assertRaisesRegex(ContractError, 'stale text fields.*traditional'):
+            self.extract()
 
     def test_lessons_review_hooks_are_selected_and_extracted(self) -> None:
         manifest = json.loads(

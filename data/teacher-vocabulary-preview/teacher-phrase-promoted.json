@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "contractId": "teacher-phrase-promoted-v1",
+  "base": {
+    "sidecarSchemaVersion": 1,
+    "sidecarContractId": "teacher-phrase-authoring-v1",
+    "sidecarSha256": null,
+    "learnerManifestSemanticSha256": "b4271e3f032483c839afd46d4bcf7cecf7d54a6c5e7ca3ffc0dcb795aaea556f",
+    "workbookSha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37"
+  },
+  "records": []
+}
