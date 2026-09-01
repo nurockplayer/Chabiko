@@ -621,6 +621,15 @@ describe('affected-domain test selection never silently skips a domain source', 
       'tests/basic-vocabulary-*.test.ts',
     ]);
   });
+
+  it('routes the Small Talk runtime and authored contract through the same affected boundary', () => {
+    expect(domainTestGlobsFor('src/domain/smallTalkEncounterRuntime.ts')).toEqual([
+      'tests/small-talk-encounter-*.test.ts',
+    ]);
+    expect(domainTestGlobsFor('src/content/loadSmallTalkEncounters.ts')).toEqual([
+      'tests/small-talk-encounter-*.test.ts',
+    ]);
+  });
 });
 
 describe('tier ordering and risk-class table are complete', () => {

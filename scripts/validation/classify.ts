@@ -269,7 +269,7 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
   },
   {
     match: (b) => b.includes('smalltalkencounter'),
-    testGlobs: ['tests/small-talk-encounter-contract.test.ts'],
+    testGlobs: ['tests/small-talk-encounter-*.test.ts'],
   },
   {
     match: (b) => b.includes('travelquest'),
