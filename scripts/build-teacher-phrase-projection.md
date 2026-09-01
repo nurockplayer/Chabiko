@@ -16,7 +16,9 @@ uv run --locked python scripts/build-teacher-phrase-projection.py --check
 ```
 
 After the rights-governed workbook, its validated #478 sidecar, and an exact
-human review artifact are available, build through all three inputs:
+human review artifact are available, build through all three inputs. A
+successful write publishes both the non-runtime evidence bundle and the
+learner projection:
 
 ```bash
 uv run --locked python scripts/build-teacher-phrase-projection.py \
@@ -26,15 +28,63 @@ uv run --locked python scripts/build-teacher-phrase-projection.py \
   --write
 ```
 
-The no-input `--check` validates the committed artifact's canonical bytes,
-shape, and current learner-manifest/workbook base without reconstructing or
-emptying promoted records. Use `--check` with all three authoring inputs to
-prove full byte identity after a promotion. No-input `--write` is rejected;
+Every changed projection is a Unicode source change. Complete the downstream
+writers in this order before committing the promotion:
+
+```bash
+uv run --locked python scripts/sync-teacher-phrase-unicode-source.py --write
+uv run --locked python scripts/extract_unicode_data.py --write
+pnpm exec node scripts/generate_unicode_visual_candidates.ts --write
+```
+
+The first command changes only the checksum of the exact
+`teacher-phrase-promoted-v1` source entry while preserving the rest of
+`data/unicode/source-manifest.json` byte-for-byte. The extractor then rebuilds
+the mechanical inventory/records, and the pinned visual generator rebuilds its
+two derived artifacts from the new scalar inventory. Do not hand-edit any of
+those generated outputs.
+
+Run the complete read-only drift closure afterward:
+
+```bash
+uv run --locked python scripts/build-teacher-phrase-projection.py --check
+uv run --locked python scripts/sync-teacher-phrase-unicode-source.py --check
+uv run --locked python scripts/extract_unicode_data.py --check
+uv run --locked python scripts/validate_unicode_data.py
+pnpm exec node scripts/generate_unicode_visual_candidates.ts --check
+```
+
+The no-input projection `--check` reads the committed evidence bundle,
+recomputes its full canonical sidecar SHA-256, validates the human-review base
+and every frozen source/rights/review/promotion gate, deterministically rebuilds
+the learner projection, and requires byte identity. Use `--check` with all
+three external authoring inputs to additionally prove that the committed
+evidence bundle is current. No-input `--write` is rejected;
 `--initialize-empty` is reserved for first creation only and refuses to replace
-any existing artifact. `--write` is atomic
-and owns only `data/teacher-vocabulary-preview/teacher-phrase-promoted.json`;
-it never deletes neighboring files. `--test` runs the repository-safe contract
-self-test without the external workbook.
+either existing artifact.
+
+Normal writes atomically replace each owned file in safe publication order:
+`teacher-phrase-promotion-evidence.json` first and
+`teacher-phrase-promoted.json` last. A partial write therefore leaves the old
+runtime projection in place and fails the next paired check. Initial creation
+removes only an evidence file created by that same invocation if projection
+creation loses a race. Neighboring files are never deleted. `--test` runs the
+repository-safe contract self-test without the external workbook.
+
+## Committed verification evidence
+
+`teacher-phrase-promotion-evidence-v1` is repository verification evidence,
+not a learner source. Before the first real promotion it truthfully contains
+null sidecar/review snapshots. A non-empty build stores the exact validated
+canonical #478 sidecar snapshot and the exact
+`teacher-phrase-human-review-v1` snapshot. CI can therefore recompute the full
+sidecar digest, require the review artifact to bind that digest and the current
+manifest/workbook base, and reproduce every promoted learner string. Directly
+editing the projection or substituting a syntactic hash cannot pass.
+
+Runtime and Unicode extraction never import this evidence bundle. They consume
+only `teacher-phrase-promoted.json`; the Unicode source manifest statically
+allowlists that projection's learner-visible fields.
 
 ## Human artifact contract
 

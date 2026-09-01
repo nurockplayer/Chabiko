@@ -511,6 +511,86 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
         self.assertNotEqual(drift.returncode, 0)
         self.assertIn("not current", drift.stderr)
 
+    def test_unicode_source_sync_updates_only_the_promoted_projection_checksum(self) -> None:
+        projection_path = self.root / "teacher-phrase-promoted.json"
+        projection_path.write_bytes(serialize_projection(self.build()))
+        manifest_path = self.root / "source-manifest.json"
+        manifest = {
+            "schemaVersion": 1,
+            "sources": [
+                {
+                    "id": "keep-source-v1",
+                    "path": "data/keep.json",
+                    "sha256": "1" * 64,
+                    "format": "json",
+                    "textFields": [],
+                },
+                {
+                    "id": "teacher-phrase-promoted-v1",
+                    "path": "data/teacher-vocabulary-preview/teacher-phrase-promoted.json",
+                    "sha256": "0" * 64,
+                    "format": "json",
+                    "textFields": [],
+                },
+            ],
+        }
+        original = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode(
+            "utf-8"
+        )
+        manifest_path.write_bytes(original)
+        command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/sync-teacher-phrase-unicode-source.py"),
+            "--manifest",
+            str(manifest_path),
+            "--projection",
+            str(projection_path),
+        ]
+
+        stale = subprocess.run(
+            [*command, "--check"],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(stale.returncode, 0)
+        self.assertIn("stale", stale.stderr)
+        subprocess.run([*command, "--write"], cwd=REPO_ROOT, check=True)
+
+        expected_digest = hashlib.sha256(projection_path.read_bytes()).hexdigest()
+        expected = original.replace(("0" * 64).encode(), expected_digest.encode())
+        self.assertEqual(manifest_path.read_bytes(), expected)
+        subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
+
+    def test_documented_promotion_workflow_closes_unicode_and_visual_drift(self) -> None:
+        workflow = (
+            REPO_ROOT / "scripts/build-teacher-phrase-projection.md"
+        ).read_text(encoding="utf-8")
+        ordered_write_steps = [
+            "scripts/build-teacher-phrase-projection.py",
+            "scripts/sync-teacher-phrase-unicode-source.py --write",
+            "scripts/extract_unicode_data.py --write",
+            "scripts/generate_unicode_visual_candidates.ts --write",
+        ]
+        positions = [workflow.index(step) for step in ordered_write_steps]
+        self.assertEqual(positions, sorted(positions))
+        for check_step in (
+            "scripts/build-teacher-phrase-projection.py --check",
+            "scripts/sync-teacher-phrase-unicode-source.py --check",
+            "scripts/extract_unicode_data.py --check",
+            "scripts/validate_unicode_data.py",
+            "scripts/generate_unicode_visual_candidates.ts --check",
+        ):
+            self.assertIn(check_step, workflow)
+        content_gate = (REPO_ROOT / "scripts/validate-content.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "scripts/sync-teacher-phrase-unicode-source.py --check",
+            content_gate,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

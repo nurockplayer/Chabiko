@@ -28,6 +28,7 @@ uv run --locked python scripts/build-teacher-phrase-sidecar.py --test
 # manifest/workbook base without erasing future non-empty promoted records.
 uv run --locked python scripts/build-teacher-phrase-projection.py --test
 uv run --locked python scripts/build-teacher-phrase-projection.py --check
+uv run --locked python scripts/sync-teacher-phrase-unicode-source.py --check
 
 # Validate checked-in content.
 for f in data/examples/valid/*.json; do
