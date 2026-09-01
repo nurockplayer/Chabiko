@@ -162,12 +162,38 @@ describe('Small Talk Encounter deterministic runtime', () => {
       currentOutcome: 'STALL',
       completionSummary: {
         supportedCapabilities: [],
+        passportProjection: null,
       },
     });
     expect(stalled.evidenceEvents[0].capabilityContribution).toBe('neither');
     expect(Object.keys(stalled.completionSummary ?? {})).not.toEqual(
       expect.arrayContaining(['score', 'confidence', 'personality', 'ability']),
     );
+  });
+
+  it('revokes run-level capability and Passport support when a later Beat stalls', () => {
+    let state = createSession('mid-autumn-2026-transfer', 'mid-autumn-2026-medium');
+    state = accept(state, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-share-preference',
+    });
+    expect(state.evidenceEvents[0].capabilityContribution).toBe('KEEP_GOING');
+
+    state = accept(state, {
+      kind: 'select-strategy',
+      strategyId: 'mid-autumn-pretend-understanding',
+    });
+
+    expect(state).toMatchObject({
+      status: 'completed',
+      currentOutcome: 'STALL',
+      completionSummary: {
+        supportedCapabilities: [],
+        passportProjection: null,
+        repairCompleted: false,
+      },
+    });
+    expect(state.evidenceEvents.map((event) => event.outcome)).toEqual(['CONTINUE', 'STALL']);
   });
 
   it('treats authored CLOSE as healthy completion without mislabeling the close event', () => {
@@ -318,15 +344,72 @@ describe('Small Talk Encounter deterministic runtime', () => {
       ...createSession(),
       currentBeatId: 'missing-beat',
     } as SmallTalkEncounterSessionState;
-    expect(() => resolveCurrentSmallTalkBeat(corrupted)).toThrow(
-      "runtime state references unknown Beat 'missing-beat'",
-    );
+    expect(() => resolveCurrentSmallTalkBeat(corrupted)).toThrow(/causal trace.*current Beat/i);
     expect(() =>
       applySmallTalkEncounterAction(corrupted, {
         kind: 'select-strategy',
         strategyId: 'anything',
       }),
-    ).toThrow("runtime state references unknown Beat 'missing-beat'");
+    ).toThrow(/causal trace.*current Beat/i);
+  });
+
+  it('fails closed on valid-but-unreachable Beats and injected evidence/history', () => {
+    const seasonal = createSession('mid-autumn-2026-transfer', 'mid-autumn-2026-medium');
+    const skippedRepairEntry = {
+      ...seasonal,
+      currentBeatId: 'mid-autumn-repair-return',
+    } as SmallTalkEncounterSessionState;
+    expect(() =>
+      applySmallTalkEncounterAction(skippedRepairEntry, {
+        kind: 'select-strategy',
+        strategyId: 'mid-autumn-confirm-and-return',
+      }),
+    ).toThrow(/causal trace.*current Beat/i);
+
+    const completed = completeWithFirstStrategy(createSession());
+    const injectedEvidence = {
+      ...createSession(),
+      evidenceEvents: completed.evidenceEvents,
+    } as SmallTalkEncounterSessionState;
+    expect(() =>
+      applySmallTalkEncounterAction(injectedEvidence, {
+        kind: 'select-strategy',
+        strategyId: 'weekend-micro-share-and-follow',
+      }),
+    ).toThrow(/causal trace.*terminal/i);
+
+    const injectedHistory = {
+      ...createSession(),
+      completedRuns: completed.completedRuns,
+    } as SmallTalkEncounterSessionState;
+    expect(() =>
+      applySmallTalkEncounterAction(injectedHistory, {
+        kind: 'select-strategy',
+        strategyId: 'weekend-micro-share-and-follow',
+      }),
+    ).toThrow(/completed-run history/i);
+  });
+
+  it('snapshots and freezes the validated Encounter against later definition drift', () => {
+    const mutable = structuredClone(document) as SmallTalkEncounterDocument;
+    const state = createSmallTalkEncounterSession(mutable, {
+      familyId: 'weekend-baseline',
+      encounterId: 'weekend-micro',
+    });
+    const sourceCue = mutable.families[0].encounters[0].beats[0].partnerCue;
+    (sourceCue as { id: string }).id = 'mutated-after-validation';
+
+    expect(resolveCurrentSmallTalkBeat(state).partnerCue.id).toBe('weekend-micro-cooperative');
+    expect(() => {
+      const runtimeCue = state.encounter.beats[0].partnerCue as { id: string };
+      runtimeCue.id = 'mutated-runtime-definition';
+    }).toThrow();
+    expect(
+      applySmallTalkEncounterAction(state, {
+        kind: 'select-strategy',
+        strategyId: 'weekend-micro-share-and-follow',
+      }).kind,
+    ).toBe('accepted');
   });
 
   it('rejects unknown or out-of-order strategy actions without mutating state', () => {
