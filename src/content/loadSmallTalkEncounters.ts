@@ -31,10 +31,6 @@ const SOURCE_KINDS = new Set([
 const OFFICIAL_FACTUAL_SOURCE_KINDS = new Set([
   'official-date', 'official-cultural-reference',
 ]);
-const EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS = new Map([
-  ['mid-autumn-date-2026', 'official-date'],
-  ['mid-autumn-barbecue-varies', 'official-cultural-reference'],
-]);
 const FROZEN_DGPA_2026_DATE_SOURCE = {
   id: 'dgpa-2026-calendar',
   kind: 'official-date',
@@ -56,6 +52,10 @@ const FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE = {
 const FROZEN_OFFICIAL_SOURCES = new Map<string, Readonly<Record<string, string>>>([
   [FROZEN_DGPA_2026_DATE_SOURCE.id, FROZEN_DGPA_2026_DATE_SOURCE],
   [FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id, FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE],
+]);
+const FROZEN_SEASONAL_CLAIM_SOURCE_IDS = new Map([
+  ['mid-autumn-date-2026', FROZEN_DGPA_2026_DATE_SOURCE.id],
+  ['mid-autumn-barbecue-varies', FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id],
 ]);
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
@@ -349,8 +349,8 @@ function validateSeasonal(
     return { claim, claimId, claimPath };
   });
   if (
-    claimIds.size !== EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.size ||
-    [...EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.keys()].some((claimId) => !claimIds.has(claimId))
+    claimIds.size !== FROZEN_SEASONAL_CLAIM_SOURCE_IDS.size ||
+    [...FROZEN_SEASONAL_CLAIM_SOURCE_IDS.keys()].some((claimId) => !claimIds.has(claimId))
   ) {
     throw new Error(`${path}.claims must contain the exact frozen claim ID set`);
   }
@@ -368,19 +368,10 @@ function validateSeasonal(
     ) {
       throw new Error(`${claimPath}.sourceRefIds must include an official factual source`);
     }
-    const expectedSourceKind = EXPECTED_SEASONAL_CLAIM_SOURCE_KINDS.get(claimId);
-    if (
-      expectedSourceKind === undefined ||
-      !claimSourceRefs.some((sourceRef) => sourceIndex.get(sourceRef) === expectedSourceKind)
-    ) {
-      throw new Error(`${claimPath}.sourceRefIds must include an ${expectedSourceKind} source`);
-    }
-    if (
-      claimId === 'mid-autumn-barbecue-varies' &&
-      !claimSourceRefs.includes(FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id)
-    ) {
+    const expectedSourceId = FROZEN_SEASONAL_CLAIM_SOURCE_IDS.get(claimId);
+    if (expectedSourceId === undefined || !claimSourceRefs.includes(expectedSourceId)) {
       throw new Error(
-        `${claimPath}.sourceRefIds must include the frozen '${FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id}' source`,
+        `${claimPath}.sourceRefIds must include the frozen '${expectedSourceId}' source`,
       );
     }
   }

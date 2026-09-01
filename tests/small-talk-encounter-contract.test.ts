@@ -325,7 +325,7 @@ describe('Small Talk Lab authored encounter contract', () => {
     swappedClaims[0].sourceRefIds = ['taiwan-tourism-traditional-festivals'];
     swappedClaims[1].sourceRefIds = ['dgpa-2026-calendar'];
     expect(() => validateSmallTalkEncounterDocument(swappedClaimSources)).toThrow(
-      'seasonal.claims[0].sourceRefIds must include an official-date source',
+      "seasonal.claims[0].sourceRefIds must include the frozen 'dgpa-2026-calendar' source",
     );
 
     const renamedClaimSources = cloneDocument();
@@ -337,6 +337,30 @@ describe('Small Talk Lab authored encounter contract', () => {
     renamedClaims[1].sourceRefIds = ['dgpa-2026-calendar'];
     expect(() => validateSmallTalkEncounterDocument(renamedClaimSources)).toThrow(
       'seasonal.claims must contain the exact frozen claim ID set',
+    );
+
+    const forgedDateSource = cloneDocument();
+    const forgedDateFamily = forgedDateSource.families[1];
+    const frozenDateSource = forgedDateFamily.sourceRefs.find(
+      (source) => source.id === 'dgpa-2026-calendar',
+    );
+    const dateClaim = forgedDateFamily.seasonal?.claims.find(
+      (claim) => claim.id === 'mid-autumn-date-2026',
+    );
+    if (!frozenDateSource || !dateClaim) {
+      throw new Error('test fixture must include the dated claim source');
+    }
+    forgedDateFamily.sourceRefs.push({
+      ...structuredClone(frozenDateSource),
+      id: 'forged-date-source',
+      title: 'Unrelated calendar',
+      publisher: 'Unrelated publisher',
+      url: 'https://example.com/unrelated-calendar',
+      supports: 'Unrelated custom',
+    });
+    dateClaim.sourceRefIds = ['forged-date-source'];
+    expect(() => validateSmallTalkEncounterDocument(forgedDateSource)).toThrow(
+      "seasonal.claims[0].sourceRefIds must include the frozen 'dgpa-2026-calendar' source",
     );
 
     const forgedCulturalSource = cloneDocument();
