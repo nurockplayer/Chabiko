@@ -57,6 +57,7 @@ const FROZEN_SEASONAL_CLAIM_SOURCE_IDS = new Map([
   ['mid-autumn-date-2026', FROZEN_DGPA_2026_DATE_SOURCE.id],
   ['mid-autumn-barbecue-varies', FROZEN_TAIWAN_TOURISM_CULTURAL_SOURCE.id],
 ]);
+const FROZEN_SEASONAL_DEFINITION_ID = 'mid-autumn-festival';
 const EXPECTED_FAMILY_IDS = ['weekend-baseline', 'mid-autumn-2026-transfer'] as const;
 const EXPECTED_ENCOUNTER_IDS = [
   ['weekend-micro', 'weekend-medium'],
@@ -291,7 +292,10 @@ function validateSeasonal(
   sourceIndex: ReadonlyMap<string, string>,
 ): void {
   const seasonal = requireRecord(value, path);
-  requireString(seasonal, 'definitionId', path);
+  const definitionId = requireString(seasonal, 'definitionId', path);
+  if (definitionId !== FROZEN_SEASONAL_DEFINITION_ID) {
+    throw new Error(`${path}.definitionId must remain '${FROZEN_SEASONAL_DEFINITION_ID}'`);
+  }
   const occurrencePath = `${path}.occurrence`;
   const occurrence = requireRecord(seasonal.occurrence, occurrencePath);
   const occurrenceYear = occurrence.year;

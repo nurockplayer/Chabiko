@@ -213,6 +213,14 @@ describe('Small Talk Lab authored encounter contract', () => {
   });
 
   it('fails closed when a seasonal occurrence lacks dated source metadata', () => {
+    const wrongDefinition = cloneDocument();
+    const seasonalDefinition = wrongDefinition.families[1].seasonal;
+    if (!seasonalDefinition) throw new Error('test fixture must be seasonal');
+    seasonalDefinition.definitionId = 'dragon-boat-festival';
+    expect(() => validateSmallTalkEncounterDocument(wrongDefinition)).toThrow(
+      "families[1].seasonal.definitionId must remain 'mid-autumn-festival'",
+    );
+
     const missingDate = cloneDocument();
     const seasonal = missingDate.families[1].seasonal;
     if (!seasonal) throw new Error('test fixture must be seasonal');
