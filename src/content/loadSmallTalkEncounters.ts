@@ -612,6 +612,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
             }
           }
           if (branch.kind === 'beat') {
+            if ('partnerReply' in branch) {
+              throw new Error(`${branchPath}.partnerReply is not valid when kind is beat`);
+            }
             if ('cueId' in branch) {
               throw new Error(`${branchPath}.cueId is not valid in the Beat-only graph`);
             }
@@ -628,6 +631,9 @@ export function validateSmallTalkEncounterDocument(input: unknown): SmallTalkEnc
               throw new Error(`${branchPath} ${outcome} must be terminal`);
             }
           } else if (branch.kind === 'terminal') {
+            if ('beatId' in branch) {
+              throw new Error(`${branchPath}.beatId is not valid when kind is terminal`);
+            }
             if (outcome === 'REPAIR') throw new Error(`${branchPath} REPAIR must target a Beat`);
             validateLocalizedText(branch.partnerReply, `${branchPath}.partnerReply`);
           } else {

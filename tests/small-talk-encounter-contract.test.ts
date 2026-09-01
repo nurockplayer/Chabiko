@@ -129,6 +129,47 @@ describe('Small Talk Lab authored encounter contract', () => {
     );
   });
 
+  it('rejects branches that carry both discriminated destination shapes', () => {
+    const beatWithReply = cloneDocument();
+    const beatBranches = beatWithReply.families.flatMap((family) =>
+      family.encounters.flatMap((encounter) =>
+        encounter.beats.flatMap((beat) =>
+          beat.strategies.map((strategy) => strategy.branch),
+        ),
+      ),
+    );
+    const beatBranch = beatBranches.find((branch) => branch.kind === 'beat');
+    const replySource = beatBranches.find((branch) => branch.kind === 'terminal');
+    if (!beatBranch || beatBranch.kind !== 'beat' || !replySource || replySource.kind !== 'terminal') {
+      throw new Error('test fixture must include both branch destination shapes');
+    }
+    (beatBranch as typeof beatBranch & { partnerReply: unknown }).partnerReply = structuredClone(
+      replySource.partnerReply,
+    );
+    expect(() => validateSmallTalkEncounterDocument(beatWithReply)).toThrow(
+      'branch.partnerReply is not valid when kind is beat',
+    );
+
+    const terminalWithBeat = cloneDocument();
+    const terminalBranch = terminalWithBeat.families
+      .flatMap((family) =>
+        family.encounters.flatMap((encounter) =>
+          encounter.beats.flatMap((beat) =>
+            beat.strategies.map((strategy) => strategy.branch),
+          ),
+        ),
+      )
+      .find((branch) => branch.kind === 'terminal');
+    if (!terminalBranch || terminalBranch.kind !== 'terminal') {
+      throw new Error('test fixture must include a terminal branch');
+    }
+    (terminalBranch as typeof terminalBranch & { beatId: string }).beatId =
+      terminalWithBeat.families[0].encounters[0].beats[0].id;
+    expect(() => validateSmallTalkEncounterDocument(terminalWithBeat)).toThrow(
+      'branch.beatId is not valid when kind is terminal',
+    );
+  });
+
   it('rejects the legacy plural cue and cue-addressed graph shape', () => {
     const pluralCue = cloneRawDocument() as unknown as {
       families: Array<{ encounters: Array<{ beats: Array<Record<string, unknown>> }> }>;
