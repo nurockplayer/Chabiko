@@ -268,6 +268,10 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/roleplay-*.test.ts'],
   },
   {
+    match: (b) => b.includes('smalltalkencounter'),
+    testGlobs: ['tests/small-talk-encounter-contract.test.ts'],
+  },
+  {
     match: (b) => b.includes('travelquest'),
     testGlobs: ['tests/travel-quest-readiness.test.ts'],
   },

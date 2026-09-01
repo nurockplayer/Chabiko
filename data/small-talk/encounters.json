@@ -1,0 +1,1352 @@
+{
+  "schemaVersion": 1,
+  "families": [
+    {
+      "id": "weekend-baseline",
+      "kind": "evergreen-baseline",
+      "titleJa": "週末の話を続ける",
+      "sourceRefs": [
+        {
+          "id": "issue-457-conversation-contract",
+          "kind": "product-authority",
+          "title": "Conversation Learning Contract v0.1",
+          "publisher": "Chabiko GitHub Issue #457",
+          "url": "https://github.com/nurockplayer/Chabiko/issues/457",
+          "retrievedAt": "2026-08-31",
+          "supports": "Move, Beat, outcome, depth, sensitivity, challenge, and KEEP_GOING semantics",
+          "rights": { "allowedUse": "reference-only", "copiedText": false }
+        },
+        {
+          "id": "issue-463-v0-authority",
+          "kind": "product-authority",
+          "title": "Small Talk Lab v0 authority decision",
+          "publisher": "Chabiko GitHub Issue #463",
+          "url": "https://github.com/nurockplayer/Chabiko/issues/463",
+          "retrievedAt": "2026-08-31",
+          "supports": "Isolated deterministic baseline-plus-seasonal-transfer Scenario prototype",
+          "rights": { "allowedUse": "reference-only", "copiedText": false }
+        }
+      ],
+      "review": {
+        "reviewStatus": "draft",
+        "contentOrigin": "ai-assisted-draft",
+        "dimensions": {
+          "traditionalMandarin": "not-reviewed",
+          "pinyin": "not-reviewed",
+          "japanese": "not-reviewed",
+          "socialPragmatics": "not-reviewed",
+          "seasonalClaims": "not-reviewed"
+        }
+      },
+      "encounters": [
+        {
+          "id": "weekend-micro",
+          "scale": "micro",
+          "capability": "KEEP_GOING",
+          "missionJa": "相手の週末の話を受け、自分の情報を一つ足して、話す余地を返す。",
+          "premiseJa": "月曜日、語学学校の休み時間にクラスメートが週末の話を始める。",
+          "participants": [
+            { "id": "learner", "role": "learner", "labelJa": "あなた" },
+            { "id": "lin", "role": "partner", "labelJa": "クラスメートの林さん" }
+          ],
+          "relationship": { "familiarity": "acquaintance", "power": "peer" },
+          "settingJa": "語学学校の休憩スペース",
+          "targetMovePattern": ["REACT", "ADD", "INVITE"],
+          "challenge": {
+            "band": "beginner",
+            "cuePredictability": "beginner",
+            "responseFreedom": "beginner",
+            "initiativeBurden": "beginner",
+            "listeningBurden": "beginner",
+            "discourseBurden": "beginner",
+            "repairBurden": "beginner",
+            "pragmaticBurden": "beginner",
+            "partnerVariability": "beginner"
+          },
+          "depth": { "min": "D1", "max": "D3" },
+          "sensitivity": "low",
+          "start": { "beatId": "weekend-micro-opening" },
+          "replay": {
+            "modifierJa": "相手が短く答える。質問だけで追わず、自分の情報を足して糸口を作る。",
+            "start": { "beatId": "weekend-micro-brief-replay" }
+          },
+          "beats": [
+            {
+              "id": "weekend-micro-opening",
+              "kind": "conversation",
+              "opportunityJa": "内容を受け、関連する情報を一つ足して、具体的に聞き返す。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-micro-cooperative",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "我週末去淡水走走，天氣很好。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ zhōumò qù Dànshuǐ zǒuzou, tiānqì hěn hǎo.",
+                    "japanese": "週末に淡水を散歩してきたよ。天気がよかった。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-micro-share-and-follow",
+                  "labelJa": "驚きを示し、自分の週末も少し話してから具体的に聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "真的嗎？我週末也出去走走了。你最喜歡淡水的哪裡？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhēn de ma? Wǒ zhōumò yě chūqù zǒuzou le. Nǐ zuì xǐhuān Dànshuǐ de nǎlǐ?",
+                      "japanese": "本当？私も週末に少し出かけたよ。淡水のどこが一番好き？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我最喜歡河邊，傍晚很舒服。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ zuì xǐhuān hébiān, bàngwǎn hěn shūfu.",
+                      "japanese": "川沿いが一番好き。夕方はとても気持ちいいよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手の淡水の話を受けた直後",
+                    "explanationJa": "反応だけで終わらず、自分の週末を足して具体的な話題を返した。",
+                    "nextMoveJa": "次は相手が出した『川沿い』を拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-micro-preference-and-invite",
+                  "labelJa": "相手を受け、自分の好みを足して相手の選択を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "聽起來不錯。我週末也喜歡慢慢走。你比較喜歡白天還是晚上？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Tīng qǐlái búcuò. Wǒ zhōumò yě xǐhuān mànmàn zǒu. Nǐ bǐjiào xǐhuān báitiān háishì wǎnshàng?",
+                      "japanese": "よさそう。私も週末はゆっくり歩くのが好き。昼と夜ならどっちが好き？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我比較喜歡晚上，沒那麼熱。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ bǐjiào xǐhuān wǎnshàng, méi nàme rè.",
+                      "japanese": "夜のほうが好き。そこまで暑くないから。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "自分の好みを一言足したところ",
+                    "explanationJa": "質問だけを続けず、共通点になり得る好みを添えた。",
+                    "nextMoveJa": "相手が選んだ時間帯の理由を拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-micro-reaction-only",
+                  "labelJa": "短く反応するだけで終える",
+                  "fit": "stall-prone",
+                  "movePattern": ["REACT"],
+                  "realizations": [
+                    {
+                      "traditional": "真的嗎？很棒。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhēn de ma? Hěn bàng.",
+                      "japanese": "本当？いいね。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "對啊。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Duì a.",
+                      "japanese": "うん。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "continuation"],
+                    "decisiveMomentJa": "肯定的な反応のあと",
+                    "explanationJa": "反応は合っているが、新しい情報も問いもなく次の糸口がない。",
+                    "nextMoveJa": "自分の情報を一つ足すか、淡水について具体的に聞く。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "weekend-micro-brief-replay",
+              "kind": "conversation",
+              "opportunityJa": "短い返答を受け、自分の過ごし方を一つ足して答えやすい問いを返す。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-micro-brief",
+                  "stance": "brief",
+                  "text": {
+                    "traditional": "我週末都在家。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ zhōumò dōu zài jiā.",
+                    "japanese": "週末はずっと家にいたよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-micro-home-share-and-invite",
+                  "labelJa": "家で過ごしたことを受け、自分の過ごし方を足して聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "這樣也不錯。我週末也在家看書。你在家做了什麼？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhèyàng yě búcuò. Wǒ zhōumò yě zài jiā kàn shū. Nǐ zài jiā zuò le shénme?",
+                      "japanese": "それもいいね。私も週末は家で本を読んだよ。家で何をしたの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我看了一部電影，也休息了一下。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ kàn le yí bù diànyǐng, yě xiūxi le yíxià.",
+                      "japanese": "映画を一本見て、少し休んだよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "短い『家にいた』をそのまま受けたところ",
+                    "explanationJa": "外出しなかった理由を詰めず、自分の家での過ごし方を足して糸口を作った。",
+                    "nextMoveJa": "相手が出した映画か休息の話を拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-micro-home-preference-and-invite",
+                  "labelJa": "家で休むよさを受け、自分の例を足して好みを聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "在家休息也很好。我週末在家會做飯。你比較喜歡看電影還是看書？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zài jiā xiūxi yě hěn hǎo. Wǒ zhōumò zài jiā huì zuòfàn. Nǐ bǐjiào xǐhuān kàn diànyǐng háishì kàn shū?",
+                      "japanese": "家で休むのもいいね。私は週末に家で料理をするよ。映画と読書ならどちらが好き？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我比較喜歡看電影。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ bǐjiào xǐhuān kàn diànyǐng.",
+                      "japanese": "映画を見るほうが好き。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "家で過ごす選択を肯定してから例を足したところ",
+                    "explanationJa": "短い答えを否定せず、答えやすい二択で次の話題を作った。",
+                    "nextMoveJa": "相手が選んだ活動について具体的に聞く。"
+                  }
+                },
+                {
+                  "id": "weekend-micro-home-question-only",
+                  "labelJa": "理由だけを問い詰める",
+                  "fit": "stall-prone",
+                  "movePattern": ["INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "你為什麼沒出門？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Nǐ wèishénme méi chūmén?",
+                      "japanese": "どうして出かけなかったの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "沒有特別的原因。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Méiyǒu tèbié de yuányīn.",
+                      "japanese": "特に理由はないよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "短い返答に自分の情報を足さず理由だけを聞いたところ",
+                    "explanationJa": "相手が出した『家』を広げず、答えにくい理由質問だけを返した。",
+                    "nextMoveJa": "自分の家での過ごし方を一つ示してから聞く。"
+                  }
+                }
+              ]
+            }
+          ],
+          "passportProjection": {
+            "situationJa": "身近な週末の雑談",
+            "capabilityJa": "相手を受け、自分の情報を足し、話す余地を返した",
+            "evidenceStage": "supported",
+            "limitationJa": "選択肢のある一回の authored Encounter に限る。自由発話や会話力全体の認定ではない。"
+          }
+        },
+        {
+          "id": "weekend-medium",
+          "scale": "medium",
+          "capability": "KEEP_GOING",
+          "missionJa": "週末の経験を二つの場面でつなぎ、相手の答えを次の問いに使う。",
+          "premiseJa": "昼休みに知り合いが最近の週末について話す。",
+          "participants": [
+            { "id": "learner", "role": "learner", "labelJa": "あなた" },
+            { "id": "meiyu", "role": "partner", "labelJa": "知り合いの美瑜さん" }
+          ],
+          "relationship": { "familiarity": "acquaintance", "power": "peer" },
+          "settingJa": "共有スペースでの昼休み",
+          "targetMovePattern": ["REACT", "ADD", "INVITE"],
+          "challenge": {
+            "band": "beginner",
+            "cuePredictability": "beginner",
+            "responseFreedom": "beginner",
+            "initiativeBurden": "intermediate",
+            "listeningBurden": "beginner",
+            "discourseBurden": "intermediate",
+            "repairBurden": "beginner",
+            "pragmaticBurden": "beginner",
+            "partnerVariability": "intermediate"
+          },
+          "depth": { "min": "D1", "max": "D4" },
+          "sensitivity": "low",
+          "start": { "beatId": "weekend-medium-opening" },
+          "replay": {
+            "modifierJa": "相手は家で過ごした。地名をなぞらず、同じ Move を別の内容で使う。",
+            "start": { "beatId": "weekend-medium-home-replay" }
+          },
+          "beats": [
+            {
+              "id": "weekend-medium-opening",
+              "kind": "conversation",
+              "opportunityJa": "相手の評価に反応し、自分の情報を足して、答えを広げる問いを返す。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-medium-trip",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "我上週末去北投泡溫泉，人比我想像的多。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ shàng zhōumò qù Běitóu pào wēnquán, rén bǐ wǒ xiǎngxiàng de duō.",
+                    "japanese": "先週末に北投へ温泉に入りに行ったら、思ったより人が多かった。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-medium-connect-experience",
+                  "labelJa": "意外だった点を拾い、似た経験を足して結果を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "CONNECT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "這麼多人啊？我上次週末出去也一直排隊。你後來有放鬆到嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhème duō rén a? Wǒ shàng cì zhōumò chūqù yě yìzhí páiduì. Nǐ hòulái yǒu fàngsōng dào ma?",
+                      "japanese": "そんなに人がいたの？私もこの前ずっと並んだよ。それでもリラックスできた？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-follow-up" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "『思ったより人が多い』を拾ったところ",
+                    "explanationJa": "地名だけでなく相手の評価に反応し、似た経験を足した。",
+                    "nextMoveJa": "次の答えに出た具体的な要素を一つ拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-medium-preference-path",
+                  "labelJa": "相手を受け、自分の好みを足して次の選び方を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "聽起來很充實。我週末比較喜歡安靜一點。你下次還會週末去嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Tīng qǐlái hěn chōngshí. Wǒ zhōumò bǐjiào xǐhuān ānjìng yìdiǎn. Nǐ xià cì hái huì zhōumò qù ma?",
+                      "japanese": "充実していそう。私は週末は静かなほうが好き。次も週末に行く？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-weekday-follow-up" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "混雑を自分の好みと結びつけたところ",
+                    "explanationJa": "相手を否定せず、自分の好みを足して次回の選択を聞いた。",
+                    "nextMoveJa": "相手の選択理由を拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-medium-generic-question",
+                  "labelJa": "相手の話を拾わず、別の週末質問を続ける",
+                  "fit": "stall-prone",
+                  "movePattern": ["INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "你週末常常出門嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Nǐ zhōumò chángcháng chūmén ma?",
+                      "japanese": "週末はよく出かける？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "還好。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hái hǎo.",
+                      "japanese": "まあまあかな。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "新しい質問を返したところ",
+                    "explanationJa": "北投・温泉・混雑のどれにもつながらず、面接のようになった。",
+                    "nextMoveJa": "直前の言葉から一つ選んで反応する。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "weekend-medium-follow-up",
+              "kind": "conversation",
+              "opportunityJa": "相手の返答に含まれる新しい情報を拾い、一段だけ発展させる。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-medium-relaxed",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "有，泡完以後舒服多了，還在附近吃了晚餐。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Yǒu, pào wán yǐhòu shūfu duō le, hái zài fùjìn chī le wǎncān.",
+                    "japanese": "うん。入ったあとはかなり楽になって、近くで夕食も食べたよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-medium-follow-detail",
+                  "labelJa": "新しく出た情報に反応し、自分の好みを足して詳細を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "這樣很好。我泡完溫泉也會想吃東西。你吃了什麼？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhèyàng hěn hǎo. Wǒ pào wán wēnquán yě huì xiǎng chī dōngxi. Nǐ chī le shénme?",
+                      "japanese": "それはいいね。私も温泉のあとは食べたくなる。何を食べたの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "吃了牛肉麵，下次可以一起去。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Chī le niúròumiàn, xià cì kěyǐ yìqǐ qù.",
+                      "japanese": "牛肉麺を食べたよ。今度一緒に行ってもいいね。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "後から出た『夕食』を拾ったところ",
+                    "explanationJa": "準備した質問ではなく、相手の新しい情報を次の話題にした。",
+                    "nextMoveJa": "次は相手の提案に答える。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "weekend-medium-weekday-follow-up",
+              "kind": "conversation",
+              "opportunityJa": "相手の次回の選択を受け、自分の考えを足して自然に区切る。",
+              "targetMovePattern": ["REACT", "ADD", "NAVIGATE"],
+              "partnerCue": {
+                  "id": "weekend-medium-weekday",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "下次想平日去，應該比較安靜。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Xià cì xiǎng píngrì qù, yīnggāi bǐjiào ānjìng.",
+                    "japanese": "次は平日に行きたいな。そのほうが静かそう。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-medium-close-well",
+                  "labelJa": "相手の選択を受け、自分の考えを足して自然に区切る",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "NAVIGATE"],
+                  "realizations": [
+                    {
+                      "traditional": "對，平日應該比較舒服。我也想找一天去看看。謝謝你告訴我。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Duì, píngrì yīnggāi bǐjiào shūfu. Wǒ yě xiǎng zhǎo yì tiān qù kànkan. Xièxie nǐ gàosu wǒ.",
+                      "japanese": "そうだね、平日のほうがよさそう。私も行ってみたい。教えてくれてありがとう。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CLOSE",
+                    "partnerReply": {
+                      "traditional": "不會，下次再聊。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Bú huì, xià cì zài liáo.",
+                      "japanese": "どういたしまして。また今度話そう。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "continuation", "pragmatic-fit"],
+                    "decisiveMomentJa": "平日に行くという選択を受け、自分の次の行動を添えたところ",
+                    "explanationJa": "相手の選択に沿って内容のある終わり方にした。CLOSE も健全な結果。",
+                    "nextMoveJa": "別の機会には平日と週末の違いを聞いてもよい。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "weekend-medium-home-replay",
+              "kind": "conversation",
+              "opportunityJa": "家で過ごした週末を受け、自分の情報を足して映画の話を広げる。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-medium-home",
+                  "stance": "brief",
+                  "text": {
+                    "traditional": "我上週末沒出門，就在家看電影。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ shàng zhōumò méi chūmén, jiù zài jiā kàn diànyǐng.",
+                    "japanese": "先週末は出かけず、家で映画を見ていたよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-medium-home-share-movie",
+                  "labelJa": "家で過ごしたことを受け、自分の映画の経験を足して聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "在家看電影很放鬆。我最近也看了一部喜劇。你看了什麼電影？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zài jiā kàn diànyǐng hěn fàngsōng. Wǒ zuìjìn yě kàn le yí bù xǐjù. Nǐ kàn le shénme diànyǐng?",
+                      "japanese": "家で映画を見るとくつろげるね。私も最近コメディーを一本見たよ。何を見たの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手が出した『映画』を自分の最近の経験につないだところ",
+                    "explanationJa": "外出しなかった理由を問わず、映画という具体的な糸口を使った。",
+                    "nextMoveJa": "相手が答えたジャンルや感想を一つ拾う。"
+                  }
+                },
+                {
+                  "id": "weekend-medium-home-compare-preference",
+                  "labelJa": "家での過ごし方を受け、自分の好みを足してジャンルを聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "這樣也很充實。我在家的時候喜歡看輕鬆的電影。你喜歡哪一種？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhèyàng yě hěn chōngshí. Wǒ zài jiā de shíhou xǐhuān kàn qīngsōng de diànyǐng. Nǐ xǐhuān nǎ yì zhǒng?",
+                      "japanese": "それも充実しているね。私は家では気軽な映画が好き。どんなジャンルが好き？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "weekend-medium-home-follow-up" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手の映画の話に自分の好みを足したところ",
+                    "explanationJa": "短い返答を自分の例で支え、答えやすいジャンルの問いへ進めた。",
+                    "nextMoveJa": "ジャンルを選んだ理由か最近見た作品を聞く。"
+                  }
+                },
+                {
+                  "id": "weekend-medium-home-change-topic",
+                  "labelJa": "映画を拾わず別の週末質問へ移る",
+                  "fit": "stall-prone",
+                  "movePattern": ["INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "那你下週末要去哪裡？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Nà nǐ xià zhōumò yào qù nǎlǐ?",
+                      "japanese": "じゃあ次の週末はどこへ行くの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "還不知道。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hái bù zhīdào.",
+                      "japanese": "まだ分からない。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "映画という具体的な情報を使わず次週の予定へ移ったところ",
+                    "explanationJa": "相手の短い答えを広げず、準備した別の質問に切り替えた。",
+                    "nextMoveJa": "相手が出した映画をまず拾う。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "weekend-medium-home-follow-up",
+              "kind": "conversation",
+              "opportunityJa": "相手が答えた映画のジャンルを拾い、感想か理由へ一段進める。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "weekend-medium-comedy",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "我看了一部喜劇，整個下午都很安靜。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ kàn le yí bù xǐjù, zhěng ge xiàwǔ dōu hěn ānjìng.",
+                    "japanese": "コメディーを一本見て、午後はずっと静かに過ごしたよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "weekend-medium-home-follow-genre",
+                  "labelJa": "ジャンルを受け、自分の好みを足して感想を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "喜劇很適合放鬆。我累的時候也會看。那部好笑嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Xǐjù hěn shìhé fàngsōng. Wǒ lèi de shíhou yě huì kàn. Nà bù hǎoxiào ma?",
+                      "japanese": "コメディーはくつろぐのに合うね。私も疲れたときに見るよ。その作品は面白かった？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "很好笑，我看完心情好多了。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hěn hǎoxiào, wǒ kàn wán xīnqíng hǎo duō le.",
+                      "japanese": "すごく面白かった。見終わって気分がかなりよくなったよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手が答えた『コメディー』を次の問いに使ったところ",
+                    "explanationJa": "新しく出た情報を拾い、自分の見方を足して感想へ進めた。",
+                    "nextMoveJa": "相手が話した気分の変化を受ける。"
+                  }
+                },
+                {
+                  "id": "weekend-medium-home-close",
+                  "labelJa": "静かに過ごしたことを受け、自分の予定を足して区切る",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "NAVIGATE"],
+                  "realizations": [
+                    {
+                      "traditional": "安靜地過下午也很好。我下週末也想在家休息。下次再聊。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Ānjìng de guò xiàwǔ yě hěn hǎo. Wǒ xià zhōumò yě xiǎng zài jiā xiūxi. Xià cì zài liáo.",
+                      "japanese": "静かに午後を過ごすのもいいね。私も次の週末は家で休みたい。また話そう。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CLOSE",
+                    "partnerReply": {
+                      "traditional": "好，下次再聊。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hǎo, xià cì zài liáo.",
+                      "japanese": "うん。また今度話そう。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "continuation", "pragmatic-fit"],
+                    "decisiveMomentJa": "静かな午後を受け、自分の次の週末を一言足したところ",
+                    "explanationJa": "相手の内容とつながる情報を残して自然に区切った。",
+                    "nextMoveJa": "別の機会には見た映画の題名を聞いてもよい。"
+                  }
+                }
+              ]
+            }
+          ],
+          "passportProjection": {
+            "situationJa": "最近の週末を二段階で話す",
+            "capabilityJa": "相手の新しい情報を次の Move に使った",
+            "evidenceStage": "supported",
+            "limitationJa": "authored choices で二つの Beat を進めた証拠。自由発話や長い会話の能力を認定しない。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "mid-autumn-2026-transfer",
+      "kind": "seasonal-transfer",
+      "titleJa": "2026年の中秋節へ転用する",
+      "sourceRefs": [
+        {
+          "id": "issue-459-seasonal-contract",
+          "kind": "product-authority",
+          "title": "Seasonal Conversation Calendar Contract v0.1",
+          "publisher": "Chabiko GitHub Issue #459",
+          "url": "https://github.com/nurockplayer/Chabiko/issues/459",
+          "retrievedAt": "2026-08-31",
+          "supports": "Annual occurrence, anticipation window, time zones, talkability, and source metadata",
+          "rights": { "allowedUse": "reference-only", "copiedText": false }
+        },
+        {
+          "id": "dgpa-2026-calendar",
+          "kind": "official-date",
+          "title": "中華民國一百一十五年政府行政機關辦公日曆表",
+          "publisher": "行政院人事行政總處",
+          "url": "https://www.dgpa.gov.tw/information?pid=12573&uid=41",
+          "retrievedAt": "2026-08-31",
+          "supports": "2026 Mid-Autumn Festival date and government-calendar scope",
+          "rights": { "allowedUse": "reference-only", "copiedText": false }
+        },
+        {
+          "id": "taiwan-tourism-traditional-festivals",
+          "kind": "official-cultural-reference",
+          "title": "Traditional Festivals: Mid-Autumn Festival",
+          "publisher": "Tourism Administration, Republic of China (Taiwan)",
+          "url": "https://eng.taiwan.net.tw/m1.aspx?sNo=0002020",
+          "retrievedAt": "2026-08-31",
+          "supports": "Reference support for mooncakes and a non-universal family-or-friends barbecue hook",
+          "rights": { "allowedUse": "reference-only", "copiedText": false }
+        }
+      ],
+      "review": {
+        "reviewStatus": "draft",
+        "contentOrigin": "ai-assisted-draft",
+        "dimensions": {
+          "traditionalMandarin": "not-reviewed",
+          "pinyin": "not-reviewed",
+          "japanese": "not-reviewed",
+          "socialPragmatics": "not-reviewed",
+          "seasonalClaims": "not-reviewed"
+        }
+      },
+      "seasonal": {
+        "definitionId": "mid-autumn-festival",
+        "occurrence": {
+          "year": 2026,
+          "startDate": "2026-09-25",
+          "endDate": "2026-09-25",
+          "eventTimeZone": "Asia/Taipei",
+          "displayTimeZone": "Asia/Tokyo",
+          "phase": "anticipation",
+          "visibleFrom": "2026-08-26",
+          "visibleUntil": "2026-09-25",
+          "dateStatus": "verified",
+          "sourceRefIds": ["dgpa-2026-calendar"]
+        },
+        "claims": [
+          {
+            "id": "mid-autumn-date-2026",
+            "claimJa": "2026年の中秋節は9月25日。",
+            "scopeNoteJa": "政府行政機関の暦が裏づける日付だけを扱い、すべての職場や学校の休暇が同じとは述べない。",
+            "sourceRefIds": ["dgpa-2026-calendar"]
+          },
+          {
+            "id": "mid-autumn-barbecue-varies",
+            "claimJa": "台湾では、中秋節に家族や友人とバーベキューをする人もいる。",
+            "scopeNoteJa": "過ごし方の一例であり、すべての人や家庭に共通する習慣とは述べない。",
+            "sourceRefIds": ["taiwan-tourism-traditional-festivals"]
+          }
+        ]
+      },
+      "encounters": [
+        {
+          "id": "mid-autumn-2026-medium",
+          "scale": "medium",
+          "capability": "KEEP_GOING",
+          "missionJa": "中秋節の予定を受け、自分の好みか経験を足して話を返す。分からない語は確認して会話へ戻る。",
+          "premiseJa": "2026年の中秋節前、クラスメートが休みの予定について話す。",
+          "participants": [
+            { "id": "learner", "role": "learner", "labelJa": "あなた" },
+            { "id": "yijun", "role": "partner", "labelJa": "台湾出身のクラスメート・怡君さん" }
+          ],
+          "relationship": { "familiarity": "acquaintance", "power": "peer" },
+          "settingJa": "2026年9月、授業後の共有スペース",
+          "targetMovePattern": ["REACT", "ADD", "INVITE"],
+          "challenge": {
+            "band": "beginner",
+            "cuePredictability": "beginner",
+            "responseFreedom": "beginner",
+            "initiativeBurden": "intermediate",
+            "listeningBurden": "intermediate",
+            "discourseBurden": "intermediate",
+            "repairBurden": "beginner",
+            "pragmaticBurden": "beginner",
+            "partnerVariability": "intermediate"
+          },
+          "depth": { "min": "D1", "max": "D4" },
+          "sensitivity": "contextual",
+          "start": { "beatId": "mid-autumn-opening" },
+          "replay": {
+            "modifierJa": "相手は行事にあまり関心がない。家族の話を押さず、好みか別の休み方へ移る。",
+            "start": { "beatId": "mid-autumn-low-interest-replay" }
+          },
+          "beats": [
+            {
+              "id": "mid-autumn-opening",
+              "kind": "conversation",
+              "opportunityJa": "相手の温度感を受け、自分の情報を一つ足して話す余地を返す。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "mid-autumn-family-plan",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "我還沒決定中秋節要不要回家。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ hái méi juédìng Zhōngqiū Jié yào bú yào huí jiā.",
+                    "japanese": "中秋節に実家へ帰るか、まだ決めていないんだ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "mid-autumn-share-preference",
+                  "labelJa": "迷っている気持ちを受け、自分の休み方を足して理由を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "還在考慮啊。我放假的時候也常常想在家休息。你是怕路上人太多嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hái zài kǎolǜ a. Wǒ fàngjià de shíhou yě chángcháng xiǎng zài jiā xiūxi. Nǐ shì pà lùshang rén tài duō ma?",
+                      "japanese": "まだ考え中なんだね。私も休みは家で休みたいことが多いよ。移動が混むのが心配？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "pragmatic-fit"],
+                    "decisiveMomentJa": "帰省を当然とせず、迷っている状態を受けたところ",
+                    "explanationJa": "家族行事を共通前提にせず、自分の休み方を足して理由を聞いた。",
+                    "nextMoveJa": "知らない語が出たら確認してから戻る。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-ask-social-plan",
+                  "labelJa": "迷っている状態を受け、自分の休み方を足して友人との予定を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "還沒決定啊。我放假的時候也會先看看有沒有朋友約我。最近有人約你嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Hái méi juédìng a. Wǒ fàngjià de shíhou yě huì xiān kànkan yǒu méiyǒu péngyou yuē wǒ. Zuìjìn yǒu rén yuē nǐ ma?",
+                      "japanese": "まだ決めていないんだね。私も休みはまず友達から誘いがあるか見てみるよ。最近、誰かに誘われた？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-detail" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "pragmatic-fit"],
+                    "decisiveMomentJa": "帰省の有無ではなく、まだ決めていない状態から予定の糸口を探したところ",
+                    "explanationJa": "家族行事を前提にせず、自分の休み方を足して友人との予定へ幅を残した。",
+                    "nextMoveJa": "相手が出した誘いの内容を拾う。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-assume-everyone",
+                  "labelJa": "全員が同じ祝い方をすると決めつける",
+                  "fit": "stall-prone",
+                  "movePattern": ["ANSWER", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "台灣人中秋節都一定回家吧？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Táiwān rén Zhōngqiū Jié dōu yídìng huí jiā ba?",
+                      "japanese": "台湾の人は中秋節にはみんな必ず実家に帰るんでしょう？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "也不一定，每個人不一樣。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Yě bù yídìng, měi ge rén bù yíyàng.",
+                      "japanese": "必ずとは限らないよ。人によって違うから。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "pragmatic-fit", "continuation"],
+                    "decisiveMomentJa": "個人差のある過ごし方を全員共通だと置いたところ",
+                    "explanationJa": "相手が迷っている情報を無視し、家庭や個人の違いを平らにした。",
+                    "nextMoveJa": "『あなたはどうする？』のように幅を残して聞く。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mid-autumn-detail",
+              "kind": "conversation",
+              "opportunityJa": "知らない語があれば分かったふりをせず、意味を確認して会話へ戻る。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "mid-autumn-barbecue-cue",
+                  "stance": "misunderstanding",
+                  "text": {
+                    "traditional": "對，而且我朋友問我要不要一起烤肉。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Duì, érqiě wǒ péngyou wèn wǒ yào bú yào yìqǐ kǎoròu.",
+                    "japanese": "そう。それに友達から一緒にバーベキューをしないか聞かれたんだ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "mid-autumn-repair-kaorou",
+                  "labelJa": "分からない語をそのまま確認する",
+                  "fit": "acceptable",
+                  "movePattern": ["REPAIR", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "等一下，「烤肉」是什麼意思？可以再說明一下嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Děng yíxià, ‘kǎoròu’ shì shénme yìsi? Kěyǐ zài shuōmíng yíxià ma?",
+                      "japanese": "ちょっと待って。「烤肉」ってどういう意味？もう少し説明してくれる？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "REPAIR", "beatId": "mid-autumn-repair-return" },
+                  "evidence": {
+                    "dimensions": ["contingency", "repair-resilience", "continuation"],
+                    "decisiveMomentJa": "知らない『烤肉』を流さなかったところ",
+                    "explanationJa": "理解できない部分を限定して確認したので、相手が説明して話題へ戻せる。",
+                    "nextMoveJa": "理解した合図を出し、自分の経験か質問へ戻る。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-react-to-choice",
+                  "labelJa": "相手の好みや誘いに反応し、自分の好みを足して聞き返す",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "聽起來不錯。我比較喜歡鹹的。你最期待吃什麼？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Tīng qǐlái búcuò. Wǒ bǐjiào xǐhuān xián de. Nǐ zuì qídài chī shénme?",
+                      "japanese": "よさそう。私はしょっぱいものが好き。何を食べるのが一番楽しみ？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我想吃朋友做的菜，大家一起吃比較有意思。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ xiǎng chī péngyou zuò de cài, dàjiā yìqǐ chī bǐjiào yǒuyìsi.",
+                      "japanese": "友達が作る料理を食べたい。みんなで食べるほうが楽しいから。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手の具体的な情報を使ったところ",
+                    "explanationJa": "自分の好みを足し、相手の内容を広げる問いを返した。",
+                    "nextMoveJa": "相手が出した範囲だけで理由を聞く。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-pretend-understanding",
+                  "labelJa": "分からない語を流し、関係のない質問へ移る",
+                  "fit": "stall-prone",
+                  "movePattern": ["INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "喔。那你放幾天假？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Ò. Nà nǐ fàng jǐ tiān jià?",
+                      "japanese": "そうなんだ。じゃあ何日休みなの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "你知道我剛剛說的意思嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Nǐ zhīdào wǒ gānggāng shuō de yìsi ma?",
+                      "japanese": "今言ったことの意味、分かっている？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "repair-resilience", "continuation"],
+                    "decisiveMomentJa": "分からない語を確認せず別の質問へ移ったところ",
+                    "explanationJa": "理解のずれが残り、共通理解が崩れた。",
+                    "nextMoveJa": "分からない部分を一語に絞って確認する。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mid-autumn-repair-return",
+              "kind": "repair-return",
+              "opportunityJa": "説明を受けた合図を出し、元の予定の話へ戻る。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "mid-autumn-repair-explanation",
+                  "stance": "repair-support",
+                  "text": {
+                    "traditional": "就是大家一起烤東西吃。有些人中秋節會跟家人或朋友烤肉。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Jiù shì dàjiā yìqǐ kǎo dōngxi chī. Yǒuxiē rén Zhōngqiū Jié huì gēn jiārén huò péngyou kǎoròu.",
+                    "japanese": "みんなで食べ物を焼いて食べることだよ。中秋節に家族や友達とバーベキューをする人もいる。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "mid-autumn-confirm-and-return",
+                  "labelJa": "理解したことを示し、自分の経験を足して予定へ戻る",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "原來是這樣。我在日本也跟朋友烤過東西。你想去嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Yuánlái shì zhèyàng. Wǒ zài Rìběn yě gēn péngyou kǎo guo dōngxi. Nǐ xiǎng qù ma?",
+                      "japanese": "そういうことなんだ。日本で私も友達と焼いたことがあるよ。行きたい？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "有一點想，聽起來應該很好玩。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Yǒu yìdiǎn xiǎng, tīng qǐlái yīnggāi hěn hǎowán.",
+                      "japanese": "少し行きたい。楽しそうだから。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["repair-resilience", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "理解した合図のあと元の誘いへ戻ったところ",
+                    "explanationJa": "確認だけで終わらず、経験を足して相手の予定へ戻った。",
+                    "nextMoveJa": "次は短い確認表現でも同じ戻り方を試す。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-confirm-and-ask-detail",
+                  "labelJa": "理解したことを示し、具体的な内容を聞いて戻る",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "懂了，謝謝。你們通常會烤什麼？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Dǒng le, xièxie. Nǐmen tōngcháng huì kǎo shénme?",
+                      "japanese": "分かった、ありがとう。普段は何を焼くの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "每次不一樣，這次朋友說想準備蔬菜和肉。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Měi cì bù yíyàng, zhè cì péngyou shuō xiǎng zhǔnbèi shūcài hé ròu.",
+                      "japanese": "毎回違うよ。今回は友達が野菜と肉を用意したいと言っている。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["repair-resilience", "contingency", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "理解を明示し、説明の内容を使ったところ",
+                    "explanationJa": "修復完了を伝え、説明に含まれた『焼く』を問いにした。",
+                    "nextMoveJa": "相手の答えから好みを一つ拾う。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mid-autumn-low-interest-replay",
+              "kind": "conversation",
+              "opportunityJa": "行事への関心が低いことを受け、家族の予定を押さず別の休み方へ広げる。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "mid-autumn-low-interest",
+                  "stance": "brief",
+                  "text": {
+                    "traditional": "中秋節我沒有特別的安排。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Zhōngqiū Jié wǒ méiyǒu tèbié de ānpái.",
+                    "japanese": "中秋節は特に予定がないよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "mid-autumn-offer-an-angle",
+                  "labelJa": "予定がないことを受け、自分の興味を足して食べ物の話題を提案する",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "這樣也很輕鬆。我想找月餅吃吃看。你有喜歡的口味嗎？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Zhèyàng yě hěn qīngsōng. Wǒ xiǎng zhǎo yuèbǐng chīchi kàn. Nǐ yǒu xǐhuān de kǒuwèi ma?",
+                      "japanese": "それも気楽でいいね。私は月餅を食べてみたい。好きな味はある？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": { "kind": "beat", "outcome": "CONTINUE", "beatId": "mid-autumn-mooncake-detail" },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "予定がないことを否定せず別の糸口を出したところ",
+                    "explanationJa": "行事参加を求めず、自分の興味を共有して答えやすい話題を提案した。",
+                    "nextMoveJa": "相手の好みを拾い、自分の好みと比べる。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-share-quiet-holiday",
+                  "labelJa": "予定がないことを受け、自分の休み方を足して過ごし方を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "沒有安排也不錯。我放假的時候喜歡在附近散步。你想在家休息，還是出去走走？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Méiyǒu ānpái yě búcuò. Wǒ fàngjià de shíhou xǐhuān zài fùjìn sànbù. Nǐ xiǎng zài jiā xiūxi, háishì chūqù zǒuzou?",
+                      "japanese": "予定がないのもいいね。私は休みの日に近所を散歩するのが好き。家で休む？それとも出かける？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "可能會在家休息，也可能去附近走走。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Kěnéng huì zài jiā xiūxi, yě kěnéng qù fùjìn zǒuzou.",
+                      "japanese": "家で休むかもしれないし、近所を歩くかもしれない。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "pragmatic-fit"],
+                    "decisiveMomentJa": "特別な予定がない状態を肯定して自分の例を足したところ",
+                    "explanationJa": "家族行事を前提にせず、相手が選べる身近な過ごし方を聞いた。",
+                    "nextMoveJa": "相手が選んだ過ごし方を一つ拾う。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-push-family-plan",
+                  "labelJa": "予定がない相手に家族行事を押しつける",
+                  "fit": "stall-prone",
+                  "movePattern": ["INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "你為什麼不回家跟家人一起過？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Nǐ wèishénme bù huí jiā gēn jiārén yìqǐ guò?",
+                      "japanese": "どうして実家に帰って家族と過ごさないの？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "每個人的情況不一樣。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Měi ge rén de qíngkuàng bù yíyàng.",
+                      "japanese": "事情は人それぞれだよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "pragmatic-fit", "continuation"],
+                    "decisiveMomentJa": "予定がないという温度感を受けず、家族と過ごす前提を置いたところ",
+                    "explanationJa": "相手の事情に幅を残さず、答えにくい家族の理由へ踏み込んだ。",
+                    "nextMoveJa": "予定がないことをそのまま受け、好みか休み方へ移る。"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mid-autumn-mooncake-detail",
+              "kind": "conversation",
+              "opportunityJa": "月餅の好みを受け、自分の好みか知識の範囲を足して話を広げる。",
+              "targetMovePattern": ["REACT", "ADD", "INVITE"],
+              "partnerCue": {
+                  "id": "mid-autumn-mooncake-cue",
+                  "stance": "cooperative",
+                  "text": {
+                    "traditional": "我喜歡蛋黃酥，不過每個人的口味差很多。",
+                    "simplifiedStatus": "unavailable",
+                    "pinyin": "Wǒ xǐhuān dànhuángsū, búguò měi ge rén de kǒuwèi chà hěn duō.",
+                    "japanese": "私は蛋黃酥が好き。でも好みは人によってかなり違うよ。",
+                    "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                  }
+              },
+              "strategies": [
+                {
+                  "id": "mid-autumn-mooncake-compare-preference",
+                  "labelJa": "相手の好みを受け、自分の好みを足して理由を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "蛋黃酥啊。我比較喜歡紅豆餡。你喜歡蛋黃酥的哪一點？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Dànhuángsū a. Wǒ bǐjiào xǐhuān hóngdòu xiàn. Nǐ xǐhuān dànhuángsū de nǎ yìdiǎn?",
+                      "japanese": "蛋黃酥なんだね。私は小豆あんのほうが好き。蛋黃酥のどんなところが好き？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "我喜歡甜甜鹹鹹的味道。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Wǒ xǐhuān tiántián xiánxián de wèidào.",
+                      "japanese": "甘さと塩気が合わさった味が好き。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "相手が出した蛋黃酥に自分の好みを並べたところ",
+                    "explanationJa": "好みの違いを優劣にせず、相手が好きな理由へ広げた。",
+                    "nextMoveJa": "味の説明に含まれる要素を一つ拾う。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-mooncake-ask-recommendation",
+                  "labelJa": "好みが分かれることを受け、自分の知識の範囲を示して推薦を聞く",
+                  "fit": "acceptable",
+                  "movePattern": ["REACT", "ADD", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "原來每個人不一樣。我還不太了解月餅。你會推薦哪一種？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Yuánlái měi ge rén bù yíyàng. Wǒ hái bú tài liǎojiě yuèbǐng. Nǐ huì tuījiàn nǎ yì zhǒng?",
+                      "japanese": "人によって違うんだね。私はまだ月餅に詳しくない。どれをすすめる？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "CONTINUE",
+                    "partnerReply": {
+                      "traditional": "如果你喜歡甜一點的，可以先試紅豆口味。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Rúguǒ nǐ xǐhuān tián yìdiǎn de, kěyǐ xiān shì hóngdòu kǒuwèi.",
+                      "japanese": "少し甘いものが好きなら、まず小豆味を試すといいよ。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "contribution", "reciprocity", "continuation"],
+                    "decisiveMomentJa": "好みが人によるという言葉を受け、自分の知識の範囲を示したところ",
+                    "explanationJa": "知っているふりをせず、相手が答えやすい個人的な推薦を聞いた。",
+                    "nextMoveJa": "推薦された味に自分の好みを返す。"
+                  }
+                },
+                {
+                  "id": "mid-autumn-mooncake-generalize",
+                  "labelJa": "一人の好みを台湾全体の好みとして決めつける",
+                  "fit": "stall-prone",
+                  "movePattern": ["ANSWER", "INVITE"],
+                  "realizations": [
+                    {
+                      "traditional": "所以台灣人都喜歡蛋黃酥吧？",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Suǒyǐ Táiwān rén dōu xǐhuān dànhuángsū ba?",
+                      "japanese": "つまり台湾の人はみんな蛋黃酥が好きなんでしょう？",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  ],
+                  "branch": {
+                    "kind": "terminal",
+                    "outcome": "STALL",
+                    "partnerReply": {
+                      "traditional": "不一定，我剛剛說每個人的口味不一樣。",
+                      "simplifiedStatus": "unavailable",
+                      "pinyin": "Bù yídìng, wǒ gānggāng shuō měi ge rén de kǒuwèi bù yíyàng.",
+                      "japanese": "そうとは限らないよ。さっき好みは人によって違うと言ったでしょう。",
+                      "provenance": { "traditional": "generated", "pinyin": "generated", "japanese": "generated" }
+                    }
+                  },
+                  "evidence": {
+                    "dimensions": ["contingency", "pragmatic-fit", "continuation"],
+                    "decisiveMomentJa": "相手が示した個人差を無視して全体へ広げたところ",
+                    "explanationJa": "一人の好みを全員に一般化し、直前の注意も拾わなかった。",
+                    "nextMoveJa": "相手自身の好みとして理由かおすすめを聞く。"
+                  }
+                }
+              ]
+            }
+          ],
+          "passportProjection": {
+            "situationJa": "中秋節前の予定と食べ物の雑談",
+            "capabilityJa": "KEEP_GOING を季節の話へ移し、一度の理解トラブルから戻った",
+            "evidenceStage": "supported",
+            "limitationJa": "2026年の一つの authored seasonal context と選択肢に基づく。文化理解や自由発話の認定ではない。"
+          }
+        }
+      ]
+    }
+  ]
+}
