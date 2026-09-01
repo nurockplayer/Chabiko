@@ -22,6 +22,7 @@ from scripts.teacher_phrase_promotion import (
     build_empty_projection,
     compute_review_version,
     serialize_projection,
+    validate_promoted_projection,
 )
 from scripts.teacher_phrase_sidecar import build_sidecar
 
@@ -348,6 +349,13 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             projection["base"]["workbookSha256"],
             self.sidecar["base"]["workbookSha256"],
         )
+
+    def test_projection_rejects_boolean_sidecar_schema_version(self) -> None:
+        projection = build_empty_projection(self.manifest)
+        projection["base"]["sidecarSchemaVersion"] = True
+
+        with self.assertRaisesRegex(ContractError, "sidecar schema"):
+            validate_promoted_projection(projection, self.manifest)
 
     def test_canonical_cli_writes_checks_and_preserves_dirty_neighbors(self) -> None:
         manifest_path = self.root / "learner-manifest.json"

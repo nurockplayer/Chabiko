@@ -407,7 +407,11 @@ def validate_promoted_projection(
         },
         "promoted projection base keys are invalid",
     )
-    _require(base.get("sidecarSchemaVersion") == 1, "promoted projection sidecar schema is unsupported")
+    _require(
+        type(base.get("sidecarSchemaVersion")) is int
+        and base.get("sidecarSchemaVersion") == 1,
+        "promoted projection sidecar schema is unsupported",
+    )
     _require(base.get("sidecarContractId") == SIDECAR_CONTRACT_ID, "promoted projection sidecar contract is unsupported")
     sidecar_digest = base.get("sidecarSha256")
     _require(
