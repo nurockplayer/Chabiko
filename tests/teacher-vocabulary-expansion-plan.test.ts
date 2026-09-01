@@ -67,8 +67,20 @@ describe('teacher-core-v1-expansion-plan.json', () => {
         'sourceChecksumSha256',
         'sourceFile',
         'sourceId',
+        'teacherPhraseAuthoring',
         'version',
       ]);
+    });
+
+    it('routes the phrase source column to the authoring-only sidecar workflow', () => {
+      expect(planJson.teacherPhraseAuthoring).toEqual({
+        authoringOnly: true,
+        rawSourceWorkflow: 'scripts/build-teacher-phrase-sidecar.md',
+        sourceColumn: '造词/造句',
+      });
+      for (const columns of Object.values(planJson.inventory.ignoredColumnsBySheet) as string[][]) {
+        expect(columns).not.toContain('造词/造句');
+      }
     });
 
     it('inventory has exactly the expected keys', () => {

@@ -4,6 +4,11 @@
   "sourceFile": "单词表(带图).xlsx",
   "sourceChecksumSha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37",
   "generatedFromImporter": "scripts/import-teacher-vocabulary-xlsx.py",
+  "teacherPhraseAuthoring": {
+    "authoringOnly": true,
+    "rawSourceWorkflow": "scripts/build-teacher-phrase-sidecar.md",
+    "sourceColumn": "造词/造句"
+  },
   "inventory": {
     "totalCandidateRows": 1865,
     "acceptedRows": 20,
@@ -24,43 +29,36 @@
     ],
     "ignoredColumnsBySheet": {
       "名词1": [
-        "造词/造句",
         "日文字",
         "备注",
         "名词"
       ],
       "动词1": [
-        "造词/造句",
         "日文字",
         "备注",
         "动词"
       ],
       "形容词1": [
-        "造词/造句",
         "日文字",
         "备注",
         "形容词"
       ],
       "副词": [
-        "造词/造句",
         "日文字",
         "备注",
         "副词"
       ],
       "名词2": [
-        "造词/造句",
         "日文字",
         "备注",
         "名词"
       ],
       "形容词2": [
-        "造词/造句",
         "日文字",
         "备注",
         "形容词"
       ],
       "动词2": [
-        "造词/造句",
         "日文字",
         "备注",
         "动词"

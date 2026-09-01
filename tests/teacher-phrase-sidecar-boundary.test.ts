@@ -65,5 +65,31 @@ describe('teacher phrase authoring sidecar boundary (#478)', () => {
 
     const contentGate = readFileSync(join(REPO_ROOT, 'scripts/validate-content.sh'), 'utf8');
     expect(contentGate).toContain('build-teacher-phrase-sidecar.py --test');
+
+    const expansionPlan = JSON.parse(
+      readFileSync(join(REPO_ROOT, 'docs/content/teacher-core-v1-expansion-plan.json'), 'utf8'),
+    ) as {
+      inventory: { ignoredColumnsBySheet: Record<string, string[]> };
+      teacherPhraseAuthoring: {
+        authoringOnly: boolean;
+        rawSourceWorkflow: string;
+        sourceColumn: string;
+      };
+    };
+    for (const ignoredColumns of Object.values(expansionPlan.inventory.ignoredColumnsBySheet)) {
+      expect(ignoredColumns).not.toContain('造词/造句');
+    }
+    expect(expansionPlan.teacherPhraseAuthoring).toEqual({
+      authoringOnly: true,
+      rawSourceWorkflow: 'scripts/build-teacher-phrase-sidecar.md',
+      sourceColumn: '造词/造句',
+    });
+
+    const expansionPlanDocumentation = readFileSync(
+      join(REPO_ROOT, 'docs/content/teacher-core-v1-expansion-plan.md'),
+      'utf8',
+    );
+    expect(expansionPlanDocumentation).toContain('scripts/build-teacher-phrase-sidecar.md');
+    expect(expansionPlanDocumentation).toContain('raw logical value');
   });
 });
