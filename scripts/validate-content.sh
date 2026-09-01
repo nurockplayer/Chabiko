@@ -24,7 +24,8 @@ uv run --locked python scripts/build-teacher-learner-manifest.py --test
 uv run --locked python scripts/build-teacher-phrase-sidecar.py --test
 
 # Teacher phrase promotion: prove the exact human gate and require the
-# repository-owned learner projection to match the current manifest base.
+# repository-owned learner projection to be canonical and match the current
+# manifest/workbook base without erasing future non-empty promoted records.
 uv run --locked python scripts/build-teacher-phrase-projection.py --test
 uv run --locked python scripts/build-teacher-phrase-projection.py --check
 

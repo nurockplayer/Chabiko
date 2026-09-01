@@ -16,6 +16,7 @@ from teacher_phrase_promotion import (
     build_empty_projection,
     build_promoted_projection,
     serialize_projection,
+    validate_promoted_projection,
 )
 
 
@@ -53,9 +54,16 @@ def main() -> int:
     parser.add_argument("--sidecar", type=Path)
     parser.add_argument("--review", type=Path)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--initialize-empty",
+        action="store_true",
+        help="allow --write to create the initial empty projection without authoring inputs",
+    )
     args = parser.parse_args()
 
     if args.test:
+        if args.initialize_empty:
+            parser.error("--initialize-empty is only valid with --write")
         return run_self_test()
 
     authoring_inputs = (args.workbook, args.sidecar, args.review)
@@ -63,18 +71,33 @@ def main() -> int:
         value is not None for value in authoring_inputs
     ):
         parser.error("--workbook, --sidecar, and --review must be supplied together")
+    has_authoring_inputs = all(value is not None for value in authoring_inputs)
+    if args.initialize_empty and (not args.write or has_authoring_inputs):
+        parser.error("--initialize-empty is only valid with no-input --write")
 
     try:
         manifest = read_json_object(args.manifest)
-        if all(value is not None for value in authoring_inputs):
+        if args.check and not has_authoring_inputs:
+            projection = read_json_object(args.output)
+            validate_promoted_projection(projection, manifest)
+            if args.output.read_bytes() != serialize_projection(projection):
+                raise ContractError(f"promoted projection is not canonical: {args.output}")
+            print(f"Teacher phrase projection is valid: {len(projection['records'])} records")
+            return 0
+        if has_authoring_inputs:
             projection = build_promoted_projection(
                 manifest,
                 read_json_object(args.sidecar),
                 read_json_object(args.review),
                 args.workbook,
             )
-        else:
+        elif args.initialize_empty:
             projection = build_empty_projection(manifest)
+        else:
+            raise ContractError(
+                "no-input --write is unsafe; use --initialize-empty for first creation "
+                "or supply --workbook, --sidecar, and --review"
+            )
         expected = serialize_projection(projection)
         if args.check:
             if not args.output.is_file() or args.output.read_bytes() != expected:

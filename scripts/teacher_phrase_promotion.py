@@ -48,6 +48,7 @@ REQUIRED_REVIEW_ROLES = (
 REVIEW_OUTCOMES = frozenset({"accepted", "needs-changes", "rejected", "not-reviewed"})
 LEARNER_FIELDS = ("simplified", "traditional", "pinyin", "japanese")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+PHRASE_ID_PATTERN = re.compile(r"teacher-phrase-v1-[0-9a-f]{64}")
 SOURCE_REVISION_PATTERN = re.compile(r"teacher-phrase-source-v1-[0-9a-f]{64}")
 
 
@@ -348,6 +349,133 @@ def build_empty_projection(manifest: dict[str, Any]) -> dict[str, Any]:
         },
         "records": [],
     }
+
+
+def validate_promoted_projection(
+    projection: dict[str, Any],
+    manifest: dict[str, Any],
+) -> None:
+    """Validate a committed projection without reading authoring evidence.
+
+    CI can validate the repository-owned artifact's exact shape and current
+    learner-manifest base. Rebuilding non-empty records still requires the
+    rights-governed workbook, validated sidecar, and human review artifact.
+    """
+    _require(
+        set(projection) == {"schemaVersion", "contractId", "base", "records"},
+        "promoted projection root keys are invalid",
+    )
+    _require(
+        type(projection.get("schemaVersion")) is int
+        and projection.get("schemaVersion") == 1
+        and projection.get("contractId") == PROJECTION_CONTRACT_ID,
+        "unsupported promoted projection contract",
+    )
+    base = projection.get("base")
+    _require(isinstance(base, dict), "promoted projection base must be an object")
+    _require(
+        set(base)
+        == {
+            "sidecarSchemaVersion",
+            "sidecarContractId",
+            "sidecarSha256",
+            "learnerManifestSemanticSha256",
+            "workbookSha256",
+        },
+        "promoted projection base keys are invalid",
+    )
+    _require(base.get("sidecarSchemaVersion") == 1, "promoted projection sidecar schema is unsupported")
+    _require(base.get("sidecarContractId") == SIDECAR_CONTRACT_ID, "promoted projection sidecar contract is unsupported")
+    sidecar_digest = base.get("sidecarSha256")
+    _require(
+        sidecar_digest is None
+        or (isinstance(sidecar_digest, str) and SHA256_PATTERN.fullmatch(sidecar_digest)),
+        "promoted projection sidecar digest is malformed",
+    )
+    _require(
+        base.get("learnerManifestSemanticSha256") == manifest_semantic_sha256(manifest),
+        "promoted projection learner manifest base is stale",
+    )
+    workbook_sha256 = base.get("workbookSha256")
+    _require(isinstance(workbook_sha256, str), "promoted projection workbook digest is malformed")
+    validate_manifest_workbook_digest(manifest, workbook_sha256)
+
+    manifest_rows = manifest.get("rows")
+    _require(isinstance(manifest_rows, list), "learner manifest rows must be an array")
+    manifest_index: dict[str, int] = {}
+    manifest_by_id: dict[str, dict[str, Any]] = {}
+    for index, row in enumerate(manifest_rows):
+        _require(isinstance(row, dict) and _is_non_empty_text(row.get("learnerId")), "learner manifest row needs a learner ID")
+        learner_id = row["learnerId"]
+        _require(learner_id not in manifest_by_id, f"learner manifest has duplicate learner ID '{learner_id}'")
+        manifest_index[learner_id] = index
+        manifest_by_id[learner_id] = row
+
+    records = projection.get("records")
+    _require(isinstance(records, list), "promoted projection records must be an array")
+    _require(not records or sidecar_digest is not None, "non-empty promoted projection needs a sidecar digest")
+    seen_learners: set[str] = set()
+    seen_phrases: set[str] = set()
+    previous_manifest_index = -1
+    for record_index, record in enumerate(records):
+        label = f"promoted projection record {record_index}"
+        _require(isinstance(record, dict), f"{label} must be an object")
+        _require(
+            set(record) == {"learnerId", "source", "reviewVersion", "teacherPhrases"},
+            f"{label} keys are invalid",
+        )
+        learner_id = record.get("learnerId")
+        _require(isinstance(learner_id, str) and learner_id in manifest_by_id, f"{label} has unknown learner ID")
+        _require(learner_id not in seen_learners, f"{label} has duplicate learner ID '{learner_id}'")
+        seen_learners.add(learner_id)
+        current_manifest_index = manifest_index[learner_id]
+        _require(current_manifest_index > previous_manifest_index, f"{label} is not in learner manifest order")
+        previous_manifest_index = current_manifest_index
+
+        source = record.get("source")
+        _require(isinstance(source, dict), f"{label} source must be an object")
+        _require(set(source) == {"sheet", "row", "column", "sourceRevision"}, f"{label} source keys are invalid")
+        manifest_row = manifest_by_id[learner_id]
+        _require(
+            source.get("sheet") == manifest_row.get("sourceSheet")
+            and source.get("row") == manifest_row.get("sourceRow")
+            and source.get("column") == "造词/造句",
+            f"{label} source coordinate is stale",
+        )
+        _require(
+            isinstance(source.get("sourceRevision"), str)
+            and SOURCE_REVISION_PATTERN.fullmatch(source["sourceRevision"]),
+            f"{label} sourceRevision is malformed",
+        )
+        _require(
+            isinstance(record.get("reviewVersion"), str)
+            and SHA256_PATTERN.fullmatch(record["reviewVersion"]),
+            f"{label} reviewVersion is malformed",
+        )
+
+        phrases = record.get("teacherPhrases")
+        _require(isinstance(phrases, list) and phrases, f"{label} teacherPhrases must be non-empty")
+        for phrase_index, phrase in enumerate(phrases):
+            phrase_label = f"{label} phrase {phrase_index}"
+            _require(isinstance(phrase, dict), f"{phrase_label} must be an object")
+            expected_keys = {"phraseId", "simplified", "pinyin", "japanese"}
+            if "traditional" in phrase:
+                expected_keys.add("traditional")
+            _require(set(phrase) == expected_keys, f"{phrase_label} keys are invalid")
+            phrase_id_value = phrase.get("phraseId")
+            _require(
+                isinstance(phrase_id_value, str)
+                and PHRASE_ID_PATTERN.fullmatch(phrase_id_value),
+                f"{phrase_label} phraseId is malformed",
+            )
+            _require(phrase_id_value not in seen_phrases, f"{phrase_label} has duplicate phraseId")
+            seen_phrases.add(phrase_id_value)
+            _require(
+                all(_is_non_empty_text(phrase.get(field)) for field in ("simplified", "pinyin", "japanese")),
+                f"{phrase_label} has an empty required learner field",
+            )
+            if "traditional" in phrase:
+                _require(_is_non_empty_text(phrase["traditional"]), f"{phrase_label} traditional must be non-empty")
 
 
 def build_promoted_projection(

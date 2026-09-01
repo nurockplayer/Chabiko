@@ -10,7 +10,8 @@ The committed production projection starts empty because the repository has
 no exact human-approved teacher phrase cells yet:
 
 ```bash
-uv run --locked python scripts/build-teacher-phrase-projection.py --write
+uv run --locked python scripts/build-teacher-phrase-projection.py \
+  --write --initialize-empty
 uv run --locked python scripts/build-teacher-phrase-projection.py --check
 ```
 
@@ -25,7 +26,11 @@ uv run --locked python scripts/build-teacher-phrase-projection.py \
   --write
 ```
 
-Use `--check` with the same inputs to prove byte identity. `--write` is atomic
+The no-input `--check` validates the committed artifact's canonical bytes,
+shape, and current learner-manifest/workbook base without reconstructing or
+emptying promoted records. Use `--check` with all three authoring inputs to
+prove full byte identity after a promotion. No-input `--write` is rejected;
+`--initialize-empty` is reserved for first creation only. `--write` is atomic
 and owns only `data/teacher-vocabulary-preview/teacher-phrase-promoted.json`;
 it never deletes neighboring files. `--test` runs the repository-safe contract
 self-test without the external workbook.

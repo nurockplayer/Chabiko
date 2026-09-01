@@ -311,11 +311,29 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             str(output_path),
         ]
 
-        subprocess.run([*command, "--write"], cwd=REPO_ROOT, check=True)
+        subprocess.run(
+            [*command, "--write", "--initialize-empty"],
+            cwd=REPO_ROOT,
+            check=True,
+        )
         expected = serialize_projection(build_empty_projection(self.manifest))
         self.assertEqual(output_path.read_bytes(), expected)
         self.assertEqual(neighbor.read_text(encoding="utf-8"), "owned by another writer\n")
         subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
+
+        promoted = serialize_projection(self.build())
+        output_path.write_bytes(promoted)
+        subprocess.run([*command, "--check"], cwd=REPO_ROOT, check=True)
+        unsafe_write = subprocess.run(
+            [*command, "--write"],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(unsafe_write.returncode, 0)
+        self.assertIn("initialize-empty", unsafe_write.stderr)
+        self.assertEqual(output_path.read_bytes(), promoted)
 
         output_path.write_text("{}\n", encoding="utf-8")
         drift = subprocess.run(
@@ -326,7 +344,7 @@ class TeacherPhrasePromotionTests(unittest.TestCase):
             text=True,
         )
         self.assertNotEqual(drift.returncode, 0)
-        self.assertIn("not current", drift.stderr)
+        self.assertIn("failed", drift.stderr)
 
 
 if __name__ == "__main__":
