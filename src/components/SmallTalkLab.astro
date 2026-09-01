@@ -1,0 +1,125 @@
+<div class="small-talk-lab" data-small-talk-lab-root>
+  <p class="small-talk-lab__eyebrow">SMALL TALK LAB v0</p>
+
+  <section class="small-talk-mission" data-small-talk-mission aria-labelledby="small-talk-mission-heading">
+    <p class="small-talk-mission__kicker">MISSION</p>
+    <h1 id="small-talk-mission-heading" data-small-talk-heading tabindex="-1"></h1>
+    <p class="small-talk-mission__lead" data-small-talk-mission-copy></p>
+    <div class="small-talk-mission__brief">
+      <p><strong>場面</strong><span data-small-talk-premise></span></p>
+      <p><strong>場所</strong><span data-small-talk-setting></span></p>
+    </div>
+    <button class="small-talk-action small-talk-action--primary" type="button" data-small-talk-start>
+      会話を始める
+    </button>
+  </section>
+
+  <section class="small-talk-encounter" data-small-talk-encounter hidden aria-labelledby="small-talk-encounter-heading">
+    <header class="small-talk-encounter__header">
+      <p class="small-talk-mission__kicker" data-small-talk-stage></p>
+      <p class="small-talk-encounter__progress" data-small-talk-progress></p>
+    </header>
+    <h2 id="small-talk-encounter-heading" data-small-talk-encounter-heading tabindex="-1"></h2>
+
+    <div class="small-talk-cue" data-small-talk-cue>
+      <p class="small-talk-cue__speaker">相手</p>
+      <p class="small-talk-cue__zh" data-small-talk-cue-zh lang="zh-Hant"></p>
+      <p class="small-talk-cue__pinyin" data-small-talk-cue-pinyin lang="zh-Latn"></p>
+      <p class="small-talk-cue__ja" data-small-talk-cue-ja lang="ja"></p>
+    </div>
+    <p class="small-talk-private-response" data-small-talk-private-response>
+      選ぶ前に、自分ならどう返すかを声に出すか、頭の中で一度考えてみましょう。録音も採点もしません。
+    </p>
+    <p class="small-talk-opportunity" data-small-talk-opportunity></p>
+    <div class="small-talk-strategies" data-small-talk-strategies role="group" aria-label="会話の進め方"></div>
+  </section>
+
+  <section class="small-talk-complete" data-small-talk-complete hidden aria-labelledby="small-talk-complete-heading">
+    <p class="small-talk-mission__kicker">EVIDENCE RECAP</p>
+    <h2 id="small-talk-complete-heading" data-small-talk-complete-heading tabindex="-1">会話の証拠を振り返る</h2>
+    <div class="small-talk-terminal">
+      <p class="small-talk-cue__speaker">相手の返事</p>
+      <p class="small-talk-cue__zh" data-small-talk-terminal-zh lang="zh-Hant"></p>
+      <p class="small-talk-cue__pinyin" data-small-talk-terminal-pinyin lang="zh-Latn"></p>
+      <p class="small-talk-cue__ja" data-small-talk-terminal-ja lang="ja"></p>
+    </div>
+    <ol class="small-talk-evidence-list" data-small-talk-evidence></ol>
+    <div class="small-talk-passport" data-small-talk-passport></div>
+    <div class="small-talk-actions">
+      <button class="small-talk-action small-talk-action--primary" type="button" data-small-talk-replay hidden>
+        条件を変えてもう一度
+      </button>
+      <button class="small-talk-action small-talk-action--primary" type="button" data-small-talk-transfer hidden>
+        中秋節の場面へ転用する
+      </button>
+    </div>
+  </section>
+
+  <div class="small-talk-footer-actions">
+    <button class="small-talk-action small-talk-action--secondary" type="button" data-small-talk-reset hidden>
+      最初からやり直す
+    </button>
+  </div>
+  <p class="small-talk-status" data-small-talk-status role="status" aria-live="polite" aria-atomic="true"></p>
+</div>
+
+<style>
+  .small-talk-lab { width: 100%; min-width: 0; }
+  .small-talk-lab__eyebrow, .small-talk-mission__kicker { margin: 0; color: var(--coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.14em; }
+  .small-talk-lab__eyebrow { padding-bottom: var(--sp-4); border-bottom: 1px solid var(--hairline-strong); }
+  .small-talk-mission, .small-talk-encounter, .small-talk-complete { padding-top: var(--sp-8); }
+  h1, h2, h3 { overflow-wrap: anywhere; }
+  h1, h2 { margin: var(--sp-2) 0 0; font-family: var(--font-serif-ja); font-size: clamp(1.75rem, 7vw, 2.35rem); line-height: 1.35; }
+  .small-talk-mission__lead { margin: var(--sp-4) 0 0; color: var(--ink-secondary); font-size: 1rem; line-height: 1.9; }
+  .small-talk-mission__brief { display: grid; gap: var(--sp-3); margin-top: var(--sp-6); padding: var(--sp-5); border-radius: var(--radius-content); background: var(--paper-deep); }
+  .small-talk-mission__brief p { display: grid; gap: var(--sp-1); margin: 0; color: var(--ink-secondary); line-height: 1.75; }
+  .small-talk-mission__brief strong { color: var(--ink); font-size: 0.75rem; }
+  .small-talk-action { min-height: 44px; padding: var(--sp-2) var(--sp-5); border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); font: inherit; font-weight: 700; cursor: pointer; }
+  .small-talk-mission > .small-talk-action { margin-top: var(--sp-6); }
+  .small-talk-action--primary { border-color: var(--jade); background: var(--jade); color: var(--color-on-primary); }
+  .small-talk-action--primary:hover { background: var(--jade-ink); }
+  .small-talk-action--secondary { background: var(--paper); color: var(--ink); }
+  .small-talk-action--secondary:hover { border-color: var(--jade); background: var(--jade-soft); }
+  .small-talk-action:active, :global(.small-talk-strategy:active) { transform: translateY(1px); }
+  .small-talk-encounter__header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-4); }
+  .small-talk-encounter__progress { flex: 0 0 auto; margin: 0; color: var(--ink-secondary); font-size: 0.75rem; }
+  .small-talk-encounter h2 { max-width: 38rem; font-size: clamp(1.3rem, 5vw, 1.75rem); }
+  .small-talk-cue { margin-top: var(--sp-8); padding: var(--sp-5) 0; border-top: 2px solid var(--coral); border-bottom: 1px solid var(--hairline); }
+  .small-talk-cue__speaker { margin: 0 0 var(--sp-2); color: var(--coral-deep); font-size: 0.75rem; font-weight: 700; }
+  .small-talk-cue__zh { margin: 0; font-family: var(--font-serif-zh); font-size: clamp(1.45rem, 7vw, 2rem); font-weight: 700; line-height: 1.55; overflow-wrap: anywhere; }
+  .small-talk-cue__pinyin, .small-talk-cue__ja { margin: var(--sp-2) 0 0; color: var(--ink-secondary); line-height: 1.7; overflow-wrap: anywhere; }
+  .small-talk-cue__pinyin { font-size: 0.875rem; }
+  .small-talk-cue__ja { font-size: 0.8125rem; }
+  .small-talk-private-response { margin: var(--sp-5) 0 0; padding-left: var(--sp-3); border-left: 3px solid var(--jade); color: var(--ink); font-size: 0.875rem; line-height: 1.75; }
+  .small-talk-opportunity { margin: var(--sp-4) 0 var(--sp-3); color: var(--ink-secondary); line-height: 1.8; }
+  .small-talk-strategies { display: grid; gap: var(--sp-3); }
+  :global(.small-talk-strategy) { display: grid; gap: var(--sp-2); width: 100%; min-height: 48px; padding: var(--sp-4); border: 1px solid var(--hairline-strong); border-radius: var(--radius-control); background: var(--paper); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+  :global(.small-talk-strategy:hover) { border-color: var(--jade); background: var(--jade-soft); }
+  :global(.small-talk-strategy:focus-visible) { outline-width: 3px; }
+  :global(.small-talk-strategy__label) { font-weight: 700; line-height: 1.65; }
+  :global(.small-talk-strategy__example-label) { color: var(--coral-deep); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; }
+  :global(.small-talk-strategy:hover .small-talk-strategy__example-label) { color: var(--ink); }
+  :global(.small-talk-strategy__zh) { font-family: var(--font-serif-zh); font-size: 1.05rem; line-height: 1.6; overflow-wrap: anywhere; }
+  :global(.small-talk-strategy__pinyin) { color: var(--ink-secondary); font-size: 0.75rem; line-height: 1.65; overflow-wrap: anywhere; }
+  .small-talk-terminal { margin-top: var(--sp-6); padding: var(--sp-4); border-left: 3px solid var(--coral); border-radius: 0 var(--radius-content) var(--radius-content) 0; background: var(--coral-soft); }
+  .small-talk-terminal .small-talk-cue__speaker { color: var(--ink); }
+  .small-talk-evidence-list { margin: var(--sp-8) 0 0; padding: 0; list-style: none; }
+  :global(.small-talk-evidence) { display: grid; gap: var(--sp-2); padding: var(--sp-4) 0; border-bottom: 1px solid var(--hairline); }
+  :global(.small-talk-evidence:first-child) { border-top: 1px solid var(--hairline); }
+  :global(.small-talk-evidence__moment) { font-weight: 700; }
+  :global(.small-talk-evidence__explanation), :global(.small-talk-evidence__next) { color: var(--ink-secondary); font-size: 0.875rem; line-height: 1.75; }
+  .small-talk-passport { margin-top: var(--sp-8); padding: var(--sp-5); border-radius: var(--radius-content); background: var(--jade-soft); }
+  .small-talk-passport :global(h3) { margin: 0; font-family: var(--font-serif-ja); font-size: 1.2rem; }
+  .small-talk-passport :global(p) { margin: var(--sp-3) 0 0; color: var(--ink-secondary); line-height: 1.75; }
+  .small-talk-passport :global(dl) { display: grid; grid-template-columns: minmax(5rem, auto) 1fr; gap: var(--sp-2) var(--sp-4); margin: var(--sp-4) 0 0; }
+  .small-talk-passport :global(dt) { font-size: 0.75rem; font-weight: 700; }
+  .small-talk-passport :global(dd) { min-width: 0; margin: 0; color: var(--ink-secondary); line-height: 1.7; overflow-wrap: anywhere; }
+  .small-talk-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-6); }
+  .small-talk-footer-actions { margin-top: var(--sp-8); padding-top: var(--sp-5); border-top: 1px solid var(--hairline); }
+  .small-talk-status { min-height: 1.5rem; margin: var(--sp-4) 0 0; color: var(--jade-ink); font-size: 0.8125rem; line-height: 1.7; }
+  @media (max-width: 374px) {
+    .small-talk-passport :global(dl) { grid-template-columns: 1fr; gap: var(--sp-1); }
+    .small-talk-passport :global(dd) { margin-bottom: var(--sp-2); }
+    .small-talk-action { width: 100%; }
+  }
+</style>
