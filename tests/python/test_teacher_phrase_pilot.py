@@ -334,6 +334,14 @@ class PilotTests(unittest.TestCase):
                 {p.name: p.read_bytes() for p in folder.iterdir() if p.is_file()},
             )
 
+    def test_packet_has_one_final_newline_for_diff_check(self):
+        folder = ROOT / "docs/content/teacher-phrase-pilot-484"
+        candidates = json.loads((folder / "candidates.json").read_text())["records"]
+        review = json.loads((folder / "human-review.json").read_text())
+        result = pilot.packet(candidates, review)
+        self.assertTrue(result.endswith(b"\n"))
+        self.assertFalse(result.endswith(b"\n\n"))
+
     def test_cli_checks_frozen_packet_without_workbook_and_is_read_only(self):
         folder = ROOT / "docs/content/teacher-phrase-pilot-484"
         before = {p.name: p.read_bytes() for p in folder.iterdir() if p.is_file()}

@@ -213,7 +213,7 @@ def packet(candidates, review):
             "Human role outcomes, corrections, suitability, minutes spent, and packet-clarity feedback: **pending**.",
             "",
         ]
-    return ("\n".join(lines) + "\n").encode()
+    return ("\n".join(lines).rstrip("\n") + "\n").encode()
 
 
 def freeze_payload(directory, selection, review, packet_bytes):

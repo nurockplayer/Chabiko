@@ -250,4 +250,3 @@ Exact raw cell (JSON-escaped; `\n` is a source LF):
 | 2: `teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958` | 伟大的发明 | 偉大的發明 | Wěidà de fāmíng | 偉大な発明。 |
 
 Human role outcomes, corrections, suitability, minutes spent, and packet-clarity feedback: **pending**.
-
