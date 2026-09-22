@@ -2,7 +2,26 @@ import { createHash } from 'node:crypto';
 import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+const journalAppendFailure = vi.hoisted(() => ({ remaining: 0 }));
+vi.mock('../scripts/unicode_review_journal', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../scripts/unicode_review_journal')>();
+  return {
+    ...actual,
+    appendUnicodeReviewJournalEvent(path: string, expectedTip: Parameters<typeof actual.appendUnicodeReviewJournalEvent>[1], payload: unknown, options: Parameters<typeof actual.appendUnicodeReviewJournalEvent>[3] = {}) {
+      return actual.appendUnicodeReviewJournalEvent(path, expectedTip, payload, {
+        ...options,
+        beforeCommit: () => {
+          if (journalAppendFailure.remaining > 0) {
+            journalAppendFailure.remaining -= 1;
+            throw new Error('injected one-shot journal pre-commit failure');
+          }
+          options.beforeCommit?.();
+        },
+      });
+    },
+  };
+});
 import {
   authorizeCalibration,
   buildBlindEvidenceArtifactsFromAuthority,
@@ -42,6 +61,7 @@ const contract: ReviewContractBinding = {
 };
 
 afterEach(() => {
+  journalAppendFailure.remaining = 0;
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
@@ -430,6 +450,69 @@ describe('#477 resumable Unicode review workflow', () => {
     expect(() => ingestUnicodeReviewWavePassB(passBPath, calibration, inputs, { result: invalidResult, receipt: receipt('pass-b', artifacts.context, invalidResult, [manifestRef], 'bad-pass-b-session', 'bad-pass-b-context') })).toThrow(/unsupported|missing/i);
     expect(readUnicodeReviewWorkflow(passBPath, calibration, inputs).activeWaveId).toBeNull();
     expect(loadUnicodeReviewJournal(passBPath).events.at(-1)!.payload).toMatchObject({ type: 'wave-invalidated', stage: 'pass-b' });
+  });
+
+  it('keeps valid A, B, and Pass B evidence pending when a one-shot journal pre-commit fails', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, 'append-retry-wave', [productionInputs[0]]);
+    const details = planDetails(path);
+    const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const inputs = waveInputs('append-retry-wave', [productionInputs[0]]);
+    const assertPendingAfterFailedAppend = (stage: string) => {
+      const before = loadUnicodeReviewJournal(path);
+      journalAppendFailure.remaining = 1;
+      return (attempt: () => void) => {
+        expect(attempt).toThrow(/injected one-shot journal pre-commit failure/i);
+        const after = loadUnicodeReviewJournal(path);
+        expect(after.tip).toEqual(before.tip);
+        expect(after.events.some((event) => (event.payload as { readonly type?: unknown }).type === 'wave-invalidated')).toBe(false);
+        expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage });
+      };
+    };
+
+    const aSubmission = fullA(artifacts, details, manifestRef);
+    assertPendingAfterFailedAppend('reviewer-a-pending')(() => ingestUnicodeReviewWaveA(path, calibration, inputs, aSubmission));
+    ingestUnicodeReviewWaveA(path, calibration, inputs, aSubmission);
+
+    prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
+    const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
+    const bSubmission = { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'append-retry-b-session', 'append-retry-b-context') };
+    assertPendingAfterFailedAppend('reviewer-b-pending')(() => ingestUnicodeReviewWaveB(path, calibration, inputs, bSubmission));
+    ingestUnicodeReviewWaveB(path, calibration, inputs, bSubmission);
+
+    prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`);
+    const passBResult = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+    const passBSubmission = { result: passBResult, receipt: receipt('pass-b', artifacts.context, passBResult, [manifestRef], 'append-retry-pass-b-session', 'append-retry-pass-b-context') };
+    assertPendingAfterFailedAppend('pass-b-pending')(() => ingestUnicodeReviewWavePassB(path, calibration, inputs, passBSubmission));
+    ingestUnicodeReviewWavePassB(path, calibration, inputs, passBSubmission);
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: 'finalization-pending' });
+  });
+
+  it('retries a strong-negative invalidation after a one-shot journal pre-commit failure without changing its reason', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, 'strong-negative-append-retry-wave', [productionInputs[0]]);
+    const details = planDetails(path);
+    const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const inputs = waveInputs('strong-negative-append-retry-wave', [productionInputs[0]]);
+    const submission = fullA(artifacts, details, manifestRef, true);
+    const before = loadUnicodeReviewJournal(path);
+    journalAppendFailure.remaining = 1;
+
+    expect(() => ingestUnicodeReviewWaveA(path, calibration, inputs, submission)).toThrow(/injected one-shot journal pre-commit failure/i);
+    expect(loadUnicodeReviewJournal(path).tip).toEqual(before.tip);
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: 'reviewer-a-pending' });
+
+    ingestUnicodeReviewWaveA(path, calibration, inputs, submission);
+    expect(loadUnicodeReviewJournal(path).events.at(-1)!.payload).toMatchObject({
+      type: 'wave-invalidated',
+      stage: 'a',
+      reason: 'strong-negative-sentinel-confusable',
+    });
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWaveId).toBeNull();
   });
 
   it('rejects duplicate Pass B pair references even when the observable description differs', () => {

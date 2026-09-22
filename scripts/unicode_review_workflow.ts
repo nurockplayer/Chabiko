@@ -547,18 +547,19 @@ export function ingestUnicodeReviewWaveA(path: string, calibration: UnicodeRevie
   const wave = currentWave(loaded.replay);
   assert(wave.a === null, 'Reviewer A has already been ingested');
   const artifacts = wave.artifacts;
+  let strongNegativeConfusable = false;
   try {
     const validated = validateStrictClassificationSubmission(artifacts.context, submission, 'reviewer-a', artifacts.context.sidecar.entries);
-    const negative = wave.plan.sentinels.find((sentinel) => sentinel.class === 'strong-negative' && validated.results.find((result) => result.pairRef === sentinel.pairRef)?.visualOutcome === 'confusable');
-    if (negative) {
-      append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'a', reason: 'strong-negative-sentinel-confusable', submission });
-      return;
-    }
-    append(path, loaded.journal, { type: 'wave-a-ingested', waveId: wave.plan.waveId, submission });
+    strongNegativeConfusable = wave.plan.sentinels.some((sentinel) => sentinel.class === 'strong-negative' && validated.results.find((result) => result.pairRef === sentinel.pairRef)?.visualOutcome === 'confusable');
   } catch (error) {
     append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'a', reason: 'classification-schema-or-binding-failure', submission: null });
     throw error;
   }
+  if (strongNegativeConfusable) {
+    append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'a', reason: 'strong-negative-sentinel-confusable', submission });
+    return;
+  }
+  append(path, loaded.journal, { type: 'wave-a-ingested', waveId: wave.plan.waveId, submission });
 }
 
 export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
@@ -586,11 +587,11 @@ export function ingestUnicodeReviewWaveB(path: string, calibration: UnicodeRevie
   try {
     validateStrictClassificationSubmission(artifacts.context, submission, 'reviewer-b', expected);
     reconcileIndependentClassification(artifacts.context, { a: wave.a, b: submission });
-    append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission });
   } catch (error) {
     append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'b', reason: 'classification-schema-or-binding-failure', submission: null });
     throw error;
   }
+  append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission });
 }
 
 export function prepareUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
@@ -613,11 +614,11 @@ export function ingestUnicodeReviewWavePassB(path: string, calibration: UnicodeR
     assert(wave.passBRefs.includes(pairRef), 'Pass B result is not in the confirmed manifest subset');
     assert(!wave.passB.some((item) => parsePassBResult(item.result).pairRef === pairRef), 'Pass B result is already recorded for this pair reference');
     void promoted;
-    append(path, loaded.journal, { type: 'wave-pass-b-ingested', waveId: wave.plan.waveId, submission });
   } catch (error) {
     append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'pass-b', reason: 'classification-schema-or-binding-failure', submission: null });
     throw error;
   }
+  append(path, loaded.journal, { type: 'wave-pass-b-ingested', waveId: wave.plan.waveId, submission });
 }
 
 export function finalizeUnicodeReviewWave(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): readonly PromotionRecord[] {
