@@ -460,6 +460,14 @@ A strong-negative result in `ingest-a` appends an
 never reported as a successful review. Schema/binding failures and any partial,
 unexpected, stale, or byte-different artifact fail closed.
 
+Initial waves are limited to 250 manifest candidates. Two consecutive clean
+initial waves qualify the current calibration for waves of up to 500. The
+`cleanInitialWaveStreak` counter advances on clean initial-size finalization
+and retains its qualifying value after a clean scaled wave; it does not restart
+the initial phase after each scaled wave. Any invalidation resets it to zero,
+requiring two new clean initial waves. A changed calibration binding still
+requires fresh calibration and a new workflow.
+
 Journal I/O failures are not evidence-validation failures. A failed append
 before commit leaves the pending stage and journal tip unchanged; it does not
 invalidate otherwise valid A, B, or Pass B evidence. After any write error,
@@ -604,6 +612,7 @@ requested again merely because the process restarted.
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
 | Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
+| Consecutive scaled waves retain qualification; invalidation requires two new clean initial waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: initial/scaled progression through finalization and replay, oversized planning/replay rejection after invalidation, and requalification |
 | Canonical external subset roots at preparation and fail-closed semantic replay | `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-workflow.test.ts`: canonical B/Pass B API persistence; `unicode-review-cli.test.ts`: “rejects hash-valid noncanonical B and Pass B subset roots before publishing status or mutating the journal” |
 | Pairwise subset-root isolation across pending and terminal waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: direct preparation rejects identical, child, and parent roots before append; `unicode-review-cli.test.ts`: hash-valid overlap fails before resume status, subset reconstruction, or stopped-writer cleanup |
 | Retryable journal I/O remains separate from evidence invalidation | `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-workflow.test.ts`: one-shot pre-commit failures preserve the tip and pending A/B/Pass B evidence, followed by identical-submission retries |

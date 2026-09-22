@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -152,7 +152,7 @@ function receipt(
   };
 }
 
-function workflowFixture(hardProbeDisagreement = false, manifestStrongControls = false, hardProbeExpectedOutcome: 'confusable' | 'borderline' = 'confusable') {
+function workflowFixture(hardProbeDisagreement = false, manifestStrongControls = false, hardProbeExpectedOutcome: 'confusable' | 'borderline' = 'confusable', productionInputCount = 253) {
   const strongControl = manifestStrongControls ? manifest : control;
   const calibrationInputs: ControllerEvidenceInput[] = [
     ...Array.from({ length: 20 }, (_, index) => strongControl(`positive-${index}`, index * 2)),
@@ -163,7 +163,7 @@ function workflowFixture(hardProbeDisagreement = false, manifestStrongControls =
   const productionInputs = [
     manifest('wave-candidate-1', 20),
     manifest('wave-candidate-2', 24),
-    ...Array.from({ length: 251 }, (_, index) => manifest(`scaled-candidate-${index}`, 40 + index * 2)),
+    ...Array.from({ length: productionInputCount - 2 }, (_, index) => manifest(`scaled-candidate-${index}`, 40 + index * 2)),
   ];
   const evidenceAuthority = authority([...calibrationInputs, ...productionInputs]);
   const artifacts = buildBlindEvidenceArtifactsFromAuthority(evidenceAuthority, calibrationInputs, checksum('e'));
@@ -254,6 +254,24 @@ function completeCleanWave(path: string, calibration: UnicodeReviewWorkflowCalib
   const promotions = finalizeUnicodeReviewWave(path, calibration, inputs);
   expect(promotions).toHaveLength(1);
   return promotions;
+}
+
+function completeAllNegativeWave(path: string, calibration: UnicodeReviewWorkflowCalibration, waveId: string, inputs: readonly ManifestEvidenceInput[], prior: UnicodeReviewWorkflowManifestInputs): UnicodeReviewWorkflowManifestInputs {
+  const artifacts = planUnicodeReviewWave(path, calibration, waveId, inputs, prior);
+  const details = planDetails(path);
+  const expectedByRef = new Map(details.sentinels.map((sentinel) => [sentinel.pairRef, sentinel.expectedOutcome]));
+  const results = artifacts.context.sidecar.entries.map((entry) => ({
+    pairRef: entry.pairRef,
+    visualOutcome: entry.purpose === 'manifest' ? 'not-confusable' as const : expectedByRef.get(entry.pairRef)!,
+  }));
+  const recorded = new Map(prior);
+  recorded.set(waveId, inputs);
+  ingestUnicodeReviewWaveA(path, calibration, recorded, { results, receipt: receipt('reviewer-a', artifacts.context, results, artifacts.context.sidecar.entries.map((entry) => entry.pairRef), 'wave-a-session', 'wave-a-context') });
+  expect(prepareUnicodeReviewWaveB(path, calibration, recorded, `${path}-${waveId}-b-subset`)).toEqual([]);
+  ingestUnicodeReviewWaveB(path, calibration, recorded, null);
+  expect(prepareUnicodeReviewWavePassB(path, calibration, recorded, `${path}-${waveId}-pass-b-subset`)).toEqual([]);
+  expect(finalizeUnicodeReviewWave(path, calibration, recorded)).toEqual([]);
+  return recorded;
 }
 
 function moveToPassB(path: string, calibration: UnicodeReviewWorkflowCalibration, waveId: string, input: ManifestEvidenceInput) {
@@ -358,6 +376,40 @@ describe('#477 resumable Unicode review workflow', () => {
     expect(readUnicodeReviewWorkflow(path, calibration, historical).cleanInitialWaveStreak).toBe(2);
     expect(planUnicodeReviewWave(path, calibration, 'scaled-wave', productionInputs.slice(2), historical).context.sidecar.entries.filter((entry) => entry.purpose === 'manifest')).toHaveLength(251);
     expect(() => readUnicodeReviewWorkflow(path, calibration, new Map())).toThrow(/requires controller manifest inputs/i);
+  });
+
+  it('keeps scaled-wave qualification through clean scaled finalization until invalidation, then requires two fresh clean initial waves', () => {
+    const { calibration, productionInputs } = workflowFixture(false, false, 'confusable', 1754);
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    let history = completeAllNegativeWave(path, calibration, 'initial-wave-1', productionInputs.slice(0, 250), new Map());
+    history = completeAllNegativeWave(path, calibration, 'initial-wave-2', productionInputs.slice(250, 500), history);
+    history = completeAllNegativeWave(path, calibration, 'scaled-wave-1', productionInputs.slice(500, 751), history);
+    history = completeAllNegativeWave(path, calibration, 'scaled-wave-2', productionInputs.slice(751, 1002), history);
+    expect(readUnicodeReviewWorkflow(path, calibration, history).cleanInitialWaveStreak).toBe(2);
+
+    const invalidationInput = productionInputs[1002];
+    const invalidationArtifacts = planUnicodeReviewWave(path, calibration, 'qualified-invalidation', [invalidationInput], history);
+    const invalidationDetails = planDetails(path);
+    const invalidationManifestRef = invalidationArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const historyAfterInvalidation = new Map(history);
+    historyAfterInvalidation.set('qualified-invalidation', [invalidationInput]);
+    ingestUnicodeReviewWaveA(path, calibration, historyAfterInvalidation, fullA(invalidationArtifacts, invalidationDetails, invalidationManifestRef, true));
+    expect(readUnicodeReviewWorkflow(path, calibration, historyAfterInvalidation).cleanInitialWaveStreak).toBe(0);
+    expect(() => planUnicodeReviewWave(path, calibration, 'oversized-after-invalidation', productionInputs.slice(1003, 1254), historyAfterInvalidation)).toThrow(/250 candidate limit/);
+
+    const scaledPlan = loadUnicodeReviewJournal(path).events.find((event) => (event.payload as { readonly type?: unknown }).type === 'wave-planned' && (event.payload as { readonly waveId?: unknown }).waveId === 'scaled-wave-1')!.payload as Record<string, unknown>;
+    const forgedPath = journalPath();
+    cpSync(path, forgedPath, { recursive: true });
+    const forgedJournal = loadUnicodeReviewJournal(forgedPath);
+    appendUnicodeReviewJournalEvent(forgedPath, forgedJournal.tip, { ...scaledPlan, waveId: 'hash-valid-oversized-after-invalidation' });
+    expect(() => readUnicodeReviewWorkflow(forgedPath, calibration, historyAfterInvalidation)).toThrow(/current candidate limit/);
+
+    let requalifiedHistory = completeAllNegativeWave(path, calibration, 'fresh-initial-wave-1', productionInputs.slice(1003, 1253), historyAfterInvalidation);
+    expect(readUnicodeReviewWorkflow(path, calibration, requalifiedHistory).cleanInitialWaveStreak).toBe(1);
+    requalifiedHistory = completeAllNegativeWave(path, calibration, 'fresh-initial-wave-2', productionInputs.slice(1253, 1503), requalifiedHistory);
+    expect(readUnicodeReviewWorkflow(path, calibration, requalifiedHistory).cleanInitialWaveStreak).toBe(2);
+    expect(planUnicodeReviewWave(path, calibration, 'rescaled-wave', productionInputs.slice(1503, 1754), requalifiedHistory).waveId).toBe('rescaled-wave');
   });
 
   it('rejects a hash-valid journal event whose Reviewer B subset was not derived from exact A-positive manifest entries', () => {

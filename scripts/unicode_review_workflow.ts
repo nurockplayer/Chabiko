@@ -365,7 +365,7 @@ function replayState(
       }
       active.finalized = true;
       const initialClean = active.plan.manifest.length <= INITIAL_WAVE_LIMIT;
-      streak = initialClean ? streak + 1 : 0;
+      if (initialClean) streak += 1;
       active = null;
     } else {
       throw new Error(`workflow journal has an unknown event type '${payload.type}'`);
