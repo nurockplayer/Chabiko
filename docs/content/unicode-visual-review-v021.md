@@ -459,6 +459,12 @@ A strong-negative result in `ingest-a` appends an
 never reported as a successful review. Schema/binding failures and any partial,
 unexpected, stale, or byte-different artifact fail closed.
 
+Journal I/O failures are not evidence-validation failures. A failed append
+before commit leaves the pending stage and journal tip unchanged; it does not
+invalidate otherwise valid A, B, or Pass B evidence. After any write error,
+replay the workflow before retrying, because an error after commit can leave a
+valid event already recorded.
+
 Every command preflights its required flags and fresh external status/subset
 output before mutating the journal. `plan` writes its journal event before
 artifact publication. `resume` may publish only the current pending wave when
@@ -468,7 +474,10 @@ without appending a duplicate prepare event. If either A artifact directory is
 present alone, or any stored artifact is partial or differs from replay, the
 adapter preserves it and stops; it never overwrites or cleans it.
 
-Every Reviewer B and Pass B plan must record an absolute subset root. A
+Every Reviewer B and Pass B plan must record a canonical absolute external
+subset root. Preparation resolves path aliases before persistence. Replay
+rejects noncanonical stored spellings, including symlink and `..` aliases,
+so isolation checks compare canonical roots and controller destinations. A
 pathless legacy transition is not a writable replay path: current workflow
 replay rejects it before a command can advance the journal. Before any command
 can append another event, the adapter rechecks every recorded subset export,
@@ -538,8 +547,8 @@ requested subset destination must be disjoint from every recorded subset root,
 including roots from terminal waves. This role isolation is checked before any
 new journal mutation.
 
-The absolute root and prepared reference set are mandatory for every new B or
-Pass B plan. A historical event without an absolute root cannot be resumed or
+The canonical absolute root and prepared reference set are mandatory for every
+new B or Pass B plan. A historical event without that root cannot be resumed or
 written through the current workflow path. Before state advances, and again
 before stopped-writer recovery removes its lock or partial event, every
 recorded subset root is revalidated, including terminal-wave roots. The check
@@ -587,6 +596,8 @@ because the process restarted.
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
 | Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
+| Canonical external subset roots at preparation and fail-closed semantic replay | `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-workflow.test.ts`: canonical B/Pass B API persistence; `unicode-review-cli.test.ts`: “rejects hash-valid noncanonical B and Pass B subset roots before publishing status or mutating the journal” |
+| Retryable journal I/O remains separate from evidence invalidation | `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-workflow.test.ts`: one-shot pre-commit failures preserve the tip and pending A/B/Pass B evidence, followed by identical-submission retries |
 | Fresh-root workflow initialization, exact empty-journal retry/recovery, and stopped-writer recovery | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; `unicode-review-journal.test.ts`: “initializes one fresh external root and never overwrites a journal or dirty caller root”; “recovers only a provably stopped owner after validating the journal and its own temporary artifact” |
 | Strict workflow descriptor, stored-wave replay, recorded-root role isolation, persistent B/Pass B subset registration, immutable partial Pass B resume, and invalidation exit | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-cli.test.ts`: “replays a calibrated synthetic wave through independent review and exports only blind subsets”; “resumes a partial Pass B wave against its immutable prepared subset”; “treats recorded B and Pass B exports as immutable evidence across commands and recovery”; “recreates missing zero-ref Reviewer B and Pass B exports only through resume”; “persists chosen subset roots, fences later status output, and permits only the recorded resume path”; “recovers an existing B subset when its active wave publication pair is absent”; “rejects reviewer/container-nested status and subset destinations before journal mutation”; “rejects a cross-wave controller root nested in another reviewer root before initialization”; “rejects an artifact root that would contain a controller input before initialization”; `unicode-review-workflow.test.ts`: “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
 
