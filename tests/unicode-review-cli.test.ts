@@ -1129,6 +1129,82 @@ describe('#477 Unicode review workflow CLI', () => {
     assertRejectedAlias('pass-b');
   });
 
+  it.each([
+    ['identical', (root: string) => root],
+    ['nested child', (root: string) => join(root, 'pass-b')],
+    ['parent', (root: string) => dirname(root)],
+  ])('rejects a hash-valid %s recorded subset root before resume status or recover cleanup', (_label, overlapPath) => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+    const controllerOutput = join(fixture.external, 'wave-1-controller');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+    expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+    expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+    const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+    const manifestEntry = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+    const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+    const aPath = join(fixture.external, 'wave-1-a.json');
+    writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+    expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+    const bSubset = join(fixture.external, 'wave-1-b');
+    expect(invoke('prepare-b', join(fixture.external, 'b-prepare.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
+    const bPath = join(fixture.external, 'wave-1-b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, [manifestEntry.pairRef]) });
+    expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+    const forgedSubset = overlapPath(realpathSync(bSubset));
+    expect(existsSync(forgedSubset)).toBe(_label !== 'nested child');
+    appendUnicodeReviewJournalEvent(journal, loadUnicodeReviewJournal(journal).tip, {
+      type: 'wave-pass-b-planned',
+      waveId: 'wave-1',
+      pairRefs: [manifestEntry.pairRef],
+      subsetOutputPath: forgedSubset,
+    });
+    const eventNames = readdirSync(join(journal, 'events')).sort();
+    const eventBytes = eventNames.map((name) => readFileSync(join(journal, 'events', name), 'utf8'));
+    const bInventory = readdirSync(bSubset, { recursive: true }).sort();
+    const bManifest = readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8');
+    const resumeStatus = join(fixture.external, 'resume-rejected.json');
+    const resumed = invoke('resume', resumeStatus);
+    expect(resumed.status, resumed.output).not.toBe(0);
+    expect(resumed.output).toMatch(/recorded reviewer subset outputs must be disjoint/i);
+    expect(existsSync(resumeStatus)).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort()).toEqual(eventNames);
+    expect(eventNames.map((name) => readFileSync(join(journal, 'events', name), 'utf8'))).toEqual(eventBytes);
+    expect(readdirSync(bSubset, { recursive: true }).sort()).toEqual(bInventory);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(bManifest);
+    expect(existsSync(forgedSubset)).toBe(_label !== 'nested child');
+
+    const nonce = '31313131-3131-4313-8313-313131313131';
+    const lock = join(journal, '.unicode-review-journal.lock');
+    const partial = join(journal, 'events', `.${String(eventNames.length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(partial, 'stopped writer partial');
+    const lockBytes = readFileSync(lock, 'utf8');
+    const partialBytes = readFileSync(partial, 'utf8');
+    const recoverStatus = join(fixture.external, 'recover-rejected.json');
+    const recovered = invoke('recover', recoverStatus);
+    expect(recovered.status, recovered.output).not.toBe(0);
+    expect(existsSync(recoverStatus)).toBe(false);
+    expect(readFileSync(lock, 'utf8')).toBe(lockBytes);
+    expect(readFileSync(partial, 'utf8')).toBe(partialBytes);
+    expect(readdirSync(bSubset, { recursive: true }).sort()).toEqual(bInventory);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(bManifest);
+    expect(existsSync(forgedSubset)).toBe(_label !== 'nested child');
+  });
+
   it('retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root', () => {
     const fixture = createCalibrationCommandFixture();
     const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');

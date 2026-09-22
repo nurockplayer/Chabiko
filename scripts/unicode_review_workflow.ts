@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { isAbsolute, relative, sep } from 'node:path';
 import {
   authorizeCalibration,
   buildBlindEvidenceArtifactsFromAuthority,
@@ -162,6 +163,26 @@ function parseSubsetOutputPath(value: unknown, label: string): string {
   const canonical = resolveStrictExternalPath(value, label);
   assert(value === canonical, `${label} must use its canonical external path`);
   return canonical;
+}
+
+function pathsOverlap(left: string, right: string): boolean {
+  const leftToRight = relative(left, right);
+  const rightToLeft = relative(right, left);
+  const isNested = (path: string) => path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`));
+  return isNested(leftToRight) || isNested(rightToLeft);
+}
+
+function allRecordedSubsetRoots(waves: readonly WaveRuntime[]): readonly string[] {
+  return waves.flatMap((wave) => [wave.bSubsetOutputPath, wave.passBSubsetOutputPath].filter((path): path is string => path !== null));
+}
+
+function assertRecordedSubsetRootsDisjoint(waves: readonly WaveRuntime[], candidate: string | null = null): void {
+  const roots = [...allRecordedSubsetRoots(waves), ...(candidate === null ? [] : [candidate])];
+  for (let index = 0; index < roots.length; index += 1) {
+    for (let other = index + 1; other < roots.length; other += 1) {
+      assert(!pathsOverlap(roots[index], roots[other]), `recorded reviewer subset outputs must be disjoint: '${roots[index]}' and '${roots[other]}' overlap`);
+    }
+  }
 }
 
 function replayCalibration(calibration: UnicodeReviewWorkflowCalibration): { authorization: CalibrationAuthorization; binding: CalibrationReplayBinding } {
@@ -350,6 +371,7 @@ function replayState(
       throw new Error(`workflow journal has an unknown event type '${payload.type}'`);
     }
   }
+  assertRecordedSubsetRootsDisjoint(waves);
   return { waves, finalized, provisional, streak };
 }
 
@@ -496,6 +518,7 @@ function recordedWaveSnapshot(wave: WaveRuntime, authorization: CalibrationAutho
 }
 
 function recordedSubsetRoots(waves: readonly WaveRuntime[]): readonly string[] {
+  assertRecordedSubsetRootsDisjoint(waves);
   const roots = new Set<string>();
   for (const wave of waves) {
     if (wave.bSubsetOutputPath !== null) roots.add(wave.bSubsetOutputPath);
@@ -567,6 +590,7 @@ export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeRevi
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs === null, 'Reviewer B cannot be prepared at this workflow stage');
+  assertRecordedSubsetRootsDisjoint(loaded.replay.waves, canonicalSubsetOutputPath);
   const refs = expectedWaveBRefs(wave.artifacts, wave.a);
   append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
@@ -599,6 +623,7 @@ export function prepareUnicodeReviewWavePassB(path: string, calibration: Unicode
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs === null, 'Pass B cannot be prepared at this workflow stage');
+  assertRecordedSubsetRootsDisjoint(loaded.replay.waves, canonicalSubsetOutputPath);
   const refs = expectedPassBRefs(wave.artifacts, loaded.issued.binding, wave.a, wave.b);
   append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
