@@ -1,0 +1,122 @@
+---
+// Read-only teacher vocabulary overview (Issue #489). This static shell is
+// intentionally outside learner navigation/sitemaps and inherits the existing
+// Cloudflare Access path boundary for `/teacher-review` and its descendants.
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { loadTeacherVocabularyReviewOverview } from '../../../content/teacherVocabularyReviewOverview';
+
+const items = loadTeacherVocabularyReviewOverview();
+if (items.length === 0) throw new Error('teacher vocabulary review overview is empty');
+const sourceSheets = [...new Set(items.map((item) => item.sourceSheet))];
+const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
+---
+
+<BaseLayout
+  title="教師レビュー — 先生厳選単語"
+  description="Chabiko 学習コンテンツの教師レビュー用単語一覧"
+  robots="noindex, nofollow"
+>
+  <main class="teacher-vocabulary-review" data-teacher-vocabulary-review>
+    <noscript>
+      <p class="teacher-vocabulary-review__noscript" lang="ja">
+        このページは JavaScript が必要です。ブラウザの設定を確認してください。
+      </p>
+    </noscript>
+
+    <header class="teacher-vocabulary-review__head">
+      <p class="teacher-vocabulary-review__eyebrow">教師レビュー / 閲覧専用</p>
+      <h1>先生厳選単語</h1>
+      <p>学習者向けの公開順のまま、内容をまとめて確認できます。</p>
+      <p class="teacher-vocabulary-review__notice">
+        この一覧では判断を保存しません。既存の教師レビューの権限・公開手順は変更されません。
+      </p>
+    </header>
+
+    <section class="teacher-vocabulary-review__controls" aria-label="単語一覧の絞り込み">
+      <div class="teacher-vocabulary-review__field teacher-vocabulary-review__field--search">
+        <label for="teacher-vocabulary-review-search">単語を検索</label>
+        <input id="teacher-vocabulary-review-search" data-tvro-search type="search" autocomplete="off" placeholder="中国語・ピンイン・日本語" />
+      </div>
+      <div class="teacher-vocabulary-review__field">
+        <label for="teacher-vocabulary-review-source-sheet">出典シート</label>
+        <select id="teacher-vocabulary-review-source-sheet" data-tvro-source-sheet>
+          <option value="all">すべて</option>
+          {sourceSheets.map((sheet) => <option value={sheet}>{sheet}</option>)}
+        </select>
+      </div>
+      <div class="teacher-vocabulary-review__field">
+        <label for="teacher-vocabulary-review-part-of-speech">品詞</label>
+        <select id="teacher-vocabulary-review-part-of-speech" data-tvro-part-of-speech>
+          <option value="all">すべて</option><option value="noun">名詞</option><option value="verb">動詞</option><option value="adjective">形容詞</option><option value="adverb">副詞</option>
+        </select>
+      </div>
+      <div class="teacher-vocabulary-review__field">
+        <label for="teacher-vocabulary-review-decision">確認状態</label>
+        <select id="teacher-vocabulary-review-decision" data-tvro-decision>
+          <option value="all">すべて</option><option value="unreviewed">未確認</option><option value="accepted">承認済み</option><option value="needs_changes">要修正</option>
+        </select>
+      </div>
+    </section>
+
+    <p class="teacher-vocabulary-review__summary" data-tvro-summary aria-live="polite">全{items.length}語を読み込み中</p>
+    <section class="teacher-vocabulary-review__list" aria-label="先生厳選単語の確認一覧">
+      <div class="teacher-vocabulary-review__columns" aria-hidden="true">
+        <span>簡体字</span><span>繁体字</span><span>ピンイン</span><span>日本語</span><span>品詞</span><span>出典</span><span>状態</span><span>ID</span>
+      </div>
+      <ol data-tvro-results></ol>
+    </section>
+    <nav class="teacher-vocabulary-review__pagination" aria-label="ページ移動">
+      <button data-tvro-page="previous" type="button">前へ</button>
+      <span data-tvro-page-indicator>1 / 1</span>
+      <button data-tvro-page="next" type="button">次へ</button>
+    </nav>
+    <script type="application/json" data-teacher-vocabulary-review-data set:html={itemsJson} is:inline></script>
+  </main>
+</BaseLayout>
+
+<script>
+  import { initTeacherVocabularyReviewOverview } from '../../../client/teacherVocabularyReviewOverview';
+  function initialise(): void {
+    document.querySelectorAll<HTMLElement>('[data-teacher-vocabulary-review]').forEach((root) => {
+      initTeacherVocabularyReviewOverview(root);
+    });
+  }
+  initialise();
+  document.addEventListener('astro:page-load', initialise);
+</script>
+
+<style is:global>
+  .teacher-vocabulary-review { width: min(100%, 88rem); margin: 0 auto; min-width: 0; }
+  .teacher-vocabulary-review__head { margin-bottom: var(--space-xl); }
+  .teacher-vocabulary-review__eyebrow { margin: 0 0 var(--space-xs); color: var(--c-text-muted); font-size: .8125rem; font-weight: 700; letter-spacing: .06em; }
+  .teacher-vocabulary-review h1 { margin: 0 0 var(--space-sm); font-size: clamp(1.5rem, 3vw, 2rem); color: var(--c-text); }
+  .teacher-vocabulary-review__head > p:not(.teacher-vocabulary-review__eyebrow) { margin: 0; color: var(--c-text-muted); }
+  .teacher-vocabulary-review__notice, .teacher-vocabulary-review__noscript { margin-top: var(--space-md) !important; padding: var(--space-md); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
+  .teacher-vocabulary-review__controls { display: grid; grid-template-columns: 1fr; gap: var(--space-md); margin-bottom: var(--space-md); }
+  .teacher-vocabulary-review__field { display: grid; gap: var(--space-xs); min-width: 0; }
+  .teacher-vocabulary-review__field label { color: var(--c-text-muted); font-size: .8125rem; font-weight: 700; }
+  .teacher-vocabulary-review__field input, .teacher-vocabulary-review__field select, .teacher-vocabulary-review__pagination button { box-sizing: border-box; min-height: 2.75rem; padding: var(--space-sm) var(--space-md); font: inherit; color: var(--c-text); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
+  .teacher-vocabulary-review__field input:focus-visible, .teacher-vocabulary-review__field select:focus-visible, .teacher-vocabulary-review__pagination button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+  .teacher-vocabulary-review__summary { margin: 0 0 var(--space-sm); color: var(--c-text-muted); font-size: .875rem; font-variant-numeric: tabular-nums; }
+  .teacher-vocabulary-review__list { border: 1px solid var(--c-border); border-radius: var(--radius); background: var(--c-surface); overflow: clip; }
+  .teacher-vocabulary-review__columns, .teacher-vocabulary-review-row { display: grid; grid-template-columns: 1.05fr 1.05fr 1.15fr 1.3fr .75fr 1.2fr .8fr 1.15fr; gap: var(--space-sm); align-items: center; }
+  .teacher-vocabulary-review__columns { position: sticky; top: 0; z-index: 1; padding: var(--space-sm) var(--space-md); color: var(--c-text-muted); background: var(--c-surface-raised); border-bottom: 1px solid var(--c-border); font-size: .75rem; font-weight: 700; }
+  ol { padding: 0; margin: 0; list-style: none; }
+  .teacher-vocabulary-review-row { min-width: 0; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--c-border); font-size: .875rem; }
+  .teacher-vocabulary-review-row:last-child { border-bottom: 0; }
+  .teacher-vocabulary-review-cell { min-width: 0; overflow-wrap: anywhere; }
+  .teacher-vocabulary-review-cell--simplified, .teacher-vocabulary-review-cell--traditional { color: var(--c-text); font-size: 1rem; font-weight: 700; }
+  .teacher-vocabulary-review-cell--id { color: var(--c-text-muted); font-family: ui-monospace, SFMono-Regular, monospace; font-size: .75rem; }
+  .teacher-vocabulary-review-cell--decision { color: var(--c-text-muted); }
+  .teacher-vocabulary-review-cell-label { display: none; }
+  .teacher-vocabulary-review__pagination { display: flex; gap: var(--space-sm); align-items: center; justify-content: center; margin-top: var(--space-lg); font-variant-numeric: tabular-nums; }
+  .teacher-vocabulary-review__pagination button { cursor: pointer; } .teacher-vocabulary-review__pagination button:disabled { cursor: not-allowed; opacity: .55; }
+  @media (min-width: 720px) { .teacher-vocabulary-review__controls { grid-template-columns: minmax(12rem, 2fr) repeat(3, minmax(9rem, 1fr)); } }
+  @media (max-width: 719px) {
+    .teacher-vocabulary-review__columns { display: none; }
+    .teacher-vocabulary-review-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm) var(--space-md); padding: var(--space-md); }
+    .teacher-vocabulary-review-cell { display: grid; gap: .1rem; }
+    .teacher-vocabulary-review-cell-label { display: block; color: var(--c-text-muted); font-size: .6875rem; font-weight: 700; }
+    .teacher-vocabulary-review-cell--japanese, .teacher-vocabulary-review-cell--source, .teacher-vocabulary-review-cell--id { grid-column: 1 / -1; }
+  }
+</style>
