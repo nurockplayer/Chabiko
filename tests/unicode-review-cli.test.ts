@@ -756,16 +756,29 @@ describe('#477 Unicode review workflow CLI', () => {
 
     const retained = join(fixture.external, 'pass-b-retained-resume.json');
     expect(invoke('resume', retained, ['--reviewer-output', passBSubset]).status).toBe(0);
-    expect(JSON.parse(readFileSync(retained, 'utf8'))).toMatchObject({ activeStage: 'pass-b-pending' });
+    const retainedStatus = JSON.parse(readFileSync(retained, 'utf8'));
+    expect(retainedStatus).toMatchObject({ activeStage: 'pass-b-pending', pendingPassBPairRefs: [manifestRefs[1]] });
     expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(preparedSubset);
     expect(readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')])).toEqual(journalBeforeResume);
 
     rmSync(passBSubset, { recursive: true, force: true });
     const recreated = join(fixture.external, 'pass-b-recreated-resume.json');
     expect(invoke('resume', recreated, ['--reviewer-output', passBSubset]).status).toBe(0);
-    expect(JSON.parse(readFileSync(recreated, 'utf8'))).toMatchObject({ activeStage: 'pass-b-pending' });
+    const recreatedStatus = JSON.parse(readFileSync(recreated, 'utf8'));
+    expect(recreatedStatus).toMatchObject({ activeStage: 'pass-b-pending', pendingPassBPairRefs: [manifestRefs[1]] });
     expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(preparedSubset);
     expect(readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')])).toEqual(journalBeforeResume);
+
+    const secondResult = { pairRef: recreatedStatus.pendingPassBPairRefs[0], observableDifference: firstResult.observableDifference };
+    const secondPassB = join(fixture.external, 'wave-1-pass-b-second.json');
+    writeJson(secondPassB, { result: secondResult, receipt: workflowReceipt('pass-b', fixture.key.contract, sidecar, secondResult, [secondResult.pairRef]) });
+    const secondIngestStatus = join(fixture.external, 'pass-b-second-status.json');
+    const secondIngest = invoke('ingest-pass-b', secondIngestStatus, ['--submission', secondPassB]);
+    expect(secondIngest.status, secondIngest.output).toBe(0);
+    expect(JSON.parse(readFileSync(secondIngestStatus, 'utf8'))).toMatchObject({ activeStage: 'finalization-pending', pendingPassBPairRefs: [] });
+    const finalized = join(fixture.external, 'finalize.json');
+    expect(invoke('finalize', finalized).status).toBe(0);
+    expect(JSON.parse(readFileSync(finalized, 'utf8'))).toMatchObject({ activeStage: null, pendingPassBPairRefs: [] });
   });
 
   it('treats recorded B and Pass B exports as immutable evidence across commands and recovery', () => {

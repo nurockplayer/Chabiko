@@ -366,6 +366,7 @@ function status(action: Command, state: UnicodeReviewWorkflowState, promotions: 
     action,
     activeWaveId: state.activeWaveId,
     activeStage: state.activeWave?.stage ?? null,
+    pendingPassBPairRefs: state.activeWave?.passBPairRefs ?? [],
     finalizedCandidateIds: state.finalizedCandidateIds,
     provisionalCandidateIds: state.provisionalCandidateIds,
     cleanInitialWaveStreak: state.cleanInitialWaveStreak,

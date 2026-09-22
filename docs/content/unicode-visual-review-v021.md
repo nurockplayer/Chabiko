@@ -451,8 +451,9 @@ receipt. Controller status and the trusted receipt retain the original
 full-bundle binding. When B has no expected refs, `ingest-b` requires a
 submission file containing JSON `null`.
 
-The controller-only status object records the action, active stage,
-finalized/provisional IDs, clean initial-wave streak, terminal state and full
+The controller-only status object records the action, active stage, pending
+Pass B references (`pendingPassBPairRefs`), finalized/provisional IDs, clean
+initial-wave streak, terminal state and full
 reviewer-bundle checksum of each recorded wave, and any finalized promotions.
 A strong-negative result in `ingest-a` appends an
 `invalidated` wave record, writes that status object, and exits nonzero. It is
@@ -580,8 +581,11 @@ Partial Pass B completion changes the pending work list, not the registered
 export or its immutable prepared pair-reference set. Resume verifies or
 recreates the complete originally prepared subset at its original path, then
 uses the journal's already-ingested results to exclude completed references
-from the pending list. Those references are never requested again merely
-because the process restarted.
+from the controller status field `pendingPassBPairRefs`. Continue only those
+references; the immutable subset manifest records the complete prepared set,
+not the remaining work. The pending list is empty after all Pass B results have
+been ingested or when no wave is active. Completed references are never
+requested again merely because the process restarted.
 
 ## Requirement, implementation, and evidence matrix
 
