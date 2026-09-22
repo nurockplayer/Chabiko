@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import {
   closeSync,
+  fstatSync,
   fsyncSync,
   linkSync,
   lstatSync,
@@ -11,6 +12,7 @@ import {
   rmdirSync,
   unlinkSync,
   writeFileSync,
+  type Stats,
 } from 'node:fs';
 import { basename, join } from 'node:path';
 import { resolveStrictExternalPath } from './unicode_review_external_io.ts';
@@ -49,11 +51,21 @@ export interface UnicodeReviewJournalAppendOptions {
   readonly afterCommit?: () => void;
 }
 
+/** Runs semantic recovery checks against an owned, structurally valid stopped journal before cleanup. */
+export interface UnicodeReviewJournalRecoveryOptions {
+  readonly beforeCleanup?: (state: UnicodeReviewJournalState) => void;
+}
+
 interface OwnedPath {
   readonly path: string;
   readonly device: number;
   readonly inode: number;
+  readonly ctimeMs: number;
+  readonly nlink: number;
+  readonly size: number;
+  readonly mode: number;
   readonly type: 'file' | 'directory';
+  descriptor: number | null;
 }
 
 interface LockRecord {
@@ -132,16 +144,45 @@ function assertExactKeys(value: Record<string, unknown>, keys: readonly string[]
   assert(actual.length === expected.length && actual.every((key, index) => key === expected[index]), `${label} has an unsupported schema`);
 }
 
-function recordOwnedPath(path: string, type: OwnedPath['type']): OwnedPath {
-  const stat = lstatSync(path);
-  assert(type === 'file' ? stat.isFile() : stat.isDirectory(), `expected journal ${type}: ${path}`);
-  return { path, device: stat.dev, inode: stat.ino, type };
+function recordOwnedPath(path: string, type: OwnedPath['type'], descriptorOrKeepOpen: number | null | boolean = null): OwnedPath {
+  const descriptor = typeof descriptorOrKeepOpen === 'boolean' && descriptorOrKeepOpen ? openSync(path, 'r') : typeof descriptorOrKeepOpen === 'number' ? descriptorOrKeepOpen : null;
+  try {
+    const stat = descriptor === null ? lstatSync(path) : undefined;
+    const descriptorStat = descriptor === null ? null : fstatSync(descriptor);
+    const typeStat = descriptorStat ?? stat;
+    assert(typeStat !== undefined && (type === 'file' ? typeStat.isFile() : typeStat.isDirectory()), `expected journal ${type}: ${path}`);
+    return { path, device: typeStat.dev, inode: typeStat.ino, ctimeMs: typeStat.ctimeMs, nlink: typeStat.nlink, size: typeStat.size, mode: typeStat.mode, type, descriptor };
+  } catch (error) {
+    if (descriptorOrKeepOpen === true && descriptor !== null) closeSync(descriptor);
+    throw error;
+  }
+}
+
+function sameLiveIdentity(left: Stats, right: Stats, type: OwnedPath['type']): boolean {
+  if (left.dev !== right.dev || left.ino !== right.ino || left.nlink !== right.nlink) return false;
+  // ctime moves whenever the inode is unlinked or relinked, so a reused inode
+  // (Linux may recycle inode numbers) cannot pass as the descriptor's inode.
+  if (left.ctimeMs !== right.ctimeMs) return false;
+  return type === 'directory' || (left.size === right.size && left.mode === right.mode);
 }
 
 function isStillOwned(path: OwnedPath): boolean {
   try {
     const stat = lstatSync(path.path);
-    return (path.type === 'file' ? stat.isFile() : stat.isDirectory()) && stat.dev === path.device && stat.ino === path.inode;
+    if (!(path.type === 'file' ? stat.isFile() : stat.isDirectory()) || stat.dev !== path.device || stat.ino !== path.inode) return false;
+    if (path.descriptor === null) {
+      // Without a descriptor only the recorded snapshot is available; require it
+      // to match as well instead of trusting device+inode alone.
+      return stat.nlink === path.nlink
+        && stat.ctimeMs === path.ctimeMs
+        && (path.type === 'directory' || (stat.size === path.size && stat.mode === path.mode));
+    }
+    const descriptorStat = fstatSync(path.descriptor);
+    if (!(path.type === 'file' ? descriptorStat.isFile() : descriptorStat.isDirectory())
+      || descriptorStat.dev !== path.device || descriptorStat.ino !== path.inode) {
+      return false;
+    }
+    return sameLiveIdentity(stat, descriptorStat, path.type);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') return false;
     throw error;
@@ -152,6 +193,13 @@ function removeOwnedFile(path: OwnedPath, label: string): void {
   assert(path.type === 'file', `${label} must be a file`);
   assert(isStillOwned(path), `${label} changed ownership and is preserved`);
   unlinkSync(path.path);
+}
+
+function releaseOwnedPath(path: OwnedPath | null): void {
+  if (path === null || path.descriptor === null) return;
+  const descriptor = path.descriptor;
+  path.descriptor = null;
+  closeSync(descriptor);
 }
 
 function fsyncDirectory(path: string): void {
@@ -203,14 +251,19 @@ function assertMarker(root: string): void {
 }
 
 function readLock(root: string): { readonly owned: OwnedPath; readonly record: LockRecord } {
-  const owned = recordOwnedPath(join(root, LOCK_NAME), 'file');
-  const { value } = decodeStrictJson(new Uint8Array(readFileSync(owned.path)), 'journal lock');
-  assert(isPlainObject(value), 'journal lock must be an object');
-  assertExactKeys(value, ['ownerNonce', 'ownerPid', 'protocolVersion'], 'journal lock');
-  assert(typeof value.ownerNonce === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value.ownerNonce), 'journal lock owner nonce is invalid');
-  assert(Number.isSafeInteger(value.ownerPid) && value.ownerPid > 0, 'journal lock owner PID is invalid');
-  assert(value.protocolVersion === UNICODE_REVIEW_JOURNAL_PROTOCOL, 'journal lock has an unsupported protocol');
-  return { owned, record: value as LockRecord };
+  const owned = recordOwnedPath(join(root, LOCK_NAME), 'file', true);
+  try {
+    const { value } = decodeStrictJson(new Uint8Array(readFileSync(owned.path)), 'journal lock');
+    assert(isPlainObject(value), 'journal lock must be an object');
+    assertExactKeys(value, ['ownerNonce', 'ownerPid', 'protocolVersion'], 'journal lock');
+    assert(typeof value.ownerNonce === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value.ownerNonce), 'journal lock owner nonce is invalid');
+    assert(Number.isSafeInteger(value.ownerPid) && value.ownerPid > 0, 'journal lock owner PID is invalid');
+    assert(value.protocolVersion === UNICODE_REVIEW_JOURNAL_PROTOCOL, 'journal lock has an unsupported protocol');
+    return { owned, record: value as LockRecord };
+  } catch (error) {
+    releaseOwnedPath(owned);
+    throw error;
+  }
 }
 
 function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemporaryNonce: string | null): JournalInspection {
@@ -230,7 +283,8 @@ function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemp
   recordOwnedPath(eventsDirectory, 'directory');
   const eventNames: string[] = [];
   let temporary: OwnedPath | null = null;
-  for (const entry of readdirSync(eventsDirectory).sort()) {
+  try {
+    for (const entry of readdirSync(eventsDirectory).sort()) {
     const eventMatch = EVENT_NAME_PATTERN.exec(entry);
     if (eventMatch !== null) {
       eventNames.push(entry);
@@ -240,12 +294,12 @@ function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemp
     assert(temporaryMatch !== null, `journal contains an unknown event entry: ${entry}`);
     assert(allowedTemporaryNonce !== null && temporaryMatch[2] === allowedTemporaryNonce, `journal contains an unowned temporary artifact: ${entry}`);
     assert(temporary === null, 'journal contains multiple in-flight temporary artifacts');
-    temporary = recordOwnedPath(join(eventsDirectory, entry), 'file');
-  }
+    temporary = recordOwnedPath(join(eventsDirectory, entry), 'file', allowedTemporaryNonce !== null);
+    }
 
-  const events: UnicodeReviewJournalEvent[] = [];
-  let previousDigest: string | null = null;
-  for (let index = 0; index < eventNames.length; index += 1) {
+    const events: UnicodeReviewJournalEvent[] = [];
+    let previousDigest: string | null = null;
+    for (let index = 0; index < eventNames.length; index += 1) {
     const name = eventNames[index];
     const sequence = index + 1;
     assert(name === eventName(sequence), `journal event sequence gap or duplicate at ${name}`);
@@ -269,9 +323,9 @@ function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemp
       digest,
     });
     previousDigest = digest;
-  }
+    }
 
-  if (temporary !== null) {
+    if (temporary !== null) {
     const match = TEMPORARY_NAME_PATTERN.exec(basename(temporary.path));
     assert(match !== null, 'journal temporary artifact has an invalid name');
     const temporarySequence = Number(match[1]);
@@ -285,8 +339,12 @@ function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemp
     } else {
       throw new Error('journal temporary artifact does not match the next or last committed sequence');
     }
+    }
+    return { root, events, tip: tipFor(events), temporary };
+  } catch (error) {
+    releaseOwnedPath(temporary);
+    throw error;
   }
-  return { root, events, tip: tipFor(events), temporary };
 }
 
 function writeExclusiveFile(path: string, contents: string): OwnedPath {
@@ -294,14 +352,13 @@ function writeExclusiveFile(path: string, contents: string): OwnedPath {
   let owned: OwnedPath | null = null;
   try {
     descriptor = openSync(path, 'wx', 0o600);
-    owned = recordOwnedPath(path, 'file');
+    owned = recordOwnedPath(path, 'file', descriptor);
     writeFileSync(descriptor, contents, 'utf8');
     fsyncSync(descriptor);
-    closeSync(descriptor);
     descriptor = null;
     return owned;
   } catch (error) {
-    if (descriptor !== null) {
+    if (descriptor !== null && owned === null) {
       try {
         closeSync(descriptor);
       } catch {
@@ -315,6 +372,7 @@ function writeExclusiveFile(path: string, contents: string): OwnedPath {
         // Preserve any replacement or cleanup failure rather than deleting by path.
       }
     }
+    releaseOwnedPath(owned);
     throw error;
   }
 }
@@ -324,8 +382,13 @@ function acquireLock(root: string): { readonly owned: OwnedPath; readonly record
   const path = join(root, LOCK_NAME);
   try {
     const owned = writeExclusiveFile(path, `${canonicalJson(record)}\n`);
-    fsyncDirectory(root);
-    return { owned, record };
+    try {
+      fsyncDirectory(root);
+      return { owned, record };
+    } catch (error) {
+      releaseOwnedPath(owned);
+      throw error;
+    }
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST') {
       throw new Error('journal already has an in-flight or abandoned writer lock');
@@ -360,16 +423,29 @@ export function initializeUnicodeReviewJournal(path: string): UnicodeReviewJourn
   let eventsOwnership: OwnedPath | null = null;
   try {
     mkdirSync(root);
-    rootOwnership = recordOwnedPath(root, 'directory');
+    rootOwnership = recordOwnedPath(root, 'directory', true);
     markerOwnership = writeExclusiveFile(join(root, MARKER_NAME), `${canonicalJson({ protocolVersion: UNICODE_REVIEW_JOURNAL_PROTOCOL })}\n`);
     mkdirSync(join(root, EVENTS_DIRECTORY_NAME));
-    eventsOwnership = recordOwnedPath(join(root, EVENTS_DIRECTORY_NAME), 'directory');
+    eventsOwnership = recordOwnedPath(join(root, EVENTS_DIRECTORY_NAME), 'directory', true);
     fsyncDirectory(root);
-    return inspectJournal(root, null, null);
+    const state = inspectJournal(root, null, null);
+    releaseOwnedPath(eventsOwnership);
+    releaseOwnedPath(markerOwnership);
+    releaseOwnedPath(rootOwnership);
+    eventsOwnership = null;
+    markerOwnership = null;
+    rootOwnership = null;
+    return state;
   } catch (error) {
-    if (eventsOwnership !== null && isStillOwned(eventsOwnership)) rmdirSync(eventsOwnership.path);
-    if (markerOwnership !== null && isStillOwned(markerOwnership)) removeOwnedFile(markerOwnership, 'journal protocol marker');
-    if (rootOwnership !== null && isStillOwned(rootOwnership)) rmdirSync(rootOwnership.path);
+    try {
+      if (eventsOwnership !== null && isStillOwned(eventsOwnership)) rmdirSync(eventsOwnership.path);
+      if (markerOwnership !== null && isStillOwned(markerOwnership)) removeOwnedFile(markerOwnership, 'journal protocol marker');
+      if (rootOwnership !== null && isStillOwned(rootOwnership)) rmdirSync(rootOwnership.path);
+    } finally {
+      releaseOwnedPath(eventsOwnership);
+      releaseOwnedPath(markerOwnership);
+      releaseOwnedPath(rootOwnership);
+    }
     throw error;
   }
 }
@@ -401,32 +477,46 @@ export function appendUnicodeReviewJournalEvent(
     const temporaryPath = join(root, EVENTS_DIRECTORY_NAME, `.${eventName(sequence)}.partial-${lock.record.ownerNonce}`);
     temporary = writeExclusiveFile(temporaryPath, encoded.raw);
     options.beforeCommit?.();
+    assert(isStillOwned(temporary), 'journal temporary artifact changed ownership and is preserved');
     linkSync(temporary.path, destination);
     fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     options.afterCommit?.();
     removeOwnedFile(temporary, 'journal temporary artifact');
+    releaseOwnedPath(temporary);
     temporary = null;
     fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     const committed = inspectJournal(root, lock.owned, lock.record.ownerNonce);
     return { root: committed.root, events: committed.events, tip: committed.tip };
   } finally {
-    if (temporary !== null && isStillOwned(temporary)) removeOwnedFile(temporary, 'journal temporary artifact');
-    removeOwnedFile(lock.owned, 'journal lock');
-    fsyncDirectory(root);
+    try {
+      if (temporary !== null && isStillOwned(temporary)) removeOwnedFile(temporary, 'journal temporary artifact');
+      removeOwnedFile(lock.owned, 'journal lock');
+      fsyncDirectory(root);
+    } finally {
+      releaseOwnedPath(temporary);
+      releaseOwnedPath(lock.owned);
+    }
   }
 }
 
 /** Removes a stopped owner's validated lock and one matching temporary artifact after a full journal replay. */
-export function recoverStoppedUnicodeReviewJournalWriter(path: string): UnicodeReviewJournalState {
+export function recoverStoppedUnicodeReviewJournalWriter(path: string, options: UnicodeReviewJournalRecoveryOptions = {}): UnicodeReviewJournalState {
   const root = resolveJournalRoot(path);
   const lock = readLock(root);
-  assert(ownerIsProvablyGone(lock.record.ownerPid), 'journal lock owner is still running or cannot be proven gone');
-  const inspection = inspectJournal(root, lock.owned, lock.record.ownerNonce);
-  if (inspection.temporary !== null) {
-    removeOwnedFile(inspection.temporary, 'journal temporary artifact');
-    fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+  let inspection: JournalInspection | null = null;
+  try {
+    assert(ownerIsProvablyGone(lock.record.ownerPid), 'journal lock owner is still running or cannot be proven gone');
+    inspection = inspectJournal(root, lock.owned, lock.record.ownerNonce);
+    options.beforeCleanup?.({ root: inspection.root, events: inspection.events, tip: inspection.tip });
+    if (inspection.temporary !== null) {
+      removeOwnedFile(inspection.temporary, 'journal temporary artifact');
+      fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+    }
+    removeOwnedFile(lock.owned, 'journal lock');
+    fsyncDirectory(root);
+    return { root: inspection.root, events: inspection.events, tip: inspection.tip };
+  } finally {
+    releaseOwnedPath(inspection?.temporary ?? null);
+    releaseOwnedPath(lock.owned);
   }
-  removeOwnedFile(lock.owned, 'journal lock');
-  fsyncDirectory(root);
-  return loadUnicodeReviewJournal(root);
 }

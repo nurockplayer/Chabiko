@@ -916,11 +916,11 @@ function evaluateCalibration(
       if (actual.visualOutcome === 'confusable') strongNegativeConfusable += 1;
     }
     if (item.class === 'hard-probe') {
-      hardProbeProductionOutcomes[item.pairRef] = actual.visualOutcome !== item.expectedOutcome
-        && (actual.visualOutcome === 'confusable' || actual.visualOutcome === 'not-confusable')
-        && (item.expectedOutcome === 'confusable' || item.expectedOutcome === 'not-confusable')
-        ? 'borderline'
-        : actual.visualOutcome;
+      // A sealed hard probe is fail-closed: any binary reviewer outcome that disagrees with the
+      // sealed expectation stays canonical 'borderline', including a binary outcome when the
+      // sealed expectation is itself 'borderline'.
+      const binaryDisagreement = actual.visualOutcome !== item.expectedOutcome && actual.visualOutcome !== 'borderline';
+      hardProbeProductionOutcomes[item.pairRef] = binaryDisagreement ? 'borderline' : actual.visualOutcome;
     }
   }
   // Strict Pass A parsing permits no prose or relation field, so leakage is structurally zero.

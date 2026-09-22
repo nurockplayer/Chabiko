@@ -24,6 +24,7 @@ import {
   type ControllerEvidenceInput,
   type EvidenceAuthority,
   type ExternalControlEvidenceInput,
+  type ManifestControllerSidecarEntry,
   type ManifestEvidenceInput,
   type ReviewContractBinding,
   validateAuthoritativeBlindEvidenceArtifacts,
@@ -254,6 +255,43 @@ describe('#477 Unicode visual-review v0.2.1 deterministic harness', () => {
     expect(() => promoteConfirmedPositive({
       context: calibration.context,
       calibrationAuthorization: calibration.authorization!,
+      classification: { a, b },
+      passB: { result: passBResult, receipt: passBReceipt },
+    })).toThrow(/hard-probe borderline/i);
+  });
+
+  it('keeps a sealed borderline hard probe canonical and learner-excluded for every binary reviewer outcome', () => {
+    const fixture = calibrationFixture();
+    const hardProbe = fixture.key.items.find((item) => item.class === 'hard-probe')!;
+    const target = fixture.context.sidecar.entries.find((entry): entry is ManifestControllerSidecarEntry => entry.purpose === 'manifest' && entry.pairRef === hardProbe.pairRef)!;
+    const sealedBorderlineKey = {
+      ...fixture.key,
+      items: fixture.key.items.map((item) => item.pairRef === hardProbe.pairRef ? { ...item, expectedOutcome: 'borderline' as const } : item),
+    };
+    const refs = sealedBorderlineKey.items.map((item) => item.pairRef);
+    for (const actualOutcome of ['confusable', 'not-confusable'] as const) {
+      const results = fixture.results.map((result) => result.pairRef === hardProbe.pairRef ? { ...result, visualOutcome: actualOutcome } : result);
+      const issued = authorizeCalibration(fixture.context, sealedBorderlineKey, submission('reviewer-a', fixture.context, results, refs));
+      expect(issued.authorization).not.toBeNull();
+      expect(issued.evaluation.pass).toBe(true);
+      expect(issued.evaluation.hardProbeProductionOutcomes[hardProbe.pairRef]).toBe('borderline');
+      expect(issued.replayBinding?.hardProbeCandidateOverrides).toContainEqual(expect.objectContaining({
+        pairRef: target.pairRef,
+        candidateId: target.candidateId,
+        candidateChecksumSha256: target.candidateChecksumSha256,
+        outcome: 'borderline',
+      }));
+    }
+
+    const positiveResults = fixture.context.sidecar.entries.map((entry) => ({ pairRef: entry.pairRef, visualOutcome: entry.pairRef === hardProbe.pairRef ? 'confusable' as const : 'not-confusable' as const }));
+    const a = submission('reviewer-a', fixture.context, positiveResults, fixture.context.sidecar.entries.map((entry) => entry.pairRef));
+    const b = submission('reviewer-b', fixture.context, [{ pairRef: hardProbe.pairRef, visualOutcome: 'confusable' }], [hardProbe.pairRef], 'b-session', 'b-context');
+    const passBResult = { pairRef: hardProbe.pairRef, observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+    const passBReceipt = submission('pass-b', fixture.context, passBResult, [hardProbe.pairRef], 'pass-b-session', 'pass-b-context').receipt;
+    const promoted = authorizeCalibration(fixture.context, sealedBorderlineKey, submission('reviewer-a', fixture.context, fixture.results.map((result) => result.pairRef === hardProbe.pairRef ? { ...result, visualOutcome: 'confusable' as const } : result), refs));
+    expect(() => promoteConfirmedPositive({
+      context: fixture.context,
+      calibrationAuthorization: promoted.authorization!,
       classification: { a, b },
       passB: { result: passBResult, receipt: passBReceipt },
     })).toThrow(/hard-probe borderline/i);

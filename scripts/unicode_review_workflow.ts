@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { isAbsolute } from 'node:path';
 import {
   authorizeCalibration,
   buildBlindEvidenceArtifactsFromAuthority,
@@ -46,6 +47,8 @@ export interface UnicodeReviewWorkflowState {
   readonly activeWave: UnicodeReviewWorkflowActiveWave | null;
   /** Every reconstructed wave, including terminal waves, for stored-artifact verification. */
   readonly waves: readonly UnicodeReviewWorkflowRecordedWave[];
+  /** Every Reviewer B and Pass B subset output root chosen so far, for permanent path fencing. */
+  readonly subsetRoots: readonly string[];
 }
 
 export interface UnicodeReviewWorkflowActiveWave {
@@ -53,7 +56,15 @@ export interface UnicodeReviewWorkflowActiveWave {
   readonly stage: 'reviewer-a-pending' | 'reviewer-b-preparation-pending' | 'reviewer-b-pending' | 'pass-b-preparation-pending' | 'pass-b-pending' | 'finalization-pending';
   readonly artifacts: UnicodeReviewWaveArtifacts;
   readonly reviewerBPairRefs: readonly string[] | null;
+  /** Immutable Reviewer B refs exported when the subset was prepared. */
+  readonly reviewerBPreparedPairRefs: readonly string[] | null;
+  /** Immutable Pass B refs exported when the subset was prepared; retained while pending refs shrink. */
+  readonly passBPreparedPairRefs: readonly string[] | null;
   readonly passBPairRefs: readonly string[] | null;
+  /** Persisted subset output root for the pending Reviewer B subset, once chosen. */
+  readonly reviewerBSubsetOutputPath: string | null;
+  /** Persisted subset output root for the pending Pass B subset, once chosen. */
+  readonly passBSubsetOutputPath: string | null;
 }
 
 export interface UnicodeReviewWorkflowRecordedWave {
@@ -62,6 +73,14 @@ export interface UnicodeReviewWorkflowRecordedWave {
   readonly artifacts: UnicodeReviewWaveArtifacts;
   /** Reconstructed only from finalized, independently proven Pass B evidence. */
   readonly promotions: readonly PromotionRecord[];
+  /** Immutable Reviewer B refs exported when the subset was prepared. */
+  readonly reviewerBPreparedPairRefs: readonly string[] | null;
+  /** Immutable Pass B refs exported when the subset was prepared. */
+  readonly passBPreparedPairRefs: readonly string[] | null;
+  /** Persisted Reviewer B subset output root for this wave, retained after finalization. */
+  readonly reviewerBSubsetOutputPath: string | null;
+  /** Persisted Pass B subset output root for this wave, retained after finalization. */
+  readonly passBSubsetOutputPath: string | null;
 }
 
 /**
@@ -111,7 +130,9 @@ interface WaveRuntime {
   bRefs: readonly string[] | null;
   b: VisionClassificationSubmission | null;
   bCompleted: boolean;
+  bSubsetOutputPath: string | null;
   passBRefs: readonly string[] | null;
+  passBSubsetOutputPath: string | null;
   passB: readonly VisionPassBSubmission[];
   invalidated: boolean;
   finalized: boolean;
@@ -134,6 +155,11 @@ function exactKeys(value: unknown, keys: readonly string[], label: string): asse
   const actual = Object.keys(value).sort();
   const expected = [...keys].sort();
   assert(actual.length === expected.length && actual.every((key, index) => key === expected[index]), `${label} has an unsupported schema`);
+}
+
+function parseSubsetOutputPath(value: unknown, label: string): string {
+  assert(typeof value === 'string' && isAbsolute(value), `${label} must be an absolute path`);
+  return value;
 }
 
 function replayCalibration(calibration: UnicodeReviewWorkflowCalibration): { authorization: CalibrationAuthorization; binding: CalibrationReplayBinding } {
@@ -237,7 +263,7 @@ function replayState(
       assert(plan.manifest.every((entry) => !finalized.has(entry.candidateId)), 'workflow journal reuses a finalized candidate');
       const manifestInputs = manifestInputsByWave.get(plan.waveId);
       assert(manifestInputs, `workflow replay requires controller manifest inputs for wave '${plan.waveId}'`);
-      active = { plan, artifacts: buildWaveArtifacts(calibration, plan, manifestInputs), a: null, bRefs: null, b: null, bCompleted: false, passBRefs: null, passB: [], invalidated: false, finalized: false };
+      active = { plan, artifacts: buildWaveArtifacts(calibration, plan, manifestInputs), a: null, bRefs: null, b: null, bCompleted: false, bSubsetOutputPath: null, passBRefs: null, passBSubsetOutputPath: null, passB: [], invalidated: false, finalized: false };
       const provisionalKeys = new Set(issued.binding.hardProbeCandidateOverrides.map((override) => `${override.candidateId}\n${override.candidateChecksumSha256}`));
       for (const entry of plan.manifest) {
         if (provisionalKeys.has(`${entry.candidateId}\n${entry.candidateChecksumSha256}`)) provisional.add(entry.candidateId);
@@ -272,10 +298,11 @@ function replayState(
       active = null;
       streak = 0;
     } else if (payload.type === 'wave-b-planned') {
-      exactKeys(payload, ['type', 'waveId', 'pairRefs'], 'wave B plan event');
+      exactKeys(payload, ['type', 'waveId', 'pairRefs', 'subsetOutputPath'], 'wave B plan event');
       assert(active?.plan.waveId === payload.waveId && active.a !== null && active.bRefs === null && Array.isArray(payload.pairRefs), 'workflow journal has an invalid B plan transition');
       sameRefs(payload.pairRefs as string[], expectedWaveBRefs(active.artifacts, active.a), 'Reviewer B subset');
       active.bRefs = payload.pairRefs as string[];
+      active.bSubsetOutputPath = parseSubsetOutputPath(payload.subsetOutputPath, 'workflow Reviewer B subset output path');
     } else if (payload.type === 'wave-b-ingested') {
       exactKeys(payload, ['type', 'waveId', 'submission'], 'wave B event');
       assert(active?.plan.waveId === payload.waveId && active.bRefs !== null && !active.bCompleted, 'workflow journal has an invalid B transition');
@@ -289,10 +316,11 @@ function replayState(
       }
       active.bCompleted = true;
     } else if (payload.type === 'wave-pass-b-planned') {
-      exactKeys(payload, ['type', 'waveId', 'pairRefs'], 'wave Pass B plan event');
+      exactKeys(payload, ['type', 'waveId', 'pairRefs', 'subsetOutputPath'], 'wave Pass B plan event');
       assert(active?.plan.waveId === payload.waveId && active.a !== null && active.bRefs !== null && active.bCompleted && active.passBRefs === null && Array.isArray(payload.pairRefs), 'workflow journal has an invalid Pass B plan transition');
       sameRefs(payload.pairRefs as string[], expectedPassBRefs(active.artifacts, issued.binding, active.a, active.b), 'Pass B subset');
       active.passBRefs = payload.pairRefs as string[];
+      active.passBSubsetOutputPath = parseSubsetOutputPath(payload.subsetOutputPath, 'workflow Pass B subset output path');
     } else if (payload.type === 'wave-pass-b-ingested') {
       exactKeys(payload, ['type', 'waveId', 'submission'], 'wave Pass B event');
       assert(active?.plan.waveId === payload.waveId && active.a !== null && active.bRefs !== null && active.bCompleted && active.passBRefs !== null, 'workflow journal has an invalid Pass B transition');
@@ -323,10 +351,13 @@ function replayState(
   return { waves, finalized, provisional, streak };
 }
 
-function loadState(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): { readonly issued: ReturnType<typeof replayCalibration>; readonly replay: ReturnType<typeof replayState>; readonly journal: UnicodeReviewJournalState } {
+function stateFromJournal(journal: UnicodeReviewJournalState, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): { readonly issued: ReturnType<typeof replayCalibration>; readonly replay: ReturnType<typeof replayState>; readonly journal: UnicodeReviewJournalState } {
   const issued = replayCalibration(calibration);
-  const journal = loadUnicodeReviewJournal(path);
   return { issued, replay: replayState(journal, calibration, issued, manifestInputsByWave), journal };
+}
+
+function loadState(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): { readonly issued: ReturnType<typeof replayCalibration>; readonly replay: ReturnType<typeof replayState>; readonly journal: UnicodeReviewJournalState } {
+  return stateFromJournal(loadUnicodeReviewJournal(path), calibration, manifestInputsByWave);
 }
 
 function currentWave(replay: ReturnType<typeof replayState>): WaveRuntime {
@@ -409,25 +440,41 @@ function append(path: string, state: UnicodeReviewJournalState, payload: Record<
   return appendUnicodeReviewJournalEvent(path, state.tip, payload);
 }
 
+/**
+ * Opens a newly-created journal or the exact empty journal left by a stopped
+ * initializer.  A nonempty journal is already a workflow candidate and must
+ * never be repurposed by init; a lock remains an explicit recover operation.
+ */
+function initializeOrResumeEmptyJournal(path: string): UnicodeReviewJournalState {
+  try {
+    return initializeUnicodeReviewJournal(path);
+  } catch (error) {
+    if (!(typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST')) throw error;
+    const existing = loadUnicodeReviewJournal(path);
+    assert(existing.events.length === 0 && existing.tip.sequence === 0 && existing.tip.digest === null, 'workflow journal is already initialized or is not an exact empty journal');
+    return existing;
+  }
+}
+
 export function initializeUnicodeReviewWorkflow(path: string, calibration: UnicodeReviewWorkflowCalibration): UnicodeReviewWorkflowState {
   const issued = replayCalibration(calibration);
-  const journal = initializeUnicodeReviewJournal(path);
+  const journal = initializeOrResumeEmptyJournal(path);
   const initialized = append(path, journal, initializedPayload(issued.binding));
-  return { journal: initialized, activeWaveId: null, finalizedCandidateIds: [], provisionalCandidateIds: [], cleanInitialWaveStreak: 0, activeWave: null, waves: [] };
+  return { journal: initialized, activeWaveId: null, finalizedCandidateIds: [], provisionalCandidateIds: [], cleanInitialWaveStreak: 0, activeWave: null, waves: [], subsetRoots: [] };
 }
 
 function activeWaveSnapshot(wave: WaveRuntime | undefined, binding: CalibrationReplayBinding): UnicodeReviewWorkflowActiveWave | null {
   if (!wave || wave.invalidated || wave.finalized) return null;
-  if (wave.a === null) return { waveId: wave.plan.waveId, stage: 'reviewer-a-pending', artifacts: wave.artifacts, reviewerBPairRefs: null, passBPairRefs: null };
+  if (wave.a === null) return { waveId: wave.plan.waveId, stage: 'reviewer-a-pending', artifacts: wave.artifacts, reviewerBPairRefs: null, reviewerBPreparedPairRefs: null, passBPreparedPairRefs: null, passBPairRefs: null, reviewerBSubsetOutputPath: null, passBSubsetOutputPath: null };
   const reviewerBPairRefs = wave.bCompleted ? [] : wave.bRefs ?? expectedWaveBRefs(wave.artifacts, wave.a);
-  if (wave.bRefs === null) return { waveId: wave.plan.waveId, stage: 'reviewer-b-preparation-pending', artifacts: wave.artifacts, reviewerBPairRefs, passBPairRefs: null };
-  if (!wave.bCompleted) return { waveId: wave.plan.waveId, stage: 'reviewer-b-pending', artifacts: wave.artifacts, reviewerBPairRefs, passBPairRefs: null };
+  if (wave.bRefs === null) return { waveId: wave.plan.waveId, stage: 'reviewer-b-preparation-pending', artifacts: wave.artifacts, reviewerBPairRefs, reviewerBPreparedPairRefs: null, passBPreparedPairRefs: null, passBPairRefs: null, reviewerBSubsetOutputPath: null, passBSubsetOutputPath: null };
+  if (!wave.bCompleted) return { waveId: wave.plan.waveId, stage: 'reviewer-b-pending', artifacts: wave.artifacts, reviewerBPairRefs, reviewerBPreparedPairRefs: wave.bRefs, passBPreparedPairRefs: null, passBPairRefs: null, reviewerBSubsetOutputPath: wave.bSubsetOutputPath, passBSubsetOutputPath: null };
   const requiredPassBPairRefs = wave.passBRefs ?? expectedPassBRefs(wave.artifacts, binding, wave.a, wave.b);
   const completedPassBPairRefs = new Set(wave.passB.map((submission) => parsePassBResult(submission.result).pairRef));
   const passBPairRefs = requiredPassBPairRefs.filter((pairRef) => !completedPassBPairRefs.has(pairRef));
-  if (wave.passBRefs === null) return { waveId: wave.plan.waveId, stage: 'pass-b-preparation-pending', artifacts: wave.artifacts, reviewerBPairRefs, passBPairRefs };
-  if (passBPairRefs.length > 0) return { waveId: wave.plan.waveId, stage: 'pass-b-pending', artifacts: wave.artifacts, reviewerBPairRefs, passBPairRefs };
-  return { waveId: wave.plan.waveId, stage: 'finalization-pending', artifacts: wave.artifacts, reviewerBPairRefs, passBPairRefs };
+  if (wave.passBRefs === null) return { waveId: wave.plan.waveId, stage: 'pass-b-preparation-pending', artifacts: wave.artifacts, reviewerBPairRefs, reviewerBPreparedPairRefs: wave.bRefs, passBPreparedPairRefs: null, passBPairRefs, reviewerBSubsetOutputPath: wave.bSubsetOutputPath, passBSubsetOutputPath: null };
+  if (wave.passBRefs.length === 0 || passBPairRefs.length > 0) return { waveId: wave.plan.waveId, stage: 'pass-b-pending', artifacts: wave.artifacts, reviewerBPairRefs, reviewerBPreparedPairRefs: wave.bRefs, passBPreparedPairRefs: wave.passBRefs, passBPairRefs, reviewerBSubsetOutputPath: wave.bSubsetOutputPath, passBSubsetOutputPath: wave.passBSubsetOutputPath };
+  return { waveId: wave.plan.waveId, stage: 'finalization-pending', artifacts: wave.artifacts, reviewerBPairRefs, reviewerBPreparedPairRefs: wave.bRefs, passBPreparedPairRefs: wave.passBRefs, passBPairRefs, reviewerBSubsetOutputPath: wave.bSubsetOutputPath, passBSubsetOutputPath: wave.passBSubsetOutputPath };
 }
 
 function recordedWaveSnapshot(wave: WaveRuntime, authorization: CalibrationAuthorization): UnicodeReviewWorkflowRecordedWave {
@@ -439,14 +486,32 @@ function recordedWaveSnapshot(wave: WaveRuntime, authorization: CalibrationAutho
     terminalState: wave.invalidated ? 'invalidated' : wave.finalized ? 'finalized' : 'pending',
     artifacts: wave.artifacts,
     promotions,
+    reviewerBPreparedPairRefs: wave.bRefs,
+    passBPreparedPairRefs: wave.passBRefs,
+    reviewerBSubsetOutputPath: wave.bSubsetOutputPath,
+    passBSubsetOutputPath: wave.passBSubsetOutputPath,
   };
 }
 
+function recordedSubsetRoots(waves: readonly WaveRuntime[]): readonly string[] {
+  const roots = new Set<string>();
+  for (const wave of waves) {
+    if (wave.bSubsetOutputPath !== null) roots.add(wave.bSubsetOutputPath);
+    if (wave.passBSubsetOutputPath !== null) roots.add(wave.passBSubsetOutputPath);
+  }
+  return [...roots].sort();
+}
+
 export function readUnicodeReviewWorkflow(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): UnicodeReviewWorkflowState {
-  const loaded = loadState(path, calibration, manifestInputsByWave);
+  return readUnicodeReviewWorkflowFromJournal(loadUnicodeReviewJournal(path), calibration, manifestInputsByWave);
+}
+
+/** Replays a caller-supplied structurally validated journal without reopening its root. */
+export function readUnicodeReviewWorkflowFromJournal(journal: UnicodeReviewJournalState, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): UnicodeReviewWorkflowState {
+  const loaded = stateFromJournal(journal, calibration, manifestInputsByWave);
   const active = loaded.replay.waves.at(-1);
   const activeWave = activeWaveSnapshot(active, loaded.issued.binding);
-  return { journal: loaded.journal, activeWaveId: activeWave?.waveId ?? null, finalizedCandidateIds: [...loaded.replay.finalized].sort(), provisionalCandidateIds: [...loaded.replay.provisional].sort(), cleanInitialWaveStreak: loaded.replay.streak, activeWave, waves: loaded.replay.waves.map((wave) => recordedWaveSnapshot(wave, loaded.issued.authorization)) };
+  return { journal: loaded.journal, activeWaveId: activeWave?.waveId ?? null, finalizedCandidateIds: [...loaded.replay.finalized].sort(), provisionalCandidateIds: [...loaded.replay.provisional].sort(), cleanInitialWaveStreak: loaded.replay.streak, activeWave, waves: loaded.replay.waves.map((wave) => recordedWaveSnapshot(wave, loaded.issued.authorization)), subsetRoots: recordedSubsetRoots(loaded.replay.waves) };
 }
 
 export function planUnicodeReviewWave(path: string, calibration: UnicodeReviewWorkflowCalibration, waveId: string, manifestInputs: readonly ManifestEvidenceInput[], previousManifestInputsByWave: UnicodeReviewWorkflowManifestInputs = new Map()): UnicodeReviewWaveArtifacts {
@@ -494,12 +559,13 @@ export function ingestUnicodeReviewWaveA(path: string, calibration: UnicodeRevie
   }
 }
 
-export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): readonly string[] {
+export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
+  assert(typeof subsetOutputPath === 'string' && isAbsolute(subsetOutputPath), 'Reviewer B subset output path must be an absolute path');
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs === null, 'Reviewer B cannot be prepared at this workflow stage');
   const refs = expectedWaveBRefs(wave.artifacts, wave.a);
-  append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs });
+  append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath });
   return refs;
 }
 
@@ -525,12 +591,13 @@ export function ingestUnicodeReviewWaveB(path: string, calibration: UnicodeRevie
   }
 }
 
-export function prepareUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): readonly string[] {
+export function prepareUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
+  assert(typeof subsetOutputPath === 'string' && isAbsolute(subsetOutputPath), 'Pass B subset output path must be an absolute path');
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs === null, 'Pass B cannot be prepared at this workflow stage');
   const refs = expectedPassBRefs(wave.artifacts, loaded.issued.binding, wave.a, wave.b);
-  append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs });
+  append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath });
   return refs;
 }
 

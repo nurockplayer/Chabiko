@@ -267,3 +267,26 @@ export function renderPinnedPair(
   }
   return png;
 }
+
+/** Encode one exact 64x64 grayscale derivative as a metadata-free PNG. */
+export function renderPinnedGlyph(tile: Uint8Array, tileSha256: string): Uint8Array {
+  requireGrayscaleTile(tile, 'glyph tile');
+  requireMatchingSha256('glyph tile', tileSha256, tile);
+  const raw = new Uint8Array((TILE_SIDE + 1) * TILE_SIDE);
+  for (let row = 0; row < TILE_SIDE; row += 1) {
+    raw[row * (TILE_SIDE + 1)] = 0;
+    raw.set(tile.subarray(row * TILE_SIDE, (row + 1) * TILE_SIDE), row * (TILE_SIDE + 1) + 1);
+  }
+  const ihdr = new Uint8Array(13);
+  writeUint32(ihdr, 0, TILE_SIDE);
+  writeUint32(ihdr, 4, TILE_SIDE);
+  ihdr[8] = 8;
+  const parts = [Uint8Array.from(PNG_SIGNATURE), chunk('IHDR', ihdr), chunk('IDAT', new Uint8Array(deflateSync(raw))), chunk('IEND', new Uint8Array(0))];
+  const png = new Uint8Array(parts.reduce((length, part) => length + part.byteLength, 0));
+  let offset = 0;
+  for (const part of parts) {
+    png.set(part, offset);
+    offset += part.byteLength;
+  }
+  return png;
+}

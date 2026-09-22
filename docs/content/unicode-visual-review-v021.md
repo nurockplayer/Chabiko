@@ -28,6 +28,44 @@ The workflow adapter below is deterministic controller tooling. It still cannot
 replace the external key, external pixel review, or a current trusted transport
 receipt with a local fixture or a persisted PASS record.
 
+## Canonical glyph export and deterministic boundary
+
+Before creating controller input, export the current #262 authority's pinned
+glyph PNGs to a fresh external directory:
+
+```bash
+pnpm exec node scripts/export_unicode_review_glyphs.ts \
+  --output /absolute/external/v021-glyph-pack
+```
+
+The output contains `index.json` and one `glyphs/<glyphRef>.png` per current
+authority glyph. The index binds the current manifest and review-plan
+checksums, rendering environment, font checksum, scalar, derivative checksum,
+PNG path, and PNG checksum. The exporter validates the current authority and
+the complete pinned payload before writing. It invokes the pinned Docker
+renderer when no payload is supplied; the Docker image, browser, font input,
+64×64 grayscale tiles, and derivative checksums are fixed by the #262
+authority. The output directory must be absolute, outside this repository and
+all of its worktrees, fresh, and exclusive. The exporter does not modify
+canonical source files and does not send glyphs to a reviewer.
+
+Use absolute paths into this pack when creating the controller-owned bundle
+input. `index.json` is an export manifest; it is not itself a bundle input.
+The bundle command then deterministically decodes the supplied PNGs, verifies
+their authority derivative checksums, renders the comparison PNGs, and writes
+the blind reviewer bundle and controller sidecar to separate fresh external
+directories.
+
+The deterministic boundary ends at pixel reproduction. Exporting glyphs,
+decoding and validating PNGs, rendering comparison artifacts, deriving opaque
+references, ordering artifacts, replaying the current authority, and checking
+all hashes are local deterministic controller operations. A genuine sealed
+72-item calibration key, a trusted vision-capable Reviewer A/B or Pass B
+classification, and their transport receipts remain external evidence. A
+fixture, OCR result, text reconstruction, local model, generated label, or
+persisted PASS JSON cannot substitute for that evidence or authorize learner
+content.
+
 ## Trust boundaries
 
 | Boundary | Trusted input | Prohibited disclosure or substitution |
@@ -261,6 +299,14 @@ strong-negative `confusable` count, zero structurally permitted relation
 leakage, a per-outcome confusion matrix, raw agreement, hard-probe production
 outcomes, and canonical candidate/checksum `borderline` overrides.
 
+Before publishing either PASS or FAIL, the command resolves every role path
+and proves the output is disjoint from both reviewer and controller artifact
+directories and all input files. Malformed context descriptors, unsafe or
+relative paths, and role overlaps exit without creating an output; an unsafe
+preflight never leaves a machine-readable FAIL behind. Once that path
+preflight succeeds, ordinary invalid evidence or key contents produce a
+machine-readable FAIL at the safe external destination.
+
 Freeze gates are unchanged: strong positives >=19/20, strong negatives >=19/20,
 zero strong-negative `confusable`, and zero relation leakage. A validation
 failure before evaluation has `metrics.evaluated: false` and null metrics; it
@@ -294,6 +340,11 @@ contains a marker, an `events` directory, and an exclusive lock. Initialize,
 load, append with the expected tip, and recovery functions validate the full
 chain. Recovery is permitted only for a provably stopped owned writer with a
 valid journal; unknown files, a live writer, or a changed owner fail closed.
+The workflow `recover` callback semantically replays the journal, verifies
+every stored wave, and checks every recorded subset root against all permanent
+roles before the journal API removes the held lock or matching partial event.
+Any semantic or recorded-root rejection preserves those owned artifacts for a
+later safe retry.
 
 ## Workflow command and descriptor
 
@@ -342,7 +393,9 @@ pnpm exec node scripts/run_unicode_review_workflow_v021.ts <command> \
 The exact lifecycle is:
 
 ```bash
-# Create a new empty journal after recalibration replay succeeds.
+# Create a new journal after recalibration replay succeeds. `init` creates the
+# marker, events directory, and initialization event through the journal's
+# exclusive append path.
 pnpm exec node scripts/run_unicode_review_workflow_v021.ts init \
   --descriptor /absolute/external/v021-workflow-descriptor.json \
   --output /absolute/external/init-status.json
@@ -410,18 +463,33 @@ Every command preflights its required flags and fresh external status/subset
 output before mutating the journal. `plan` writes its journal event before
 artifact publication. `resume` may publish only the current pending wave when
 **both** its reviewer and controller directories are absent. During a pending
-Reviewer B or Pass B stage, provide a new `--reviewer-output` to `resume` and
-it exports the recorded pending opaque subset without appending a duplicate
-prepare event. If either A artifact directory is present alone, or any stored
-artifact is partial or differs from replay, the adapter preserves it and stops;
-it never overwrites or cleans it.
+Reviewer B or Pass B stage, it exports the recorded pending opaque subset
+without appending a duplicate prepare event. If either A artifact directory is
+present alone, or any stored artifact is partial or differs from replay, the
+adapter preserves it and stops; it never overwrites or cleans it.
+
+Every Reviewer B and Pass B plan must record an absolute subset root. A
+pathless legacy transition is not a writable replay path: current workflow
+replay rejects it before a command can advance the journal. Before any command
+can append another event, the adapter rechecks every recorded subset export,
+including exports from terminal waves, against the original immutable prepared
+pair-reference set, replayed manifest and PNG bytes, and complete file
+inventory. A wholly absent export may be reconstructed only by `resume` for
+the current resumable stage, at that exact recorded root; this includes a
+manifest-only export whose prepared reference set is empty. A missing export
+from an advanced or terminal wave, or any partial, unexpected, or drifted
+export, fails closed and preserves the recorded root.
 
 ```bash
 pnpm exec node scripts/run_unicode_review_workflow_v021.ts resume \
   --descriptor /absolute/external/v021-workflow-descriptor.json \
-  --reviewer-output /absolute/external/fresh-reviewer-b-or-pass-b-subset \
   --output /absolute/external/resume-subset-status.json
 ```
+
+When a pending subset export was registered but its directory is absent, the
+command above recreates it at the recorded path. Supplying
+`--reviewer-output` is optional and, if supplied, must name that same recorded
+path; it cannot redirect recovery to a new directory.
 
 `recover` is the sole journal-recovery command. Use it only after a writer is
 provably stopped:
@@ -432,8 +500,75 @@ pnpm exec node scripts/run_unicode_review_workflow_v021.ts recover \
   --output /absolute/external/recover-status.json
 ```
 
-It invokes the explicit journal recovery API, then replays the workflow and
-validates every stored wave artifact before writing status.
+It invokes the explicit journal recovery API with a pre-cleanup semantic
+validation callback. For a nonempty journal, that callback replays the exact
+workflow, validates every stored wave artifact, and verifies recorded subset
+roots from pending and terminal waves against their immutable prepared refs,
+exact bytes, and complete inventory, as well as against every permanent role,
+before the API removes the held lock or matching partial event. Recovery writes
+status only after cleanup succeeds.
+If the current active wave has neither artifact directory, recovery permits
+the validated plan to remain unpublished; a subsequent `resume` recreates its
+exact artifacts. A partially present pair, damaged artifact, or missing
+terminal-wave output still rejects recovery before cleanup.
+For an exact empty journal, there are no stored waves to replay; after the
+stopped-writer cleanup, recovery performs the same calibration-first
+initialization path.
+
+Initialization has a separate boundary. Calibration is replayed before any
+journal mutation. `init` either creates a fresh external root or resumes only
+an exact protocol-valid zero-event root with no lock or unknown entries; it
+appends the initialization event using the expected zero tip. Nonempty,
+foreign, or dirty roots fail closed without deletion or modification. If an
+initializer stops while holding the journal lock, `recover` first proves that
+owner is gone and validates/reclaims only the owned lock and temporary event.
+When recovery leaves an exact empty journal, it performs the same
+calibration-first initialization; when events exist, it reads and replays the
+existing workflow. Neither command clears a live or unverified lock.
+
+Reviewer B and Pass B subset exports have persistent registration and recovery
+semantics. `prepare-b` and `prepare-pass-b` require a fresh absolute external
+`--reviewer-output`. The command first appends a journal event recording the
+exact subset root and pair references, then publishes only
+`reviewer-subset.json` and the selected stored PNGs. The recorded root is
+included in workflow status and remains permanently fenced after finalization.
+Every later status output, wave reviewer/controller root, journal, calibration
+artifact root, controller input, descriptor, command submission, and newly
+requested subset destination must be disjoint from every recorded subset root,
+including roots from terminal waves. This role isolation is checked before any
+new journal mutation.
+
+The absolute root and prepared reference set are mandatory for every new B or
+Pass B plan. A historical event without an absolute root cannot be resumed or
+written through the current workflow path. Before state advances, and again
+before stopped-writer recovery removes its lock or partial event, every
+recorded subset root is revalidated, including terminal-wave roots. The check
+uses deterministic replay of the original wave artifacts and requires the
+original manifest, selected PNG bytes, and exact inventory.
+
+Each stored subset must contain exactly its manifest and selected PNG files:
+unexpected files, symlinks, or directories (including empty nested
+directories) make replay fail closed. The command preserves the recorded root
+and does not overwrite or clean a partial or drifted export.
+
+If subset publication fails after registration, the status file is not written
+and the journal retains the registered path. `resume` reconstructs a wholly
+absent registered pending subset only at that exact path; a zero-reference
+subset is still reconstructed as its manifest-only export. If the directory
+exists, `resume` checks its complete file set and every byte against
+deterministic replay; it never overwrites, cleans, or redirects a partial or
+drifted export. A missing subset from an advanced or terminal wave fails closed
+instead. `--reviewer-output`, when supplied to `resume`, must match the
+recorded path. These rules apply equally to Reviewer B and Pass B; they
+preserve blind subset isolation while making an interrupted export
+restart-safe.
+
+Partial Pass B completion changes the pending work list, not the registered
+export or its immutable prepared pair-reference set. Resume verifies or
+recreates the complete originally prepared subset at its original path, then
+uses the journal's already-ingested results to exclude completed references
+from the pending list. Those references are never requested again merely
+because the process restarted.
 
 ## Requirement, implementation, and evidence matrix
 
@@ -441,20 +576,27 @@ validates every stored wave artifact before writing status.
 | --- | --- | --- |
 | Blind opaque bundle and separated sidecar | `unicode_review_v021.ts`, `run_unicode_review_v021.ts` | `unicode-review-v021.test.ts`, `unicode-review-cli.test.ts` |
 | Strict external path, fresh-output, and no-overwrite boundary | `unicode_review_external_io.ts`, `run_unicode_review_v021.ts` | `unicode-review-external-io.test.ts`, `unicode-review-cli.test.ts` |
+| Calibration unsafe-preflight no-output boundary | `run_unicode_review_v021.ts`, `unicode_review_external_io.ts` | `unicode-review-cli.test.ts`: “refuses calibration output inside reviewer or controller artifact directories before writing”; “does not publish a FAIL record when a sealed key or submission overlaps the blind tree”; “does not publish into the blind tree before malformed role paths are rejected” |
 | Pinned PNG decode and comparison rendering | `unicode_review_pixels.ts`, `unicode_review_cli_context.ts` | `unicode-review-pixels.test.ts`, `unicode-review-cli-context.test.ts` |
 | Original-input replay and current #262 authority rebinding | `unicode_review_cli_context.ts`, `unicode_review_v021.ts` | `unicode-review-cli-context.test.ts`, `unicode-review-v021.test.ts` |
 | Salted opaque ordering and exact one-to-one artifact coverage | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Strict 72-item sealed calibration and mechanical freeze gates | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Receipt-bound trusted vision submission and unavailable FAIL metrics | `unicode_review_v021.ts`, `run_unicode_review_v021.ts` | `unicode-review-v021.test.ts`, `unicode-review-cli.test.ts` |
+| Canonical pinned glyph export, complete authority coverage, and exclusive external pack output | `export_unicode_review_glyphs.ts`, `unicode_review_pixels.ts`, `unicode_review_external_io.ts` | `unicode-review-glyph-export.test.ts`: “builds one PNG per authority glyph and a binding index”; “fails closed for incomplete, duplicate, unknown, or drifted payloads”; “fails closed when canonical rendering authority metadata is stale or malformed”; “publishes through the real CLI argument boundary with path safety before Docker”; “accepts a payload over 1 MiB through the Docker command boundary before semantic validation” |
 | Opaque authorization, replay binding, and hard-probe exclusion | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
-| Immutable external journal and restart-safe chain validation | `unicode_review_journal.ts` | `unicode-review-journal.test.ts` |
-| Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts` |
-| Strict workflow descriptor, artifact byte replay, external status, subset export, and invalidation exit | `run_unicode_review_workflow_v021.ts` | `unicode-review-cli.test.ts` |
+| Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
+| Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
+| Fresh-root workflow initialization, exact empty-journal retry/recovery, and stopped-writer recovery | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; `unicode-review-journal.test.ts`: “initializes one fresh external root and never overwrites a journal or dirty caller root”; “recovers only a provably stopped owner after validating the journal and its own temporary artifact” |
+| Strict workflow descriptor, stored-wave replay, recorded-root role isolation, persistent B/Pass B subset registration, immutable partial Pass B resume, and invalidation exit | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-cli.test.ts`: “replays a calibrated synthetic wave through independent review and exports only blind subsets”; “resumes a partial Pass B wave against its immutable prepared subset”; “treats recorded B and Pass B exports as immutable evidence across commands and recovery”; “recreates missing zero-ref Reviewer B and Pass B exports only through resume”; “persists chosen subset roots, fences later status output, and permits only the recorded resume path”; “recovers an existing B subset when its active wave publication pair is absent”; “rejects reviewer/container-nested status and subset destinations before journal mutation”; “rejects a cross-wave controller root nested in another reviewer root before initialization”; “rejects an artifact root that would contain a controller input before initialization”; `unicode-review-workflow.test.ts`: “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
 
 ## Documentation-only verification
 
 This document is aligned to the current core, IO, pixel, context, journal, and
 CLI source interfaces. It does not claim that any external calibration, vision
 transport proof, production review wave, learner promotion, or #338 freeze gate
-has completed.
+has completed. The focused test names in the matrix identify repository
+coverage; they do not create or replace external calibration, vision, or rights
+evidence. The empty-journal test covers only the exact protocol-valid
+zero-event retry and stopped-initializer recovery path; foreign or dirty roots
+remain fail-closed.

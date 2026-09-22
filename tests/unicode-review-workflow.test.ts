@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -14,7 +14,7 @@ import {
   type ReviewEvidenceContext,
   type SealedCalibrationKey,
 } from '../scripts/unicode_review_v021';
-import { appendUnicodeReviewJournalEvent, loadUnicodeReviewJournal } from '../scripts/unicode_review_journal';
+import { appendUnicodeReviewJournalEvent, initializeUnicodeReviewJournal, loadUnicodeReviewJournal } from '../scripts/unicode_review_journal';
 import {
   finalizeUnicodeReviewWave,
   ingestUnicodeReviewWaveA,
@@ -132,7 +132,7 @@ function receipt(
   };
 }
 
-function workflowFixture(hardProbeDisagreement = false, manifestStrongControls = false) {
+function workflowFixture(hardProbeDisagreement = false, manifestStrongControls = false, hardProbeExpectedOutcome: 'confusable' | 'borderline' = 'confusable') {
   const strongControl = manifestStrongControls ? manifest : control;
   const calibrationInputs: ControllerEvidenceInput[] = [
     ...Array.from({ length: 20 }, (_, index) => strongControl(`positive-${index}`, index * 2)),
@@ -159,7 +159,7 @@ function workflowFixture(hardProbeDisagreement = false, manifestStrongControls =
     const id = entry.purpose === 'manifest' ? entry.candidateId : entry.controllerControlId;
     if (id.startsWith('positive-')) return { pairRef: entry.pairRef, class: 'strong-positive' as const, expectedOutcome: 'confusable' as const };
     if (id.startsWith('negative-')) return { pairRef: entry.pairRef, class: 'strong-negative' as const, expectedOutcome: 'not-confusable' as const };
-    if (entry.purpose === 'manifest') return { pairRef: entry.pairRef, class: 'hard-probe' as const, expectedOutcome: 'confusable' as const };
+    if (entry.purpose === 'manifest') return { pairRef: entry.pairRef, class: 'hard-probe' as const, expectedOutcome: hardProbeExpectedOutcome };
     return { pairRef: entry.pairRef, class: 'relation-trap' as const, expectedOutcome: 'borderline' as const };
   });
   const key: SealedCalibrationKey = {
@@ -180,11 +180,12 @@ function workflowFixture(hardProbeDisagreement = false, manifestStrongControls =
   };
   const issued = authorizeCalibration(context, key, calibrationSubmission);
   expect(issued.authorization).not.toBeNull();
+  const perturbedHardProbe = key.items.find((item) => item.class === 'hard-probe')!;
   return {
     calibration: { context, key, submission: calibrationSubmission } satisfies UnicodeReviewWorkflowCalibration,
     calibrationInputs,
     productionInputs,
-    hardProbeOverrideCandidateId: issued.replayBinding?.hardProbeCandidateOverrides[0]?.candidateId ?? null,
+    hardProbeOverrideCandidateId: issued.replayBinding?.hardProbeCandidateOverrides.find((override) => override.pairRef === perturbedHardProbe.pairRef)?.candidateId ?? null,
   };
 }
 
@@ -224,10 +225,10 @@ function completeCleanWave(path: string, calibration: UnicodeReviewWorkflowCalib
   const inputs = new Map(prior);
   inputs.set(waveId, [input]);
   ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
-  expect(prepareUnicodeReviewWaveB(path, calibration, inputs)).toEqual([manifestRef]);
+  expect(prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`)).toEqual([manifestRef]);
   const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
   ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'wave-b-session', 'wave-b-context') });
-  expect(prepareUnicodeReviewWavePassB(path, calibration, inputs)).toEqual([manifestRef]);
+  expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`)).toEqual([manifestRef]);
   const result = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
   ingestUnicodeReviewWavePassB(path, calibration, inputs, { result, receipt: receipt('pass-b', artifacts.context, result, [manifestRef], 'pass-b-session', 'pass-b-context') });
   const promotions = finalizeUnicodeReviewWave(path, calibration, inputs);
@@ -241,14 +242,29 @@ function moveToPassB(path: string, calibration: UnicodeReviewWorkflowCalibration
   const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
   const inputs = waveInputs(waveId, [input]);
   ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
-  prepareUnicodeReviewWaveB(path, calibration, inputs);
+  prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
   const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
   ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'wave-b-session', 'wave-b-context') });
-  expect(prepareUnicodeReviewWavePassB(path, calibration, inputs)).toEqual([manifestRef]);
+  expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`)).toEqual([manifestRef]);
   return { artifacts, manifestRef, inputs };
 }
 
 describe('#477 resumable Unicode review workflow', () => {
+  it('resumes only the exact empty journal left before workflow initialization', () => {
+    const { calibration } = workflowFixture();
+    const resumedPath = journalPath();
+    expect(initializeUnicodeReviewJournal(resumedPath).events).toEqual([]);
+    expect(initializeUnicodeReviewWorkflow(resumedPath, calibration).journal.events).toHaveLength(1);
+
+    const nonemptyPath = journalPath();
+    initializeUnicodeReviewWorkflow(nonemptyPath, calibration);
+    expect(() => initializeUnicodeReviewWorkflow(nonemptyPath, calibration)).toThrow(/already initialized|exact empty journal/i);
+
+    const foreignPath = journalPath();
+    mkdirSync(foreignPath);
+    expect(() => initializeUnicodeReviewWorkflow(foreignPath, calibration)).toThrow(/required layout|journal protocol marker|unknown|empty journal/i);
+  });
+
   it('accepts calibrated manifest strong controls as 4/4/4 external sentinels without manifest ownership', () => {
     const { calibration, calibrationInputs, productionInputs } = workflowFixture(false, true);
     const path = journalPath();
@@ -334,7 +350,7 @@ describe('#477 resumable Unicode review workflow', () => {
     const inputs = waveInputs('tampered-wave', [productionInputs[0]]);
     ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
     const journal = loadUnicodeReviewJournal(path);
-    appendUnicodeReviewJournalEvent(path, journal.tip, { type: 'wave-b-planned', waveId: 'tampered-wave', pairRefs: [] });
+    appendUnicodeReviewJournalEvent(path, journal.tip, { type: 'wave-b-planned', waveId: 'tampered-wave', pairRefs: [], subsetOutputPath: `${path}-tampered-subset` });
     expect(() => readUnicodeReviewWorkflow(path, calibration, inputs)).toThrow(/Reviewer B subset/i);
   });
 
@@ -359,7 +375,7 @@ describe('#477 resumable Unicode review workflow', () => {
     const liveRef = liveArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
     const liveInputs = waveInputs('same-context-live', [productionInputs[0]]);
     ingestUnicodeReviewWaveA(livePath, calibration, liveInputs, fullA(liveArtifacts, liveDetails, liveRef));
-    prepareUnicodeReviewWaveB(livePath, calibration, liveInputs);
+    prepareUnicodeReviewWaveB(livePath, calibration, liveInputs, `${livePath}-b-subset`);
     const liveResults = [{ pairRef: liveRef, visualOutcome: 'confusable' as const }];
     const reusedContext = { results: liveResults, receipt: receipt('reviewer-b', liveArtifacts.context, liveResults, [liveRef], 'wave-a-session', 'wave-a-context') };
     expect(() => ingestUnicodeReviewWaveB(livePath, calibration, liveInputs, reusedContext)).toThrow(/fresh session|independent context/i);
@@ -373,7 +389,7 @@ describe('#477 resumable Unicode review workflow', () => {
     const forgedRef = forgedArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
     const forgedInputs = waveInputs('same-context-forged', [productionInputs[1]]);
     ingestUnicodeReviewWaveA(forgedPath, calibration, forgedInputs, fullA(forgedArtifacts, forgedDetails, forgedRef));
-    prepareUnicodeReviewWaveB(forgedPath, calibration, forgedInputs);
+    prepareUnicodeReviewWaveB(forgedPath, calibration, forgedInputs, `${forgedPath}-b-subset`);
     const forgedResults = [{ pairRef: forgedRef, visualOutcome: 'confusable' as const }];
     const forgedJournal = loadUnicodeReviewJournal(forgedPath);
     appendUnicodeReviewJournalEvent(forgedPath, forgedJournal.tip, { type: 'wave-b-ingested', waveId: 'same-context-forged', submission: { results: forgedResults, receipt: receipt('reviewer-b', forgedArtifacts.context, forgedResults, [forgedRef], 'wave-a-session', 'wave-a-context') } });
@@ -402,7 +418,7 @@ describe('#477 resumable Unicode review workflow', () => {
     const bRef = bArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
     const bInputs = waveInputs('b-failure-wave', [productionInputs[0]]);
     ingestUnicodeReviewWaveA(bPath, calibration, bInputs, fullA(bArtifacts, bDetails, bRef));
-    prepareUnicodeReviewWaveB(bPath, calibration, bInputs);
+    prepareUnicodeReviewWaveB(bPath, calibration, bInputs, `${bPath}-b-subset`);
     expect(() => ingestUnicodeReviewWaveB(bPath, calibration, bInputs, { results: [], receipt: null })).toThrow(/incomplete|subset/i);
     expect(readUnicodeReviewWorkflow(bPath, calibration, bInputs).activeWaveId).toBeNull();
     expect(loadUnicodeReviewJournal(bPath).events.at(-1)!.payload).toMatchObject({ type: 'wave-invalidated', stage: 'b' });
@@ -450,8 +466,11 @@ describe('#477 resumable Unicode review workflow', () => {
     expect(() => readUnicodeReviewWorkflow(oversizedPath, calibration, new Map())).toThrow(/current candidate limit/i);
   });
 
-  it('keeps calibrated hard-probe overrides provisional and out of Pass B requirements', () => {
-    const { calibration, calibrationInputs, hardProbeOverrideCandidateId } = workflowFixture(true);
+  it.each([
+    ['binary sealed expectation', 'confusable' as const],
+    ['borderline sealed expectation', 'borderline' as const],
+  ])('keeps calibrated hard-probe overrides provisional and out of Pass B requirements for a %s', (_label, hardProbeExpectedOutcome) => {
+    const { calibration, calibrationInputs, hardProbeOverrideCandidateId } = workflowFixture(true, false, hardProbeExpectedOutcome);
     expect(hardProbeOverrideCandidateId).not.toBeNull();
     const hardProbe = calibrationInputs.find((input): input is ManifestEvidenceInput => input.purpose === 'manifest' && input.candidateId === hardProbeOverrideCandidateId)!;
     const path = journalPath();
@@ -461,11 +480,105 @@ describe('#477 resumable Unicode review workflow', () => {
     const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
     const inputs = waveInputs('provisional-hard-probe-wave', [hardProbe]);
     ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
-    prepareUnicodeReviewWaveB(path, calibration, inputs);
+    prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
     const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
     ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'hard-probe-b-session', 'hard-probe-b-context') });
-    expect(prepareUnicodeReviewWavePassB(path, calibration, inputs)).toEqual([]);
+    expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`)).toEqual([]);
     expect(finalizeUnicodeReviewWave(path, calibration, inputs)).toEqual([]);
     expect(readUnicodeReviewWorkflow(path, calibration, inputs).provisionalCandidateIds).toEqual([hardProbe.candidateId]);
+  });
+
+  it('persists chosen Reviewer B and Pass B subset roots and retains them after finalization', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, 'subset-paths', [productionInputs[0]]);
+    const details = planDetails(path);
+    const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const inputs = waveInputs('subset-paths', [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
+    const reviewerBSubset = `${path}-b-subset`;
+    const passBSubset = `${path}-pass-b-subset`;
+
+    expect(prepareUnicodeReviewWaveB(path, calibration, inputs, reviewerBSubset)).toEqual([manifestRef]);
+    const preparedB = readUnicodeReviewWorkflow(path, calibration, inputs);
+    expect(preparedB.activeWave).toMatchObject({ stage: 'reviewer-b-pending', reviewerBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: null });
+    expect(preparedB.subsetRoots).toEqual([reviewerBSubset]);
+
+    const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
+    ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'subset-b-session', 'subset-b-context') });
+    expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, passBSubset)).toEqual([manifestRef]);
+    const preparedPassB = readUnicodeReviewWorkflow(path, calibration, inputs);
+    expect(preparedPassB.activeWave).toMatchObject({ stage: 'pass-b-pending', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: passBSubset });
+    expect(preparedPassB.subsetRoots).toEqual([reviewerBSubset, passBSubset].sort());
+
+    const result = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+    ingestUnicodeReviewWavePassB(path, calibration, inputs, { result, receipt: receipt('pass-b', artifacts.context, result, [manifestRef], 'subset-pass-b-session', 'subset-pass-b-context') });
+    finalizeUnicodeReviewWave(path, calibration, inputs);
+    const finalized = readUnicodeReviewWorkflow(path, calibration, inputs);
+    expect(finalized.subsetRoots).toEqual([reviewerBSubset, passBSubset].sort());
+    expect(finalized.waves[0]).toMatchObject({ terminalState: 'finalized', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: passBSubset });
+  });
+
+  it('retains immutable prepared Pass B refs while completed results are removed from pending work', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    const waveId = 'partial-pass-b';
+    const inputs = waveInputs(waveId, productionInputs.slice(0, 2));
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, waveId, productionInputs.slice(0, 2));
+    const details = planDetails(path);
+    const manifestRefs = artifacts.context.sidecar.entries.filter((entry) => entry.purpose === 'manifest').map((entry) => entry.pairRef);
+    const expectedByRef = new Map(details.sentinels.map((sentinel) => [sentinel.pairRef, sentinel.expectedOutcome]));
+    const aResults = artifacts.context.sidecar.entries.map((entry) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' as const : expectedByRef.get(entry.pairRef)! }));
+    ingestUnicodeReviewWaveA(path, calibration, inputs, { results: aResults, receipt: receipt('reviewer-a', artifacts.context, aResults, aResults.map((result) => result.pairRef), 'partial-a-session', 'partial-a-context') });
+    prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
+    const bResults = manifestRefs.map((pairRef) => ({ pairRef, visualOutcome: 'confusable' as const }));
+    ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, manifestRefs, 'partial-b-session', 'partial-b-context') });
+    expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`)).toEqual(manifestRefs);
+
+    const first = { pairRef: manifestRefs[0], observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+    ingestUnicodeReviewWavePassB(path, calibration, inputs, { result: first, receipt: receipt('pass-b', artifacts.context, first, [first.pairRef], 'partial-pass-b-session', 'partial-pass-b-context') });
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({
+      stage: 'pass-b-pending',
+      passBPreparedPairRefs: manifestRefs,
+      passBPairRefs: [manifestRefs[1]],
+    });
+  });
+
+  it('rejects Reviewer B and Pass B subset transitions without an absolute recorded path', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const legacyPath = journalPath();
+    initializeUnicodeReviewWorkflow(legacyPath, calibration);
+    const legacyArtifacts = planUnicodeReviewWave(legacyPath, calibration, 'legacy-subset', [productionInputs[0]]);
+    const legacyDetails = planDetails(legacyPath);
+    const legacyRef = legacyArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const legacyInputs = waveInputs('legacy-subset', [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(legacyPath, calibration, legacyInputs, fullA(legacyArtifacts, legacyDetails, legacyRef));
+    appendUnicodeReviewJournalEvent(legacyPath, loadUnicodeReviewJournal(legacyPath).tip, { type: 'wave-b-planned', waveId: 'legacy-subset', pairRefs: [legacyRef] });
+    expect(() => readUnicodeReviewWorkflow(legacyPath, calibration, legacyInputs)).toThrow(/unsupported schema/i);
+
+    const forgedPath = journalPath();
+    initializeUnicodeReviewWorkflow(forgedPath, calibration);
+    const forgedArtifacts = planUnicodeReviewWave(forgedPath, calibration, 'forged-subset', [productionInputs[0]]);
+    const forgedDetails = planDetails(forgedPath);
+    const forgedRef = forgedArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const forgedInputs = waveInputs('forged-subset', [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(forgedPath, calibration, forgedInputs, fullA(forgedArtifacts, forgedDetails, forgedRef));
+    appendUnicodeReviewJournalEvent(forgedPath, loadUnicodeReviewJournal(forgedPath).tip, { type: 'wave-b-planned', waveId: 'forged-subset', pairRefs: [forgedRef], subsetOutputPath: 'relative/subset' });
+    expect(() => readUnicodeReviewWorkflow(forgedPath, calibration, forgedInputs)).toThrow(/absolute path/i);
+
+    const passBPath = journalPath();
+    initializeUnicodeReviewWorkflow(passBPath, calibration);
+    const passBArtifacts = planUnicodeReviewWave(passBPath, calibration, 'missing-pass-b-subset', [productionInputs[0]]);
+    const passBDetails = planDetails(passBPath);
+    const passBRef = passBArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const passBInputs = waveInputs('missing-pass-b-subset', [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(passBPath, calibration, passBInputs, fullA(passBArtifacts, passBDetails, passBRef));
+    prepareUnicodeReviewWaveB(passBPath, calibration, passBInputs, `${passBPath}-b-subset`);
+    const bResults = [{ pairRef: passBRef, visualOutcome: 'confusable' as const }];
+    ingestUnicodeReviewWaveB(passBPath, calibration, passBInputs, { results: bResults, receipt: receipt('reviewer-b', passBArtifacts.context, bResults, [passBRef], 'missing-pass-b-session', 'missing-pass-b-context') });
+    appendUnicodeReviewJournalEvent(passBPath, loadUnicodeReviewJournal(passBPath).tip, { type: 'wave-pass-b-planned', waveId: 'missing-pass-b-subset', pairRefs: [passBRef] });
+    expect(() => readUnicodeReviewWorkflow(passBPath, calibration, passBInputs)).toThrow(/unsupported schema/i);
   });
 });

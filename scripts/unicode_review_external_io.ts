@@ -1,14 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import {
   linkSync,
+  closeSync,
+  fstatSync,
   lstatSync,
   mkdirSync,
+  openSync,
   readFileSync,
   realpathSync,
   rmdirSync,
   statSync,
   unlinkSync,
   writeFileSync,
+  type Stats,
 } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,6 +52,7 @@ interface ResolvedExternalPath {
 interface OwnedPath {
   readonly path: string;
   readonly device: number;
+  readonly descriptor: number;
   readonly inode: number;
   readonly type: 'file' | 'directory';
 }
@@ -246,37 +251,79 @@ function writeExclusiveFile(
   linkSync(temporary, destination);
   created.files.push(recordOwnedPath(destination, 'file'));
   unlinkSync(temporary);
+  closeSync(temporaryOwnership.descriptor);
   created.files.splice(created.files.indexOf(temporaryOwnership), 1);
 }
 
 function recordOwnedPath(path: string, type: OwnedPath['type']): OwnedPath {
-  const stat = lstatSync(path);
-  assert(type === 'file' ? stat.isFile() : stat.isDirectory(), `expected created ${type}: ${path}`);
-  return { path, device: stat.dev, inode: stat.ino, type };
+  const descriptor = openSync(path, 'r');
+  try {
+    const stat = fstatSync(descriptor);
+    assert(type === 'file' ? stat.isFile() : stat.isDirectory(), `expected created ${type}: ${path}`);
+    return { path, device: stat.dev, descriptor, inode: stat.ino, type };
+  } catch (error) {
+    closeSync(descriptor);
+    throw error;
+  }
+}
+
+function sameLiveIdentity(left: Stats, right: Stats, type: OwnedPath['type']): boolean {
+  if (left.dev !== right.dev || left.ino !== right.ino || left.nlink !== right.nlink) return false;
+  // ctime moves whenever the inode is unlinked or relinked, so a reused inode
+  // (Linux may recycle inode numbers) cannot pass as the descriptor's inode.
+  if (left.ctimeMs !== right.ctimeMs) return false;
+  return type === 'directory' || (left.size === right.size && left.mode === right.mode);
 }
 
 function isStillOwned(path: OwnedPath): boolean {
   const stat = lstatOrNull(path.path);
   if (stat === null) return false;
-  const expectedType = path.type === 'file' ? stat.isFile() : stat.isDirectory();
-  return expectedType && stat.dev === path.device && stat.ino === path.inode;
+  if (path.type === 'file' ? !stat.isFile() : !stat.isDirectory()) return false;
+  let descriptorStat: Stats;
+  try {
+    descriptorStat = fstatSync(path.descriptor);
+  } catch {
+    return false;
+  }
+  if (path.type === 'file' ? !descriptorStat.isFile() : !descriptorStat.isDirectory()) return false;
+  if (descriptorStat.dev !== path.device || descriptorStat.ino !== path.inode) return false;
+  // Ownership is decided by comparing the live path entry with the open
+  // descriptor, never by device+inode alone: a reused inode has a different
+  // link count (the held descriptor sees zero links) and a newer ctime.
+  return sameLiveIdentity(stat, descriptorStat, path.type);
 }
 
 function cleanupCreated(created: CreatedPaths): void {
   for (const file of [...created.files].reverse()) {
-    if (!isStillOwned(file)) continue;
     try {
-      unlinkSync(file.path);
-    } catch (error) {
-      if (!isMissing(error)) continue;
+      if (isStillOwned(file)) {
+        try {
+          unlinkSync(file.path);
+        } catch (error) {
+          if (!isMissing(error)) continue;
+        }
+      }
+    } finally {
+      closeSync(file.descriptor);
     }
   }
   for (const directory of [...created.directories].reverse()) {
-    if (!isStillOwned(directory)) continue;
     try {
-      rmdirSync(directory.path);
+      if (isStillOwned(directory)) rmdirSync(directory.path);
     } catch {
       // A concurrent or unrelated file is preserved rather than removed recursively.
+    } finally {
+      closeSync(directory.descriptor);
+    }
+  }
+}
+
+function closeCreatedDescriptors(created: CreatedPaths): void {
+  for (const path of [...created.files, ...created.directories]) {
+    try {
+      closeSync(path.descriptor);
+    } catch {
+      // Descriptor cleanup is best effort after the transaction has completed.
     }
   }
 }
@@ -308,6 +355,7 @@ export function writeExclusiveExternalFile(path: string, contents: string | Uint
   const created: CreatedPaths = { files: [], directories: [] };
   try {
     writeExclusiveFile(destination, contents, created, (temporary, value) => writeFileSync(temporary, value, { flag: 'wx' }));
+    closeCreatedDescriptors(created);
     return destination;
   } catch (error) {
     cleanupCreated(created);
@@ -320,6 +368,33 @@ export function writeExclusiveExternalJson(path: string, value: unknown): string
   const encoded = JSON.stringify(value, null, 2);
   assert(encoded !== undefined, 'external JSON output must be serializable');
   return writeExclusiveExternalFile(path, `${encoded}\n`);
+}
+
+/** Writes a single fresh external directory and its files exclusively. */
+export function writeExclusiveExternalDirectory(
+  transaction: ExternalOutputDirectory,
+  options: ExternalOutputWriteOptions = {},
+): { readonly directory: string; readonly files: readonly string[] } {
+  const directory = assertFreshExternalDirectory(transaction.directory, 'external output directory');
+  assertExternalDirectoryParent(directory, 'external output directory');
+  const files = validateFiles({ reviewer: transaction, controller: { directory: join(dirname(directory), `.unused-${randomUUID()}`), files: [] } }).reviewer;
+  const created: CreatedPaths = { files: [], directories: [] };
+  const createdDirectories = new Set<string>();
+  const writer = options.writeFile ?? ((path: string, contents: string | Uint8Array) => writeFileSync(path, contents, { flag: 'wx' }));
+  try {
+    createDirectory(directory, created);
+    createdDirectories.add(directory);
+    const outputFiles = files.map((file) => {
+      const destination = createParents(directory, file.relativePath, created, createdDirectories);
+      writeExclusiveFile(destination, file.contents, created, writer);
+      return destination;
+    });
+    closeCreatedDescriptors(created);
+    return { directory, files: outputFiles };
+  } catch (error) {
+    cleanupCreated(created);
+    throw error;
+  }
 }
 
 /**
@@ -355,12 +430,14 @@ export function writeExclusiveExternalOutputs(
       return destination;
     });
 
-    return {
+    const result = {
       reviewerDirectory,
       controllerDirectory,
       reviewerFiles: writeGroup(reviewerDirectory, files.reviewer),
       controllerFiles: writeGroup(controllerDirectory, files.controller),
     };
+    closeCreatedDescriptors(created);
+    return result;
   } catch (error) {
     cleanupCreated(created);
     throw error;

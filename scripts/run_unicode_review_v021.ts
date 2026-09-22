@@ -1,5 +1,5 @@
 import { realpathSync } from 'node:fs';
-import { isAbsolute, relative, sep } from 'node:path';
+import { dirname, isAbsolute, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   REVIEW_PROTOCOL_VERSION,
@@ -11,7 +11,7 @@ import {
   type SealedCalibrationKey,
   type VisionClassificationSubmission,
 } from './unicode_review_v021.ts';
-import { loadReviewEvidenceContext, parseControllerEvidenceInputs } from './unicode_review_cli_context.ts';
+import { loadReviewEvidenceContext, parseControllerEvidenceInputs, pathsOverlap, resolveReviewEvidenceContextPaths } from './unicode_review_cli_context.ts';
 import {
   readStrictExternalJson,
   resolveUnicodeReviewRepositoryRoot,
@@ -156,19 +156,78 @@ function unavailableCalibrationEvaluation(error: unknown): UnavailableCalibratio
   };
 }
 
+/** Raised when the calibration output itself would enter a controller-only or blind path. */
+class ForbiddenCalibrationOutputError extends Error {}
+
+function assertCalibrationOutputIsolation(
+  outputPath: string,
+  roles: readonly { readonly label: string; readonly path: string }[],
+): void {
+  for (const role of roles) {
+    if (pathsOverlap(outputPath, role.path)) {
+      throw new ForbiddenCalibrationOutputError(`calibration output must be disjoint from the ${role.label}`);
+    }
+  }
+}
+
+function assertControllerRolesOutsideReviewerTree(
+  reviewerDirectory: string,
+  roles: readonly { readonly label: string; readonly path: string }[],
+): void {
+  for (const role of roles) {
+    assert(!pathsOverlap(reviewerDirectory, role.path), `${role.label} must be disjoint from the reviewer bundle tree`);
+  }
+}
+
+interface CalibrationPathPreflight {
+  readonly descriptor: unknown;
+  readonly sealedKeyPath: string;
+  readonly submissionPath: string;
+}
+
+/**
+ * Proves every role path and the publication destination are disjoint before
+ * calibration can publish either a PASS or a machine FAIL record.  A resolver
+ * failure is deliberately not an evaluable calibration failure: its paths have
+ * not been proven safe for output publication.
+ */
+function preflightCalibrationPublication(options: { readonly context: string; readonly sealedKey: string; readonly submission: string }, outputPath: string): CalibrationPathPreflight {
+  const descriptor = readStrictExternalJson(resolveStrictExternalPath(options.context, 'calibration context'));
+  const paths = resolveReviewEvidenceContextPaths(descriptor);
+  const sealedKeyPath = resolveStrictExternalPath(options.sealedKey, 'sealed calibration key');
+  const submissionPath = resolveStrictExternalPath(options.submission, 'calibration submission');
+  assertCalibrationOutputIsolation(outputPath, [
+    { label: 'calibration context input', path: paths.inputPath },
+    { label: 'reviewer bundle path', path: paths.reviewerBundlePath },
+    { label: 'reviewer bundle tree', path: paths.reviewerDirectory },
+    { label: 'controller artifact directory', path: dirname(paths.controllerSidecarPath) },
+    { label: 'context review contract', path: paths.contractPath },
+    { label: 'sealed calibration key', path: sealedKeyPath },
+    { label: 'calibration submission', path: submissionPath },
+  ]);
+  assertControllerRolesOutsideReviewerTree(paths.reviewerDirectory, [
+    { label: 'context input', path: paths.inputPath },
+    { label: 'context controller sidecar', path: paths.controllerSidecarPath },
+    { label: 'context review contract', path: paths.contractPath },
+    { label: 'sealed calibration key', path: sealedKeyPath },
+    { label: 'calibration submission', path: submissionPath },
+  ]);
+  return { descriptor, sealedKeyPath, submissionPath };
+}
+
 function runCalibration(args: readonly string[]): void {
   const options = parseCalibrationArguments(args);
-  // Resolve the output first so rejected external evidence can still emit an immutable FAIL record.
   const outputPath = resolveStrictExternalPath(options.output, 'calibration output');
+  const preflight = preflightCalibrationPublication(options, outputPath);
   let output: CalibrationCommandOutput;
   try {
-    const descriptor = readStrictExternalJson(resolveStrictExternalPath(options.context, 'calibration context'));
-    const context = loadReviewEvidenceContext(descriptor);
-    const key = readStrictExternalJson(resolveStrictExternalPath(options.sealedKey, 'sealed calibration key')) as SealedCalibrationKey;
-    const submission = readStrictExternalJson(resolveStrictExternalPath(options.submission, 'calibration submission')) as VisionClassificationSubmission;
+    const context = loadReviewEvidenceContext(preflight.descriptor);
+    const key = readStrictExternalJson(preflight.sealedKeyPath) as SealedCalibrationKey;
+    const submission = readStrictExternalJson(preflight.submissionPath) as VisionClassificationSubmission;
     const authorized = authorizeCalibration(context, key, submission);
     output = { evaluation: authorized.evaluation, replayBinding: authorized.replayBinding };
   } catch (error) {
+    if (error instanceof ForbiddenCalibrationOutputError) throw error;
     output = { evaluation: unavailableCalibrationEvaluation(error), replayBinding: null };
   }
   writeExclusiveExternalJson(outputPath, output);

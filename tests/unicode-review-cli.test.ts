@@ -1,10 +1,11 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { deflateSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
+import { appendUnicodeReviewJournalEvent, loadUnicodeReviewJournal } from '../scripts/unicode_review_journal';
 
 const sourceRoot = resolve(process.cwd());
 const temporaryRoots: string[] = [];
@@ -493,6 +494,84 @@ describe('#477 Unicode review bundle CLI', () => {
     expect(missingRecord).toMatchObject({ evaluation: { pass: false, metrics: { evaluated: false, strongPositiveExact: null, confusionMatrix: null }, calibrationResultChecksumSha256: null }, replayBinding: null });
   });
 
+  it('refuses calibration output inside reviewer or controller artifact directories before writing', () => {
+    const fixture = createCalibrationCommandFixture();
+    const treeRootBefore = readdirSync(fixture.reviewerOutput).sort();
+    const pairsBefore = readdirSync(join(fixture.reviewerOutput, 'pairs')).sort();
+    const controllerOutput = join(fixture.external, 'controller');
+    const controllerBefore = readdirSync(controllerOutput).sort();
+    const treeRoot = join(fixture.reviewerOutput, 'calibration-output.json');
+    const direct = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', fixture.submissionPath, '--output', treeRoot], join(fixture.external, 'caller-cwd'));
+    expect(direct.status).not.toBe(0);
+    expect(direct.output).toMatch(/calibration output must be disjoint from the reviewer bundle tree/i);
+    expect(existsSync(treeRoot)).toBe(false);
+
+    const nested = join(fixture.reviewerOutput, 'pairs', 'calibration-output.json');
+    const nestedResult = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', fixture.submissionPath, '--output', nested], join(fixture.external, 'caller-cwd'));
+    expect(nestedResult.status).not.toBe(0);
+    expect(existsSync(nested)).toBe(false);
+    expect(readdirSync(fixture.reviewerOutput).sort()).toEqual(treeRootBefore);
+    expect(readdirSync(join(fixture.reviewerOutput, 'pairs')).sort()).toEqual(pairsBefore);
+
+    const controllerNested = join(controllerOutput, 'nested', 'calibration-output.json');
+    const controllerResult = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', fixture.submissionPath, '--output', controllerNested], join(fixture.external, 'caller-cwd'));
+    expect(controllerResult.status).not.toBe(0);
+    expect(controllerResult.output).toMatch(/calibration output must be disjoint from the controller artifact directory/i);
+    expect(existsSync(controllerNested)).toBe(false);
+    expect(readdirSync(controllerOutput).sort()).toEqual(controllerBefore);
+  });
+
+  it('does not publish a FAIL record when a sealed key or submission overlaps the blind tree', () => {
+    const fixture = createCalibrationCommandFixture();
+    const movedKey = join(fixture.reviewerOutput, 'sealed-key.json');
+    copyFileSync(fixture.keyPath, movedKey);
+    const keyOutput = join(fixture.external, 'calibration-key-overlap.json');
+    const keyResult = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', movedKey, '--submission', fixture.submissionPath, '--output', keyOutput], join(fixture.external, 'caller-cwd'));
+    expect(keyResult.status).not.toBe(0);
+    expect(keyResult.output).toMatch(/sealed calibration key must be disjoint from the reviewer bundle tree/);
+    expect(existsSync(keyOutput)).toBe(false);
+
+    const movedSubmission = join(fixture.reviewerOutput, 'submission.json');
+    copyFileSync(fixture.submissionPath, movedSubmission);
+    const submissionOutput = join(fixture.external, 'calibration-submission-overlap.json');
+    const submissionResult = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', movedSubmission, '--output', submissionOutput], join(fixture.external, 'caller-cwd'));
+    expect(submissionResult.status).not.toBe(0);
+    expect(submissionResult.output).toMatch(/calibration submission must be disjoint from the reviewer bundle tree/);
+    expect(existsSync(submissionOutput)).toBe(false);
+    expect(readdirSync(fixture.reviewerOutput)).not.toContain('calibration-submission-overlap.json');
+  });
+
+  it('does not publish a FAIL record when a context role resolves inside the blind reviewer tree', () => {
+    const fixture = createCalibrationCommandFixture();
+    const descriptor = JSON.parse(readFileSync(fixture.descriptorPath, 'utf8'));
+    writeJson(fixture.descriptorPath, { ...descriptor, controllerSidecarPath: join(fixture.reviewerOutput, 'moved-controller-sidecar.json') });
+    const output = join(fixture.external, 'calibration-context-overlap.json');
+    const result = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', fixture.submissionPath, '--output', output], join(fixture.external, 'caller-cwd'));
+    expect(result.status).not.toBe(0);
+    expect(result.output).toMatch(/context controller sidecar must be disjoint from the reviewer bundle tree/);
+    expect(existsSync(output)).toBe(false);
+    expect(readdirSync(fixture.reviewerOutput)).not.toContain('calibration-context-overlap.json');
+  });
+
+  it('does not publish into the blind tree before malformed role paths are rejected', () => {
+    const fixture = createCalibrationCommandFixture();
+    const reviewerBefore = readdirSync(fixture.reviewerOutput).sort();
+    const malformedContext = join(fixture.external, 'malformed-review-context.json');
+    writeFileSync(malformedContext, '{"unexpected":true}\n');
+    const cases = [
+      ['relative sealed key', fixture.descriptorPath, 'relative-key.json', fixture.submissionPath],
+      ['relative submission', fixture.descriptorPath, fixture.keyPath, 'relative-submission.json'],
+      ['malformed context', malformedContext, fixture.keyPath, fixture.submissionPath],
+    ] as const;
+    for (const [label, context, sealedKey, submission] of cases) {
+      const output = join(fixture.reviewerOutput, `${label.replaceAll(' ', '-')}.json`);
+      const result = runCalibration(fixture.script, ['--context', context, '--sealed-key', sealedKey, '--submission', submission, '--output', output], join(fixture.external, 'caller-cwd'));
+      expect(result.status, `${label}: ${result.output}`).not.toBe(0);
+      expect(existsSync(output), label).toBe(false);
+    }
+    expect(readdirSync(fixture.reviewerOutput).sort()).toEqual(reviewerBefore);
+  });
+
 });
 
 function runWorkflow(script: string, command: string, args: readonly string[], cwd: string) {
@@ -554,6 +633,22 @@ describe('#477 Unicode review workflow CLI', () => {
     expect(tampered.status, tampered.output).not.toBe(0);
     expect(existsSync(join(fixture.external, 'tampered.json'))).toBe(false);
     writeFileSync(join(reviewerOutput, 'reviewer-bundle.json'), originalBundle);
+    const rejectEmptyDirectory = (artifactRoot: string, label: string, extra: readonly string[] = []) => {
+      const emptyDirectory = join(artifactRoot, 'unexpected-empty-directory');
+      const output = join(fixture.external, `${label}-empty-directory-status.json`);
+      const eventBytes = () => readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name))]);
+      const before = eventBytes();
+      mkdirSync(emptyDirectory);
+      const rejected = invoke('resume', output, extra);
+      expect(rejected.status, rejected.output).not.toBe(0);
+      expect(rejected.output).toMatch(/unexpected empty directory/);
+      expect(existsSync(output)).toBe(false);
+      expect(existsSync(emptyDirectory)).toBe(true);
+      expect(eventBytes()).toEqual(before);
+      rmSync(emptyDirectory, { recursive: true });
+    };
+    rejectEmptyDirectory(reviewerOutput, 'reviewer');
+    rejectEmptyDirectory(controllerOutput, 'controller');
     const resumed = invoke('resume', join(fixture.external, 'resume.json'));
     expect(resumed.status, resumed.output).toBe(0);
 
@@ -573,13 +668,14 @@ describe('#477 Unicode review workflow CLI', () => {
     chmodSync(blockedBParent, 0o700);
     expect(bPrepared.status, bPrepared.output).not.toBe(0);
     expect(existsSync(join(fixture.external, 'b-prepare-status.json'))).toBe(false);
-    const bExport = join(fixture.external, 'wave-1-b-export');
+    const bExport = join(blockedBParent, 'subset');
     const bResumed = invoke('resume', join(fixture.external, 'b-resume-status.json'), ['--reviewer-output', bExport]);
     expect(bResumed.status, bResumed.output).toBe(0);
     const bSubset = JSON.parse(readFileSync(join(bExport, 'reviewer-subset.json'), 'utf8'));
     expect(Object.keys(bSubset).sort()).toEqual(['items', 'protocolVersion']);
     expect(JSON.stringify(bSubset)).not.toContain('visualOutcome');
     expect(bSubset.items.map((item: { pairRef: string }) => item.pairRef)).toEqual([manifestEntry.pairRef]);
+    rejectEmptyDirectory(bExport, 'reviewer-b', ['--reviewer-output', bExport]);
 
     const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
     const bPath = join(fixture.external, 'wave-1-b.json');
@@ -594,7 +690,7 @@ describe('#477 Unicode review workflow CLI', () => {
     chmodSync(blockedPassBParent, 0o700);
     expect(passBPrepared.status, passBPrepared.output).not.toBe(0);
     expect(existsSync(join(fixture.external, 'pass-b-prepare-status.json'))).toBe(false);
-    const passBExport = join(fixture.external, 'wave-1-pass-b-export');
+    const passBExport = join(blockedPassBParent, 'subset');
     const passBResumed = invoke('resume', join(fixture.external, 'pass-b-resume-status.json'), ['--reviewer-output', passBExport]);
     expect(passBResumed.status, passBResumed.output).toBe(0);
     expect(JSON.parse(readFileSync(join(passBExport, 'reviewer-subset.json'), 'utf8')).items.map((item: { pairRef: string }) => item.pairRef)).toEqual([manifestEntry.pairRef]);
@@ -612,6 +708,546 @@ describe('#477 Unicode review workflow CLI', () => {
     const recoveredFinalStatus = JSON.parse(readFileSync(join(fixture.external, 'finalize-resume.json'), 'utf8'));
     expect(recoveredFinalStatus.promotions).toHaveLength(1);
     expect(recoveredFinalStatus.recordedWaves[0].reviewerBundleChecksumSha256).toBe(sidecar.reviewerBundleChecksumSha256);
+  });
+
+  it('resumes a partial Pass B wave against its immutable prepared subset', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: JSON.parse(readFileSync(fixture.input, 'utf8')).items.filter((item: { purpose: string }) => item.purpose === 'manifest').slice(0, 2) });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+    const controllerOutput = join(fixture.external, 'wave-1-controller');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+    const initialized = invoke('init', join(fixture.external, 'init.json'));
+    expect(initialized.status, initialized.output).toBe(0);
+    expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+
+    const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+    const manifestRefs = sidecar.entries.filter((entry: { purpose: string }) => entry.purpose === 'manifest').map((entry: { pairRef: string }) => entry.pairRef);
+    expect(manifestRefs).toHaveLength(2);
+    const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+    const aPath = join(fixture.external, 'wave-1-a.json');
+    writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+    expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+    const bSubset = join(fixture.external, 'wave-1-b');
+    expect(invoke('prepare-b', join(fixture.external, 'b-prepare-status.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    const bResults = manifestRefs.map((pairRef: string) => ({ pairRef, visualOutcome: 'confusable' }));
+    const bPath = join(fixture.external, 'wave-1-b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, manifestRefs) });
+    expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+    const passBSubset = join(fixture.external, 'wave-1-pass-b');
+    expect(invoke('prepare-pass-b', join(fixture.external, 'pass-b-prepare-status.json'), ['--reviewer-output', passBSubset]).status).toBe(0);
+    const preparedSubset = readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8');
+
+    const firstResult = { pairRef: manifestRefs[0], observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+    const firstPassB = join(fixture.external, 'wave-1-pass-b-first.json');
+    writeJson(firstPassB, { result: firstResult, receipt: workflowReceipt('pass-b', fixture.key.contract, sidecar, firstResult, [manifestRefs[0]]) });
+    expect(invoke('ingest-pass-b', join(fixture.external, 'pass-b-first-status.json'), ['--submission', firstPassB]).status).toBe(0);
+    const journalBeforeResume = readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')]);
+
+    const retained = join(fixture.external, 'pass-b-retained-resume.json');
+    expect(invoke('resume', retained, ['--reviewer-output', passBSubset]).status).toBe(0);
+    expect(JSON.parse(readFileSync(retained, 'utf8'))).toMatchObject({ activeStage: 'pass-b-pending' });
+    expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(preparedSubset);
+    expect(readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')])).toEqual(journalBeforeResume);
+
+    rmSync(passBSubset, { recursive: true, force: true });
+    const recreated = join(fixture.external, 'pass-b-recreated-resume.json');
+    expect(invoke('resume', recreated, ['--reviewer-output', passBSubset]).status).toBe(0);
+    expect(JSON.parse(readFileSync(recreated, 'utf8'))).toMatchObject({ activeStage: 'pass-b-pending' });
+    expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(preparedSubset);
+    expect(readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')])).toEqual(journalBeforeResume);
+  });
+
+  it('treats recorded B and Pass B exports as immutable evidence across commands and recovery', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+    const controllerOutput = join(fixture.external, 'wave-1-controller');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+    const events = () => readdirSync(join(journal, 'events')).sort().map((file) => [file, readFileSync(join(journal, 'events', file), 'utf8')]);
+    expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+    expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+    const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+    const manifestEntry = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+    const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+    const aPath = join(fixture.external, 'a.json');
+    writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+    expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+
+    const bSubset = join(fixture.external, 'b-subset');
+    expect(invoke('prepare-b', join(fixture.external, 'prepare-b.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    const preparedB = readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8');
+    rmSync(bSubset, { recursive: true });
+    expect(invoke('resume', join(fixture.external, 'resume-b.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(preparedB);
+
+    const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
+    const bPath = join(fixture.external, 'b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, [manifestEntry.pairRef]) });
+    const assertRejectedWithoutMutation = (label: string, command: string, extra: readonly string[]) => {
+      const output = join(fixture.external, `${label}.json`);
+      const before = events();
+      const rejected = invoke(command, output, extra);
+      expect(rejected.status, rejected.output).not.toBe(0);
+      expect(existsSync(output)).toBe(false);
+      expect(events()).toEqual(before);
+    };
+    writeFileSync(join(bSubset, 'secret.txt'), 'controller secret');
+    assertRejectedWithoutMutation('secret-before-ingest', 'ingest-b', ['--submission', bPath]);
+    rmSync(join(bSubset, 'secret.txt'));
+    writeFileSync(join(bSubset, 'reviewer-subset.json'), '{"drift":true}\n');
+    assertRejectedWithoutMutation('drift-before-ingest', 'ingest-b', ['--submission', bPath]);
+    writeFileSync(join(bSubset, 'reviewer-subset.json'), preparedB);
+    mkdirSync(join(bSubset, 'empty'));
+    assertRejectedWithoutMutation('empty-before-prepare', 'prepare-pass-b', ['--reviewer-output', join(fixture.external, 'pass-b-subset')]);
+    rmSync(join(bSubset, 'empty'), { recursive: true });
+
+    expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+    const passBSubset = join(fixture.external, 'pass-b-subset');
+    expect(invoke('prepare-pass-b', join(fixture.external, 'prepare-pass-b.json'), ['--reviewer-output', passBSubset]).status).toBe(0);
+    const preparedPassB = readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8');
+    const passBResult = { pairRef: manifestEntry.pairRef, observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+    const passBPath = join(fixture.external, 'pass-b.json');
+    writeJson(passBPath, { result: passBResult, receipt: workflowReceipt('pass-b', fixture.key.contract, sidecar, passBResult, [manifestEntry.pairRef]) });
+    writeFileSync(join(passBSubset, 'reviewer-subset.json'), '{"drift":true}\n');
+    assertRejectedWithoutMutation('drift-before-pass-b-ingest', 'ingest-pass-b', ['--submission', passBPath]);
+    writeFileSync(join(passBSubset, 'reviewer-subset.json'), preparedPassB);
+    expect(invoke('ingest-pass-b', join(fixture.external, 'pass-b-status.json'), ['--submission', passBPath]).status).toBe(0);
+    mkdirSync(join(passBSubset, 'empty'));
+    assertRejectedWithoutMutation('empty-before-finalize', 'finalize', []);
+    rmSync(join(passBSubset, 'empty'), { recursive: true });
+    expect(invoke('finalize', join(fixture.external, 'finalize.json')).status).toBe(0);
+
+    writeFileSync(join(passBSubset, 'reviewer-subset.json'), '{"terminal-drift":true}\n');
+    const nonce = '30303030-3030-4030-8030-303030303030';
+    const lock = join(journal, '.unicode-review-journal.lock');
+    const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(partial, 'stopped writer partial');
+    const lockBytes = readFileSync(lock, 'utf8');
+    const partialBytes = readFileSync(partial, 'utf8');
+    const recovery = invoke('recover', join(fixture.external, 'recover-drift.json'));
+    expect(recovery.status, recovery.output).not.toBe(0);
+    expect(existsSync(join(fixture.external, 'recover-drift.json'))).toBe(false);
+    expect(readFileSync(lock, 'utf8')).toBe(lockBytes);
+    expect(readFileSync(partial, 'utf8')).toBe(partialBytes);
+    writeFileSync(join(passBSubset, 'reviewer-subset.json'), preparedPassB);
+    expect(invoke('recover', join(fixture.external, 'recover-clean.json')).status).toBe(0);
+    rmSync(passBSubset, { recursive: true });
+    const missingTerminal = invoke('resume', join(fixture.external, 'missing-terminal.json'));
+    expect(missingTerminal.status, missingTerminal.output).not.toBe(0);
+    expect(existsSync(join(fixture.external, 'missing-terminal.json'))).toBe(false);
+  });
+
+  it('recreates missing zero-ref Reviewer B and Pass B exports only through resume', () => {
+    const start = (label: string, manifestOutcome: 'confusable' | 'not-confusable') => {
+      const fixture = createCalibrationCommandFixture();
+      const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+      const waveInput = join(fixture.external, 'wave-1-input.json');
+      writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+      const descriptor = join(fixture.external, 'workflow-descriptor.json');
+      const journal = join(fixture.external, 'workflow-journal');
+      const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+      const controllerOutput = join(fixture.external, 'wave-1-controller');
+      writeJson(descriptor, {
+        calibrationContextPath: fixture.descriptorPath,
+        sealedKeyPath: fixture.keyPath,
+        calibrationSubmissionPath: fixture.submissionPath,
+        journalPath: journal,
+        waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+      });
+      const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+      expect(invoke('init', join(fixture.external, `${label}-init.json`)).status).toBe(0);
+      expect(invoke('plan', join(fixture.external, `${label}-plan.json`), ['--wave-id', 'wave-1']).status).toBe(0);
+      const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+      const manifest = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+      const results = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? manifestOutcome : 'not-confusable' }));
+      const aPath = join(fixture.external, `${label}-a.json`);
+      writeJson(aPath, { results, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, results, results.map((result: { pairRef: string }) => result.pairRef)) });
+      expect(invoke('ingest-a', join(fixture.external, `${label}-a-status.json`), ['--submission', aPath]).status).toBe(0);
+      return { fixture, invoke, sidecar, manifest, reviewerOutput };
+    };
+
+    const zeroB = start('zero-b', 'not-confusable');
+    const zeroBSubset = join(zeroB.fixture.external, 'zero-b-subset');
+    expect(zeroB.invoke('prepare-b', join(zeroB.fixture.external, 'zero-b-prepare.json'), ['--reviewer-output', zeroBSubset]).status).toBe(0);
+    const zeroBBytes = readFileSync(join(zeroBSubset, 'reviewer-subset.json'), 'utf8');
+    expect(JSON.parse(zeroBBytes).items).toEqual([]);
+    rmSync(zeroBSubset, { recursive: true });
+    expect(zeroB.invoke('resume', join(zeroB.fixture.external, 'zero-b-resume.json'), ['--reviewer-output', zeroBSubset]).status).toBe(0);
+    expect(readFileSync(join(zeroBSubset, 'reviewer-subset.json'), 'utf8')).toBe(zeroBBytes);
+
+    const zeroPassB = start('zero-pass-b', 'confusable');
+    const bSubset = join(zeroPassB.fixture.external, 'b-subset');
+    expect(zeroPassB.invoke('prepare-b', join(zeroPassB.fixture.external, 'b-prepare.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    const bResults = [{ pairRef: zeroPassB.manifest.pairRef, visualOutcome: 'not-confusable' }];
+    const bPath = join(zeroPassB.fixture.external, 'b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', zeroPassB.fixture.key.contract, zeroPassB.sidecar, bResults, [zeroPassB.manifest.pairRef]) });
+    expect(zeroPassB.invoke('ingest-b', join(zeroPassB.fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+    const zeroPassBSubset = join(zeroPassB.fixture.external, 'zero-pass-b-subset');
+    expect(zeroPassB.invoke('prepare-pass-b', join(zeroPassB.fixture.external, 'zero-pass-b-prepare.json'), ['--reviewer-output', zeroPassBSubset]).status).toBe(0);
+    const zeroPassBBytes = readFileSync(join(zeroPassBSubset, 'reviewer-subset.json'), 'utf8');
+    expect(JSON.parse(zeroPassBBytes).items).toEqual([]);
+    rmSync(zeroPassBSubset, { recursive: true });
+    const resumed = zeroPassB.invoke('resume', join(zeroPassB.fixture.external, 'zero-pass-b-resume.json'), ['--reviewer-output', zeroPassBSubset]);
+    expect(resumed.status, resumed.output).toBe(0);
+    expect(JSON.parse(readFileSync(join(zeroPassB.fixture.external, 'zero-pass-b-resume.json'), 'utf8'))).toMatchObject({ activeStage: 'pass-b-pending' });
+    expect(readFileSync(join(zeroPassBSubset, 'reviewer-subset.json'), 'utf8')).toBe(zeroPassBBytes);
+  });
+
+  it('persists chosen subset roots, fences later status output, and permits only the recorded resume path', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+    const controllerOutput = join(fixture.external, 'wave-1-controller');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+    expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+    expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+
+    const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+    const manifestEntry = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+    const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+    const aPath = join(fixture.external, 'wave-1-a.json');
+    writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+    expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+
+    const bSubset = join(fixture.external, 'wave-1-b');
+    const bPrepare = invoke('prepare-b', join(fixture.external, 'b-prepare-status.json'), ['--reviewer-output', bSubset]);
+    expect(bPrepare.status, bPrepare.output).toBe(0);
+    const bPrepareStatus = JSON.parse(readFileSync(join(fixture.external, 'b-prepare-status.json'), 'utf8'));
+    expect(bPrepareStatus.recordedSubsetRoots).toEqual([realpathSync(bSubset)]);
+    expect(bPrepareStatus.recordedWaves[0].reviewerBSubsetOutputPath).toBe(realpathSync(bSubset));
+
+    const finalizedEventsBefore = readdirSync(join(journal, 'events')).sort();
+    const nestedStatus = join(bSubset, 'later-status.json');
+    const fenced = invoke('resume', nestedStatus);
+    expect(fenced.status, fenced.output).not.toBe(0);
+    expect(fenced.output).toMatch(/disjoint/i);
+    expect(existsSync(nestedStatus)).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort()).toEqual(finalizedEventsBefore);
+
+    const mismatched = invoke('resume', join(fixture.external, 'b-mismatch-status.json'), ['--reviewer-output', join(fixture.external, 'other-b')]);
+    expect(mismatched.status, mismatched.output).not.toBe(0);
+    expect(mismatched.output).toMatch(/recorded/i);
+    expect(existsSync(join(fixture.external, 'other-b'))).toBe(false);
+    expect(invoke('resume', join(fixture.external, 'b-resume-status.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+
+    const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
+    const bPath = join(fixture.external, 'wave-1-b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, [manifestEntry.pairRef]) });
+    expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+    const passBSubset = join(fixture.external, 'wave-1-pass-b');
+    expect(invoke('prepare-pass-b', join(fixture.external, 'pass-b-prepare-status.json'), ['--reviewer-output', passBSubset]).status).toBe(0);
+    const result = { pairRef: manifestEntry.pairRef, observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+    const passBPath = join(fixture.external, 'wave-1-pass-b.json');
+    writeJson(passBPath, { result, receipt: workflowReceipt('pass-b', fixture.key.contract, sidecar, result, [manifestEntry.pairRef]) });
+    expect(invoke('ingest-pass-b', join(fixture.external, 'pass-b-status.json'), ['--submission', passBPath]).status).toBe(0);
+    expect(invoke('finalize', join(fixture.external, 'finalize.json')).status).toBe(0);
+
+    const finalStatus = JSON.parse(readFileSync(join(fixture.external, 'finalize.json'), 'utf8'));
+    expect(finalStatus.recordedSubsetRoots).toEqual([realpathSync(bSubset), realpathSync(passBSubset)].sort());
+    const retained = invoke('resume', join(fixture.external, 'retained-after-finalize.json'));
+    expect(retained.status, retained.output).toBe(0);
+    expect(JSON.parse(readFileSync(join(fixture.external, 'retained-after-finalize.json'), 'utf8')).recordedSubsetRoots).toEqual([realpathSync(bSubset), realpathSync(passBSubset)].sort());
+
+    const recoveryNonce = '27272727-2727-4272-8272-272727272727';
+    const recoveryLock = join(journal, '.unicode-review-journal.lock');
+    writeFileSync(recoveryLock, `{"ownerNonce":"${recoveryNonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    const recoveryPartial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${recoveryNonce}`);
+    writeFileSync(recoveryPartial, 'stopped writer partial');
+    const recoveryLockBytes = readFileSync(recoveryLock, 'utf8');
+    const recoveryPartialBytes = readFileSync(recoveryPartial, 'utf8');
+    const unsafeRecovery = invoke('recover', join(bSubset, 'unsafe-recover.json'));
+    expect(unsafeRecovery.status, unsafeRecovery.output).not.toBe(0);
+    expect(existsSync(join(bSubset, 'unsafe-recover.json'))).toBe(false);
+    expect(readFileSync(recoveryLock, 'utf8')).toBe(recoveryLockBytes);
+    expect(readFileSync(recoveryPartial, 'utf8')).toBe(recoveryPartialBytes);
+
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: join(passBSubset, 'moved-controller') }],
+    });
+    const movedRole = invoke('recover', join(fixture.external, 'moved-role-recover.json'));
+    expect(movedRole.status, movedRole.output).not.toBe(0);
+    expect(existsSync(join(fixture.external, 'moved-role-recover.json'))).toBe(false);
+    expect(readFileSync(recoveryLock, 'utf8')).toBe(recoveryLockBytes);
+    expect(readFileSync(recoveryPartial, 'utf8')).toBe(recoveryPartialBytes);
+
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const recoveredStoppedWriter = invoke('recover', join(fixture.external, 'recovered-stopped-writer.json'));
+    expect(recoveredStoppedWriter.status, recoveredStoppedWriter.output).toBe(0);
+    expect(existsSync(recoveryLock)).toBe(false);
+    expect(existsSync(recoveryPartial)).toBe(false);
+    const postFinalNested = join(bSubset, 'post-final-status.json');
+    const postFinal = invoke('resume', postFinalNested);
+    expect(postFinal.status, postFinal.output).not.toBe(0);
+    expect(existsSync(postFinalNested)).toBe(false);
+
+    const eventsBefore = readdirSync(join(journal, 'events')).sort();
+    const bManifestBefore = readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8');
+    const passBManifestBefore = readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8');
+    const nestedWaveInput = join(bSubset, 'later-wave-input.json');
+    copyFileSync(waveInput, nestedWaveInput);
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [
+        { waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput },
+        { waveId: 'wave-2', inputPath: nestedWaveInput, reviewerOutputPath: join(fixture.external, 'wave-2-reviewer'), controllerOutputPath: join(passBSubset, 'later-controller') },
+      ],
+    });
+    const leakedWave = invoke('plan', join(fixture.external, 'leaked-wave-status.json'), ['--wave-id', 'wave-2']);
+    expect(leakedWave.status, leakedWave.output).not.toBe(0);
+    expect(leakedWave.output).toMatch(/recorded reviewer subset output|disjoint/i);
+    expect(existsSync(join(fixture.external, 'leaked-wave-status.json'))).toBe(false);
+    expect(existsSync(join(passBSubset, 'later-controller'))).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort()).toEqual(eventsBefore);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(bManifestBefore);
+    expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(passBManifestBefore);
+
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const nestedSubmission = join(passBSubset, 'later-reviewer-a.json');
+    copyFileSync(aPath, nestedSubmission);
+    const leakedSubmission = invoke('ingest-a', join(fixture.external, 'leaked-submission-status.json'), ['--submission', nestedSubmission]);
+    expect(leakedSubmission.status, leakedSubmission.output).not.toBe(0);
+    expect(leakedSubmission.output).toMatch(/recorded reviewer subset output|disjoint/i);
+    expect(existsSync(join(fixture.external, 'leaked-submission-status.json'))).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort()).toEqual(eventsBefore);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(bManifestBefore);
+    expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(passBManifestBefore);
+  });
+
+  it('retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const writeDescriptor = (journalPath: string) => writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: join(fixture.external, 'wave-1-reviewer'), controllerOutputPath: join(fixture.external, 'wave-1-controller') }],
+    });
+    writeDescriptor(journal);
+    const invoke = (command: string, output: string) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output], join(fixture.external, 'caller-cwd'));
+
+    expect(invoke('init', join(fixture.external, 'first-init.json')).status).toBe(0);
+    const initialEvent = readdirSync(join(journal, 'events'));
+    expect(initialEvent).toHaveLength(1);
+    unlinkSync(join(journal, 'events', initialEvent[0]));
+    const retried = invoke('init', join(fixture.external, 'retry-init.json'));
+    expect(retried.status, retried.output).toBe(0);
+    expect(readdirSync(join(journal, 'events'))).toHaveLength(1);
+
+    unlinkSync(join(journal, 'events', readdirSync(join(journal, 'events'))[0]));
+    writeFileSync(
+      join(journal, '.unicode-review-journal.lock'),
+      '{"ownerNonce":"00000000-0000-4000-8000-000000000000","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n',
+    );
+    const recovered = invoke('recover', join(fixture.external, 'recover-init.json'));
+    expect(recovered.status, recovered.output).toBe(0);
+    expect(readdirSync(join(journal, 'events'))).toHaveLength(1);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+
+    const foreignJournal = join(fixture.external, 'foreign-journal');
+    mkdirSync(foreignJournal);
+    writeFileSync(join(foreignJournal, 'keep.txt'), 'preserve');
+    writeDescriptor(foreignJournal);
+    const foreign = invoke('init', join(fixture.external, 'foreign-init.json'));
+    expect(foreign.status, foreign.output).not.toBe(0);
+    expect(readFileSync(join(foreignJournal, 'keep.txt'), 'utf8')).toBe('preserve');
+  });
+
+  it('preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: join(fixture.external, 'wave-1-reviewer'), controllerOutputPath: join(fixture.external, 'wave-1-controller') }],
+    });
+    const invoke = (command: string, output: string) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output], join(fixture.external, 'caller-cwd'));
+    expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+    appendUnicodeReviewJournalEvent(journal, loadUnicodeReviewJournal(journal).tip, { type: 'hash-valid-but-semantic-invalid' });
+    const nonce = '26262626-2626-4262-8262-262626262626';
+    const lock = join(journal, '.unicode-review-journal.lock');
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    const partial = join(journal, 'events', `.0000000000000003.json.partial-${nonce}`);
+    writeFileSync(partial, 'unfinished recovery writer');
+    const lockBytes = readFileSync(lock, 'utf8');
+    const partialBytes = readFileSync(partial, 'utf8');
+
+    const output = join(fixture.external, 'recover.json');
+    const recovered = invoke('recover', output);
+    expect(recovered.status, recovered.output).not.toBe(0);
+    expect(existsSync(output)).toBe(false);
+    expect(readFileSync(lock, 'utf8')).toBe(lockBytes);
+    expect(readFileSync(partial, 'utf8')).toBe(partialBytes);
+  });
+
+  it('recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair', () => {
+    const createPlannedFixture = () => {
+      const fixture = createCalibrationCommandFixture();
+      const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+      const waveInput = join(fixture.external, 'wave-1-input.json');
+      writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+      const descriptor = join(fixture.external, 'workflow-descriptor.json');
+      const journal = join(fixture.external, 'workflow-journal');
+      const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+      const controllerOutput = join(fixture.external, 'wave-1-controller');
+      writeJson(descriptor, {
+        calibrationContextPath: fixture.descriptorPath,
+        sealedKeyPath: fixture.keyPath,
+        calibrationSubmissionPath: fixture.submissionPath,
+        journalPath: journal,
+        waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+      });
+      const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+      expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+      expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+      return { fixture, journal, reviewerOutput, controllerOutput, invoke };
+    };
+    const stopWriter = (journal: string, nonce: string) => {
+      const lock = join(journal, '.unicode-review-journal.lock');
+      writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+      const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+      writeFileSync(partial, 'stopped writer partial');
+      return { lock, partial, lockBytes: readFileSync(lock, 'utf8'), partialBytes: readFileSync(partial, 'utf8') };
+    };
+
+    const unpublished = createPlannedFixture();
+    const reviewerBundle = readFileSync(join(unpublished.reviewerOutput, 'reviewer-bundle.json'), 'utf8');
+    const controllerSidecar = readFileSync(join(unpublished.controllerOutput, 'controller-sidecar.json'), 'utf8');
+    rmSync(unpublished.reviewerOutput, { recursive: true, force: true });
+    rmSync(unpublished.controllerOutput, { recursive: true, force: true });
+    const stoppedUnpublished = stopWriter(unpublished.journal, '28282828-2828-4282-8282-282828282828');
+    const recoveredOutput = join(unpublished.fixture.external, 'recover.json');
+    const recovered = unpublished.invoke('recover', recoveredOutput);
+    expect(recovered.status, recovered.output).toBe(0);
+    expect(existsSync(unpublished.reviewerOutput)).toBe(false);
+    expect(existsSync(unpublished.controllerOutput)).toBe(false);
+    expect(existsSync(stoppedUnpublished.lock)).toBe(false);
+    expect(existsSync(stoppedUnpublished.partial)).toBe(false);
+
+    const resumed = unpublished.invoke('resume', join(unpublished.fixture.external, 'resume.json'));
+    expect(resumed.status, resumed.output).toBe(0);
+    expect(readFileSync(join(unpublished.reviewerOutput, 'reviewer-bundle.json'), 'utf8')).toBe(reviewerBundle);
+    expect(readFileSync(join(unpublished.controllerOutput, 'controller-sidecar.json'), 'utf8')).toBe(controllerSidecar);
+
+    const partialPair = createPlannedFixture();
+    rmSync(partialPair.controllerOutput, { recursive: true, force: true });
+    const stoppedPartial = stopWriter(partialPair.journal, '29292929-2929-4292-8292-292929292929');
+    const rejectedOutput = join(partialPair.fixture.external, 'recover-partial.json');
+    const rejected = partialPair.invoke('recover', rejectedOutput);
+    expect(rejected.status, rejected.output).not.toBe(0);
+    expect(existsSync(rejectedOutput)).toBe(false);
+    expect(readFileSync(stoppedPartial.lock, 'utf8')).toBe(stoppedPartial.lockBytes);
+    expect(readFileSync(stoppedPartial.partial, 'utf8')).toBe(stoppedPartial.partialBytes);
+    expect(existsSync(partialPair.reviewerOutput)).toBe(true);
+    expect(existsSync(partialPair.controllerOutput)).toBe(false);
+  });
+
+  it('recovers an existing B subset when its active wave publication pair is absent', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+    const controllerOutput = join(fixture.external, 'wave-1-controller');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+    expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+    expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+    const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+    const manifest = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+    const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+    const aPath = join(fixture.external, 'a.json');
+    writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+    expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+    const bSubset = join(fixture.external, 'b-subset');
+    expect(invoke('prepare-b', join(fixture.external, 'prepare-b.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    const savedSubset = readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8');
+    rmSync(reviewerOutput, { recursive: true });
+    rmSync(controllerOutput, { recursive: true });
+    const nonce = '31313131-3131-4131-8131-313131313131';
+    const lock = join(journal, '.unicode-review-journal.lock');
+    const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(partial, 'stopped writer partial');
+    expect(invoke('recover', join(fixture.external, 'recover.json')).status).toBe(0);
+    expect(existsSync(reviewerOutput)).toBe(false);
+    expect(existsSync(controllerOutput)).toBe(false);
+    expect(invoke('resume', join(fixture.external, 'resume.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+    expect(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).toBe(savedSubset);
+    expect(existsSync(reviewerOutput)).toBe(true);
+    expect(existsSync(controllerOutput)).toBe(true);
+    expect(manifest.pairRef).toBeDefined();
   });
 
   it('rejects workflow initialization when the external calibration no longer authorizes it', () => {

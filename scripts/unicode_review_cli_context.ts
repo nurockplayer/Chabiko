@@ -1,4 +1,5 @@
-import { dirname, join } from 'node:path';
+import { readdirSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, sep } from 'node:path';
 import {
   REVIEW_PROTOCOL_VERSION,
   loadCanonicalEvidenceAuthority,
@@ -133,6 +134,97 @@ function parseContextDescriptor(value: unknown): ReviewEvidenceContextDescriptor
   };
 }
 
+/** Canonical role paths that a stored context descriptor binds to. */
+export interface ReviewEvidenceContextPaths {
+  readonly inputPath: string;
+  readonly reviewerBundlePath: string;
+  readonly reviewerDirectory: string;
+  readonly controllerSidecarPath: string;
+  readonly contractPath: string;
+}
+
+function isSameOrNestedPath(parent: string, candidate: string): boolean {
+  const pathFromParent = relative(parent, candidate);
+  return pathFromParent === '' || (!pathFromParent.startsWith(`..${sep}`) && pathFromParent !== '..' && !isAbsolute(pathFromParent));
+}
+
+/** True when either canonical path contains the other, or they are identical. */
+export function pathsOverlap(left: string, right: string): boolean {
+  return isSameOrNestedPath(left, right) || isSameOrNestedPath(right, left);
+}
+
+/**
+ * Resolves every controller/reviewer role path an untrusted descriptor names
+ * without reading any artifact, so a caller can fence its own outputs first.
+ */
+export function resolveReviewEvidenceContextPaths(descriptorValue: unknown): ReviewEvidenceContextPaths {
+  const descriptor = parseContextDescriptor(descriptorValue);
+  const reviewerBundlePath = resolveStrictExternalPath(descriptor.reviewerBundlePath, 'context reviewer bundle');
+  return {
+    inputPath: resolveStrictExternalPath(descriptor.inputPath, 'context input'),
+    reviewerBundlePath,
+    reviewerDirectory: dirname(reviewerBundlePath),
+    controllerSidecarPath: resolveStrictExternalPath(descriptor.controllerSidecarPath, 'context controller sidecar'),
+    contractPath: resolveStrictExternalPath(descriptor.contractPath, 'context review contract'),
+  };
+}
+
+function assertReviewerTreeIsolation(paths: ReviewEvidenceContextPaths): void {
+  const roles = [
+    { label: 'context input', path: paths.inputPath },
+    { label: 'context controller sidecar', path: paths.controllerSidecarPath },
+    { label: 'context review contract', path: paths.contractPath },
+  ];
+  for (const role of roles) {
+    assert(!pathsOverlap(paths.reviewerDirectory, role.path), `${role.label} must be disjoint from the reviewer bundle tree`);
+  }
+}
+
+function readReviewerTreeDirectory(absoluteDirectory: string, relativeDirectory: string) {
+  try {
+    return readdirSync(absoluteDirectory, { withFileTypes: true });
+  } catch (error) {
+    throw new Error(`reviewer tree directory '${relativeDirectory}' is unavailable: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function collectReviewerTree(directory: string): { readonly files: string[]; readonly directories: string[] } {
+  const files: string[] = [];
+  const directories: string[] = [];
+  const visit = (absoluteDirectory: string, relativeDirectory: string): void => {
+    for (const entry of readReviewerTreeDirectory(absoluteDirectory, relativeDirectory === '' ? '.' : relativeDirectory)) {
+      const relativePath = relativeDirectory === '' ? entry.name : `${relativeDirectory}/${entry.name}`;
+      assert(!entry.isSymbolicLink(), `reviewer tree must not contain a symbolic link: ${relativePath}`);
+      if (entry.isDirectory()) {
+        directories.push(relativePath);
+        visit(join(absoluteDirectory, entry.name), relativePath);
+        continue;
+      }
+      assert(entry.isFile(), `reviewer tree contains an unsupported entry type: ${relativePath}`);
+      files.push(relativePath);
+    }
+  };
+  visit(directory, '');
+  return { files, directories };
+}
+
+/**
+ * The blind reviewer tree may hold only the reviewer bundle and the exact
+ * `pairs/*.png` files that bundle lists; any other file, directory or symbolic
+ * link could carry candidate identifiers or controller overrides.
+ */
+function assertExactReviewerTree(directory: string, bundle: ReviewerBundle): void {
+  const expectedFiles = new Set<string>(['reviewer-bundle.json', ...bundle.items.map((item) => item.pixelPath)]);
+  const expectedDirectories = new Set<string>(bundle.items.map((item) => dirname(item.pixelPath)).filter((value) => value !== '.'));
+  const observed = collectReviewerTree(directory);
+  const unexpectedFiles = observed.files.filter((file) => !expectedFiles.has(file)).sort();
+  const unexpectedDirectories = observed.directories.filter((item) => !expectedDirectories.has(item)).sort();
+  assert(
+    unexpectedFiles.length === 0 && unexpectedDirectories.length === 0,
+    `reviewer tree must contain exactly the reviewer bundle and its listed pixels; unexpected entries: ${[...unexpectedFiles, ...unexpectedDirectories].join(', ')}`,
+  );
+}
+
 function parseReviewContract(value: unknown): ReviewContractBinding {
   assertExactKeys(value, ['rubricVersion', 'promptChecksumSha256', 'renderingEvidenceChecksumSha256', 'reviewerModelVersion', 'transportContractChecksumSha256', 'visionCapabilityEvidenceRef'], 'review contract');
   assert(value.rubricVersion === REVIEW_PROTOCOL_VERSION, 'review contract rubric version is stale');
@@ -157,24 +249,21 @@ function parseReviewContract(value: unknown): ReviewContractBinding {
  * stored reviewer PNGs all rebind to current canonical #262 authority.
  */
 export function loadReviewEvidenceContext(descriptorValue: unknown): ReviewEvidenceContext {
-  const descriptor = parseContextDescriptor(descriptorValue);
-  const inputPath = resolveStrictExternalPath(descriptor.inputPath, 'context input');
-  const reviewerBundlePath = resolveStrictExternalPath(descriptor.reviewerBundlePath, 'context reviewer bundle');
-  const controllerSidecarPath = resolveStrictExternalPath(descriptor.controllerSidecarPath, 'context controller sidecar');
-  const contractPath = resolveStrictExternalPath(descriptor.contractPath, 'context review contract');
+  const paths = resolveReviewEvidenceContextPaths(descriptorValue);
+  assertReviewerTreeIsolation(paths);
   const authority = loadCanonicalEvidenceAuthority(resolveUnicodeReviewRepositoryRoot());
-  const inputs = parseControllerEvidenceInputs(readStrictExternalJson(inputPath), authority);
-  const rawBundle = readStrictExternalJson(reviewerBundlePath);
-  const rawSidecar = readStrictExternalJson(controllerSidecarPath);
-  const contract = parseReviewContract(readStrictExternalJson(contractPath));
+  const inputs = parseControllerEvidenceInputs(readStrictExternalJson(paths.inputPath), authority);
+  const rawBundle = readStrictExternalJson(paths.reviewerBundlePath);
+  const rawSidecar = readStrictExternalJson(paths.controllerSidecarPath);
+  const contract = parseReviewContract(readStrictExternalJson(paths.contractPath));
   validateReviewerBundle(rawBundle);
   validateBlindEvidenceArtifacts(rawBundle, rawSidecar);
   const bundle = rawBundle as ReviewerBundle;
   const sidecar = rawSidecar as ControllerSidecar;
-  const reviewerDirectory = dirname(reviewerBundlePath);
+  assertExactReviewerTree(paths.reviewerDirectory, bundle);
   const localPngs = new Map<string, Uint8Array>();
   for (const item of bundle.items) {
-    const pixelPath = resolveStrictExternalPath(join(reviewerDirectory, item.pixelPath), `stored reviewer PNG '${item.pixelPath}'`);
+    const pixelPath = resolveStrictExternalPath(join(paths.reviewerDirectory, item.pixelPath), `stored reviewer PNG '${item.pixelPath}'`);
     localPngs.set(item.pixelPath, readStrictExternalBytes(pixelPath));
   }
   validateAuthoritativeBlindEvidenceArtifacts(authority, bundle, sidecar, inputs, localPngs);

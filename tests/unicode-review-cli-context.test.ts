@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { deflateSync } from 'node:zlib';
@@ -277,5 +277,49 @@ describe('#477 Unicode review evidence-context loader', () => {
     const missing = runLoader(missingPng);
     expect(missing.status).not.toBe(0);
     expect(missing.output).toMatch(/external regular file|unavailable/i);
+  });
+
+  it('rejects extra reviewer-tree files, nested extras, unexpected directories, and symbolic links', () => {
+    const rootExtra = createLoadedContextFixture();
+    writeJson(join(rootExtra.reviewerOutput, 'candidate-map.json'), { candidateId: rootExtra.candidateId });
+    const rootResult = runLoader(rootExtra);
+    expect(rootResult.status).not.toBe(0);
+    expect(rootResult.output).toMatch(/reviewer tree must contain exactly the reviewer bundle and its listed pixels/i);
+    expect(rootResult.output).toContain('candidate-map.json');
+
+    const nestedExtra = createLoadedContextFixture();
+    writeFileSync(join(nestedExtra.reviewerOutput, 'pairs', 'extra.png'), Uint8Array.from([1, 2, 3]));
+    const nestedResult = runLoader(nestedExtra);
+    expect(nestedResult.status).not.toBe(0);
+    expect(nestedResult.output).toContain('pairs/extra.png');
+
+    const unexpectedDirectory = createLoadedContextFixture();
+    mkdirSync(join(unexpectedDirectory.reviewerOutput, 'notes'), { recursive: true });
+    writeJson(join(unexpectedDirectory.reviewerOutput, 'notes', 'candidate-id.json'), { candidateId: unexpectedDirectory.candidateId });
+    const directoryResult = runLoader(unexpectedDirectory);
+    expect(directoryResult.status).not.toBe(0);
+    expect(directoryResult.output).toContain('notes');
+
+    const symlinked = createLoadedContextFixture();
+    symlinkSync(join(symlinked.external, 'review-context.json'), join(symlinked.reviewerOutput, 'descriptor-link.json'));
+    const symlinkResult = runLoader(symlinked);
+    expect(symlinkResult.status).not.toBe(0);
+    expect(symlinkResult.output).toMatch(/reviewer tree must not contain a symbolic link/i);
+  });
+
+  it('rejects controller context roles that overlap the blind reviewer tree', () => {
+    const overlaps = [
+      { role: 'inputPath', expected: 'context input must be disjoint from the reviewer bundle tree' },
+      { role: 'controllerSidecarPath', expected: 'context controller sidecar must be disjoint from the reviewer bundle tree' },
+      { role: 'contractPath', expected: 'context review contract must be disjoint from the reviewer bundle tree' },
+    ] as const;
+    for (const overlap of overlaps) {
+      const fixture = createLoadedContextFixture();
+      const descriptor = JSON.parse(readFileSync(fixture.descriptor, 'utf8'));
+      writeJson(fixture.descriptor, { ...descriptor, [overlap.role]: join(fixture.reviewerOutput, `moved-${overlap.role}.json`) });
+      const result = runLoader(fixture);
+      expect(result.status, result.output).not.toBe(0);
+      expect(result.output).toContain(overlap.expected);
+    }
   });
 });

@@ -28,6 +28,7 @@ import {
   prepareUnicodeReviewWaveB,
   prepareUnicodeReviewWavePassB,
   readUnicodeReviewWorkflow,
+  readUnicodeReviewWorkflowFromJournal,
   type UnicodeReviewWaveArtifacts,
   type UnicodeReviewWorkflowCalibration,
   type UnicodeReviewWorkflowState,
@@ -230,6 +231,36 @@ function assertCommandPathIsolation(loaded: LoadedWorkflow, statusOutput: string
   }
 }
 
+/**
+ * Fences a controller status file and any newly chosen subset against every
+ * subset root recorded so far.  A later command must never write under an old
+ * Reviewer B or Pass B export, even after that wave is finalized.
+ */
+function assertRecordedSubsetIsolation(
+  loaded: LoadedWorkflow,
+  statusOutput: string,
+  subsetOutput: string | null,
+  submissionPath: string | null,
+  subsetRoots: readonly string[],
+): void {
+  const status = { label: 'workflow status output', path: statusOutput };
+  for (const root of subsetRoots) assertDisjoint(status, { label: `recorded reviewer subset output '${root}'`, path: root });
+  const permanentRoles: readonly NamedPath[] = [
+    ...staticOutputRoots(loaded),
+    { label: 'calibration reviewer directory', path: dirname(loaded.calibrationArtifactPaths.reviewerBundlePath) },
+    { label: 'calibration controller directory', path: dirname(loaded.calibrationArtifactPaths.controllerSidecarPath) },
+    ...controllerSourcePaths(loaded),
+    ...(submissionPath === null ? [] : [{ label: 'workflow reviewer submission', path: submissionPath }]),
+  ];
+  for (const root of subsetRoots) {
+    const recorded = { label: `recorded reviewer subset output '${root}'`, path: root };
+    for (const role of permanentRoles) assertDisjoint(role, recorded);
+  }
+  if (subsetOutput === null) return;
+  const subset = { label: 'reviewer subset output', path: subsetOutput };
+  for (const root of subsetRoots) assertDisjoint(subset, { label: `recorded reviewer subset output '${root}'`, path: root });
+}
+
 function parseWaveInputs(descriptor: WorkflowDescriptor, authority: UnicodeReviewWorkflowCalibration['context']['authority']): ReadonlyMap<string, readonly ManifestEvidenceInput[]> {
   return new Map(descriptor.waves.map((wave) => {
     const parsed = parseControllerEvidenceInputs(readStrictExternalJson(wave.inputPath), authority);
@@ -264,7 +295,11 @@ function recursiveFiles(root: string): readonly string[] {
     const stat = lstatSync(path);
     assert(!stat.isSymbolicLink(), `stored workflow output contains a symbolic link: ${path}`);
     const relativePath = prefix === '' ? name : `${prefix}/${name}`;
-    if (stat.isDirectory()) return visit(path, relativePath);
+    if (stat.isDirectory()) {
+      const files = visit(path, relativePath);
+      assert(files.length > 0, `stored workflow output contains an unexpected empty directory: ${path}`);
+      return files;
+    }
     assert(stat.isFile(), `stored workflow output contains an unsupported file type: ${path}`);
     return [relativePath];
   });
@@ -338,7 +373,10 @@ function status(action: Command, state: UnicodeReviewWorkflowState, promotions: 
       waveId: wave.waveId,
       terminalState: wave.terminalState,
       reviewerBundleChecksumSha256: wave.artifacts.controllerSidecar.reviewerBundleChecksumSha256,
+      reviewerBSubsetOutputPath: wave.reviewerBSubsetOutputPath,
+      passBSubsetOutputPath: wave.passBSubsetOutputPath,
     })),
+    recordedSubsetRoots: state.subsetRoots,
     promotions,
   };
 }
@@ -384,13 +422,22 @@ function preflightWaveArtifactOutputs(wave: WaveDescriptor): void {
   preflightFreshExternalDirectory(wave.controllerOutputPath, `workflow wave '${wave.waveId}' controller output`);
 }
 
-function exportSubset(output: string, source: WaveDescriptor, artifacts: UnicodeReviewWaveArtifacts, refs: readonly string[]): void {
-  const directory = preflightFreshExternalDirectory(output, 'reviewer subset output');
-  mkdirSync(directory);
+function subsetFiles(source: WaveDescriptor, artifacts: UnicodeReviewWaveArtifacts, refs: readonly string[]): ReadonlyMap<string, Uint8Array> {
   const selected = artifacts.reviewerBundle.items.filter((item) => refs.includes(item.pairRef));
   assert(selected.length === refs.length, 'reviewer subset references are not present in the stored reviewer bundle');
   const manifest = { protocolVersion: REVIEW_PROTOCOL_VERSION, items: selected };
-  const write = (relativePath: string, contents: string | Uint8Array): void => {
+  const files = new Map<string, Uint8Array>();
+  files.set('reviewer-subset.json', encodedJson(manifest));
+  for (const item of selected) {
+    const bytes = artifacts.localPngs.get(item.pixelPath);
+    assert(bytes, `reviewer subset '${item.pixelPath}' is absent from replayed workflow artifacts`);
+    files.set(item.pixelPath, bytes);
+  }
+  return files;
+}
+
+function writeSubset(directory: string, files: ReadonlyMap<string, Uint8Array>): void {
+  for (const [relativePath, contents] of files) {
     const destination = join(directory, relativePath);
     const parent = dirname(destination);
     if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
@@ -400,9 +447,61 @@ function exportSubset(output: string, source: WaveDescriptor, artifacts: Unicode
     } finally {
       closeSync(descriptor);
     }
+  }
+}
+
+function exportSubset(output: string, source: WaveDescriptor, artifacts: UnicodeReviewWaveArtifacts, refs: readonly string[]): void {
+  const directory = preflightFreshExternalDirectory(output, 'reviewer subset output');
+  const files = subsetFiles(source, artifacts, refs);
+  mkdirSync(directory);
+  writeSubset(directory, files);
+}
+
+/**
+ * Verifies an already-exported recorded subset in place.  A partial directory,
+ * an unexpected file, or drifted bytes fail closed without deleting anything,
+ * so a resume can never overwrite or clean up a user's files.
+ */
+function assertExistingSubset(output: string, source: WaveDescriptor, artifacts: UnicodeReviewWaveArtifacts, refs: readonly string[]): void {
+  const directory = externalPath(output, 'recorded reviewer subset output');
+  const stats = lstatSync(directory);
+  assert(stats.isDirectory() && !stats.isSymbolicLink(), 'recorded reviewer subset output must be a directory');
+  const files = subsetFiles(source, artifacts, refs);
+  const expectedFiles = [...files.keys()].sort();
+  assert(JSON.stringify(recursiveFiles(directory)) === JSON.stringify(expectedFiles), 'recorded reviewer subset output is partial or has an unexpected file set');
+  for (const [relativePath, contents] of files) assertExactFile(join(directory, relativePath), contents, `recorded reviewer subset '${relativePath}'`);
+}
+
+/**
+ * Revalidates every persisted Reviewer B and Pass B export before a command
+ * can append another workflow event.  Only resume may reconstruct its own
+ * current missing export; all other missing or changed evidence is retained
+ * for investigation.
+ */
+function verifyStoredSubsets(loaded: LoadedWorkflow, state: UnicodeReviewWorkflowState, allowAbsentCurrentResumable: boolean): void {
+  const absentCurrentResumable = (waveId: string, stage: 'reviewer-b' | 'pass-b', root: string): boolean => {
+    const active = state.activeWave;
+    if (!allowAbsentCurrentResumable || active?.waveId !== waveId) return false;
+    return stage === 'reviewer-b'
+      ? active.stage === 'reviewer-b-pending' && active.reviewerBSubsetOutputPath === root
+      : active.stage === 'pass-b-pending' && active.passBSubsetOutputPath === root;
   };
-  write('reviewer-subset.json', `${JSON.stringify(manifest, null, 2)}\n`);
-  for (const item of selected) write(item.pixelPath, readStrictExternalBytes(join(source.reviewerOutputPath, item.pixelPath)));
+  for (const recorded of state.waves) {
+    const descriptor = findWave(loaded.descriptor, recorded.waveId);
+    const subsets: readonly { readonly stage: 'reviewer-b' | 'pass-b'; readonly root: string | null; readonly refs: readonly string[] | null }[] = [
+      { stage: 'reviewer-b', root: recorded.reviewerBSubsetOutputPath, refs: recorded.reviewerBPreparedPairRefs },
+      { stage: 'pass-b', root: recorded.passBSubsetOutputPath, refs: recorded.passBPreparedPairRefs },
+    ];
+    for (const subset of subsets) {
+      assert((subset.root === null) === (subset.refs === null), `workflow wave '${recorded.waveId}' ${subset.stage} subset registration is incomplete`);
+      if (subset.root === null || subset.refs === null) continue;
+      if (!existsSync(subset.root)) {
+        assert(absentCurrentResumable(recorded.waveId, subset.stage, subset.root), `workflow wave '${recorded.waveId}' ${subset.stage} subset output is missing; only resume may recreate the current pending subset`);
+        continue;
+      }
+      assertExistingSubset(subset.root, descriptor, recorded.artifacts, subset.refs);
+    }
+  }
 }
 
 function run(command: Command, args: readonly string[]): void {
@@ -413,24 +512,47 @@ function run(command: Command, args: readonly string[]): void {
   const descriptorPath = required(values, '--descriptor');
   const output = preflightFreshExternalFile(required(values, '--output'), 'workflow output');
   const requestedSubsetOutput = values.has('--reviewer-output') ? externalPath(required(values, '--reviewer-output'), 'reviewer subset output') : null;
+  const submissionPath = needsSubmission ? externalPath(required(values, '--submission'), 'workflow reviewer submission') : null;
   const loaded = loadWorkflow(descriptorPath);
   assertStaticPathIsolation(loaded);
   assertCommandPathIsolation(loaded, output, requestedSubsetOutput);
   if (command === 'recover') {
-    recoverStoppedUnicodeReviewJournalWriter(loaded.descriptor.journalPath);
-    const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
-    verifyStoredWaves(loaded, state, false);
+    let validatedState: UnicodeReviewWorkflowState | null = null;
+    const recovered = recoverStoppedUnicodeReviewJournalWriter(loaded.descriptor.journalPath, {
+      beforeCleanup: (journal) => {
+        if (journal.events.length === 0) return;
+        const state = readUnicodeReviewWorkflowFromJournal(journal, loaded.calibration, loaded.inputsByWave);
+        // A plan event can commit before its paired external artifacts are
+        // published.  Recovery only releases the stopped writer here; resume
+        // remains responsible for publishing that one fully absent active pair.
+        verifyStoredWaves(loaded, state, true);
+        verifyStoredSubsets(loaded, state, true);
+        assertRecordedSubsetIsolation(loaded, output, requestedSubsetOutput, null, state.subsetRoots);
+        validatedState = state;
+      },
+    });
+    const state = recovered.events.length === 0
+      ? initializeUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration)
+      : validatedState;
+    assert(state !== null, 'recovery did not validate the stopped workflow journal');
+    if (recovered.events.length === 0) {
+      verifyStoredWaves(loaded, state, false);
+      verifyStoredSubsets(loaded, state, false);
+      assertRecordedSubsetIsolation(loaded, output, requestedSubsetOutput, null, state.subsetRoots);
+    }
     writeStatus(output, command, state);
     return;
   }
   if (command === 'init') {
-    preflightFreshExternalDirectory(loaded.descriptor.journalPath, 'workflow journal');
     const state = initializeUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration);
     writeStatus(output, command, state);
     return;
   }
   const before = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
+  const newSubsetOutput = command === 'prepare-b' || command === 'prepare-pass-b' ? requestedSubsetOutput : null;
+  assertRecordedSubsetIsolation(loaded, output, newSubsetOutput, submissionPath, before.subsetRoots);
   verifyStoredWaves(loaded, before, command === 'resume');
+  verifyStoredSubsets(loaded, before, command === 'resume');
   if (command === 'plan') {
     assert(before.activeWave === null, 'cannot plan while a wave is pending');
     const id = waveId(required(values, '--wave-id'), 'wave ID');
@@ -441,6 +563,7 @@ function run(command: Command, args: readonly string[]): void {
     publishWaveArtifacts(wave, artifacts);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
+    verifyStoredSubsets(loaded, state, false);
     writeStatus(output, command, state);
     return;
   }
@@ -449,50 +572,63 @@ function run(command: Command, args: readonly string[]): void {
       const wave = findWave(loaded.descriptor, before.activeWave.waveId);
       const existing = outputsExist(wave);
       if (!existing.reviewer && !existing.controller) publishWaveArtifacts(wave, before.activeWave.artifacts);
-      const pendingRefs = before.activeWave.stage === 'reviewer-b-pending' ? before.activeWave.reviewerBPairRefs
-        : before.activeWave.stage === 'pass-b-pending' ? before.activeWave.passBPairRefs : null;
-      if (pendingRefs !== null && pendingRefs.length > 0) {
-        const reviewerOutput = requestedSubsetOutput;
-        assert(reviewerOutput, `resume requires --reviewer-output for ${before.activeWave.stage}`);
-        preflightFreshExternalDirectory(reviewerOutput, 'reviewer subset output');
-        exportSubset(reviewerOutput, wave, before.activeWave.artifacts, pendingRefs);
+      const subsetStage = before.activeWave.stage === 'reviewer-b-pending' ? 'reviewer-b'
+        : before.activeWave.stage === 'pass-b-pending' ? 'pass-b' : null;
+      if (subsetStage !== null) {
+        const recordedSubsetOutput = subsetStage === 'reviewer-b' ? before.activeWave.reviewerBSubsetOutputPath : before.activeWave.passBSubsetOutputPath;
+        assert(recordedSubsetOutput, `resume requires a recorded ${before.activeWave.stage} subset output path`);
+        if (values.has('--reviewer-output')) {
+          assert(requestedSubsetOutput === recordedSubsetOutput, 'resume --reviewer-output must match the recorded reviewer subset output path');
+        }
+        const exportedRefs = subsetStage === 'pass-b'
+          ? before.activeWave.passBPreparedPairRefs
+          : before.activeWave.reviewerBPreparedPairRefs;
+        assert(exportedRefs !== null, `resume requires recorded ${subsetStage} subset refs`);
+        if (existsSync(recordedSubsetOutput)) {
+          assertExistingSubset(recordedSubsetOutput, wave, before.activeWave.artifacts, exportedRefs);
+        } else {
+          exportSubset(recordedSubsetOutput, wave, before.activeWave.artifacts, exportedRefs);
+        }
       } else {
         assert(!values.has('--reviewer-output'), '--reviewer-output is only valid while Reviewer B or Pass B refs are pending');
       }
     }
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
+    verifyStoredSubsets(loaded, state, false);
     writeStatus(output, command, state);
     return;
   }
   if (command === 'ingest-a') {
-    ingestUnicodeReviewWaveA(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(externalPath(required(values, '--submission'), 'Reviewer A submission')) as VisionClassificationSubmission);
+    ingestUnicodeReviewWaveA(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(submissionPath as string) as VisionClassificationSubmission);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
+    verifyStoredSubsets(loaded, state, false);
     writeStatus(output, command, state);
     if (before.activeWave !== null && state.waves.find((wave) => wave.waveId === before.activeWave!.waveId)?.terminalState === 'invalidated') process.exitCode = 1;
     return;
   } else if (command === 'prepare-b') {
     assert(requestedSubsetOutput, 'prepare-b requires --reviewer-output');
     preflightFreshExternalDirectory(requestedSubsetOutput, 'reviewer subset output');
-    const refs = prepareUnicodeReviewWaveB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
+    const refs = prepareUnicodeReviewWaveB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, requestedSubsetOutput);
     assert(before.activeWave !== null, 'Reviewer B preparation has no active wave');
     exportSubset(requestedSubsetOutput, findWave(loaded.descriptor, before.activeWave.waveId), before.activeWave.artifacts, refs);
   } else if (command === 'ingest-b') {
-    const submission = readStrictExternalJson(externalPath(required(values, '--submission'), 'Reviewer B submission'));
+    const submission = readStrictExternalJson(submissionPath as string);
     ingestUnicodeReviewWaveB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, submission as VisionClassificationSubmission | null);
   } else if (command === 'prepare-pass-b') {
     assert(requestedSubsetOutput, 'prepare-pass-b requires --reviewer-output');
     preflightFreshExternalDirectory(requestedSubsetOutput, 'reviewer subset output');
-    const refs = prepareUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
+    const refs = prepareUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, requestedSubsetOutput);
     assert(before.activeWave !== null, 'Pass B preparation has no active wave');
     exportSubset(requestedSubsetOutput, findWave(loaded.descriptor, before.activeWave.waveId), before.activeWave.artifacts, refs);
   } else if (command === 'ingest-pass-b') {
-    ingestUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(externalPath(required(values, '--submission'), 'Pass B submission')) as VisionPassBSubmission);
+    ingestUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(submissionPath as string) as VisionPassBSubmission);
   } else if (command === 'finalize') {
     const promotions = finalizeUnicodeReviewWave(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
+    verifyStoredSubsets(loaded, state, false);
     writeStatus(output, command, state, promotions);
     return;
   } else {
@@ -500,6 +636,7 @@ function run(command: Command, args: readonly string[]): void {
   }
   const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
   verifyStoredWaves(loaded, state, false);
+  verifyStoredSubsets(loaded, state, false);
   writeStatus(output, command, state);
 }
 

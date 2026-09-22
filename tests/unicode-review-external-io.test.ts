@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -44,7 +44,11 @@ describe('#477 external Unicode review I/O', () => {
 
     const sharedWorktree = join(root, 'shared-worktree');
     mkdirSync(sharedWorktree);
-    writeFileSync(join(sharedWorktree, '.git'), readFileSync(join(repositoryRoot, '.git'), 'utf8'), 'utf8');
+    const repositoryGitPath = join(repositoryRoot, '.git');
+    const gitPointer = lstatSync(repositoryGitPath).isDirectory()
+      ? `gitdir: ${realpathSync(repositoryGitPath)}\n`
+      : readFileSync(repositoryGitPath, 'utf8');
+    writeFileSync(join(sharedWorktree, '.git'), gitPointer, 'utf8');
     writeFileSync(join(sharedWorktree, 'receipt.json'), '{"shared":true}', 'utf8');
     expect(() => readStrictExternalJson(join(sharedWorktree, 'receipt.json'))).toThrow(/every worktree/i);
   });
@@ -200,5 +204,37 @@ describe('#477 external Unicode review I/O', () => {
       },
     })).toThrow(/replaced an earlier output/);
     expect(readFileSync(firstDestination, 'utf8')).toBe('replacement');
+  });
+
+  it('preserves a replaced output even when the platform reuses the unlinked inode', () => {
+    const root = externalRoot();
+    let firstDestination = '';
+    let originalInode = -1;
+    let replacementInode = -1;
+    expect(() => writeExclusiveExternalOutputs({
+      reviewer: {
+        directory: join(root, 'inode-reviewer'),
+        files: [
+          { relativePath: 'first.json', contents: '{"first":true}' },
+          { relativePath: 'second.json', contents: '{"second":true}' },
+        ],
+      },
+      controller: { directory: join(root, 'inode-controller'), files: [] },
+    }, {
+      writeFile(path, contents) {
+        if (firstDestination === '') {
+          firstDestination = join(dirname(path), 'first.json');
+          writeFileSync(path, contents, { flag: 'wx' });
+          return;
+        }
+        originalInode = lstatSync(firstDestination).ino;
+        unlinkSync(firstDestination);
+        writeFileSync(firstDestination, 'replacement', { flag: 'wx' });
+        replacementInode = lstatSync(firstDestination).ino;
+        throw new Error('writer replaced an earlier output');
+      },
+    })).toThrow(/replaced an earlier output/);
+    expect(readFileSync(firstDestination, 'utf8')).toBe('replacement');
+    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
   });
 });

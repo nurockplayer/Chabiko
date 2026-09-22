@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -86,6 +86,26 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(Object.keys(loaded)).toEqual(['root', 'events', 'tip']);
   });
 
+  it('releases owned descriptors across repeated successful appends', () => {
+    if (process.platform === 'win32') return;
+    const journal = join(externalRoot(), 'journal');
+    const journalModule = pathToFileURL(join(process.cwd(), 'scripts', 'unicode_review_journal.ts')).href;
+    const fdDirectory = process.platform === 'linux' ? '/proc/self/fd' : '/dev/fd';
+    const source = [
+      `import { readdirSync } from 'node:fs';`,
+      `import { appendUnicodeReviewJournalEvent, initializeUnicodeReviewJournal } from ${JSON.stringify(journalModule)};`,
+      `const count = () => readdirSync(${JSON.stringify(fdDirectory)}).length;`,
+      `let tip = initializeUnicodeReviewJournal(${JSON.stringify(journal)}).tip;`,
+      `const before = count();`,
+      `for (let index = 0; index < 100; index += 1) tip = appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, tip, { index }).tip;`,
+      `console.log(JSON.stringify({ before, after: count() }));`,
+    ].join('\n');
+    const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { encoding: 'utf8' });
+    expect(result.status).toBe(0);
+    const counts = JSON.parse(result.stdout.trim()) as { before: number; after: number };
+    expect(counts.after - counts.before).toBeLessThanOrEqual(2);
+  });
+
   it('rejects a stale caller tip and preserves the current event history', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
@@ -135,6 +155,79 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(readdirSync(join(journal, 'events'))).toEqual([]);
   });
 
+  it('preserves a replacement of the owned temporary artifact during failed cleanup', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    let temporary = '';
+    let replacement = false;
+    expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'replacement' }, {
+      beforeCommit() {
+        const temporaryName = readdirSync(join(journal, 'events')).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
+        expect(temporaryName).toBeTypeOf('string');
+        temporary = join(journal, 'events', temporaryName as string);
+        unlinkSync(temporary);
+        writeFileSync(temporary, 'replacement', { flag: 'wx' });
+        replacement = true;
+      },
+    })).toThrow(/changed ownership/);
+    expect(replacement).toBe(true);
+    expect(readFileSync(temporary, 'utf8')).toBe('replacement');
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/unowned temporary artifact/);
+  });
+
+  it('preserves a replaced temporary artifact even when the platform reuses the unlinked inode', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    let temporary = '';
+    let originalInode = -1;
+    let replacementInode = -1;
+    expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'inode reuse' }, {
+      beforeCommit() {
+        const temporaryName = readdirSync(join(journal, 'events')).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
+        expect(temporaryName).toBeTypeOf('string');
+        temporary = join(journal, 'events', temporaryName as string);
+        originalInode = lstatSync(temporary).ino;
+        unlinkSync(temporary);
+        writeFileSync(temporary, 'replacement', { flag: 'wx' });
+        replacementInode = lstatSync(temporary).ino;
+      },
+    })).toThrow(/changed ownership/);
+    expect(readFileSync(temporary, 'utf8')).toBe('replacement');
+    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
+  });
+
+  it('preserves a replacement of the owned lock during post-commit cleanup', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'lock replacement' }, {
+      afterCommit() {
+        unlinkSync(lockPath);
+        writeFileSync(lockPath, 'replacement lock', { flag: 'wx' });
+      },
+    })).toThrow(/changed ownership|journal lock/i);
+    expect(readFileSync(lockPath, 'utf8')).toBe('replacement lock');
+    expect(existsSync(eventPath(journal, 1))).toBe(true);
+  });
+
+  it('preserves a replaced lock even when the platform reuses the unlinked inode', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    let originalInode = -1;
+    let replacementInode = -1;
+    expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'lock inode reuse' }, {
+      afterCommit() {
+        originalInode = lstatSync(lockPath).ino;
+        unlinkSync(lockPath);
+        writeFileSync(lockPath, 'replacement lock', { flag: 'wx' });
+        replacementInode = lstatSync(lockPath).ino;
+      },
+    })).toThrow(/changed ownership|journal lock/i);
+    expect(readFileSync(lockPath, 'utf8')).toBe('replacement lock');
+    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
+  });
+
   it('recovers only a provably stopped owner after validating the journal and its own temporary artifact', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
@@ -148,6 +241,28 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(recoverStoppedUnicodeReviewJournalWriter(journal).tip).toEqual(appended.tip);
     expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
     expect(existsSync(temporary)).toBe(false);
+  });
+
+  it('preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'committed' });
+    const nonce = '25252525-2525-4252-8252-252525252525';
+    writeLock(journal, stoppedProcessPid(), nonce);
+    const temporary = join(journal, 'events', `.0000000000000002.json.partial-${nonce}`);
+    writeFileSync(temporary, 'incomplete', { flag: 'wx' });
+    const lock = join(journal, '.unicode-review-journal.lock');
+    const lockBytes = readFileSync(lock, 'utf8');
+    const temporaryBytes = readFileSync(temporary, 'utf8');
+
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal, {
+      beforeCleanup: (state) => {
+        expect(state.events).toHaveLength(1);
+        throw new Error('semantic recovery rejected');
+      },
+    })).toThrow(/semantic recovery rejected/);
+    expect(readFileSync(lock, 'utf8')).toBe(lockBytes);
+    expect(readFileSync(temporary, 'utf8')).toBe(temporaryBytes);
   });
 
   it('preserves an event committed before process exit and removes its matching last-event temporary artifact', () => {
