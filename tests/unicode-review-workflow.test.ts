@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   authorizeCalibration,
@@ -497,27 +497,35 @@ describe('#477 resumable Unicode review workflow', () => {
     const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
     const inputs = waveInputs('subset-paths', [productionInputs[0]]);
     ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
-    const reviewerBSubset = `${path}-b-subset`;
-    const passBSubset = `${path}-pass-b-subset`;
+    const subsetParent = join(dirname(path), 'canonical-subsets');
+    const subsetAlias = join(dirname(path), 'subset-alias');
+    mkdirSync(subsetParent);
+    symlinkSync(subsetParent, subsetAlias, 'dir');
+    const reviewerBSubset = join(subsetAlias, 'b-subset');
+    const passBSubset = join(subsetAlias, 'pass-b-subset');
+    const canonicalReviewerBSubset = join(realpathSync(subsetParent), 'b-subset');
+    const canonicalPassBSubset = join(realpathSync(subsetParent), 'pass-b-subset');
 
     expect(prepareUnicodeReviewWaveB(path, calibration, inputs, reviewerBSubset)).toEqual([manifestRef]);
     const preparedB = readUnicodeReviewWorkflow(path, calibration, inputs);
-    expect(preparedB.activeWave).toMatchObject({ stage: 'reviewer-b-pending', reviewerBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: null });
-    expect(preparedB.subsetRoots).toEqual([reviewerBSubset]);
+    expect(preparedB.activeWave).toMatchObject({ stage: 'reviewer-b-pending', reviewerBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: canonicalReviewerBSubset, passBSubsetOutputPath: null });
+    expect(preparedB.subsetRoots).toEqual([canonicalReviewerBSubset]);
+    expect((loadUnicodeReviewJournal(path).events.at(-1)!.payload as { readonly subsetOutputPath: string }).subsetOutputPath).toBe(canonicalReviewerBSubset);
 
     const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
     ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'subset-b-session', 'subset-b-context') });
     expect(prepareUnicodeReviewWavePassB(path, calibration, inputs, passBSubset)).toEqual([manifestRef]);
     const preparedPassB = readUnicodeReviewWorkflow(path, calibration, inputs);
-    expect(preparedPassB.activeWave).toMatchObject({ stage: 'pass-b-pending', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: passBSubset });
-    expect(preparedPassB.subsetRoots).toEqual([reviewerBSubset, passBSubset].sort());
+    expect(preparedPassB.activeWave).toMatchObject({ stage: 'pass-b-pending', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: canonicalReviewerBSubset, passBSubsetOutputPath: canonicalPassBSubset });
+    expect(preparedPassB.subsetRoots).toEqual([canonicalReviewerBSubset, canonicalPassBSubset].sort());
+    expect((loadUnicodeReviewJournal(path).events.at(-1)!.payload as { readonly subsetOutputPath: string }).subsetOutputPath).toBe(canonicalPassBSubset);
 
     const result = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
     ingestUnicodeReviewWavePassB(path, calibration, inputs, { result, receipt: receipt('pass-b', artifacts.context, result, [manifestRef], 'subset-pass-b-session', 'subset-pass-b-context') });
     finalizeUnicodeReviewWave(path, calibration, inputs);
     const finalized = readUnicodeReviewWorkflow(path, calibration, inputs);
-    expect(finalized.subsetRoots).toEqual([reviewerBSubset, passBSubset].sort());
-    expect(finalized.waves[0]).toMatchObject({ terminalState: 'finalized', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: reviewerBSubset, passBSubsetOutputPath: passBSubset });
+    expect(finalized.subsetRoots).toEqual([canonicalReviewerBSubset, canonicalPassBSubset].sort());
+    expect(finalized.waves[0]).toMatchObject({ terminalState: 'finalized', reviewerBPreparedPairRefs: [manifestRef], passBPreparedPairRefs: [manifestRef], reviewerBSubsetOutputPath: canonicalReviewerBSubset, passBSubsetOutputPath: canonicalPassBSubset });
   });
 
   it('retains immutable prepared Pass B refs while completed results are removed from pending work', () => {

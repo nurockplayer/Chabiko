@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { isAbsolute } from 'node:path';
 import {
   authorizeCalibration,
   buildBlindEvidenceArtifactsFromAuthority,
@@ -27,6 +26,7 @@ import {
   loadUnicodeReviewJournal,
   type UnicodeReviewJournalState,
 } from './unicode_review_journal.ts';
+import { resolveStrictExternalPath } from './unicode_review_external_io.ts';
 
 const INITIAL_WAVE_LIMIT = 250;
 const SCALED_WAVE_LIMIT = 500;
@@ -158,8 +158,10 @@ function exactKeys(value: unknown, keys: readonly string[], label: string): asse
 }
 
 function parseSubsetOutputPath(value: unknown, label: string): string {
-  assert(typeof value === 'string' && isAbsolute(value), `${label} must be an absolute path`);
-  return value;
+  assert(typeof value === 'string', `${label} must be an absolute path`);
+  const canonical = resolveStrictExternalPath(value, label);
+  assert(value === canonical, `${label} must use its canonical external path`);
+  return canonical;
 }
 
 function replayCalibration(calibration: UnicodeReviewWorkflowCalibration): { authorization: CalibrationAuthorization; binding: CalibrationReplayBinding } {
@@ -560,12 +562,12 @@ export function ingestUnicodeReviewWaveA(path: string, calibration: UnicodeRevie
 }
 
 export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
-  assert(typeof subsetOutputPath === 'string' && isAbsolute(subsetOutputPath), 'Reviewer B subset output path must be an absolute path');
+  const canonicalSubsetOutputPath = resolveStrictExternalPath(subsetOutputPath, 'Reviewer B subset output path');
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs === null, 'Reviewer B cannot be prepared at this workflow stage');
   const refs = expectedWaveBRefs(wave.artifacts, wave.a);
-  append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath });
+  append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
 }
 
@@ -592,12 +594,12 @@ export function ingestUnicodeReviewWaveB(path: string, calibration: UnicodeRevie
 }
 
 export function prepareUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
-  assert(typeof subsetOutputPath === 'string' && isAbsolute(subsetOutputPath), 'Pass B subset output path must be an absolute path');
+  const canonicalSubsetOutputPath = resolveStrictExternalPath(subsetOutputPath, 'Pass B subset output path');
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs === null, 'Pass B cannot be prepared at this workflow stage');
   const refs = expectedPassBRefs(wave.artifacts, loaded.issued.binding, wave.a, wave.b);
-  append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath });
+  append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
 }
 

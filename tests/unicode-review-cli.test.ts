@@ -1066,6 +1066,69 @@ describe('#477 Unicode review workflow CLI', () => {
     expect(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).toBe(passBManifestBefore);
   });
 
+  it('rejects hash-valid noncanonical B and Pass B subset roots before publishing status or mutating the journal', () => {
+    const assertRejectedAlias = (stage: 'b' | 'pass-b') => {
+      const fixture = createCalibrationCommandFixture();
+      const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+      const waveInput = join(fixture.external, 'wave-1-input.json');
+      writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+      const descriptor = join(fixture.external, 'workflow-descriptor.json');
+      const journal = join(fixture.external, 'workflow-journal');
+      const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+      const controllerOutput = join(fixture.external, 'wave-1-controller');
+      writeJson(descriptor, {
+        calibrationContextPath: fixture.descriptorPath,
+        sealedKeyPath: fixture.keyPath,
+        calibrationSubmissionPath: fixture.submissionPath,
+        journalPath: journal,
+        waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+      });
+      const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+      expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+      expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+      const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+      const manifestEntry = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+      const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable' }));
+      const aPath = join(fixture.external, 'wave-1-a.json');
+      writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+      expect(invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]).status).toBe(0);
+
+      if (stage === 'pass-b') {
+        const bSubset = join(fixture.external, 'wave-1-b');
+        expect(invoke('prepare-b', join(fixture.external, 'b-prepare.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+        const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
+        const bPath = join(fixture.external, 'wave-1-b.json');
+        writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, [manifestEntry.pairRef]) });
+        expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', bPath]).status).toBe(0);
+      }
+
+      const subsetParent = join(fixture.external, 'canonical-subsets');
+      const subsetAlias = join(fixture.external, 'subset-alias');
+      mkdirSync(subsetParent);
+      symlinkSync(subsetParent, subsetAlias, 'dir');
+      const subsetName = stage === 'b' ? 'wave-1-b' : 'wave-1-pass-b';
+      appendUnicodeReviewJournalEvent(journal, loadUnicodeReviewJournal(journal).tip, {
+        type: stage === 'b' ? 'wave-b-planned' : 'wave-pass-b-planned',
+        waveId: 'wave-1',
+        pairRefs: [manifestEntry.pairRef],
+        subsetOutputPath: join(subsetAlias, subsetName),
+      });
+      const eventNames = readdirSync(join(journal, 'events')).sort();
+      const eventBytes = eventNames.map((name) => readFileSync(join(journal, 'events', name), 'utf8'));
+      const status = join(subsetParent, subsetName, 'unsafe-status.json');
+      mkdirSync(dirname(status), { recursive: true });
+      const rejected = invoke('resume', status);
+      expect(rejected.status, rejected.output).not.toBe(0);
+      expect(rejected.output).toMatch(/canonical external path/i);
+      expect(existsSync(status)).toBe(false);
+      expect(readdirSync(join(journal, 'events')).sort()).toEqual(eventNames);
+      expect(eventNames.map((name) => readFileSync(join(journal, 'events', name), 'utf8'))).toEqual(eventBytes);
+    };
+
+    assertRejectedAlias('b');
+    assertRejectedAlias('pass-b');
+  });
+
   it('retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root', () => {
     const fixture = createCalibrationCommandFixture();
     const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
