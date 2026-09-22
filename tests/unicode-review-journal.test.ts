@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, fstatSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -22,6 +22,21 @@ function externalRoot(): string {
 
 function eventPath(root: string, sequence: number): string {
   return join(root, 'events', `${String(sequence).padStart(16, '0')}.json`);
+}
+
+function hasRetainedUnlinkedDescriptor(device: number, inode: number): boolean {
+  if (process.platform !== 'linux') return true;
+  for (const entry of readdirSync('/proc/self/fd')) {
+    try {
+      const descriptor = Number(entry);
+      const stat = fstatSync(descriptor);
+      if (stat.dev === device && stat.ino === inode && stat.nlink === 0) return true;
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'EBADF') continue;
+      throw error;
+    }
+  }
+  return false;
 }
 
 function writeLock(root: string, ownerPid: number, ownerNonce: string): void {
@@ -175,10 +190,11 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(() => loadUnicodeReviewJournal(journal)).toThrow(/unowned temporary artifact/);
   });
 
-  it('preserves a replaced temporary artifact even when the platform reuses the unlinked inode', () => {
+  it('retains the owned temporary descriptor while preserving a replacement', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
     let temporary = '';
+    let originalDevice = -1;
     let originalInode = -1;
     let replacementInode = -1;
     expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'inode reuse' }, {
@@ -186,14 +202,19 @@ describe('#477 restart-safe Unicode review journal', () => {
         const temporaryName = readdirSync(join(journal, 'events')).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
         expect(temporaryName).toBeTypeOf('string');
         temporary = join(journal, 'events', temporaryName as string);
-        originalInode = lstatSync(temporary).ino;
+        const original = lstatSync(temporary);
+        originalDevice = original.dev;
+        originalInode = original.ino;
         unlinkSync(temporary);
         writeFileSync(temporary, 'replacement', { flag: 'wx' });
         replacementInode = lstatSync(temporary).ino;
+        expect(hasRetainedUnlinkedDescriptor(originalDevice, originalInode)).toBe(true);
       },
     })).toThrow(/changed ownership/);
     expect(readFileSync(temporary, 'utf8')).toBe('replacement');
-    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
+    // The in-flight temporary remains open until cleanup, so Linux cannot
+    // recycle its unlinked inode for the foreign replacement.
+    if (process.platform === 'linux') expect(replacementInode).not.toBe(originalInode);
   });
 
   it('preserves a replacement of the owned lock during post-commit cleanup', () => {
@@ -210,22 +231,28 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(existsSync(eventPath(journal, 1))).toBe(true);
   });
 
-  it('preserves a replaced lock even when the platform reuses the unlinked inode', () => {
+  it('retains the owned lock descriptor while preserving a replacement', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
     const lockPath = join(journal, '.unicode-review-journal.lock');
+    let originalDevice = -1;
     let originalInode = -1;
     let replacementInode = -1;
     expect(() => appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'lock inode reuse' }, {
       afterCommit() {
-        originalInode = lstatSync(lockPath).ino;
+        const original = lstatSync(lockPath);
+        originalDevice = original.dev;
+        originalInode = original.ino;
         unlinkSync(lockPath);
         writeFileSync(lockPath, 'replacement lock', { flag: 'wx' });
         replacementInode = lstatSync(lockPath).ino;
+        expect(hasRetainedUnlinkedDescriptor(originalDevice, originalInode)).toBe(true);
       },
     })).toThrow(/changed ownership|journal lock/i);
     expect(readFileSync(lockPath, 'utf8')).toBe('replacement lock');
-    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
+    // The writer holds the lock descriptor through post-commit cleanup, which
+    // prevents Linux from recycling its unlinked inode for this replacement.
+    if (process.platform === 'linux') expect(replacementInode).not.toBe(originalInode);
   });
 
   it('recovers only a provably stopped owner after validating the journal and its own temporary artifact', () => {

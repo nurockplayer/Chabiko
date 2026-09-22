@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, fstatSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -17,6 +17,21 @@ function externalRoot(prefix = 'chabiko-external-io-'): string {
   const root = mkdtempSync(join(tmpdir(), prefix));
   temporaryRoots.push(root);
   return root;
+}
+
+function hasRetainedUnlinkedDescriptor(device: number, inode: number): boolean {
+  if (process.platform !== 'linux') return true;
+  for (const entry of readdirSync('/proc/self/fd')) {
+    try {
+      const descriptor = Number(entry);
+      const stat = fstatSync(descriptor);
+      if (stat.dev === device && stat.ino === inode && stat.nlink === 0) return true;
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'EBADF') continue;
+      throw error;
+    }
+  }
+  return false;
 }
 
 afterEach(() => {
@@ -206,9 +221,10 @@ describe('#477 external Unicode review I/O', () => {
     expect(readFileSync(firstDestination, 'utf8')).toBe('replacement');
   });
 
-  it('preserves a replaced output even when the platform reuses the unlinked inode', () => {
+  it('retains the owned output descriptor while preserving a replacement', () => {
     const root = externalRoot();
     let firstDestination = '';
+    let originalDevice = -1;
     let originalInode = -1;
     let replacementInode = -1;
     expect(() => writeExclusiveExternalOutputs({
@@ -227,14 +243,19 @@ describe('#477 external Unicode review I/O', () => {
           writeFileSync(path, contents, { flag: 'wx' });
           return;
         }
-        originalInode = lstatSync(firstDestination).ino;
+        const original = lstatSync(firstDestination);
+        originalDevice = original.dev;
+        originalInode = original.ino;
         unlinkSync(firstDestination);
         writeFileSync(firstDestination, 'replacement', { flag: 'wx' });
         replacementInode = lstatSync(firstDestination).ino;
+        expect(hasRetainedUnlinkedDescriptor(originalDevice, originalInode)).toBe(true);
         throw new Error('writer replaced an earlier output');
       },
     })).toThrow(/replaced an earlier output/);
     expect(readFileSync(firstDestination, 'utf8')).toBe('replacement');
-    if (process.platform === 'linux') expect(replacementInode).toBe(originalInode);
+    // The writer retains an FD for the owned output through rollback. On Linux,
+    // that makes the unlinked inode ineligible for reuse by the replacement.
+    if (process.platform === 'linux') expect(replacementInode).not.toBe(originalInode);
   });
 });
