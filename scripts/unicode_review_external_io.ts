@@ -6,6 +6,7 @@ import {
   lstatSync,
   mkdirSync,
   openSync,
+  readSync,
   readFileSync,
   realpathSync,
   rmdirSync,
@@ -54,11 +55,28 @@ interface OwnedPath {
   readonly device: number;
   readonly descriptor: number;
   readonly inode: number;
-  readonly type: 'file' | 'directory';
+  readonly type: 'directory';
+}
+
+interface FileSnapshot {
+  readonly device: number;
+  readonly inode: number;
+  readonly mode: number;
+  readonly size: number;
+  readonly mtimeMs: number;
+  readonly ctimeMs: number;
+  readonly nlink: number;
+}
+
+interface OwnedFile {
+  readonly aliases: string[];
+  readonly intendedBytes: Uint8Array;
+  readonly descriptor: number;
+  snapshot: FileSnapshot;
 }
 
 interface CreatedPaths {
-  readonly files: OwnedPath[];
+  readonly files: OwnedFile[];
   readonly directories: OwnedPath[];
 }
 
@@ -221,7 +239,7 @@ function validateFiles(transaction: ExternalOutputTransaction): { reviewer: read
 
 function createDirectory(path: string, created: CreatedPaths): void {
   mkdirSync(path);
-  created.directories.push(recordOwnedPath(path, 'directory'));
+  created.directories.push(recordOwnedPath(path));
 }
 
 function createParents(root: string, relativePath: string, created: CreatedPaths, createdSet: Set<string>): string {
@@ -245,64 +263,158 @@ function writeExclusiveFile(
   writeFile: (path: string, contents: string | Uint8Array) => void,
 ): void {
   const temporary = join(dirname(destination), `.${basename(destination)}.partial-${randomUUID()}`);
-  writeFile(temporary, contents);
-  const temporaryOwnership = recordOwnedPath(temporary, 'file');
+  const intendedBytes = typeof contents === 'string' ? new TextEncoder().encode(contents) : new Uint8Array(contents);
+  const writerContents = typeof contents === 'string' ? contents : new Uint8Array(intendedBytes);
+  writeFile(temporary, writerContents);
+  const temporaryOwnership = recordOwnedFile(temporary, intendedBytes);
   created.files.push(temporaryOwnership);
+  assert(verifyOwnedFile(temporaryOwnership, 1, false), `created output changed before publication: ${temporary}`);
   linkSync(temporary, destination);
-  created.files.push(recordOwnedPath(destination, 'file'));
+  temporaryOwnership.aliases.push(destination);
+  assert(verifyOwnedFile(temporaryOwnership, 2, true), `created output changed during publication: ${destination}`);
+  assert(verifyOwnedFile(temporaryOwnership, 2, false), `created output changed before staging cleanup: ${destination}`);
   unlinkSync(temporary);
-  closeSync(temporaryOwnership.descriptor);
-  created.files.splice(created.files.indexOf(temporaryOwnership), 1);
+  temporaryOwnership.aliases.splice(temporaryOwnership.aliases.indexOf(temporary), 1);
+  assert(verifyOwnedFile(temporaryOwnership, 1, true), `created output changed during staging cleanup: ${destination}`);
 }
 
-function recordOwnedPath(path: string, type: OwnedPath['type']): OwnedPath {
+function fileSnapshot(stat: Stats): FileSnapshot {
+  return {
+    device: stat.dev,
+    inode: stat.ino,
+    mode: stat.mode,
+    size: stat.size,
+    mtimeMs: stat.mtimeMs,
+    ctimeMs: stat.ctimeMs,
+    nlink: stat.nlink,
+  };
+}
+
+function sameSnapshot(left: FileSnapshot, right: FileSnapshot): boolean {
+  return left.device === right.device && left.inode === right.inode && left.mode === right.mode
+    && left.size === right.size && left.mtimeMs === right.mtimeMs && left.ctimeMs === right.ctimeMs
+    && left.nlink === right.nlink;
+}
+
+function recordOwnedFile(path: string, intendedBytes: Uint8Array): OwnedFile {
+  const pathStat = lstatSync(path);
+  assert(pathStat.isFile() && !pathStat.isSymbolicLink() && pathStat.nlink === 1, `expected singly-linked created file: ${path}`);
   const descriptor = openSync(path, 'r');
   try {
     const stat = fstatSync(descriptor);
-    assert(type === 'file' ? stat.isFile() : stat.isDirectory(), `expected created ${type}: ${path}`);
-    return { path, device: stat.dev, descriptor, inode: stat.ino, type };
+    assert(stat.isFile() && pathStat.dev === stat.dev && pathStat.ino === stat.ino, `created file identity changed: ${path}`);
+    const file: OwnedFile = { aliases: [path], intendedBytes, descriptor, snapshot: fileSnapshot(stat) };
+    assert(verifyOwnedFile(file, 1, false), `created file contents or metadata changed: ${path}`);
+    return file;
   } catch (error) {
     closeSync(descriptor);
     throw error;
   }
 }
 
-function sameLiveIdentity(left: Stats, right: Stats, type: OwnedPath['type']): boolean {
+function readDescriptorBytes(descriptor: number, expected: Uint8Array): boolean {
+  const buffer = Buffer.alloc(Math.max(1, Math.min(64 * 1024, expected.length + 1)));
+  let position = 0;
+  while (position < expected.length) {
+    const count = Math.min(buffer.length, expected.length - position);
+    const read = readSync(descriptor, buffer, 0, count, position);
+    if (read === 0) return false;
+    for (let index = 0; index < read; index += 1) if (buffer[index] !== expected[position + index]) return false;
+    position += read;
+  }
+  return readSync(descriptor, buffer, 0, 1, expected.length) === 0;
+}
+
+/** Validates every alias and the retained original descriptor before adopting an owned link transition. */
+function verifyOwnedFile(file: OwnedFile, expectedLinks: number, allowOwnTransition: boolean): boolean {
+  if (file.aliases.length !== expectedLinks) return false;
+  let before: Stats;
+  try {
+    before = fstatSync(file.descriptor);
+  } catch {
+    return false;
+  }
+  if (!before.isFile()) return false;
+  const current = fileSnapshot(before);
+  const frozen = file.snapshot;
+  if (current.device !== frozen.device || current.inode !== frozen.inode || current.mode !== frozen.mode
+    || current.size !== frozen.size || current.mtimeMs !== frozen.mtimeMs || current.nlink !== expectedLinks) return false;
+  if (allowOwnTransition) {
+    if (Math.abs(current.nlink - frozen.nlink) !== 1) return false;
+  } else if (!sameSnapshot(current, frozen)) return false;
+
+  for (const alias of file.aliases) {
+    const stat = lstatOrNull(alias);
+    if (stat === null || !stat.isFile() || stat.isSymbolicLink()) return false;
+    if (!sameSnapshot(fileSnapshot(stat), current)) return false;
+  }
+
+  try {
+    if (!readDescriptorBytes(file.descriptor, file.intendedBytes)) return false;
+    const after = fstatSync(file.descriptor);
+    if (!sameSnapshot(fileSnapshot(after), current)) return false;
+    for (const alias of file.aliases) {
+      const stat = lstatOrNull(alias);
+      if (stat === null || !stat.isFile() || !sameSnapshot(fileSnapshot(stat), current)) return false;
+    }
+  } catch {
+    return false;
+  }
+  if (allowOwnTransition) file.snapshot = current;
+  return true;
+}
+
+function recordOwnedPath(path: string): OwnedPath {
+  const descriptor = openSync(path, 'r');
+  try {
+    const stat = fstatSync(descriptor);
+    assert(stat.isDirectory(), `expected created directory: ${path}`);
+    return { path, device: stat.dev, descriptor, inode: stat.ino, type: 'directory' };
+  } catch (error) {
+    closeSync(descriptor);
+    throw error;
+  }
+}
+
+function sameLiveIdentity(left: Stats, right: Stats): boolean {
   if (left.dev !== right.dev || left.ino !== right.ino || left.nlink !== right.nlink) return false;
   // ctime moves whenever the inode is unlinked or relinked, so a reused inode
   // (Linux may recycle inode numbers) cannot pass as the descriptor's inode.
   if (left.ctimeMs !== right.ctimeMs) return false;
-  return type === 'directory' || (left.size === right.size && left.mode === right.mode);
+  return left.size === right.size && left.mode === right.mode;
 }
 
 function isStillOwned(path: OwnedPath): boolean {
   const stat = lstatOrNull(path.path);
   if (stat === null) return false;
-  if (path.type === 'file' ? !stat.isFile() : !stat.isDirectory()) return false;
+  if (!stat.isDirectory()) return false;
   let descriptorStat: Stats;
   try {
     descriptorStat = fstatSync(path.descriptor);
   } catch {
     return false;
   }
-  if (path.type === 'file' ? !descriptorStat.isFile() : !descriptorStat.isDirectory()) return false;
+  if (!descriptorStat.isDirectory()) return false;
   if (descriptorStat.dev !== path.device || descriptorStat.ino !== path.inode) return false;
   // Ownership is decided by comparing the live path entry with the open
   // descriptor, never by device+inode alone: a reused inode has a different
   // link count (the held descriptor sees zero links) and a newer ctime.
-  return sameLiveIdentity(stat, descriptorStat, path.type);
+  return sameLiveIdentity(stat, descriptorStat);
 }
 
 function cleanupCreated(created: CreatedPaths): void {
   for (const file of [...created.files].reverse()) {
     try {
-      if (isStillOwned(file)) {
-        try {
-          unlinkSync(file.path);
-        } catch (error) {
-          if (!isMissing(error)) continue;
-        }
+      while (file.aliases.length > 0) {
+        const alias = file.aliases[0];
+        const expectedLinks = file.aliases.length;
+        if (!verifyOwnedFile(file, expectedLinks, false)) break;
+        unlinkSync(alias);
+        file.aliases.shift();
+        if (file.aliases.length > 0 && !verifyOwnedFile(file, file.aliases.length, true)) break;
       }
+    } catch {
+      // Unknown unlink outcomes and changed files are preserved.
     } finally {
       closeSync(file.descriptor);
     }
@@ -319,7 +431,14 @@ function cleanupCreated(created: CreatedPaths): void {
 }
 
 function closeCreatedDescriptors(created: CreatedPaths): void {
-  for (const path of [...created.files, ...created.directories]) {
+  for (const file of created.files) {
+    try {
+      closeSync(file.descriptor);
+    } catch {
+      // Descriptor cleanup is best effort after the transaction has completed.
+    }
+  }
+  for (const path of created.directories) {
     try {
       closeSync(path.descriptor);
     } catch {

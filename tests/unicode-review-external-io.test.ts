@@ -1,4 +1,6 @@
 import { existsSync, fstatSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs';
+import { syncBuiltinESMExports } from 'node:module';
 import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -8,6 +10,7 @@ import {
   readStrictExternalBytes,
   resolveUnicodeReviewRepositoryRoot,
   writeExclusiveExternalFile,
+  writeExclusiveExternalDirectory,
   writeExclusiveExternalJson,
   writeExclusiveExternalOutputs,
 } from '../scripts/unicode_review_external_io';
@@ -296,5 +299,216 @@ describe('#477 external Unicode review I/O', () => {
     // The writer retains an FD for the owned output through rollback. On Linux,
     // that makes the unlinked inode ineligible for reuse by the replacement.
     if (process.platform === 'linux') expect(replacementInode).not.toBe(originalInode);
+  });
+
+  it('preserves registered outputs after same-inode content, truncation, binary, or mode edits', () => {
+    for (const mutation of ['same-length', 'truncate', 'binary', 'mode'] as const) {
+      if (mutation === 'mode' && process.platform === 'win32') continue;
+      const root = externalRoot(`chabiko-external-${mutation}-`);
+      const first = join(root, 'reviewer', 'first.bin');
+      let writes = 0;
+      let changedMode = -1;
+      let caught = false;
+      try {
+        writeExclusiveExternalOutputs({
+          reviewer: { directory: join(root, 'reviewer'), files: [
+            { relativePath: 'first.bin', contents: new Uint8Array([1, 2, 3, 4]) },
+            { relativePath: 'second.bin', contents: new Uint8Array([5]) },
+          ] },
+          controller: { directory: join(root, 'controller'), files: [] },
+        }, {
+          writeFile(path, contents) {
+            writes += 1;
+            if (writes === 2) {
+              if (mutation === 'same-length') writeFileSync(first, new Uint8Array([9, 8, 7, 6]));
+              else if (mutation === 'truncate') writeFileSync(first, new Uint8Array([1, 2]));
+              else if (mutation === 'binary') writeFileSync(first, new Uint8Array([1, 2, 3, 9]));
+              else {
+                changedMode = (lstatSync(first).mode & 0o777) ^ 0o040;
+                fs.chmodSync(first, changedMode);
+              }
+              throw new Error(`foreign ${mutation} mutation`);
+            }
+            writeFileSync(path, contents, { flag: 'wx' });
+          },
+        });
+      } catch (error) {
+        caught = error instanceof Error && error.message === `foreign ${mutation} mutation`;
+      }
+      expect(caught, mutation).toBe(true);
+      expect(existsSync(first), mutation).toBe(true);
+      if (mutation === 'same-length') expect([...readFileSync(first)]).toEqual([9, 8, 7, 6]);
+      if (mutation === 'truncate') expect([...readFileSync(first)]).toEqual([1, 2]);
+      if (mutation === 'binary') expect([...readFileSync(first)]).toEqual([1, 2, 3, 9]);
+      if (mutation === 'mode') expect(lstatSync(first).mode & 0o777).toBe(changedMode);
+    }
+  });
+
+  it('keeps the supplied single-output post-link mutation and clean alias-failure cases fail closed', () => {
+    const root = externalRoot();
+    const destination = join(root, 'single.json');
+    const originalUnlink = fs.unlinkSync;
+    let tempPath = '';
+    let injected = false;
+    try {
+      fs.unlinkSync = ((path: fs.PathLike) => {
+        if (!injected && String(path).includes('.single.json.partial-')) {
+          injected = true;
+          writeFileSync(destination, 'foreign-in-place-edit');
+          throw new Error('injected temporary alias removal failure');
+        }
+        return originalUnlink(path);
+      }) as typeof fs.unlinkSync;
+      syncBuiltinESMExports();
+      expect(() => writeExclusiveExternalJson(destination, { intended: true })).toThrow(/temporary alias removal failure/);
+      expect(readFileSync(destination, 'utf8')).toBe('foreign-in-place-edit');
+      tempPath = readdirSync(root).find((name) => name.includes('.single.json.partial-')) ?? '';
+      expect(tempPath).not.toBe('');
+      expect(existsSync(join(root, tempPath))).toBe(true);
+    } finally {
+      fs.unlinkSync = originalUnlink;
+      syncBuiltinESMExports();
+    }
+
+    const cleanRoot = externalRoot();
+    const cleanDestination = join(cleanRoot, 'clean.json');
+    const cleanOriginalUnlink = fs.unlinkSync;
+    let failOnce = true;
+    try {
+      fs.unlinkSync = ((path: fs.PathLike) => {
+        if (failOnce && String(path).includes('.clean.json.partial-')) {
+          failOnce = false;
+          throw new Error('injected clean alias removal failure');
+        }
+        return cleanOriginalUnlink(path);
+      }) as typeof fs.unlinkSync;
+      syncBuiltinESMExports();
+      expect(() => writeExclusiveExternalJson(cleanDestination, { intended: true })).toThrow(/clean alias removal failure/);
+      expect(existsSync(cleanDestination)).toBe(false);
+      expect(readdirSync(cleanRoot)).toEqual([]);
+    } finally {
+      fs.unlinkSync = cleanOriginalUnlink;
+      syncBuiltinESMExports();
+    }
+  });
+
+  it('copies mutable byte input and rejects hard-linked or symlink staging before registration', () => {
+    const root = externalRoot();
+    const callerBytes = new Uint8Array([4, 5, 6]);
+    const copyResult = writeExclusiveExternalDirectory({
+      directory: join(root, 'copy-dir'),
+      files: [{ relativePath: 'copied.bin', contents: callerBytes }],
+    }, {
+      writeFile(path, contents) {
+        writeFileSync(path, contents, { flag: 'wx' });
+        (contents as Uint8Array)[0] = 99;
+      },
+    });
+    const copiedPath = copyResult.files[0];
+    expect(callerBytes).toEqual(new Uint8Array([4, 5, 6]));
+    expect([...readFileSync(copiedPath)]).toEqual([4, 5, 6]);
+
+    const hardlinkRoot = join(root, 'hardlink-stage');
+    let hardlinkTemp = '';
+    const foreignAlias = join(root, 'foreign-link.bin');
+    expect(() => writeExclusiveExternalDirectory({
+      directory: hardlinkRoot,
+      files: [{ relativePath: 'artifact.bin', contents: new Uint8Array([1, 2]) }],
+    }, {
+      writeFile(path, contents) {
+        hardlinkTemp = path;
+        writeFileSync(path, contents, { flag: 'wx' });
+        fs.linkSync(path, foreignAlias);
+      },
+    })).toThrow(/singly-linked/i);
+    expect(existsSync(hardlinkTemp)).toBe(true);
+    expect(existsSync(foreignAlias)).toBe(true);
+
+    const symlinkRoot = join(root, 'symlink-stage');
+    const foreignTarget = join(root, 'foreign-target.txt');
+    writeFileSync(foreignTarget, 'keep');
+    let symlinkTemp = '';
+    expect(() => writeExclusiveExternalDirectory({
+      directory: symlinkRoot,
+      files: [{ relativePath: 'artifact.bin', contents: 'intended' }],
+    }, {
+      writeFile(path) {
+        symlinkTemp = path;
+        symlinkSync(foreignTarget, path);
+      },
+    })).toThrow(/singly-linked/i);
+    expect(lstatSync(symlinkTemp).isSymbolicLink()).toBe(true);
+    expect(readFileSync(foreignTarget, 'utf8')).toBe('keep');
+  });
+
+  it('preserves a newly-added foreign hard link instead of rolling back a published file', () => {
+    const root = externalRoot();
+    const destination = join(root, 'reviewer', 'first.bin');
+    const foreignAlias = join(root, 'foreign-alias.bin');
+    let writes = 0;
+    expect(() => writeExclusiveExternalOutputs({
+      reviewer: { directory: join(root, 'reviewer'), files: [
+        { relativePath: 'first.bin', contents: new Uint8Array([1, 2]) },
+        { relativePath: 'second.bin', contents: new Uint8Array([3]) },
+      ] },
+      controller: { directory: join(root, 'controller'), files: [] },
+    }, {
+      writeFile(path, contents) {
+        writes += 1;
+        if (writes === 2) {
+          fs.linkSync(destination, foreignAlias);
+          throw new Error('later write failed');
+        }
+        writeFileSync(path, contents, { flag: 'wx' });
+      },
+    })).toThrow(/later write failed/);
+    expect([...readFileSync(destination)]).toEqual([1, 2]);
+    expect([...readFileSync(foreignAlias)]).toEqual([1, 2]);
+  });
+
+  it('preserves an unexpected hard link added during publication', () => {
+    const root = externalRoot();
+    const destination = join(root, 'reviewer', 'artifact.bin');
+    const foreignAlias = join(root, 'foreign-transition-alias.bin');
+    const originalLink = fs.linkSync;
+    let injected = false;
+    try {
+      fs.linkSync = ((source: fs.PathLike, target: fs.PathLike) => {
+        if (!injected && String(source).includes('.artifact.bin.partial-')) {
+          injected = true;
+          originalLink(source, foreignAlias);
+        }
+        return originalLink(source, target);
+      }) as typeof fs.linkSync;
+      syncBuiltinESMExports();
+      expect(() => writeExclusiveExternalDirectory({
+        directory: join(root, 'reviewer'),
+        files: [{ relativePath: 'artifact.bin', contents: new Uint8Array([7, 8]) }],
+      })).toThrow(/changed during publication/);
+      expect([...readFileSync(destination)]).toEqual([7, 8]);
+      expect([...readFileSync(foreignAlias)]).toEqual([7, 8]);
+    } finally {
+      fs.linkSync = originalLink;
+      syncBuiltinESMExports();
+    }
+  });
+
+  it('preserves a destination symlink collision and its foreign target before publication', () => {
+    const root = externalRoot();
+    const reviewer = join(root, 'reviewer');
+    const target = join(root, 'foreign-target.txt');
+    const destination = join(reviewer, 'artifact.bin');
+    writeFileSync(target, 'foreign target');
+    expect(() => writeExclusiveExternalDirectory({
+      directory: reviewer,
+      files: [{ relativePath: 'artifact.bin', contents: 'intended' }],
+    }, {
+      writeFile(path, contents) {
+        writeFileSync(path, contents, { flag: 'wx' });
+        symlinkSync(target, destination);
+      },
+    })).toThrow(/EEXIST/);
+    expect(lstatSync(destination).isSymbolicLink()).toBe(true);
+    expect(readFileSync(target, 'utf8')).toBe('foreign target');
   });
 });
