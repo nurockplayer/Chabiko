@@ -339,6 +339,65 @@ describe('#477 resumable Unicode review workflow', () => {
     expect(existsSync(path)).toBe(false);
   });
 
+  it.each([
+    ['journal descendant', (journalRoot: string) => join(journalRoot, 'future-wave')],
+    ['journal ancestor', (journalRoot: string) => dirname(journalRoot)],
+    ['journal alias', (journalRoot: string) => journalRoot],
+  ])('rejects a post-initialization future wave role at the journal %s before appending', (_label, invalidReviewerRoot) => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const waveId = 'post-init-role';
+    const rootsForWave = testWaveRoleRoots(calibration, waveId);
+    const roleMap = calibration.artifactRoots.waves as Map<string, { readonly reviewerRoot: string; readonly controllerRoot: string }>;
+    roleMap.set(waveId, { ...rootsForWave, reviewerRoot: invalidReviewerRoot(realpathSync(path)) });
+    const before = loadUnicodeReviewJournal(path);
+
+    expect(() => planUnicodeReviewWave(path, calibration, waveId, [productionInputs[0]])).toThrow(/workflow journal and workflow wave 'post-init-role' reviewer root must be disjoint/i);
+    expect(loadUnicodeReviewJournal(path).tip).toEqual(before.tip);
+    expect(loadUnicodeReviewJournal(path).events).toEqual(before.events);
+  });
+
+  it('rejects B and Pass B subset admissions inside the journal or future wave roles without advancing the journal', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const waveId = 'subset-isolation-wave';
+    const futureWaveId = 'future-isolation-wave';
+    const futureRoots = testWaveRoleRoots(calibration, futureWaveId);
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, waveId, [productionInputs[0]]);
+    const details = planDetails(path);
+    const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const inputs = waveInputs(waveId, [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
+
+    const assertRejectedWithoutMutation = (label: string, invoke: () => unknown, candidatePath: string, expectedStage: 'reviewer-b-preparation-pending' | 'pass-b-preparation-pending') => {
+      const before = loadUnicodeReviewJournal(path);
+      expect(invoke).toThrow(/must be disjoint/i);
+      const after = loadUnicodeReviewJournal(path);
+      expect(after.tip).toEqual(before.tip);
+      expect(after.events).toEqual(before.events);
+      expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: expectedStage });
+      expect(existsSync(candidatePath), label).toBe(false);
+    };
+
+    const journalRoot = realpathSync(path);
+    const journalBSubset = join(journalRoot, 'future-b-subset');
+    assertRejectedWithoutMutation('journal B subset', () => prepareUnicodeReviewWaveB(path, calibration, inputs, journalBSubset), journalBSubset, 'reviewer-b-preparation-pending');
+    const futureReviewerSubset = join(futureRoots.reviewerRoot, 'b-subset');
+    assertRejectedWithoutMutation('future reviewer-root B subset', () => prepareUnicodeReviewWaveB(path, calibration, inputs, futureReviewerSubset), futureReviewerSubset, 'reviewer-b-preparation-pending');
+
+    const validBSubset = `${path}-valid-b-subset`;
+    prepareUnicodeReviewWaveB(path, calibration, inputs, validBSubset);
+    const bResults = [{ pairRef: manifestRef, visualOutcome: 'confusable' as const }];
+    ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'isolation-b-session', 'isolation-b-context') });
+
+    const journalPassBSubset = join(journalRoot, 'future-pass-b-subset');
+    assertRejectedWithoutMutation('journal Pass B subset', () => prepareUnicodeReviewWavePassB(path, calibration, inputs, journalPassBSubset), journalPassBSubset, 'pass-b-preparation-pending');
+    const futureControllerSubset = join(futureRoots.controllerRoot, 'pass-b-subset');
+    assertRejectedWithoutMutation('future controller-root Pass B subset', () => prepareUnicodeReviewWavePassB(path, calibration, inputs, futureControllerSubset), futureControllerSubset, 'pass-b-preparation-pending');
+  });
+
   it('resumes only the exact empty journal left before workflow initialization', () => {
     const { calibration } = workflowFixture();
     const resumedPath = journalPath();

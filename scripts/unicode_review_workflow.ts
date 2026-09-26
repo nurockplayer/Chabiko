@@ -218,28 +218,21 @@ function validatedCurrentRoleRoots(calibration: UnicodeReviewWorkflowCalibration
       { path: parseRoleRoot(roots.controllerRoot, `workflow wave '${waveId}' controller root`), label: `workflow wave '${waveId}' controller root` },
     );
   }
-  assertRoleRootsDisjoint(roles);
   return roles;
 }
 
 function assertRecordedArtifactRootsDisjoint(
   waves: readonly WaveRuntime[],
-  calibrationRoots: UnicodeReviewArtifactRoleRoots,
+  journalRoot: string,
+  currentRoles: readonly { readonly path: string; readonly label: string }[],
   candidateSubset: string | null = null,
-  candidateWave: { readonly waveId: string; readonly reviewerRoot: string; readonly controllerRoot: string } | null = null,
 ): void {
   const roots = [
-    { path: calibrationRoots.reviewerRoot, label: 'calibration reviewer root' },
-    { path: calibrationRoots.controllerRoot, label: 'calibration controller root' },
+    { path: journalRoot, label: 'workflow journal' },
+    ...currentRoles,
     ...waves.flatMap((wave) => [
-      { path: wave.plan.reviewerOutputRoot, label: `wave '${wave.plan.waveId}' reviewer root` },
-      { path: wave.plan.controllerOutputRoot, label: `wave '${wave.plan.waveId}' controller root` },
       ...(wave.bSubsetOutputPath === null ? [] : [{ path: wave.bSubsetOutputPath, label: `wave '${wave.plan.waveId}' Reviewer B subset root` }]),
       ...(wave.passBSubsetOutputPath === null ? [] : [{ path: wave.passBSubsetOutputPath, label: `wave '${wave.plan.waveId}' Pass B subset root` }]),
-    ]),
-    ...(candidateWave === null ? [] : [
-      { path: candidateWave.reviewerRoot, label: `wave '${candidateWave.waveId}' reviewer root` },
-      { path: candidateWave.controllerRoot, label: `wave '${candidateWave.waveId}' controller root` },
     ]),
     ...(candidateSubset === null ? [] : [{ path: candidateSubset, label: 'candidate reviewer subset root' }]),
   ];
@@ -335,9 +328,10 @@ function replayState(
   calibration: UnicodeReviewWorkflowCalibration,
   issued: ReturnType<typeof replayCalibration>,
   manifestInputsByWave: UnicodeReviewWorkflowManifestInputs,
-): { readonly calibrationRoots: UnicodeReviewArtifactRoleRoots; readonly waves: readonly WaveRuntime[]; readonly finalized: Set<string>; readonly provisional: Set<string>; readonly streak: number } {
+): { readonly calibrationRoots: UnicodeReviewArtifactRoleRoots; readonly currentRoles: readonly { readonly path: string; readonly label: string }[]; readonly waves: readonly WaveRuntime[]; readonly finalized: Set<string>; readonly provisional: Set<string>; readonly streak: number } {
   assert(journal.events.length > 0, 'workflow journal is not initialized');
-  validatedCurrentRoleRoots(calibration);
+  const journalRoot = parseRoleRoot(journal.root, 'workflow journal');
+  const currentRoles = validatedCurrentRoleRoots(calibration);
   const first = journal.events[0].payload;
   exactKeys(first, ['type', 'replayBindingJson', 'calibrationReviewerRoot', 'calibrationControllerRoot'], 'workflow initialization event');
   const calibrationRoots = {
@@ -347,7 +341,6 @@ function replayState(
   assert(calibrationRoots.reviewerRoot === calibration.artifactRoots.calibration.reviewerRoot
     && calibrationRoots.controllerRoot === calibration.artifactRoots.calibration.controllerRoot,
   'workflow calibration artifact roles differ from immutable initialization');
-  assertRoleRootsDisjoint(validatedCurrentRoleRoots(calibration));
   assert(first.type === 'workflow-initialized' && calibrationReplayBindingsEqual(parseReplayBinding(first.replayBindingJson), issued.binding), 'workflow calibration replay binding is stale or changed');
   const waves: WaveRuntime[] = [];
   const finalized = new Set<string>();
@@ -451,8 +444,8 @@ function replayState(
       throw new Error(`workflow journal has an unknown event type '${payload.type}'`);
     }
   }
-  assertRecordedArtifactRootsDisjoint(waves, calibrationRoots);
-  return { calibrationRoots, waves, finalized, provisional, streak };
+  assertRecordedArtifactRootsDisjoint(waves, journalRoot, currentRoles);
+  return { calibrationRoots, currentRoles, waves, finalized, provisional, streak };
 }
 
 function stateFromJournal(journal: UnicodeReviewJournalState, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs): { readonly issued: ReturnType<typeof replayCalibration>; readonly replay: ReturnType<typeof replayState>; readonly journal: UnicodeReviewJournalState } {
@@ -564,14 +557,11 @@ export function initializeUnicodeReviewWorkflow(path: string, calibration: Unico
   const issued = replayCalibration(calibration);
   const currentRoles = validatedCurrentRoleRoots(calibration);
   const canonicalJournalPath = resolveStrictExternalPath(path, 'workflow journal');
-  assertRoleRootsDisjoint([
-    ...currentRoles,
-    { path: canonicalJournalPath, label: 'workflow journal' },
-  ]);
   const calibrationRoots = {
     reviewerRoot: parseRoleRoot(calibration.artifactRoots.calibration.reviewerRoot, 'calibration reviewer root'),
     controllerRoot: parseRoleRoot(calibration.artifactRoots.calibration.controllerRoot, 'calibration controller root'),
   };
+  assertRecordedArtifactRootsDisjoint([], canonicalJournalPath, currentRoles);
   const journal = initializeOrResumeEmptyJournal(path);
   const initialized = append(path, journal, initializedPayload(issued.binding, calibrationRoots));
   return { journal: initialized, calibrationArtifactRoots: calibrationRoots, activeWaveId: null, finalizedCandidateIds: [], provisionalCandidateIds: [], cleanInitialWaveStreak: 0, activeWave: null, waves: [], subsetRoots: [] };
@@ -610,8 +600,7 @@ function recordedWaveSnapshot(wave: WaveRuntime, authorization: CalibrationAutho
   };
 }
 
-function recordedSubsetRoots(waves: readonly WaveRuntime[], calibrationRoots: UnicodeReviewArtifactRoleRoots): readonly string[] {
-  assertRecordedArtifactRootsDisjoint(waves, calibrationRoots);
+function recordedSubsetRoots(waves: readonly WaveRuntime[]): readonly string[] {
   const roots = new Set<string>();
   for (const wave of waves) {
     if (wave.bSubsetOutputPath !== null) roots.add(wave.bSubsetOutputPath);
@@ -629,7 +618,7 @@ export function readUnicodeReviewWorkflowFromJournal(journal: UnicodeReviewJourn
   const loaded = stateFromJournal(journal, calibration, manifestInputsByWave);
   const active = loaded.replay.waves.at(-1);
   const activeWave = activeWaveSnapshot(active, loaded.issued.binding);
-  return { journal: loaded.journal, calibrationArtifactRoots: loaded.replay.calibrationRoots, activeWaveId: activeWave?.waveId ?? null, finalizedCandidateIds: [...loaded.replay.finalized].sort(), provisionalCandidateIds: [...loaded.replay.provisional].sort(), cleanInitialWaveStreak: loaded.replay.streak, activeWave, waves: loaded.replay.waves.map((wave) => recordedWaveSnapshot(wave, loaded.issued.authorization)), subsetRoots: recordedSubsetRoots(loaded.replay.waves, loaded.replay.calibrationRoots) };
+  return { journal: loaded.journal, calibrationArtifactRoots: loaded.replay.calibrationRoots, activeWaveId: activeWave?.waveId ?? null, finalizedCandidateIds: [...loaded.replay.finalized].sort(), provisionalCandidateIds: [...loaded.replay.provisional].sort(), cleanInitialWaveStreak: loaded.replay.streak, activeWave, waves: loaded.replay.waves.map((wave) => recordedWaveSnapshot(wave, loaded.issued.authorization)), subsetRoots: recordedSubsetRoots(loaded.replay.waves) };
 }
 
 export function planUnicodeReviewWave(path: string, calibration: UnicodeReviewWorkflowCalibration, waveId: string, manifestInputs: readonly ManifestEvidenceInput[], previousManifestInputsByWave: UnicodeReviewWorkflowManifestInputs = new Map()): UnicodeReviewWaveArtifacts {
@@ -641,7 +630,6 @@ export function planUnicodeReviewWave(path: string, calibration: UnicodeReviewWo
   assert(roleRoots, `workflow descriptor lacks artifact roles for wave '${waveId}'`);
   const reviewerOutputRoot = parseRoleRoot(roleRoots.reviewerRoot, `workflow wave '${waveId}' reviewer output root`);
   const controllerOutputRoot = parseRoleRoot(roleRoots.controllerRoot, `workflow wave '${waveId}' controller output root`);
-  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.replay.calibrationRoots);
   const limit = loaded.replay.streak >= 2 ? SCALED_WAVE_LIMIT : INITIAL_WAVE_LIMIT;
   assert(manifestInputs.length > 0 && manifestInputs.length <= limit, `wave manifest size exceeds the current ${limit} candidate limit`);
   assert(manifestInputs.every((input) => !loaded.replay.finalized.has(input.candidateId)), 'wave reuses a finalized manifest candidate');
@@ -658,7 +646,6 @@ export function planUnicodeReviewWave(path: string, calibration: UnicodeReviewWo
       return { pairRef: entry.pairRef, controllerControlId: entry.controllerControlId, leftGlyphRef: entry.leftGlyphRef, rightGlyphRef: entry.rightGlyphRef, evidenceChecksumSha256: entry.evidenceChecksumSha256, class: selected.class, expectedOutcome: selected.expectedOutcome };
     });
   const plan: WavePlanEvent = { type: 'wave-planned', waveId, reviewerOutputRoot, controllerOutputRoot, namespaceSalt, manifest, sentinels };
-  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.replay.calibrationRoots, null, { waveId, reviewerRoot: reviewerOutputRoot, controllerRoot: controllerOutputRoot });
   append(path, loaded.journal, { ...plan });
   const context: ReviewEvidenceContext = { authority: calibration.context.authority, bundle: artifacts.reviewerBundle, sidecar: artifacts.controllerSidecar, inputs: [...manifestInputs, ...controls.map((item) => item.input)], localPngs: artifacts.localPngs, contract: calibration.context.contract };
   return { waveId, context, reviewerBundle: context.bundle, controllerSidecar: context.sidecar, localPngs: context.localPngs };
@@ -689,7 +676,7 @@ export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeRevi
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs === null, 'Reviewer B cannot be prepared at this workflow stage');
-  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.replay.calibrationRoots, canonicalSubsetOutputPath);
+  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.journal.root, loaded.replay.currentRoles, canonicalSubsetOutputPath);
   const refs = expectedWaveBRefs(wave.artifacts, wave.a);
   append(path, loaded.journal, { type: 'wave-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
@@ -722,7 +709,7 @@ export function prepareUnicodeReviewWavePassB(path: string, calibration: Unicode
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs === null, 'Pass B cannot be prepared at this workflow stage');
-  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.replay.calibrationRoots, canonicalSubsetOutputPath);
+  assertRecordedArtifactRootsDisjoint(loaded.replay.waves, loaded.journal.root, loaded.replay.currentRoles, canonicalSubsetOutputPath);
   const refs = expectedPassBRefs(wave.artifacts, loaded.issued.binding, wave.a, wave.b);
   append(path, loaded.journal, { type: 'wave-pass-b-planned', waveId: wave.plan.waveId, pairRefs: refs, subsetOutputPath: canonicalSubsetOutputPath });
   return refs;
