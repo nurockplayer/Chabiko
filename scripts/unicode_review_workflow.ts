@@ -28,7 +28,7 @@ import {
   loadUnicodeReviewJournal,
   type UnicodeReviewJournalState,
 } from './unicode_review_journal.ts';
-import { resolveStrictExternalPath } from './unicode_review_external_io.ts';
+import { ExternalJsonContentError, resolveStrictExternalPath } from './unicode_review_external_io.ts';
 
 const INITIAL_WAVE_LIMIT = 250;
 const SCALED_WAVE_LIMIT = 500;
@@ -670,6 +670,23 @@ export function ingestUnicodeReviewWaveA(path: string, calibration: UnicodeRevie
   append(path, loaded.journal, { type: 'wave-a-ingested', waveId: wave.plan.waveId, submission });
 }
 
+export type UnicodeReviewWaveSubmissionStage = 'a' | 'b' | 'pass-b';
+
+/** Persist a sanitized invalidation when an external submission cannot be decoded as unambiguous JSON. */
+export function invalidateUnicodeReviewWaveSubmissionContent(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, stage: UnicodeReviewWaveSubmissionStage, error: ExternalJsonContentError): void {
+  assert(error instanceof ExternalJsonContentError, 'only external JSON content failures may invalidate a wave before submission validation');
+  assert(stage === 'a' || stage === 'b' || stage === 'pass-b', 'unsupported submission invalidation stage');
+  const loaded = loadState(path, calibration, manifestInputsByWave);
+  const wave = currentWave(loaded.replay);
+  const stageIsPending = stage === 'a'
+    ? wave.a === null
+    : stage === 'b'
+      ? wave.a !== null && wave.bRefs !== null && !wave.bCompleted
+      : wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs !== null && wave.passB.length < wave.passBRefs.length;
+  assert(stageIsPending, `Reviewer ${stage} submission cannot invalidate a wave at this workflow stage`);
+  append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage, reason: 'classification-schema-or-binding-failure', submission: null });
+}
+
 export function prepareUnicodeReviewWaveB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {
   const canonicalSubsetOutputPath = resolveStrictExternalPath(subsetOutputPath, 'Reviewer B subset output path');
   const loaded = loadState(path, calibration, manifestInputsByWave);
@@ -685,22 +702,25 @@ export function ingestUnicodeReviewWaveB(path: string, calibration: UnicodeRevie
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
   assert(wave.a !== null && wave.bRefs !== null && !wave.bCompleted, 'Reviewer B cannot be ingested at this workflow stage');
-  if (wave.bRefs.length === 0) {
-    assert(submission === null, 'Reviewer B must not receive an empty subset');
-    append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission: null });
-    return;
-  }
-  assert(submission !== null, 'Reviewer B submission is required for A-positive manifest entries');
-  const artifacts = wave.artifacts;
-  const expected = artifacts.context.sidecar.entries.filter((entry) => wave.bRefs!.includes(entry.pairRef));
   try {
-    validateStrictClassificationSubmission(artifacts.context, submission, 'reviewer-b', expected);
-    reconcileIndependentClassification(artifacts.context, { a: wave.a, b: submission });
+    if (wave.bRefs.length === 0) {
+      assert(submission === null, 'Reviewer B must not receive an empty subset');
+    } else {
+      assert(submission !== null, 'Reviewer B submission is required for A-positive manifest entries');
+      const artifacts = wave.artifacts;
+      const expected = artifacts.context.sidecar.entries.filter((entry) => wave.bRefs!.includes(entry.pairRef));
+      validateStrictClassificationSubmission(artifacts.context, submission, 'reviewer-b', expected);
+      reconcileIndependentClassification(artifacts.context, { a: wave.a, b: submission });
+    }
   } catch (error) {
     append(path, loaded.journal, { type: 'wave-invalidated', waveId: wave.plan.waveId, stage: 'b', reason: 'classification-schema-or-binding-failure', submission: null });
     throw error;
   }
-  append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission });
+  if (wave.bRefs.length === 0) {
+    append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission: null });
+    return;
+  }
+  append(path, loaded.journal, { type: 'wave-b-ingested', waveId: wave.plan.waveId, submission: submission as VisionClassificationSubmission });
 }
 
 export function prepareUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, subsetOutputPath: string): readonly string[] {

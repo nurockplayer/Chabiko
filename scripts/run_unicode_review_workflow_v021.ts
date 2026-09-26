@@ -10,6 +10,7 @@ import {
 } from './unicode_review_v021.ts';
 import { loadReviewEvidenceContext, parseControllerEvidenceInputs } from './unicode_review_cli_context.ts';
 import {
+  ExternalJsonContentError,
   readStrictExternalBytes,
   readStrictExternalJson,
   resolveStrictExternalPath,
@@ -19,6 +20,7 @@ import {
 import { inspectUnicodeReviewJournalRecoveryState, recoverStoppedUnicodeReviewJournalWriter } from './unicode_review_journal.ts';
 import {
   finalizeUnicodeReviewWave,
+  invalidateUnicodeReviewWaveSubmissionContent,
   ingestUnicodeReviewWaveA,
   ingestUnicodeReviewWaveB,
   ingestUnicodeReviewWavePassB,
@@ -68,6 +70,17 @@ interface LoadedWorkflow {
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function readSubmissionForStage(loaded: LoadedWorkflow, submissionPath: string, stage: 'a' | 'b' | 'pass-b'): unknown {
+  try {
+    return readStrictExternalJson(submissionPath);
+  } catch (error) {
+    if (error instanceof ExternalJsonContentError) {
+      invalidateUnicodeReviewWaveSubmissionContent(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, stage, error);
+    }
+    throw error;
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -623,7 +636,8 @@ function run(command: Command, args: readonly string[]): void {
     return;
   }
   if (command === 'ingest-a') {
-    ingestUnicodeReviewWaveA(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(submissionPath as string) as VisionClassificationSubmission);
+    assert(before.activeWave?.stage === 'reviewer-a-pending', 'Reviewer A cannot be ingested at this workflow stage');
+    ingestUnicodeReviewWaveA(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readSubmissionForStage(loaded, submissionPath as string, 'a') as VisionClassificationSubmission);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
     verifyStoredSubsets(loaded, state, false);
@@ -637,7 +651,8 @@ function run(command: Command, args: readonly string[]): void {
     assert(before.activeWave !== null, 'Reviewer B preparation has no active wave');
     exportSubset(requestedSubsetOutput, findWave(loaded.descriptor, before.activeWave.waveId), before.activeWave.artifacts, refs);
   } else if (command === 'ingest-b') {
-    const submission = readStrictExternalJson(submissionPath as string);
+    assert(before.activeWave?.stage === 'reviewer-b-pending', 'Reviewer B cannot be ingested at this workflow stage');
+    const submission = readSubmissionForStage(loaded, submissionPath as string, 'b');
     ingestUnicodeReviewWaveB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, submission as VisionClassificationSubmission | null);
   } else if (command === 'prepare-pass-b') {
     assert(requestedSubsetOutput, 'prepare-pass-b requires --reviewer-output');
@@ -646,7 +661,8 @@ function run(command: Command, args: readonly string[]): void {
     assert(before.activeWave !== null, 'Pass B preparation has no active wave');
     exportSubset(requestedSubsetOutput, findWave(loaded.descriptor, before.activeWave.waveId), before.activeWave.artifacts, refs);
   } else if (command === 'ingest-pass-b') {
-    ingestUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(submissionPath as string) as VisionPassBSubmission);
+    assert(before.activeWave?.stage === 'pass-b-pending', 'Pass B cannot be ingested at this workflow stage');
+    ingestUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readSubmissionForStage(loaded, submissionPath as string, 'pass-b') as VisionPassBSubmission);
   } else if (command === 'finalize') {
     finalizeUnicodeReviewWave(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);

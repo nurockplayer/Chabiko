@@ -34,8 +34,10 @@ import {
   type SealedCalibrationKey,
 } from '../scripts/unicode_review_v021';
 import { appendUnicodeReviewJournalEvent, initializeUnicodeReviewJournal, loadUnicodeReviewJournal } from '../scripts/unicode_review_journal';
+import { ExternalJsonContentError } from '../scripts/unicode_review_external_io';
 import {
   finalizeUnicodeReviewWave,
+  invalidateUnicodeReviewWaveSubmissionContent,
   ingestUnicodeReviewWaveA,
   ingestUnicodeReviewWaveB,
   ingestUnicodeReviewWavePassB,
@@ -314,6 +316,80 @@ function moveToPassB(path: string, calibration: UnicodeReviewWorkflowCalibration
 }
 
 describe('#477 resumable Unicode review workflow', () => {
+  it('limits pre-validation invalidation to typed content errors at a pending stage with remaining work', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    const artifacts = planUnicodeReviewWave(path, calibration, 'typed-content-boundary-wave', [productionInputs[0]]);
+    const details = planDetails(path);
+    const manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const inputs = waveInputs('typed-content-boundary-wave', [productionInputs[0]]);
+    ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
+    prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
+
+    const atB = loadUnicodeReviewJournal(path);
+    expect(() => invalidateUnicodeReviewWaveSubmissionContent(path, calibration, inputs, 'b', new Error('filesystem read failure') as ExternalJsonContentError)).toThrow(/only external JSON content failures/i);
+    expect(() => invalidateUnicodeReviewWaveSubmissionContent(path, calibration, inputs, 'unknown' as never, new ExternalJsonContentError('bad JSON'))).toThrow(/unsupported submission invalidation stage/i);
+    expect(() => invalidateUnicodeReviewWaveSubmissionContent(path, calibration, inputs, 'a', new ExternalJsonContentError('bad JSON'))).toThrow(/cannot invalidate a wave at this workflow stage/i);
+    expect(loadUnicodeReviewJournal(path).tip).toEqual(atB.tip);
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: 'reviewer-b-pending' });
+
+    invalidateUnicodeReviewWaveSubmissionContent(path, calibration, inputs, 'b', new ExternalJsonContentError('malformed content'));
+    expect(loadUnicodeReviewJournal(path).events.at(-1)?.payload).toMatchObject({ type: 'wave-invalidated', stage: 'b', reason: 'classification-schema-or-binding-failure', submission: null });
+    expect(JSON.stringify(loadUnicodeReviewJournal(path).events.at(-1)?.payload)).not.toContain('malformed content');
+    expect(readUnicodeReviewWorkflow(path, calibration, inputs)).toMatchObject({ activeWaveId: null, cleanInitialWaveStreak: 0 });
+
+    const completedPath = journalPath();
+    initializeUnicodeReviewWorkflow(completedPath, calibration);
+    const completed = moveToPassB(completedPath, calibration, 'completed-pass-b-content-wave', productionInputs[0]);
+    const passBResult = { pairRef: completed.manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+    ingestUnicodeReviewWavePassB(completedPath, calibration, completed.inputs, { result: passBResult, receipt: receipt('pass-b', completed.artifacts.context, passBResult, [completed.manifestRef], 'completed-pass-b-session', 'completed-pass-b-context') });
+    const completedTip = loadUnicodeReviewJournal(completedPath).tip;
+    expect(() => invalidateUnicodeReviewWaveSubmissionContent(completedPath, calibration, completed.inputs, 'pass-b', new ExternalJsonContentError('extra data'))).toThrow(/cannot invalidate a wave at this workflow stage/i);
+    expect(loadUnicodeReviewJournal(completedPath).tip).toEqual(completedTip);
+    expect(readUnicodeReviewWorkflow(completedPath, calibration, completed.inputs).activeWave).toMatchObject({ stage: 'finalization-pending' });
+
+    const emptyPath = journalPath();
+    initializeUnicodeReviewWorkflow(emptyPath, calibration);
+    const emptyArtifacts = planUnicodeReviewWave(emptyPath, calibration, 'empty-pass-b-content-wave', [productionInputs[0]]);
+    const emptyDetails = planDetails(emptyPath);
+    const emptyManifestRef = emptyArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const emptyInputs = waveInputs('empty-pass-b-content-wave', [productionInputs[0]]);
+    const negativeResults = emptyArtifacts.context.sidecar.entries.map((entry) => ({
+      pairRef: entry.pairRef,
+      visualOutcome: entry.purpose === 'manifest' ? 'not-confusable' as const : emptyDetails.sentinels.find((sentinel) => sentinel.pairRef === entry.pairRef)!.expectedOutcome,
+    }));
+    ingestUnicodeReviewWaveA(emptyPath, calibration, emptyInputs, { results: negativeResults, receipt: receipt('reviewer-a', emptyArtifacts.context, negativeResults, emptyArtifacts.context.sidecar.entries.map((entry) => entry.pairRef), 'empty-pass-b-a-session', 'empty-pass-b-a-context') });
+    prepareUnicodeReviewWaveB(emptyPath, calibration, emptyInputs, `${emptyPath}-b-subset`);
+    ingestUnicodeReviewWaveB(emptyPath, calibration, emptyInputs, null);
+    expect(prepareUnicodeReviewWavePassB(emptyPath, calibration, emptyInputs, `${emptyPath}-pass-b-subset`)).toEqual([]);
+    const emptyTip = loadUnicodeReviewJournal(emptyPath).tip;
+    expect(readUnicodeReviewWorkflow(emptyPath, calibration, emptyInputs).activeWave).toMatchObject({ stage: 'pass-b-pending', passBPairRefs: [] });
+    expect(() => invalidateUnicodeReviewWaveSubmissionContent(emptyPath, calibration, emptyInputs, 'pass-b', new ExternalJsonContentError('extra data'))).toThrow(/cannot invalidate a wave at this workflow stage/i);
+    expect(loadUnicodeReviewJournal(emptyPath).tip).toEqual(emptyTip);
+    expect(emptyManifestRef).toBeTruthy();
+  });
+
+  it('resets an already qualified clean-wave streak on typed submission content failure', () => {
+    const { calibration, productionInputs } = workflowFixture(false, false, 'confusable', 4);
+    const path = journalPath();
+    initializeUnicodeReviewWorkflow(path, calibration);
+    let history: UnicodeReviewWorkflowManifestInputs = new Map();
+    history = completeAllNegativeWave(path, calibration, 'qualification-wave-1', [productionInputs[0]], history);
+    history = completeAllNegativeWave(path, calibration, 'qualification-wave-2', [productionInputs[1]], history);
+    expect(readUnicodeReviewWorkflow(path, calibration, history).cleanInitialWaveStreak).toBe(2);
+    const nextInputs = [productionInputs[2]];
+    planUnicodeReviewWave(path, calibration, 'qualified-malformed-submission-wave', nextInputs, history);
+    const activeHistory = new Map(history);
+    activeHistory.set('qualified-malformed-submission-wave', nextInputs);
+    expect(readUnicodeReviewWorkflow(path, calibration, activeHistory).activeWave).toMatchObject({ stage: 'reviewer-a-pending' });
+    expect(readUnicodeReviewWorkflow(path, calibration, activeHistory).cleanInitialWaveStreak).toBe(2);
+
+    invalidateUnicodeReviewWaveSubmissionContent(path, calibration, activeHistory, 'a', new ExternalJsonContentError('malformed reviewer content'));
+    expect(readUnicodeReviewWorkflow(path, calibration, activeHistory)).toMatchObject({ activeWaveId: null, cleanInitialWaveStreak: 0 });
+    expect(loadUnicodeReviewJournal(path).events.at(-1)?.payload).toMatchObject({ type: 'wave-invalidated', stage: 'a', reason: 'classification-schema-or-binding-failure', submission: null });
+  });
+
   it('rejects a pre-release initialization event without persistent calibration artifact-role bindings', () => {
     const { calibration } = workflowFixture();
     const seeded = initializeUnicodeReviewWorkflow(journalPath(), calibration);

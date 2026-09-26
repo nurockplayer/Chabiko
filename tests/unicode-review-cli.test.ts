@@ -663,6 +663,63 @@ function workflowReceipt(
   };
 }
 
+function createWorkflowAtSubmissionStage(stage: 'a' | 'b' | 'pass-b', options: { readonly positive?: boolean } = {}) {
+  const fixture = createCalibrationCommandFixture();
+  const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+  const waveInput = join(fixture.external, 'wave-1-input.json');
+  const manifestInput = JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest');
+  writeJson(waveInput, { items: [manifestInput] });
+  const descriptor = join(fixture.external, 'workflow-descriptor.json');
+  const journal = join(fixture.external, 'workflow-journal');
+  const reviewerOutput = join(fixture.external, 'wave-1-reviewer');
+  const controllerOutput = join(fixture.external, 'wave-1-controller');
+  writeJson(descriptor, {
+    calibrationContextPath: fixture.descriptorPath,
+    sealedKeyPath: fixture.keyPath,
+    calibrationSubmissionPath: fixture.submissionPath,
+    journalPath: journal,
+    waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: reviewerOutput, controllerOutputPath: controllerOutput }],
+  });
+  const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
+  expect(invoke('init', join(fixture.external, 'init.json')).status).toBe(0);
+  expect(invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']).status).toBe(0);
+  const sidecar = JSON.parse(readFileSync(join(controllerOutput, 'controller-sidecar.json'), 'utf8'));
+  const positive = options.positive ?? true;
+  const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({
+    pairRef: entry.pairRef,
+    visualOutcome: entry.purpose === 'manifest' && positive ? 'confusable' : 'not-confusable',
+  }));
+  const aPath = join(fixture.external, 'wave-1-a.json');
+  writeJson(aPath, { results: aResults, receipt: workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)) });
+  const validPaths: Record<'a' | 'b' | 'pass-b', string> = { a: aPath, b: '', 'pass-b': '' };
+  if (stage === 'a') return { fixture, journal, invoke, validPaths };
+  const ingestedA = invoke('ingest-a', join(fixture.external, 'a-status.json'), ['--submission', aPath]);
+  expect(ingestedA.status, ingestedA.output).toBe(0);
+
+  const bSubset = join(fixture.external, 'b-reviewer');
+  expect(invoke('prepare-b', join(fixture.external, 'b-prepare-status.json'), ['--reviewer-output', bSubset]).status).toBe(0);
+  const bRefs: string[] = JSON.parse(readFileSync(join(bSubset, 'reviewer-subset.json'), 'utf8')).items.map((item: { pairRef: string }) => item.pairRef);
+  if (bRefs.length > 0) {
+    const bResults = bRefs.map((pairRef) => ({ pairRef, visualOutcome: 'confusable' }));
+    const bPath = join(fixture.external, 'wave-1-b.json');
+    writeJson(bPath, { results: bResults, receipt: workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, bRefs) });
+    validPaths.b = bPath;
+  } else {
+    validPaths.b = join(fixture.external, 'wave-1-b-null.json');
+    writeFileSync(validPaths.b, 'null\n');
+  }
+  if (stage === 'b') return { fixture, journal, invoke, validPaths };
+
+  const passBSubset = join(fixture.external, 'pass-b-reviewer');
+  expect(invoke('ingest-b', join(fixture.external, 'b-status.json'), ['--submission', validPaths.b]).status).toBe(0);
+  expect(invoke('prepare-pass-b', join(fixture.external, 'pass-b-prepare-status.json'), ['--reviewer-output', passBSubset]).status).toBe(0);
+  const passBRefs: string[] = JSON.parse(readFileSync(join(passBSubset, 'reviewer-subset.json'), 'utf8')).items.map((item: { pairRef: string }) => item.pairRef);
+  const passBResult = { pairRef: passBRefs[0], observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+  validPaths['pass-b'] = join(fixture.external, 'wave-1-pass-b.json');
+  writeJson(validPaths['pass-b'], { result: passBResult, receipt: workflowReceipt('pass-b', fixture.key.contract, sidecar, passBResult, [passBResult.pairRef]) });
+  return { fixture, journal, invoke, validPaths };
+}
+
 describe('#477 Unicode review workflow CLI', () => {
   it.each(['partial-stage-write', 'published-two-links', 'removed-stage-alias'] as const)('recovers the first workflow initialization append after SIGKILL at %s', (boundary) => {
     const fixture = createCalibrationCommandFixture();
@@ -1880,6 +1937,117 @@ describe('#477 Unicode review workflow CLI', () => {
     const resumed = invoke('resume', resumedOutput);
     expect(resumed.status, resumed.output).toBe(0);
     expect(JSON.parse(readFileSync(resumedOutput, 'utf8'))).toMatchObject({ activeWaveId: null, recordedWaves: [{ waveId: 'wave-1', terminalState: 'invalidated' }], promotions: [] });
+  });
+
+  it.each([
+    ['a', 'prose'], ['a', 'invalid-utf8'], ['a', 'duplicate-members'],
+    ['b', 'prose'], ['b', 'invalid-utf8'], ['b', 'duplicate-members'],
+    ['pass-b', 'prose'], ['pass-b', 'invalid-utf8'], ['pass-b', 'duplicate-members'],
+  ] as const)('persists %s invalidation for %s external JSON content', (stage, contentFailure) => {
+    const { fixture, journal, invoke, validPaths } = createWorkflowAtSubmissionStage(stage);
+    const command = stage === 'a' ? 'ingest-a' : stage === 'b' ? 'ingest-b' : 'ingest-pass-b';
+    const externalContent = `raw-${stage}-${contentFailure}-must-not-be-persisted`;
+    const badSubmission = join(fixture.external, `bad-${stage}-${contentFailure}.json`);
+    if (contentFailure === 'prose') writeFileSync(badSubmission, `${externalContent}: {"results": []}\n`);
+    else if (contentFailure === 'invalid-utf8') writeFileSync(badSubmission, Uint8Array.from([0x7b, 0x22, 0xff, 0x7d]));
+    else writeFileSync(badSubmission, `{"results":[],"results":[],"marker":"${externalContent}"}\n`);
+
+    const rejectedStatus = join(fixture.external, `rejected-${stage}-${contentFailure}.json`);
+    const rejected = invoke(command, rejectedStatus, ['--submission', badSubmission]);
+    expect(rejected.status, rejected.output).not.toBe(0);
+    expect(existsSync(rejectedStatus)).toBe(false);
+    const beforeResume = loadUnicodeReviewJournal(journal);
+    expect(beforeResume.events.at(-1)?.payload).toMatchObject({ type: 'wave-invalidated', waveId: 'wave-1', stage, reason: 'classification-schema-or-binding-failure', submission: null });
+    const serializedEvents = readdirSync(join(journal, 'events')).filter((name) => name.endsWith('.json')).map((name) => readFileSync(join(journal, 'events', name), 'utf8')).join('\n');
+    expect(serializedEvents).not.toContain(externalContent);
+
+    const resumedStatus = join(fixture.external, `resumed-${stage}-${contentFailure}.json`);
+    expect(invoke('resume', resumedStatus).status).toBe(0);
+    expect(JSON.parse(readFileSync(resumedStatus, 'utf8'))).toMatchObject({
+      activeWaveId: null,
+      cleanInitialWaveStreak: 0,
+      recordedWaves: [{ waveId: 'wave-1', terminalState: 'invalidated' }],
+      promotions: [],
+    });
+    const terminalEventCount = loadUnicodeReviewJournal(journal).events.length;
+    const retryStatus = join(fixture.external, `retry-${stage}-${contentFailure}.json`);
+    const retry = invoke(command, retryStatus, ['--submission', validPaths[stage]]);
+    expect(retry.status, retry.output).not.toBe(0);
+    expect(existsSync(retryStatus)).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(terminalEventCount);
+  });
+
+  it('persists B payload-shape violations while retaining valid empty-B null completion', () => {
+    for (const scenario of ['required-nonempty-null', 'empty-nonnull', 'empty-null'] as const) {
+      const positive = scenario === 'required-nonempty-null';
+      const { fixture, journal, invoke } = createWorkflowAtSubmissionStage('b', { positive });
+      const submission = join(fixture.external, `${scenario}.json`);
+      writeFileSync(submission, scenario === 'required-nonempty-null' ? 'null\n' : scenario === 'empty-nonnull' ? '{"results":[]}\n' : 'null\n');
+      const output = join(fixture.external, `${scenario}-status.json`);
+      const result = invoke('ingest-b', output, ['--submission', submission]);
+      if (scenario === 'empty-null') {
+        expect(result.status, result.output).toBe(0);
+        expect(JSON.parse(readFileSync(output, 'utf8'))).toMatchObject({ activeWaveId: 'wave-1', recordedWaves: [{ waveId: 'wave-1', terminalState: 'pending' }] });
+        expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-b-ingested', waveId: 'wave-1', submission: null });
+      } else {
+        expect(result.status, result.output).not.toBe(0);
+        expect(existsSync(output)).toBe(false);
+        expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-invalidated', waveId: 'wave-1', stage: 'b', reason: 'classification-schema-or-binding-failure', submission: null });
+      }
+    }
+  });
+
+  it('rejects malformed submission content at the wrong stage without invalidating the current wave', () => {
+    const { fixture, journal, invoke } = createWorkflowAtSubmissionStage('b');
+    const eventsBefore = loadUnicodeReviewJournal(journal).events.length;
+    const malformed = join(fixture.external, 'wrong-stage-malformed.json');
+    writeFileSync(malformed, 'not JSON');
+    const output = join(fixture.external, 'wrong-stage-status.json');
+    const result = invoke('ingest-a', output, ['--submission', malformed]);
+    expect(result.status, result.output).not.toBe(0);
+    expect(existsSync(output)).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(eventsBefore);
+    expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-b-planned', waveId: 'wave-1' });
+
+    const pendingA = createWorkflowAtSubmissionStage('a');
+    const pendingEvents = loadUnicodeReviewJournal(pendingA.journal).events.length;
+    const absentSubmission = join(pendingA.fixture.external, 'submission-does-not-exist.json');
+    const absentStatus = join(pendingA.fixture.external, 'absent-submission-status.json');
+    const absent = pendingA.invoke('ingest-a', absentStatus, ['--submission', absentSubmission]);
+    expect(absent.status, absent.output).not.toBe(0);
+    expect(existsSync(absentStatus)).toBe(false);
+    expect(loadUnicodeReviewJournal(pendingA.journal).events).toHaveLength(pendingEvents);
+    expect(loadUnicodeReviewJournal(pendingA.journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-planned', waveId: 'wave-1' });
+    expect(pendingA.invoke('ingest-a', join(pendingA.fixture.external, 'retry-a-status.json'), ['--submission', pendingA.validPaths.a]).status).toBe(0);
+  });
+
+  it('keeps a valid A submission retryable when the journal event fsync fails in the CLI', () => {
+    const { fixture, journal, invoke, validPaths } = createWorkflowAtSubmissionStage('a');
+    const preload = join(fixture.external, 'fail-first-journal-file-fsync.mjs');
+    writeFileSync(preload, [
+      `import fs from 'node:fs';`,
+      `import { syncBuiltinESMExports } from 'node:module';`,
+      `const originalFsync = fs.fsyncSync.bind(fs);`,
+      `let failed = false;`,
+      `fs.fsyncSync = (descriptor) => { if (!failed && fs.fstatSync(descriptor).isFile()) { failed = true; throw new Error('injected journal event fsync failure'); } return originalFsync(descriptor); };`,
+      `syncBuiltinESMExports();`,
+    ].join('\n'));
+    const before = loadUnicodeReviewJournal(journal);
+    const failedStatus = join(fixture.external, 'failed-a-status.json');
+    const failed = runWorkflow(join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts'), 'ingest-a', [
+      '--descriptor', join(fixture.external, 'workflow-descriptor.json'), '--output', failedStatus, '--submission', validPaths.a,
+    ], join(fixture.external, 'caller-cwd'), preload);
+    expect(failed.status, failed.output).not.toBe(0);
+    expect(failed.output).toContain('injected journal event fsync failure');
+    expect(existsSync(failedStatus)).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(before.tip);
+    expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-planned', waveId: 'wave-1' });
+
+    const retriedStatus = join(fixture.external, 'retried-a-status.json');
+    const retried = invoke('ingest-a', retriedStatus, ['--submission', validPaths.a]);
+    expect(retried.status, retried.output).toBe(0);
+    expect(existsSync(retriedStatus)).toBe(true);
+    expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-a-ingested', waveId: 'wave-1' });
   });
 
   it('rejects reviewer/container-nested status and subset destinations before journal mutation', () => {

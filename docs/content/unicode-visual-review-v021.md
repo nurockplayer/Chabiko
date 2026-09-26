@@ -474,6 +474,14 @@ receipt. Controller status and the trusted receipt retain the original
 full-bundle binding. When B has no expected refs, `ingest-b` requires a
 submission file containing JSON `null`.
 
+At a pending A, B, or Pass B stage, malformed JSON, invalid UTF-8, and
+duplicate-member JSON are submission-content failures: the command records a
+terminal sanitized wave invalidation, resets the clean initial-wave streak, and
+exits unsuccessfully. Do not edit and resubmit to that wave; start a new wave
+after inspecting the resumed status. Missing or unreadable submission files and
+journal I/O failures remain retryable and do not by themselves invalidate the
+wave. A valid empty Reviewer B subset still completes with JSON `null`.
+
 The controller-only status object records the action, active stage, pending
 Pass B references (`pendingPassBPairRefs`), finalized/provisional IDs, clean
 initial-wave streak, terminal state and full
@@ -661,6 +669,7 @@ requested again merely because the process restarted.
 | Consecutive scaled waves retain qualification; invalidation requires two new clean initial waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: initial/scaled progression through finalization and replay, oversized planning/replay rejection after invalidation, and requalification |
 | Canonical external subset roots at preparation and fail-closed semantic replay | `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-workflow.test.ts`: canonical B/Pass B API persistence; `unicode-review-cli.test.ts`: “rejects hash-valid noncanonical B and Pass B subset roots before publishing status or mutating the journal” |
 | Pairwise subset-root isolation across pending and terminal waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: direct preparation rejects identical, child, and parent roots before append; `unicode-review-cli.test.ts`: hash-valid overlap fails before resume status, subset reconstruction, or stopped-writer cleanup |
+| Typed submission-content failures invalidate only the matching pending A/B/Pass B stage; file and journal I/O remain retryable | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-cli.test.ts`: prose, invalid UTF-8, and duplicate-member JSON at A/B/Pass B persist sanitized terminal invalidation and qualification reset; `unicode-review-workflow.test.ts`: typed error, stage, remaining Pass B work, qualification reset, and no-op boundaries |
 | Retryable journal I/O remains separate from evidence invalidation | `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-workflow.test.ts`: one-shot pre-commit failures preserve the tip and pending A/B/Pass B evidence, followed by identical-submission retries |
 | Fresh-root workflow initialization, exact empty-journal retry/recovery, and stopped-writer recovery | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; `unicode-review-journal.test.ts`: “initializes one fresh external root and never overwrites a journal or dirty caller root”; “recovers only a provably stopped owner after validating the journal and its own temporary artifact” |
 | Calibration-first `recover` and parent-durable adoption of an absent or exact unlocked zero-event journal | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts`, `publish_unicode_review_journal.py` | `unicode-review-cli.test.ts`: “calibrates before recover initializes an absent or exact unlocked empty journal”; “durably adopts an exact empty journal after lost publication acknowledgement and repeated parent-sync failures”; `unicode-review-journal.test.ts`: “adopts only an exact empty journal after a parent durability barrier and preserves changed roots” |
