@@ -316,6 +316,74 @@ function moveToPassB(path: string, calibration: UnicodeReviewWorkflowCalibration
 }
 
 describe('#477 resumable Unicode review workflow', () => {
+  it('rejects no-work Pass B submissions without invalidating or blocking finalization', () => {
+    const { calibration, productionInputs } = workflowFixture();
+    const emptyPath = journalPath();
+    const emptyWaveId = 'empty-pass-b-no-work';
+    const emptyInputs = waveInputs(emptyWaveId, [productionInputs[0]]);
+    initializeUnicodeReviewWorkflow(emptyPath, calibration);
+    const emptyArtifacts = planUnicodeReviewWave(emptyPath, calibration, emptyWaveId, [productionInputs[0]]);
+    const emptyDetails = planDetails(emptyPath);
+    const emptyManifestRef = emptyArtifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+    const expectedByRef = new Map(emptyDetails.sentinels.map((sentinel) => [sentinel.pairRef, sentinel.expectedOutcome]));
+    const negativeResults = emptyArtifacts.context.sidecar.entries.map((entry) => ({
+      pairRef: entry.pairRef,
+      visualOutcome: entry.purpose === 'manifest' ? 'not-confusable' as const : expectedByRef.get(entry.pairRef)!,
+    }));
+    ingestUnicodeReviewWaveA(emptyPath, calibration, emptyInputs, { results: negativeResults, receipt: receipt('reviewer-a', emptyArtifacts.context, negativeResults, negativeResults.map((result) => result.pairRef)) });
+    expect(prepareUnicodeReviewWaveB(emptyPath, calibration, emptyInputs, `${emptyPath}-b-subset`)).toEqual([]);
+    ingestUnicodeReviewWaveB(emptyPath, calibration, emptyInputs, null);
+    expect(prepareUnicodeReviewWavePassB(emptyPath, calibration, emptyInputs, `${emptyPath}-pass-b-subset`)).toEqual([]);
+    const emptyBefore = loadUnicodeReviewJournal(emptyPath);
+    const noWorkSubmission = { result: { pairRef: emptyManifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } }, receipt: {} } as never;
+    expect(() => ingestUnicodeReviewWavePassB(emptyPath, calibration, emptyInputs, noWorkSubmission)).toThrow(/cannot be ingested at this workflow stage/i);
+    expect(loadUnicodeReviewJournal(emptyPath).tip).toEqual(emptyBefore.tip);
+    expect(readUnicodeReviewWorkflow(emptyPath, calibration, emptyInputs).activeWave).toMatchObject({ stage: 'pass-b-pending', passBPairRefs: [] });
+    expect(finalizeUnicodeReviewWave(emptyPath, calibration, emptyInputs)).toEqual([]);
+
+    const completedPath = journalPath();
+    const completedWaveId = 'completed-pass-b-no-work';
+    initializeUnicodeReviewWorkflow(completedPath, calibration);
+    const { artifacts, manifestRef, inputs } = moveToPassB(completedPath, calibration, completedWaveId, productionInputs[0]);
+    const first = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+    ingestUnicodeReviewWavePassB(completedPath, calibration, inputs, { result: first, receipt: receipt('pass-b', artifacts.context, first, [manifestRef], 'completed-pass-b-session', 'completed-pass-b-context') });
+    const completedBefore = loadUnicodeReviewJournal(completedPath);
+    const duplicate = { pairRef: manifestRef, observableDifference: { region: 'lower' as const, feature: 'stroke' as const, contrast: 'longer' as const } };
+    expect(() => ingestUnicodeReviewWavePassB(completedPath, calibration, inputs, { result: duplicate, receipt: receipt('pass-b', artifacts.context, duplicate, [manifestRef], 'duplicate-pass-b-session', 'duplicate-pass-b-context') })).toThrow(/cannot be ingested at this workflow stage/i);
+    expect(loadUnicodeReviewJournal(completedPath).tip).toEqual(completedBefore.tip);
+    expect(readUnicodeReviewWorkflow(completedPath, calibration, inputs).activeWave).toMatchObject({ stage: 'finalization-pending', passBPairRefs: [] });
+    expect(finalizeUnicodeReviewWave(completedPath, calibration, inputs)).toHaveLength(1);
+  });
+
+  it.each(['empty', 'completed'] as const)('rejects hash-valid Pass B invalidation replay after %s work is done', (state) => {
+    const { calibration, productionInputs } = workflowFixture();
+    const path = journalPath();
+    const waveId = `invalid-pass-b-invalidation-${state}`;
+    let inputs: UnicodeReviewWorkflowManifestInputs;
+    let artifacts: UnicodeReviewWaveArtifacts;
+    let manifestRef: string;
+    initializeUnicodeReviewWorkflow(path, calibration);
+    if (state === 'completed') {
+      ({ artifacts, manifestRef, inputs } = moveToPassB(path, calibration, waveId, productionInputs[0]));
+      const result = { pairRef: manifestRef, observableDifference: { region: 'upper' as const, feature: 'dot' as const, contrast: 'present' as const } };
+      ingestUnicodeReviewWavePassB(path, calibration, inputs, { result, receipt: receipt('pass-b', artifacts.context, result, [manifestRef]) });
+    } else {
+      inputs = waveInputs(waveId, [productionInputs[0]]);
+      artifacts = planUnicodeReviewWave(path, calibration, waveId, [productionInputs[0]]);
+      const details = planDetails(path);
+      manifestRef = artifacts.context.sidecar.entries.find((entry) => entry.purpose === 'manifest')!.pairRef;
+      const expectedByRef = new Map(details.sentinels.map((sentinel) => [sentinel.pairRef, sentinel.expectedOutcome]));
+      const results = artifacts.context.sidecar.entries.map((entry) => ({ pairRef: entry.pairRef, visualOutcome: entry.purpose === 'manifest' ? 'not-confusable' as const : expectedByRef.get(entry.pairRef)! }));
+      ingestUnicodeReviewWaveA(path, calibration, inputs, { results, receipt: receipt('reviewer-a', artifacts.context, results, results.map((result) => result.pairRef)) });
+      prepareUnicodeReviewWaveB(path, calibration, inputs, `${path}-b-subset`);
+      ingestUnicodeReviewWaveB(path, calibration, inputs, null);
+      prepareUnicodeReviewWavePassB(path, calibration, inputs, `${path}-pass-b-subset`);
+    }
+    const before = loadUnicodeReviewJournal(path);
+    appendUnicodeReviewJournalEvent(path, before.tip, { type: 'wave-invalidated', waveId, stage: 'pass-b', reason: 'classification-schema-or-binding-failure', submission: null });
+    expect(() => readUnicodeReviewWorkflow(path, calibration, inputs)).toThrow(/invalid stage/i);
+  });
+
   it('limits pre-validation invalidation to typed content errors at a pending stage with remaining work', () => {
     const { calibration, productionInputs } = workflowFixture();
     const path = journalPath();

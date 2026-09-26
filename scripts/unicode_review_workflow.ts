@@ -387,7 +387,7 @@ function replayState(
         assert(
           (payload.stage === 'a' && active.a === null)
           || (payload.stage === 'b' && active.a !== null && active.bRefs !== null && !active.bCompleted)
-          || (payload.stage === 'pass-b' && active.a !== null && active.bRefs !== null && active.bCompleted && active.passBRefs !== null),
+          || (payload.stage === 'pass-b' && active.a !== null && active.bRefs !== null && active.bCompleted && active.passBRefs !== null && active.passB.length < active.passBRefs.length),
           'workflow schema invalidation has an invalid stage',
         );
       }
@@ -737,7 +737,7 @@ export function prepareUnicodeReviewWavePassB(path: string, calibration: Unicode
 export function ingestUnicodeReviewWavePassB(path: string, calibration: UnicodeReviewWorkflowCalibration, manifestInputsByWave: UnicodeReviewWorkflowManifestInputs, submission: VisionPassBSubmission): void {
   const loaded = loadState(path, calibration, manifestInputsByWave);
   const wave = currentWave(loaded.replay);
-  assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs !== null, 'Pass B cannot be ingested at this workflow stage');
+  assert(wave.a !== null && wave.bRefs !== null && wave.bCompleted && wave.passBRefs !== null && wave.passB.length < wave.passBRefs.length, 'Pass B cannot be ingested at this workflow stage');
   try {
     const promoted = promoteConfirmedPositive({ context: wave.artifacts.context, calibrationAuthorization: loaded.issued.authorization, classification: { a: wave.a, b: wave.b }, passB: submission });
     const pairRef = parsePassBResult(submission.result).pairRef;

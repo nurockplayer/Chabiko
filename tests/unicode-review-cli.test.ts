@@ -721,6 +721,60 @@ function createWorkflowAtSubmissionStage(stage: 'a' | 'b' | 'pass-b', options: {
 }
 
 describe('#477 Unicode review workflow CLI', () => {
+  it('rejects parsed and malformed no-work Pass B submissions without mutating the pending wave', () => {
+    const { fixture, journal, invoke } = createWorkflowAtSubmissionStage('pass-b', { positive: false });
+    const beforeStatus = join(fixture.external, 'before-no-work-pass-b.json');
+    expect(invoke('resume', beforeStatus).status).toBe(0);
+    const statusBefore = JSON.parse(readFileSync(beforeStatus, 'utf8'));
+    const eventsBefore = loadUnicodeReviewJournal(journal).events.map((event) => event.payload);
+    const tipBefore = loadUnicodeReviewJournal(journal).tip;
+
+    for (const [label, contents] of [['parsed-empty', '{}\n'], ['malformed-json', 'not JSON\n']] as const) {
+      const submission = join(fixture.external, `${label}-submission.json`);
+      writeFileSync(submission, contents);
+      const output = join(fixture.external, `${label}-status.json`);
+      const rejected = invoke('ingest-pass-b', output, ['--submission', submission]);
+      expect(rejected.status, rejected.output).not.toBe(0);
+      expect(existsSync(output)).toBe(false);
+      expect(loadUnicodeReviewJournal(journal).tip).toEqual(tipBefore);
+      expect(loadUnicodeReviewJournal(journal).events.map((event) => event.payload)).toEqual(eventsBefore);
+      const afterStatus = join(fixture.external, `${label}-resume.json`);
+      expect(invoke('resume', afterStatus).status).toBe(0);
+      const statusAfter = JSON.parse(readFileSync(afterStatus, 'utf8'));
+      expect(statusAfter).toMatchObject({
+        activeStage: statusBefore.activeStage,
+        cleanInitialWaveStreak: statusBefore.cleanInitialWaveStreak,
+        recordedWaves: statusBefore.recordedWaves,
+      });
+    }
+    const finalStatus = join(fixture.external, 'finalize-no-work-pass-b.json');
+    expect(invoke('finalize', finalStatus).status).toBe(0);
+    expect(JSON.parse(readFileSync(finalStatus, 'utf8'))).toMatchObject({ activeStage: null, cleanInitialWaveStreak: 1 });
+  });
+
+  it('rejects hash-valid no-work Pass B invalidation before recovery cleanup', () => {
+    const { fixture, journal, invoke } = createWorkflowAtSubmissionStage('pass-b', { positive: false });
+    const beforeAppend = loadUnicodeReviewJournal(journal);
+    appendUnicodeReviewJournalEvent(journal, beforeAppend.tip, { type: 'wave-invalidated', waveId: 'wave-1', stage: 'pass-b', reason: 'classification-schema-or-binding-failure', submission: null });
+    const retainedEvents = readdirSync(join(journal, 'events')).filter((name) => name.endsWith('.json')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')]);
+    const nonce = '51515151-5151-4151-8151-515151515151';
+    const stoppedLock = join(journal, '.unicode-review-journal.lock');
+    const stoppedPartial = join(journal, 'events', `.${String(retainedEvents.length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+    writeFileSync(stoppedLock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
+    writeFileSync(stoppedPartial, 'stopped writer partial');
+    const lockBytes = readFileSync(stoppedLock, 'utf8');
+    const partialBytes = readFileSync(stoppedPartial, 'utf8');
+
+    const output = join(fixture.external, 'rejected-invalid-recovery.json');
+    const rejected = invoke('recover', output);
+    expect(rejected.status, rejected.output).not.toBe(0);
+    expect(rejected.output).toMatch(/schema invalidation has an invalid stage/i);
+    expect(existsSync(output)).toBe(false);
+    expect(readFileSync(stoppedLock, 'utf8')).toBe(lockBytes);
+    expect(readFileSync(stoppedPartial, 'utf8')).toBe(partialBytes);
+    expect(readdirSync(join(journal, 'events')).filter((name) => name.endsWith('.json')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')])).toEqual(retainedEvents);
+  });
+
   it.each(['partial-stage-write', 'published-two-links', 'removed-stage-alias'] as const)('recovers the first workflow initialization append after SIGKILL at %s', (boundary) => {
     const fixture = createCalibrationCommandFixture();
     const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
