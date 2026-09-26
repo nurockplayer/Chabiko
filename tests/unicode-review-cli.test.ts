@@ -477,6 +477,48 @@ describe('#477 Unicode review bundle CLI', () => {
     expect(reviewerOrder).not.toEqual(fixture.specs.map((spec) => spec.candidateId));
   });
 
+  it('refuses calibration authorization for shadowed pairRef/controllerControlId without changing evidence, key, or receipt bytes', () => {
+    const fixture = createCalibrationCommandFixture();
+    const sidecarPath = join(fixture.external, 'controller', 'controller-sidecar.json');
+    const sidecarBytes = readFileSync(sidecarPath, 'utf8');
+    const control = fixture.sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'external-control');
+    expect(control).toBeDefined();
+    const pairRefMember = `"pairRef": ${JSON.stringify(control.pairRef)}`;
+    const controlIdMember = `"controllerControlId": ${JSON.stringify(control.controllerControlId)}`;
+    const shadowed = sidecarBytes
+      .replace(pairRefMember, `${pairRefMember},\n      ${pairRefMember}`)
+      .replace(controlIdMember, `${controlIdMember},\n      ${controlIdMember}`);
+    expect(shadowed).not.toBe(sidecarBytes);
+    expect(JSON.parse(shadowed)).toEqual(fixture.sidecar);
+
+    const bundlePath = join(fixture.reviewerOutput, 'reviewer-bundle.json');
+    const bundleBytes = readFileSync(bundlePath);
+    const bundle = JSON.parse(bundleBytes.toString('utf8'));
+    const bundleFingerprint = sha256(bundleBytes);
+    const pngBytes = bundle.items.map((item: { pixelPath: string }) => readFileSync(join(fixture.reviewerOutput, item.pixelPath)));
+    const pngFingerprints = pngBytes.map((bytes: Uint8Array) => sha256(bytes));
+    const keyBytes = readFileSync(fixture.keyPath);
+    const submissionBytes = readFileSync(fixture.submissionPath);
+    const submissionBefore = JSON.parse(submissionBytes.toString('utf8'));
+    writeFileSync(sidecarPath, shadowed, 'utf8');
+
+    const output = join(fixture.external, 'duplicate-member-calibration.json');
+    const rejected = runCalibration(fixture.script, ['--context', fixture.descriptorPath, '--sealed-key', fixture.keyPath, '--submission', fixture.submissionPath, '--output', output], join(fixture.external, 'caller-cwd'));
+    expect(rejected.status).not.toBe(0);
+    expect(rejected.output).toMatch(/Calibration FAIL/);
+    expect(JSON.parse(readFileSync(output, 'utf8'))).toMatchObject({ evaluation: { pass: false }, replayBinding: null });
+
+    expect(readFileSync(bundlePath)).toEqual(bundleBytes);
+    expect(sha256(readFileSync(bundlePath))).toBe(bundleFingerprint);
+    expect(JSON.parse(bundleBytes.toString('utf8'))).toEqual(bundle);
+    expect(bundle.items.map((item: { pixelPath: string }) => readFileSync(join(fixture.reviewerOutput, item.pixelPath))).map((bytes: Uint8Array) => sha256(bytes))).toEqual(pngFingerprints);
+    expect(readFileSync(fixture.keyPath)).toEqual(keyBytes);
+    expect(readFileSync(fixture.submissionPath)).toEqual(submissionBytes);
+    expect(JSON.parse(readFileSync(fixture.keyPath, 'utf8'))).toEqual(fixture.key);
+    expect(JSON.parse(readFileSync(fixture.submissionPath, 'utf8'))).toEqual(submissionBefore);
+    expect(readFileSync(sidecarPath, 'utf8')).toBe(shadowed);
+  });
+
   it('writes non-authoritative machine FAIL records for stale key contracts and missing context pixels', () => {
     const fixture = createCalibrationCommandFixture();
     const staleKey = { ...fixture.key, contract: { ...fixture.key.contract, promptChecksumSha256: '0'.repeat(64) } };

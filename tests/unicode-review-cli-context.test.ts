@@ -279,6 +279,35 @@ describe('#477 Unicode review evidence-context loader', () => {
     expect(missing.output).toMatch(/external regular file|unavailable/i);
   });
 
+  it('rejects a shadowed pairRef while leaving parsed bundle and pinned evidence unchanged', () => {
+    const fixture = createLoadedContextFixture();
+    const bundlePath = join(fixture.reviewerOutput, 'reviewer-bundle.json');
+    const bundleBytes = readFileSync(bundlePath);
+    const bundleBefore = JSON.parse(bundleBytes.toString('utf8'));
+    const pairRefMember = `"pairRef": ${JSON.stringify(bundleBefore.items[0].pairRef)}`;
+    const shadowed = bundleBytes.toString('utf8').replace(pairRefMember, `${pairRefMember},\n      ${pairRefMember}`);
+    expect(shadowed).not.toBe(bundleBytes.toString('utf8'));
+    expect(JSON.parse(shadowed)).toEqual(bundleBefore);
+    writeFileSync(bundlePath, shadowed, 'utf8');
+
+    const pngPath = join(fixture.reviewerOutput, bundleBefore.items[0].pixelPath);
+    const pngBytes = readFileSync(pngPath);
+    const sidecarBytes = readFileSync(join(fixture.controllerOutput, 'controller-sidecar.json'));
+    const contractBytes = readFileSync(fixture.contract);
+    const inputBytes = readFileSync(fixture.input);
+    const result = runLoader(fixture);
+
+    expect(result.status).not.toBe(0);
+    expect(result.output).toMatch(/duplicate object member/i);
+    expect(readFileSync(bundlePath, 'utf8')).toBe(shadowed);
+    expect(JSON.parse(bundleBytes.toString('utf8'))).toEqual(bundleBefore);
+    expect(JSON.parse(shadowed)).toEqual(bundleBefore);
+    expect(readFileSync(pngPath)).toEqual(pngBytes);
+    expect(readFileSync(join(fixture.controllerOutput, 'controller-sidecar.json'))).toEqual(sidecarBytes);
+    expect(readFileSync(fixture.contract)).toEqual(contractBytes);
+    expect(readFileSync(fixture.input)).toEqual(inputBytes);
+  });
+
   it('rejects extra reviewer-tree files, nested extras, unexpected directories, and symbolic links', () => {
     const rootExtra = createLoadedContextFixture();
     writeJson(join(rootExtra.reviewerOutput, 'candidate-map.json'), { candidateId: rootExtra.candidateId });

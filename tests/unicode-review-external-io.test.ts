@@ -3,6 +3,7 @@ import { basename, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  ExternalJsonContentError,
   readStrictExternalJson,
   readStrictExternalBytes,
   resolveUnicodeReviewRepositoryRoot,
@@ -66,6 +67,44 @@ describe('#477 external Unicode review I/O', () => {
     writeFileSync(join(sharedWorktree, '.git'), gitPointer, 'utf8');
     writeFileSync(join(sharedWorktree, 'receipt.json'), '{"shared":true}', 'utf8');
     expect(() => readStrictExternalJson(join(sharedWorktree, 'receipt.json'))).toThrow(/every worktree/i);
+  });
+
+  it('preserves valid JSON values and rejects duplicate decoded member names at every nesting level', () => {
+    const root = externalRoot();
+    const prettyPath = join(root, 'pretty.json');
+    writeFileSync(prettyPath, '{\n  "top": {"same": 1, "nested": [{"same": 2}]},\n  "array": [true, null]\n}\n', 'utf8');
+    expect(readStrictExternalJson(prettyPath)).toEqual({ top: { same: 1, nested: [{ same: 2 }] }, array: [true, null] });
+
+    for (const [name, contents] of [
+      ['root duplicate', '{"pairRef":"first","pairRef":"second"}'],
+      ['escaped-equivalent duplicate', '{"controllerControlId":"first","controller\\u0043ontrolId":"second"}'],
+      ['nested duplicate in object', '{"outer":{"key":1,"key":2}}'],
+      ['duplicate inside array object', '[{"outer":[{"pairRef":"first","pairRef":"second"}]}]'],
+    ] as const) {
+      const path = join(root, `${name.replaceAll(' ', '-')}.json`);
+      writeFileSync(path, contents, 'utf8');
+      expect(() => readStrictExternalJson(path), name).toThrow(ExternalJsonContentError);
+      expect(() => readStrictExternalJson(path), name).toThrow(/duplicate object member/i);
+    }
+  });
+
+  it('types only strict JSON content failures and leaves file-read errors unchanged', () => {
+    const root = externalRoot();
+    const malformed = join(root, 'malformed.json');
+    writeFileSync(malformed, '{"items":[}', 'utf8');
+    expect(() => readStrictExternalJson(malformed)).toThrow(ExternalJsonContentError);
+
+    const invalidUtf8 = join(root, 'invalid-utf8.json');
+    writeFileSync(invalidUtf8, Uint8Array.from([0x7b, 0x22, 0x61, 0x22, 0x3a, 0xc3, 0x28, 0x7d]));
+    expect(() => readStrictExternalJson(invalidUtf8)).toThrow(ExternalJsonContentError);
+
+    try {
+      readStrictExternalJson(join(root, 'missing.json'));
+      throw new Error('missing external file unexpectedly read');
+    } catch (error) {
+      expect(error).not.toBeInstanceOf(ExternalJsonContentError);
+      expect(error).toMatchObject({ message: expect.stringMatching(/external regular file/i) });
+    }
   });
 
   it('reads and writes standalone external PNG, receipt, and checkpoint artifacts exclusively', () => {

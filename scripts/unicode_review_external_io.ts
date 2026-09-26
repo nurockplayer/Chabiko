@@ -334,6 +334,123 @@ function readExternalRegularBytes(path: string, label: string): Uint8Array {
   return new Uint8Array(readFileSync(resolved.canonical));
 }
 
+/** A strict external JSON artifact could not be decoded or is not unambiguous JSON content. */
+export class ExternalJsonContentError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ExternalJsonContentError';
+  }
+}
+
+type JsonScanFrame =
+  | { readonly kind: 'object'; readonly keys: Set<string>; state: 'key-or-end' | 'colon' | 'value' | 'comma-or-end' }
+  | { readonly kind: 'array'; state: 'value-or-end' | 'value' | 'comma-or-end' };
+
+function skipJsonWhitespace(text: string, start: number): number {
+  let index = start;
+  while (index < text.length && (text[index] === ' ' || text[index] === '\t' || text[index] === '\n' || text[index] === '\r')) index += 1;
+  return index;
+}
+
+function jsonStringEnd(text: string, start: number): number {
+  let index = start + 1;
+  while (index < text.length) {
+    if (text[index] === '\\') {
+      index += 2;
+      continue;
+    }
+    if (text[index] === '"') return index + 1;
+    index += 1;
+  }
+  return text.length;
+}
+
+/** Scans already-syntax-validated tokens so duplicate object keys cannot be normalized away. */
+function assertNoDuplicateJsonObjectKeys(text: string): void {
+  const frames: JsonScanFrame[] = [];
+  let index = skipJsonWhitespace(text, 0);
+  let rootComplete = false;
+
+  const completeValue = (): void => {
+    const parent = frames.at(-1);
+    if (parent === undefined) rootComplete = true;
+    else parent.state = 'comma-or-end';
+  };
+
+  const beginValue = (): void => {
+    index = skipJsonWhitespace(text, index);
+    const token = text[index];
+    if (token === '{') {
+      index += 1;
+      frames.push({ kind: 'object', keys: new Set(), state: 'key-or-end' });
+    } else if (token === '[') {
+      index += 1;
+      frames.push({ kind: 'array', state: 'value-or-end' });
+    } else if (token === '"') {
+      index = jsonStringEnd(text, index);
+      completeValue();
+    } else {
+      while (index < text.length && text[index] !== ',' && text[index] !== ']' && text[index] !== '}'
+        && text[index] !== ' ' && text[index] !== '\t' && text[index] !== '\n' && text[index] !== '\r') index += 1;
+      completeValue();
+    }
+  };
+
+  while (!rootComplete || frames.length > 0) {
+    index = skipJsonWhitespace(text, index);
+    const frame = frames.at(-1);
+    if (frame === undefined) {
+      beginValue();
+      continue;
+    }
+
+    if (frame.kind === 'object') {
+      if (frame.state === 'key-or-end') {
+        if (text[index] === '}') {
+          index += 1;
+          frames.pop();
+          completeValue();
+          continue;
+        }
+        const keyStart = index;
+        index = jsonStringEnd(text, index);
+        const key = JSON.parse(text.slice(keyStart, index)) as string;
+        if (frame.keys.has(key)) throw new ExternalJsonContentError(`JSON input contains duplicate object member '${key}'`);
+        frame.keys.add(key);
+        frame.state = 'colon';
+      } else if (frame.state === 'colon') {
+        index += 1;
+        frame.state = 'value';
+      } else if (frame.state === 'value') {
+        beginValue();
+      } else if (text[index] === ',') {
+        index += 1;
+        frame.state = 'key-or-end';
+      } else {
+        index += 1;
+        frames.pop();
+        completeValue();
+      }
+      continue;
+    }
+
+    if (frame.state === 'value-or-end' && text[index] === ']') {
+      index += 1;
+      frames.pop();
+      completeValue();
+    } else if (frame.state === 'value-or-end' || frame.state === 'value') {
+      beginValue();
+    } else if (text[index] === ',') {
+      index += 1;
+      frame.state = 'value';
+    } else {
+      index += 1;
+      frames.pop();
+      completeValue();
+    }
+  }
+}
+
 /** Reads only an absolute, external, regular file, including pinned PNG bytes. */
 export function readStrictExternalBytes(path: string): Uint8Array {
   return readExternalRegularBytes(path, 'external bytes input');
@@ -342,11 +459,21 @@ export function readStrictExternalBytes(path: string): Uint8Array {
 /** Reads only an absolute, external, regular JSON file. */
 export function readStrictExternalJson(path: string): unknown {
   const bytes = readExternalRegularBytes(path, 'JSON input');
+  let text: string;
   try {
-    return JSON.parse(new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes));
+    text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
   } catch (error) {
-    throw new Error(`JSON input must contain strict JSON: ${error instanceof Error ? error.message : String(error)}`);
+    throw new ExternalJsonContentError(`JSON input must contain strict UTF-8: ${error instanceof Error ? error.message : String(error)}`);
   }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (error) {
+    throw new ExternalJsonContentError(`JSON input must contain strict JSON: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  assertNoDuplicateJsonObjectKeys(text);
+  return parsed;
 }
 
 /** Writes one fresh external artifact without creating reviewer/controller directories. */
