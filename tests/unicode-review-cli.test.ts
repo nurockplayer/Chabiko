@@ -92,6 +92,7 @@ function createFixture(): {
     'unicode_review_cli_context.ts',
     'unicode_review_external_io.ts',
     'unicode_review_journal.ts',
+    'publish_unicode_review_journal.py',
     'unicode_review_pixels.ts',
     'unicode_review_v021.ts',
     'unicode_visual_contract.ts',
@@ -99,6 +100,7 @@ function createFixture(): {
   ]) {
     copyFileSync(join(sourceRoot, 'scripts', file), join(repository, 'scripts', file));
   }
+  for (const file of ['pyproject.toml', 'uv.lock']) copyFileSync(join(sourceRoot, file), join(repository, file));
 
   const left = new Uint8Array(64 * 64).fill(255);
   const right = Uint8Array.from(left);
@@ -237,6 +239,7 @@ function createCalibrationFixture() {
     'unicode_review_cli_context.ts',
     'unicode_review_external_io.ts',
     'unicode_review_journal.ts',
+    'publish_unicode_review_journal.py',
     'unicode_review_pixels.ts',
     'unicode_review_v021.ts',
     'unicode_visual_contract.ts',
@@ -244,6 +247,7 @@ function createCalibrationFixture() {
   ]) {
     copyFileSync(join(sourceRoot, 'scripts', file), join(repository, 'scripts', file));
   }
+  for (const file of ['pyproject.toml', 'uv.lock']) copyFileSync(join(sourceRoot, file), join(repository, file));
 
   const hashes = calibrationHashes(72);
   const glyphs: Array<Record<string, unknown>> = [];
@@ -1359,6 +1363,48 @@ describe('#477 Unicode review workflow CLI', () => {
     const foreign = invoke('init', join(fixture.external, 'foreign-init.json'));
     expect(foreign.status, foreign.output).not.toBe(0);
     expect(readFileSync(join(foreignJournal, 'keep.txt'), 'utf8')).toBe('preserve');
+  });
+
+  it('calibrates before recover initializes an absent or exact unlocked empty journal', () => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: join(fixture.external, 'wave-1-reviewer'), controllerOutputPath: join(fixture.external, 'wave-1-controller') }],
+    });
+    const invoke = (output: string) => runWorkflow(workflowScript, 'recover', ['--descriptor', descriptor, '--output', output], join(fixture.external, 'caller-cwd'));
+
+    const absent = invoke(join(fixture.external, 'recover-absent.json'));
+    expect(absent.status, absent.output).toBe(0);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(1);
+
+    unlinkSync(join(journal, 'events', readdirSync(join(journal, 'events'))[0]));
+    const empty = invoke(join(fixture.external, 'recover-empty.json'));
+    expect(empty.status, empty.output).toBe(0);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(1);
+
+    const invalidFixture = createCalibrationCommandFixture();
+    const invalidScript = join(invalidFixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const invalidDescriptor = join(invalidFixture.external, 'invalid-workflow-descriptor.json');
+    const invalidJournal = join(invalidFixture.external, 'journal');
+    writeJson(invalidDescriptor, {
+      calibrationContextPath: invalidFixture.descriptorPath,
+      sealedKeyPath: invalidFixture.keyPath,
+      calibrationSubmissionPath: invalidFixture.submissionPath,
+      journalPath: invalidJournal,
+      waves: [],
+    });
+    writeFileSync(invalidFixture.submissionPath, '{}');
+    const invalid = runWorkflow(invalidScript, 'recover', ['--descriptor', invalidDescriptor, '--output', join(invalidFixture.external, 'recover-invalid.json')], join(invalidFixture.external, 'caller-cwd'));
+    expect(invalid.status, invalid.output).not.toBe(0);
+    expect(existsSync(invalidJournal)).toBe(false);
   });
 
   it('preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event', () => {

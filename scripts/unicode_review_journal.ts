@@ -5,6 +5,7 @@ import {
   fsyncSync,
   linkSync,
   lstatSync,
+  mkdtempSync,
   mkdirSync,
   openSync,
   readdirSync,
@@ -14,8 +15,9 @@ import {
   writeFileSync,
   type Stats,
 } from 'node:fs';
-import { basename, join } from 'node:path';
-import { resolveStrictExternalPath } from './unicode_review_external_io.ts';
+import { basename, dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { resolveStrictExternalPath, resolveUnicodeReviewRepositoryRoot } from './unicode_review_external_io.ts';
 
 export const UNICODE_REVIEW_JOURNAL_PROTOCOL = 'unicode-review-journal-v1';
 
@@ -45,10 +47,19 @@ export interface UnicodeReviewJournalState {
   readonly tip: UnicodeReviewJournalTip;
 }
 
+export type UnicodeReviewJournalRecoveryState = 'absent' | 'unlocked-empty' | 'locked-or-populated';
+
 /** Focused test hook; production callers do not need to provide it. */
 export interface UnicodeReviewJournalAppendOptions {
   readonly beforeCommit?: () => void;
   readonly afterCommit?: () => void;
+}
+
+/** Narrow initialization hooks for crash and filesystem-failure tests. */
+export interface UnicodeReviewJournalInitializationOptions {
+  readonly beforePublish?: (stagingRoot: string) => void;
+  readonly afterPublish?: (canonicalRoot: string) => void;
+  readonly fsyncDirectory?: (path: string) => void;
 }
 
 /** Runs semantic recovery checks against an owned, structurally valid stopped journal before cleanup. */
@@ -60,10 +71,10 @@ interface OwnedPath {
   readonly path: string;
   readonly device: number;
   readonly inode: number;
-  readonly ctimeMs: number;
-  readonly nlink: number;
-  readonly size: number;
-  readonly mode: number;
+  ctimeMs: number;
+  nlink: number;
+  size: number;
+  mode: number;
   readonly type: 'file' | 'directory';
   descriptor: number | null;
 }
@@ -162,7 +173,9 @@ function sameLiveIdentity(left: Stats, right: Stats, type: OwnedPath['type']): b
   if (left.dev !== right.dev || left.ino !== right.ino || left.nlink !== right.nlink) return false;
   // ctime moves whenever the inode is unlinked or relinked, so a reused inode
   // (Linux may recycle inode numbers) cannot pass as the descriptor's inode.
-  if (left.ctimeMs !== right.ctimeMs) return false;
+  // Directory ctime changes as the initializer creates and removes its own
+  // children, so directory ownership is fenced by the retained inode instead.
+  if (type === 'file' && left.ctimeMs !== right.ctimeMs) return false;
   return type === 'directory' || (left.size === right.size && left.mode === right.mode);
 }
 
@@ -174,14 +187,15 @@ function isStillOwned(path: OwnedPath): boolean {
       // Without a descriptor only the recorded snapshot is available; require it
       // to match as well instead of trusting device+inode alone.
       return stat.nlink === path.nlink
-        && stat.ctimeMs === path.ctimeMs
-        && (path.type === 'directory' || (stat.size === path.size && stat.mode === path.mode));
+        && (path.type === 'directory' || (stat.ctimeMs === path.ctimeMs && stat.size === path.size && stat.mode === path.mode));
     }
     const descriptorStat = fstatSync(path.descriptor);
     if (!(path.type === 'file' ? descriptorStat.isFile() : descriptorStat.isDirectory())
       || descriptorStat.dev !== path.device || descriptorStat.ino !== path.inode) {
       return false;
     }
+    if (path.type === 'file'
+      && (stat.nlink !== path.nlink || stat.ctimeMs !== path.ctimeMs || stat.size !== path.size || stat.mode !== path.mode)) return false;
     return sameLiveIdentity(stat, descriptorStat, path.type);
   } catch (error) {
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') return false;
@@ -200,6 +214,16 @@ function releaseOwnedPath(path: OwnedPath | null): void {
   const descriptor = path.descriptor;
   path.descriptor = null;
   closeSync(descriptor);
+}
+
+function refreshOwnedFileSnapshot(path: OwnedPath): void {
+  assert(path.type === 'file' && path.descriptor !== null, 'only an open owned file can refresh its identity snapshot');
+  const current = fstatSync(path.descriptor);
+  assert(current.isFile() && current.dev === path.device && current.ino === path.inode, 'owned file identity changed while writing');
+  path.ctimeMs = current.ctimeMs;
+  path.nlink = current.nlink;
+  path.size = current.size;
+  path.mode = current.mode;
 }
 
 function fsyncDirectory(path: string): void {
@@ -355,6 +379,7 @@ function writeExclusiveFile(path: string, contents: string): OwnedPath {
     owned = recordOwnedPath(path, 'file', descriptor);
     writeFileSync(descriptor, contents, 'utf8');
     fsyncSync(descriptor);
+    refreshOwnedFileSnapshot(owned);
     descriptor = null;
     return owned;
   } catch (error) {
@@ -415,36 +440,109 @@ function ownerIsProvablyGone(pid: number): boolean {
   }
 }
 
-/** Initializes one new external journal root; any pre-existing or dirty root is rejected. */
-export function initializeUnicodeReviewJournal(path: string): UnicodeReviewJournalState {
+function assertAbsentJournalDestination(root: string): void {
+  try {
+    lstatSync(root);
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') return;
+    throw error;
+  }
+  const error = new Error('journal destination already exists') as Error & { code: string };
+  error.code = 'EEXIST';
+  throw error;
+}
+
+function journalIdentity(path: OwnedPath): { readonly device: number; readonly inode: number } {
+  return { device: path.device, inode: path.inode };
+}
+
+function invokeExclusiveJournalPublisher(stagingRoot: string, canonicalRoot: string, expected: Record<string, unknown>): void {
+  const repositoryRoot = resolveUnicodeReviewRepositoryRoot();
+  const helper = join(repositoryRoot, 'scripts', 'publish_unicode_review_journal.py');
+  const result = spawnSync('uv', [
+    'run', '--locked', '--no-sync', '--project', repositoryRoot,
+    'python', helper, stagingRoot, canonicalRoot, JSON.stringify(expected),
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
+  if (result.error) throw result.error;
+  if (result.status === 0) return;
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim();
+  const error = new Error(`exclusive journal publication failed${output ? `: ${output}` : ''}`) as Error & { code?: string };
+  if (result.status === 73 && output.includes('DESTINATION_EXISTS')) error.code = 'EEXIST';
+  throw error;
+}
+
+function cleanupOwnedDirectory(path: OwnedPath | null): void {
+  if (path === null || path.type !== 'directory' || !isStillOwned(path)) return;
+  try {
+    if (readdirSync(path.path).length === 0) rmdirSync(path.path);
+  } catch {
+    // A non-empty, replaced, or otherwise changed directory is preserved.
+  }
+}
+
+/** Initializes one external journal by atomically publishing a complete empty sibling stage. */
+export function initializeUnicodeReviewJournal(
+  path: string,
+  options: UnicodeReviewJournalInitializationOptions = {},
+): UnicodeReviewJournalState {
   const root = resolveJournalRoot(path);
-  let rootOwnership: OwnedPath | null = null;
+  assertAbsentJournalDestination(root);
+  const parent = dirname(root);
+  const stagingRoot = mkdtempSync(join(parent, `.unicode-review-journal-init-${randomUUID()}-`));
+  let stagingOwnership: OwnedPath | null = null;
   let markerOwnership: OwnedPath | null = null;
   let eventsOwnership: OwnedPath | null = null;
   try {
-    mkdirSync(root);
-    rootOwnership = recordOwnedPath(root, 'directory', true);
-    markerOwnership = writeExclusiveFile(join(root, MARKER_NAME), `${canonicalJson({ protocolVersion: UNICODE_REVIEW_JOURNAL_PROTOCOL })}\n`);
-    mkdirSync(join(root, EVENTS_DIRECTORY_NAME));
-    eventsOwnership = recordOwnedPath(join(root, EVENTS_DIRECTORY_NAME), 'directory', true);
-    fsyncDirectory(root);
+    // Retain the invocation's directory inode before creating any children so
+    // all later path-based work can be checked against this exact staging root.
+    stagingOwnership = recordOwnedPath(stagingRoot, 'directory', true);
+    markerOwnership = writeExclusiveFile(join(stagingRoot, MARKER_NAME), `${canonicalJson({ protocolVersion: UNICODE_REVIEW_JOURNAL_PROTOCOL })}\n`);
+    mkdirSync(join(stagingRoot, EVENTS_DIRECTORY_NAME), { mode: 0o700 });
+    eventsOwnership = recordOwnedPath(join(stagingRoot, EVENTS_DIRECTORY_NAME), 'directory', true);
+    const staged = inspectJournal(stagingRoot, null, null);
+    assert(staged.events.length === 0 && staged.tip.sequence === 0 && staged.tip.digest === null, 'journal staging root must be empty');
+    (options.fsyncDirectory ?? fsyncDirectory)(join(stagingRoot, EVENTS_DIRECTORY_NAME));
+    (options.fsyncDirectory ?? fsyncDirectory)(stagingRoot);
+    (options.fsyncDirectory ?? fsyncDirectory)(parent);
+    options.beforePublish?.(stagingRoot);
+    // The native helper rechecks the retained identities and exact inventory immediately before its no-replace syscall.
+    assert(isStillOwned(stagingOwnership), 'journal staging root changed ownership before publication');
+    assert(isStillOwned(markerOwnership), 'journal staging marker changed ownership before publication');
+    assert(isStillOwned(eventsOwnership), 'journal staging events directory changed ownership before publication');
+    assert(JSON.stringify(readdirSync(stagingRoot).sort()) === JSON.stringify([EVENTS_DIRECTORY_NAME, MARKER_NAME].sort()), 'journal staging root inventory changed before publication');
+    assert(readdirSync(join(stagingRoot, EVENTS_DIRECTORY_NAME)).length === 0, 'journal staging events directory is not empty');
+    invokeExclusiveJournalPublisher(stagingRoot, root, {
+      root: journalIdentity(stagingOwnership),
+      marker: journalIdentity(markerOwnership),
+      events: journalIdentity(eventsOwnership),
+    });
+    const publishedOwnership = { ...stagingOwnership, path: root };
+    assert(isStillOwned(publishedOwnership), 'published journal root identity changed');
+    (options.fsyncDirectory ?? fsyncDirectory)(parent);
+    options.afterPublish?.(root);
     const state = inspectJournal(root, null, null);
     releaseOwnedPath(eventsOwnership);
     releaseOwnedPath(markerOwnership);
-    releaseOwnedPath(rootOwnership);
+    releaseOwnedPath(stagingOwnership);
     eventsOwnership = null;
     markerOwnership = null;
-    rootOwnership = null;
+    stagingOwnership = null;
     return state;
   } catch (error) {
     try {
-      if (eventsOwnership !== null && isStillOwned(eventsOwnership)) rmdirSync(eventsOwnership.path);
-      if (markerOwnership !== null && isStillOwned(markerOwnership)) removeOwnedFile(markerOwnership, 'journal protocol marker');
-      if (rootOwnership !== null && isStillOwned(rootOwnership)) rmdirSync(rootOwnership.path);
+      cleanupOwnedDirectory(eventsOwnership);
+      if (markerOwnership !== null && isStillOwned(markerOwnership)) {
+        try {
+          removeOwnedFile(markerOwnership, 'journal protocol marker');
+        } catch {
+          // A replaced or linked marker remains untouched.
+        }
+      }
+      cleanupOwnedDirectory(stagingOwnership);
     } finally {
       releaseOwnedPath(eventsOwnership);
       releaseOwnedPath(markerOwnership);
-      releaseOwnedPath(rootOwnership);
+      releaseOwnedPath(stagingOwnership);
     }
     throw error;
   }
@@ -455,6 +553,28 @@ export function loadUnicodeReviewJournal(path: string): UnicodeReviewJournalStat
   const root = resolveJournalRoot(path);
   const inspection = inspectJournal(root, null, null);
   return { root: inspection.root, events: inspection.events, tip: inspection.tip };
+}
+
+/** Classifies only the safe calibration-first recovery cases without mutating journal state. */
+export function inspectUnicodeReviewJournalRecoveryState(path: string): UnicodeReviewJournalRecoveryState {
+  const root = resolveJournalRoot(path);
+  try {
+    const rootStat = lstatSync(root);
+    assert(rootStat.isDirectory(), 'journal root must be a real directory');
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') return 'absent';
+    throw error;
+  }
+  try {
+    lstatSync(join(root, LOCK_NAME));
+    return 'locked-or-populated';
+  } catch (error) {
+    if (!(typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT')) throw error;
+  }
+  const journal = loadUnicodeReviewJournal(root);
+  return journal.events.length === 0 && journal.tip.sequence === 0 && journal.tip.digest === null
+    ? 'unlocked-empty'
+    : 'locked-or-populated';
 }
 
 /** Appends exactly one opaque JSON event after checking the caller's current on-disk tip under an exclusive lock. */
@@ -479,6 +599,9 @@ export function appendUnicodeReviewJournalEvent(
     options.beforeCommit?.();
     assert(isStillOwned(temporary), 'journal temporary artifact changed ownership and is preserved');
     linkSync(temporary.path, destination);
+    // The extra link is the journal commit point and is intentionally removed
+    // from the temporary path after the directory entry is durable.
+    refreshOwnedFileSnapshot(temporary);
     fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     options.afterCommit?.();
     removeOwnedFile(temporary, 'journal temporary artifact');

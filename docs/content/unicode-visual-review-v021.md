@@ -331,9 +331,19 @@ same convention. A `pairRef` is different: it is the first 24 hexadecimal
 characters of SHA-256 over the protocol version, a newline, the namespace salt,
 another newline, and the exact JSON controller-side pair binding.
 
-The external journal is separate. It uses recursively key-sorted canonical JSON
-with exactly one trailing newline, SHA-256 content checksums, monotonically
-increasing sequence numbers, and a previous-digest chain. An event content
+The external journal is separate. Fresh initialization builds a complete,
+fsynced sibling staging root and publishes it with an atomic no-replace kernel
+operation (`renameat2(RENAME_NOREPLACE)` on Linux or `renamex_np(RENAME_EXCL)`
+on macOS). Unsupported platforms or filesystems fail closed; initialization
+never falls back to ordinary rename or copy. A process crash may leave its
+uniquely named staging directory for inspection; later commands neither adopt
+nor sweep it. Once publication may have occurred, errors preserve the canonical
+root. The Python standard-library helper runs through `uv --locked` bound to
+the repository project and lockfile.
+
+The journal uses recursively key-sorted canonical JSON with exactly one
+trailing newline, SHA-256 content checksums, monotonically increasing sequence
+numbers, and a previous-digest chain. An event content
 checksum hashes canonical `{ payload, previousDigest, sequence }`; its digest
 hashes the canonical record body containing that checksum. Its external root
 contains a marker, an `events` directory, and an exclusive lock. Initialize,
@@ -522,9 +532,11 @@ pnpm exec node scripts/run_unicode_review_workflow_v021.ts recover \
   --output /absolute/external/recover-status.json
 ```
 
-It invokes the explicit journal recovery API with a pre-cleanup semantic
-validation callback. For a nonempty journal, that callback replays the exact
-workflow, validates every stored wave artifact, and verifies recorded subset
+For an absent journal or an exact unlocked zero-event journal, `recover`
+replays calibration first and then uses the same atomic initialization path as
+`init`. Otherwise it invokes the explicit stopped-writer recovery API with a
+pre-cleanup semantic validation callback. For a nonempty journal, that callback
+replays the exact workflow, validates every stored wave artifact, and verifies recorded subset
 roots from pending and terminal waves against their immutable prepared refs,
 exact bytes, and complete inventory, as well as against every permanent role,
 before the API removes the held lock or matching partial event. Recovery writes
@@ -533,13 +545,13 @@ If the current active wave has neither artifact directory, recovery permits
 the validated plan to remain unpublished; a subsequent `resume` recreates its
 exact artifacts. A partially present pair, damaged artifact, or missing
 terminal-wave output still rejects recovery before cleanup.
-For an exact empty journal, there are no stored waves to replay; after the
-stopped-writer cleanup, recovery performs the same calibration-first
+For a stopped initializer holding a lock, there are no stored waves to replay;
+after stopped-writer cleanup, recovery performs the same calibration-first
 initialization path.
 
 Initialization has a separate boundary. Calibration is replayed before any
-journal mutation. `init` either creates a fresh external root or resumes only
-an exact protocol-valid zero-event root with no lock or unknown entries; it
+journal mutation. `init` either atomically creates a fresh external root or
+resumes only an exact protocol-valid zero-event root with no lock or unknown entries; it
 appends the initialization event using the expected zero tip. Nonempty,
 foreign, or dirty roots fail closed without deletion or modification. If an
 initializer stops while holding the journal lock, `recover` first proves that
@@ -611,12 +623,14 @@ requested again merely because the process restarted.
 | Opaque authorization, replay binding, and hard-probe exclusion | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
+| Atomic native no-replace publication, crash boundaries, and dirty staging preservation | `unicode_review_journal.ts`, `publish_unicode_review_journal.py`; helper runs with repository-pinned `uv --locked` | `unicode-review-journal.test.ts`: concurrent initializers; pre/post-publication process exits and fsync failures; foreign marker, hard-link, and replaced-root preservation; helper `--self-test`: exclusive publication, destination preservation, unsupported-platform failure, concurrent race, and process death after publish |
 | Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
 | Consecutive scaled waves retain qualification; invalidation requires two new clean initial waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: initial/scaled progression through finalization and replay, oversized planning/replay rejection after invalidation, and requalification |
 | Canonical external subset roots at preparation and fail-closed semantic replay | `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-workflow.test.ts`: canonical B/Pass B API persistence; `unicode-review-cli.test.ts`: “rejects hash-valid noncanonical B and Pass B subset roots before publishing status or mutating the journal” |
 | Pairwise subset-root isolation across pending and terminal waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: direct preparation rejects identical, child, and parent roots before append; `unicode-review-cli.test.ts`: hash-valid overlap fails before resume status, subset reconstruction, or stopped-writer cleanup |
 | Retryable journal I/O remains separate from evidence invalidation | `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-workflow.test.ts`: one-shot pre-commit failures preserve the tip and pending A/B/Pass B evidence, followed by identical-submission retries |
 | Fresh-root workflow initialization, exact empty-journal retry/recovery, and stopped-writer recovery | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; `unicode-review-journal.test.ts`: “initializes one fresh external root and never overwrites a journal or dirty caller root”; “recovers only a provably stopped owner after validating the journal and its own temporary artifact” |
+| Calibration-first `recover` of an absent or exact unlocked zero-event journal | `run_unicode_review_workflow_v021.ts`, `unicode_review_journal.ts`, `publish_unicode_review_journal.py` | `unicode-review-cli.test.ts`: “calibrates before recover initializes an absent or exact unlocked empty journal”; absent/empty roots publish through atomic no-replace initialization |
 | Strict workflow descriptor, stored-wave replay, recorded-root role isolation, persistent B/Pass B subset registration, immutable partial Pass B resume, and invalidation exit | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-cli.test.ts`: “replays a calibrated synthetic wave through independent review and exports only blind subsets”; “resumes a partial Pass B wave against its immutable prepared subset”; “treats recorded B and Pass B exports as immutable evidence across commands and recovery”; “recreates missing zero-ref Reviewer B and Pass B exports only through resume”; “persists chosen subset roots, fences later status output, and permits only the recorded resume path”; “recovers an existing B subset when its active wave publication pair is absent”; “rejects reviewer/container-nested status and subset destinations before journal mutation”; “rejects a cross-wave controller root nested in another reviewer root before initialization”; “rejects an artifact root that would contain a controller input before initialization”; `unicode-review-workflow.test.ts`: “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
 
 ## Documentation-only verification

@@ -16,7 +16,7 @@ import {
   writeExclusiveExternalJson,
   writeExclusiveExternalOutputs,
 } from './unicode_review_external_io.ts';
-import { recoverStoppedUnicodeReviewJournalWriter } from './unicode_review_journal.ts';
+import { inspectUnicodeReviewJournalRecoveryState, recoverStoppedUnicodeReviewJournalWriter } from './unicode_review_journal.ts';
 import {
   finalizeUnicodeReviewWave,
   ingestUnicodeReviewWaveA,
@@ -517,6 +517,15 @@ function run(command: Command, args: readonly string[]): void {
   assertStaticPathIsolation(loaded);
   assertCommandPathIsolation(loaded, output, requestedSubsetOutput);
   if (command === 'recover') {
+    const recoveryState = inspectUnicodeReviewJournalRecoveryState(loaded.descriptor.journalPath);
+    if (recoveryState === 'absent' || recoveryState === 'unlocked-empty') {
+      const state = initializeUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration);
+      verifyStoredWaves(loaded, state, false);
+      verifyStoredSubsets(loaded, state, false);
+      assertRecordedSubsetIsolation(loaded, output, requestedSubsetOutput, null, state.subsetRoots);
+      writeStatus(output, command, state);
+      return;
+    }
     let validatedState: UnicodeReviewWorkflowState | null = null;
     const recovered = recoverStoppedUnicodeReviewJournalWriter(loaded.descriptor.journalPath, {
       beforeCleanup: (journal) => {

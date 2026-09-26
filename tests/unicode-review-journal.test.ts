@@ -1,13 +1,14 @@
-import { existsSync, fstatSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdtempSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   UNICODE_REVIEW_JOURNAL_PROTOCOL,
   appendUnicodeReviewJournalEvent,
   initializeUnicodeReviewJournal,
+  inspectUnicodeReviewJournalRecoveryState,
   loadUnicodeReviewJournal,
   recoverStoppedUnicodeReviewJournalWriter,
 } from '../scripts/unicode_review_journal';
@@ -85,6 +86,113 @@ describe('#477 restart-safe Unicode review journal', () => {
     writeFileSync(join(dirty, 'keep.txt'), 'preserve');
     expect(() => initializeUnicodeReviewJournal(dirty)).toThrow(/exist|EEXIST/i);
     expect(readFileSync(join(dirty, 'keep.txt'), 'utf8')).toBe('preserve');
+    for (const kind of ['file', 'symlink'] as const) {
+      const foreign = join(parent, `foreign-${kind}`);
+      if (kind === 'file') writeFileSync(foreign, 'keep');
+      else symlinkSync(marker, foreign);
+      expect(() => initializeUnicodeReviewJournal(foreign)).toThrow();
+      expect(lstatSync(foreign).isSymbolicLink()).toBe(kind === 'symlink');
+    }
+  });
+
+  it('cleans its own pre-publication failure, preserves crash staging, and never rolls back a published root', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    expect(() => initializeUnicodeReviewJournal(journal, { beforePublish: () => { throw new Error('injected pre-publish failure'); } })).toThrow(/injected pre-publish failure/);
+    expect(existsSync(journal)).toBe(false);
+    expect(readdirSync(parent)).toEqual([]);
+
+    const moduleUrl = pathToFileURL(join(process.cwd(), 'scripts', 'unicode_review_journal.ts')).href;
+    const crashBefore = [
+      `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)};`,
+      `initializeUnicodeReviewJournal(${JSON.stringify(journal)}, { beforePublish() { process.exit(86); } });`,
+    ].join('\n');
+    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashBefore]).status).toBe(86);
+    expect(existsSync(journal)).toBe(false);
+    expect(readdirSync(parent)).toHaveLength(1);
+    const abandonedStage = readdirSync(parent)[0];
+    const abandoned = loadUnicodeReviewJournal(join(parent, abandonedStage));
+    expect(abandoned.events).toEqual([]);
+    expect(abandoned.tip).toEqual({ sequence: 0, digest: null });
+
+    const crashAfter = [
+      `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)};`,
+      `initializeUnicodeReviewJournal(${JSON.stringify(journal)}, { afterPublish() { process.exit(87); } });`,
+    ].join('\n');
+    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashAfter]).status).toBe(87);
+    expect(inspectUnicodeReviewJournalRecoveryState(journal)).toBe('unlocked-empty');
+    expect(() => initializeUnicodeReviewJournal(journal)).toThrow(/exist|journal/i);
+    expect(inspectUnicodeReviewJournalRecoveryState(journal)).toBe('unlocked-empty');
+  });
+
+  it('fails closed on directory fsync errors before publication and preserves the canonical root after publication', () => {
+    const parent = externalRoot();
+    const before = join(parent, 'before');
+    let beforeSyncs = 0;
+    expect(() => initializeUnicodeReviewJournal(before, { fsyncDirectory: () => { if (++beforeSyncs === 2) throw new Error('injected directory fsync failure'); } })).toThrow(/injected directory fsync failure/);
+    expect(existsSync(before)).toBe(false);
+    expect(readdirSync(parent)).toEqual([]);
+
+    const after = join(parent, 'after');
+    let afterSyncs = 0;
+    expect(() => initializeUnicodeReviewJournal(after, { fsyncDirectory: (path) => {
+      if (++afterSyncs === 4) throw new Error('injected post-publish parent fsync failure');
+      const descriptor = openSync(path, 'r');
+      try { fsyncSync(descriptor); } finally { closeSync(descriptor); }
+    } })).toThrow(/post-publish parent fsync failure/);
+    expect(loadUnicodeReviewJournal(after).tip).toEqual({ sequence: 0, digest: null });
+  });
+
+  it('preserves foreign replacements, linked markers, and replaced staging roots', () => {
+    const parent = externalRoot();
+    const replacedMarker = join(parent, 'replaced-marker');
+    let markerStage = '';
+    expect(() => initializeUnicodeReviewJournal(replacedMarker, { beforePublish: (stage) => {
+      markerStage = stage;
+      unlinkSync(join(stage, '.unicode-review-journal.json'));
+      writeFileSync(join(stage, '.unicode-review-journal.json'), 'foreign marker');
+    } })).toThrow(/changed ownership|inventory changed/);
+    expect(readFileSync(join(markerStage, '.unicode-review-journal.json'), 'utf8')).toBe('foreign marker');
+    expect(existsSync(replacedMarker)).toBe(false);
+
+    const linkedMarker = join(parent, 'linked-marker');
+    let linkedStage = '';
+    expect(() => initializeUnicodeReviewJournal(linkedMarker, { beforePublish: (stage) => {
+      linkedStage = stage;
+      linkSync(join(stage, '.unicode-review-journal.json'), join(parent, 'foreign-marker-link'));
+    } })).toThrow(/singly linked|publication failed|changed ownership/);
+    expect(existsSync(join(parent, 'foreign-marker-link'))).toBe(true);
+    expect(existsSync(join(linkedStage, '.unicode-review-journal.json'))).toBe(true);
+    expect(existsSync(linkedMarker)).toBe(false);
+
+    const replacedRoot = join(parent, 'replaced-root');
+    let abandonedStage = '';
+    let foreignStage = '';
+    expect(() => initializeUnicodeReviewJournal(replacedRoot, { beforePublish: (stage) => {
+      abandonedStage = `${stage}-owned-away`;
+      foreignStage = stage;
+      renameSync(stage, abandonedStage);
+      mkdirSync(foreignStage);
+      writeFileSync(join(foreignStage, 'foreign.txt'), 'preserve');
+    } })).toThrow(/changed ownership/);
+    expect(readFileSync(join(foreignStage, 'foreign.txt'), 'utf8')).toBe('preserve');
+    expect(existsSync(join(abandonedStage, '.unicode-review-journal.json'))).toBe(true);
+    expect(existsSync(replacedRoot)).toBe(false);
+  });
+
+  it('allows exactly one concurrent initializer to publish without replacing the winner', async () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    const moduleUrl = pathToFileURL(join(process.cwd(), 'scripts', 'unicode_review_journal.ts')).href;
+    const source = `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)}; try { initializeUnicodeReviewJournal(${JSON.stringify(journal)}); process.exit(0); } catch (error) { if (error && error.code === 'EEXIST') process.exit(73); throw error; }`;
+    const launch = () => new Promise<number>((resolveExit, reject) => {
+      const child = spawn(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { stdio: 'ignore' });
+      child.once('error', reject);
+      child.once('exit', (code) => resolveExit(code ?? -1));
+    });
+    const codes = await Promise.all([launch(), launch()]);
+    expect(codes.sort()).toEqual([0, 73]);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual({ sequence: 0, digest: null });
   });
 
   it('appends opaque JSON records and reloads the authoritative sequence and digest chain', () => {
