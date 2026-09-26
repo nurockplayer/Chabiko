@@ -138,6 +138,9 @@ function canonicalJson(value: unknown, active = new Set<object>()): string {
   if (Array.isArray(value)) {
     assert(!active.has(value), 'journal payload must not contain cycles');
     active.add(value);
+    for (let index = 0; index < value.length; index += 1) {
+      assert(Object.prototype.hasOwnProperty.call(value, index), 'journal payload arrays must not contain holes');
+    }
     const encoded = `[${value.map((item) => canonicalJson(item, active)).join(',')}]`;
     active.delete(value);
     return encoded;

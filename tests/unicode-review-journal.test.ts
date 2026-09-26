@@ -249,6 +249,36 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(Object.keys(loaded)).toEqual(['root', 'events', 'tip']);
   });
 
+  it('rejects sparse arrays before locking or changing journal history', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const prior = appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'prior history' });
+    const eventsPath = join(journal, 'events');
+    const beforeFiles = readdirSync(eventsPath).sort();
+    const beforeBytes = beforeFiles.map((name) => readFileSync(join(eventsPath, name)));
+    const trailingHole = [1];
+    trailingHole.length = 2;
+    const nestedTrailingHole = [true];
+    nestedTrailingHole.length = 2;
+    const sparseValues: unknown[] = [
+      new Array(1),
+      trailingHole,
+      { nested: nestedTrailingHole },
+    ];
+
+    for (const payload of sparseValues) {
+      expect(() => appendUnicodeReviewJournalEvent(journal, prior.tip, payload)).toThrow(/arrays must not contain holes/);
+      expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+      expect(readdirSync(eventsPath).sort()).toEqual(beforeFiles);
+      expect(readdirSync(eventsPath).map((name) => readFileSync(join(eventsPath, name)))).toEqual(beforeBytes);
+      expect(loadUnicodeReviewJournal(journal).tip).toEqual(prior.tip);
+    }
+
+    const appended = appendUnicodeReviewJournalEvent(journal, prior.tip, { dense: [], nested: [null, true, 7] });
+    expect(appended.events).toHaveLength(2);
+    expect(appended.events[1].payload).toEqual({ dense: [], nested: [null, true, 7] });
+  });
+
   it('releases owned descriptors across repeated successful appends', () => {
     if (process.platform === 'win32') return;
     const journal = join(externalRoot(), 'journal');
