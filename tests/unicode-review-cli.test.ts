@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { deflateSync } from 'node:zlib';
@@ -669,10 +669,56 @@ describe('#477 Unicode review workflow CLI', () => {
     });
     const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(workflowScript, command, ['--descriptor', descriptor, '--output', output, ...extra], join(fixture.external, 'caller-cwd'));
 
-    const initialized = invoke('init', join(fixture.external, 'init.json'));
+    const initStatusPath = join(fixture.external, 'init.json');
+    const initialized = invoke('init', initStatusPath);
     expect(initialized.status, initialized.output).toBe(0);
+    expect(JSON.parse(readFileSync(initStatusPath, 'utf8')).calibrationArtifactRoots).toEqual({
+      reviewerRoot: realpathSync(fixture.reviewerOutput),
+      controllerRoot: realpathSync(dirname(JSON.parse(readFileSync(fixture.descriptorPath, 'utf8')).controllerSidecarPath)),
+    });
+    const calibrationContext = JSON.parse(readFileSync(fixture.descriptorPath, 'utf8'));
+    const calibrationBundleBytes = readFileSync(calibrationContext.reviewerBundlePath);
+    const journalEventsBeforeRelocation = readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')]);
+    const relocatedCalibrationRoot = join(fixture.external, 'relocated-calibration-reviewer');
+    cpSync(dirname(calibrationContext.reviewerBundlePath), relocatedCalibrationRoot, { recursive: true });
+    writeJson(fixture.descriptorPath, { ...calibrationContext, reviewerBundlePath: join(relocatedCalibrationRoot, 'reviewer-bundle.json') });
+    const relocatedCalibration = invoke('resume', join(fixture.external, 'relocated-calibration-status.json'));
+    expect(relocatedCalibration.status, relocatedCalibration.output).not.toBe(0);
+    expect(relocatedCalibration.output).toMatch(/calibration artifact roles differ from immutable initialization/);
+    expect(existsSync(join(fixture.external, 'relocated-calibration-status.json'))).toBe(false);
+    expect(readFileSync(join(relocatedCalibrationRoot, 'reviewer-bundle.json'))).toEqual(calibrationBundleBytes);
+    expect(readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')])).toEqual(journalEventsBeforeRelocation);
+    writeJson(fixture.descriptorPath, calibrationContext);
     const planned = invoke('plan', join(fixture.external, 'plan.json'), ['--wave-id', 'wave-1']);
     expect(planned.status, planned.output).toBe(0);
+    expect(JSON.parse(readFileSync(join(fixture.external, 'plan.json'), 'utf8')).recordedWaves[0]).toMatchObject({
+      reviewerOutputRoot: realpathSync(reviewerOutput),
+      controllerOutputRoot: realpathSync(controllerOutput),
+    });
+    const workflowDescriptor = JSON.parse(readFileSync(descriptor, 'utf8'));
+    const plannedEvents = readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')]);
+    writeJson(descriptor, { ...workflowDescriptor, waves: [{ ...workflowDescriptor.waves[0], reviewerOutputPath: join(fixture.external, 'reassigned-wave-reviewer'), controllerOutputPath: join(fixture.external, 'reassigned-wave-controller') }] });
+    const reassignedStatus = invoke('resume', join(fixture.external, 'reassigned-wave-status.json'));
+    expect(reassignedStatus.status, reassignedStatus.output).not.toBe(0);
+    expect(reassignedStatus.output).toMatch(/artifact roles differ from the immutable plan/);
+    expect(existsSync(join(fixture.external, 'reassigned-wave-status.json'))).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')])).toEqual(plannedEvents);
+    const nonce = '29292929-2929-4929-8929-292929292929';
+    const stoppedLock = join(journal, '.unicode-review-journal.lock');
+    const stoppedPartial = join(journal, 'events', `.${String(plannedEvents.length + 1).padStart(16, '0')}.json.partial-${nonce}`);
+    writeFileSync(stoppedLock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(stoppedPartial, 'stopped writer partial');
+    const stoppedLockBytes = readFileSync(stoppedLock, 'utf8');
+    const stoppedPartialBytes = readFileSync(stoppedPartial, 'utf8');
+    const reassignedRecovery = invoke('recover', join(fixture.external, 'reassigned-recover-status.json'));
+    expect(reassignedRecovery.status, reassignedRecovery.output).not.toBe(0);
+    expect(reassignedRecovery.output).toMatch(/artifact roles differ from the immutable plan/);
+    expect(existsSync(join(fixture.external, 'reassigned-recover-status.json'))).toBe(false);
+    expect(readFileSync(stoppedLock, 'utf8')).toBe(stoppedLockBytes);
+    expect(readFileSync(stoppedPartial, 'utf8')).toBe(stoppedPartialBytes);
+    unlinkSync(stoppedLock);
+    unlinkSync(stoppedPartial);
+    writeJson(descriptor, workflowDescriptor);
     const originalBundle = readFileSync(join(reviewerOutput, 'reviewer-bundle.json'));
     writeFileSync(join(reviewerOutput, 'reviewer-bundle.json'), '{"tampered":true}\n');
     const tampered = invoke('resume', join(fixture.external, 'tampered.json'));
@@ -754,6 +800,13 @@ describe('#477 Unicode review workflow CLI', () => {
     const recoveredFinalStatus = JSON.parse(readFileSync(join(fixture.external, 'finalize-resume.json'), 'utf8'));
     expect(recoveredFinalStatus.promotions).toHaveLength(1);
     expect(recoveredFinalStatus.recordedWaves[0].reviewerBundleChecksumSha256).toBe(sidecar.reviewerBundleChecksumSha256);
+    const finalEvents = readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')]);
+    writeJson(descriptor, { ...workflowDescriptor, waves: [] });
+    const omittedHistorical = invoke('resume', join(fixture.external, 'omitted-historical-status.json'));
+    expect(omittedHistorical.status, omittedHistorical.output).not.toBe(0);
+    expect(omittedHistorical.output).toMatch(/lacks recorded artifact roles for wave 'wave-1'/);
+    expect(existsSync(join(fixture.external, 'omitted-historical-status.json'))).toBe(false);
+    expect(readdirSync(join(journal, 'events')).sort().map((name) => [name, readFileSync(join(journal, 'events', name), 'utf8')])).toEqual(finalEvents);
   });
 
   it('keeps the second finalize status cumulative and equal to resume for synthetic positives', () => {
@@ -1337,7 +1390,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const resumeStatus = join(fixture.external, 'resume-rejected.json');
     const resumed = invoke('resume', resumeStatus);
     expect(resumed.status, resumed.output).not.toBe(0);
-    expect(resumed.output).toMatch(/recorded reviewer subset outputs must be disjoint/i);
+    expect(resumed.output).toMatch(/must be disjoint/i);
     expect(existsSync(resumeStatus)).toBe(false);
     expect(readdirSync(join(journal, 'events')).sort()).toEqual(eventNames);
     expect(eventNames.map((name) => readFileSync(join(journal, 'events', name), 'utf8'))).toEqual(eventBytes);

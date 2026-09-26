@@ -470,6 +470,18 @@ A strong-negative result in `ingest-a` appends an
 never reported as a successful review. Schema/binding failures and any partial,
 unexpected, stale, or byte-different artifact fail closed.
 
+The journal also binds the canonical external calibration reviewer and
+controller directories at initialization, and each wave's reviewer and
+controller output directories when that wave is planned. These role roots are
+immutable for the life of the journal: resume, status, publication, and stopped-
+writer recovery replay them against the current descriptor before writing or
+cleaning anything. Repointing a role, omitting a previously planned wave, or
+relocating even byte-identical calibration artifacts requires a new workflow.
+Old workflow journals without these bindings fail closed; no history migration
+or evaluator fingerprint change is performed. All calibration, wave, and
+Reviewer B/Pass B subset roots must remain pairwise disjoint, including roots
+from terminal waves.
+
 Initial waves are limited to 250 manifest candidates. Two consecutive clean
 initial waves qualify the current calibration for waves of up to 500. The
 `cleanInitialWaveStreak` counter advances on clean initial-size finalization
@@ -632,6 +644,7 @@ requested again merely because the process restarted.
 | Fresh-root workflow initialization, exact empty-journal retry/recovery, and stopped-writer recovery | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_journal.ts` | `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; `unicode-review-journal.test.ts`: “initializes one fresh external root and never overwrites a journal or dirty caller root”; “recovers only a provably stopped owner after validating the journal and its own temporary artifact” |
 | Calibration-first `recover` of an absent or exact unlocked zero-event journal | `run_unicode_review_workflow_v021.ts`, `unicode_review_journal.ts`, `publish_unicode_review_journal.py` | `unicode-review-cli.test.ts`: “calibrates before recover initializes an absent or exact unlocked empty journal”; absent/empty roots publish through atomic no-replace initialization |
 | Strict workflow descriptor, stored-wave replay, recorded-root role isolation, persistent B/Pass B subset registration, immutable partial Pass B resume, and invalidation exit | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts`, `unicode_review_external_io.ts` | `unicode-review-cli.test.ts`: “replays a calibrated synthetic wave through independent review and exports only blind subsets”; “resumes a partial Pass B wave against its immutable prepared subset”; “treats recorded B and Pass B exports as immutable evidence across commands and recovery”; “recreates missing zero-ref Reviewer B and Pass B exports only through resume”; “persists chosen subset roots, fences later status output, and permits only the recorded resume path”; “recovers an existing B subset when its active wave publication pair is absent”; “rejects reviewer/container-nested status and subset destinations before journal mutation”; “rejects a cross-wave controller root nested in another reviewer root before initialization”; “rejects an artifact root that would contain a controller input before initialization”; `unicode-review-workflow.test.ts`: “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
+| Immutable calibration and per-wave artifact-role roots, exact descriptor replay across pending/terminal waves, and rejection of unbound pre-release histories | `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “rejects a pre-release initialization event without persistent calibration artifact-role bindings”; `unicode-review-cli.test.ts`: “replays a calibrated synthetic wave through independent review and exports only blind subsets” verifies calibration relocation, wave-root reassignment, and omitted terminal-wave rejection before status or journal mutation |
 
 ## Documentation-only verification
 

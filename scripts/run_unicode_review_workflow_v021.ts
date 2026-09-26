@@ -30,6 +30,7 @@ import {
   readUnicodeReviewWorkflowFromJournal,
   type UnicodeReviewWaveArtifacts,
   type UnicodeReviewWorkflowCalibration,
+  type UnicodeReviewArtifactRoleBindings,
   type UnicodeReviewWorkflowState,
 } from './unicode_review_workflow.ts';
 
@@ -278,7 +279,17 @@ function loadWorkflow(descriptorPath: string): LoadedWorkflow {
   const submission = readStrictExternalJson(descriptor.calibrationSubmissionPath) as UnicodeReviewWorkflowCalibration['submission'];
   const issued = authorizeCalibration(context, key, submission);
   assert(issued.evaluation.pass && issued.authorization !== null && issued.replayBinding !== null, 'workflow requires a fresh calibration PASS from authorizeCalibration');
-  const calibration = { context, key, submission };
+  const artifactRoots: UnicodeReviewArtifactRoleBindings = {
+    calibration: {
+      reviewerRoot: dirname(calibrationArtifactPaths.reviewerBundlePath),
+      controllerRoot: dirname(calibrationArtifactPaths.controllerSidecarPath),
+    },
+    waves: new Map(descriptor.waves.map((wave) => [wave.waveId, {
+      reviewerRoot: wave.reviewerOutputPath,
+      controllerRoot: wave.controllerOutputPath,
+    }])),
+  };
+  const calibration = { context, key, submission, artifactRoots };
   return { workflowDescriptorPath, descriptor, calibrationArtifactPaths, calibration, inputsByWave: parseWaveInputs(descriptor, context.authority) };
 }
 
@@ -363,6 +374,7 @@ function verifyStoredWaves(loaded: LoadedWorkflow, state: UnicodeReviewWorkflowS
 function status(action: Command, state: UnicodeReviewWorkflowState): Record<string, unknown> {
   return {
     action,
+    calibrationArtifactRoots: state.calibrationArtifactRoots,
     activeWaveId: state.activeWaveId,
     activeStage: state.activeWave?.stage ?? null,
     pendingPassBPairRefs: state.activeWave?.passBPairRefs ?? [],
@@ -371,6 +383,8 @@ function status(action: Command, state: UnicodeReviewWorkflowState): Record<stri
     cleanInitialWaveStreak: state.cleanInitialWaveStreak,
     recordedWaves: state.waves.map((wave) => ({
       waveId: wave.waveId,
+      reviewerOutputRoot: wave.reviewerOutputRoot,
+      controllerOutputRoot: wave.controllerOutputRoot,
       terminalState: wave.terminalState,
       reviewerBundleChecksumSha256: wave.artifacts.controllerSidecar.reviewerBundleChecksumSha256,
       reviewerBSubsetOutputPath: wave.reviewerBSubsetOutputPath,

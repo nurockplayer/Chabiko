@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { cpSync, mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, mkdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -40,7 +40,7 @@ import {
   ingestUnicodeReviewWaveB,
   ingestUnicodeReviewWavePassB,
   initializeUnicodeReviewWorkflow,
-  planUnicodeReviewWave,
+  planUnicodeReviewWave as planWave,
   prepareUnicodeReviewWaveB,
   prepareUnicodeReviewWavePassB,
   readUnicodeReviewWorkflow,
@@ -188,6 +188,13 @@ function workflowFixture(hardProbeDisagreement = false, manifestStrongControls =
     contract,
     items,
   };
+  const roleRoot = realpathSync(mkdtempSync(join(tmpdir(), 'chabiko-unicode-workflow-roles-')));
+  roots.push(roleRoot);
+  const calibrationReviewerRoot = join(roleRoot, 'calibration-reviewer');
+  const calibrationControllerRoot = join(roleRoot, 'calibration-controller');
+  mkdirSync(calibrationReviewerRoot);
+  mkdirSync(calibrationControllerRoot);
+  const waveRoles = new Map<string, { readonly reviewerRoot: string; readonly controllerRoot: string }>();
   const calibrationResults = items.map((item) => ({
     pairRef: item.pairRef,
     visualOutcome: hardProbeDisagreement && item.class === 'hard-probe' && item.pairRef === items.find((candidate) => candidate.class === 'hard-probe')!.pairRef
@@ -202,11 +209,30 @@ function workflowFixture(hardProbeDisagreement = false, manifestStrongControls =
   expect(issued.authorization).not.toBeNull();
   const perturbedHardProbe = key.items.find((item) => item.class === 'hard-probe')!;
   return {
-    calibration: { context, key, submission: calibrationSubmission } satisfies UnicodeReviewWorkflowCalibration,
+    calibration: { context, key, submission: calibrationSubmission, artifactRoots: { calibration: { reviewerRoot: calibrationReviewerRoot, controllerRoot: calibrationControllerRoot }, waves: waveRoles } } satisfies UnicodeReviewWorkflowCalibration,
     calibrationInputs,
     productionInputs,
     hardProbeOverrideCandidateId: issued.replayBinding?.hardProbeCandidateOverrides.find((override) => override.pairRef === perturbedHardProbe.pairRef)?.candidateId ?? null,
   };
+}
+
+function testWaveRoleRoots(calibration: UnicodeReviewWorkflowCalibration, waveId: string): { readonly reviewerRoot: string; readonly controllerRoot: string } {
+  const mutableRoles = calibration.artifactRoots.waves as Map<string, { readonly reviewerRoot: string; readonly controllerRoot: string }>;
+  if (!mutableRoles.has(waveId)) {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'chabiko-unicode-wave-roles-')));
+    roots.push(root);
+    const reviewerRoot = join(root, 'reviewer');
+    const controllerRoot = join(root, 'controller');
+    mkdirSync(reviewerRoot);
+    mkdirSync(controllerRoot);
+    mutableRoles.set(waveId, { reviewerRoot, controllerRoot });
+  }
+  return mutableRoles.get(waveId)!;
+}
+
+function planUnicodeReviewWave(path: string, calibration: UnicodeReviewWorkflowCalibration, waveId: string, inputs: readonly ManifestEvidenceInput[], prior: UnicodeReviewWorkflowManifestInputs = new Map()): UnicodeReviewWaveArtifacts {
+  testWaveRoleRoots(calibration, waveId);
+  return planWave(path, calibration, waveId, inputs, prior);
 }
 
 function journalPath(): string {
@@ -288,6 +314,31 @@ function moveToPassB(path: string, calibration: UnicodeReviewWorkflowCalibration
 }
 
 describe('#477 resumable Unicode review workflow', () => {
+  it('rejects a pre-release initialization event without persistent calibration artifact-role bindings', () => {
+    const { calibration } = workflowFixture();
+    const seeded = initializeUnicodeReviewWorkflow(journalPath(), calibration);
+    const replayBindingJson = (seeded.journal.events[0].payload as { readonly replayBindingJson: string }).replayBindingJson;
+    const legacyPath = journalPath();
+    const empty = initializeUnicodeReviewJournal(legacyPath);
+    appendUnicodeReviewJournalEvent(legacyPath, empty.tip, { type: 'workflow-initialized', replayBindingJson });
+    expect(() => readUnicodeReviewWorkflow(legacyPath, calibration, new Map())).toThrow(/workflow initialization event has an unsupported schema/i);
+  });
+
+  it('rejects aliased calibration and wave artifact roles before creating the journal', () => {
+    const { calibration } = workflowFixture();
+    const distinctWaveRoots = testWaveRoleRoots(calibration, 'overlap-check');
+    const invalidCalibration = {
+      ...calibration,
+      artifactRoots: {
+        calibration: calibration.artifactRoots.calibration,
+        waves: new Map([['overlap-check', { ...distinctWaveRoots, reviewerRoot: calibration.artifactRoots.calibration.reviewerRoot }]]),
+      },
+    } satisfies UnicodeReviewWorkflowCalibration;
+    const path = journalPath();
+    expect(() => initializeUnicodeReviewWorkflow(path, invalidCalibration)).toThrow(/must be disjoint/i);
+    expect(existsSync(path)).toBe(false);
+  });
+
   it('resumes only the exact empty journal left before workflow initialization', () => {
     const { calibration } = workflowFixture();
     const resumedPath = journalPath();
@@ -402,7 +453,7 @@ describe('#477 resumable Unicode review workflow', () => {
     const forgedPath = journalPath();
     cpSync(path, forgedPath, { recursive: true });
     const forgedJournal = loadUnicodeReviewJournal(forgedPath);
-    appendUnicodeReviewJournalEvent(forgedPath, forgedJournal.tip, { ...scaledPlan, waveId: 'hash-valid-oversized-after-invalidation' });
+    appendUnicodeReviewJournalEvent(forgedPath, forgedJournal.tip, { ...scaledPlan, waveId: 'hash-valid-oversized-after-invalidation', ...(() => { const role = testWaveRoleRoots(calibration, 'hash-valid-oversized-after-invalidation'); return { reviewerOutputRoot: role.reviewerRoot, controllerOutputRoot: role.controllerRoot }; })() });
     expect(() => readUnicodeReviewWorkflow(forgedPath, calibration, historyAfterInvalidation)).toThrow(/current candidate limit/);
 
     let requalifiedHistory = completeAllNegativeWave(path, calibration, 'fresh-initial-wave-1', productionInputs.slice(1003, 1253), historyAfterInvalidation);
@@ -597,7 +648,8 @@ describe('#477 resumable Unicode review workflow', () => {
     initializeUnicodeReviewWorkflow(oversizedPath, calibration);
     const oversized = Array.from({ length: 251 }, (_, index) => ({ pairRef: `pair-${String(index).padStart(24, '0')}`, candidateId: `forged-${index}`, candidateChecksumSha256: checksum('a'), evidenceChecksumSha256: checksum('b') }));
     const initial = loadUnicodeReviewJournal(oversizedPath);
-    appendUnicodeReviewJournalEvent(oversizedPath, initial.tip, { type: 'wave-planned', waveId: 'forged-oversized-wave', namespaceSalt: checksum('c'), manifest: oversized, sentinels: Array.from({ length: 12 }, () => ({})) });
+    const oversizedRoles = testWaveRoleRoots(calibration, 'forged-oversized-wave');
+    appendUnicodeReviewJournalEvent(oversizedPath, initial.tip, { type: 'wave-planned', waveId: 'forged-oversized-wave', reviewerOutputRoot: oversizedRoles.reviewerRoot, controllerOutputRoot: oversizedRoles.controllerRoot, namespaceSalt: checksum('c'), manifest: oversized, sentinels: Array.from({ length: 12 }, () => ({})) });
     expect(() => readUnicodeReviewWorkflow(oversizedPath, calibration, new Map())).toThrow(/current candidate limit/i);
   });
 
@@ -682,7 +734,7 @@ describe('#477 resumable Unicode review workflow', () => {
     ingestUnicodeReviewWaveB(path, calibration, inputs, { results: bResults, receipt: receipt('reviewer-b', artifacts.context, bResults, [manifestRef], 'overlap-b-session', 'overlap-b-context') });
     const before = loadUnicodeReviewJournal(path);
 
-    expect(() => prepareUnicodeReviewWavePassB(path, calibration, inputs, passBPath(reviewerBPath))).toThrow(/recorded reviewer subset outputs must be disjoint/i);
+    expect(() => prepareUnicodeReviewWavePassB(path, calibration, inputs, passBPath(reviewerBPath))).toThrow(/must be disjoint/i);
     expect(loadUnicodeReviewJournal(path).tip).toEqual(before.tip);
     expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: 'pass-b-preparation-pending' });
   });
@@ -704,7 +756,7 @@ describe('#477 resumable Unicode review workflow', () => {
     ingestUnicodeReviewWaveA(path, calibration, inputs, fullA(artifacts, details, manifestRef));
     const before = loadUnicodeReviewJournal(path);
 
-    expect(() => prepareUnicodeReviewWaveB(path, calibration, inputs, priorRoot(path))).toThrow(/recorded reviewer subset outputs must be disjoint/i);
+    expect(() => prepareUnicodeReviewWaveB(path, calibration, inputs, priorRoot(path))).toThrow(/must be disjoint/i);
     expect(loadUnicodeReviewJournal(path).tip).toEqual(before.tip);
     expect(readUnicodeReviewWorkflow(path, calibration, inputs).activeWave).toMatchObject({ stage: 'reviewer-b-preparation-pending' });
   });
