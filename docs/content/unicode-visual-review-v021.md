@@ -620,6 +620,13 @@ recorded subset root is revalidated, including terminal-wave roots. The check
 uses deterministic replay of the original wave artifacts and requires the
 original manifest, selected PNG bytes, and exact inventory.
 
+If an event link may have published but an events-directory durability barrier
+fails, the append preserves the canonical writer lock and any remaining event
+temporary alias. `load` and workflow commands stay blocked until `recover`
+retries the retained events-directory barrier, removes only a verified owned
+temporary alias, verifies the same journal history, and then removes the lock.
+Do not repeat the command's semantic operation while that recovery guard exists.
+
 Each stored subset must contain exactly its manifest and selected PNG files:
 unexpected files, symlinks, or directories (including empty nested
 directories) make replay fail closed. The command preserves the recorded root
@@ -664,6 +671,7 @@ requested again merely because the process restarted.
 | Opaque authorization, replay binding, and hard-probe exclusion | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
+| Post-publication event-directory durability guard and stopped-owner barrier retry before acknowledging a committed event | `unicode_review_journal.ts` | `unicode-review-journal.test.ts`: first and second events-directory barrier failures preserve the canonical lock and recover without event loss/duplication; after-commit and uncertain-link outcomes recover; root/parent/events replacement is preserved. `unicode-review-cli.test.ts`: finalization remains unacknowledged until recover; later resume does not append finalization twice |
 | Complete lock-owner hard-link publication, exact link transitions, and stopped-owner alias recovery | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts` | `unicode-review-journal.test.ts`: SIGKILL before publication, after link, and after stage-alias removal; exact link-count and mode/byte preservation; foreign alias and extra-hardlink rejection; `unicode-review-cli.test.ts`: recovery after SIGKILL during the first workflow initialization append |
 | Atomic native no-replace publication, crash boundaries, and dirty staging preservation | `unicode_review_journal.ts`, `publish_unicode_review_journal.py`; helper runs with repository-pinned `uv --locked` | `unicode-review-journal.test.ts`: concurrent initializers; pre/post-publication process exits and fsync failures; foreign marker, hard-link, and replaced-root preservation; helper `--self-test`: exclusive publication, destination preservation, unsupported-platform failure, concurrent race, and process death after publish |
 | Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |

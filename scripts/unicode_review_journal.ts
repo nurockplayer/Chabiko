@@ -856,8 +856,19 @@ export function appendUnicodeReviewJournalEvent(
   const lock = acquireLock(root, options);
   const syncDirectory = options.fsyncDirectory ?? fsyncDirectory;
   let temporary: OwnedPath | null = null;
+  let eventsDirectory: OwnedPath | null = null;
+  let publicationAttempted = false;
+  let durabilityComplete = false;
   try {
+    const eventsPath = join(root, EVENTS_DIRECTORY_NAME);
+    eventsDirectory = recordOwnedPath(eventsPath, 'directory', true);
+    assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal locations changed before append inspection');
     const state = inspectJournal(root, lock.owned, lock.record.ownerNonce);
+    try {
+      assert(state.temporary === null, 'journal contains a temporary artifact before append');
+    } finally {
+      releaseOwnedPath(state.temporary);
+    }
     assertExpectedTip(expectedTip, state.tip);
     const sequence = state.tip.sequence + 1;
     const encoded = encodeJournalRecord(sequence, state.tip.digest, payload);
@@ -865,27 +876,46 @@ export function appendUnicodeReviewJournalEvent(
     const temporaryPath = join(root, EVENTS_DIRECTORY_NAME, `.${eventName(sequence)}.partial-${lock.record.ownerNonce}`);
     temporary = writeExclusiveFile(temporaryPath, encoded.raw);
     options.beforeCommit?.();
-    assert(isStillOwned(temporary), 'journal temporary artifact changed ownership and is preserved');
+    assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned)
+      && isStillOwned(temporary), 'journal publication paths changed ownership and are preserved');
+    // From this point a throwing link operation may still have published the event.
+    publicationAttempted = true;
     linkSync(temporary.path, destination);
-    // The extra link is the journal commit point and is intentionally removed
-    // from the temporary path after the directory entry is durable.
     refreshOwnedFileSnapshot(temporary);
-    syncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+    const syncEventsDirectory = (): void => {
+      assert(eventsDirectory !== null && eventsDirectory.descriptor !== null, 'retained journal events-directory descriptor is unavailable');
+    assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal lock or event durability locations changed before event durability barrier');
+      if (options.fsyncDirectory !== undefined) options.fsyncDirectory(eventsDirectory.path);
+      else fsyncSync(eventsDirectory.descriptor);
+    assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal lock or event durability locations changed during event durability barrier');
+    };
+    syncEventsDirectory();
     options.afterCommit?.();
     removeOwnedFile(temporary, 'journal temporary artifact');
     releaseOwnedPath(temporary);
     temporary = null;
-    syncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+    syncEventsDirectory();
     const committed = inspectJournal(root, lock.owned, lock.record.ownerNonce);
-    return { root: committed.root, events: committed.events, tip: committed.tip };
+    try {
+      assert(committed.temporary === null, 'journal contains a temporary artifact after event publication');
+      assert(committed.tip.sequence === sequence && committed.tip.digest === encoded.digest, 'journal replay did not confirm the published event');
+      assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal locations changed after event replay');
+      durabilityComplete = true;
+      return { root: committed.root, events: committed.events, tip: committed.tip };
+    } finally {
+      releaseOwnedPath(committed.temporary);
+    }
   } finally {
     try {
-      assert(isStillOwned(lock.root) && isStillOwned(lock.parent), 'journal lock root or parent identity changed before writer cleanup');
-      if (temporary !== null && isStillOwned(temporary)) removeOwnedFile(temporary, 'journal temporary artifact');
-      removeOwnedFile(lock.owned, 'journal lock');
-      syncDirectory(root);
+      if (!publicationAttempted || durabilityComplete) {
+        assert(isStillOwned(lock.root) && isStillOwned(lock.parent) && (eventsDirectory === null || isStillOwned(eventsDirectory)), 'journal root, parent, or events-directory identity changed before writer cleanup');
+        if (temporary !== null && isStillOwned(temporary)) removeOwnedFile(temporary, 'journal temporary artifact');
+        removeOwnedFile(lock.owned, 'journal lock');
+        syncDirectory(root);
+      }
     } finally {
       releaseOwnedPath(temporary);
+      releaseOwnedPath(eventsDirectory);
       releaseOwnedPath(lock.owned);
       releaseOwnedPath(lock.root);
       releaseOwnedPath(lock.parent);
@@ -898,12 +928,21 @@ export function recoverStoppedUnicodeReviewJournalWriter(path: string, options: 
   const root = resolveJournalRoot(path);
   const lock = readLock(root);
   let inspection: JournalInspection | null = null;
+  let eventsDirectory: OwnedPath | null = null;
   try {
     assert(ownerIsProvablyGone(lock.record.ownerPid), 'journal lock owner is still running or cannot be proven gone');
+    eventsDirectory = recordOwnedPath(join(root, EVENTS_DIRECTORY_NAME), 'directory', true);
     inspection = inspectJournal(root, lock.owned, lock.record.ownerNonce);
     options.beforeCleanup?.({ root: inspection.root, events: inspection.events, tip: inspection.tip });
-    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(lock.owned), 'journal lock root, parent, or canonical identity changed before recovery');
+    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(eventsDirectory)
+      && isStillOwned(lock.owned), 'journal root, parent, or canonical identity changed before recovery (events directory is also checked)');
     revalidateLockStageState(root, lock.owned, lock.record.ownerNonce, lock.bytes, lock.stageAlias);
+    // A stopped append may have linked the event before losing its first directory barrier.
+    // Always retry that barrier on the retained directory inode, even when no temp alias remains.
+    assert(eventsDirectory.descriptor !== null, 'journal events-directory descriptor is required for recovery');
+    fsyncSync(eventsDirectory.descriptor);
+    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(eventsDirectory)
+      && isStillOwned(lock.owned), 'journal locations changed during recovery events-directory barrier');
     if (lock.stageAlias !== null) {
       assert(isStillOwned(lock.stageAlias) && lock.owned.nlink === 2, 'journal lock staging alias changed before recovery');
       unlinkSync(lock.stageAlias.path);
@@ -915,15 +954,30 @@ export function recoverStoppedUnicodeReviewJournalWriter(path: string, options: 
       assert(lock.owned.nlink === 1, 'journal lock has an unexpected hard link');
     }
     if (inspection.temporary !== null) {
+      assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal locations changed before temporary-event cleanup');
       removeOwnedFile(inspection.temporary, 'journal temporary artifact');
-      fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+      assert(eventsDirectory.descriptor !== null, 'journal events-directory descriptor is required for recovery');
+      fsyncSync(eventsDirectory.descriptor);
+      assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(eventsDirectory)
+        && isStillOwned(lock.owned), 'journal locations changed during temporary-event cleanup barrier');
     }
-    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership), 'journal lock root or parent identity changed before canonical cleanup');
+    const verified = inspectJournal(root, lock.owned, lock.record.ownerNonce);
+    try {
+      assert(verified.temporary === null, 'journal temporary artifact remains after recovery cleanup');
+      assert(verified.tip.sequence === inspection.tip.sequence && verified.tip.digest === inspection.tip.digest
+        && verified.events.length === inspection.events.length
+        && verified.events.every((event, index) => event.digest === inspection?.events[index]?.digest), 'journal history changed during stopped-writer recovery');
+    } finally {
+      releaseOwnedPath(verified.temporary);
+    }
+    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(eventsDirectory) && isStillOwned(lock.owned), 'journal root, parent, events directory, or lock identity changed before canonical cleanup');
+    revalidateLockStageState(root, lock.owned, lock.record.ownerNonce, lock.bytes, null);
     removeOwnedFile(lock.owned, 'journal lock');
     fsyncDirectory(root);
     return { root: inspection.root, events: inspection.events, tip: inspection.tip };
   } finally {
     releaseOwnedPath(inspection?.temporary ?? null);
+    releaseOwnedPath(eventsDirectory);
     releaseOwnedPath(lock.stageAlias);
     releaseOwnedPath(lock.owned);
     releaseOwnedPath(lock.rootOwnership);

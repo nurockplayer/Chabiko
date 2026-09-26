@@ -492,7 +492,7 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(existsSync(eventPath(changedJournal, 1))).toBe(false);
   });
 
-  it('preserves a committed event when the first post-link events-directory fsync fails', () => {
+  it('keeps the writer guard after a first events-directory barrier failure until stopped-owner recovery retries it', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
     const result = runJournalChild([
@@ -501,9 +501,141 @@ describe('#477 restart-safe Unicode review journal', () => {
       `catch (error) { if (!String(error).includes('injected post-link directory fsync')) throw error; }`,
     ].join('\n'));
     expect(result.status, result.output).toBe(0);
-    expect(loadUnicodeReviewJournal(journal).events.map((event) => event.payload)).toEqual([{ opaque: 'committed before directory fsync failure' }]);
-    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    const eventsPath = join(journal, 'events');
+    expect(existsSync(lockPath)).toBe(true);
+    expect(readdirSync(eventsPath).sort()).toHaveLength(2);
+    expect(readdirSync(eventsPath)).toContain('0000000000000001.json');
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+
+    const failedRecovery = runJournalChild([
+      `const eventsPath = ${JSON.stringify(eventsPath)};`,
+      `const expected = fs.statSync(eventsPath);`,
+      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+      `let barriers = 0;`,
+      `fs.fsyncSync = (descriptor) => { const actual = fs.fstatSync(descriptor); if (actual.isDirectory() && actual.dev === expected.dev && actual.ino === expected.ino && ++barriers === 1) throw new Error('injected recovery events barrier failure'); return originalFsyncSync(descriptor); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.recoverStoppedUnicodeReviewJournalWriter(${JSON.stringify(journal)}); throw new Error('recovery unexpectedly succeeded'); } catch (error) { if (!String(error).includes('injected recovery events barrier failure')) throw error; }`,
+    ].join('\n'));
+    expect(failedRecovery.status, failedRecovery.output).toBe(0);
+    expect(existsSync(lockPath)).toBe(true);
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+
+    const recovered = recoverStoppedUnicodeReviewJournalWriter(journal);
+    expect(recovered.events.map((event) => event.payload)).toEqual([{ opaque: 'committed before directory fsync failure' }]);
+    expect(existsSync(lockPath)).toBe(false);
+    expect(readdirSync(eventsPath)).toEqual(['0000000000000001.json']);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(1);
+  });
+
+  it('retains a guard after the second events-directory barrier fails with no temporary alias', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const child = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `let eventBarriers = 0;`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'second barrier failure' }, { fsyncDirectory(path) { if (path.endsWith('/journal/events') && ++eventBarriers === 2) throw new Error('injected second events barrier failure'); } }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected second events barrier failure')) throw error; }`,
+      `if (eventBarriers !== 2) throw new Error('expected exactly two event barriers before failure');`,
+    ].join('\n'));
+    expect(child.status, child.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
     expect(readdirSync(join(journal, 'events'))).toEqual(['0000000000000001.json']);
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+    const eventsPath = join(journal, 'events');
+    const failedRecovery = runJournalChild([
+      `const eventsPath = ${JSON.stringify(eventsPath)};`,
+      `const expected = fs.statSync(eventsPath);`,
+      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+      `let barriers = 0;`,
+      `fs.fsyncSync = (descriptor) => { const actual = fs.fstatSync(descriptor); if (actual.isDirectory() && actual.dev === expected.dev && actual.ino === expected.ino && ++barriers === 1) throw new Error('injected no-temp recovery events barrier failure'); return originalFsyncSync(descriptor); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.recoverStoppedUnicodeReviewJournalWriter(${JSON.stringify(journal)}); throw new Error('recovery unexpectedly succeeded'); } catch (error) { if (!String(error).includes('injected no-temp recovery events barrier failure')) throw error; }`,
+    ].join('\n'));
+    expect(failedRecovery.status, failedRecovery.output).toBe(0);
+    expect(readdirSync(eventsPath)).toEqual(['0000000000000001.json']);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+    expect(recoverStoppedUnicodeReviewJournalWriter(journal).events).toHaveLength(1);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(1);
+  });
+
+  it('retains the guard when a same-nonce temporary artifact reappears before final replay', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const child = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `let eventBarriers = 0;`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'reintroduced temporary' }, { fsyncDirectory(path) { if (path.endsWith('/journal/events') && ++eventBarriers === 2) { const root = ${JSON.stringify(journal)}; const lock = JSON.parse(fs.readFileSync(join(root, '.unicode-review-journal.lock'), 'utf8')); const eventBytes = fs.readFileSync(join(root, 'events', '0000000000000001.json')); fs.writeFileSync(join(root, 'events', '.0000000000000001.json.partial-' + lock.ownerNonce), eventBytes, { flag: 'wx', mode: 0o600 }); } } }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('temporary artifact after event publication')) throw error; }`,
+      `if (eventBarriers !== 2) throw new Error('expected exactly two event barriers before final replay');`,
+    ].join('\n'));
+    expect(child.status, child.output).toBe(0);
+    const eventsPath = join(journal, 'events');
+    expect(readdirSync(eventsPath).sort()).toEqual([
+      '.0000000000000001.json.partial-' + JSON.parse(readFileSync(join(journal, '.unicode-review-journal.lock'), 'utf8')).ownerNonce,
+      '0000000000000001.json',
+    ]);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+    const recovered = recoverStoppedUnicodeReviewJournalWriter(journal);
+    expect(recovered.events.map((event) => event.payload)).toEqual([{ opaque: 'reintroduced temporary' }]);
+    expect(readdirSync(eventsPath)).toEqual(['0000000000000001.json']);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+  });
+
+  it('recovers after after-commit and uncertain event-link failures without deleting or duplicating history', () => {
+    for (const boundary of ['after-commit', 'link-before', 'link-after'] as const) {
+      const journal = join(externalRoot(), `journal-${boundary}`);
+      const initial = initializeUnicodeReviewJournal(journal);
+      const childLines = [
+        `const originalLinkSync = fs.linkSync.bind(fs);`,
+        `fs.linkSync = (source, destination) => { if (String(source).includes('.0000000000000001.json.partial-')) { ${boundary === 'link-after' ? 'originalLinkSync(source, destination);' : ''} ${boundary.startsWith('link-') ? `throw new Error('injected ${boundary} event-link failure');` : ''} } return originalLinkSync(source, destination); };`,
+        `syncBuiltinESMExports();`,
+        `const journal = await import(journalModuleUrl);`,
+        boundary === 'after-commit'
+          ? `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: '${boundary}' }, { afterCommit() { throw new Error('injected after-commit failure'); } }); throw new Error('append unexpectedly succeeded'); } catch (error) { if (!String(error).includes('injected after-commit failure')) throw error; }`
+          : `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: '${boundary}' }); throw new Error('append unexpectedly succeeded'); } catch (error) { if (!String(error).includes('injected ${boundary} event-link failure')) throw error; }`,
+      ];
+      const result = runJournalChild(childLines.join('\n'));
+      expect(result.status, `${boundary}: ${result.output}`).toBe(0);
+      expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+      expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+      const recovered = recoverStoppedUnicodeReviewJournalWriter(journal);
+      expect(recovered.events.map((event) => event.payload)).toEqual(boundary === 'link-before' ? [] : [{ opaque: boundary }]);
+      expect(loadUnicodeReviewJournal(journal).events.map((event) => event.payload)).toEqual(recovered.events.map((event) => event.payload));
+      expect(readdirSync(join(journal, 'events')).filter((name) => name.endsWith('.json'))).toHaveLength(boundary === 'link-before' ? 0 : 1);
+    }
+  });
+
+  it.each(['events', 'root', 'parent'] as const)('preserves the recovery guard and foreign paths when the %s directory is replaced', (replacement) => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const failedAppend = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'replacement guard' }, { fsyncDirectory(path) { if (path.endsWith('/journal/events')) throw new Error('injected first barrier failure'); } }); throw new Error('append unexpectedly succeeded'); } catch (error) { if (!String(error).includes('injected first barrier failure')) throw error; }`,
+    ].join('\n'));
+    expect(failedAppend.status, failedAppend.output).toBe(0);
+    const movedPath = `${replacement === 'events' ? join(journal, 'events') : replacement === 'root' ? journal : parent}-moved`;
+    if (replacement === 'parent') temporaryRoots.push(movedPath);
+    const foreignPath = replacement === 'events' ? join(journal, 'events', 'foreign.txt') : join(replacement === 'root' ? journal : parent, 'foreign.txt');
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal, { beforeCleanup() {
+      if (replacement === 'events') {
+        renameSync(join(journal, 'events'), movedPath);
+        mkdirSync(join(journal, 'events'));
+      } else {
+        renameSync(replacement === 'root' ? journal : parent, movedPath);
+        mkdirSync(replacement === 'root' ? journal : parent);
+      }
+      writeFileSync(foreignPath, 'preserve');
+    } })).toThrow(/identity changed/i);
+    expect(readFileSync(foreignPath, 'utf8')).toBe('preserve');
+    if (replacement === 'events') expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    else if (replacement === 'root') expect(existsSync(join(movedPath, '.unicode-review-journal.lock'))).toBe(true);
+    else expect(existsSync(join(movedPath, 'journal', '.unicode-review-journal.lock'))).toBe(true);
   });
 
   it('recovers exact lock aliases after SIGKILL at publication boundaries without losing existing history', () => {

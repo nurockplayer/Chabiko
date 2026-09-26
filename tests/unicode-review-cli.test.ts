@@ -2021,7 +2021,7 @@ describe('#477 Unicode review workflow CLI', () => {
     expect(pendingA.invoke('ingest-a', join(pendingA.fixture.external, 'retry-a-status.json'), ['--submission', pendingA.validPaths.a]).status).toBe(0);
   });
 
-  it('keeps a valid A submission retryable when the journal event fsync fails in the CLI', () => {
+  it('keeps a valid A submission retryable when the journal lock-file fsync fails in the CLI', () => {
     const { fixture, journal, invoke, validPaths } = createWorkflowAtSubmissionStage('a');
     const preload = join(fixture.external, 'fail-first-journal-file-fsync.mjs');
     writeFileSync(preload, [
@@ -2029,7 +2029,7 @@ describe('#477 Unicode review workflow CLI', () => {
       `import { syncBuiltinESMExports } from 'node:module';`,
       `const originalFsync = fs.fsyncSync.bind(fs);`,
       `let failed = false;`,
-      `fs.fsyncSync = (descriptor) => { if (!failed && fs.fstatSync(descriptor).isFile()) { failed = true; throw new Error('injected journal event fsync failure'); } return originalFsync(descriptor); };`,
+      `fs.fsyncSync = (descriptor) => { if (!failed && fs.fstatSync(descriptor).isFile()) { failed = true; throw new Error('injected journal lock-file fsync failure'); } return originalFsync(descriptor); };`,
       `syncBuiltinESMExports();`,
     ].join('\n'));
     const before = loadUnicodeReviewJournal(journal);
@@ -2038,7 +2038,7 @@ describe('#477 Unicode review workflow CLI', () => {
       '--descriptor', join(fixture.external, 'workflow-descriptor.json'), '--output', failedStatus, '--submission', validPaths.a,
     ], join(fixture.external, 'caller-cwd'), preload);
     expect(failed.status, failed.output).not.toBe(0);
-    expect(failed.output).toContain('injected journal event fsync failure');
+    expect(failed.output).toContain('injected journal lock-file fsync failure');
     expect(existsSync(failedStatus)).toBe(false);
     expect(loadUnicodeReviewJournal(journal).tip).toEqual(before.tip);
     expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-planned', waveId: 'wave-1' });
@@ -2048,6 +2048,98 @@ describe('#477 Unicode review workflow CLI', () => {
     expect(retried.status, retried.output).toBe(0);
     expect(existsSync(retriedStatus)).toBe(true);
     expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-a-ingested', waveId: 'wave-1' });
+  });
+
+  it('keeps a valid A submission retryable when the event temporary-file fsync fails in the CLI', () => {
+    const { fixture, journal, invoke, validPaths } = createWorkflowAtSubmissionStage('a');
+    const preload = join(fixture.external, 'fail-event-temp-file-fsync.mjs');
+    const marker = join(fixture.external, 'event-temp-fsync-count.txt');
+    writeFileSync(preload, [
+      `import fs from 'node:fs';`,
+      `import { syncBuiltinESMExports } from 'node:module';`,
+      `const marker = ${JSON.stringify(marker)};`,
+      `const originalFsync = fs.fsyncSync.bind(fs);`,
+      `let regularFileSyncs = 0;`,
+      `fs.fsyncSync = (descriptor) => { if (fs.fstatSync(descriptor).isFile() && ++regularFileSyncs === 2) { fs.writeFileSync(marker, String(regularFileSyncs)); throw new Error('injected event temporary file fsync failure'); } return originalFsync(descriptor); };`,
+      `syncBuiltinESMExports();`,
+    ].join('\n'));
+    const before = loadUnicodeReviewJournal(journal);
+    const failedStatus = join(fixture.external, 'failed-event-fsync-status.json');
+    const failed = runWorkflow(join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts'), 'ingest-a', [
+      '--descriptor', join(fixture.external, 'workflow-descriptor.json'), '--output', failedStatus, '--submission', validPaths.a,
+    ], join(fixture.external, 'caller-cwd'), preload);
+    expect(failed.status, failed.output).not.toBe(0);
+    expect(failed.output).toContain('injected event temporary file fsync failure');
+    expect(readFileSync(marker, 'utf8')).toBe('2');
+    expect(existsSync(failedStatus)).toBe(false);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(before.tip);
+    expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-planned', waveId: 'wave-1' });
+
+    const retriedStatus = join(fixture.external, 'retried-event-fsync-status.json');
+    const retried = invoke('ingest-a', retriedStatus, ['--submission', validPaths.a]);
+    expect(retried.status, retried.output).toBe(0);
+    expect(existsSync(retriedStatus)).toBe(true);
+    expect(loadUnicodeReviewJournal(journal).events.at(-1)?.payload).toMatchObject({ type: 'wave-a-ingested', waveId: 'wave-1' });
+  });
+
+  it('requires recover after a finalized event barrier fails and does not append finalization twice', () => {
+    const { fixture, journal, invoke, validPaths } = createWorkflowAtSubmissionStage('pass-b');
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const passBStatus = join(fixture.external, 'pass-b-ingest-status.json');
+    const ingested = invoke('ingest-pass-b', passBStatus, ['--submission', validPaths['pass-b']]);
+    expect(ingested.status, ingested.output).toBe(0);
+
+    const eventsPath = join(journal, 'events');
+    const eventsIdentity = lstatSync(eventsPath);
+    const preload = join(fixture.external, 'fail-final-event-directory-barrier.mjs');
+    const barrierMarker = join(fixture.external, 'final-event-barrier-count.txt');
+    writeFileSync(preload, [
+      `import fs from 'node:fs';`,
+      `import { syncBuiltinESMExports } from 'node:module';`,
+      `const expected = ${JSON.stringify({ dev: eventsIdentity.dev, ino: eventsIdentity.ino })};`,
+      `const marker = ${JSON.stringify(barrierMarker)};`,
+      `const originalFsync = fs.fsyncSync.bind(fs);`,
+      `let eventsBarriers = 0;`,
+      `fs.fsyncSync = (descriptor) => { const current = fs.fstatSync(descriptor); if (current.isDirectory() && current.dev === expected.dev && current.ino === expected.ino && ++eventsBarriers === 1) { fs.writeFileSync(marker, String(eventsBarriers)); throw new Error('injected final event directory barrier failure'); } return originalFsync(descriptor); };`,
+      `syncBuiltinESMExports();`,
+    ].join('\n'));
+    const finalizeStatus = join(fixture.external, 'failed-finalize-status.json');
+    const failed = runWorkflow(workflowScript, 'finalize', [
+      '--descriptor', join(fixture.external, 'workflow-descriptor.json'), '--output', finalizeStatus,
+    ], join(fixture.external, 'caller-cwd'), preload);
+    expect(failed.status, failed.output).not.toBe(0);
+    expect(failed.output).toContain('injected final event directory barrier failure');
+    expect(readFileSync(barrierMarker, 'utf8')).toBe('1');
+    expect(existsSync(finalizeStatus)).toBe(false);
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    expect(existsSync(lockPath)).toBe(true);
+    expect(readdirSync(eventsPath).some((name) => name.includes('.partial-'))).toBe(true);
+    expect(() => loadUnicodeReviewJournal(journal)).toThrow(/in-flight or abandoned/i);
+
+    const blockedResumeStatus = join(fixture.external, 'blocked-resume-status.json');
+    const blockedResume = invoke('resume', blockedResumeStatus);
+    expect(blockedResume.status, blockedResume.output).not.toBe(0);
+    expect(existsSync(blockedResumeStatus)).toBe(false);
+    expect(existsSync(lockPath)).toBe(true);
+
+    const recoveredStatus = join(fixture.external, 'recovered-status.json');
+    const recovered = invoke('recover', recoveredStatus);
+    expect(recovered.status, recovered.output).toBe(0);
+    expect(existsSync(lockPath)).toBe(false);
+    expect(JSON.parse(readFileSync(recoveredStatus, 'utf8')).cleanInitialWaveStreak).toBe(1);
+    const committedEvents = readdirSync(eventsPath).filter((name) => name.endsWith('.json')).sort();
+    const committedBytes = committedEvents.map((name) => readFileSync(join(eventsPath, name), 'utf8'));
+    expect(committedEvents.filter((name) => JSON.parse(readFileSync(join(eventsPath, name), 'utf8')).payload.type === 'wave-finalized')).toHaveLength(1);
+
+    const resumedStatus = join(fixture.external, 'resumed-finalized-status.json');
+    const resumed = invoke('resume', resumedStatus);
+    expect(resumed.status, resumed.output).toBe(0);
+    expect(JSON.parse(readFileSync(resumedStatus, 'utf8'))).toMatchObject({ cleanInitialWaveStreak: 1, promotions: expect.arrayContaining([expect.anything()]) });
+    expect(JSON.parse(readFileSync(resumedStatus, 'utf8')).promotions).toHaveLength(1);
+    expect(readdirSync(eventsPath).filter((name) => name.endsWith('.json')).sort()).toEqual(committedEvents);
+    expect(committedEvents.map((name) => readFileSync(join(eventsPath, name), 'utf8'))).toEqual(committedBytes);
+    expect(loadUnicodeReviewJournal(journal).events.filter((event) => (event.payload as { type?: string }).type === 'wave-finalized')).toHaveLength(1);
   });
 
   it('rejects reviewer/container-nested status and subset destinations before journal mutation', () => {
