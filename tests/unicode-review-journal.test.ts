@@ -1,6 +1,7 @@
-import { closeSync, existsSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdtempSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { closeSync, existsSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdtempSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -44,7 +45,7 @@ function writeLock(root: string, ownerPid: number, ownerNonce: string): void {
   writeFileSync(
     join(root, '.unicode-review-journal.lock'),
     `{"ownerNonce":"${ownerNonce}","ownerPid":${ownerPid},"protocolVersion":"${UNICODE_REVIEW_JOURNAL_PROTOCOL}"}\n`,
-    { flag: 'wx' },
+    { flag: 'wx', mode: 0o600 },
   );
 }
 
@@ -469,18 +470,218 @@ describe('#477 restart-safe Unicode review journal', () => {
     const journal = join(externalRoot(), 'journal');
     const initial = initializeUnicodeReviewJournal(journal);
     const result = runJournalChild([
-      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
-      `let directorySyncs = 0;`,
-      `fs.fsyncSync = (fd) => { if (!fs.fstatSync(fd).isFile() && ++directorySyncs === 2) throw new Error('injected post-link directory fsync failure'); return originalFsyncSync(fd); };`,
-      `syncBuiltinESMExports();`,
       `const journal = await import(journalModuleUrl);`,
-      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'committed before directory fsync failure' }); throw new Error('append unexpectedly succeeded'); }`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'committed before directory fsync failure' }, { fsyncDirectory(path) { if (path.endsWith('/journal/events')) throw new Error('injected post-link directory fsync failure'); } }); throw new Error('append unexpectedly succeeded'); }`,
       `catch (error) { if (!String(error).includes('injected post-link directory fsync')) throw error; }`,
     ].join('\n'));
     expect(result.status, result.output).toBe(0);
     expect(loadUnicodeReviewJournal(journal).events.map((event) => event.payload)).toEqual([{ opaque: 'committed before directory fsync failure' }]);
     expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
     expect(readdirSync(join(journal, 'events'))).toEqual(['0000000000000001.json']);
+  });
+
+  it('recovers exact lock aliases after SIGKILL at publication boundaries without losing existing history', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const first = appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'existing history' });
+    const stageCrash = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(first.tip)}, { opaque: 'killed after complete stage write' }, { afterLockStageWrite() { process.kill(process.pid, 'SIGKILL'); } });`,
+    ].join('\n'));
+    expect(stageCrash.status).toBeNull();
+    const stageOnly = readdirSync(dirname(journal)).filter((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`));
+    expect(stageOnly).toHaveLength(1);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(first.tip);
+
+    const publicationCrash = runJournalChild([
+      `const originalLinkSync = fs.linkSync.bind(fs);`,
+      `fs.linkSync = (source, destination) => { originalLinkSync(source, destination); process.kill(process.pid, 'SIGKILL'); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(first.tip)}, { opaque: 'killed after lock link' });`,
+    ].join('\n'));
+    expect(publicationCrash.status).toBeNull();
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`))).toHaveLength(2);
+    expect(recoverStoppedUnicodeReviewJournalWriter(journal).tip).toEqual(first.tip);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`))).toEqual(stageOnly);
+
+    const unlinkCrash = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(first.tip)}, { opaque: 'killed after alias removal' }, { afterLockAliasRemoval() { process.kill(process.pid, 'SIGKILL'); } });`,
+    ].join('\n'));
+    expect(unlinkCrash.status).toBeNull();
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`))).toEqual(stageOnly);
+    expect(recoverStoppedUnicodeReviewJournalWriter(journal).tip).toEqual(first.tip);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(first.tip);
+    expect(readdirSync(join(journal, 'events'))).toEqual(['0000000000000001.json']);
+  });
+
+  it('preserves an incomplete lock write after a real SIGKILL before publication', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const killed = runJournalChild([
+      `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+      `const originalWriteSync = fs.writeSync.bind(fs);`,
+      `fs.writeFileSync = (file, data, ...args) => { if (typeof file === 'number') { const bytes = Buffer.from(data); originalWriteSync(file, bytes, 0, Math.min(5, bytes.length), 0); process.kill(process.pid, 'SIGKILL'); } return originalWriteFileSync(file, data, ...args); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'killed during lock write' });`,
+    ].join('\n'));
+    expect(killed.status).toBeNull();
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(initial.tip);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`))).toHaveLength(1);
+  });
+
+  it('fails closed on lock link and parent/journal directory-sync failures', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const linkFailure = runJournalChild([
+      `const originalLinkSync = fs.linkSync.bind(fs);`,
+      `fs.linkSync = (source, destination) => { if (String(destination).endsWith('/.unicode-review-journal.lock')) { const error = new Error('injected unsupported lock hard link'); error.code = 'EPERM'; throw error; } return originalLinkSync(source, destination); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'link failure' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected unsupported lock hard link')) throw error; }`,
+    ].join('\n'));
+    expect(linkFailure.status, linkFailure.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith('.unicode-review-lock-'))).toEqual([]);
+
+    const parentFailure = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'parent sync failure' }, { fsyncDirectory(path) { if (path === ${JSON.stringify(realpathSync(dirname(journal)))}) throw new Error('injected parent directory sync failure'); } }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected parent directory sync failure')) throw error; }`,
+    ].join('\n'));
+    expect(parentFailure.status, parentFailure.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith('.unicode-review-lock-'))).toEqual([]);
+
+    const postAliasParentFailure = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `let parentSyncs = 0;`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'post-alias parent sync failure' }, { fsyncDirectory(path) { if (path === ${JSON.stringify(realpathSync(dirname(journal)))} && ++parentSyncs === 2) throw new Error('injected post-alias parent directory sync failure'); } }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected post-alias parent directory sync failure')) throw error; }`,
+    ].join('\n'));
+    expect(postAliasParentFailure.status, postAliasParentFailure.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith('.unicode-review-lock-'))).toEqual([]);
+    expect(recoverStoppedUnicodeReviewJournalWriter(journal).tip).toEqual(initial.tip);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+
+    const journalFailure = runJournalChild([
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'journal sync failure' }, { fsyncDirectory(path) { if (path === ${JSON.stringify(realpathSync(journal))}) throw new Error('injected journal directory sync failure'); } }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected journal directory sync failure')) throw error; }`,
+    ].join('\n'));
+    expect(journalFailure.status, journalFailure.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith('.unicode-review-lock-'))).toHaveLength(1);
+    expect(recoverStoppedUnicodeReviewJournalWriter(journal).tip).toEqual(initial.tip);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(readdirSync(dirname(journal)).filter((entry) => entry.startsWith('.unicode-review-lock-'))).toEqual([]);
+  });
+
+  it('preserves a mode mutation during the exclusive hard-link transition', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const mutation = runJournalChild([
+      `const originalLinkSync = fs.linkSync.bind(fs);`,
+      `fs.linkSync = (source, destination) => { originalLinkSync(source, destination); fs.chmodSync(source, 0o640); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'foreign mode mutation' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('journal lock mode or size changed')) throw error; }`,
+    ].join('\n'));
+    expect(mutation.status, mutation.output).toBe(0);
+    const stage = readdirSync(dirname(journal)).find((entry) => entry.startsWith(`.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-`));
+    expect(stage).toBeTypeOf('string');
+    expect(lstatSync(join(dirname(journal), stage as string)).mode & 0o777).toBe(0o640);
+    expect(lstatSync(join(journal, '.unicode-review-journal.lock')).mode & 0o777).toBe(0o640);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal)).toThrow(/unsupported file mode/);
+    expect(existsSync(join(dirname(journal), stage as string))).toBe(true);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(readdirSync(join(journal, 'events'))).toEqual([]);
+  });
+
+  it('rejects extra lock hard links and replacement staging aliases without deleting foreign paths', () => {
+    const journal = join(externalRoot(), 'journal');
+    initializeUnicodeReviewJournal(journal);
+    const nonce = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    const stagePath = join(dirname(journal), `.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-${nonce}.partial`);
+    writeLock(journal, stoppedProcessPid(), nonce);
+    writeFileSync(stagePath, 'foreign staging alias', { flag: 'wx', mode: 0o600 });
+    const lockBytes = readFileSync(lockPath);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal)).toThrow(/conflicts with canonical lock/);
+    expect(readFileSync(lockPath)).toEqual(lockBytes);
+    expect(readFileSync(stagePath, 'utf8')).toBe('foreign staging alias');
+
+    unlinkSync(stagePath);
+    linkSync(lockPath, stagePath);
+    const thirdLink = join(dirname(journal), 'foreign-lock-hardlink');
+    linkSync(lockPath, thirdLink);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal)).toThrow(/unexpected hard link/);
+    expect(existsSync(lockPath)).toBe(true);
+    expect(existsSync(stagePath)).toBe(true);
+    expect(existsSync(thirdLink)).toBe(true);
+
+    unlinkSync(thirdLink);
+    unlinkSync(stagePath);
+    const foreignTarget = join(dirname(journal), 'foreign-lock-target');
+    writeFileSync(foreignTarget, 'foreign symlink target');
+    symlinkSync(foreignTarget, stagePath);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal)).toThrow(/staging alias is not a regular file/);
+    expect(lstatSync(stagePath).isSymbolicLink()).toBe(true);
+    expect(existsSync(lockPath)).toBe(true);
+  });
+
+  it('revalidates an initially absent lock alias after semantic recovery hooks', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    initializeUnicodeReviewJournal(journal);
+    const nonce = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    writeLock(journal, stoppedProcessPid(), nonce);
+    const lockPath = join(journal, '.unicode-review-journal.lock');
+    const stagePath = join(parent, `.unicode-review-lock-${createHash('sha256').update('journal').digest('hex')}-${nonce}.partial`);
+    const lockBytes = readFileSync(lockPath);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal, {
+      beforeCleanup() { writeFileSync(stagePath, 'foreign replacement', { flag: 'wx', mode: 0o600 }); },
+    })).toThrow(/staging alias|link count/i);
+    expect(readFileSync(lockPath)).toEqual(lockBytes);
+    expect(readFileSync(stagePath, 'utf8')).toBe('foreign replacement');
+  });
+
+  it('preserves a canonical lock when its journal root is replaced during recovery', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    initializeUnicodeReviewJournal(journal);
+    writeLock(journal, stoppedProcessPid(), 'cccccccc-cccc-4ccc-8ccc-cccccccccccc');
+    const movedJournal = join(parent, 'moved-journal');
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal, {
+      beforeCleanup() { renameSync(journal, movedJournal); mkdirSync(journal); },
+    })).toThrow(/root, parent, or canonical identity changed/);
+    expect(existsSync(join(movedJournal, '.unicode-review-journal.lock'))).toBe(true);
+    expect(readdirSync(journal)).toEqual([]);
+  });
+
+  it('preserves a canonical lock when its parent directory is replaced during recovery', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    initializeUnicodeReviewJournal(journal);
+    writeLock(journal, stoppedProcessPid(), 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+    const movedParent = `${parent}-moved`;
+    temporaryRoots.push(movedParent);
+    expect(() => recoverStoppedUnicodeReviewJournalWriter(journal, {
+      beforeCleanup() {
+        renameSync(parent, movedParent);
+        mkdirSync(parent);
+        mkdirSync(journal);
+      },
+    })).toThrow(/root, parent, or canonical identity changed/);
+    expect(existsSync(join(movedParent, 'journal', '.unicode-review-journal.lock'))).toBe(true);
+    expect(readdirSync(journal)).toEqual([]);
   });
 
   it('preserves a replacement of the owned temporary artifact during failed cleanup', () => {

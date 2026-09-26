@@ -620,8 +620,8 @@ describe('#477 Unicode review bundle CLI', () => {
 
 });
 
-function runWorkflow(script: string, command: string, args: readonly string[], cwd: string) {
-  const result = spawnSync(process.execPath, [script, command, ...args], { cwd, encoding: 'utf8' });
+function runWorkflow(script: string, command: string, args: readonly string[], cwd: string, preload?: string) {
+  const result = spawnSync(process.execPath, [...(preload ? ['--import', preload] : []), script, command, ...args], { cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -651,6 +651,61 @@ function workflowReceipt(
 }
 
 describe('#477 Unicode review workflow CLI', () => {
+  it.each(['partial-stage-write', 'published-two-links', 'removed-stage-alias'] as const)('recovers the first workflow initialization append after SIGKILL at %s', (boundary) => {
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const waveInput = join(fixture.external, 'wave-1-input.json');
+    writeJson(waveInput, { items: [JSON.parse(readFileSync(fixture.input, 'utf8')).items.find((item: { purpose: string }) => item.purpose === 'manifest')] });
+    const descriptor = join(fixture.external, 'workflow-descriptor.json');
+    const journal = join(fixture.external, 'workflow-journal');
+    const status = join(fixture.external, 'init-status.json');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves: [{ waveId: 'wave-1', inputPath: waveInput, reviewerOutputPath: join(fixture.external, 'wave-1-reviewer'), controllerOutputPath: join(fixture.external, 'wave-1-controller') }],
+    });
+    const preload = join(fixture.external, `kill-${boundary}.mjs`);
+    const killBoundary = boundary === 'partial-stage-write'
+      ? [
+        `const originalOpenSync = fs.openSync.bind(fs);`,
+        `let lockDescriptor = null;`,
+        `fs.openSync = (path, ...args) => { const descriptor = originalOpenSync(path, ...args); if (String(path).includes('.unicode-review-lock-')) lockDescriptor = descriptor; return descriptor; };`,
+        `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+        `const originalWriteSync = fs.writeSync.bind(fs);`,
+        `fs.writeFileSync = (file, data, ...args) => { if (file === lockDescriptor) { const bytes = Buffer.from(data); originalWriteSync(file, bytes, 0, Math.min(5, bytes.length), 0); process.kill(process.pid, 'SIGKILL'); } return originalWriteFileSync(file, data, ...args); };`,
+      ]
+      : boundary === 'published-two-links'
+        ? [
+          `const originalLinkSync = fs.linkSync.bind(fs);`,
+          `fs.linkSync = (source, destination) => { originalLinkSync(source, destination); process.kill(process.pid, 'SIGKILL'); };`,
+        ]
+        : [
+          `const originalUnlinkSync = fs.unlinkSync.bind(fs);`,
+          `fs.unlinkSync = (path) => { originalUnlinkSync(path); if (String(path).includes('.unicode-review-lock-')) process.kill(process.pid, 'SIGKILL'); };`,
+        ];
+    writeFileSync(preload, [
+      `import fs from 'node:fs';`,
+      `import { syncBuiltinESMExports } from 'node:module';`,
+      ...killBoundary,
+      `syncBuiltinESMExports();`,
+    ].join('\n'));
+    const args = ['--descriptor', descriptor, '--output', status];
+    const interrupted = runWorkflow(workflowScript, 'init', args, join(fixture.external, 'caller-cwd'), preload);
+    expect(interrupted.status).toBeNull();
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(boundary !== 'partial-stage-write');
+    const stagePrefix = `.unicode-review-lock-${createHash('sha256').update('workflow-journal').digest('hex')}-`;
+    expect(readdirSync(fixture.external).filter((entry) => entry.startsWith(stagePrefix))).toHaveLength(boundary === 'removed-stage-alias' ? 0 : 1);
+
+    const recovered = runWorkflow(workflowScript, 'recover', args, join(fixture.external, 'caller-cwd'));
+    expect(recovered.status, recovered.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).events).toHaveLength(1);
+    expect(JSON.parse(readFileSync(status, 'utf8')).action).toBe('recover');
+    expect(readdirSync(fixture.external).filter((entry) => entry.startsWith(stagePrefix))).toHaveLength(boundary === 'partial-stage-write' ? 1 : 0);
+  });
+
   it('replays a calibrated synthetic wave through independent review and exports only blind subsets', () => {
     const fixture = createCalibrationCommandFixture();
     const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
@@ -706,7 +761,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const nonce = '29292929-2929-4929-8929-292929292929';
     const stoppedLock = join(journal, '.unicode-review-journal.lock');
     const stoppedPartial = join(journal, 'events', `.${String(plannedEvents.length + 1).padStart(16, '0')}.json.partial-${nonce}`);
-    writeFileSync(stoppedLock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(stoppedLock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     writeFileSync(stoppedPartial, 'stopped writer partial');
     const stoppedLockBytes = readFileSync(stoppedLock, 'utf8');
     const stoppedPartialBytes = readFileSync(stoppedPartial, 'utf8');
@@ -1054,7 +1109,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const nonce = '30303030-3030-4030-8030-303030303030';
     const lock = join(journal, '.unicode-review-journal.lock');
     const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
-    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     writeFileSync(partial, 'stopped writer partial');
     const lockBytes = readFileSync(lock, 'utf8');
     const partialBytes = readFileSync(partial, 'utf8');
@@ -1195,7 +1250,7 @@ describe('#477 Unicode review workflow CLI', () => {
 
     const recoveryNonce = '27272727-2727-4272-8272-272727272727';
     const recoveryLock = join(journal, '.unicode-review-journal.lock');
-    writeFileSync(recoveryLock, `{"ownerNonce":"${recoveryNonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(recoveryLock, `{"ownerNonce":"${recoveryNonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     const recoveryPartial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${recoveryNonce}`);
     writeFileSync(recoveryPartial, 'stopped writer partial');
     const recoveryLockBytes = readFileSync(recoveryLock, 'utf8');
@@ -1401,7 +1456,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const nonce = '31313131-3131-4313-8313-313131313131';
     const lock = join(journal, '.unicode-review-journal.lock');
     const partial = join(journal, 'events', `.${String(eventNames.length + 1).padStart(16, '0')}.json.partial-${nonce}`);
-    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     writeFileSync(partial, 'stopped writer partial');
     const lockBytes = readFileSync(lock, 'utf8');
     const partialBytes = readFileSync(partial, 'utf8');
@@ -1445,6 +1500,7 @@ describe('#477 Unicode review workflow CLI', () => {
     writeFileSync(
       join(journal, '.unicode-review-journal.lock'),
       '{"ownerNonce":"00000000-0000-4000-8000-000000000000","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n',
+      { mode: 0o600 },
     );
     const recovered = invoke('recover', join(fixture.external, 'recover-init.json'));
     expect(recovered.status, recovered.output).toBe(0);
@@ -1521,7 +1577,7 @@ describe('#477 Unicode review workflow CLI', () => {
     appendUnicodeReviewJournalEvent(journal, loadUnicodeReviewJournal(journal).tip, { type: 'hash-valid-but-semantic-invalid' });
     const nonce = '26262626-2626-4262-8262-262626262626';
     const lock = join(journal, '.unicode-review-journal.lock');
-    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     const partial = join(journal, 'events', `.0000000000000003.json.partial-${nonce}`);
     writeFileSync(partial, 'unfinished recovery writer');
     const lockBytes = readFileSync(lock, 'utf8');
@@ -1559,7 +1615,7 @@ describe('#477 Unicode review workflow CLI', () => {
     };
     const stopWriter = (journal: string, nonce: string) => {
       const lock = join(journal, '.unicode-review-journal.lock');
-      writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+      writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
       const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
       writeFileSync(partial, 'stopped writer partial');
       return { lock, partial, lockBytes: readFileSync(lock, 'utf8'), partialBytes: readFileSync(partial, 'utf8') };
@@ -1630,7 +1686,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const nonce = '31313131-3131-4131-8131-313131313131';
     const lock = join(journal, '.unicode-review-journal.lock');
     const partial = join(journal, 'events', `.${String(readdirSync(join(journal, 'events')).filter((entry) => entry.endsWith('.json')).length + 1).padStart(16, '0')}.json.partial-${nonce}`);
-    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`);
+    writeFileSync(lock, `{"ownerNonce":"${nonce}","ownerPid":999999999,"protocolVersion":"unicode-review-journal-v1"}\n`, { mode: 0o600 });
     writeFileSync(partial, 'stopped writer partial');
     expect(invoke('recover', join(fixture.external, 'recover.json')).status).toBe(0);
     expect(existsSync(reviewerOutput)).toBe(false);

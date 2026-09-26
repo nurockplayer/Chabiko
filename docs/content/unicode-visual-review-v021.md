@@ -346,7 +346,20 @@ trailing newline, SHA-256 content checksums, monotonically increasing sequence
 numbers, and a previous-digest chain. An event content
 checksum hashes canonical `{ payload, previousDigest, sequence }`; its digest
 hashes the canonical record body containing that checksum. Its external root
-contains a marker, an `events` directory, and an exclusive lock. Initialize,
+contains a marker, an `events` directory, and an exclusive lock. Each writer
+first writes and fsyncs a complete lock record to a unique sibling path derived
+from the journal basename and owner nonce, then publishes it with an exclusive
+hard link. The lock file must retain its exclusive-creation mode `0600`. The
+writer retains the original descriptor and verifies the exact one-to-two and
+two-to-one link-count transitions, unchanged mode/size/bytes, and
+the journal and parent directory identities. A crash before link leaves an
+untrusted sibling stage that is preserved and never scanned or adopted; a crash
+after link leaves a complete lock that stopped-writer recovery recognizes only
+with its exact derived stage alias or as a single canonical link. Recovery
+proves the owner stopped and completes structural and semantic history checks
+before removing a verified alias or lock. Conflicting aliases, extra links,
+replacements, symlinks, or uncertain publication are preserved and fail closed.
+Initialize,
 load, append with the expected tip, and recovery functions validate the full
 chain. Recovery is permitted only for a provably stopped owned writer with a
 valid journal; unknown files, a live writer, or a changed owner fail closed.
@@ -635,6 +648,7 @@ requested again merely because the process restarted.
 | Opaque authorization, replay binding, and hard-probe exclusion | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Mixed A, positive-manifest B, Pass B, and fixed caution | `unicode_review_v021.ts` | `unicode-review-v021.test.ts` |
 | Immutable external journal, transactional stopped-writer recovery, and restart-safe chain validation | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts`, `unicode_review_workflow.ts` | `unicode-review-journal.test.ts`: “recovers only a provably stopped owner after validating the journal and its own temporary artifact”; “preserves owned stopped-writer artifacts when pre-cleanup recovery validation rejects the journal”; “rejects a same-sequence temporary artifact that conflicts with the committed event”; `unicode-review-cli.test.ts`: “retries an exact empty initialization journal and recovers a stopped initializer without accepting a foreign root”; “preserves a stopped workflow journal when semantic recovery replay rejects its hash-valid event”; “recovers a stopped planned wave with both unpublished artifacts absent, but preserves a partial pair” |
+| Complete lock-owner hard-link publication, exact link transitions, and stopped-owner alias recovery | `unicode_review_journal.ts`, `run_unicode_review_workflow_v021.ts` | `unicode-review-journal.test.ts`: SIGKILL before publication, after link, and after stage-alias removal; exact link-count and mode/byte preservation; foreign alias and extra-hardlink rejection; `unicode-review-cli.test.ts`: recovery after SIGKILL during the first workflow initialization append |
 | Atomic native no-replace publication, crash boundaries, and dirty staging preservation | `unicode_review_journal.ts`, `publish_unicode_review_journal.py`; helper runs with repository-pinned `uv --locked` | `unicode-review-journal.test.ts`: concurrent initializers; pre/post-publication process exits and fsync failures; foreign marker, hard-link, and replaced-root preservation; helper `--self-test`: exclusive publication, destination preservation, unsupported-platform failure, concurrent race, and process death after publish |
 | Resumable wave state, sentinel injection, A/B independence, Pass B, and promotion | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: “persists chosen Reviewer B and Pass B subset roots and retains them after finalization”; “retains immutable prepared Pass B refs while completed results are removed from pending work”; “rejects Reviewer B and Pass B subset transitions without an absolute recorded path” |
 | Consecutive scaled waves retain qualification; invalidation requires two new clean initial waves | `unicode_review_workflow.ts` | `unicode-review-workflow.test.ts`: initial/scaled progression through finalization and replay, oversized planning/replay rejection after invalidation, and requalification |

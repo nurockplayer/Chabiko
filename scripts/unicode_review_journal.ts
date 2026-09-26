@@ -54,6 +54,11 @@ export type UnicodeReviewJournalRecoveryState = 'absent' | 'unlocked-empty' | 'l
 export interface UnicodeReviewJournalAppendOptions {
   readonly beforeCommit?: () => void;
   readonly afterCommit?: () => void;
+  /** Narrow lock publication hooks for subprocess crash-boundary tests. */
+  readonly afterLockStageWrite?: (stagingPath: string) => void;
+  readonly afterLockPublish?: (stagingPath: string) => void;
+  readonly afterLockAliasRemoval?: (canonicalPath: string) => void;
+  readonly fsyncDirectory?: (path: string) => void;
 }
 
 /** Narrow initialization hooks for crash and filesystem-failure tests. */
@@ -84,6 +89,13 @@ interface LockRecord {
   readonly ownerNonce: string;
   readonly ownerPid: number;
   readonly protocolVersion: typeof UNICODE_REVIEW_JOURNAL_PROTOCOL;
+}
+
+interface LockLease {
+  readonly owned: OwnedPath;
+  readonly record: LockRecord;
+  readonly root: OwnedPath;
+  readonly parent: OwnedPath;
 }
 
 interface JournalRecord {
@@ -323,17 +335,146 @@ function assertMarker(root: string): void {
   assert(value.protocolVersion === UNICODE_REVIEW_JOURNAL_PROTOCOL, 'journal protocol marker has an unsupported protocol');
 }
 
-function readLock(root: string): { readonly owned: OwnedPath; readonly record: LockRecord } {
-  const owned = recordOwnedPath(join(root, LOCK_NAME), 'file', true);
+function lockStagePath(root: string, ownerNonce: string): string {
+  assert(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(ownerNonce), 'journal lock owner nonce is invalid');
+  return join(dirname(root), `.unicode-review-lock-${sha256(basename(root))}-${ownerNonce}.partial`);
+}
+
+function readDescriptorBytes(owned: OwnedPath, label: string): Buffer {
+  assert(owned.type === 'file' && owned.descriptor !== null, `${label} must have an open file descriptor`);
+  const before = fstatSync(owned.descriptor);
+  assert(before.isFile() && before.dev === owned.device && before.ino === owned.inode, `${label} descriptor identity changed`);
+  assert(before.size <= 1024 * 1024, `${label} exceeds the supported size`);
+  const bytes = Buffer.alloc(before.size);
+  let offset = 0;
+  while (offset < bytes.byteLength) {
+    const count = readSync(owned.descriptor, bytes, offset, bytes.byteLength - offset, offset);
+    assert(count > 0, `${label} ended before its captured size`);
+    offset += count;
+  }
+  const after = fstatSync(owned.descriptor);
+  assert(sameFailedWriteMetadata(before, after), `${label} changed during descriptor read`);
+  return bytes;
+}
+
+function readOwnedFileBytes(owned: OwnedPath, label: string): Buffer {
+  const bytes = readDescriptorBytes(owned, label);
+  assert(isStillOwned(owned), `${label} pathname changed during descriptor read`);
+  return bytes;
+}
+
+function verifyLockLinkTransition(
+  owned: OwnedPath,
+  rootOwnership: OwnedPath,
+  parentOwnership: OwnedPath,
+  stagePath: string,
+  canonicalPath: string,
+  intendedBytes: Uint8Array,
+  expectedBefore: 1 | 2,
+  expectedAfter: 1 | 2,
+): void {
+  assert(owned.type === 'file' && owned.descriptor !== null, 'journal lock transition lost its retained descriptor');
+  assert(owned.nlink === expectedBefore, 'journal lock transition began from an unexpected recorded link count');
+  assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal lock root or parent identity changed during link transition');
+  const descriptorBefore = fstatSync(owned.descriptor);
+  assert(descriptorBefore.isFile() && descriptorBefore.dev === owned.device && descriptorBefore.ino === owned.inode, 'journal lock descriptor identity changed during link transition');
+  assert(descriptorBefore.nlink === expectedAfter, 'journal lock link transition reached an unexpected descriptor link count');
+  assert(descriptorBefore.mode === owned.mode && descriptorBefore.size === owned.size, 'journal lock mode or size changed during link transition');
+
+  const canonicalStat = lstatSync(canonicalPath);
+  assert(canonicalStat.isFile() && canonicalStat.dev === owned.device && canonicalStat.ino === owned.inode, 'canonical journal lock identity changed during link transition');
+  assert(canonicalStat.nlink === expectedAfter && canonicalStat.mode === owned.mode && canonicalStat.size === owned.size, 'canonical journal lock metadata changed during link transition');
+  if (expectedAfter === 2) {
+    const stageStat = lstatSync(stagePath);
+    assert(stageStat.isFile() && stageStat.dev === owned.device && stageStat.ino === owned.inode, 'journal lock staging alias identity changed during link transition');
+    assert(stageStat.nlink === 2 && stageStat.mode === owned.mode && stageStat.size === owned.size, 'journal lock staging alias metadata changed during link transition');
+  } else {
+    try {
+      lstatSync(stagePath);
+      throw new Error('journal lock staging alias remains after the one-link transition');
+    } catch (error) {
+      if (!(typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT')) throw error;
+    }
+  }
+  assert(expectedAfter === (expectedBefore === 1 ? 2 : 1), 'journal lock link transition is unsupported');
+  assert(readDescriptorBytes(owned, 'journal lock transition').equals(Buffer.from(intendedBytes)), 'journal lock bytes changed during link transition');
+  const descriptorAfter = fstatSync(owned.descriptor);
+  const canonicalAfter = lstatSync(canonicalPath);
+  assert(sameFailedWriteMetadata(descriptorBefore, descriptorAfter) && sameFailedWriteMetadata(descriptorAfter, canonicalAfter), 'journal lock metadata changed during transition verification');
+  assert(descriptorAfter.nlink === expectedAfter && descriptorAfter.mode === owned.mode && descriptorAfter.size === owned.size, 'journal lock transition verification observed unexpected metadata');
+  owned.ctimeMs = descriptorAfter.ctimeMs;
+  owned.nlink = descriptorAfter.nlink;
+}
+
+function validateLockStageAlias(root: string, owned: OwnedPath, ownerNonce: string, bytes: Uint8Array): OwnedPath | null {
+  const stagePath = lockStagePath(root, ownerNonce);
+  let stageStat: Stats;
   try {
-    const { value } = decodeStrictJson(new Uint8Array(readFileSync(owned.path)), 'journal lock');
+    stageStat = lstatSync(stagePath);
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+      assert(owned.descriptor !== null, 'journal lock descriptor is unavailable');
+      assert(owned.nlink === 1 && fstatSync(owned.descriptor).nlink === 1, 'journal lock has an unexpected hard link');
+      return null;
+    }
+    throw error;
+  }
+  assert(stageStat.isFile() && !stageStat.isSymbolicLink(), 'journal lock staging alias is not a regular file');
+  const stage = recordOwnedPath(stagePath, 'file', true);
+  try {
+    assert(stage.device === owned.device && stage.inode === owned.inode, 'journal lock staging alias conflicts with canonical lock');
+    assert(stage.nlink === 2 && owned.nlink === 2, 'journal lock has an unexpected hard link count');
+    assert(stage.mode === owned.mode && stage.size === owned.size && stage.ctimeMs === owned.ctimeMs, 'journal lock staging alias metadata differs');
+    assert(readOwnedFileBytes(stage, 'journal lock staging alias').equals(Buffer.from(bytes)), 'journal lock staging alias bytes differ');
+    return stage;
+  } catch (error) {
+    releaseOwnedPath(stage);
+    throw error;
+  }
+}
+
+function revalidateLockStageState(
+  root: string,
+  owned: OwnedPath,
+  ownerNonce: string,
+  bytes: Uint8Array,
+  expectedAlias: OwnedPath | null,
+): void {
+  const current = validateLockStageAlias(root, owned, ownerNonce, bytes);
+  try {
+    assert((current === null) === (expectedAlias === null), 'journal lock staging alias state changed before cleanup');
+    if (current !== null && expectedAlias !== null) {
+      assert(current.device === expectedAlias.device && current.inode === expectedAlias.inode, 'journal lock staging alias was replaced before cleanup');
+    }
+  } finally {
+    releaseOwnedPath(current);
+  }
+}
+
+function readLock(root: string): { readonly owned: OwnedPath; readonly record: LockRecord; readonly bytes: Buffer; readonly stageAlias: OwnedPath | null; readonly rootOwnership: OwnedPath; readonly parentOwnership: OwnedPath } {
+  const owned = recordOwnedPath(join(root, LOCK_NAME), 'file', true);
+  let rootOwnership: OwnedPath | null = null;
+  let parentOwnership: OwnedPath | null = null;
+  let stageAlias: OwnedPath | null = null;
+  try {
+    rootOwnership = recordOwnedPath(root, 'directory', true);
+    parentOwnership = recordOwnedPath(dirname(root), 'directory', true);
+    const bytes = readOwnedFileBytes(owned, 'journal lock');
+    const { value } = decodeStrictJson(new Uint8Array(bytes), 'journal lock');
     assert(isPlainObject(value), 'journal lock must be an object');
     assertExactKeys(value, ['ownerNonce', 'ownerPid', 'protocolVersion'], 'journal lock');
     assert(typeof value.ownerNonce === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value.ownerNonce), 'journal lock owner nonce is invalid');
     assert(Number.isSafeInteger(value.ownerPid) && value.ownerPid > 0, 'journal lock owner PID is invalid');
     assert(value.protocolVersion === UNICODE_REVIEW_JOURNAL_PROTOCOL, 'journal lock has an unsupported protocol');
-    return { owned, record: value as LockRecord };
+    assert((owned.mode & 0o777) === 0o600, 'journal lock has an unsupported file mode');
+    const record = value as LockRecord;
+    stageAlias = validateLockStageAlias(root, owned, record.ownerNonce, bytes);
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal lock root or parent identity changed');
+    return { owned, record, bytes, stageAlias, rootOwnership, parentOwnership };
   } catch (error) {
+    releaseOwnedPath(stageAlias);
+    releaseOwnedPath(rootOwnership);
+    releaseOwnedPath(parentOwnership);
     releaseOwnedPath(owned);
     throw error;
   }
@@ -454,22 +595,60 @@ function writeExclusiveFile(path: string, contents: string): OwnedPath {
   }
 }
 
-function acquireLock(root: string): { readonly owned: OwnedPath; readonly record: LockRecord } {
+function acquireLock(root: string, options: UnicodeReviewJournalAppendOptions): LockLease {
   const record: LockRecord = { ownerNonce: randomUUID(), ownerPid: process.pid, protocolVersion: UNICODE_REVIEW_JOURNAL_PROTOCOL };
-  const path = join(root, LOCK_NAME);
+  const canonicalPath = join(root, LOCK_NAME);
+  const stagingPath = lockStagePath(root, record.ownerNonce);
+  const rootOwnership = recordOwnedPath(root, 'directory', true);
+  let parentOwnership: OwnedPath | null = null;
+  let stagingOwnership: OwnedPath | null = null;
+  let published = false;
+  const syncDirectory = options.fsyncDirectory ?? fsyncDirectory;
   try {
-    const owned = writeExclusiveFile(path, `${canonicalJson(record)}\n`);
-    try {
-      fsyncDirectory(root);
-      return { owned, record };
-    } catch (error) {
-      releaseOwnedPath(owned);
-      throw error;
-    }
+    parentOwnership = recordOwnedPath(dirname(root), 'directory', true);
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal lock root or parent identity changed before publication');
+    stagingOwnership = writeExclusiveFile(stagingPath, `${canonicalJson(record)}\n`);
+    assert(stagingOwnership.nlink === 1 && isStillOwned(stagingOwnership), 'journal lock staging file is not exclusively owned');
+    options.afterLockStageWrite?.(stagingPath);
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership) && isStillOwned(stagingOwnership), 'journal lock publication paths changed before linking');
+    syncDirectory(dirname(root));
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership) && isStillOwned(stagingOwnership), 'journal lock publication paths changed before linking');
+    linkSync(stagingPath, canonicalPath);
+    published = true;
+
+    const intendedBytes = Buffer.from(`${canonicalJson(record)}\n`);
+    verifyLockLinkTransition(stagingOwnership, rootOwnership, parentOwnership, stagingPath, canonicalPath, intendedBytes, 1, 2);
+    const canonicalOwnership: OwnedPath = { ...stagingOwnership, path: canonicalPath };
+    assert(stagingOwnership.nlink === 2 && isStillOwned(stagingOwnership) && isStillOwned(canonicalOwnership), 'journal lock hard-link publication failed identity verification');
+    assert(readOwnedFileBytes(stagingOwnership, 'journal lock staging file').equals(intendedBytes), 'journal lock staging bytes changed before publication');
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal lock root or parent identity changed after publication');
+    options.afterLockPublish?.(stagingPath);
+    syncDirectory(root);
+    assert(isStillOwned(stagingOwnership) && isStillOwned(canonicalOwnership), 'journal lock aliases changed before staging removal');
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal lock root or parent identity changed before staging removal');
+    unlinkSync(stagingPath);
+    verifyLockLinkTransition(canonicalOwnership, rootOwnership, parentOwnership, stagingPath, canonicalPath, intendedBytes, 2, 1);
+    assert(canonicalOwnership.nlink === 1 && isStillOwned(canonicalOwnership), 'journal lock canonical link did not return to one-link state');
+    assert(readOwnedFileBytes(canonicalOwnership, 'canonical journal lock').equals(intendedBytes), 'canonical journal lock bytes changed after publication');
+    options.afterLockAliasRemoval?.(canonicalPath);
+    syncDirectory(dirname(root));
+    assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership) && isStillOwned(canonicalOwnership), 'journal lock ownership changed before acquisition acknowledgement');
+    // Transfer the one original descriptor to canonical ownership; never close a copied descriptor twice.
+    stagingOwnership.descriptor = null;
+    return { owned: canonicalOwnership, record, root: rootOwnership, parent: parentOwnership };
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST') {
-      throw new Error('journal already has an in-flight or abandoned writer lock');
+    if (!published && stagingOwnership !== null && isStillOwned(rootOwnership) && parentOwnership !== null && isStillOwned(parentOwnership) && isStillOwned(stagingOwnership)) {
+      try {
+        removeOwnedFile(stagingOwnership, 'journal lock staging file');
+        syncDirectory(dirname(root));
+      } catch {
+        // Preserve a stage that cannot be proven to remain ours.
+      }
     }
+    releaseOwnedPath(stagingOwnership);
+    releaseOwnedPath(parentOwnership);
+    releaseOwnedPath(rootOwnership);
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST') throw new Error('journal already has an in-flight or abandoned writer lock');
     throw error;
   }
 }
@@ -638,7 +817,8 @@ export function appendUnicodeReviewJournalEvent(
 ): UnicodeReviewJournalState {
   canonicalJson(payload);
   const root = resolveJournalRoot(path);
-  const lock = acquireLock(root);
+  const lock = acquireLock(root, options);
+  const syncDirectory = options.fsyncDirectory ?? fsyncDirectory;
   let temporary: OwnedPath | null = null;
   try {
     const state = inspectJournal(root, lock.owned, lock.record.ownerNonce);
@@ -654,22 +834,25 @@ export function appendUnicodeReviewJournalEvent(
     // The extra link is the journal commit point and is intentionally removed
     // from the temporary path after the directory entry is durable.
     refreshOwnedFileSnapshot(temporary);
-    fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+    syncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     options.afterCommit?.();
     removeOwnedFile(temporary, 'journal temporary artifact');
     releaseOwnedPath(temporary);
     temporary = null;
-    fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
+    syncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     const committed = inspectJournal(root, lock.owned, lock.record.ownerNonce);
     return { root: committed.root, events: committed.events, tip: committed.tip };
   } finally {
     try {
+      assert(isStillOwned(lock.root) && isStillOwned(lock.parent), 'journal lock root or parent identity changed before writer cleanup');
       if (temporary !== null && isStillOwned(temporary)) removeOwnedFile(temporary, 'journal temporary artifact');
       removeOwnedFile(lock.owned, 'journal lock');
-      fsyncDirectory(root);
+      syncDirectory(root);
     } finally {
       releaseOwnedPath(temporary);
       releaseOwnedPath(lock.owned);
+      releaseOwnedPath(lock.root);
+      releaseOwnedPath(lock.parent);
     }
   }
 }
@@ -683,15 +866,31 @@ export function recoverStoppedUnicodeReviewJournalWriter(path: string, options: 
     assert(ownerIsProvablyGone(lock.record.ownerPid), 'journal lock owner is still running or cannot be proven gone');
     inspection = inspectJournal(root, lock.owned, lock.record.ownerNonce);
     options.beforeCleanup?.({ root: inspection.root, events: inspection.events, tip: inspection.tip });
+    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(lock.owned), 'journal lock root, parent, or canonical identity changed before recovery');
+    revalidateLockStageState(root, lock.owned, lock.record.ownerNonce, lock.bytes, lock.stageAlias);
+    if (lock.stageAlias !== null) {
+      assert(isStillOwned(lock.stageAlias) && lock.owned.nlink === 2, 'journal lock staging alias changed before recovery');
+      unlinkSync(lock.stageAlias.path);
+      verifyLockLinkTransition(lock.owned, lock.rootOwnership, lock.parentOwnership, lock.stageAlias.path, lock.owned.path, lock.bytes, 2, 1);
+      assert(lock.owned.nlink === 1 && isStillOwned(lock.owned), 'journal lock recovery did not restore one canonical link');
+      fsyncDirectory(dirname(root));
+      assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership) && isStillOwned(lock.owned), 'journal lock root or parent changed during alias cleanup');
+    } else {
+      assert(lock.owned.nlink === 1, 'journal lock has an unexpected hard link');
+    }
     if (inspection.temporary !== null) {
       removeOwnedFile(inspection.temporary, 'journal temporary artifact');
       fsyncDirectory(join(root, EVENTS_DIRECTORY_NAME));
     }
+    assert(isStillOwned(lock.rootOwnership) && isStillOwned(lock.parentOwnership), 'journal lock root or parent identity changed before canonical cleanup');
     removeOwnedFile(lock.owned, 'journal lock');
     fsyncDirectory(root);
     return { root: inspection.root, events: inspection.events, tip: inspection.tip };
   } finally {
     releaseOwnedPath(inspection?.temporary ?? null);
+    releaseOwnedPath(lock.stageAlias);
     releaseOwnedPath(lock.owned);
+    releaseOwnedPath(lock.rootOwnership);
+    releaseOwnedPath(lock.parentOwnership);
   }
 }
