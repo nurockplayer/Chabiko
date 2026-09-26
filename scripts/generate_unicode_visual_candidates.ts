@@ -130,15 +130,25 @@ async function collectRendererPixels(scalars: number[]) {
   }
 }
 
-async function renderGlyphs(scalars: number[]) {
+export async function renderGlyphPixels(scalars: number[]) {
   if (!existsSync(fontPath)) throw new RendererUnavailableError(`pinned container font is unavailable: ${fontPath}`);
   const fontChecksumSha256 = sha256(readFileSync(fontPath));
   assertInventoryCoverage(scalars);
   const pixels = await collectRendererPixels(scalars);
   return {
     fontChecksumSha256,
-    glyphs: pixels.map(({ faceCount: _faceCount, grayscaleBase64, ...item }) => {
-      const grayscale = Buffer.from(grayscaleBase64, 'base64');
+    glyphs: pixels.map((item) => ({
+      scalar: item.scalar,
+      grayscale: Buffer.from(item.grayscaleBase64, 'base64'),
+    })),
+  };
+}
+
+export async function renderGlyphs(scalars: number[]) {
+  const rendered = await renderGlyphPixels(scalars);
+  return {
+    fontChecksumSha256: rendered.fontChecksumSha256,
+    glyphs: rendered.glyphs.map(({ grayscale, ...item }) => {
       const averages: number[] = [];
       for (let row = 0; row < 8; row += 1) for (let column = 0; column < 9; column += 1) {
         const x0 = Math.floor(column * 64 / 9);
@@ -306,6 +316,17 @@ function runPinned(mode: '--write' | '--check'): never {
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args[0] === '--internal-render-glyphs') {
+    const inventory = JSON.parse(readFileSync(inventoryPath, 'utf8'));
+    const rendered = await renderGlyphPixels(inventory.scalars.map((row: { scalar: number }) => row.scalar));
+    process.stdout.write(JSON.stringify({
+      schemaVersion: VISUAL_SCHEMA_VERSION,
+      renderingEnvironment: { id: RENDERING_ENVIRONMENT_ID, playwrightImage: PLAYWRIGHT_IMAGE, browser: 'chromium-149.0.7827.55', fontInput: 'Ubuntu fonts-unifont 1:15.1.01-1build1 / Unifont Regular' },
+      fontChecksumSha256: rendered.fontChecksumSha256,
+      glyphs: rendered.glyphs.map((glyph) => ({ scalar: glyph.scalar, grayscaleBase64: Buffer.from(glyph.grayscale).toString('base64') })),
+    }));
+    return;
+  }
   const internal = args[0] === '--internal';
   const mode = (internal ? args[1] : args[0]) as '--write' | '--check';
   if (!['--write', '--check'].includes(mode)) throw new Error('Usage: generate_unicode_visual_candidates.ts [--write|--check]');
