@@ -68,6 +68,11 @@ export interface UnicodeReviewJournalInitializationOptions {
   readonly fsyncDirectory?: (path: string) => void;
 }
 
+/** Testable durability barrier for adopting a retained exact-empty journal. */
+export interface UnicodeReviewJournalAdoptionOptions {
+  readonly fsyncDirectory?: (path: string) => void;
+}
+
 /** Runs semantic recovery checks against an owned, structurally valid stopped journal before cleanup. */
 export interface UnicodeReviewJournalRecoveryOptions {
   readonly beforeCleanup?: (state: UnicodeReviewJournalState) => void;
@@ -776,6 +781,37 @@ export function initializeUnicodeReviewJournal(
       releaseOwnedPath(stagingOwnership);
     }
     throw error;
+  }
+}
+
+/** Revalidates and durably adopts only the exact unlocked empty canonical journal. */
+export function adoptEmptyUnicodeReviewJournal(
+  path: string,
+  options: UnicodeReviewJournalAdoptionOptions = {},
+): UnicodeReviewJournalState {
+  const root = resolveJournalRoot(path);
+  const rootOwnership = recordOwnedPath(root, 'directory', true);
+  let parentOwnership: OwnedPath | null = null;
+  try {
+    parentOwnership = recordOwnedPath(dirname(root), 'directory', true);
+    const assertExactEmpty = (): UnicodeReviewJournalState => {
+      assert(isStillOwned(rootOwnership) && parentOwnership !== null && isStillOwned(parentOwnership), 'journal root or parent identity changed during empty-root adoption');
+      const state = inspectJournal(root, null, null);
+      assert(state.events.length === 0 && state.tip.sequence === 0 && state.tip.digest === null, 'only an exact empty journal can be adopted');
+      assert(isStillOwned(rootOwnership) && isStillOwned(parentOwnership), 'journal root or parent identity changed during empty-root validation');
+      return state;
+    };
+
+    assertExactEmpty();
+    if (options.fsyncDirectory !== undefined) options.fsyncDirectory(dirname(root));
+    else {
+      assert(parentOwnership.descriptor !== null, 'journal parent descriptor is required for empty-root adoption');
+      fsyncSync(parentOwnership.descriptor);
+    }
+    return assertExactEmpty();
+  } finally {
+    releaseOwnedPath(parentOwnership);
+    releaseOwnedPath(rootOwnership);
   }
 }
 

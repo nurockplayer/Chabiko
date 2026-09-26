@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, copyFileSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, cpSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { deflateSync } from 'node:zlib';
@@ -624,6 +624,19 @@ function runWorkflow(script: string, command: string, args: readonly string[], c
   const result = spawnSync(process.execPath, [...(preload ? ['--import', preload] : []), script, command, ...args], { cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
+}
+
+function writeParentDirectorySyncFailurePreload(path: string, parent: string, failingOrdinal: number, errorMessage: string): void {
+  writeFileSync(path, [
+    `import fs from 'node:fs';`,
+    `import { syncBuiltinESMExports } from 'node:module';`,
+    `const parentPath = ${JSON.stringify(parent)};`,
+    `const parentIdentity = fs.statSync(parentPath);`,
+    `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+    `let parentSyncs = 0;`,
+    `fs.fsyncSync = (descriptor) => { const current = fs.fstatSync(descriptor); if (current.isDirectory() && current.dev === parentIdentity.dev && current.ino === parentIdentity.ino && ++parentSyncs === ${failingOrdinal}) throw new Error(${JSON.stringify(errorMessage)}); return originalFsyncSync(descriptor); };`,
+    `syncBuiltinESMExports();`,
+  ].join('\n'));
 }
 
 function workflowReceipt(
@@ -1514,6 +1527,88 @@ describe('#477 Unicode review workflow CLI', () => {
     const foreign = invoke('init', join(fixture.external, 'foreign-init.json'));
     expect(foreign.status, foreign.output).not.toBe(0);
     expect(readFileSync(join(foreignJournal, 'keep.txt'), 'utf8')).toBe('preserve');
+  });
+
+  it('durably adopts an exact empty journal after lost publication acknowledgement and repeated parent-sync failures', () => {
+    const lostAckFixture = createCalibrationCommandFixture();
+    const lostAckScript = join(lostAckFixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const lostAckJournal = join(lostAckFixture.external, 'journal');
+    const lostAckDescriptor = join(lostAckFixture.external, 'descriptor.json');
+    const lostAckStatus = join(lostAckFixture.external, 'init-status.json');
+    writeJson(lostAckDescriptor, {
+      calibrationContextPath: lostAckFixture.descriptorPath,
+      sealedKeyPath: lostAckFixture.keyPath,
+      calibrationSubmissionPath: lostAckFixture.submissionPath,
+      journalPath: lostAckJournal,
+      waves: [],
+    });
+    const stagedRoot = join(lostAckFixture.external, '.staged-empty-journal');
+    const stagedEvents = join(stagedRoot, 'events');
+    mkdirSync(stagedRoot, { mode: 0o700 });
+    writeFileSync(join(stagedRoot, '.unicode-review-journal.json'), '{"protocolVersion":"unicode-review-journal-v1"}\n', { mode: 0o600 });
+    mkdirSync(stagedEvents, { mode: 0o700 });
+    const identity = (path: string) => {
+      const stat = lstatSync(path);
+      return { device: stat.dev, inode: stat.ino };
+    };
+    const expected = { root: identity(stagedRoot), marker: identity(join(stagedRoot, '.unicode-review-journal.json')), events: identity(stagedEvents) };
+    const helper = join(lostAckFixture.repository, 'scripts/publish_unicode_review_journal.py');
+    const loseAcknowledgement = [
+      'import importlib.util, json, os, sys',
+      'spec = importlib.util.spec_from_file_location("journal_publisher", sys.argv[1])',
+      'module = importlib.util.module_from_spec(spec)',
+      'spec.loader.exec_module(module)',
+      'module.publish(sys.argv[2], sys.argv[3], json.loads(sys.argv[4]), after_rename=lambda: os._exit(86))',
+    ].join('; ');
+    const interruptedPublish = spawnSync('uv', [
+      'run', '--locked', '--no-sync', '--project', lostAckFixture.repository, 'python', '-c', loseAcknowledgement,
+      helper, stagedRoot, lostAckJournal, JSON.stringify(expected),
+    ], { cwd: lostAckFixture.repository, encoding: 'utf8' });
+    if (interruptedPublish.error) throw interruptedPublish.error;
+    expect(interruptedPublish.status, `${interruptedPublish.stdout}${interruptedPublish.stderr}`).toBe(86);
+    expect(existsSync(stagedRoot)).toBe(false);
+    expect(existsSync(lostAckStatus)).toBe(false);
+    expect(existsSync(lostAckStatus)).toBe(false);
+    expect(existsSync(join(lostAckJournal, '.unicode-review-journal.json'))).toBe(true);
+    expect(readdirSync(join(lostAckJournal, 'events'))).toEqual([]);
+    expect(existsSync(join(lostAckJournal, '.unicode-review-journal.lock'))).toBe(false);
+    const recoveredLostAck = runWorkflow(lostAckScript, 'recover', ['--descriptor', lostAckDescriptor, '--output', join(lostAckFixture.external, 'recover-status.json')], join(lostAckFixture.external, 'caller-cwd'));
+    expect(recoveredLostAck.status, recoveredLostAck.output).toBe(0);
+    expect(readdirSync(join(lostAckJournal, 'events'))).toHaveLength(1);
+
+    const syncFixture = createCalibrationCommandFixture();
+    const syncScript = join(syncFixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const syncJournal = join(syncFixture.external, 'journal');
+    const syncDescriptor = join(syncFixture.external, 'descriptor.json');
+    const syncCwd = join(syncFixture.external, 'caller-cwd');
+    writeJson(syncDescriptor, {
+      calibrationContextPath: syncFixture.descriptorPath,
+      sealedKeyPath: syncFixture.keyPath,
+      calibrationSubmissionPath: syncFixture.submissionPath,
+      journalPath: syncJournal,
+      waves: [],
+    });
+    const failPublishedBarrier = join(syncFixture.external, 'fail-published-barrier.mjs');
+    writeParentDirectorySyncFailurePreload(failPublishedBarrier, realpathSync(syncFixture.external), 2, 'injected post-publish parent sync failure');
+    const publicationSyncFailure = runWorkflow(syncScript, 'init', ['--descriptor', syncDescriptor, '--output', join(syncFixture.external, 'first-status.json')], syncCwd, failPublishedBarrier);
+    expect(publicationSyncFailure.status).not.toBe(0);
+    expect(existsSync(join(syncJournal, '.unicode-review-journal.json'))).toBe(true);
+    expect(readdirSync(join(syncJournal, 'events'))).toEqual([]);
+
+    const failAdoptionBarrier = join(syncFixture.external, 'fail-adoption-barrier.mjs');
+    writeParentDirectorySyncFailurePreload(failAdoptionBarrier, realpathSync(syncFixture.external), 1, 'injected repeated adoption parent sync failure');
+    for (const command of ['init', 'recover'] as const) {
+      const status = join(syncFixture.external, `${command}-failed-status.json`);
+      const failedRetry = runWorkflow(syncScript, command, ['--descriptor', syncDescriptor, '--output', status], syncCwd, failAdoptionBarrier);
+      expect(failedRetry.status, failedRetry.output).not.toBe(0);
+      expect(existsSync(status)).toBe(false);
+      expect(existsSync(join(syncJournal, '.unicode-review-journal.lock'))).toBe(false);
+      expect(readdirSync(join(syncJournal, 'events'))).toEqual([]);
+    }
+
+    const recoveredSyncFailure = runWorkflow(syncScript, 'recover', ['--descriptor', syncDescriptor, '--output', join(syncFixture.external, 'recovered-status.json')], syncCwd);
+    expect(recoveredSyncFailure.status, recoveredSyncFailure.output).toBe(0);
+    expect(readdirSync(join(syncJournal, 'events'))).toHaveLength(1);
   });
 
   it('calibrates before recover initializes an absent or exact unlocked empty journal', () => {

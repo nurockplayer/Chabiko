@@ -22,6 +22,7 @@ import {
   type VisualOutcome,
 } from './unicode_review_v021.ts';
 import {
+  adoptEmptyUnicodeReviewJournal,
   appendUnicodeReviewJournalEvent,
   initializeUnicodeReviewJournal,
   loadUnicodeReviewJournal,
@@ -547,9 +548,7 @@ function initializeOrResumeEmptyJournal(path: string): UnicodeReviewJournalState
     return initializeUnicodeReviewJournal(path);
   } catch (error) {
     if (!(typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST')) throw error;
-    const existing = loadUnicodeReviewJournal(path);
-    assert(existing.events.length === 0 && existing.tip.sequence === 0 && existing.tip.digest === null, 'workflow journal is already initialized or is not an exact empty journal');
-    return existing;
+    return adoptEmptyUnicodeReviewJournal(path);
   }
 }
 

@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   UNICODE_REVIEW_JOURNAL_PROTOCOL,
+  adoptEmptyUnicodeReviewJournal,
   appendUnicodeReviewJournalEvent,
   initializeUnicodeReviewJournal,
   inspectUnicodeReviewJournalRecoveryState,
@@ -155,6 +156,31 @@ describe('#477 restart-safe Unicode review journal', () => {
       try { fsyncSync(descriptor); } finally { closeSync(descriptor); }
     } })).toThrow(/post-publish parent fsync failure/);
     expect(loadUnicodeReviewJournal(after).tip).toEqual({ sequence: 0, digest: null });
+  });
+
+  it('adopts only an exact empty journal after a parent durability barrier and preserves changed roots', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    initializeUnicodeReviewJournal(journal);
+    let barrierPath = '';
+    expect(() => adoptEmptyUnicodeReviewJournal(journal, { fsyncDirectory: (path) => {
+      barrierPath = path;
+      throw new Error('injected adoption parent fsync failure');
+    } })).toThrow(/injected adoption parent fsync failure/);
+    expect(barrierPath).toBe(realpathSync(parent));
+    expect(loadUnicodeReviewJournal(journal).events).toEqual([]);
+    expect(adoptEmptyUnicodeReviewJournal(journal).events).toEqual([]);
+
+    const replaced = join(parent, 'replaced');
+    const moved = `${replaced}-moved`;
+    initializeUnicodeReviewJournal(replaced);
+    expect(() => adoptEmptyUnicodeReviewJournal(replaced, { fsyncDirectory: () => {
+      renameSync(replaced, moved);
+      mkdirSync(replaced);
+      writeFileSync(join(replaced, 'foreign.txt'), 'preserve');
+    } })).toThrow(/identity changed/i);
+    expect(readFileSync(join(replaced, 'foreign.txt'), 'utf8')).toBe('preserve');
+    expect(loadUnicodeReviewJournal(moved).events).toEqual([]);
   });
 
   it('preserves foreign replacements, linked markers, and replaced staging roots', () => {
