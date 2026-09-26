@@ -710,6 +710,105 @@ describe('#477 Unicode review workflow CLI', () => {
     expect(recoveredFinalStatus.recordedWaves[0].reviewerBundleChecksumSha256).toBe(sidecar.reviewerBundleChecksumSha256);
   });
 
+  it('keeps the second finalize status cumulative and equal to resume for synthetic positives', () => {
+    // These generated labels exercise CLI mechanics only; they are not visual judgments or calibration evidence.
+    const fixture = createCalibrationCommandFixture();
+    const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');
+    const manifestItems = JSON.parse(readFileSync(fixture.input, 'utf8')).items
+      .filter((item: { purpose: string }) => item.purpose === 'manifest')
+      .slice(0, 2);
+    const journal = join(fixture.external, 'two-wave-journal');
+    const waves = manifestItems.map((item: Record<string, string>, index: number) => {
+      const waveId = `wave-${index + 1}`;
+      const inputPath = join(fixture.external, `${waveId}-input.json`);
+      writeJson(inputPath, { items: [item] });
+      return {
+        waveId,
+        inputPath,
+        reviewerOutputPath: join(fixture.external, `${waveId}-reviewer`),
+        controllerOutputPath: join(fixture.external, `${waveId}-controller`),
+      };
+    });
+    const descriptor = join(fixture.external, 'two-wave-workflow-descriptor.json');
+    writeJson(descriptor, {
+      calibrationContextPath: fixture.descriptorPath,
+      sealedKeyPath: fixture.keyPath,
+      calibrationSubmissionPath: fixture.submissionPath,
+      journalPath: journal,
+      waves,
+    });
+    const invoke = (command: string, output: string, extra: readonly string[] = []) => runWorkflow(
+      workflowScript,
+      command,
+      ['--descriptor', descriptor, '--output', output, ...extra],
+      join(fixture.external, 'caller-cwd'),
+    );
+    expect(invoke('init', join(fixture.external, 'two-wave-init.json')).status).toBe(0);
+    const finalizedCandidateIds: string[] = [];
+
+    for (const [index, wave] of waves.entries()) {
+      const waveNumber = index + 1;
+      expect(invoke('plan', join(fixture.external, `${wave.waveId}-plan.json`), ['--wave-id', wave.waveId]).status).toBe(0);
+      const sidecar = JSON.parse(readFileSync(join(wave.controllerOutputPath, 'controller-sidecar.json'), 'utf8'));
+      const manifestEntry = sidecar.entries.find((entry: { purpose: string }) => entry.purpose === 'manifest');
+      expect(manifestEntry).toBeDefined();
+      const aResults = sidecar.entries.map((entry: { pairRef: string; purpose: string }) => ({
+        pairRef: entry.pairRef,
+        visualOutcome: entry.purpose === 'manifest' ? 'confusable' : 'not-confusable',
+      }));
+      const aReceipt = {
+        ...workflowReceipt('reviewer-a', fixture.key.contract, sidecar, aResults, aResults.map((result: { pairRef: string }) => result.pairRef)),
+        reviewerSessionId: `synthetic-reviewer-a-session-${waveNumber}`,
+        reviewerIndependenceContextId: `synthetic-reviewer-a-context-${waveNumber}`,
+      };
+      const aPath = join(fixture.external, `${wave.waveId}-a.json`);
+      writeJson(aPath, { results: aResults, receipt: aReceipt });
+      expect(invoke('ingest-a', join(fixture.external, `${wave.waveId}-a-status.json`), ['--submission', aPath]).status).toBe(0);
+
+      const bSubset = join(fixture.external, `${wave.waveId}-b-subset`);
+      expect(invoke('prepare-b', join(fixture.external, `${wave.waveId}-b-prepare-status.json`), ['--reviewer-output', bSubset]).status).toBe(0);
+      const bResults = [{ pairRef: manifestEntry.pairRef, visualOutcome: 'confusable' }];
+      const bPath = join(fixture.external, `${wave.waveId}-b.json`);
+      const bReceipt = {
+        ...workflowReceipt('reviewer-b', fixture.key.contract, sidecar, bResults, [manifestEntry.pairRef]),
+        reviewerSessionId: `synthetic-reviewer-b-session-${waveNumber}`,
+        reviewerIndependenceContextId: `synthetic-reviewer-b-context-${waveNumber}`,
+      };
+      writeJson(bPath, { results: bResults, receipt: bReceipt });
+      expect(invoke('ingest-b', join(fixture.external, `${wave.waveId}-b-status.json`), ['--submission', bPath]).status).toBe(0);
+
+      const passBSubset = join(fixture.external, `${wave.waveId}-pass-b-subset`);
+      expect(invoke('prepare-pass-b', join(fixture.external, `${wave.waveId}-pass-b-prepare-status.json`), ['--reviewer-output', passBSubset]).status).toBe(0);
+      const passBResult = { pairRef: manifestEntry.pairRef, observableDifference: { region: 'upper', feature: 'dot', contrast: 'present' } };
+      const passBReceipt = {
+        ...workflowReceipt('pass-b', fixture.key.contract, sidecar, passBResult, [manifestEntry.pairRef]),
+        reviewerSessionId: `synthetic-pass-b-session-${waveNumber}`,
+        reviewerIndependenceContextId: `synthetic-pass-b-context-${waveNumber}`,
+      };
+      const passBPath = join(fixture.external, `${wave.waveId}-pass-b.json`);
+      writeJson(passBPath, { result: passBResult, receipt: passBReceipt });
+      expect(invoke('ingest-pass-b', join(fixture.external, `${wave.waveId}-pass-b-status.json`), ['--submission', passBPath]).status).toBe(0);
+
+      const finalizePath = join(fixture.external, `${wave.waveId}-finalize.json`);
+      const finalized = invoke('finalize', finalizePath);
+      expect(finalized.status, finalized.output).toBe(0);
+      const finalizeStatus = JSON.parse(readFileSync(finalizePath, 'utf8'));
+      finalizedCandidateIds.push(manifestEntry.candidateId);
+      expect(finalizeStatus.promotions.map((promotion: { candidateId: string }) => promotion.candidateId).sort())
+        .toEqual([...finalizedCandidateIds].sort());
+      expect(finalizeStatus.promotions).toHaveLength(waveNumber);
+    }
+
+    const secondFinalize = JSON.parse(readFileSync(join(fixture.external, 'wave-2-finalize.json'), 'utf8'));
+    const resumedPath = join(fixture.external, 'after-two-wave-resume.json');
+    const resumed = invoke('resume', resumedPath);
+    expect(resumed.status, resumed.output).toBe(0);
+    const resumeStatus = JSON.parse(readFileSync(resumedPath, 'utf8'));
+    expect(secondFinalize.promotions).toEqual(resumeStatus.promotions);
+    expect(resumeStatus.promotions.map((promotion: { candidateId: string }) => promotion.candidateId).sort())
+      .toEqual([...finalizedCandidateIds].sort());
+  });
+
   it('resumes a partial Pass B wave against its immutable prepared subset', () => {
     const fixture = createCalibrationCommandFixture();
     const workflowScript = join(fixture.repository, 'scripts/run_unicode_review_workflow_v021.ts');

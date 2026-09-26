@@ -5,7 +5,6 @@ import {
   REVIEW_PROTOCOL_VERSION,
   authorizeCalibration,
   type ManifestEvidenceInput,
-  type PromotionRecord,
   type VisionClassificationSubmission,
   type VisionPassBSubmission,
 } from './unicode_review_v021.ts';
@@ -361,7 +360,7 @@ function verifyStoredWaves(loaded: LoadedWorkflow, state: UnicodeReviewWorkflowS
   }
 }
 
-function status(action: Command, state: UnicodeReviewWorkflowState, promotions: readonly PromotionRecord[] = state.waves.flatMap((wave) => wave.promotions)): Record<string, unknown> {
+function status(action: Command, state: UnicodeReviewWorkflowState): Record<string, unknown> {
   return {
     action,
     activeWaveId: state.activeWaveId,
@@ -378,7 +377,7 @@ function status(action: Command, state: UnicodeReviewWorkflowState, promotions: 
       passBSubsetOutputPath: wave.passBSubsetOutputPath,
     })),
     recordedSubsetRoots: state.subsetRoots,
-    promotions,
+    promotions: state.waves.flatMap((wave) => wave.promotions),
   };
 }
 
@@ -403,8 +402,8 @@ function required(values: Map<string, string>, name: string): string {
   return value;
 }
 
-function writeStatus(output: string, action: Command, state: UnicodeReviewWorkflowState, promotions?: readonly PromotionRecord[]): void {
-  writeExclusiveExternalJson(externalPath(output, 'workflow output'), promotions === undefined ? status(action, state) : status(action, state, promotions));
+function writeStatus(output: string, action: Command, state: UnicodeReviewWorkflowState): void {
+  writeExclusiveExternalJson(externalPath(output, 'workflow output'), status(action, state));
 }
 
 function preflightFreshExternalFile(path: string, label: string): string {
@@ -626,11 +625,11 @@ function run(command: Command, args: readonly string[]): void {
   } else if (command === 'ingest-pass-b') {
     ingestUnicodeReviewWavePassB(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave, readStrictExternalJson(submissionPath as string) as VisionPassBSubmission);
   } else if (command === 'finalize') {
-    const promotions = finalizeUnicodeReviewWave(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
+    finalizeUnicodeReviewWave(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     const state = readUnicodeReviewWorkflow(loaded.descriptor.journalPath, loaded.calibration, loaded.inputsByWave);
     verifyStoredWaves(loaded, state, false);
     verifyStoredSubsets(loaded, state, false);
-    writeStatus(output, command, state, promotions);
+    writeStatus(output, command, state);
     return;
   } else {
     throw new Error(`unsupported workflow command ${command}`);
