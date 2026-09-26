@@ -65,6 +65,19 @@ function crashAfterCommit(root: string, expectedTip: unknown): void {
   expect(result.status).toBe(86);
 }
 
+function runJournalChild(body: string): { readonly status: number | null; readonly output: string } {
+  const journalModule = pathToFileURL(join(process.cwd(), 'scripts', 'unicode_review_journal.ts')).href;
+  const source = [
+    `import fs from 'node:fs';`,
+    `import { syncBuiltinESMExports } from 'node:module';`,
+    `import { join } from 'node:path';`,
+    `const journalModuleUrl = ${JSON.stringify(journalModule)};`,
+    body,
+  ].join('\n');
+  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { encoding: 'utf8' });
+  return { status: result.status, output: `${result.stdout}${result.stderr}` };
+}
+
 afterEach(() => {
   while (temporaryRoots.length > 0) {
     rmSync(temporaryRoots.pop() as string, { recursive: true, force: true });
@@ -276,6 +289,198 @@ describe('#477 restart-safe Unicode review journal', () => {
     expect(loadUnicodeReviewJournal(journal).tip).toEqual(initial.tip);
     expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
     expect(readdirSync(join(journal, 'events'))).toEqual([]);
+  });
+
+  it.each(['partial write', 'temporary-file fsync'] as const)('cleans a real %s failure and permits an unchanged-history retry', (failure) => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const prior = appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'committed before failure' });
+    const failureSetup = failure === 'partial write'
+      ? [
+        `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+        `const originalWriteSync = fs.writeSync.bind(fs);`,
+        `let descriptorWrites = 0;`,
+        `fs.writeFileSync = (file, data, ...args) => {`,
+        `  if (typeof file === 'number' && ++descriptorWrites === 2) {`,
+        `    const intended = Buffer.from(data);`,
+        `    originalWriteSync(file, intended, 0, Math.min(7, intended.length), 0);`,
+        `    throw new Error('injected event temporary partial-write failure');`,
+        `  }`,
+        `  return originalWriteFileSync(file, data, ...args);`,
+        `};`,
+      ].join('\n')
+      : [
+        `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+        `let regularFileSyncs = 0;`,
+        `fs.fsyncSync = (fd) => {`,
+        `  if (fs.fstatSync(fd).isFile() && ++regularFileSyncs === 2) throw new Error('injected event temporary fsync failure');`,
+        `  return originalFsyncSync(fd);`,
+        `};`,
+      ].join('\n');
+    const result = runJournalChild([
+      failureSetup,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(prior.tip)}, { opaque: 'retry after failed write' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected event temporary')) throw error; }`,
+    ].join('\n'));
+    expect(result.status, result.output).toBe(0);
+    expect(loadUnicodeReviewJournal(journal).tip).toEqual(prior.tip);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(readdirSync(join(journal, 'events'))).toEqual(['0000000000000001.json']);
+
+    const retried = appendUnicodeReviewJournalEvent(journal, prior.tip, { opaque: 'retry after failed write' });
+    expect(retried.events).toHaveLength(2);
+  });
+
+  it('cleans a partially written initialization marker and a failed initial lock write', () => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    const partialMarker = runJournalChild([
+      `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+      `const originalWriteSync = fs.writeSync.bind(fs);`,
+      `fs.writeFileSync = (file, data, ...args) => {`,
+      `  if (typeof file === 'number') { const intended = Buffer.from(data); originalWriteSync(file, intended, 0, Math.min(5, intended.length), 0); throw new Error('injected marker partial-write failure'); }`,
+      `  return originalWriteFileSync(file, data, ...args);`,
+      `};`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.initializeUnicodeReviewJournal(${JSON.stringify(journal)}); throw new Error('initialization unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected marker partial-write')) throw error; }`,
+    ].join('\n'));
+    expect(partialMarker.status, partialMarker.output).toBe(0);
+    expect(readdirSync(parent)).toEqual([]);
+    expect(initializeUnicodeReviewJournal(journal).tip).toEqual({ sequence: 0, digest: null });
+
+    const initial = loadUnicodeReviewJournal(journal);
+    const lockFailure = runJournalChild([
+      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+      `let regularFileSyncs = 0;`,
+      `fs.fsyncSync = (fd) => { if (fs.fstatSync(fd).isFile() && ++regularFileSyncs === 1) throw new Error('injected lock fsync failure'); return originalFsyncSync(fd); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'retry after failed lock' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected lock fsync')) throw error; }`,
+    ].join('\n'));
+    expect(lockFailure.status, lockFailure.output).toBe(0);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(loadUnicodeReviewJournal(journal).events).toEqual([]);
+    expect(appendUnicodeReviewJournalEvent(journal, initial.tip, { opaque: 'retry after failed lock' }).events).toHaveLength(1);
+  });
+
+  it.each(['same-inode overwrite', 'hard link', 'mode change', 'symlink replacement'] as const)('preserves a failed temporary after a foreign %s', (mutation) => {
+    const parent = externalRoot();
+    const journal = join(parent, 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const events = join(journal, 'events');
+    const foreignLink = join(parent, 'foreign-link');
+    const foreignTarget = join(parent, 'foreign-target');
+    writeFileSync(foreignTarget, 'preserve target');
+    const mutate = mutation === 'same-inode overwrite'
+      ? `originalWriteSync(file, Buffer.alloc(intended.length, 0x5a), 0, intended.length, 0);`
+      : mutation === 'hard link'
+        ? `fs.linkSync(temporaryPath, ${JSON.stringify(foreignLink)});`
+        : mutation === 'mode change'
+          ? `fs.fchmodSync(file, 0o640);`
+          : `fs.unlinkSync(temporaryPath); fs.symlinkSync(${JSON.stringify(foreignTarget)}, temporaryPath);`;
+    const result = runJournalChild([
+      `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+      `const originalWriteSync = fs.writeSync.bind(fs);`,
+      `let descriptorWrites = 0;`,
+      `fs.writeFileSync = (file, data, ...args) => {`,
+      `  if (typeof file === 'number' && ++descriptorWrites === 2) {`,
+      `    const intended = Buffer.from(data);`,
+      `    originalWriteSync(file, intended, 0, Math.min(5, intended.length), 0);`,
+      `    const temporaryName = fs.readdirSync(${JSON.stringify(events)}).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));`,
+      `    if (typeof temporaryName !== 'string') throw new Error('missing temporary under test');`,
+      `    const temporaryPath = join(${JSON.stringify(events)}, temporaryName);`,
+      `    ${mutate}`,
+      `    throw new Error('injected partial-write failure after foreign mutation');`,
+      `  }`,
+      `  return originalWriteFileSync(file, data, ...args);`,
+      `};`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'foreign mutation' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected partial-write')) throw error; }`,
+    ].join('\n'));
+    expect(result.status, result.output).toBe(0);
+    expect(existsSync(eventPath(journal, 1))).toBe(false);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    const temporaryName = readdirSync(events).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
+    expect(temporaryName).toBeTypeOf('string');
+    const temporary = join(events, temporaryName as string);
+    if (mutation === 'same-inode overwrite') expect(readFileSync(temporary)).toEqual(Buffer.alloc(readFileSync(temporary).length, 0x5a));
+    if (mutation === 'hard link') {
+      expect(existsSync(foreignLink)).toBe(true);
+      expect(lstatSync(temporary).nlink).toBe(2);
+    }
+    if (mutation === 'mode change') expect(lstatSync(temporary).mode & 0o777).toBe(0o640);
+    if (mutation === 'symlink replacement') {
+      expect(lstatSync(temporary).isSymbolicLink()).toBe(true);
+      expect(readFileSync(foreignTarget, 'utf8')).toBe('preserve target');
+    }
+  });
+
+  it('preserves truncation after a completed write and mutation during failed-write verification', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const truncated = runJournalChild([
+      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+      `let regularFileSyncs = 0;`,
+      `fs.fsyncSync = (fd) => { if (fs.fstatSync(fd).isFile() && ++regularFileSyncs === 2) { fs.ftruncateSync(fd, 1); throw new Error('injected fsync after completed write'); } return originalFsyncSync(fd); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'must not truncate' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected fsync after completed write')) throw error; }`,
+    ].join('\n'));
+    expect(truncated.status, truncated.output).toBe(0);
+    expect(existsSync(eventPath(journal, 1))).toBe(false);
+    const truncatedTemporary = readdirSync(join(journal, 'events')).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
+    expect(truncatedTemporary).toBeTypeOf('string');
+    expect(readFileSync(join(journal, 'events', truncatedTemporary as string))).toHaveLength(1);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+
+    const changedJournal = join(externalRoot(), 'journal');
+    const changedInitial = initializeUnicodeReviewJournal(changedJournal);
+    const changedEvents = join(changedJournal, 'events');
+    const mutated = runJournalChild([
+      `const originalWriteFileSync = fs.writeFileSync.bind(fs);`,
+      `const originalWriteSync = fs.writeSync.bind(fs);`,
+      `const originalReadSync = fs.readSync.bind(fs);`,
+      `let descriptorWrites = 0;`,
+      `let verificationRead = false;`,
+      `let verificationArmed = false;`,
+      `fs.writeFileSync = (file, data, ...args) => { if (typeof file === 'number' && ++descriptorWrites === 2) { const bytes = Buffer.from(data); originalWriteSync(file, bytes, 0, Math.min(5, bytes.length), 0); verificationArmed = true; throw new Error('injected partial-write before verification mutation'); } return originalWriteFileSync(file, data, ...args); };`,
+      `fs.readSync = (fd, ...args) => { if (verificationArmed && !verificationRead) { verificationRead = true; originalWriteSync(fd, Buffer.from([0x58]), 0, 1, 0); } return originalReadSync(fd, ...args); };`,
+      `const journal = await import(journalModuleUrl);`,
+      `syncBuiltinESMExports();`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(changedJournal)}, ${JSON.stringify(changedInitial.tip)}, { opaque: 'verification mutation' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected partial-write before verification mutation')) throw error; }`,
+    ].join('\n'));
+    expect(mutated.status, mutated.output).toBe(0);
+    const changedTemporary = readdirSync(changedEvents).find((entry) => entry.startsWith('.0000000000000001.json.partial-'));
+    expect(changedTemporary).toBeTypeOf('string');
+    expect(readFileSync(join(changedEvents, changedTemporary as string))[0]).toBe(0x58);
+    expect(existsSync(eventPath(changedJournal, 1))).toBe(false);
+  });
+
+  it('preserves a committed event when the first post-link events-directory fsync fails', () => {
+    const journal = join(externalRoot(), 'journal');
+    const initial = initializeUnicodeReviewJournal(journal);
+    const result = runJournalChild([
+      `const originalFsyncSync = fs.fsyncSync.bind(fs);`,
+      `let directorySyncs = 0;`,
+      `fs.fsyncSync = (fd) => { if (!fs.fstatSync(fd).isFile() && ++directorySyncs === 2) throw new Error('injected post-link directory fsync failure'); return originalFsyncSync(fd); };`,
+      `syncBuiltinESMExports();`,
+      `const journal = await import(journalModuleUrl);`,
+      `try { journal.appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, ${JSON.stringify(initial.tip)}, { opaque: 'committed before directory fsync failure' }); throw new Error('append unexpectedly succeeded'); }`,
+      `catch (error) { if (!String(error).includes('injected post-link directory fsync')) throw error; }`,
+    ].join('\n'));
+    expect(result.status, result.output).toBe(0);
+    expect(loadUnicodeReviewJournal(journal).events.map((event) => event.payload)).toEqual([{ opaque: 'committed before directory fsync failure' }]);
+    expect(existsSync(join(journal, '.unicode-review-journal.lock'))).toBe(false);
+    expect(readdirSync(join(journal, 'events'))).toEqual(['0000000000000001.json']);
   });
 
   it('preserves a replacement of the owned temporary artifact during failed cleanup', () => {

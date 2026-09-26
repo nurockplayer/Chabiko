@@ -9,6 +9,7 @@ import {
   mkdirSync,
   openSync,
   readdirSync,
+  readSync,
   readFileSync,
   rmdirSync,
   unlinkSync,
@@ -226,6 +227,54 @@ function refreshOwnedFileSnapshot(path: OwnedPath): void {
   path.mode = current.mode;
 }
 
+function sameFailedWriteMetadata(left: Stats, right: Stats): boolean {
+  return left.isFile() && right.isFile()
+    && left.dev === right.dev
+    && left.ino === right.ino
+    && left.nlink === right.nlink
+    && left.mode === right.mode
+    && left.size === right.size
+    && left.ctimeMs === right.ctimeMs
+    && left.mtimeMs === right.mtimeMs;
+}
+
+/** Removes only a failed exclusive write whose current bytes are still this call's intended prefix. */
+function removeVerifiedFailedExclusiveWrite(path: OwnedPath, descriptor: number, intended: Uint8Array, writeCompleted: boolean): void {
+  assert(path.type === 'file' && path.descriptor === descriptor, 'failed exclusive write lost its original descriptor');
+  const beforeDescriptor = fstatSync(descriptor);
+  const beforePath = lstatSync(path.path);
+  assert(path.nlink === 1 && beforeDescriptor.nlink === 1 && beforePath.nlink === 1, 'failed exclusive write link count changed');
+  assert(beforeDescriptor.dev === path.device && beforeDescriptor.ino === path.inode, 'failed exclusive write descriptor identity changed');
+  assert(beforePath.isFile() && beforePath.dev === path.device && beforePath.ino === path.inode, 'failed exclusive write path identity changed');
+  assert(beforeDescriptor.mode === path.mode && beforePath.mode === path.mode, 'failed exclusive write mode changed');
+  assert(sameFailedWriteMetadata(beforeDescriptor, beforePath), 'failed exclusive write descriptor and path metadata disagree');
+  assert(beforeDescriptor.size <= intended.byteLength, 'failed exclusive write exceeds its intended byte length');
+
+  const actual = Buffer.alloc(beforeDescriptor.size);
+  let offset = 0;
+  while (offset < actual.byteLength) {
+    const count = readSync(descriptor, actual, offset, actual.byteLength - offset, offset);
+    assert(count > 0, 'failed exclusive write ended before its captured size');
+    offset += count;
+  }
+  if (writeCompleted) {
+    assert(actual.byteLength === intended.byteLength && actual.equals(intended), 'completed exclusive write bytes changed before fsync failure cleanup');
+  } else {
+    assert(actual.equals(Buffer.from(intended).subarray(0, actual.byteLength)), 'partial exclusive write bytes are not an intended prefix');
+  }
+
+  const afterDescriptor = fstatSync(descriptor);
+  const afterPath = lstatSync(path.path);
+  assert(sameFailedWriteMetadata(beforeDescriptor, afterDescriptor) && sameFailedWriteMetadata(beforePath, afterPath)
+    && sameFailedWriteMetadata(afterDescriptor, afterPath), 'failed exclusive write metadata changed during byte verification');
+
+  // Only the write's captured size and ctime may evolve. Link count and mode
+  // remain bound to the original exclusive creation snapshot.
+  path.size = beforeDescriptor.size;
+  path.ctimeMs = beforeDescriptor.ctimeMs;
+  removeOwnedFile(path, 'failed journal exclusive file');
+}
+
 function fsyncDirectory(path: string): void {
   const descriptor = openSync(path, 'r');
   try {
@@ -374,10 +423,13 @@ function inspectJournal(root: string, allowedLock: OwnedPath | null, allowedTemp
 function writeExclusiveFile(path: string, contents: string): OwnedPath {
   let descriptor: number | null = null;
   let owned: OwnedPath | null = null;
+  const intended = Buffer.from(contents, 'utf8');
+  let writeCompleted = false;
   try {
-    descriptor = openSync(path, 'wx', 0o600);
+    descriptor = openSync(path, 'wx+', 0o600);
     owned = recordOwnedPath(path, 'file', descriptor);
-    writeFileSync(descriptor, contents, 'utf8');
+    writeFileSync(descriptor, intended);
+    writeCompleted = true;
     fsyncSync(descriptor);
     refreshOwnedFileSnapshot(owned);
     descriptor = null;
@@ -390,11 +442,11 @@ function writeExclusiveFile(path: string, contents: string): OwnedPath {
         // The original write failure remains authoritative; cleanup stays inode-gated.
       }
     }
-    if (owned !== null && isStillOwned(owned)) {
+    if (owned !== null && descriptor !== null) {
       try {
-        removeOwnedFile(owned, 'journal exclusive file');
+        removeVerifiedFailedExclusiveWrite(owned, descriptor, intended, writeCompleted);
       } catch {
-        // Preserve any replacement or cleanup failure rather than deleting by path.
+        // Preserve any changed, unverifiable, or foreign artifact.
       }
     }
     releaseOwnedPath(owned);
