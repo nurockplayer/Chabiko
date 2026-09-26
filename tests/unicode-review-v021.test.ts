@@ -188,15 +188,17 @@ describe('#477 Unicode visual-review v0.2.1 deterministic harness', () => {
     const validA = submission('reviewer-a', evidence.context, [{ pairRef: ref, visualOutcome: 'not-confusable' }], [ref]);
     expect(validateStrictClassificationSubmission(evidence.context, validA, 'reviewer-a', evidence.context.sidecar.entries).results)
       .toEqual([{ pairRef: ref, visualOutcome: 'not-confusable' }]);
+    const submissionWithExtraProse = { ...validA, prose: 'all good' };
     expect(() => validateStrictClassificationSubmission(
       evidence.context,
-      { ...validA, prose: 'all good' },
+      submissionWithExtraProse,
       'reviewer-a',
       evidence.context.sidecar.entries,
     )).toThrow(/submission has unsupported or missing fields/i);
+    const submissionWithOrthographicRelation = { ...validA, orthographicRelation: 'same-character' };
     expect(() => validateStrictClassificationSubmission(
       evidence.context,
-      { ...validA, orthographicRelation: 'same-character' },
+      submissionWithOrthographicRelation,
       'reviewer-a',
       evidence.context.sidecar.entries,
     )).toThrow(/submission has unsupported or missing fields/i);
@@ -245,11 +247,12 @@ describe('#477 Unicode visual-review v0.2.1 deterministic harness', () => {
     expect(promoted).toMatchObject({ reviewStatus: 'reviewed', learnerEligible: true });
     expect(promoted.cautionJa).toContain('意味・読み・字種上の関係は、この比較からは判断しません。');
     const validPassB = { result: passBResult, receipt: passBReceipt };
+    const passBWithExtraRelation = { ...validPassB, relation: 'same-character' };
     expect(() => promoteConfirmedPositive({
       context: calibration.context,
       calibrationAuthorization: calibration.authorization!,
       classification: { a, b },
-      passB: { ...validPassB, relation: 'same-character' },
+      passB: passBWithExtraRelation,
     })).toThrow(/Pass B submission has unsupported or missing fields/i);
     expect(() => promoteConfirmedPositive({
       context: calibration.context,
