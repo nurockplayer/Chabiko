@@ -1047,6 +1047,7 @@ export function validateStrictClassificationSubmission(
   expectedEntries: readonly ControllerSidecarEntry[],
 ): ValidatedClassificationSubmission {
   validateReviewEvidenceContext(context);
+  assertExactKeys(submission, ['results', 'receipt'], `${role} submission`);
   assert(expectedEntries.length > 0, `${role} expected subset is empty`);
   const contextEntriesByRef = new Map(context.sidecar.entries.map((entry) => [entry.pairRef, entry]));
   const expectedRefs: string[] = [];
@@ -1137,6 +1138,7 @@ export function renderFixedCaution(leftText: string, rightText: string, differen
 export function promoteConfirmedPositive(input: PromotionInput): PromotionRecord {
   const calibrationBinding = getCalibrationAuthorizationBinding(input.calibrationAuthorization);
   assert(calibrationBinding && calibrationIsCompatible(input.calibrationAuthorization, input.context.contract), 'promotion requires an evaluator-issued calibration authorization for the current exact contract');
+  assertExactKeys(input.passB, ['result', 'receipt'], 'Pass B submission');
   const reconciled = reconcileIndependentClassification(input.context, input.classification);
   const passB = parsePassBResult(input.passB.result);
   const record = reconciled.find((item) => item.pairRef === passB.pairRef);

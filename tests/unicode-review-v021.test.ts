@@ -185,6 +185,27 @@ describe('#477 Unicode visual-review v0.2.1 deterministic harness', () => {
     const ref = evidence.reviewerBundle.items[0].pairRef;
     expect(() => parsePassAResult({ pairRef: ref, visualOutcome: 'confusable', prose: 'looks alike' })).toThrow(/unsupported|missing/i);
     expect(() => parsePassAResult({ pairRef: ref, visualOutcome: 'unsupported-evidence' })).toThrow(/unsupported/i);
+    const validA = submission('reviewer-a', evidence.context, [{ pairRef: ref, visualOutcome: 'not-confusable' }], [ref]);
+    expect(validateStrictClassificationSubmission(evidence.context, validA, 'reviewer-a', evidence.context.sidecar.entries).results)
+      .toEqual([{ pairRef: ref, visualOutcome: 'not-confusable' }]);
+    expect(() => validateStrictClassificationSubmission(
+      evidence.context,
+      { ...validA, prose: 'all good' },
+      'reviewer-a',
+      evidence.context.sidecar.entries,
+    )).toThrow(/submission has unsupported or missing fields/i);
+    expect(() => validateStrictClassificationSubmission(
+      evidence.context,
+      { ...validA, orthographicRelation: 'same-character' },
+      'reviewer-a',
+      evidence.context.sidecar.entries,
+    )).toThrow(/submission has unsupported or missing fields/i);
+    expect(() => validateStrictClassificationSubmission(
+      evidence.context,
+      { results: validA.results } as typeof validA,
+      'reviewer-a',
+      evidence.context.sidecar.entries,
+    )).toThrow(/submission has unsupported or missing fields/i);
     const invalid = submission('reviewer-a', evidence.context, [{ pairRef: ref, visualOutcome: 'not-confusable' }, { pairRef: ref, visualOutcome: 'not-confusable' }], [ref]);
     expect(() => reconcileIndependentClassification(evidence.context, { a: invalid, b: null })).toThrow(/duplicates/i);
   });
@@ -223,6 +244,19 @@ describe('#477 Unicode visual-review v0.2.1 deterministic harness', () => {
     });
     expect(promoted).toMatchObject({ reviewStatus: 'reviewed', learnerEligible: true });
     expect(promoted.cautionJa).toContain('意味・読み・字種上の関係は、この比較からは判断しません。');
+    const validPassB = { result: passBResult, receipt: passBReceipt };
+    expect(() => promoteConfirmedPositive({
+      context: calibration.context,
+      calibrationAuthorization: calibration.authorization!,
+      classification: { a, b },
+      passB: { ...validPassB, relation: 'same-character' },
+    })).toThrow(/Pass B submission has unsupported or missing fields/i);
+    expect(() => promoteConfirmedPositive({
+      context: calibration.context,
+      calibrationAuthorization: calibration.authorization!,
+      classification: { a, b },
+      passB: { result: passBResult } as typeof validPassB,
+    })).toThrow(/Pass B submission has unsupported or missing fields/i);
     expect(() => promoteConfirmedPositive({
       context: calibration.context,
       calibrationAuthorization: { issuedAt: 'evaluator-only' },
