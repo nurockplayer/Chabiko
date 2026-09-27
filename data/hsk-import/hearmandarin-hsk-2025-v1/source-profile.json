@@ -1,5 +1,5 @@
 {
-  "profileVersion": 1,
+  "profileVersion": 2,
   "dataset": {
     "publisher": "HearMandarin",
     "datasetName": "HSK 3.0 word list",
@@ -99,7 +99,6 @@
     "firstBatch": "hsk-vocabulary-batch-001.json",
     "firstBatchPrimaryLevel": 1,
     "subsequentMaxRows": 50,
-    "subsequentOrdering": "global-sequence-within-primary-level",
-    "repositoryPublishedBatches": 1
+    "subsequentOrdering": "global-sequence-within-primary-level"
   }
 }

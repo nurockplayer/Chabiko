@@ -1,5 +1,5 @@
 {
-  "manifestVersion": 1,
+  "manifestVersion": 2,
   "source": {
     "publisher": "HearMandarin",
     "datasetName": "HSK 3.0 word list",
@@ -67,13 +67,17 @@
     "supplementarySourceLevelLabels": 90
   },
   "publication": {
+    "batches": [
+      {
+        "placement": "batch-001",
+        "file": "hsk-vocabulary-batch-001.json",
+        "records": 20,
+        "primaryLevel": 1,
+        "sha256": "76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e"
+      }
+    ],
     "repositoryPublishedBatchCount": 1,
-    "firstBatchFile": "hsk-vocabulary-batch-001.json",
-    "firstBatchRecords": 20,
-    "firstBatchPrimaryLevel": 1,
-    "subsequentBatchMaximum": 50,
-    "subsequentBatchOrdering": "global-sequence-within-primary-level",
-    "batchSha256": "76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e",
+    "repositoryPublishedRecordCount": 20,
     "sourceEligibleIsHumanReviewed": false,
     "sourceEligibleIsRuntimeAvailable": false
   },
@@ -85,11 +89,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "爱",
-      "pinyin": "ài"
+      "pinyin": "ài",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00002",
@@ -98,11 +103,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "八",
-      "pinyin": "bā"
+      "pinyin": "bā",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00003",
@@ -111,11 +117,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "爸爸",
-      "pinyin": "bàba"
+      "pinyin": "bàba",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00004",
@@ -124,11 +131,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "吧",
-      "pinyin": "ba"
+      "pinyin": "ba",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00005",
@@ -137,11 +145,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "白天",
-      "pinyin": "báitiān"
+      "pinyin": "báitiān",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00006",
@@ -150,11 +159,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "百",
-      "pinyin": "bǎi"
+      "pinyin": "bǎi",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00007",
@@ -163,11 +173,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（4）",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "半",
-      "pinyin": "bàn"
+      "pinyin": "bàn",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00008",
@@ -176,11 +187,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "包子",
-      "pinyin": "bāozi"
+      "pinyin": "bāozi",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00009",
@@ -189,11 +201,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "杯子",
-      "pinyin": "bēizi"
+      "pinyin": "bēizi",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00010",
@@ -216,11 +229,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "边",
-      "pinyin": "biān"
+      "pinyin": "biān",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00012",
@@ -229,11 +243,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "病",
-      "pinyin": "bìng"
+      "pinyin": "bìng",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00013",
@@ -242,11 +257,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "不",
-      "pinyin": "bù"
+      "pinyin": "bù",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00014",
@@ -255,11 +271,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "不客气",
-      "pinyin": "bú kèqi"
+      "pinyin": "bú kèqi",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00015",
@@ -268,11 +285,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "不要",
-      "pinyin": "búyào"
+      "pinyin": "búyào",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00016",
@@ -281,11 +299,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "菜",
-      "pinyin": "cài"
+      "pinyin": "cài",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00017",
@@ -294,11 +313,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "茶",
-      "pinyin": "chá"
+      "pinyin": "chá",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00018",
@@ -307,11 +327,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "唱",
-      "pinyin": "chàng"
+      "pinyin": "chàng",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00019",
@@ -320,11 +341,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "超市",
-      "pinyin": "chāoshì"
+      "pinyin": "chāoshì",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00020",
@@ -333,11 +355,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "车",
-      "pinyin": "chē"
+      "pinyin": "chē",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00021",
@@ -346,11 +369,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "draft-batch-001",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "batch-001",
       "disposition": "eligible",
       "simplified": "吃",
-      "pinyin": "chī"
+      "pinyin": "chī",
+      "repositoryBatchFile": "hsk-vocabulary-batch-001.json"
     },
     {
       "recordId": "hm-hsk3-w00022",
