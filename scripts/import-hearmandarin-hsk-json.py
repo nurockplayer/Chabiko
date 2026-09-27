@@ -19,6 +19,11 @@ from typing import Any
 PROFILE_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/source-profile.json")
 RECEIPT_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/official-verification.json")
 JAPANESE_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/first-batch-japanese.json")
+FIRST_BATCH_FILENAME = "hsk-vocabulary-batch-001.json"
+FIRST_BATCH_SIZE = 20
+FIRST_BATCH_LEVEL = 1
+SUBSEQUENT_BATCH_MAX_ROWS = 50
+SUBSEQUENT_BATCH_ORDERING = "global-sequence-within-primary-level"
 
 
 class ImportFailure(Exception):
@@ -54,6 +59,57 @@ def require(condition: bool, message: str) -> None:
         raise ImportFailure(message)
 
 
+def _validate_profile(profile: dict[str, Any], receipt: dict[str, Any]) -> None:
+    dataset = profile["dataset"]
+    expected = profile["expectedSourceMetadata"]
+    counts = profile["counts"]
+    coordinate = profile["coordinate"]
+    plan = profile["plannedBatches"]
+    verification = dataset["sourceCoordinateVerification"]
+
+    # These fields are duplicated in the human-maintained profile and the source
+    # JSON/independent receipt. Keep them tied to one verified publisher artifact.
+    source_metadata_pairs = (
+        ("datasetVersion", "version"),
+        ("generated", "generated"),
+        ("license", "license"),
+        ("licenseUrl", "license_url"),
+        ("attribution", "attribution"),
+        ("homepage", "homepage"),
+    )
+    for dataset_key, metadata_key in source_metadata_pairs:
+        require(dataset[dataset_key] == expected[metadata_key], f"profile source identity drift at {dataset_key!r}")
+    require(dataset["json"]["rows"] == expected["count"], "profile JSON row count disagrees with publisher metadata")
+    require(dataset["csv"]["rows"] == expected["count"], "profile CSV row count disagrees with publisher metadata")
+    require(dataset["json"]["sha256"] == receipt.get("datasetSha256"), "official receipt is bound to a different source JSON identity")
+    require(receipt.get("versionEvidence") == {
+        "datasetVersion": expected["version"],
+        "datasetGenerated": expected["generated"],
+        "downloadPageVersionLabel": dataset["downloadPageVersionLabel"],
+    }, "official receipt source-version identity disagrees with verified publisher metadata")
+    require(verification["receiptSha256"] == sha256(json_bytes(receipt)), "profile receipt identity does not match parsed official receipt")
+    require(verification["verificationReceipt"] == RECEIPT_REL.name, "profile names a different official verification receipt")
+    require(receipt.get("intendedCount") == counts["sourceCandidates"] == coordinate["lastVerifiedSequence"] - coordinate["firstVerifiedSequence"] + 1,
+            "official receipt candidate count disagrees with frozen source coordinates")
+    require(receipt.get("primaryLevelCounts") == coordinate["expectedLevelCounts"], "official receipt primary-level counts disagree with profile coordinates")
+    require(receipt.get("eligibleCount") == counts["eligible"], "official receipt eligible count disagrees with profile accounting")
+    require(receipt.get("eligibleLevelCounts") == counts["eligibleLevelCounts"], "official receipt eligible level counts disagree with profile accounting")
+
+    max_rows = plan["subsequentMaxRows"]
+    require(isinstance(max_rows, int) and not isinstance(max_rows, bool) and 1 <= max_rows <= SUBSEQUENT_BATCH_MAX_ROWS,
+            "subsequent batch maximum must be a positive integer no greater than 50")
+    require(plan["subsequentOrdering"] == SUBSEQUENT_BATCH_ORDERING, "unsupported subsequent batch ordering")
+    require(plan["firstBatch"] == FIRST_BATCH_FILENAME, "first batch filename disagrees with frozen publication contract")
+    require(isinstance(counts["firstBatch"], int) and not isinstance(counts["firstBatch"], bool) and counts["firstBatch"] == FIRST_BATCH_SIZE,
+            "first batch size disagrees with frozen publication contract")
+    first_level = plan["firstBatchPrimaryLevel"]
+    require(isinstance(first_level, int) and not isinstance(first_level, bool) and first_level == FIRST_BATCH_LEVEL,
+            "first batch primary level disagrees with frozen publication contract")
+    published_batches = plan["repositoryPublishedBatches"]
+    require(isinstance(published_batches, int) and not isinstance(published_batches, bool) and published_batches == 1,
+            "repository publication count disagrees with frozen first-batch contract")
+
+
 def load_configuration(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     profile = load_json(repo_root / PROFILE_REL)
     receipt_path = repo_root / RECEIPT_REL
@@ -66,6 +122,7 @@ def load_configuration(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any],
         receipt = json.loads(receipt_bytes.decode("utf-8"), object_pairs_hook=_unique_object)
     except (UnicodeError, json.JSONDecodeError) as error:
         raise ImportFailure(f"verification receipt is not valid UTF-8 JSON: {error}") from error
+    _validate_profile(profile, receipt)
     japanese = load_json(repo_root / JAPANESE_REL)
     return profile, receipt, japanese
 
@@ -389,13 +446,13 @@ def _mini_profile(source_bytes: bytes, receipt_bytes: bytes) -> dict[str, Any]:
             "termsSummary": "The general site terms are separate from this small fixture's pinned artifact.",
             "artifactScopeRationale": "The exact JSON artifact has an artifact-specific CC BY 4.0 grant.",
             "excludedFields": ["English glosses", "Traditional Chinese", "part of speech", "numbered pinyin", "legacy HSK levels", "audio", "dictionary material"],
-            "json": {"sha256": source_hash, "bytes": len(source_bytes), "rows": 4},
-            "sourceCoordinateVerification": {"receiptSha256": sha256(receipt_bytes), "page": "https://www.chinesetest.cn/syllabus", "officialArtifactSha256": "test", "scope": "Test-only coordinate receipt."},
+            "json": {"sha256": source_hash, "bytes": len(source_bytes), "rows": 21}, "csv": {"sha256": "test", "bytes": 0, "rows": 21},
+            "sourceCoordinateVerification": {"receiptSha256": sha256(receipt_bytes), "verificationReceipt": RECEIPT_REL.name, "page": "https://www.chinesetest.cn/syllabus", "officialArtifactSha256": "test", "scope": "Test-only coordinate receipt."},
         },
-        "expectedSourceMetadata": {"name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 4, "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "HearMandarin (https://hearmandarin.com)", "homepage": "https://hearmandarin.com/datasets/"},
-        "coordinate": {"primaryLevelField": "hsk3_band", "globalSequenceField": "hsk3_seq", "firstVerifiedSequence": 1, "lastVerifiedSequence": 4, "expectedLevelCounts": {"1": 4}},
-        "counts": {"sourceCandidates": 4, "eligible": 3, "blocked": 1, "excludedPosDiscrepancies": 0, "supplementarySourceLevelLabels": 0, "firstBatch": 2, "eligibleLevelCounts": {"1": 3}, "duplicateGroups": 0, "duplicateRows": 0},
-        "plannedBatches": {"firstBatch": "hsk-vocabulary-batch-001.json", "firstBatchPrimaryLevel": 1, "subsequentMaxRows": 50, "subsequentOrdering": "global-sequence-within-primary-level"},
+        "expectedSourceMetadata": {"name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 21, "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "HearMandarin (https://hearmandarin.com)", "homepage": "https://hearmandarin.com/datasets/"},
+        "coordinate": {"primaryLevelField": "hsk3_band", "globalSequenceField": "hsk3_seq", "firstVerifiedSequence": 1, "lastVerifiedSequence": 21, "expectedLevelCounts": {"1": 21}},
+        "counts": {"sourceCandidates": 21, "eligible": 20, "blocked": 1, "excludedPosDiscrepancies": 0, "supplementarySourceLevelLabels": 0, "firstBatch": 20, "eligibleLevelCounts": {"1": 20}, "duplicateGroups": 0, "duplicateRows": 0},
+        "plannedBatches": {"firstBatch": "hsk-vocabulary-batch-001.json", "firstBatchPrimaryLevel": 1, "subsequentMaxRows": 50, "subsequentOrdering": "global-sequence-within-primary-level", "repositoryPublishedBatches": 1},
     }
 
 
@@ -408,31 +465,30 @@ def self_test(script_path: Path) -> None:
         config_dir.mkdir(parents=True)
         source_path = Path(temporary) / "source.json"
         source = {
-            "name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 4, "license": "CC BY 4.0",
+            "name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 21, "license": "CC BY 4.0",
             "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "HearMandarin (https://hearmandarin.com)",
             "homepage": "https://hearmandarin.com/datasets/", "words": [
-                {"id": "w00001", "simplified": "甲", "pinyin": "jiǎ", "hsk3_band": 1, "hsk3_seq": 1},
-                {"id": "w00002", "simplified": "乙", "pinyin": "yǐ", "hsk3_band": 1, "hsk3_seq": 2},
-                {"id": "w00003", "simplified": "丙", "pinyin": "bǐng", "hsk3_band": 1, "hsk3_seq": 3},
-                {"id": "w00004", "simplified": "丁", "pinyin": "dīng", "hsk3_band": 1, "hsk3_seq": 4},
+                {"id": f"w{index:05d}", "simplified": f"词{index}", "pinyin": f"cí{index}", "hsk3_band": 1, "hsk3_seq": index}
+                for index in range(1, 22)
             ],
         }
         source_bytes = json_bytes(source)
         source_path.write_bytes(source_bytes)
-        projection = [["w00001", 1, 1, "甲", "jiǎ"], ["w00003", 3, 1, "丙", "bǐng"], ["w00004", 4, 1, "丁", "dīng"]]
+        projection = [[row["id"], row["hsk3_seq"], row["hsk3_band"], row["simplified"], row["pinyin"]] for row in source["words"][:20]]
         receipt = {
-            "datasetSha256": sha256(source_bytes), "intendedCount": 4, "primaryLevelCounts": {"1": 4},
-            "eligibleCount": 3, "eligibleLevelCounts": {"1": 3},
+            "datasetSha256": sha256(source_bytes), "intendedCount": 21, "primaryLevelCounts": {"1": 21},
+            "eligibleCount": 20, "eligibleLevelCounts": {"1": 20},
+            "versionEvidence": {"datasetVersion": "test-v1", "datasetGenerated": "test-date", "downloadPageVersionLabel": "test-label"},
             "eligibleProjectionSha256": sha256(json.dumps(projection, ensure_ascii=False, separators=(",", ":")).encode("utf-8")),
-            "blocked": [{"globalSequence": 2, "reasons": ["official-numbered-sense-marker-not-retained"]}],
+            "blocked": [{"globalSequence": 21, "reasons": ["official-numbered-sense-marker-not-retained"]}],
             "supplementarySourceLevelLabels": {}, "excludedFieldDiscrepancies": [],
         }
         receipt_bytes = json_bytes(receipt)
         (config_dir / "official-verification.json").write_bytes(receipt_bytes)
         (config_dir / "source-profile.json").write_bytes(json_bytes(_mini_profile(source_bytes, receipt_bytes)))
         companion = {"authoring": {"status": "ai-provisional", "reviewStatus": "draft", "humanReview": False, "excludedSourceFieldsUsed": []}, "records": [
-            {"sourceId": "w00001", "globalSequence": 1, "simplified": "甲", "pinyin": "jiǎ", "japanese": "一。"},
-            {"sourceId": "w00003", "globalSequence": 3, "simplified": "丙", "pinyin": "bǐng", "japanese": "三。"},
+            {"sourceId": row["id"], "globalSequence": row["hsk3_seq"], "simplified": row["simplified"], "pinyin": row["pinyin"], "japanese": f"語彙{index}。"}
+            for index, row in enumerate(source["words"][:20], start=1)
         ]}
         (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(companion))
         copied_script = root / "scripts" / script_path.name
@@ -450,8 +506,8 @@ def self_test(script_path: Path) -> None:
             require((out_a / name).read_bytes() == (out_b / name).read_bytes(), f"self-test repeated output drift: {name}")
         manifest = load_json(out_a / "manifest.json")
         batch = load_json(out_a / "hsk-vocabulary-batch-001.json")
-        require(manifest["accounting"]["eligible"] == 3 and manifest["accounting"]["blocked"] == 1, "self-test manifest accounting mismatch")
-        require(len(batch["vocabulary"]) == 2 and all(row["reviewStatus"] == "draft" for row in batch["vocabulary"]), "self-test batch publication mismatch")
+        require(manifest["accounting"]["eligible"] == 20 and manifest["accounting"]["blocked"] == 1, "self-test manifest accounting mismatch")
+        require(len(batch["vocabulary"]) == 20 and all(row["reviewStatus"] == "draft" for row in batch["vocabulary"]), "self-test batch publication mismatch")
 
         dirty = Path(temporary) / "dirty"
         dirty.mkdir()
@@ -476,6 +532,21 @@ def self_test(script_path: Path) -> None:
         rejected = invoke(Path(temporary) / "wrong-hash-out", wrong_hash)
         require(rejected.returncode != 0 and not (Path(temporary) / "wrong-hash-out").exists(), "self-test source hash drift was not rejected before output")
 
+        profile = load_json(config_dir / "source-profile.json")
+        for probe_name, path, value in (
+            ("contradictory source version", ("dataset", "datasetVersion"), "wrong-version"),
+            ("51-row future batch", ("plannedBatches", "subsequentMaxRows"), 51),
+            ("boolean future batch limit", ("plannedBatches", "subsequentMaxRows"), True),
+            ("unsupported future ordering", ("plannedBatches", "subsequentOrdering"), "source-file-order"),
+        ):
+            changed_profile = json.loads(json.dumps(profile))
+            changed_profile[path[0]][path[1]] = value
+            (config_dir / "source-profile.json").write_bytes(json_bytes(changed_profile))
+            rejected_output = Path(temporary) / f"rejected-{probe_name.replace(' ', '-')}"
+            rejected = invoke(rejected_output)
+            require(rejected.returncode != 0 and not rejected_output.exists(), f"self-test {probe_name} was not rejected before output")
+        (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
+
         duplicate_source = dict(source)
         duplicate_source["words"] = [dict(row) for row in source["words"]]
         duplicate_source["words"][3]["hsk3_seq"] = 3
@@ -483,7 +554,7 @@ def self_test(script_path: Path) -> None:
         source_path.write_bytes(duplicate_bytes)
         profile = load_json(config_dir / "source-profile.json")
         profile["dataset"]["json"].update({"sha256": sha256(duplicate_bytes), "bytes": len(duplicate_bytes)})
-        profile["expectedSourceMetadata"]["count"] = 4
+        profile["expectedSourceMetadata"]["count"] = 21
         receipt["datasetSha256"] = sha256(duplicate_bytes)
         (config_dir / "official-verification.json").write_bytes(json_bytes(receipt))
         profile["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(json_bytes(receipt))
@@ -503,7 +574,7 @@ def self_test(script_path: Path) -> None:
         (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(japanese_companion))
         rejected = invoke(Path(temporary) / "missing-japanese-out")
         require(rejected.returncode != 0 and not (Path(temporary) / "missing-japanese-out").exists(), "self-test incomplete Japanese companion was not rejected before output")
-    print("self-test passed: clean CLI repeat, dirty output preservation, symlink output rejection, source hash drift, duplicate coordinates, incomplete Japanese companion")
+    print("self-test passed: clean CLI repeat, dirty output preservation, symlink output rejection, source hash drift, contradictory profile version, invalid future batch plan, duplicate coordinates, incomplete Japanese companion")
 
 
 def main(argv: list[str] | None = None) -> int:
