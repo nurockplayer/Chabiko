@@ -17,6 +17,7 @@ interface SourceProfile {
     duplicateGroups: number;
     duplicateRows: number;
     supplementarySourceLevelLabels: number;
+    excludedPosDiscrepancies: number;
   };
   plannedBatches: {
     repositoryPublishedBatches?: number;
@@ -464,6 +465,8 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
   requireInvariant(candidate.accounting.excludedFieldDiscrepancies.every((entry) => sameJson(Object.keys(entry).sort(), ['field', 'globalSequence', 'pdfPage', 'reason', 'retained'])),
     'manifest-excluded-discrepancy-schema');
   requireInvariant(sameJson(candidate.accounting.excludedFieldDiscrepancies, proof.excludedFieldDiscrepancies), 'excluded-field-discrepancies');
+  requireInvariant(proof.excludedFieldDiscrepancies.length === candidateProfile.counts.excludedPosDiscrepancies,
+    'profile-excluded-field-discrepancy-count');
 
   const primaryCounts = Object.fromEntries([1, 2, 3, 4].map((level) => [String(level), candidate.rows.filter((row) => row.primaryLevel === level).length]));
   const eligibleLevelCounts = Object.fromEntries([1, 2, 3, 4].map((level) => [String(level), eligibleRows.filter((row) => row.primaryLevel === level).length]));
@@ -474,6 +477,8 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
   requireInvariant(sameJson(candidate.accounting.primaryLevelCounts, proof.primaryLevelCounts), 'manifest-primary-level-counts');
   requireInvariant(sameJson(candidate.accounting.eligibleLevelCounts, proof.eligibleLevelCounts), 'manifest-eligible-level-counts');
   requireInvariant(Object.keys(supplementaryLabels).length === candidate.accounting.supplementarySourceLevelLabels, 'supplementary-label-count');
+  requireInvariant(Object.keys(supplementaryLabels).length === candidateProfile.counts.supplementarySourceLevelLabels,
+    'profile-supplementary-label-count');
 
   const projection = eligibleRows.map((row) => [row.sourceId, row.globalSequence, row.primaryLevel, row.simplified, row.pinyin]);
   const projectionSha256 = createHash('sha256').update(JSON.stringify(projection), 'utf8').digest('hex');
@@ -863,6 +868,33 @@ describe('HearMandarin HSK source foundation', () => {
     emptyJapanese.companions['batch-001']!.records[0]!.japanese = '  ';
     syncTestCompanionBytes(emptyJapanese, 'batch-001');
     expect(producerInputError(emptyJapanese)).toContain('Japanese draft is empty at row 1');
+  });
+
+  it('joins raw profile accounting counts to the independent receipt', () => {
+    const profileCountDrifts: Array<{
+      name: string;
+      count: 'supplementarySourceLevelLabels' | 'excludedPosDiscrepancies';
+      invariant: string;
+    }> = [
+      {
+        name: 'supplementary source-level label count',
+        count: 'supplementarySourceLevelLabels',
+        invariant: 'profile-supplementary-label-count',
+      },
+      {
+        name: 'excluded field discrepancy count',
+        count: 'excludedPosDiscrepancies',
+        invariant: 'profile-excluded-field-discrepancy-count',
+      },
+    ];
+
+    for (const testCase of profileCountDrifts) {
+      const candidate = cloneArtifacts();
+      candidate.profile.counts[testCase.count] = 999;
+      syncTestProfileBytes(candidate);
+      expect(producerInputError(candidate), `${testCase.name} raw producer profile bridge`).toBe('');
+      expect(() => assertFoundation(candidate), testCase.name).toThrow(`manifest invariant: ${testCase.invariant}`);
+    }
   });
 
   it('rejects independent profile, manifest, index, companion, and batch drift copies through the same validators', () => {
