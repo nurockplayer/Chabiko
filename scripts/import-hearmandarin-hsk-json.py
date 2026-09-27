@@ -765,8 +765,14 @@ def _self_test_multilevel_cli(temporary: Path, mini_repo: Path, copied_script: P
     reject_multi_case("index wrong root type", "publication index must be an object", json_bytes([]))
     reject_multi_case("index wrong placements type", "publication index placements must be a nonempty array",
                       json_bytes({"publicationIndexVersion": 1, "placements": {}}))
+    reject_multi_case("index malformed JSON", "cannot read valid UTF-8 JSON from",
+                      b'{"publicationIndexVersion":1,"placements":["batch-001"]\n')
     reject_multi_case("index duplicate keys", "duplicate JSON object key: placements",
                       b'{"publicationIndexVersion":1,"placements":["batch-001"],"placements":["batch-001"]}\n')
+    reject_multi_case("index wrong placement element type", "publication index placements must be nonempty strings",
+                      json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", 2]}))
+    reject_multi_case("index extra root field", "publication index has unsupported fields",
+                      json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001"], "extra": True}))
     reject_multi_case("index float version", "publication index version must be the integer 1",
                       b'{"publicationIndexVersion":1.0,"placements":["batch-001"]}\n')
     reject_multi_case("index unsupported version", "publication index version must be the integer 1",
@@ -797,6 +803,13 @@ def _self_test_multilevel_cli(temporary: Path, mini_repo: Path, copied_script: P
 
     reject_multi_case("declared companion missing", "cannot read valid UTF-8 JSON from", target_index,
                       setup=lambda: target_companion_path.unlink())
+    reject_multi_case("declared companion malformed JSON", "cannot read valid UTF-8 JSON from", target_index,
+                      setup=lambda: target_companion_path.write_bytes(b'{"authoring":\n'))
+    reject_multi_case("declared companion duplicate keys", "duplicate JSON object key: sourceId", target_index,
+                      setup=lambda: target_companion_path.write_bytes(
+                          b'{"authoring":{},"records":[{"sourceId":"first","sourceId":"duplicate",'
+                          b'"globalSequence":1,"simplified":"x","pinyin":"x","japanese":"x"}]}\n'
+                      ))
     reject_multi_case("declared companion wrong source join", "Japanese companion sourceId mismatch at row 1", target_index,
                       setup=lambda: target_companion_path.write_bytes(json_bytes({
                           **companions[target_placement],
@@ -842,7 +855,7 @@ def _self_test_multilevel_cli(temporary: Path, mini_repo: Path, copied_script: P
                           **companions[target_placement],
                           "records": [{**companions[target_placement]["records"][0], "globalSequence": True}, *companions[target_placement]["records"][1:]],
                       })))
-    require(negative_count == 21, f"self-test multi-placement negative probe count changed: {negative_count}")
+    require(negative_count == 26, f"self-test multi-placement negative probe count changed: {negative_count}")
 
     reset_inputs(json_bytes(full_index))
     faulting_script = mini_repo / "scripts" / "import-hearmandarin-hsk-json-link-failure-test.py"
@@ -859,8 +872,10 @@ if os.environ.get("CHABIKO_TEST_FAIL_THIRD_LINK") == "1":
         return _hsk_original_link(source, target, *args, **kwargs)
     os.link = _hsk_fail_third_link
 '''
-    require(source_text.splitlines()[8] == "import os", "self-test copied importer link-failure injection point changed")
-    faulting_script.write_text(source_text.replace("import os\n", injection, 1), encoding="utf-8")
+    import_anchor = "\nimport os\n"
+    require(source_text.count(import_anchor) == 1,
+            "self-test copied importer link-failure injection anchor must occur exactly once")
+    faulting_script.write_text(source_text.replace(import_anchor, "\n" + injection, 1), encoding="utf-8")
     fail_output = temporary / "multi-link-failure"
     caller_sentinel = temporary / "caller-owned" / "sentinel.txt"
     caller_sentinel.parent.mkdir()
