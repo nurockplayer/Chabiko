@@ -26,6 +26,22 @@ type TeacherRow = {
 };
 
 type TeacherBatch = { vocabulary: TeacherRow[] };
+type ExistingExpansionPlan = {
+  inventory: {
+    totalCandidateRows: number;
+    acceptedRows: number;
+    rejectedRows: number;
+    rejected: { sourceSheet: string; sourceRow: number; reason: string }[];
+  };
+  existingBatch01: { count: number; exactAcceptedPrefix: boolean; ids: string[] };
+};
+
+type PreviewRow = {
+  sourceSheet: string;
+  sourceRow: number;
+  productionVocabularyId?: string;
+};
+
 type TeacherImportManifest = {
   sourceFile: string;
   sourceChecksumSha256: string;
@@ -79,11 +95,15 @@ const manifestPath = 'data/teacher-import/teacher-core-v1/manifest.json';
 const sourceBatchPath = 'data/teacher-import/teacher-core-v1/teacher-vocabulary-batch-01.json';
 const productionBatchPath = 'data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json';
 const learnerManifestPath = 'data/teacher-vocabulary-preview/learner-manifest.json';
+const expansionPlanPath = 'docs/content/teacher-core-v1-expansion-plan.json';
+const previewCorpusPath = 'data/teacher-vocabulary-preview/preview-corpus.json';
 const profile = JSON.parse(fs.readFileSync(profilePath, 'utf8')) as SourceProfile;
 const importManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as TeacherImportManifest;
 const sourceBatch = JSON.parse(fs.readFileSync(sourceBatchPath, 'utf8')) as TeacherBatch;
 const productionBatch = JSON.parse(fs.readFileSync(productionBatchPath, 'utf8')) as TeacherBatch;
 const learnerManifest = JSON.parse(fs.readFileSync(learnerManifestPath, 'utf8')) as { rows: unknown[] };
+const expansionPlan = JSON.parse(fs.readFileSync(expansionPlanPath, 'utf8')) as ExistingExpansionPlan;
+const previewCorpus = JSON.parse(fs.readFileSync(previewCorpusPath, 'utf8')) as { rows: PreviewRow[] };
 
 function sha256(path: string): string {
   return createHash('sha256').update(fs.readFileSync(path)).digest('hex');
@@ -159,7 +179,9 @@ describe('teacher-only #81 source reconciliation', () => {
     expect(profile.headers.blankLeadingCells).toBe(1);
     expect(profile.headers.trailingBlankCellsTrimmed).toBe(0);
     expect(profile.artifacts.manifest.sha256).toBe(sha256(manifestPath));
+    expect(profile.artifacts.manifest.sha256).toBe('d1b65807c2d837982bc84386ea89533e88801efdbc86eb54af09e031b6747f38');
     expect(profile.artifacts.sourceBatch.sha256).toBe(sha256(sourceBatchPath));
+    expect(profile.artifacts.sourceBatch.sha256).toBe('7de26e919bead636f84cd269af8f64cfbfb941647326f7fe2c05f35c86912795');
     expect(profile.productionReconciliation.currentSourceBatchSha256).toBe(sha256(productionBatchPath));
     expect(profile.productionReconciliation.learnerCorpus.sha256).toBe(sha256(learnerManifestPath));
     expect(profile.artifacts.sourceBatch.recordCount).toBe(20);
@@ -194,14 +216,33 @@ describe('teacher-only #81 source reconciliation', () => {
     expect(new Set(rejected).size).toBe(1845);
     expect(importManifest.batches).toHaveLength(1);
     expect(importManifest.batches[0].sourceRows.map(row => coordinate(row.sheet, row.row))).toEqual(accepted);
+
+    expect(expansionPlan.inventory).toMatchObject({ totalCandidateRows: 1865, acceptedRows: 20, rejectedRows: 1845 });
+    expect(importManifest.rejectedRows.map(row => ({ sourceSheet: row.sheet, sourceRow: row.row, reason: row.reason })))
+      .toEqual(expansionPlan.inventory.rejected);
+    expect(expansionPlan.existingBatch01.count).toBe(20);
+    expect(expansionPlan.existingBatch01.exactAcceptedPrefix).toBe(true);
+    expect(importManifest.acceptedItems.map(item => item.vocabularyId)).toEqual(expansionPlan.existingBatch01.ids);
+
+    const previewCoordinates = previewCorpus.rows.map(row => coordinate(row.sourceSheet, row.sourceRow));
+    expect(previewCoordinates).toHaveLength(importManifest.totalRows);
+    expect(new Set(previewCoordinates).size).toBe(importManifest.totalRows);
+    expect([...all].sort()).toEqual([...previewCoordinates].sort());
+    expect(previewCorpus.rows.filter(row => row.productionVocabularyId).map(row => row.productionVocabularyId))
+      .toEqual(expansionPlan.existingBatch01.ids);
+    expect(previewCorpus.rows.filter(row => row.productionVocabularyId).map(row => coordinate(row.sourceSheet, row.sourceRow)))
+      .toEqual(accepted);
   });
 
   it('keeps the exact first source slice separate from its enriched production glosses', () => {
     expect(sourceBatch.vocabulary).toHaveLength(20);
     expect(productionBatch.vocabulary).toHaveLength(20);
+    expect(sourceBatch.vocabulary.map(row => row.id)).toEqual(expansionPlan.existingBatch01.ids);
     expect(sourceBatch.vocabulary.map(row => row.id)).toEqual(productionBatch.vocabulary.map(row => row.id));
     expect(sourceBatch.vocabulary.map(row => coordinate(row.curriculum.sourceSheet, row.curriculum.sourceRow)))
       .toEqual(productionBatch.vocabulary.map(row => coordinate(row.curriculum.sourceSheet, row.curriculum.sourceRow)));
+    expect(sourceBatch.vocabulary.map(row => coordinate(row.curriculum.sourceSheet, row.curriculum.sourceRow)))
+      .toEqual(importManifest.acceptedItems.map(item => coordinate(item.sourceSheet, item.sourceRow)));
 
     for (const [index, source] of sourceBatch.vocabulary.entries()) {
       const production = productionBatch.vocabulary[index];
