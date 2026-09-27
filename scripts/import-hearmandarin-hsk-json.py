@@ -87,6 +87,10 @@ def _validate_profile(profile: dict[str, Any], receipt: dict[str, Any]) -> None:
         "datasetGenerated": expected["generated"],
         "downloadPageVersionLabel": dataset["downloadPageVersionLabel"],
     }, "official receipt source-version identity disagrees with verified publisher metadata")
+    require(verification["officialArtifactSha256"] == receipt.get("officialArtifactSha256"),
+            "official verification artifact hash disagrees with receipt")
+    require(verification["page"] == receipt.get("officialPageUrl"),
+            "official verification page disagrees with receipt")
     require(verification["receiptSha256"] == sha256(json_bytes(receipt)), "profile receipt identity does not match parsed official receipt")
     require(verification["verificationReceipt"] == RECEIPT_REL.name, "profile names a different official verification receipt")
     require(receipt.get("intendedCount") == counts["sourceCandidates"] == coordinate["lastVerifiedSequence"] - coordinate["firstVerifiedSequence"] + 1,
@@ -479,6 +483,8 @@ def self_test(script_path: Path) -> None:
             "datasetSha256": sha256(source_bytes), "intendedCount": 21, "primaryLevelCounts": {"1": 21},
             "eligibleCount": 20, "eligibleLevelCounts": {"1": 20},
             "versionEvidence": {"datasetVersion": "test-v1", "datasetGenerated": "test-date", "downloadPageVersionLabel": "test-label"},
+            "officialArtifactSha256": "test", "officialArtifactUrl": "https://www.chinesetest.cn/syllabus/test.pdf",
+            "officialPageUrl": "https://www.chinesetest.cn/syllabus",
             "eligibleProjectionSha256": sha256(json.dumps(projection, ensure_ascii=False, separators=(",", ":")).encode("utf-8")),
             "blocked": [{"globalSequence": 21, "reasons": ["official-numbered-sense-marker-not-retained"]}],
             "supplementarySourceLevelLabels": {}, "excludedFieldDiscrepancies": [],
@@ -533,18 +539,24 @@ def self_test(script_path: Path) -> None:
         require(rejected.returncode != 0 and not (Path(temporary) / "wrong-hash-out").exists(), "self-test source hash drift was not rejected before output")
 
         profile = load_json(config_dir / "source-profile.json")
-        for probe_name, path, value in (
-            ("contradictory source version", ("dataset", "datasetVersion"), "wrong-version"),
-            ("51-row future batch", ("plannedBatches", "subsequentMaxRows"), 51),
-            ("boolean future batch limit", ("plannedBatches", "subsequentMaxRows"), True),
-            ("unsupported future ordering", ("plannedBatches", "subsequentOrdering"), "source-file-order"),
+        for probe_name, path, value, expected_error in (
+            ("contradictory source version", ("dataset", "datasetVersion"), "wrong-version", "source identity drift"),
+            ("51-row future batch", ("plannedBatches", "subsequentMaxRows"), 51, "no greater than 50"),
+            ("boolean future batch limit", ("plannedBatches", "subsequentMaxRows"), True, "maximum must be a positive integer"),
+            ("unsupported future ordering", ("plannedBatches", "subsequentOrdering"), "source-file-order", "unsupported subsequent batch ordering"),
+            ("contradictory official artifact hash", ("dataset", "sourceCoordinateVerification", "officialArtifactSha256"), "wrong-test-hash", "artifact hash disagrees with receipt"),
+            ("contradictory official page", ("dataset", "sourceCoordinateVerification", "page"), "https://wrong.example/syllabus", "page disagrees with receipt"),
         ):
             changed_profile = json.loads(json.dumps(profile))
-            changed_profile[path[0]][path[1]] = value
+            target = changed_profile
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = value
             (config_dir / "source-profile.json").write_bytes(json_bytes(changed_profile))
             rejected_output = Path(temporary) / f"rejected-{probe_name.replace(' ', '-')}"
             rejected = invoke(rejected_output)
-            require(rejected.returncode != 0 and not rejected_output.exists(), f"self-test {probe_name} was not rejected before output")
+            require(rejected.returncode != 0 and not rejected_output.exists() and expected_error in rejected.stderr,
+                    f"self-test {probe_name} did not reach its intended rejection before output: {rejected.stderr.strip()}")
         (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
 
         duplicate_source = dict(source)
@@ -574,7 +586,7 @@ def self_test(script_path: Path) -> None:
         (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(japanese_companion))
         rejected = invoke(Path(temporary) / "missing-japanese-out")
         require(rejected.returncode != 0 and not (Path(temporary) / "missing-japanese-out").exists(), "self-test incomplete Japanese companion was not rejected before output")
-    print("self-test passed: clean CLI repeat, dirty output preservation, symlink output rejection, source hash drift, contradictory profile version, invalid future batch plan, duplicate coordinates, incomplete Japanese companion")
+    print("self-test passed: clean CLI repeat, dirty output preservation, symlink output rejection, source hash drift, contradictory source and official receipt identity, invalid future batch plan, duplicate coordinates, incomplete Japanese companion")
 
 
 def main(argv: list[str] | None = None) -> int:
