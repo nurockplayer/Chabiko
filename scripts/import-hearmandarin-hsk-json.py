@@ -282,7 +282,9 @@ def _companion_path(placement: str) -> Path:
 def _validate_publication_index_header(publication_index: Any) -> list[str]:
     require(isinstance(publication_index, dict), "publication index must be an object")
     require(set(publication_index) == {"publicationIndexVersion", "placements"}, "publication index has unsupported fields")
-    require(publication_index.get("publicationIndexVersion") == 1, "unsupported publication index version")
+    version = publication_index.get("publicationIndexVersion")
+    require(isinstance(version, int) and not isinstance(version, bool) and version == 1,
+            "publication index version must be the integer 1")
     declarations = publication_index.get("placements")
     require(isinstance(declarations, list) and declarations, "publication index placements must be a nonempty array")
     require(all(isinstance(item, str) and item for item in declarations), "publication index placements must be nonempty strings")
@@ -527,7 +529,8 @@ def self_test(script_path: Path) -> None:
         shutil.copy2(script_path, root / "scripts" / script_path.name)
         config_dir = root / "data/hsk-import/hearmandarin-hsk-2025-v1"
         config_dir.mkdir(parents=True)
-        (config_dir / "publication-index.json").write_bytes(json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001"]}))
+        base_publication_index = {"publicationIndexVersion": 1, "placements": ["batch-001"]}
+        (config_dir / "publication-index.json").write_bytes(json_bytes(base_publication_index))
         source_path = Path(temporary) / "source.json"
         source_ids = [
             "fixture-kite", "fixture-orchid", "fixture-river", "fixture-copper", "fixture-cedar",
@@ -576,6 +579,7 @@ def self_test(script_path: Path) -> None:
             (config_dir / "official-verification.json").write_bytes(json_bytes(receipt_data))
             (config_dir / "source-profile.json").write_bytes(json_bytes(profile_data))
             (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(japanese_data))
+            (config_dir / "publication-index.json").write_bytes(json_bytes(base_publication_index))
 
         def reset_inputs() -> None:
             write_inputs(source_bytes, clone(base_profile), clone(base_receipt), clone(companion))
@@ -682,6 +686,9 @@ def self_test(script_path: Path) -> None:
                     setup=profile_probe(("plannedBatches", "subsequentMaxRows"), True))
         reject_case("unsupported future ordering", "unsupported subsequent batch ordering",
                     setup=profile_probe(("plannedBatches", "subsequentOrdering"), "source-file-order"))
+        reject_case("boolean publication index version", "publication index version must be the integer 1",
+                    setup=lambda _output: (config_dir.joinpath("publication-index.json").write_bytes(
+                        json_bytes({"publicationIndexVersion": True, "placements": ["batch-001"]})), source_path)[1])
         reject_case("contradictory official artifact hash", "official verification artifact hash disagrees with receipt",
                     setup=profile_probe(("dataset", "sourceCoordinateVerification", "officialArtifactSha256"), "wrong-test-hash"))
         reject_case("contradictory official page", "official verification page disagrees with receipt",
@@ -783,7 +790,7 @@ def self_test(script_path: Path) -> None:
         reject_case("broken symlink output", "output directory cannot be a symlink", setup=broken_symlink_setup, expected_output_exists=True,
                     preserve=lambda output: output.is_symlink() and not broken_target.exists())
 
-        require(rejection_case_count == 31, f"self-test negative CLI probe count changed: {rejection_case_count}")
+        require(rejection_case_count == 32, f"self-test negative CLI probe count changed: {rejection_case_count}")
 
     print(f"self-test passed: {rejection_case_count} negative CLI probes plus clean/repeat/empty-dir CLI success")
 
