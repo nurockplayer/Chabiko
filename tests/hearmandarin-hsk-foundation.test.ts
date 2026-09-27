@@ -4,15 +4,78 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+interface SourceProfile {
+  dataset: {
+    json: { sha256: string };
+    jsonDownloadUrl: string;
+    csvDownloadUrl: string;
+    termsUrl: string;
+    artifactScopeRationale: string;
+  };
+}
+
+interface VerificationReceipt {
+  eligibleProjectionSha256: string;
+  blocked: Array<{ globalSequence: number; reasons: string[] }>;
+  excludedFieldDiscrepancies: Array<{ globalSequence: number; retained: boolean }>;
+}
+
+interface JapaneseDraft {
+  sourceId: string;
+  globalSequence: number;
+  simplified: string;
+  pinyin: string;
+  japanese: string;
+}
+
+interface ManifestRow {
+  recordId: string;
+  sourceId: string;
+  globalSequence: number;
+  primaryLevel: number;
+  sourceLevelLabel: string;
+  sourceEligible: boolean;
+  repositoryPublication: string;
+  batchPlacement: string | null;
+  disposition: 'eligible' | 'blocked';
+  blockedReason?: string[];
+  simplified?: string;
+  pinyin?: string;
+}
+
+interface HskManifest {
+  source: { termsUrl: string; artifactScopeRationale: string };
+  accounting: Record<string, number>;
+  officialCoordinateVerification: { eligibleProjectionSha256: string };
+  publication: { firstBatchPrimaryLevel: number; batchSha256: string };
+  rows: ManifestRow[];
+}
+
+interface VocabularyRecord {
+  id: string;
+  pinyin: string;
+  japanese: string;
+  reviewStatus: string;
+  simplified: string;
+  simplifiedStatus: string;
+  hsk: { standardVersion: string; introducedAtLevel: number; sourceLevelLabel: string };
+  source: { type: string; note: string };
+}
+
 const root = process.cwd();
 const importDir = 'data/hsk-import/hearmandarin-hsk-2025-v1';
-const profile = JSON.parse(readFileSync(path.join(root, importDir, 'source-profile.json'), 'utf8')) as Record<string, any>;
+
+function readJson<T>(relativePath: string): T {
+  return JSON.parse(readFileSync(path.join(root, relativePath), 'utf8')) as T;
+}
+
+const profile = readJson<SourceProfile>(path.join(importDir, 'source-profile.json'));
 const receiptBytes = readFileSync(path.join(root, importDir, 'official-verification.json'));
-const receipt = JSON.parse(receiptBytes.toString('utf8')) as Record<string, any>;
-const japanese = JSON.parse(readFileSync(path.join(root, importDir, 'first-batch-japanese.json'), 'utf8')) as Record<string, any>;
-const manifest = JSON.parse(readFileSync(path.join(root, importDir, 'manifest.json'), 'utf8')) as Record<string, any>;
+const receipt = JSON.parse(receiptBytes.toString('utf8')) as VerificationReceipt;
+const japanese = readJson<{ authoring: Record<string, unknown>; records: JapaneseDraft[] }>(path.join(importDir, 'first-batch-japanese.json'));
+const manifest = readJson<HskManifest>(path.join(importDir, 'manifest.json'));
 const batchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
-const batch = JSON.parse(readFileSync(path.join(root, batchPath), 'utf8')) as { vocabulary: Array<Record<string, any>> };
+const batch = readJson<{ vocabulary: VocabularyRecord[] }>(batchPath);
 
 describe('HearMandarin HSK source foundation', () => {
   it('pins the exact small receipt and records the bounded artifact-specific terms inference', () => {
@@ -42,28 +105,29 @@ describe('HearMandarin HSK source foundation', () => {
 
   it('accounts for each official coordinate once and places only the first 20 eligible rows in repository output', () => {
     expect(manifest.rows).toHaveLength(2000);
-    expect(manifest.rows.map((row: Record<string, any>) => row.globalSequence)).toEqual(
+    expect(manifest.rows.map((row) => row.globalSequence)).toEqual(
       Array.from({ length: 2000 }, (_, index) => index + 1),
     );
-    expect(manifest.rows.filter((row: Record<string, any>) => row.disposition === 'blocked')).toHaveLength(31);
-    expect(manifest.rows.filter((row: Record<string, any>) => row.repositoryPublication === 'draft-batch-001')).toHaveLength(20);
-    expect(manifest.rows.filter((row: Record<string, any>) => row.disposition === 'eligible')).toHaveLength(1969);
-    expect(manifest.rows.filter((row: Record<string, any>) => row.disposition === 'blocked').every(
-      (row: Record<string, any>) => !('simplified' in row) && !('pinyin' in row) && Array.isArray(row.blockedReason),
+    expect(manifest.rows.filter((row) => row.disposition === 'blocked')).toHaveLength(31);
+    expect(manifest.rows.filter((row) => row.repositoryPublication === 'draft-batch-001')).toHaveLength(20);
+    expect(manifest.rows.filter((row) => row.disposition === 'eligible')).toHaveLength(1969);
+    expect(manifest.rows.filter((row) => row.disposition === 'blocked').every(
+      (row) => !('simplified' in row) && !('pinyin' in row) && Array.isArray(row.blockedReason),
     )).toBe(true);
-    expect(manifest.rows.filter((row: Record<string, any>) => row.sourceLevelLabel.includes('（')).length).toBe(90);
-    expect(manifest.rows.every((row: Record<string, any>) => row.recordId === `hm-hsk3-${row.sourceId}`)).toBe(true);
+    expect(manifest.rows.filter((row) => row.sourceLevelLabel.includes('（')).length).toBe(90);
+    expect(manifest.rows.every((row) => row.recordId === `hm-hsk3-${row.sourceId}`)).toBe(true);
     expect(manifest.officialCoordinateVerification.eligibleProjectionSha256).toBe(receipt.eligibleProjectionSha256);
-    expect(manifest.rows.filter((row: Record<string, any>) => row.disposition === 'blocked').map(
-      (row: Record<string, any>) => [row.globalSequence, row.blockedReason],
-    )).toEqual(receipt.blocked.map((row: Record<string, any>) => [row.globalSequence, row.reasons]));
+    expect(manifest.rows.filter((row) => row.disposition === 'blocked').map(
+      (row) => [row.globalSequence, row.blockedReason],
+    )).toEqual(receipt.blocked.map((row) => [row.globalSequence, row.reasons]));
     expect(Object.fromEntries([1, 2, 3, 4].map((level) => [
-      String(level), manifest.rows.filter((row: Record<string, any>) => row.disposition === 'eligible' && row.primaryLevel === level).length,
+      String(level), manifest.rows.filter((row) => row.disposition === 'eligible' && row.primaryLevel === level).length,
     ]))).toEqual({ '1': 294, '2': 191, '3': 495, '4': 989 });
     expect(manifest.publication.firstBatchPrimaryLevel).toBe(1);
     expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batchSha256);
-    const plans = new Map<string, Array<Record<string, any>>>();
-    for (const row of manifest.rows.filter((entry: Record<string, any>) => entry.disposition === 'eligible')) {
+    const plans = new Map<string, ManifestRow[]>();
+    for (const row of manifest.rows.filter((entry) => entry.disposition === 'eligible')) {
+      if (row.batchPlacement === null) throw new Error(`eligible row ${row.globalSequence} has no batch placement`);
       const group = plans.get(row.batchPlacement) ?? [];
       group.push(row);
       plans.set(row.batchPlacement, group);
@@ -87,9 +151,9 @@ describe('HearMandarin HSK source foundation', () => {
     });
     expect(japanese.records).toHaveLength(20);
     expect(batch.vocabulary).toHaveLength(20);
-    expect(batch.vocabulary.map((row) => row.id)).toEqual(japanese.records.map((row: Record<string, any>) => `hm-hsk3-${row.sourceId}`));
+    expect(batch.vocabulary.map((row) => row.id)).toEqual(japanese.records.map((row) => `hm-hsk3-${row.sourceId}`));
     for (const [index, row] of batch.vocabulary.entries()) {
-      const companion = japanese.records[index] as Record<string, any>;
+      const companion = japanese.records[index];
       expect(row.simplified).toBe(companion.simplified);
       expect(row.pinyin).toBe(companion.pinyin);
       expect(row.japanese).toBe(companion.japanese);
