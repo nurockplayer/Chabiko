@@ -771,6 +771,33 @@ function updateTestPlacementHash(candidate: FoundationArtifacts, placement: stri
   publication.sha256 = serializedBatchSha256(output);
 }
 
+function swapDistinctEligiblePlacementsWithSamePublicationShape(candidate: FoundationArtifacts): void {
+  const declaredPlacements = new Set(candidate.publicationIndex.placements);
+  const planned = candidate.manifest.rows.filter(
+    (row) => row.sourceEligible && row.batchPlacement !== 'batch-001',
+  );
+  let first: ManifestRow | undefined;
+  let second: ManifestRow | undefined;
+  for (const row of planned) {
+    const isDeclared = declaredPlacements.has(row.batchPlacement ?? '');
+    const matchingRow = planned.find((other) => other.batchPlacement !== row.batchPlacement
+      && declaredPlacements.has(other.batchPlacement ?? '') === isDeclared);
+    if (matchingRow) {
+      first = row;
+      second = matchingRow;
+      break;
+    }
+  }
+  if (!first || !second) throw new Error('fixture lacks eligible distinct placements with the same publication shape');
+  [first.batchPlacement, second.batchPlacement] = [second.batchPlacement, first.batchPlacement];
+}
+
+function expectPlacementSwapToReachImmutablePlan(candidate: FoundationArtifacts, context: string): void {
+  const drifted = structuredClone(candidate) as FoundationArtifacts;
+  swapDistinctEligiblePlacementsWithSamePublicationShape(drifted);
+  expect(() => assertFoundation(drifted), context).toThrow('manifest invariant: immutable-plan-sha256');
+}
+
 describe('HearMandarin HSK source foundation', () => {
   it('pins the exact small receipt and records the bounded artifact-specific terms inference', () => {
     expect(profile.profileVersion).toBe(2);
@@ -945,13 +972,7 @@ describe('HearMandarin HSK source foundation', () => {
       {
         name: 'swapped eligible placements',
         invariant: 'immutable-plan-sha256',
-        mutate: (candidate) => {
-          const planned = candidate.manifest.rows.filter((row) => row.sourceEligible && row.batchPlacement !== 'batch-001');
-          const first = planned[0];
-          const second = planned.find((row) => row.batchPlacement !== first?.batchPlacement);
-          if (!first || !second) throw new Error('fixture lacks distinct planned placements');
-          [first.batchPlacement, second.batchPlacement] = [second.batchPlacement, first.batchPlacement];
-        },
+        mutate: swapDistinctEligiblePlacementsWithSamePublicationShape,
       },
       {
         name: 'blocked row marked eligible',
@@ -1221,10 +1242,16 @@ describe('HearMandarin HSK source foundation', () => {
 
     let driftCandidate: FoundationArtifacts | undefined;
     let driftPlacement: string | undefined;
+
+    const currentPublication = cloneArtifacts();
+    expect(() => assertFoundation(currentPublication), 'current 1/20 publication baseline').not.toThrow();
+    expectPlacementSwapToReachImmutablePlan(currentPublication, 'current 1/20 swapped placement');
+
     for (const growthCase of growthCases) {
       const candidate = firstBatchOnlyFixture();
       for (const placement of growthCase.placements) publishTestPlacement(candidate, placement);
       expect(() => assertFoundation(candidate), growthCase.name).not.toThrow();
+      expectPlacementSwapToReachImmutablePlan(candidate, `${growthCase.name} swapped placement`);
       if (growthCase.repeatPlacement) {
         expect(candidate.publicationIndex.placements.filter((placement) => placement === growthCase.repeatPlacement)).toHaveLength(1);
       }
@@ -1242,6 +1269,7 @@ describe('HearMandarin HSK source foundation', () => {
     expect(completePublication.publicationIndex.placements).toEqual(immutablePlacements);
     expect(completePublication.manifest.publication.repositoryPublishedBatchCount).toBe(immutablePlacements.length);
     expect(() => assertFoundation(completePublication), 'complete immutable placement publication').not.toThrow();
+    expectPlacementSwapToReachImmutablePlan(completePublication, 'complete 41/1969 swapped placement');
 
     if (!driftCandidate || !driftPlacement) throw new Error('test fixture lacks a new level-1 publication for drift checks');
     const filename = expectedBatchFilename(driftPlacement);
