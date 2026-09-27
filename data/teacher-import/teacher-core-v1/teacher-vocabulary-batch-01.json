@@ -1,0 +1,404 @@
+{
+  "vocabulary": [
+    {
+      "id": "teacher-star-1-37e0eb213f0f",
+      "simplified": "大家",
+      "simplifiedStatus": "authored",
+      "pinyin": "dà jiā",
+      "japanese": "・みんな",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 2
+      },
+      "example": "大家好 大家请听"
+    },
+    {
+      "id": "teacher-star-1-a66948a76fda",
+      "simplified": "人",
+      "simplifiedStatus": "authored",
+      "pinyin": "rén",
+      "japanese": "・ひと ・人間",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 3
+      },
+      "example": "他是日本人 我们是人"
+    },
+    {
+      "id": "teacher-star-1-86f5cdb6e25c",
+      "simplified": "客人",
+      "simplifiedStatus": "authored",
+      "pinyin": "kè ren",
+      "japanese": "・お客さん",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 7
+      },
+      "example": "来了一位客人 有很多乘客"
+    },
+    {
+      "id": "teacher-star-1-bdc7865a507e",
+      "simplified": "朋友",
+      "simplifiedStatus": "authored",
+      "pinyin": "péng you",
+      "japanese": "・友達 ・彼氏・彼女",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 8
+      },
+      "example": "这是我的好朋友 男朋友 女朋友"
+    },
+    {
+      "id": "teacher-star-1-86367b2d53f6",
+      "simplified": "先生",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiān sheng",
+      "japanese": "～さん（男性）",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 9
+      },
+      "example": "王先生很帅 先生，您好"
+    },
+    {
+      "id": "teacher-star-1-8b957a100bd4",
+      "simplified": "小姐/女士",
+      "simplifiedStatus": "authored",
+      "pinyin": "xiǎo jiě/nǚ shì",
+      "japanese": "～さん（女性）",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 10
+      },
+      "example": "李小姐很漂亮 小姐，您好"
+    },
+    {
+      "id": "teacher-star-1-2cfcacc0503e",
+      "simplified": "自己",
+      "simplifiedStatus": "authored",
+      "pinyin": "zì jǐ",
+      "japanese": "自分",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 11
+      },
+      "example": "自己做饭自己吃"
+    },
+    {
+      "id": "teacher-star-1-e7bc12c4f23a",
+      "simplified": "爸爸",
+      "simplifiedStatus": "authored",
+      "pinyin": "bà ba",
+      "japanese": "お父さん・パパ",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 14
+      },
+      "example": "他是一个好爸爸"
+    },
+    {
+      "id": "teacher-star-1-e64490a207eb",
+      "simplified": "妈妈",
+      "simplifiedStatus": "authored",
+      "pinyin": "mā ma",
+      "japanese": "お母さん・ママ",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 15
+      },
+      "example": "妈妈很爱我"
+    },
+    {
+      "id": "teacher-star-1-bada4e11125d",
+      "simplified": "父亲",
+      "simplifiedStatus": "authored",
+      "pinyin": "fù qin",
+      "japanese": "父親",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 16
+      },
+      "example": "父亲现在不在"
+    },
+    {
+      "id": "teacher-star-1-d903f490725f",
+      "simplified": "母亲",
+      "simplifiedStatus": "authored",
+      "pinyin": "mǔ qin",
+      "japanese": "母親",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 17
+      },
+      "example": "我母亲是老师"
+    },
+    {
+      "id": "teacher-star-1-7420330fee5c",
+      "simplified": "哥哥",
+      "simplifiedStatus": "authored",
+      "pinyin": "gē ge",
+      "japanese": "お兄さん",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 18
+      },
+      "example": "哥哥常常跟我玩儿"
+    },
+    {
+      "id": "teacher-star-1-ed096023b3be",
+      "simplified": "姐姐",
+      "simplifiedStatus": "authored",
+      "pinyin": "jiě jie",
+      "japanese": "お姉さん",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 19
+      },
+      "example": "姐姐不跟我玩儿"
+    },
+    {
+      "id": "teacher-star-1-cb42fb8775e5",
+      "simplified": "弟弟",
+      "simplifiedStatus": "authored",
+      "pinyin": "dì di",
+      "japanese": "弟",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 20
+      },
+      "example": "弟弟很可爱"
+    },
+    {
+      "id": "teacher-star-1-c39a19585434",
+      "simplified": "妹妹",
+      "simplifiedStatus": "authored",
+      "pinyin": "mèi mei",
+      "japanese": "妹",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 23
+      },
+      "example": "我有一个妹妹"
+    },
+    {
+      "id": "teacher-star-1-3e6fabf09358",
+      "simplified": "爱人",
+      "simplifiedStatus": "authored",
+      "pinyin": "ài rén",
+      "japanese": "妻や夫（配偶者）",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 26
+      },
+      "example": "我爱人很会做饭 我爱人很有钱"
+    },
+    {
+      "id": "teacher-star-1-1c0cdf0b2b9c",
+      "simplified": "丈夫",
+      "simplifiedStatus": "authored",
+      "pinyin": "zhàng fu",
+      "japanese": "夫/旦那",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 27
+      },
+      "example": "他是个好丈夫 他是个好老公"
+    },
+    {
+      "id": "teacher-star-1-8fea4ac29b4c",
+      "simplified": "妻子",
+      "simplifiedStatus": "authored",
+      "pinyin": "qī zi",
+      "japanese": "妻/奥さん",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 28
+      },
+      "example": "我妻子很吵 我老婆很吵"
+    },
+    {
+      "id": "teacher-star-1-94757170c2b0",
+      "simplified": "孩子",
+      "simplifiedStatus": "authored",
+      "pinyin": "hái zi",
+      "japanese": "子ども（息子、娘）",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 29
+      },
+      "example": "我有两个孩子 小孩子很可爱"
+    },
+    {
+      "id": "teacher-star-1-0cc5799cdbbc",
+      "simplified": "儿子",
+      "simplifiedStatus": "authored",
+      "pinyin": "ér zi",
+      "japanese": "息子",
+      "source": {
+        "type": "teacher-workbook"
+      },
+      "reviewStatus": "draft",
+      "curriculum": {
+        "sourceId": "teacher-core-v1",
+        "difficultyBand": "star-1",
+        "sourceDifficultyLabel": "☆",
+        "partOfSpeech": "noun",
+        "sourceSheet": "名词1",
+        "sourceRow": 30
+      },
+      "example": "这是我的儿子"
+    }
+  ]
+}

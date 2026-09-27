@@ -1331,6 +1331,45 @@ def _test_duplicate_header_fatal():
             assert not os.path.exists(_out)
 
 
+def _test_cli_command_behavior():
+    """Exercise the documented CLI with clean and dirty output directories."""
+    with tempfile.TemporaryDirectory() as _td:
+        _fixture = os.path.join(_td, "cli-fixture.xlsx")
+        _wb = _make_synthetic_wb(_fixture)
+        _wb.save(_fixture)
+
+        _script = os.path.abspath(__file__)
+        _clean_output = os.path.join(_td, "clean-output")
+        _success = subprocess.run(
+            [sys.executable, _script, _fixture, _clean_output],
+            capture_output=True, text=True,
+        )
+        assert _success.returncode == 0, _success.stderr
+        with open(os.path.join(_clean_output, "manifest.json"), "r", encoding="utf-8") as _f:
+            _manifest = json.load(_f)
+        assert _manifest["accepted"] > 0
+        assert _manifest["batchCount"] >= 1
+
+        _dirty_output = os.path.join(_td, "dirty-output")
+        os.makedirs(os.path.join(_dirty_output, "unrelated"))
+        _sentinel = os.path.join(_dirty_output, "unrelated", "developer-owned.txt")
+        with open(_sentinel, "w", encoding="utf-8") as _f:
+            _f.write("preserve this file\n")
+        with open(_sentinel, "rb") as _f:
+            _before = _f.read()
+
+        _failure = subprocess.run(
+            [sys.executable, _script, _fixture, _dirty_output],
+            capture_output=True, text=True,
+        )
+        assert _failure.returncode != 0, "non-empty output directory must fail"
+        assert "non-empty" in _failure.stderr
+        with open(_sentinel, "rb") as _f:
+            assert _f.read() == _before, "CLI changed a developer-owned sentinel"
+        assert sorted(os.listdir(_dirty_output)) == ["unrelated"]
+        assert sorted(os.listdir(os.path.dirname(_sentinel))) == ["developer-owned.txt"]
+
+
 # ─── Run all tests ───────────────────────────────────────────────────────────
 
 def run_tests():
@@ -1387,6 +1426,11 @@ def run_tests():
             print(f"  {_label} ... ", end="")
             _test_fn()
             print("PASS")
+
+        print("── Phase 3b: CLI behavior ──")
+        print("  Documented CLI and dirty-output preservation ... ", end="")
+        _test_cli_command_behavior()
+        print("PASS")
 
         # Phase 4: End-to-end determinism
         print("── Phase 4: End-to-end determinism ──")
