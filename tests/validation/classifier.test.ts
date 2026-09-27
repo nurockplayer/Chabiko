@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -432,6 +432,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
   // Issue #193: a documented workflow command must be asserted by a self-test).
 
   const scriptPath = fileURLToPath(new URL('../../scripts/validation/run.ts', import.meta.url));
+  const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
   const tempRepos: string[] = [];
 
   function git(cwd: string, args: string[]): {
@@ -463,7 +464,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(git(cwd, ['commit', '-m', message]).status).toBe(0);
   }
 
-  function runClassify(cwd: string, base = 'HEAD'): {
+  function runClassify(cwd: string, base = 'HEAD', files?: string): {
     status: number;
     stdout: string;
     stderr: string;
@@ -475,7 +476,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     );
     const result = spawnSync(
       process.execPath,
-      [scriptPath, 'classify', '--base', base, '--emit-github-output'],
+      [scriptPath, 'classify', '--base', base, ...(files ? ['--files', files] : []), '--emit-github-output'],
       { cwd, env: { ...process.env, GITHUB_OUTPUT: outputPath }, encoding: 'utf8' },
     );
     return {
@@ -483,6 +484,23 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       stdout: result.stdout ?? '',
       stderr: result.stderr ?? '',
       outputPath,
+    };
+  }
+
+  function runAffected(cwd: string, base = 'HEAD', files?: string): {
+    status: number;
+    stdout: string;
+    stderr: string;
+  } {
+    const result = spawnSync(
+      process.execPath,
+      [realpathSync(join(cwd, 'scripts/validation/run.ts')), 'affected', '--base', base, ...(files ? ['--files', files] : [])],
+      { cwd, encoding: 'utf8', timeout: 120_000 },
+    );
+    return {
+      status: result.status ?? -1,
+      stdout: result.stdout ?? '',
+      stderr: result.stderr ?? '',
     };
   }
 
@@ -500,6 +518,24 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     return { repo, base };
   }
 
+  function seedFoundationRepo(): { repo: string; base: string } {
+    const repo = createTempRepo();
+    cpSync(repositoryRoot, repo, {
+      recursive: true,
+      filter: (source) => {
+        const relativePath = relative(repositoryRoot, source).replaceAll('\\', '/');
+        return !['.git', 'node_modules', '.astro', 'dist', 'coverage', 'test-results', 'playwright-report']
+          .some((directory) => relativePath === directory || relativePath.startsWith(`${directory}/`));
+      },
+    });
+    symlinkSync(join(repositoryRoot, 'node_modules'), join(repo, 'node_modules'), 'dir');
+    expect(git(repo, ['add', '-A']).status).toBe(0);
+    expect(git(repo, ['commit', '-m', 'seed full package for type-change probe']).status).toBe(0);
+    const base = git(repo, ['rev-parse', 'HEAD']).stdout.trim();
+    expect(base).not.toBe('');
+    return { repo, base };
+  }
+
   function moveManagedBatchToDocs(repo: string): void {
     mkdirSync(dirname(join(repo, lowRiskDocsPath)), { recursive: true });
     renameSync(join(repo, managedBatchPath), join(repo, lowRiskDocsPath));
@@ -510,10 +546,10 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(output.split('\n')).toContain(`A\t${lowRiskDocsPath}`);
   }
 
-  function expectHskRenameSelection(result: ReturnType<typeof runClassify>): void {
+  function expectHskSelection(result: ReturnType<typeof runClassify>, riskClasses: string): void {
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('tier=t1');
-    expect(result.stdout).toContain('content/data, docs/static');
+    expect(result.stdout).toContain(riskClasses);
     expect(result.stdout).toContain('run_affected_vitest=true');
     expect(result.stdout).toContain('run_content=true');
     expect(result.stdout).toContain('HearMandarin HSK publication surface → T1 foundation contract suite');
@@ -524,6 +560,10 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(emitted).toContain('run_affected_vitest=true');
     expect(emitted).toContain('run_content=true');
     expect(emitted).toContain('HearMandarin HSK publication surface → T1 foundation contract suite');
+  }
+
+  function expectHskRenameSelection(result: ReturnType<typeof runClassify>): void {
+    expectHskSelection(result, 'content/data, docs/static');
   }
 
   afterAll(() => {
@@ -741,6 +781,60 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       }
     },
   );
+
+  it('retains managed-batch type changes and fails the affected suite on an unreadable symlink', () => {
+    const { repo, base } = seedFoundationRepo();
+    const foundationSelection = runClassify(repo, 'HEAD', managedBatchPath);
+    expectHskSelection(foundationSelection, 'content/data');
+    rmSync(foundationSelection.outputPath, { force: true });
+
+    const baselineAffected = runAffected(repo, 'HEAD', managedBatchPath);
+    const baselineOutput = `${baselineAffected.stdout}\n${baselineAffected.stderr}`;
+    const normalizedBaselineOutput = stripVTControlCharacters(baselineOutput).replace(/\s+/g, ' ');
+    expect(baselineAffected.status, baselineOutput).toBe(0);
+    expect(normalizedBaselineOutput).toContain('tests/hearmandarin-hsk-foundation.test.ts');
+    expect(normalizedBaselineOutput).toMatch(/Test Files 1 passed/);
+    expect(normalizedBaselineOutput).toMatch(/Tests [1-9]\d* passed/);
+
+    const managedBatch = join(repo, managedBatchPath);
+    const missingTarget = join(repo, 'missing-managed-batch-target.json');
+
+    for (const state of ['unstaged', 'staged', 'committed'] as const) {
+      expect(git(repo, ['reset', '--hard', base]).status).toBe(0);
+      rmSync(managedBatch);
+      symlinkSync(missingTarget, managedBatch);
+
+      let classificationBase = 'HEAD';
+      if (state === 'staged') {
+        expect(git(repo, ['add', '-A']).status).toBe(0);
+        expect(git(repo, ['diff', '--cached', '--name-status']).stdout.split('\n'))
+          .toContain(`T\t${managedBatchPath}`);
+      } else if (state === 'committed') {
+        expect(git(repo, ['add', '-A']).status).toBe(0);
+        expect(git(repo, ['commit', '-m', 'replace managed batch with dangling symlink']).status).toBe(0);
+        classificationBase = base;
+        expect(git(repo, ['diff', '--name-status', `${base}...HEAD`]).stdout.split('\n'))
+          .toContain(`T\t${managedBatchPath}`);
+      } else {
+        expect(git(repo, ['diff', '--name-status']).stdout.split('\n'))
+          .toContain(`T\t${managedBatchPath}`);
+      }
+
+      const classification = runClassify(repo, classificationBase);
+      try {
+        expectHskSelection(classification, 'content/data');
+      } finally {
+        rmSync(classification.outputPath, { force: true });
+      }
+
+      const affected = runAffected(repo, classificationBase);
+      const output = `${affected.stdout}\n${affected.stderr}`;
+      expect(affected.status, output).not.toBe(0);
+      expect(output).toContain('tests/hearmandarin-hsk-foundation.test.ts');
+      expect(output).toContain('ENOENT');
+      expect(output).toContain(managedBatchPath);
+    }
+  }, 120_000);
 
   it('#359: a manifest-allowlisted source change escalates to t2 (run_full_vitest=true)', () => {
     const repo = createTempRepo();

@@ -35,7 +35,7 @@ function gitChangedFiles(base: string): string[] {
   // checkout is clean, so this alone yields the PR's change set.
   const committed = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRD', `${base}...HEAD`],
+    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', `${base}...HEAD`],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   if (committed.status !== 0) {
@@ -48,12 +48,12 @@ function gitChangedFiles(base: string): string[] {
   // diff alone would under-report.
   const unstaged = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRD'],
+    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT'],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   const staged = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRD', '--cached'],
+    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', '--cached'],
     { cwd: repoRoot, encoding: 'utf8' },
   );
   const untracked = spawnSync(
