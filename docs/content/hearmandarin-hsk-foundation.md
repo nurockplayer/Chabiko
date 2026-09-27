@@ -16,7 +16,7 @@ Excluded publisher fields are English glosses, Traditional Chinese, part of spee
 
 ## Canonical importer and publication declaration
 
-The unchanged importer uses only the Python standard library and performs no network access. Run it with Python 3.14 or later, the exact pinned source JSON, and a new or empty output directory:
+The importer uses only the Python standard library and performs no network access. Run it with Python 3.14 or later, the exact pinned source JSON, and a new or empty output directory; the command interface remains unchanged:
 
 ```sh
 python3 scripts/import-hearmandarin-hsk-json.py \
