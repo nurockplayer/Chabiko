@@ -534,6 +534,363 @@ def _mini_profile(source_bytes: bytes, receipt_bytes: bytes) -> dict[str, Any]:
     }
 
 
+def _mini_multilevel_fixture() -> tuple[bytes, dict[str, Any], bytes, dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]], list[str]]:
+    levels = [1] * 22 + [2] * 3 + [3] * 3 + [4] * 2
+    words = [
+        {
+            "id": f"opaque-{hashlib.sha256(f'fixture-source-key-{index}'.encode('utf-8')).hexdigest()[:16]}",
+            "simplified": f"词{index:02d}",
+            "pinyin": f"cí{index:02d}",
+            "hsk3_band": level,
+            "hsk3_seq": index,
+        }
+        for index, level in enumerate(levels, start=1)
+    ]
+    source = {
+        "name": "HearMandarin HSK 3.0 Word List Dataset",
+        "version": "test-v1",
+        "generated": "test-date",
+        "count": len(words),
+        "license": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/",
+        "attribution": "HearMandarin (https://hearmandarin.com)",
+        "homepage": "https://hearmandarin.com/datasets/",
+        "words": words,
+    }
+    source_bytes = json_bytes(source)
+    eligible_words = words[:-1]
+    projection = [[row["id"], row["hsk3_seq"], row["hsk3_band"], row["simplified"], row["pinyin"]] for row in eligible_words]
+    primary_level_counts = {"1": 22, "2": 3, "3": 3, "4": 2}
+    eligible_level_counts = {"1": 22, "2": 3, "3": 3, "4": 1}
+    receipt = {
+        "datasetSha256": sha256(source_bytes),
+        "intendedCount": len(words),
+        "primaryLevelCounts": primary_level_counts,
+        "eligibleCount": len(eligible_words),
+        "eligibleLevelCounts": eligible_level_counts,
+        "versionEvidence": {"datasetVersion": "test-v1", "datasetGenerated": "test-date", "downloadPageVersionLabel": "test-label"},
+        "officialArtifactSha256": "test",
+        "officialArtifactUrl": "https://www.chinesetest.cn/syllabus/test.pdf",
+        "officialPageUrl": "https://www.chinesetest.cn/syllabus",
+        "eligibleProjectionSha256": sha256(json.dumps(projection, ensure_ascii=False, separators=(",", ":")).encode("utf-8")),
+        "blocked": [{"globalSequence": 30, "reasons": ["synthetic-coordinate-held-for-test"]}],
+        "supplementarySourceLevelLabels": {},
+        "excludedFieldDiscrepancies": [],
+    }
+    receipt_bytes = json_bytes(receipt)
+    profile = _mini_profile(source_bytes, receipt_bytes)
+    profile["expectedSourceMetadata"]["count"] = len(words)
+    profile["dataset"]["json"].update({"sha256": sha256(source_bytes), "bytes": len(source_bytes), "rows": len(words)})
+    profile["dataset"]["csv"]["rows"] = len(words)
+    profile["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(receipt_bytes)
+    profile["coordinate"].update({"lastVerifiedSequence": len(words), "expectedLevelCounts": primary_level_counts})
+    profile["counts"].update({
+        "sourceCandidates": len(words),
+        "eligible": len(eligible_words),
+        "blocked": 1,
+        "eligibleLevelCounts": eligible_level_counts,
+    })
+
+    placement_rows = {
+        "batch-001": eligible_words[:20],
+        "planned-level-1-batch-002": eligible_words[20:22],
+        "planned-level-2-batch-002": eligible_words[22:25],
+        "planned-level-3-batch-002": eligible_words[25:28],
+        "planned-level-4-batch-002": eligible_words[28:29],
+    }
+    authoring = {
+        "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+        "status": "ai-provisional",
+        "reviewStatus": "draft",
+        "humanReview": False,
+        "excludedSourceFieldsUsed": [],
+    }
+    companions: dict[str, dict[str, Any]] = {}
+    for placement, rows in placement_rows.items():
+        companions[placement] = {
+            "authoring": dict(authoring),
+            "records": [
+                {
+                    "sourceId": row["id"],
+                    "globalSequence": row["hsk3_seq"],
+                    "simplified": row["simplified"],
+                    "pinyin": row["pinyin"],
+                    "japanese": f"合成語彙{row['hsk3_seq']}。",
+                }
+                for row in rows
+            ],
+        }
+    return source_bytes, profile, receipt_bytes, companions, placement_rows, list(placement_rows)
+
+
+def _self_test_multilevel_cli(temporary: Path, mini_repo: Path, copied_script: Path) -> int:
+    config_dir = mini_repo / PROFILE_REL.parent
+    source_bytes, profile, receipt_bytes, companions, placement_rows, placements = _mini_multilevel_fixture()
+    receipt = json.loads(receipt_bytes.decode("utf-8"))
+    source_path = temporary / "multi-placement-source.json"
+    base_index = {"publicationIndexVersion": 1, "placements": ["batch-001"]}
+    full_index = {"publicationIndexVersion": 1, "placements": placements}
+    subset_placements = ["batch-001", "planned-level-2-batch-002", "planned-level-4-batch-002"]
+    subset_index = {"publicationIndexVersion": 1, "placements": subset_placements}
+
+    def reset_inputs(index_bytes: bytes | None = None) -> None:
+        source_path.write_bytes(source_bytes)
+        (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
+        (config_dir / "official-verification.json").write_bytes(receipt_bytes)
+        (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(companions["batch-001"]))
+        japanese_dir = config_dir / "japanese"
+        if japanese_dir.exists():
+            shutil.rmtree(japanese_dir)
+        for placement in placements:
+            if placement == "batch-001":
+                continue
+            relative = _companion_path(placement)
+            companion_path = mini_repo / relative
+            companion_path.parent.mkdir(parents=True, exist_ok=True)
+            companion_path.write_bytes(json_bytes(companions[placement]))
+        (config_dir / "publication-index.json").write_bytes(index_bytes or json_bytes(base_index))
+
+    def invoke(output: Path, script: Path = copied_script, environment: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(script), "--source", str(source_path), "--output-dir", str(output)],
+            text=True,
+            capture_output=True,
+            check=False,
+            env=environment,
+        )
+
+    source = json.loads(source_bytes.decode("utf-8"))
+    blocked_sequences = {item["globalSequence"] for item in receipt["blocked"]}
+    planned_by_sequence = {
+        row["hsk3_seq"]: placement
+        for placement, rows in placement_rows.items()
+        for row in rows
+    }
+
+    def verify_output(output: Path, declared: list[str]) -> None:
+        expected_files = {"manifest.json", *(_placement_filename(placement) for placement in declared)}
+        require({entry.name for entry in output.iterdir()} == expected_files, f"self-test synthetic output set drifted for {declared}")
+        manifest = load_json(output / "manifest.json")
+        publication = manifest["publication"]
+        expected_records = sum(len(placement_rows[placement]) for placement in declared)
+        require(publication["repositoryPublishedBatchCount"] == len(declared), "self-test synthetic batch count mismatch")
+        require(publication["repositoryPublishedRecordCount"] == expected_records, "self-test synthetic record count mismatch")
+        require(len(publication["batches"]) == len(declared), "self-test synthetic publication entry count mismatch")
+        require(manifest["accounting"]["eligible"] == 29 and manifest["accounting"]["blocked"] == 1,
+                "self-test synthetic source accounting mismatch")
+
+        manifest_rows = {row["globalSequence"]: row for row in manifest["rows"]}
+        declared_set = set(declared)
+        for row in source["words"]:
+            sequence = row["hsk3_seq"]
+            manifest_row = manifest_rows[sequence]
+            placement = planned_by_sequence.get(sequence)
+            if sequence in blocked_sequences:
+                require(manifest_row["repositoryPublication"] == "blocked" and manifest_row["disposition"] == "blocked"
+                        and manifest_row["batchPlacement"] is None and "repositoryBatchFile" not in manifest_row,
+                        f"self-test blocked publication state drift at {sequence}")
+            elif placement in declared_set:
+                require(manifest_row["repositoryPublication"] == "draft-published-to-repository"
+                        and manifest_row["repositoryBatchFile"] == _placement_filename(placement),
+                        f"self-test declared publication state drift at {sequence}")
+            else:
+                require(manifest_row["repositoryPublication"] == "planned-not-published"
+                        and "repositoryBatchFile" not in manifest_row,
+                        f"self-test undeclared publication state drift at {sequence}")
+
+        for index, placement in enumerate(declared):
+            filename = _placement_filename(placement)
+            batch_bytes = (output / filename).read_bytes()
+            batch = load_json(output / filename)
+            rows = placement_rows[placement]
+            entry = publication["batches"][index]
+            expected_level = rows[0]["hsk3_band"]
+            require(entry == {
+                "placement": placement,
+                "file": filename,
+                "records": len(rows),
+                "primaryLevel": expected_level,
+                "sha256": sha256(batch_bytes),
+            }, f"self-test synthetic publication metadata mismatch for {placement}")
+            vocabulary = batch["vocabulary"]
+            companion_records = companions[placement]["records"]
+            require(len(vocabulary) == len(rows) == len(companion_records), f"self-test synthetic join count mismatch for {placement}")
+            for word, companion, record in zip(rows, companion_records, vocabulary, strict=True):
+                require(companion["sourceId"] == word["id"] and companion["globalSequence"] == word["hsk3_seq"]
+                        and companion["simplified"] == word["simplified"] and companion["pinyin"] == word["pinyin"],
+                        f"self-test synthetic companion join mismatch for {placement}")
+                require(record["id"] == f"hm-hsk3-{word['id']}" and record["simplified"] == word["simplified"]
+                        and record["pinyin"] == word["pinyin"] and record["japanese"] == companion["japanese"]
+                        and record["hsk"]["introducedAtLevel"] == word["hsk3_band"]
+                        and record["reviewStatus"] == "draft" and record["simplifiedStatus"] == "authored",
+                        f"self-test synthetic vocabulary join mismatch for {placement}")
+
+    reset_inputs(json_bytes(full_index))
+    multi_full_a = temporary / "multi-full-a"
+    first = invoke(multi_full_a)
+    require(first.returncode == 0, f"self-test multi-placement CLI failed: {first.stderr.strip()}")
+    verify_output(multi_full_a, placements)
+    reset_inputs(json_bytes(full_index))
+    multi_full_b = temporary / "multi-full-b"
+    second = invoke(multi_full_b)
+    require(second.returncode == 0, f"self-test multi-placement repeat failed: {second.stderr.strip()}")
+    verify_output(multi_full_b, placements)
+    require({item.name: item.read_bytes() for item in multi_full_a.iterdir()} ==
+            {item.name: item.read_bytes() for item in multi_full_b.iterdir()}, "self-test multi-placement repeated bytes drifted")
+    require(_placement_filename("planned-level-1-batch-002") != _placement_filename("planned-level-2-batch-002")
+            and all(placement.endswith("batch-002") for placement in placements[1:]),
+            "self-test equal batch numbers across levels did not derive distinct filenames")
+
+    reset_inputs(json_bytes(subset_index))
+    multi_subset = temporary / "multi-subset"
+    subset_result = invoke(multi_subset)
+    require(subset_result.returncode == 0, f"self-test ordered-subset CLI failed: {subset_result.stderr.strip()}")
+    verify_output(multi_subset, subset_placements)
+
+    negative_count = 0
+
+    def reject_multi_case(name: str, diagnostic: str, index_bytes: bytes | None = None, setup: Any | None = None) -> None:
+        nonlocal negative_count
+        reset_inputs(index_bytes)
+        if setup is not None:
+            setup()
+        slug = name.lower().replace(" ", "-")
+        output = temporary / f"multi-reject-{slug}"
+        result = invoke(output)
+        require(result.returncode != 0 and diagnostic in result.stderr,
+                f"self-test multi {name} missed intended rejection: {result.stderr.strip()}")
+        require(not output.exists() and not output.is_symlink(), f"self-test multi {name} created output before rejection")
+        negative_count += 1
+
+    reject_multi_case("index wrong root type", "publication index must be an object", json_bytes([]))
+    reject_multi_case("index wrong placements type", "publication index placements must be a nonempty array",
+                      json_bytes({"publicationIndexVersion": 1, "placements": {}}))
+    reject_multi_case("index duplicate keys", "duplicate JSON object key: placements",
+                      b'{"publicationIndexVersion":1,"placements":["batch-001"],"placements":["batch-001"]}\n')
+    reject_multi_case("index float version", "publication index version must be the integer 1",
+                      b'{"publicationIndexVersion":1.0,"placements":["batch-001"]}\n')
+    reject_multi_case("index unsupported version", "publication index version must be the integer 1",
+                      json_bytes({"publicationIndexVersion": 2, "placements": ["batch-001"]}))
+    reject_multi_case("index empty declaration", "publication index placements must be a nonempty array",
+                      json_bytes({"publicationIndexVersion": 1, "placements": []}))
+    reject_multi_case("index missing first placement", "publication index must begin with batch-001",
+                      json_bytes({"publicationIndexVersion": 1, "placements": [placements[1]]}))
+    reject_multi_case("index duplicate placement", "publication index contains duplicate placements",
+                      json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", placements[1], placements[1]]}))
+    reject_multi_case("index wrong order", "publication index placements must follow manifest plan order",
+                      json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", placements[2], placements[1]]}))
+
+    unknown_placement = "planned-level-4-batch-999"
+    unknown_path = mini_repo / _companion_path(unknown_placement)
+    reject_multi_case(
+        "index unknown placement",
+        "publication index placements must follow manifest plan order",
+        json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", unknown_placement]}),
+        setup=lambda: (unknown_path.parent.mkdir(parents=True, exist_ok=True), unknown_path.write_bytes(json_bytes(companions["batch-001"]))),
+    )
+    reject_multi_case("index arbitrary path", "invalid planned placement name",
+                      json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", "../escape"]}))
+
+    target_placement = "planned-level-2-batch-002"
+    target_companion_path = mini_repo / _companion_path(target_placement)
+    target_index = json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001", target_placement]})
+
+    reject_multi_case("declared companion missing", "cannot read valid UTF-8 JSON from", target_index,
+                      setup=lambda: target_companion_path.unlink())
+    reject_multi_case("declared companion wrong source join", "Japanese companion sourceId mismatch at row 1", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "records": [{**companions[target_placement]["records"][0], "sourceId": "not-the-opaque-source"}, *companions[target_placement]["records"][1:]],
+                      })))
+    reject_multi_case("declared companion reordered", "Japanese companion sourceId mismatch at row 1", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "records": list(reversed(companions[target_placement]["records"])),
+                      })))
+    reject_multi_case("declared companion extra row", f"Japanese companion must contain exactly placement {target_placement}", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "records": [*companions[target_placement]["records"], companions[target_placement]["records"][-1]],
+                      })))
+    reject_multi_case("declared companion excluded field", "Japanese companion row 1 must contain exactly sourceId/globalSequence/simplified/pinyin/japanese", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "records": [{**companions[target_placement]["records"][0], "english": "excluded"}, *companions[target_placement]["records"][1:]],
+                      })))
+    reject_multi_case("declared companion missing authoring method", "Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "authoring": {key: value for key, value in companions[target_placement]["authoring"].items() if key != "method"},
+                      })))
+    reject_multi_case("declared companion contradictory authoring", "Japanese authoring method is missing or unsupported", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "authoring": {**companions[target_placement]["authoring"], "method": "Used excluded source fields."},
+                      })))
+    reject_multi_case("declared companion extra authoring field", "Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "authoring": {**companions[target_placement]["authoring"], "extra": True},
+                      })))
+    reject_multi_case("declared companion false human review", "Japanese authoring cannot claim human review", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "authoring": {**companions[target_placement]["authoring"], "humanReview": True},
+                      })))
+    reject_multi_case("declared companion Boolean coordinate", "Japanese companion globalSequence must be a non-Boolean integer at row 1", target_index,
+                      setup=lambda: target_companion_path.write_bytes(json_bytes({
+                          **companions[target_placement],
+                          "records": [{**companions[target_placement]["records"][0], "globalSequence": True}, *companions[target_placement]["records"][1:]],
+                      })))
+    require(negative_count == 21, f"self-test multi-placement negative probe count changed: {negative_count}")
+
+    reset_inputs(json_bytes(full_index))
+    faulting_script = mini_repo / "scripts" / "import-hearmandarin-hsk-json-link-failure-test.py"
+    source_text = copied_script.read_text(encoding="utf-8")
+    injection = '''import os
+if os.environ.get("CHABIKO_TEST_FAIL_THIRD_LINK") == "1":
+    _hsk_original_link = os.link
+    _hsk_link_call_count = 0
+    def _hsk_fail_third_link(source, target, *args, **kwargs):
+        global _hsk_link_call_count
+        _hsk_link_call_count += 1
+        if _hsk_link_call_count == 3:
+            raise OSError("injected test link failure")
+        return _hsk_original_link(source, target, *args, **kwargs)
+    os.link = _hsk_fail_third_link
+'''
+    require(source_text.splitlines()[8] == "import os", "self-test copied importer link-failure injection point changed")
+    faulting_script.write_text(source_text.replace("import os\n", injection, 1), encoding="utf-8")
+    fail_output = temporary / "multi-link-failure"
+    caller_sentinel = temporary / "caller-owned" / "sentinel.txt"
+    caller_sentinel.parent.mkdir()
+    caller_sentinel.write_text("preserve caller-owned test sentinel\n", encoding="utf-8")
+    environment = dict(os.environ)
+    environment["CHABIKO_TEST_FAIL_THIRD_LINK"] = "1"
+    failed = invoke(fail_output, script=faulting_script, environment=environment)
+    require(failed.returncode != 0 and "injected test link failure" in failed.stderr,
+            f"self-test injected output-link failure was not reported: {failed.stderr.strip()}")
+    require({entry.name for entry in fail_output.iterdir()} == {"manifest.json", FIRST_BATCH_FILENAME},
+            "self-test link failure did not preserve the manifest and completed first batch")
+    require((fail_output / "manifest.json").read_bytes() == (multi_full_a / "manifest.json").read_bytes(),
+            "self-test link failure changed the previously published manifest bytes")
+    require((fail_output / FIRST_BATCH_FILENAME).read_bytes() == (multi_full_a / FIRST_BATCH_FILENAME).read_bytes(),
+            "self-test link failure changed the completed first-batch bytes")
+    require(caller_sentinel.read_text(encoding="utf-8") == "preserve caller-owned test sentinel\n",
+            "self-test link failure changed caller-owned data")
+    require(not [entry for entry in temporary.iterdir() if entry.name.startswith(".hsk-import-stage-")],
+            "self-test link failure left its private stage behind")
+    reset_inputs(json_bytes(full_index))
+    recovery = temporary / "multi-link-recovery-fresh-dir"
+    recovered = invoke(recovery)
+    require(recovered.returncode == 0, f"self-test fresh-directory recovery failed: {recovered.stderr.strip()}")
+    verify_output(recovery, placements)
+    require({entry.name: entry.read_bytes() for entry in recovery.iterdir()} ==
+            {entry.name: entry.read_bytes() for entry in multi_full_a.iterdir()},
+            "self-test fresh-directory recovery output drifted")
+    return negative_count
+
+
 def self_test(script_path: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="hearmandarin-hsk-self-test-") as temporary:
         root = Path(temporary) / "mini-repo"
@@ -822,8 +1179,14 @@ def self_test(script_path: Path) -> None:
                     preserve=lambda output: output.is_symlink() and not broken_target.exists())
 
         require(rejection_case_count == 41, f"self-test negative CLI probe count changed: {rejection_case_count}")
+        multi_placement_negative_count = _self_test_multilevel_cli(Path(temporary), root, copied_script)
 
-    print(f"self-test passed: {rejection_case_count} negative CLI probes plus clean/repeat/empty-dir CLI success")
+    print(
+        f"self-test passed: {rejection_case_count} negative CLI probes (baseline); clean/repeat/empty-dir CLI success; "
+        f"plus "
+        f"{multi_placement_negative_count} synthetic multi-placement negative probes, "
+        "multi-placement repeat/subset success, and partial-link failure/fresh-dir recovery"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

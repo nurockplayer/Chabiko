@@ -1046,5 +1046,8 @@ describe('HearMandarin HSK source foundation', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.stdout).toContain('41 negative CLI probes');
     expect(result.stdout).toContain('clean/repeat/empty-dir CLI success');
+    expect(result.stdout).toContain('21 synthetic multi-placement negative probes');
+    expect(result.stdout).toContain('multi-placement repeat/subset success');
+    expect(result.stdout).toContain('partial-link failure/fresh-dir recovery');
   });
 });
