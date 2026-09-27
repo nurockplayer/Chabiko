@@ -103,7 +103,7 @@ interface ManifestAccounting {
   primaryLevelCounts: Record<string, number>;
   repeatedWordPinyinGroupsWhollyBlocked: number;
   repeatedWordPinyinRowsBlocked: number;
-  excludedFieldDiscrepancies: Array<{ globalSequence: number; retained: boolean }>;
+  excludedFieldDiscrepancies: Array<{ globalSequence: number; pdfPage: number; field: string; reason: string; retained: boolean }>;
   supplementarySourceLevelLabels: number;
 }
 
@@ -111,7 +111,14 @@ interface HskManifest {
   manifestVersion: number;
   source: Record<string, unknown>;
   accounting: ManifestAccounting;
-  officialCoordinateVerification: { eligibleProjectionSha256: string };
+  officialCoordinateVerification: {
+    authorityUrl: string;
+    artifactSha256: string;
+    receiptSha256: string;
+    intendedCount: number;
+    eligibleProjectionSha256: string;
+    scope: string;
+  };
   publication: {
     batches: Array<{ placement: string; file: string; records: number; primaryLevel: number; sha256: string }>;
     repositoryPublishedBatchCount: number;
@@ -171,6 +178,7 @@ function assertStrictJson(json: string): void {
 }
 
 const profile = readJson<SourceProfile>(path.join(importDir, 'source-profile.json'));
+const publicationIndexBytes = readFileSync(path.join(root, importDir, 'publication-index.json'));
 const publicationIndex = readJson<PublicationIndex>(path.join(importDir, 'publication-index.json'));
 const receiptBytes = readFileSync(path.join(root, importDir, 'official-verification.json'));
 assertStrictJson(receiptBytes.toString('utf8'));
@@ -227,7 +235,48 @@ function requireInvariant(condition: boolean, invariant: string): asserts condit
 }
 
 function sameJson(left: unknown, right: unknown): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  if (left === right) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left) && Array.isArray(right) && left.length === right.length
+      && left.every((value, index) => sameJson(value, right[index]));
+  }
+  if (typeof left !== 'object' || left === null || typeof right !== 'object' || right === null) return false;
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord).sort();
+  const rightKeys = Object.keys(rightRecord).sort();
+  return sameJson(leftKeys, rightKeys) && leftKeys.every((key) => sameJson(leftRecord[key], rightRecord[key]));
+}
+
+function expectedSourceNote(candidateProfile: SourceProfile, row: ManifestRow): string {
+  const dataset = candidateProfile.dataset;
+  return `Source: ${dataset.attribution}, ${dataset.datasetName} (${dataset.homepage}). `
+    + `Publisher provenance and independence disclaimer: ${dataset.provenance}. `
+    + `Publisher Terms: ${dataset.termsUrl}. ${dataset.artifactScopeRationale} `
+    + `License: ${dataset.license} (${dataset.licenseUrl}). ${dataset.modificationNotice} `
+    + `Japanese is independently AI-authored and provisional, not human reviewed. Source ID ${row.sourceId}; global sequence ${row.globalSequence}; `
+    + `primary level ${row.primaryLevel}; source level label ${row.sourceLevelLabel}.`;
+}
+
+function producerPublicationIndexError(raw: string): string {
+  const code = [
+    'import importlib.util, json, sys',
+    'spec = importlib.util.spec_from_file_location("hsk_importer_under_test", sys.argv[1])',
+    'module = importlib.util.module_from_spec(spec)',
+    'spec.loader.exec_module(module)',
+    'try:',
+    '    value = json.loads(sys.stdin.read(), object_pairs_hook=module._unique_object)',
+    '    module._validate_publication_index_header(value)',
+    'except Exception as error:',
+    '    print(str(error), file=sys.stderr)',
+    '    sys.exit(2)',
+  ].join('\n');
+  const result = spawnSync('python3', ['-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    cwd: root,
+    input: raw,
+    encoding: 'utf8',
+  });
+  return result.status === 0 ? '' : result.stderr.trim();
 }
 
 function assertFoundation(artifacts: FoundationArtifacts): void {
@@ -244,13 +293,31 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
     && candidateProfile.plannedBatches.subsequentMaxRows === 50
     && candidateProfile.plannedBatches.subsequentOrdering === 'global-sequence-within-primary-level', 'profile-publication-plan');
   requireInvariant(publicationIndex.publicationIndexVersion === 1, 'publication-index-version');
+  requireInvariant(sameJson(Object.keys(publicationIndex).sort(), ['placements', 'publicationIndexVersion']), 'publication-index-schema');
   requireInvariant(publicationIndex.placements.length > 0 && publicationIndex.placements[0] === 'batch-001', 'publication-index-first-placement');
   requireInvariant(new Set(publicationIndex.placements).size === publicationIndex.placements.length, 'publication-index-unique-placements');
   requireInvariant(candidate.manifestVersion === 2, 'manifest-version');
+  requireInvariant(sameJson(Object.keys(candidate).sort(), ['accounting', 'manifestVersion', 'officialCoordinateVerification', 'publication', 'rows', 'source']), 'manifest-root-schema');
+  requireInvariant(sameJson(Object.keys(candidate.source).sort(), [
+    'artifactScopeRationale', 'attribution', 'csvDownloadUrl', 'datasetName', 'datasetVersion', 'disclaimerUrl', 'downloadPageVersionLabel',
+    'excludedFields', 'generated', 'jsonDownloadUrl', 'jsonSha256', 'license', 'licenseUrl', 'modificationNotice', 'provenanceUrl',
+    'publisher', 'sourceUrl', 'termsSummary', 'termsUrl',
+  ]), 'manifest-source-schema');
+  requireInvariant(sameJson(Object.keys(candidate.accounting).sort(), [
+    'blocked', 'eligible', 'eligibleLevelCounts', 'excludedFieldDiscrepancies', 'primaryLevelCounts', 'repeatedWordPinyinGroupsWhollyBlocked',
+    'repeatedWordPinyinRowsBlocked', 'sourceCandidates', 'supplementarySourceLevelLabels',
+  ]), 'manifest-accounting-schema');
+  requireInvariant(sameJson(Object.keys(candidate.officialCoordinateVerification).sort(), [
+    'artifactSha256', 'authorityUrl', 'eligibleProjectionSha256', 'intendedCount', 'receiptSha256', 'scope',
+  ]), 'manifest-official-provenance-schema');
+  requireInvariant(sameJson(Object.keys(candidate.publication).sort(), [
+    'batches', 'repositoryPublishedBatchCount', 'repositoryPublishedRecordCount', 'sourceEligibleIsHumanReviewed', 'sourceEligibleIsRuntimeAvailable',
+  ]), 'manifest-publication-schema');
   requireInvariant(createHash('sha256').update(artifacts.receiptBytes).digest('hex') === candidateProfile.dataset.sourceCoordinateVerification.receiptSha256,
     'source-profile-receipt-sha256');
   requireInvariant(candidateProfile.dataset.json.sha256 === proof.datasetSha256 && candidate.source.jsonSha256 === proof.datasetSha256,
     'profile-manifest-receipt-source-identity');
+  requireInvariant(candidateProfile.dataset.disclaimer === candidateProfile.dataset.provenance, 'profile-provenance-disclaimer-join');
   const sourceJoins: Array<[keyof HskManifest['source'], unknown]> = [
     ['publisher', candidateProfile.dataset.publisher],
     ['datasetName', candidateProfile.dataset.datasetName],
@@ -285,6 +352,13 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
   requireInvariant(candidate.rows.every((row, index) => row.globalSequence === index + 1), 'global-sequence-order');
   requireInvariant(new Set(candidate.rows.map((row) => row.globalSequence)).size === 2000, 'unique-global-sequences');
   for (const row of candidate.rows) {
+    const baseRowKeys = ['batchPlacement', 'disposition', 'globalSequence', 'primaryLevel', 'recordId', 'repositoryPublication', 'sourceEligible', 'sourceId', 'sourceLevelLabel'];
+    const expectedRowKeys = !row.sourceEligible
+      ? [...baseRowKeys, 'blockedReason']
+      : publicationIndex.placements.includes(row.batchPlacement ?? '')
+        ? [...baseRowKeys, 'pinyin', 'repositoryBatchFile', 'simplified']
+        : [...baseRowKeys, 'pinyin', 'simplified'];
+    requireInvariant(sameJson(Object.keys(row).sort(), expectedRowKeys.sort()), `manifest-row-schema-${row.globalSequence}`);
     requireInvariant(typeof row.sourceId === 'string' && row.sourceId.length > 0, 'nonempty-source-id');
     requireInvariant(!sourceIds.has(row.sourceId), 'unique-source-ids');
     sourceIds.add(row.sourceId);
@@ -318,6 +392,8 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
     && candidateProfile.counts.blocked === blockedRows.length && candidateProfile.counts.eligible === eligibleRows.length, 'manifest-accounting');
   requireInvariant(candidate.accounting.repeatedWordPinyinGroupsWhollyBlocked === candidateProfile.counts.duplicateGroups, 'repeated-word-pinyin-group-count');
   requireInvariant(candidate.accounting.repeatedWordPinyinRowsBlocked === candidateProfile.counts.duplicateRows, 'repeated-word-pinyin-row-count');
+  requireInvariant(candidate.accounting.excludedFieldDiscrepancies.every((entry) => sameJson(Object.keys(entry).sort(), ['field', 'globalSequence', 'pdfPage', 'reason', 'retained'])),
+    'manifest-excluded-discrepancy-schema');
   requireInvariant(sameJson(candidate.accounting.excludedFieldDiscrepancies, proof.excludedFieldDiscrepancies), 'excluded-field-discrepancies');
 
   const primaryCounts = Object.fromEntries([1, 2, 3, 4].map((level) => [String(level), candidate.rows.filter((row) => row.primaryLevel === level).length]));
@@ -426,13 +502,15 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
     requireInvariant(new Set(group.map((row) => row.primaryLevel)).size === 1, `single-level-batch-${placement}`);
     requireInvariant(group.every((row, index) => index === 0 || group[index - 1].globalSequence < row.globalSequence), `ordered-batch-${placement}`);
     requireInvariant(companion !== undefined && published !== undefined, `declared-output-present-${placement}`);
+    requireInvariant(sameJson(Object.keys(published).sort(), ['vocabulary']), `batch-root-schema-${placement}`);
     requireInvariant(sameJson(Object.keys(companion).sort(), ['authoring', 'records']), `japanese-root-keys-${placement}`);
     requireInvariant(sameJson(companion.authoring, expectedAuthoring), `japanese-authoring-${placement}`);
     requireInvariant(companion.records.length === group.length, `japanese-count-${placement}`);
     requireInvariant(published.vocabulary.length === group.length, `batch-count-${placement}`);
     const declared = candidate.publication.batches.find((entry) => entry.placement === placement);
-    requireInvariant(declared !== undefined && createHash('sha256').update(artifacts.batchBytes[batchFilename] ?? []).digest('hex') === declared.sha256,
-      `batch-sha256-${placement}`);
+    const actualBytes = artifacts.batchBytes[batchFilename];
+    requireInvariant(declared !== undefined && actualBytes !== undefined, `batch-metadata-and-bytes-present-${placement}`);
+    requireInvariant(createHash('sha256').update(actualBytes).digest('hex') === declared.sha256, `batch-sha256-${placement}`);
     for (const [index, row] of group.entries()) {
       const japaneseRow = companion.records[index];
       const batchRow = published.vocabulary[index];
@@ -449,11 +527,7 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
       requireInvariant(batchRow.hsk.standardVersion === 'hsk-3.0' && batchRow.hsk.introducedAtLevel === row.primaryLevel
         && batchRow.hsk.sourceLevelLabel === row.sourceLevelLabel, `batch-hsk-join-${placement}-${index + 1}`);
       requireInvariant(batchRow.source.type === 'hearmandarin-hsk-json', `batch-source-type-${placement}-${index + 1}`);
-      requireInvariant(batchRow.source.note.includes(candidateProfile.dataset.licenseUrl)
-        && batchRow.source.note.includes(candidateProfile.dataset.termsUrl)
-        && batchRow.source.note.includes('AI-authored and provisional')
-        && batchRow.source.note.includes(`Source ID ${row.sourceId}; global sequence ${row.globalSequence}; primary level ${row.primaryLevel}; source level label ${row.sourceLevelLabel}.`),
-      `batch-source-provenance-${placement}-${index + 1}`);
+      requireInvariant(batchRow.source.note === expectedSourceNote(candidateProfile, row), `batch-source-note-exact-${placement}-${index + 1}`);
       requireInvariant(!Object.hasOwn(batchRow, 'traditional'), `batch-excluded-field-${placement}-${index + 1}`);
     }
   }
@@ -475,7 +549,8 @@ describe('HearMandarin HSK source foundation', () => {
   it('pins the exact small receipt and records the bounded artifact-specific terms inference', () => {
     expect(profile.profileVersion).toBe(2);
     expect(profile.plannedBatches).not.toHaveProperty('repositoryPublishedBatches');
-    expect(publicationIndex).toEqual({ publicationIndexVersion: 1, placements: ['batch-001'] });
+    expect(publicationIndex.publicationIndexVersion).toBe(1);
+    expect(publicationIndex.placements[0]).toBe('batch-001');
     expect(manifest.manifestVersion).toBe(2);
     expect(createHash('sha256').update(receiptBytes).digest('hex')).toBe(
       'd084bb096f5ab6f2183a829308e002e23c3b9ef7c68658207c25e612103ca28e',
@@ -501,8 +576,25 @@ describe('HearMandarin HSK source foundation', () => {
     ]);
   });
 
-  it('rejects duplicate keys when loading repository publication JSON', () => {
-    expect(() => assertStrictJson('{"publicationIndexVersion":1,"publicationIndexVersion":2}')).toThrow(/duplicate JSON key: publicationIndexVersion/);
+  it('validates the actual and malformed raw publication indexes through the producer boundary', () => {
+    expect(producerPublicationIndexError(publicationIndexBytes.toString('utf8'))).toBe('');
+    const malformedIndexes: Array<{ raw: string; diagnostic: string }> = [
+      {
+        raw: '{"publicationIndexVersion":1,"publicationIndexVersion":1,"placements":["batch-001"]}',
+        diagnostic: 'duplicate JSON object key: publicationIndexVersion',
+      },
+      {
+        raw: '{"publicationIndexVersion":1.0,"placements":["batch-001"]}',
+        diagnostic: 'publication index version must be the integer 1',
+      },
+      {
+        raw: '{"publicationIndexVersion":1,"placements":["batch-001"],"extra":true}',
+        diagnostic: 'publication index has unsupported fields',
+      },
+    ];
+    for (const candidate of malformedIndexes) {
+      expect(producerPublicationIndexError(candidate.raw)).toContain(candidate.diagnostic);
+    }
   });
 
   it('accounts for official coordinates and reconciles every declared repository output', () => {
@@ -569,7 +661,7 @@ describe('HearMandarin HSK source foundation', () => {
       },
       {
         name: 'blocked row marked eligible',
-        invariant: 'eligibility-disposition',
+        invariant: 'manifest-row-schema-10',
         mutate: (candidate) => {
           const row = candidate.manifest.rows.find((entry) => entry.disposition === 'blocked');
           if (!row) throw new Error('fixture lacks blocked rows');
@@ -652,6 +744,76 @@ describe('HearMandarin HSK source foundation', () => {
         },
       },
       {
+        name: 'publication index has an extra root key',
+        invariant: 'publication-index-schema',
+        mutate: (candidate) => {
+          (candidate.publicationIndex as PublicationIndex & Record<string, unknown>).extra = true;
+        },
+      },
+      {
+        name: 'manifest has an obsolete root key',
+        invariant: 'manifest-root-schema',
+        mutate: (candidate) => {
+          (candidate.manifest as HskManifest & Record<string, unknown>).obsolete = true;
+        },
+      },
+      {
+        name: 'manifest source has an excluded field',
+        invariant: 'manifest-source-schema',
+        mutate: (candidate) => {
+          candidate.manifest.source.english = 'excluded teaching fixture';
+        },
+      },
+      {
+        name: 'manifest accounting has an obsolete field',
+        invariant: 'manifest-accounting-schema',
+        mutate: (candidate) => {
+          (candidate.manifest.accounting as ManifestAccounting & Record<string, unknown>).legacyCount = 20;
+        },
+      },
+      {
+        name: 'manifest official coordinate proof has an extra field',
+        invariant: 'manifest-official-provenance-schema',
+        mutate: (candidate) => {
+          (candidate.manifest.officialCoordinateVerification as HskManifest['officialCoordinateVerification'] & Record<string, unknown>).extra = true;
+        },
+      },
+      {
+        name: 'manifest publication has an extra field',
+        invariant: 'manifest-publication-schema',
+        mutate: (candidate) => {
+          (candidate.manifest.publication as HskManifest['publication'] & Record<string, unknown>).english = 'excluded teaching fixture';
+        },
+      },
+      {
+        name: 'manifest row has an excluded field',
+        invariant: 'manifest-row-schema-26',
+        mutate: (candidate) => {
+          (candidate.manifest.rows[25] as ManifestRow & Record<string, unknown>).english = 'excluded teaching fixture';
+        },
+      },
+      {
+        name: 'published manifest row has an excluded field',
+        invariant: 'manifest-row-schema-1',
+        mutate: (candidate) => {
+          (candidate.manifest.rows[0] as ManifestRow & Record<string, unknown>).english = 'excluded teaching fixture';
+        },
+      },
+      {
+        name: 'blocked manifest row has an excluded field',
+        invariant: 'manifest-row-schema-10',
+        mutate: (candidate) => {
+          (candidate.manifest.rows[9] as ManifestRow & Record<string, unknown>).english = 'excluded teaching fixture';
+        },
+      },
+      {
+        name: 'manifest excluded-field receipt row has an extra field',
+        invariant: 'manifest-excluded-discrepancy-schema',
+        mutate: (candidate) => {
+          (candidate.manifest.accounting.excludedFieldDiscrepancies[0] as ManifestAccounting['excludedFieldDiscrepancies'][number] & Record<string, unknown>).legacy = true;
+        },
+      },
+      {
         name: 'manifest provenance drift from profile',
         invariant: 'source-profile-manifest-licenseUrl',
         mutate: (candidate) => {
@@ -717,6 +879,13 @@ describe('HearMandarin HSK source foundation', () => {
         },
       },
       {
+        name: 'vocabulary batch has an extra root key',
+        invariant: 'batch-root-schema-batch-001',
+        mutate: (candidate) => {
+          (candidate.batches['hsk-vocabulary-batch-001.json'] as { vocabulary: VocabularyRecord[] } & Record<string, unknown>).extra = true;
+        },
+      },
+      {
         name: 'human review flag drift',
         invariant: 'source-eligibility-is-not-human-review',
         mutate: (candidate) => {
@@ -744,7 +913,6 @@ describe('HearMandarin HSK source foundation', () => {
     const placement = 'planned-level-2-batch-002';
     const filename = expectedBatchFilename(placement);
     const group = candidate.manifest.rows.filter((row) => row.sourceEligible && row.batchPlacement === placement);
-    const sourceNotePrefix = candidate.batches['hsk-vocabulary-batch-001.json']!.vocabulary[0]!.source.note.replace(/Source ID .*$/, '');
     const records = group.map((row) => {
       const japaneseText = `合成訳${row.globalSequence}`;
       return {
@@ -765,20 +933,21 @@ describe('HearMandarin HSK source foundation', () => {
       simplifiedStatus: 'authored',
       source: {
         type: 'hearmandarin-hsk-json',
-        note: `${sourceNotePrefix}Source ID ${row.sourceId}; global sequence ${row.globalSequence}; primary level ${row.primaryLevel}; source level label ${row.sourceLevelLabel}.`,
+        note: expectedSourceNote(candidate.profile, row),
       },
     }));
     const output = { vocabulary };
     const bytes = serializedBatchBytes(output);
     candidate.publicationIndex.placements.push(placement);
-    candidate.companions[placement] = {
-      authoring: {
+    const authoring = {
         method: 'Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.',
         status: 'ai-provisional',
         reviewStatus: 'draft',
         humanReview: false,
         excludedSourceFieldsUsed: [],
-      },
+      };
+    candidate.companions[placement] = {
+      authoring: Object.fromEntries(Object.entries(authoring).reverse()),
       records,
     };
     candidate.batches[filename] = output;
@@ -808,6 +977,30 @@ describe('HearMandarin HSK source foundation', () => {
     semanticDrift.batchBytes[filename] = serializedBatchBytes(laterOutput);
     semanticDrift.manifest.publication.batches[1]!.sha256 = serializedBatchSha256(laterOutput);
     expect(() => assertFoundation(semanticDrift)).toThrow('manifest invariant: batch-hsk-join-planned-level-2-batch-002-1');
+
+    const laterRow = group[0];
+    if (!laterRow) throw new Error('synthetic later declaration has no rows');
+    const expectedRowSourceNote = expectedSourceNote(candidate.profile, laterRow);
+    const sourceNoteDrifts: Array<{ name: string; alter: (note: string) => string }> = [
+      { name: 'attribution', alter: (note) => note.replace(candidate.profile.dataset.attribution, 'Unknown publisher') },
+      { name: 'dataset title', alter: (note) => note.replace(candidate.profile.dataset.datasetName, 'Unknown dataset') },
+      { name: 'homepage', alter: (note) => note.replace(candidate.profile.dataset.homepage, 'https://example.invalid/data') },
+      { name: 'provenance and disclaimer', alter: (note) => note.replace(candidate.profile.dataset.provenance, 'https://example.invalid/provenance') },
+      { name: 'publisher terms', alter: (note) => note.replace(candidate.profile.dataset.termsUrl, 'https://example.invalid/terms') },
+      { name: 'license name', alter: (note) => note.replace(candidate.profile.dataset.license, 'Unknown license') },
+      { name: 'license URL', alter: (note) => note.replace(candidate.profile.dataset.licenseUrl, 'https://example.invalid/license') },
+      { name: 'modification notice', alter: (note) => note.replace(candidate.profile.dataset.modificationNotice, 'Modification detail omitted.') },
+      { name: 'provisional disclaimer', alter: (note) => note.replace('provisional, not human reviewed', 'approved by a human reviewer') },
+      { name: 'record identity', alter: (note) => note.replace(`Source ID ${laterRow.sourceId};`, 'Source ID contradictory-id;') },
+    ];
+    for (const drift of sourceNoteDrifts) {
+      const noteDrift = structuredClone(candidate) as FoundationArtifacts;
+      const noteOutput = noteDrift.batches[filename]!;
+      noteOutput.vocabulary[0]!.source.note = drift.alter(expectedRowSourceNote);
+      noteDrift.batchBytes[filename] = serializedBatchBytes(noteOutput);
+      noteDrift.manifest.publication.batches[1]!.sha256 = serializedBatchSha256(noteOutput);
+      expect(() => assertFoundation(noteDrift), drift.name).toThrow('manifest invariant: batch-source-note-exact-planned-level-2-batch-002-1');
+    }
   });
 
   it('keeps the first Japanese batch provisional and carries source credit and modification details per row', () => {
