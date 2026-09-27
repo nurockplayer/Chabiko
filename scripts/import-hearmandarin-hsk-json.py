@@ -19,6 +19,7 @@ from typing import Any
 PROFILE_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/source-profile.json")
 RECEIPT_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/official-verification.json")
 JAPANESE_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/first-batch-japanese.json")
+PUBLICATION_INDEX_REL = Path("data/hsk-import/hearmandarin-hsk-2025-v1/publication-index.json")
 FIRST_BATCH_FILENAME = "hsk-vocabulary-batch-001.json"
 FIRST_BATCH_SIZE = 20
 FIRST_BATCH_LEVEL = 1
@@ -60,6 +61,7 @@ def require(condition: bool, message: str) -> None:
 
 
 def _validate_profile(profile: dict[str, Any], receipt: dict[str, Any]) -> None:
+    require(profile.get("profileVersion") == 2, "unsupported source profile version")
     dataset = profile["dataset"]
     expected = profile["expectedSourceMetadata"]
     counts = profile["counts"]
@@ -109,12 +111,10 @@ def _validate_profile(profile: dict[str, Any], receipt: dict[str, Any]) -> None:
     first_level = plan["firstBatchPrimaryLevel"]
     require(isinstance(first_level, int) and not isinstance(first_level, bool) and first_level == FIRST_BATCH_LEVEL,
             "first batch primary level disagrees with frozen publication contract")
-    published_batches = plan["repositoryPublishedBatches"]
-    require(isinstance(published_batches, int) and not isinstance(published_batches, bool) and published_batches == 1,
-            "repository publication count disagrees with frozen first-batch contract")
+    require("repositoryPublishedBatches" not in plan, "source profile cannot carry a mutable repository publication count")
 
 
-def load_configuration(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def load_configuration(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     profile = load_json(repo_root / PROFILE_REL)
     receipt_path = repo_root / RECEIPT_REL
     receipt_bytes = receipt_path.read_bytes()
@@ -128,7 +128,8 @@ def load_configuration(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any],
         raise ImportFailure(f"verification receipt is not valid UTF-8 JSON: {error}") from error
     _validate_profile(profile, receipt)
     japanese = load_json(repo_root / JAPANESE_REL)
-    return profile, receipt, japanese
+    publication_index = load_json(repo_root / PUBLICATION_INDEX_REL)
+    return profile, receipt, japanese, publication_index
 
 
 def _check_source_metadata(source: dict[str, Any], profile: dict[str, Any]) -> None:
@@ -231,16 +232,15 @@ def _validate_receipt(rows: list[dict[str, Any]], profile: dict[str, Any], recei
     return blocked, labels, projection_sha
 
 
-def _validate_japanese(japanese: dict[str, Any], eligible: list[dict[str, Any]], first_batch_count: int) -> list[dict[str, Any]]:
+def _validate_japanese(japanese: dict[str, Any], placement_rows: list[dict[str, Any]], placement: str) -> list[dict[str, Any]]:
     authoring = japanese.get("authoring")
     require(isinstance(authoring, dict), "Japanese authoring metadata is missing")
     require(authoring.get("status") == "ai-provisional" and authoring.get("reviewStatus") == "draft", "Japanese authoring must remain AI-provisional draft")
     require(authoring.get("humanReview") is False, "Japanese authoring cannot claim human review")
     require(authoring.get("excludedSourceFieldsUsed") == [], "Japanese authoring declares use of excluded source fields")
     records = japanese.get("records")
-    require(isinstance(records, list) and len(records) == first_batch_count, "Japanese companion must contain exactly the first repository batch")
-    first_rows = eligible[:first_batch_count]
-    for index, (companion, source) in enumerate(zip(records, first_rows, strict=True), start=1):
+    require(isinstance(records, list) and len(records) == len(placement_rows), f"Japanese companion must contain exactly placement {placement}")
+    for index, (companion, source) in enumerate(zip(records, placement_rows, strict=True), start=1):
         require(isinstance(companion, dict), f"Japanese companion row {index} is not an object")
         for key in ("sourceId", "globalSequence", "simplified", "pinyin"):
             require(companion.get(key) == source[key], f"Japanese companion {key} mismatch at row {index}")
@@ -260,7 +260,38 @@ def _source_note(profile: dict[str, Any], row: dict[str, Any], source_level_labe
     )
 
 
-def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str, Any], receipt: dict[str, Any], japanese: dict[str, Any]) -> tuple[bytes, bytes]:
+def _placement_filename(placement: str) -> str:
+    if placement == "batch-001":
+        return FIRST_BATCH_FILENAME
+    parts = placement.split("-")
+    require(len(parts) == 5 and parts[0] == "planned" and parts[1] == "level" and parts[3] == "batch"
+            and parts[2].isdigit() and parts[4].isdigit(), f"invalid planned placement name: {placement}")
+    level = int(parts[2])
+    batch_number = int(parts[4])
+    require(1 <= level <= 4 and batch_number >= 1, f"invalid planned placement name: {placement}")
+    return f"hsk-vocabulary-level-{level}-batch-{batch_number:03d}.json"
+
+
+def _companion_path(placement: str) -> Path:
+    if placement == "batch-001":
+        return JAPANESE_REL
+    filename = _placement_filename(placement)
+    return PROFILE_REL.parent / "japanese" / filename.removeprefix("hsk-vocabulary-")
+
+
+def _validate_publication_index_header(publication_index: Any) -> list[str]:
+    require(isinstance(publication_index, dict), "publication index must be an object")
+    require(set(publication_index) == {"publicationIndexVersion", "placements"}, "publication index has unsupported fields")
+    require(publication_index.get("publicationIndexVersion") == 1, "unsupported publication index version")
+    declarations = publication_index.get("placements")
+    require(isinstance(declarations, list) and declarations, "publication index placements must be a nonempty array")
+    require(all(isinstance(item, str) and item for item in declarations), "publication index placements must be nonempty strings")
+    require(len(set(declarations)) == len(declarations), "publication index contains duplicate placements")
+    require(declarations[0] == "batch-001", "publication index must begin with batch-001")
+    return declarations
+
+
+def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str, Any], receipt: dict[str, Any], japanese_by_placement: dict[str, dict[str, Any]], publication_index: dict[str, Any]) -> tuple[bytes, dict[str, bytes]]:
     require(sha256(source_bytes) == profile["dataset"]["json"]["sha256"], "source JSON SHA256 does not match the pinned source profile")
     require(len(source_bytes) == profile["dataset"]["json"]["bytes"], "source JSON byte count does not match the pinned source profile")
     _check_source_metadata(source, profile)
@@ -268,12 +299,12 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
     require(len(rows) == profile["counts"]["sourceCandidates"], "source candidate count does not match profile")
     blocked, supplementary_labels, projection_sha = _validate_receipt(rows, profile, receipt)
     eligible = [row for row in rows if row["globalSequence"] not in blocked]
-    companion = _validate_japanese(japanese, eligible, profile["counts"]["firstBatch"])
     first_batch_count = profile["counts"]["firstBatch"]
     first_batch_rows = eligible[:first_batch_count]
     require(len({row["primaryLevel"] for row in first_batch_rows}) == 1, "first batch must contain one primary level")
     require(first_batch_rows[0]["primaryLevel"] == profile["plannedBatches"]["firstBatchPrimaryLevel"], "first batch primary level drifted")
 
+    placement_rows: dict[str, list[dict[str, Any]]] = {"batch-001": first_batch_rows}
     placements: dict[int, str] = {row["globalSequence"]: "batch-001" for row in first_batch_rows}
     by_level: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for row in eligible[first_batch_count:]:
@@ -282,8 +313,19 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
     for level in sorted(by_level):
         for chunk_index, start in enumerate(range(0, len(by_level[level]), max_chunk), start=1):
             placement = f"planned-level-{level}-batch-{chunk_index + 1:03d}"
-            for row in by_level[level][start:start + max_chunk]:
+            placement_rows[placement] = by_level[level][start:start + max_chunk]
+            for row in placement_rows[placement]:
                 placements[row["globalSequence"]] = placement
+
+    declarations = _validate_publication_index_header(publication_index)
+    ordered_plan = list(placement_rows)
+    require(declarations == [item for item in ordered_plan if item in set(declarations)], "publication index placements must follow manifest plan order")
+    require(all(item in placement_rows for item in declarations), "publication index names an unknown or incomplete placement")
+
+    companions: dict[str, list[dict[str, Any]]] = {}
+    for placement in declarations:
+        require(placement in japanese_by_placement, f"Japanese companion is missing for declared placement {placement}")
+        companions[placement] = _validate_japanese(japanese_by_placement[placement], placement_rows[placement], placement)
 
     manifest_rows: list[dict[str, Any]] = []
     for row in rows:
@@ -297,7 +339,7 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
             "primaryLevel": row["primaryLevel"],
             "sourceLevelLabel": source_level_label,
             "sourceEligible": not is_blocked,
-            "repositoryPublication": "blocked" if is_blocked else ("draft-batch-001" if sequence in placements and placements[sequence] == "batch-001" else "planned-not-published"),
+            "repositoryPublication": "blocked" if is_blocked else ("draft-published-to-repository" if placements.get(sequence) in declarations else "planned-not-published"),
             "batchPlacement": None if is_blocked else placements[sequence],
             "disposition": "blocked" if is_blocked else "eligible",
         }
@@ -306,33 +348,46 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
         else:
             item["simplified"] = row["simplified"]
             item["pinyin"] = row["pinyin"]
+            if placements.get(sequence) in declarations:
+                item["repositoryBatchFile"] = _placement_filename(placements[sequence])
         manifest_rows.append(item)
 
-    records: list[dict[str, Any]] = []
-    for source_row, ja_row in zip(first_batch_rows, companion, strict=True):
-        sequence = source_row["globalSequence"]
-        level_label = supplementary_labels.get(sequence, str(source_row["primaryLevel"]))
-        records.append({
-            "id": f"hm-hsk3-{source_row['sourceId']}",
-            "pinyin": source_row["pinyin"],
-            "japanese": ja_row["japanese"],
-            "reviewStatus": "draft",
-            "hsk": {
-                "standardVersion": "hsk-3.0",
-                "introducedAtLevel": source_row["primaryLevel"],
-                "sourceLevelLabel": level_label,
-            },
-            "simplified": source_row["simplified"],
-            "simplifiedStatus": "authored",
-            "source": {
-                "type": "hearmandarin-hsk-json",
-                "note": _source_note(profile, source_row, level_label),
-            },
+    batch_outputs: dict[str, bytes] = {}
+    batch_entries: list[dict[str, Any]] = []
+    for placement in declarations:
+        records: list[dict[str, Any]] = []
+        for source_row, ja_row in zip(placement_rows[placement], companions[placement], strict=True):
+            sequence = source_row["globalSequence"]
+            level_label = supplementary_labels.get(sequence, str(source_row["primaryLevel"]))
+            records.append({
+                "id": f"hm-hsk3-{source_row['sourceId']}",
+                "pinyin": source_row["pinyin"],
+                "japanese": ja_row["japanese"],
+                "reviewStatus": "draft",
+                "hsk": {
+                    "standardVersion": "hsk-3.0",
+                    "introducedAtLevel": source_row["primaryLevel"],
+                    "sourceLevelLabel": level_label,
+                },
+                "simplified": source_row["simplified"],
+                "simplifiedStatus": "authored",
+                "source": {
+                    "type": "hearmandarin-hsk-json",
+                    "note": _source_note(profile, source_row, level_label),
+                },
+            })
+        batch_bytes = json_bytes({"vocabulary": records})
+        filename = _placement_filename(placement)
+        batch_outputs[filename] = batch_bytes
+        batch_entries.append({
+            "placement": placement,
+            "file": filename,
+            "records": len(records),
+            "primaryLevel": placement_rows[placement][0]["primaryLevel"],
+            "sha256": sha256(batch_bytes),
         })
-    batch = {"vocabulary": records}
-    batch_bytes = json_bytes(batch)
     manifest = {
-        "manifestVersion": 1,
+        "manifestVersion": 2,
         "source": {
             "publisher": profile["dataset"]["publisher"],
             "datasetName": profile["dataset"]["datasetName"],
@@ -374,22 +429,18 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
             "supplementarySourceLevelLabels": len(supplementary_labels),
         },
         "publication": {
-            "repositoryPublishedBatchCount": 1,
-            "firstBatchFile": profile["plannedBatches"]["firstBatch"],
-            "firstBatchRecords": len(records),
-            "firstBatchPrimaryLevel": first_batch_rows[0]["primaryLevel"],
-            "subsequentBatchMaximum": max_chunk,
-            "subsequentBatchOrdering": profile["plannedBatches"]["subsequentOrdering"],
-            "batchSha256": sha256(batch_bytes),
+            "batches": batch_entries,
+            "repositoryPublishedBatchCount": len(batch_entries),
+            "repositoryPublishedRecordCount": sum(entry["records"] for entry in batch_entries),
             "sourceEligibleIsHumanReviewed": False,
             "sourceEligibleIsRuntimeAvailable": False,
         },
         "rows": manifest_rows,
     }
-    return json_bytes(manifest), batch_bytes
+    return json_bytes(manifest), batch_outputs
 
 
-def write_outputs(output_dir: Path, manifest_bytes: bytes, batch_bytes: bytes) -> None:
+def write_outputs(output_dir: Path, manifest_bytes: bytes, batch_outputs: dict[str, bytes]) -> None:
     raw_output = output_dir.expanduser()
     require(not raw_output.is_symlink(), "output directory cannot be a symlink")
     output = raw_output.absolute()
@@ -403,13 +454,14 @@ def write_outputs(output_dir: Path, manifest_bytes: bytes, batch_bytes: bytes) -
     made_output = False
     try:
         (stage / "manifest.json").write_bytes(manifest_bytes)
-        (stage / "hsk-vocabulary-batch-001.json").write_bytes(batch_bytes)
+        for filename, data in batch_outputs.items():
+            (stage / filename).write_bytes(data)
         if not existed:
             output.mkdir()
             made_output = True
         require(output.is_dir() and not output.is_symlink(), "output directory changed during import")
         require(not any(output.iterdir()), "output directory changed and is no longer empty")
-        for name in ("manifest.json", "hsk-vocabulary-batch-001.json"):
+        for name in ("manifest.json", *batch_outputs):
             os.link(stage / name, output / name)
     except Exception:
         if made_output and output.is_dir() and not any(output.iterdir()):
@@ -420,7 +472,13 @@ def write_outputs(output_dir: Path, manifest_bytes: bytes, batch_bytes: bytes) -
 
 
 def run_import(repo_root: Path, source_path: Path, output_dir: Path) -> None:
-    profile, receipt, japanese = load_configuration(repo_root)
+    profile, receipt, japanese, publication_index = load_configuration(repo_root)
+    japanese_by_placement = {"batch-001": japanese}
+    for placement in _validate_publication_index_header(publication_index):
+        if placement == "batch-001":
+            continue
+        companion_path = repo_root / _companion_path(placement)
+        japanese_by_placement[placement] = load_json(companion_path)
     if source_path.is_symlink():
         raise ImportFailure("source JSON cannot be a symlink")
     try:
@@ -429,15 +487,17 @@ def run_import(repo_root: Path, source_path: Path, output_dir: Path) -> None:
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise ImportFailure(f"cannot read valid UTF-8 source JSON: {error}") from error
     require(isinstance(source, dict), "source JSON root must be an object")
-    manifest_bytes, batch_bytes = build_outputs(source_bytes, source, profile, receipt, japanese)
-    write_outputs(output_dir, manifest_bytes, batch_bytes)
+    manifest_bytes, batch_outputs = build_outputs(source_bytes, source, profile, receipt, japanese_by_placement, publication_index)
+    write_outputs(output_dir, manifest_bytes, batch_outputs)
     print(f"wrote {output_dir}/manifest.json ({sha256(manifest_bytes)})")
-    print(f"wrote {output_dir}/hsk-vocabulary-batch-001.json ({sha256(batch_bytes)})")
+    for filename, batch_bytes in batch_outputs.items():
+        print(f"wrote {output_dir}/{filename} ({sha256(batch_bytes)})")
 
 
 def _mini_profile(source_bytes: bytes, receipt_bytes: bytes) -> dict[str, Any]:
     source_hash = sha256(source_bytes)
     return {
+        "profileVersion": 2,
         "dataset": {
             "publisher": "HearMandarin", "datasetName": "HSK 3.0 word list", "datasetVersion": "test-v1",
             "generated": "test-date", "downloadPageVersionLabel": "test-label", "homepage": "https://hearmandarin.com/datasets/",
@@ -456,7 +516,7 @@ def _mini_profile(source_bytes: bytes, receipt_bytes: bytes) -> dict[str, Any]:
         "expectedSourceMetadata": {"name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 21, "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "HearMandarin (https://hearmandarin.com)", "homepage": "https://hearmandarin.com/datasets/"},
         "coordinate": {"primaryLevelField": "hsk3_band", "globalSequenceField": "hsk3_seq", "firstVerifiedSequence": 1, "lastVerifiedSequence": 21, "expectedLevelCounts": {"1": 21}},
         "counts": {"sourceCandidates": 21, "eligible": 20, "blocked": 1, "excludedPosDiscrepancies": 0, "supplementarySourceLevelLabels": 0, "firstBatch": 20, "eligibleLevelCounts": {"1": 20}, "duplicateGroups": 0, "duplicateRows": 0},
-        "plannedBatches": {"firstBatch": "hsk-vocabulary-batch-001.json", "firstBatchPrimaryLevel": 1, "subsequentMaxRows": 50, "subsequentOrdering": "global-sequence-within-primary-level", "repositoryPublishedBatches": 1},
+        "plannedBatches": {"firstBatch": "hsk-vocabulary-batch-001.json", "firstBatchPrimaryLevel": 1, "subsequentMaxRows": 50, "subsequentOrdering": "global-sequence-within-primary-level"},
     }
 
 
@@ -467,6 +527,7 @@ def self_test(script_path: Path) -> None:
         shutil.copy2(script_path, root / "scripts" / script_path.name)
         config_dir = root / "data/hsk-import/hearmandarin-hsk-2025-v1"
         config_dir.mkdir(parents=True)
+        (config_dir / "publication-index.json").write_bytes(json_bytes({"publicationIndexVersion": 1, "placements": ["batch-001"]}))
         source_path = Path(temporary) / "source.json"
         source_ids = [
             "fixture-kite", "fixture-orchid", "fixture-river", "fixture-copper", "fixture-cedar",
@@ -572,7 +633,8 @@ def self_test(script_path: Path) -> None:
             require((out_a / name).read_bytes() == (out_b / name).read_bytes(), f"self-test repeated output drift: {name}")
         manifest = load_json(out_a / "manifest.json")
         batch = load_json(out_a / "hsk-vocabulary-batch-001.json")
-        require(manifest["accounting"]["eligible"] == 20 and manifest["accounting"]["blocked"] == 1, "self-test manifest accounting mismatch")
+        require(manifest["manifestVersion"] == 2 and manifest["accounting"]["eligible"] == 20 and manifest["accounting"]["blocked"] == 1, "self-test manifest accounting mismatch")
+        require(manifest["publication"]["repositoryPublishedBatchCount"] == 1 and manifest["publication"]["repositoryPublishedRecordCount"] == 20, "self-test publication accounting mismatch")
         require(len(batch["vocabulary"]) == 20 and all(row["reviewStatus"] == "draft" for row in batch["vocabulary"]), "self-test batch publication mismatch")
 
         empty_output = Path(temporary) / "existing-empty-output"
@@ -675,9 +737,9 @@ def self_test(script_path: Path) -> None:
 
         reject_case("Japanese source join mismatch", "Japanese companion sourceId mismatch at row 1",
                     setup=japanese_probe(lambda value: value["records"][0].__setitem__("sourceId", "not-the-source-id")))
-        reject_case("missing Japanese record", "Japanese companion must contain exactly the first repository batch",
+        reject_case("missing Japanese record", "Japanese companion must contain exactly placement batch-001",
                     setup=japanese_probe(lambda value: value["records"].pop()))
-        reject_case("extra Japanese record", "Japanese companion must contain exactly the first repository batch",
+        reject_case("extra Japanese record", "Japanese companion must contain exactly placement batch-001",
                     setup=japanese_probe(lambda value: value["records"].append(clone(value["records"][-1]))))
 
         reject_case("malformed source JSON", "cannot read valid UTF-8 source JSON",

@@ -5,6 +5,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 interface SourceProfile {
+  profileVersion: number;
+  plannedBatches: { repositoryPublishedBatches?: number };
   dataset: {
     json: { sha256: string };
     jsonDownloadUrl: string;
@@ -43,6 +45,7 @@ interface ManifestRow {
   sourceEligible: boolean;
   repositoryPublication: string;
   batchPlacement: string | null;
+  repositoryBatchFile?: string;
   disposition: 'eligible' | 'blocked';
   blockedReason?: string[];
   simplified?: string;
@@ -62,16 +65,14 @@ interface ManifestAccounting {
 }
 
 interface HskManifest {
+  manifestVersion: number;
   source: { termsUrl: string; artifactScopeRationale: string; jsonSha256: string };
   accounting: ManifestAccounting;
   officialCoordinateVerification: { eligibleProjectionSha256: string };
   publication: {
+    batches: Array<{ placement: string; file: string; records: number; primaryLevel: number; sha256: string }>;
     repositoryPublishedBatchCount: number;
-    firstBatchFile: string;
-    firstBatchRecords: number;
-    firstBatchPrimaryLevel: number;
-    subsequentBatchMaximum: number;
-    batchSha256: string;
+    repositoryPublishedRecordCount: number;
     sourceEligibleIsHumanReviewed: boolean;
     sourceEligibleIsRuntimeAvailable: boolean;
   };
@@ -104,6 +105,7 @@ function readJson<T>(relativePath: string): T {
 }
 
 const profile = readJson<SourceProfile>(path.join(importDir, 'source-profile.json'));
+const publicationIndex = readJson<{ publicationIndexVersion: number; placements: string[] }>(path.join(importDir, 'publication-index.json'));
 const receiptBytes = readFileSync(path.join(root, importDir, 'official-verification.json'));
 const receipt = JSON.parse(receiptBytes.toString('utf8')) as VerificationReceipt;
 const japanese = readJson<{ authoring: Record<string, unknown>; records: JapaneseDraft[] }>(path.join(importDir, 'first-batch-japanese.json'));
@@ -200,17 +202,22 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
     const expectedPublication = !row.sourceEligible
       ? 'blocked'
       : firstBatchSequencesSet.has(row.globalSequence)
-        ? 'draft-batch-001'
+        ? 'draft-published-to-repository'
         : 'planned-not-published';
     requireInvariant(row.repositoryPublication === expectedPublication, 'repository-publication-consistency');
     requireInvariant(row.sourceEligible || row.batchPlacement === null, 'blocked-row-has-batch-placement');
     requireInvariant(row.sourceEligible || row.repositoryPublication === 'blocked', 'blocked-row-publication');
+    requireInvariant(firstBatchSequencesSet.has(row.globalSequence)
+      ? row.repositoryBatchFile === 'hsk-vocabulary-batch-001.json'
+      : row.repositoryBatchFile === undefined, 'repository-batch-file-consistency');
   }
+  requireInvariant(candidate.publication.batches.length === 1, 'repository-published-batches');
+  requireInvariant(candidate.publication.batches[0].placement === 'batch-001'
+    && candidate.publication.batches[0].file === 'hsk-vocabulary-batch-001.json'
+    && candidate.publication.batches[0].records === 20
+    && candidate.publication.batches[0].primaryLevel === 1, 'first-batch-metadata');
   requireInvariant(candidate.publication.repositoryPublishedBatchCount === 1, 'repository-published-batch-count');
-  requireInvariant(candidate.publication.firstBatchFile === 'hsk-vocabulary-batch-001.json', 'first-batch-file');
-  requireInvariant(candidate.publication.firstBatchRecords === 20 && published.vocabulary.length === 20, 'first-batch-count');
-  requireInvariant(candidate.publication.firstBatchPrimaryLevel === 1, 'first-batch-level');
-  requireInvariant(candidate.publication.subsequentBatchMaximum === 50, 'subsequent-batch-maximum');
+  requireInvariant(candidate.publication.repositoryPublishedRecordCount === 20 && published.vocabulary.length === 20, 'repository-published-record-count');
   requireInvariant(candidate.publication.sourceEligibleIsHumanReviewed === false, 'source-eligibility-is-not-human-review');
   requireInvariant(candidate.publication.sourceEligibleIsRuntimeAvailable === false, 'source-eligibility-is-not-runtime-availability');
 
@@ -250,6 +257,10 @@ function serializedBatchSha256(candidate: { vocabulary: VocabularyRecord[] }): s
 
 describe('HearMandarin HSK source foundation', () => {
   it('pins the exact small receipt and records the bounded artifact-specific terms inference', () => {
+    expect(profile.profileVersion).toBe(2);
+    expect(profile.plannedBatches).not.toHaveProperty('repositoryPublishedBatches');
+    expect(publicationIndex).toEqual({ publicationIndexVersion: 1, placements: ['batch-001'] });
+    expect(manifest.manifestVersion).toBe(2);
     expect(createHash('sha256').update(receiptBytes).digest('hex')).toBe(
       'd084bb096f5ab6f2183a829308e002e23c3b9ef7c68658207c25e612103ca28e',
     );
@@ -276,7 +287,7 @@ describe('HearMandarin HSK source foundation', () => {
 
   it('accounts for each official coordinate once and places only the first 20 eligible rows in repository output', () => {
     expect(() => assertFoundation({ manifest, receipt, japanese, batch })).not.toThrow();
-    expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batchSha256);
+    expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batches[0].sha256);
   });
 
   it('rejects independent manifest and first-batch drift copies through the same validators', () => {
@@ -364,7 +375,7 @@ describe('HearMandarin HSK source foundation', () => {
         name: 'publication state drift',
         invariant: 'repository-publication-consistency',
         mutate: (candidate) => {
-          const row = candidate.manifest.rows.find((entry) => entry.repositoryPublication === 'draft-batch-001');
+          const row = candidate.manifest.rows.find((entry) => entry.repositoryPublication === 'draft-published-to-repository');
           if (!row) throw new Error('fixture lacks published draft rows');
           row.repositoryPublication = 'planned-not-published';
         },
@@ -388,7 +399,7 @@ describe('HearMandarin HSK source foundation', () => {
         invariant: 'batch-hsk-level-join-1',
         mutate: (candidate) => {
           candidate.batch.vocabulary[0].hsk.introducedAtLevel = 2;
-          candidate.manifest.publication.batchSha256 = serializedBatchSha256(candidate.batch);
+          candidate.manifest.publication.batches[0].sha256 = serializedBatchSha256(candidate.batch);
         },
       },
       {
@@ -396,7 +407,7 @@ describe('HearMandarin HSK source foundation', () => {
         invariant: 'batch-hsk-label-join-1',
         mutate: (candidate) => {
           candidate.batch.vocabulary[0].hsk.sourceLevelLabel = 'incorrect-source-label';
-          candidate.manifest.publication.batchSha256 = serializedBatchSha256(candidate.batch);
+          candidate.manifest.publication.batches[0].sha256 = serializedBatchSha256(candidate.batch);
         },
       },
     ];
