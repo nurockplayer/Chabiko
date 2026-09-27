@@ -142,11 +142,13 @@ interface VocabularyRecord {
 
 interface FoundationArtifacts {
   profile: SourceProfile;
+  profileBytes: Uint8Array;
   publicationIndex: PublicationIndex;
   manifest: HskManifest;
   receipt: VerificationReceipt;
   receiptBytes: Uint8Array;
   companions: Record<string, { authoring: Record<string, unknown>; records: JapaneseDraft[] }>;
+  companionBytes: Record<string, Uint8Array>;
   batches: Record<string, { vocabulary: VocabularyRecord[] }>;
   batchBytes: Record<string, Uint8Array>;
   companionFiles: string[];
@@ -158,6 +160,12 @@ const importDir = 'data/hsk-import/hearmandarin-hsk-2025-v1';
 
 function readJson<T>(relativePath: string): T {
   const json = readFileSync(path.join(root, relativePath), 'utf8');
+  assertStrictJson(json);
+  return JSON.parse(json) as T;
+}
+
+function parseJsonBytes<T>(bytes: Uint8Array): T {
+  const json = Buffer.from(bytes).toString('utf8');
   assertStrictJson(json);
   return JSON.parse(json) as T;
 }
@@ -177,13 +185,12 @@ function assertStrictJson(json: string): void {
   execFileSync('python3', ['-c', validator], { input: json, cwd: root, stdio: ['pipe', 'pipe', 'pipe'] });
 }
 
-const profile = readJson<SourceProfile>(path.join(importDir, 'source-profile.json'));
+const profileBytes = readFileSync(path.join(root, importDir, 'source-profile.json'));
+const profile = parseJsonBytes<SourceProfile>(profileBytes);
 const publicationIndexBytes = readFileSync(path.join(root, importDir, 'publication-index.json'));
 const publicationIndex = readJson<PublicationIndex>(path.join(importDir, 'publication-index.json'));
 const receiptBytes = readFileSync(path.join(root, importDir, 'official-verification.json'));
-assertStrictJson(receiptBytes.toString('utf8'));
-const receipt = JSON.parse(receiptBytes.toString('utf8')) as VerificationReceipt;
-const japanese = readJson<{ authoring: Record<string, unknown>; records: JapaneseDraft[] }>(path.join(importDir, 'first-batch-japanese.json'));
+const receipt = parseJsonBytes<VerificationReceipt>(receiptBytes);
 const manifest = readJson<HskManifest>(path.join(importDir, 'manifest.json'));
 const batchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
 const immutablePlanSha256 = '7a1dd56a17d6d973600bcaa487035108dd61ede3b488ff88dff60c3a1a1c4bd3';
@@ -204,6 +211,13 @@ function expectedCompanionFilename(placement: string): string {
 
 const importRoot = path.join(root, importDir);
 const importJapaneseDir = path.join(importRoot, 'japanese');
+const companionBytes = Object.fromEntries(publicationIndex.placements.map((placement) => {
+  const companionPath = path.join(importRoot, expectedCompanionFilename(placement));
+  return [placement, readFileSync(companionPath)];
+}));
+const japanese = parseJsonBytes<{ authoring: Record<string, unknown>; records: JapaneseDraft[] }>(
+  companionBytes['batch-001']!,
+);
 const companionFiles = [
   'first-batch-japanese.json',
   ...(existsSync(importJapaneseDir) ? readdirSync(importJapaneseDir).map((name) => `japanese/${name}`) : []),
@@ -214,16 +228,16 @@ const batchFiles = readdirSync(batchDirectory)
   .sort();
 const foundationArtifacts: FoundationArtifacts = {
   profile,
+  profileBytes,
   publicationIndex,
   manifest,
   receipt,
   receiptBytes,
   companions: Object.fromEntries(publicationIndex.placements.map((placement) => [
     placement,
-    placement === 'batch-001'
-      ? japanese
-      : readJson(path.join(importDir, expectedCompanionFilename(placement))),
+    parseJsonBytes(companionBytes[placement]!),
   ])),
+  companionBytes,
   batches: Object.fromEntries(batchFiles.map((filename) => [filename, readJson(`data/hsk-vocabulary/${filename}`)])),
   batchBytes: Object.fromEntries(batchFiles.map((filename) => [filename, readFileSync(path.join(batchDirectory, filename))])),
   companionFiles,
@@ -232,6 +246,61 @@ const foundationArtifacts: FoundationArtifacts = {
 
 function requireInvariant(condition: boolean, invariant: string): asserts condition {
   if (!condition) throw new Error(`manifest invariant: ${invariant}`);
+}
+
+function producerInputError(artifacts: FoundationArtifacts): string {
+  const placements = artifacts.publicationIndex.placements;
+  const companions: Record<string, string> = {};
+  for (const placement of placements) {
+    const raw = artifacts.companionBytes[placement];
+    if (!raw) return `raw Japanese companion bytes are missing for declared placement ${placement}`;
+    companions[placement] = Buffer.from(raw).toString('base64');
+  }
+  const placementRows = Object.fromEntries(placements.map((placement) => [
+    placement,
+    artifacts.manifest.rows
+      .filter((row) => row.sourceEligible && row.batchPlacement === placement)
+      .map((row) => ({
+        sourceId: row.sourceId,
+        globalSequence: row.globalSequence,
+        primaryLevel: row.primaryLevel,
+        simplified: row.simplified,
+        pinyin: row.pinyin,
+      })),
+  ]));
+  const code = [
+    'import base64, importlib.util, json, sys',
+    'spec = importlib.util.spec_from_file_location("hsk_importer_under_test", sys.argv[1])',
+    'module = importlib.util.module_from_spec(spec)',
+    'spec.loader.exec_module(module)',
+    'bundle = json.loads(sys.stdin.read())',
+    'def parse_raw(encoded):',
+    '    raw = base64.b64decode(encoded, validate=True).decode("utf-8")',
+    '    return json.loads(raw, object_pairs_hook=module._unique_object)',
+    'try:',
+    '    profile = parse_raw(bundle["profile"])',
+    '    receipt = parse_raw(bundle["receipt"])',
+    '    module._validate_profile(profile, receipt)',
+    '    for placement in bundle["placements"]:',
+    '        companion = parse_raw(bundle["companions"][placement])',
+    '        module._validate_japanese(companion, bundle["placementRows"][placement], placement)',
+    'except Exception as error:',
+    '    print(str(error), file=sys.stderr)',
+    '    sys.exit(2)',
+  ].join('\n');
+  const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    cwd: root,
+    input: JSON.stringify({
+      profile: Buffer.from(artifacts.profileBytes).toString('base64'),
+      receipt: Buffer.from(artifacts.receiptBytes).toString('base64'),
+      placements,
+      companions,
+      placementRows,
+    }),
+    encoding: 'utf8',
+  });
+  if (result.error) return result.error.message;
+  return result.status === 0 ? '' : result.stderr.trim() || `producer input check exited with status ${result.status}`;
 }
 
 function sameJson(left: unknown, right: unknown): boolean {
@@ -271,7 +340,7 @@ function producerPublicationIndexError(raw: string): string {
     '    print(str(error), file=sys.stderr)',
     '    sys.exit(2)',
   ].join('\n');
-  const result = spawnSync('python3', ['-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+  const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
     cwd: root,
     input: raw,
     encoding: 'utf8',
@@ -531,6 +600,11 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
       requireInvariant(!Object.hasOwn(batchRow, 'traditional'), `batch-excluded-field-${placement}-${index + 1}`);
     }
   }
+  requireInvariant(producerInputError(artifacts) === '', 'producer-input-contracts');
+}
+
+function serializedJsonBytes(candidate: unknown): Uint8Array {
+  return new TextEncoder().encode(`${JSON.stringify(candidate, null, 2)}\n`);
 }
 
 function serializedBatchSha256(candidate: { vocabulary: VocabularyRecord[] }): string {
@@ -545,11 +619,44 @@ function cloneArtifacts(): FoundationArtifacts {
   return structuredClone(foundationArtifacts) as FoundationArtifacts;
 }
 
+function syncTestProfileBytes(candidate: FoundationArtifacts): void {
+  candidate.profileBytes = serializedJsonBytes(candidate.profile);
+}
+
+function syncTestCompanionBytes(candidate: FoundationArtifacts, placement: string): void {
+  const companion = candidate.companions[placement];
+  if (!companion) throw new Error(`test fixture has no companion for ${placement}`);
+  candidate.companionBytes[placement] = serializedJsonBytes(companion);
+}
+
+function rawCompanionWithIntegralFloat(rawBytes: Uint8Array, sequence: number): Uint8Array {
+  const raw = Buffer.from(rawBytes).toString('utf8');
+  const token = new RegExp(`"globalSequence":\\s*${sequence}(?=\\s*[,}])`, 'g');
+  const matches = [...raw.matchAll(token)];
+  if (matches.length !== 1 || matches[0]?.index === undefined) {
+    throw new Error(`test companion does not contain one globalSequence token for ${sequence}`);
+  }
+  const match = matches[0];
+  const end = match.index + match[0].length;
+  return new TextEncoder().encode(`${raw.slice(0, end)}.0${raw.slice(end)}`);
+}
+
+function rawCompanionWithDuplicateSourceId(rawBytes: Uint8Array, sourceId: string): Uint8Array {
+  const raw = Buffer.from(rawBytes).toString('utf8');
+  const token = `"sourceId": "${sourceId}"`;
+  const index = raw.indexOf(token);
+  if (index < 0 || raw.indexOf(token, index + token.length) >= 0) {
+    throw new Error(`test companion does not contain one sourceId token for ${sourceId}`);
+  }
+  return new TextEncoder().encode(`${raw.slice(0, index + token.length)}, ${token}${raw.slice(index + token.length)}`);
+}
+
 function firstBatchOnlyFixture(): FoundationArtifacts {
   const candidate = cloneArtifacts();
   const firstBatch = 'hsk-vocabulary-batch-001.json';
   candidate.publicationIndex.placements = ['batch-001'];
   candidate.companions = { 'batch-001': candidate.companions['batch-001']! };
+  candidate.companionBytes = { 'batch-001': candidate.companionBytes['batch-001']! };
   candidate.batches = { [firstBatch]: candidate.batches[firstBatch]! };
   candidate.batchBytes = { [firstBatch]: candidate.batchBytes[firstBatch]! };
   candidate.companionFiles = ['first-batch-japanese.json'];
@@ -631,6 +738,7 @@ function publishTestPlacement(candidate: FoundationArtifacts, placement: string)
 
   candidate.publicationIndex.placements.splice(orderedIndex, 0, placement);
   candidate.companions[placement] = { authoring, records };
+  candidate.companionBytes[placement] = serializedJsonBytes(candidate.companions[placement]);
   candidate.batches[filename] = output;
   candidate.batchBytes[filename] = bytes;
   candidate.companionFiles.push(expectedCompanionFilename(placement));
@@ -714,6 +822,47 @@ describe('HearMandarin HSK source foundation', () => {
     expect(() => assertFoundation(foundationArtifacts)).not.toThrow();
     expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batches[0].sha256);
     expect(manifest.publication.batches[0]?.sha256).toBe(immutableFirstBatchSha256);
+  });
+
+  it('applies producer profile and raw companion contracts to declared inputs', () => {
+    const wrongExpectedVersion = cloneArtifacts();
+    wrongExpectedVersion.profile.expectedSourceMetadata.version = 'incorrect-profile-version';
+    syncTestProfileBytes(wrongExpectedVersion);
+    expect(producerInputError(wrongExpectedVersion)).toContain("profile source identity drift at 'datasetVersion'");
+    expect(() => assertFoundation(wrongExpectedVersion)).toThrow('manifest invariant: producer-input-contracts');
+
+    const floatCases: Array<{ placement: string; candidate: FoundationArtifacts }> = [
+      { placement: 'batch-001', candidate: cloneArtifacts() },
+      { placement: 'planned-level-1-batch-002', candidate: firstBatchOnlyFixture() },
+    ];
+    const laterCandidate = floatCases[1]!.candidate;
+    publishTestPlacement(laterCandidate, 'planned-level-1-batch-002');
+    for (const { placement, candidate } of floatCases) {
+      const sequence = candidate.companions[placement]!.records[0]!.globalSequence;
+      candidate.companionBytes[placement] = rawCompanionWithIntegralFloat(candidate.companionBytes[placement]!, sequence);
+      expect(producerInputError(candidate)).toContain('Japanese companion globalSequence must be a non-Boolean integer at row 1');
+      expect(() => assertFoundation(candidate)).toThrow('manifest invariant: producer-input-contracts');
+    }
+
+    const duplicateRawKey = cloneArtifacts();
+    const firstSourceId = duplicateRawKey.companions['batch-001']!.records[0]!.sourceId;
+    duplicateRawKey.companionBytes['batch-001'] = rawCompanionWithDuplicateSourceId(
+      duplicateRawKey.companionBytes['batch-001']!, firstSourceId,
+    );
+    expect(producerInputError(duplicateRawKey)).toContain('duplicate JSON object key: sourceId');
+    expect(() => assertFoundation(duplicateRawKey)).toThrow('manifest invariant: producer-input-contracts');
+
+    const extraAuthoringMetadata = cloneArtifacts();
+    extraAuthoringMetadata.companions['batch-001']!.authoring.extra = true;
+    syncTestCompanionBytes(extraAuthoringMetadata, 'batch-001');
+    expect(producerInputError(extraAuthoringMetadata)).toContain(
+      'Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed',
+    );
+
+    const emptyJapanese = cloneArtifacts();
+    emptyJapanese.companions['batch-001']!.records[0]!.japanese = '  ';
+    syncTestCompanionBytes(emptyJapanese, 'batch-001');
+    expect(producerInputError(emptyJapanese)).toContain('Japanese draft is empty at row 1');
   });
 
   it('rejects independent profile, manifest, index, companion, and batch drift copies through the same validators', () => {
