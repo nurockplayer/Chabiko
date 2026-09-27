@@ -545,6 +545,119 @@ function cloneArtifacts(): FoundationArtifacts {
   return structuredClone(foundationArtifacts) as FoundationArtifacts;
 }
 
+function firstBatchOnlyFixture(): FoundationArtifacts {
+  const candidate = cloneArtifacts();
+  const firstBatch = 'hsk-vocabulary-batch-001.json';
+  candidate.publicationIndex.placements = ['batch-001'];
+  candidate.companions = { 'batch-001': candidate.companions['batch-001']! };
+  candidate.batches = { [firstBatch]: candidate.batches[firstBatch]! };
+  candidate.batchBytes = { [firstBatch]: candidate.batchBytes[firstBatch]! };
+  candidate.companionFiles = ['first-batch-japanese.json'];
+  candidate.batchFiles = [firstBatch];
+  candidate.manifest.publication.batches = candidate.manifest.publication.batches.filter(
+    (entry) => entry.placement === 'batch-001',
+  );
+  candidate.manifest.publication.repositoryPublishedBatchCount = 1;
+  candidate.manifest.publication.repositoryPublishedRecordCount = candidate.manifest.publication.batches[0]!.records;
+  for (const row of candidate.manifest.rows) {
+    const isFirstBatch = row.sourceEligible && row.batchPlacement === 'batch-001';
+    row.repositoryPublication = !row.sourceEligible
+      ? 'blocked'
+      : isFirstBatch
+        ? 'draft-published-to-repository'
+        : 'planned-not-published';
+    if (isFirstBatch) row.repositoryBatchFile = firstBatch;
+    else delete row.repositoryBatchFile;
+  }
+  return candidate;
+}
+
+function plannedPlacementOrder(candidate: FoundationArtifacts): string[] {
+  return [...new Set(candidate.manifest.rows
+    .filter((row) => row.sourceEligible)
+    .map((row) => row.batchPlacement)
+    .filter((placement): placement is string => typeof placement === 'string'))];
+}
+
+function publishTestPlacement(candidate: FoundationArtifacts, placement: string): void {
+  if (candidate.publicationIndex.placements.includes(placement)) return;
+
+  const group = candidate.manifest.rows.filter(
+    (row) => row.sourceEligible && row.batchPlacement === placement,
+  );
+  if (group.length === 0) throw new Error(`test fixture has no eligible rows for ${placement}`);
+  const order = plannedPlacementOrder(candidate);
+  const orderIndex = order.indexOf(placement);
+  if (orderIndex < 0) throw new Error(`test fixture has no planned order for ${placement}`);
+
+  const filename = expectedBatchFilename(placement);
+  const records = group.map((row) => ({
+    sourceId: row.sourceId,
+    globalSequence: row.globalSequence,
+    simplified: row.simplified ?? '',
+    pinyin: row.pinyin ?? '',
+    japanese: `合成訳${row.globalSequence}`,
+  }));
+  const vocabulary = group.map((row, index): VocabularyRecord => ({
+    id: row.recordId,
+    pinyin: row.pinyin ?? '',
+    japanese: records[index]?.japanese ?? '',
+    reviewStatus: 'draft',
+    hsk: {
+      standardVersion: 'hsk-3.0',
+      introducedAtLevel: row.primaryLevel,
+      sourceLevelLabel: row.sourceLevelLabel,
+    },
+    simplified: row.simplified ?? '',
+    simplifiedStatus: 'authored',
+    source: {
+      type: 'hearmandarin-hsk-json',
+      note: expectedSourceNote(candidate.profile, row),
+    },
+  }));
+  const output = { vocabulary };
+  const bytes = serializedBatchBytes(output);
+  const insertionIndex = candidate.publicationIndex.placements.findIndex(
+    (declared) => order.indexOf(declared) > orderIndex,
+  );
+  const orderedIndex = insertionIndex < 0 ? candidate.publicationIndex.placements.length : insertionIndex;
+  const authoring = {
+    method: 'Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.',
+    status: 'ai-provisional',
+    reviewStatus: 'draft',
+    humanReview: false,
+    excludedSourceFieldsUsed: [],
+  };
+
+  candidate.publicationIndex.placements.splice(orderedIndex, 0, placement);
+  candidate.companions[placement] = { authoring, records };
+  candidate.batches[filename] = output;
+  candidate.batchBytes[filename] = bytes;
+  candidate.companionFiles.push(expectedCompanionFilename(placement));
+  candidate.companionFiles.sort();
+  candidate.batchFiles.push(filename);
+  candidate.batchFiles.sort();
+  candidate.manifest.publication.batches.splice(orderedIndex, 0, {
+    placement,
+    file: filename,
+    records: group.length,
+    primaryLevel: group[0]!.primaryLevel,
+    sha256: createHash('sha256').update(bytes).digest('hex'),
+  });
+  candidate.manifest.publication.repositoryPublishedBatchCount += 1;
+  candidate.manifest.publication.repositoryPublishedRecordCount += group.length;
+  for (const row of group) {
+    row.repositoryPublication = 'draft-published-to-repository';
+    row.repositoryBatchFile = filename;
+  }
+}
+
+function updateTestPlacementHash(candidate: FoundationArtifacts, placement: string, output: { vocabulary: VocabularyRecord[] }): void {
+  const publication = candidate.manifest.publication.batches.find((entry) => entry.placement === placement);
+  if (!publication) throw new Error(`test fixture has no publication entry for ${placement}`);
+  publication.sha256 = serializedBatchSha256(output);
+}
+
 describe('HearMandarin HSK source foundation', () => {
   it('pins the exact small receipt and records the bounded artifact-specific terms inference', () => {
     expect(profile.profileVersion).toBe(2);
@@ -740,7 +853,7 @@ describe('HearMandarin HSK source foundation', () => {
         name: 'publication index references unknown placement',
         invariant: 'publication-index-known-placement',
         mutate: (candidate) => {
-          candidate.publicationIndex.placements.push('planned-level-2-batch-999');
+          candidate.publicationIndex.placements.push('test-only-unknown-placement');
         },
       },
       {
@@ -867,7 +980,7 @@ describe('HearMandarin HSK source foundation', () => {
         name: 'extra managed vocabulary output file',
         invariant: 'batch-filesystem-set',
         mutate: (candidate) => {
-          candidate.batchFiles.push('hsk-vocabulary-level-2-batch-999.json');
+          candidate.batchFiles.push('hsk-vocabulary-batch-test-unlisted.json');
           candidate.batchFiles.sort();
         },
       },
@@ -908,98 +1021,81 @@ describe('HearMandarin HSK source foundation', () => {
     }
   });
 
-  it('accepts a later independently declared placement with its complete output set', () => {
-    const candidate = cloneArtifacts();
-    const placement = 'planned-level-2-batch-002';
-    const filename = expectedBatchFilename(placement);
-    const group = candidate.manifest.rows.filter((row) => row.sourceEligible && row.batchPlacement === placement);
-    const records = group.map((row) => {
-      const japaneseText = `合成訳${row.globalSequence}`;
-      return {
-        sourceId: row.sourceId,
-        globalSequence: row.globalSequence,
-        simplified: row.simplified ?? '',
-        pinyin: row.pinyin ?? '',
-        japanese: japaneseText,
-      };
-    });
-    const vocabulary = group.map((row, index): VocabularyRecord => ({
-      id: row.recordId,
-      pinyin: row.pinyin ?? '',
-      japanese: records[index]?.japanese ?? '',
-      reviewStatus: 'draft',
-      hsk: { standardVersion: 'hsk-3.0', introducedAtLevel: row.primaryLevel, sourceLevelLabel: row.sourceLevelLabel },
-      simplified: row.simplified ?? '',
-      simplifiedStatus: 'authored',
-      source: {
-        type: 'hearmandarin-hsk-json',
-        note: expectedSourceNote(candidate.profile, row),
+  it('accepts ordered test-owned publications as the immutable plan grows', () => {
+    const growthCases: Array<{ name: string; placements: string[]; repeatPlacement?: string }> = [
+      {
+        name: 'publishes the valid second level-1 batch',
+        placements: ['planned-level-1-batch-002'],
       },
-    }));
-    const output = { vocabulary };
-    const bytes = serializedBatchBytes(output);
-    candidate.publicationIndex.placements.push(placement);
-    const authoring = {
-        method: 'Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.',
-        status: 'ai-provisional',
-        reviewStatus: 'draft',
-        humanReview: false,
-        excludedSourceFieldsUsed: [],
-      };
-    candidate.companions[placement] = {
-      authoring: Object.fromEntries(Object.entries(authoring).reverse()),
-      records,
-    };
-    candidate.batches[filename] = output;
-    candidate.batchBytes[filename] = bytes;
-    candidate.companionFiles.push(expectedCompanionFilename(placement));
-    candidate.companionFiles.sort();
-    candidate.batchFiles.push(filename);
-    candidate.batchFiles.sort();
-    candidate.manifest.publication.batches.push({
-      placement,
-      file: filename,
-      records: group.length,
-      primaryLevel: 2,
-      sha256: createHash('sha256').update(bytes).digest('hex'),
-    });
-    candidate.manifest.publication.repositoryPublishedBatchCount += 1;
-    candidate.manifest.publication.repositoryPublishedRecordCount += group.length;
-    for (const row of group) {
-      row.repositoryPublication = 'draft-published-to-repository';
-      row.repositoryBatchFile = filename;
-    }
-    expect(() => assertFoundation(candidate)).not.toThrow();
+      {
+        name: 'does not duplicate an already-declared level-2 target',
+        placements: ['planned-level-2-batch-002', 'planned-level-2-batch-002'],
+        repeatPlacement: 'planned-level-2-batch-002',
+      },
+      {
+        name: 'inserts earlier placements before an existing level-3 batch',
+        placements: ['planned-level-3-batch-002', 'planned-level-2-batch-002', 'planned-level-1-batch-002'],
+      },
+    ];
 
-    const semanticDrift = structuredClone(candidate) as FoundationArtifacts;
+    let driftCandidate: FoundationArtifacts | undefined;
+    let driftPlacement: string | undefined;
+    for (const growthCase of growthCases) {
+      const candidate = firstBatchOnlyFixture();
+      for (const placement of growthCase.placements) publishTestPlacement(candidate, placement);
+      expect(() => assertFoundation(candidate), growthCase.name).not.toThrow();
+      if (growthCase.repeatPlacement) {
+        expect(candidate.publicationIndex.placements.filter((placement) => placement === growthCase.repeatPlacement)).toHaveLength(1);
+      }
+      if (growthCase.name === 'publishes the valid second level-1 batch') {
+        driftCandidate = candidate;
+        driftPlacement = growthCase.placements[0];
+      }
+    }
+
+    const completePublication = firstBatchOnlyFixture();
+    const immutablePlacements = plannedPlacementOrder(completePublication);
+    for (const placement of immutablePlacements) {
+      if (placement !== 'batch-001') publishTestPlacement(completePublication, placement);
+    }
+    expect(completePublication.publicationIndex.placements).toEqual(immutablePlacements);
+    expect(completePublication.manifest.publication.repositoryPublishedBatchCount).toBe(immutablePlacements.length);
+    expect(() => assertFoundation(completePublication), 'complete immutable placement publication').not.toThrow();
+
+    if (!driftCandidate || !driftPlacement) throw new Error('test fixture lacks a new level-1 publication for drift checks');
+    const filename = expectedBatchFilename(driftPlacement);
+    const group = driftCandidate.manifest.rows.filter(
+      (row) => row.sourceEligible && row.batchPlacement === driftPlacement,
+    );
+    const semanticDrift = structuredClone(driftCandidate) as FoundationArtifacts;
     const laterOutput = semanticDrift.batches[filename]!;
     laterOutput.vocabulary[0]!.hsk.introducedAtLevel = 3;
     semanticDrift.batchBytes[filename] = serializedBatchBytes(laterOutput);
-    semanticDrift.manifest.publication.batches[1]!.sha256 = serializedBatchSha256(laterOutput);
-    expect(() => assertFoundation(semanticDrift)).toThrow('manifest invariant: batch-hsk-join-planned-level-2-batch-002-1');
+    updateTestPlacementHash(semanticDrift, driftPlacement, laterOutput);
+    expect(() => assertFoundation(semanticDrift)).toThrow(`manifest invariant: batch-hsk-join-${driftPlacement}-1`);
 
     const laterRow = group[0];
     if (!laterRow) throw new Error('synthetic later declaration has no rows');
-    const expectedRowSourceNote = expectedSourceNote(candidate.profile, laterRow);
+    const expectedRowSourceNote = expectedSourceNote(driftCandidate.profile, laterRow);
     const sourceNoteDrifts: Array<{ name: string; alter: (note: string) => string }> = [
-      { name: 'attribution', alter: (note) => note.replace(candidate.profile.dataset.attribution, 'Unknown publisher') },
-      { name: 'dataset title', alter: (note) => note.replace(candidate.profile.dataset.datasetName, 'Unknown dataset') },
-      { name: 'homepage', alter: (note) => note.replace(candidate.profile.dataset.homepage, 'https://example.invalid/data') },
-      { name: 'provenance and disclaimer', alter: (note) => note.replace(candidate.profile.dataset.provenance, 'https://example.invalid/provenance') },
-      { name: 'publisher terms', alter: (note) => note.replace(candidate.profile.dataset.termsUrl, 'https://example.invalid/terms') },
-      { name: 'license name', alter: (note) => note.replace(candidate.profile.dataset.license, 'Unknown license') },
-      { name: 'license URL', alter: (note) => note.replace(candidate.profile.dataset.licenseUrl, 'https://example.invalid/license') },
-      { name: 'modification notice', alter: (note) => note.replace(candidate.profile.dataset.modificationNotice, 'Modification detail omitted.') },
+      { name: 'attribution', alter: (note) => note.replace(driftCandidate.profile.dataset.attribution, 'Unknown publisher') },
+      { name: 'dataset title', alter: (note) => note.replace(driftCandidate.profile.dataset.datasetName, 'Unknown dataset') },
+      { name: 'homepage', alter: (note) => note.replace(driftCandidate.profile.dataset.homepage, 'https://example.invalid/data') },
+      { name: 'provenance and disclaimer', alter: (note) => note.replace(driftCandidate.profile.dataset.provenance, 'https://example.invalid/provenance') },
+      { name: 'publisher terms', alter: (note) => note.replace(driftCandidate.profile.dataset.termsUrl, 'https://example.invalid/terms') },
+      { name: 'license name', alter: (note) => note.replace(driftCandidate.profile.dataset.license, 'Unknown license') },
+      { name: 'license URL', alter: (note) => note.replace(driftCandidate.profile.dataset.licenseUrl, 'https://example.invalid/license') },
+      { name: 'modification notice', alter: (note) => note.replace(driftCandidate.profile.dataset.modificationNotice, 'Modification detail omitted.') },
       { name: 'provisional disclaimer', alter: (note) => note.replace('provisional, not human reviewed', 'approved by a human reviewer') },
       { name: 'record identity', alter: (note) => note.replace(`Source ID ${laterRow.sourceId};`, 'Source ID contradictory-id;') },
     ];
     for (const drift of sourceNoteDrifts) {
-      const noteDrift = structuredClone(candidate) as FoundationArtifacts;
+      const noteDrift = structuredClone(driftCandidate) as FoundationArtifacts;
       const noteOutput = noteDrift.batches[filename]!;
       noteOutput.vocabulary[0]!.source.note = drift.alter(expectedRowSourceNote);
       noteDrift.batchBytes[filename] = serializedBatchBytes(noteOutput);
-      noteDrift.manifest.publication.batches[1]!.sha256 = serializedBatchSha256(noteOutput);
-      expect(() => assertFoundation(noteDrift), drift.name).toThrow('manifest invariant: batch-source-note-exact-planned-level-2-batch-002-1');
+      updateTestPlacementHash(noteDrift, driftPlacement, noteOutput);
+      expect(() => assertFoundation(noteDrift), drift.name).toThrow(`manifest invariant: batch-source-note-exact-${driftPlacement}-1`);
     }
   });
 
