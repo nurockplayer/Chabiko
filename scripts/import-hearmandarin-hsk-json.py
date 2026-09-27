@@ -468,12 +468,19 @@ def self_test(script_path: Path) -> None:
         config_dir = root / "data/hsk-import/hearmandarin-hsk-2025-v1"
         config_dir.mkdir(parents=True)
         source_path = Path(temporary) / "source.json"
+        source_ids = [
+            "fixture-kite", "fixture-orchid", "fixture-river", "fixture-copper", "fixture-cedar",
+            "fixture-moon", "fixture-linen", "fixture-amber", "fixture-cloud", "fixture-pebble",
+            "fixture-fern", "fixture-comet", "fixture-maple", "fixture-glass", "fixture-island",
+            "fixture-saffron", "fixture-willow", "fixture-lantern", "fixture-slate", "fixture-harbor",
+            "fixture-plum",
+        ]
         source = {
             "name": "HearMandarin HSK 3.0 Word List Dataset", "version": "test-v1", "generated": "test-date", "count": 21, "license": "CC BY 4.0",
             "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "HearMandarin (https://hearmandarin.com)",
             "homepage": "https://hearmandarin.com/datasets/", "words": [
-                {"id": f"w{index:05d}", "simplified": f"词{index}", "pinyin": f"cí{index}", "hsk3_band": 1, "hsk3_seq": index}
-                for index in range(1, 22)
+                {"id": source_ids[index - 1], "simplified": f"词{index}", "pinyin": f"cí{index}", "hsk3_band": 1, "hsk3_seq": index}
+                for index in range(1, len(source_ids) + 1)
             ],
         }
         source_bytes = json_bytes(source)
@@ -496,16 +503,69 @@ def self_test(script_path: Path) -> None:
             {"sourceId": row["id"], "globalSequence": row["hsk3_seq"], "simplified": row["simplified"], "pinyin": row["pinyin"], "japanese": f"語彙{index}。"}
             for index, row in enumerate(source["words"][:20], start=1)
         ]}
-        (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(companion))
         copied_script = root / "scripts" / script_path.name
+        base_profile = _mini_profile(source_bytes, receipt_bytes)
+        base_receipt = json.loads(receipt_bytes.decode("utf-8"))
+
+        def clone(value: Any) -> Any:
+            return json.loads(json.dumps(value, ensure_ascii=False))
+
+        def write_inputs(source_data: bytes, profile_data: dict[str, Any], receipt_data: dict[str, Any], japanese_data: dict[str, Any]) -> None:
+            source_path.write_bytes(source_data)
+            (config_dir / "official-verification.json").write_bytes(json_bytes(receipt_data))
+            (config_dir / "source-profile.json").write_bytes(json_bytes(profile_data))
+            (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(japanese_data))
+
+        def reset_inputs() -> None:
+            write_inputs(source_bytes, clone(base_profile), clone(base_receipt), clone(companion))
+
+        def repin_source_variant(source_data: dict[str, Any]) -> tuple[bytes, dict[str, Any], dict[str, Any]]:
+            changed_source = clone(source_data)
+            changed_source["count"] = len(changed_source["words"])
+            changed_bytes = json_bytes(changed_source)
+            changed_profile = clone(base_profile)
+            changed_receipt = clone(base_receipt)
+            changed_profile["expectedSourceMetadata"]["count"] = changed_source["count"]
+            changed_profile["dataset"]["json"].update({"sha256": sha256(changed_bytes), "bytes": len(changed_bytes), "rows": changed_source["count"]})
+            changed_profile["dataset"]["csv"]["rows"] = changed_source["count"]
+            changed_receipt["datasetSha256"] = sha256(changed_bytes)
+            changed_receipt_bytes = json_bytes(changed_receipt)
+            changed_profile["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(changed_receipt_bytes)
+            write_inputs(changed_bytes, changed_profile, changed_receipt, clone(companion))
+            return changed_bytes, changed_profile, changed_receipt
 
         def invoke(output: Path, input_path: Path = source_path) -> subprocess.CompletedProcess[str]:
             return subprocess.run([sys.executable, str(copied_script), "--source", str(input_path), "--output-dir", str(output)], text=True, capture_output=True, check=False)
 
+        rejection_case_count = 0
+
+        def reject_case(
+            name: str,
+            expected_error: str,
+            setup: Any | None = None,
+            expected_output_exists: bool = False,
+            preserve: Any | None = None,
+        ) -> None:
+            nonlocal rejection_case_count
+            reset_inputs()
+            slug = name.lower().replace(" ", "-")
+            output = Path(temporary) / f"case-{slug}"
+            input_path = setup(output) if setup is not None else source_path
+            result = invoke(output, input_path)
+            output_remains = output.exists() or output.is_symlink()
+            require(result.returncode != 0 and expected_error in result.stderr,
+                    f"self-test {name} did not reach intended rejection: {result.stderr.strip()}")
+            require(output_remains is expected_output_exists, f"self-test {name} output-path state changed unexpectedly")
+            if preserve is not None:
+                require(preserve(output), f"self-test {name} changed pre-existing caller data")
+            rejection_case_count += 1
+
         out_a = Path(temporary) / "out-a"
+        reset_inputs()
         first = invoke(out_a)
         require(first.returncode == 0, f"self-test clean CLI failed: {first.stderr.strip()}")
         out_b = Path(temporary) / "out-b"
+        reset_inputs()
         second = invoke(out_b)
         require(second.returncode == 0, f"self-test repeat CLI failed: {second.stderr.strip()}")
         for name in ("manifest.json", "hsk-vocabulary-batch-001.json"):
@@ -515,78 +575,155 @@ def self_test(script_path: Path) -> None:
         require(manifest["accounting"]["eligible"] == 20 and manifest["accounting"]["blocked"] == 1, "self-test manifest accounting mismatch")
         require(len(batch["vocabulary"]) == 20 and all(row["reviewStatus"] == "draft" for row in batch["vocabulary"]), "self-test batch publication mismatch")
 
-        dirty = Path(temporary) / "dirty"
-        dirty.mkdir()
-        sentinel = dirty / "developer-sentinel.txt"
-        sentinel.write_text("preserve me\n", encoding="utf-8")
-        rejected = invoke(dirty)
-        require(rejected.returncode != 0 and sentinel.read_text(encoding="utf-8") == "preserve me\n", "self-test dirty output was not rejected safely")
-        require(list(dirty.iterdir()) == [sentinel], "self-test dirty output changed the caller directory")
+        empty_output = Path(temporary) / "existing-empty-output"
+        empty_output.mkdir()
+        reset_inputs()
+        empty_result = invoke(empty_output)
+        require(empty_result.returncode == 0 and {path.name for path in empty_output.iterdir()} == {"manifest.json", "hsk-vocabulary-batch-001.json"},
+                f"self-test existing empty output failed: {empty_result.stderr.strip()}")
+
+        def profile_probe(path: tuple[str, ...], value: Any) -> Any:
+            def setup(_output: Path) -> Path:
+                profile_value = clone(base_profile)
+                target = profile_value
+                for key in path[:-1]:
+                    target = target[key]
+                target[path[-1]] = value
+                write_inputs(source_bytes, profile_value, clone(base_receipt), clone(companion))
+                return source_path
+            return setup
+
+        def source_probe(change: Any, profile_change: Any | None = None) -> Any:
+            def setup(_output: Path) -> Path:
+                changed_source = clone(source)
+                change(changed_source)
+                changed_bytes, profile_value, _receipt_value = repin_source_variant(changed_source)
+                if profile_change is not None:
+                    profile_change(profile_value)
+                current_receipt = load_json(config_dir / "official-verification.json")
+                current_japanese = clone(companion)
+                write_inputs(changed_bytes, profile_value, current_receipt, current_japanese)
+                return source_path
+            return setup
+
+        reject_case("source hash drift", "source JSON SHA256 does not match the pinned source profile",
+                    setup=lambda _output: (source_path.write_bytes(source_bytes + b" "), source_path)[1])
+        reject_case("source version drift", "source metadata drift at 'version'",
+                    setup=source_probe(lambda value: value.__setitem__("version", "different-source-version")))
+        reject_case("source license metadata drift", "source metadata drift at 'license'",
+                    setup=source_probe(lambda value: value.__setitem__("license", "CC0")))
+        reject_case("contradictory profile version", "profile source identity drift at 'datasetVersion'",
+                    setup=profile_probe(("dataset", "datasetVersion"), "wrong-version"))
+        reject_case("51-row future batch", "no greater than 50",
+                    setup=profile_probe(("plannedBatches", "subsequentMaxRows"), 51))
+        reject_case("boolean future batch limit", "maximum must be a positive integer",
+                    setup=profile_probe(("plannedBatches", "subsequentMaxRows"), True))
+        reject_case("unsupported future ordering", "unsupported subsequent batch ordering",
+                    setup=profile_probe(("plannedBatches", "subsequentOrdering"), "source-file-order"))
+        reject_case("contradictory official artifact hash", "official verification artifact hash disagrees with receipt",
+                    setup=profile_probe(("dataset", "sourceCoordinateVerification", "officialArtifactSha256"), "wrong-test-hash"))
+        reject_case("contradictory official page", "official verification page disagrees with receipt",
+                    setup=profile_probe(("dataset", "sourceCoordinateVerification", "page"), "https://wrong.example/syllabus"))
+
+        reject_case("duplicate global coordinate", "duplicate global sequence 3",
+                    setup=source_probe(lambda value: value["words"][3].__setitem__("hsk3_seq", 3)))
+        reject_case("missing global coordinate", "missing or extra verified global sequence coordinate",
+                    setup=source_probe(lambda value: value["words"][20].__setitem__("hsk3_seq", 22)))
+        reject_case("global sequence below frozen range", "missing or extra verified global sequence coordinate",
+                    setup=source_probe(lambda value: value["words"][0].__setitem__("hsk3_seq", 0)))
+        reject_case("extra verified coordinate range", "official receipt candidate count disagrees with frozen source coordinates",
+                    setup=source_probe(
+                        lambda value: value["words"].append({"id": "fixture-extra", "simplified": "额外", "pinyin": "éwài", "hsk3_band": 1, "hsk3_seq": 22}),
+                        profile_change=lambda value: value["coordinate"].__setitem__("lastVerifiedSequence", 22),
+                    ))
+        reject_case("source primary level drift", "source primary-level coordinate counts drifted",
+                    setup=source_probe(lambda value: value["words"][0].__setitem__("hsk3_band", 2)))
+        reject_case(f"duplicate opaque source ID", f"duplicate source ID {source_ids[19]}",
+                    setup=source_probe(lambda value: value["words"][20].__setitem__("id", value["words"][19]["id"])))
+        reject_case("opaque source ID drift", "complete retained eligible projection digest",
+                    setup=source_probe(lambda value: value["words"][19].__setitem__("id", "opaque-renamed-id")))
+        reject_case("Simplified source text drift", "complete retained eligible projection digest",
+                    setup=source_probe(lambda value: value["words"][19].__setitem__("simplified", "改字")))
+        reject_case("pinyin source drift", "complete retained eligible projection digest",
+                    setup=source_probe(lambda value: value["words"][19].__setitem__("pinyin", "gǎibiàn")))
+
+        def receipt_probe(change: Any) -> Any:
+            def setup(_output: Path) -> Path:
+                profile_value = clone(base_profile)
+                receipt_value = clone(base_receipt)
+                change(receipt_value)
+                receipt_bytes_value = json_bytes(receipt_value)
+                profile_value["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(receipt_bytes_value)
+                write_inputs(source_bytes, profile_value, receipt_value, clone(companion))
+                return source_path
+            return setup
+
+        reject_case("receipt proof digest drift", "complete retained eligible projection digest",
+                    setup=receipt_probe(lambda value: value.__setitem__("eligibleProjectionSha256", "0" * 64)))
+        reject_case("quarantine coordinate drift", "complete retained eligible projection digest",
+                    setup=receipt_probe(lambda value: value["blocked"][0].__setitem__("globalSequence", 20)))
+        reject_case("receipt eligible count drift", "official receipt eligible count disagrees with profile accounting",
+                    setup=receipt_probe(lambda value: value.__setitem__("eligibleCount", 19)))
+
+        def japanese_probe(change: Any) -> Any:
+            def setup(_output: Path) -> Path:
+                japanese_value = clone(companion)
+                change(japanese_value)
+                write_inputs(source_bytes, clone(base_profile), clone(base_receipt), japanese_value)
+                return source_path
+            return setup
+
+        reject_case("Japanese source join mismatch", "Japanese companion sourceId mismatch at row 1",
+                    setup=japanese_probe(lambda value: value["records"][0].__setitem__("sourceId", "not-the-source-id")))
+        reject_case("missing Japanese record", "Japanese companion must contain exactly the first repository batch",
+                    setup=japanese_probe(lambda value: value["records"].pop()))
+        reject_case("extra Japanese record", "Japanese companion must contain exactly the first repository batch",
+                    setup=japanese_probe(lambda value: value["records"].append(clone(value["records"][-1]))))
+
+        reject_case("malformed source JSON", "cannot read valid UTF-8 source JSON",
+                    setup=lambda _output: (source_path.write_bytes(b"{not-json"), source_path)[1])
+        reject_case("duplicate source JSON key", "duplicate JSON object key: name",
+                    setup=lambda _output: (source_path.write_bytes(b'{"name":"first","name":"second"}'), source_path)[1])
+        source_link = Path(temporary) / "source-link.json"
+        reject_case("source JSON symlink", "source JSON cannot be a symlink",
+                    setup=lambda _output: (os.symlink(source_path, source_link) or source_link))
+
+        def nested_sentinel(output: Path) -> Path:
+            sentinel = output / "developer-owned" / "nested" / "sentinel.txt"
+            sentinel.parent.mkdir(parents=True)
+            sentinel.write_text("preserve nested sentinel\n", encoding="utf-8")
+            return source_path
+        reject_case("nested dirty output", "output directory must be empty", setup=nested_sentinel, expected_output_exists=True,
+                    preserve=lambda output: (output / "developer-owned/nested/sentinel.txt").read_text(encoding="utf-8") == "preserve nested sentinel\n"
+                    and list((output / "developer-owned/nested").iterdir()) == [output / "developer-owned/nested/sentinel.txt"])
+
+        def existing_file(output: Path) -> Path:
+            output.write_text("preserve existing file\n", encoding="utf-8")
+            return source_path
+        reject_case("existing file output", "output path exists and is not a directory", setup=existing_file, expected_output_exists=True,
+                    preserve=lambda output: output.read_text(encoding="utf-8") == "preserve existing file\n")
 
         symlink_target = Path(temporary) / "symlink-target"
-        symlink_target.mkdir()
         symlink_sentinel = symlink_target / "developer-sentinel.txt"
-        symlink_sentinel.write_text("preserve symlink target\n", encoding="utf-8")
-        symlink_output = Path(temporary) / "symlink-output"
-        os.symlink(symlink_target, symlink_output, target_is_directory=True)
-        rejected = invoke(symlink_output)
-        require(rejected.returncode != 0 and symlink_sentinel.read_text(encoding="utf-8") == "preserve symlink target\n", "self-test symlink output was not rejected safely")
-        require(list(symlink_target.iterdir()) == [symlink_sentinel], "self-test symlink target was modified")
+        def symlink_output_setup(output: Path) -> Path:
+            symlink_target.mkdir()
+            symlink_sentinel.write_text("preserve symlink target\n", encoding="utf-8")
+            os.symlink(symlink_target, output, target_is_directory=True)
+            return source_path
+        reject_case("symlink output", "output directory cannot be a symlink", setup=symlink_output_setup, expected_output_exists=True,
+                    preserve=lambda _output: symlink_sentinel.read_text(encoding="utf-8") == "preserve symlink target\n"
+                    and list(symlink_target.iterdir()) == [symlink_sentinel])
 
-        wrong_hash = Path(temporary) / "wrong-source.json"
-        wrong_hash.write_bytes(source_bytes + b" ")
-        rejected = invoke(Path(temporary) / "wrong-hash-out", wrong_hash)
-        require(rejected.returncode != 0 and not (Path(temporary) / "wrong-hash-out").exists(), "self-test source hash drift was not rejected before output")
+        broken_target = Path(temporary) / "missing-output-target"
+        def broken_symlink_setup(output: Path) -> Path:
+            os.symlink(broken_target, output, target_is_directory=True)
+            return source_path
+        reject_case("broken symlink output", "output directory cannot be a symlink", setup=broken_symlink_setup, expected_output_exists=True,
+                    preserve=lambda output: output.is_symlink() and not broken_target.exists())
 
-        profile = load_json(config_dir / "source-profile.json")
-        for probe_name, path, value, expected_error in (
-            ("contradictory source version", ("dataset", "datasetVersion"), "wrong-version", "source identity drift"),
-            ("51-row future batch", ("plannedBatches", "subsequentMaxRows"), 51, "no greater than 50"),
-            ("boolean future batch limit", ("plannedBatches", "subsequentMaxRows"), True, "maximum must be a positive integer"),
-            ("unsupported future ordering", ("plannedBatches", "subsequentOrdering"), "source-file-order", "unsupported subsequent batch ordering"),
-            ("contradictory official artifact hash", ("dataset", "sourceCoordinateVerification", "officialArtifactSha256"), "wrong-test-hash", "artifact hash disagrees with receipt"),
-            ("contradictory official page", ("dataset", "sourceCoordinateVerification", "page"), "https://wrong.example/syllabus", "page disagrees with receipt"),
-        ):
-            changed_profile = json.loads(json.dumps(profile))
-            target = changed_profile
-            for key in path[:-1]:
-                target = target[key]
-            target[path[-1]] = value
-            (config_dir / "source-profile.json").write_bytes(json_bytes(changed_profile))
-            rejected_output = Path(temporary) / f"rejected-{probe_name.replace(' ', '-')}"
-            rejected = invoke(rejected_output)
-            require(rejected.returncode != 0 and not rejected_output.exists() and expected_error in rejected.stderr,
-                    f"self-test {probe_name} did not reach its intended rejection before output: {rejected.stderr.strip()}")
-        (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
+        require(rejection_case_count == 31, f"self-test negative CLI probe count changed: {rejection_case_count}")
 
-        duplicate_source = dict(source)
-        duplicate_source["words"] = [dict(row) for row in source["words"]]
-        duplicate_source["words"][3]["hsk3_seq"] = 3
-        duplicate_bytes = json_bytes(duplicate_source)
-        source_path.write_bytes(duplicate_bytes)
-        profile = load_json(config_dir / "source-profile.json")
-        profile["dataset"]["json"].update({"sha256": sha256(duplicate_bytes), "bytes": len(duplicate_bytes)})
-        profile["expectedSourceMetadata"]["count"] = 21
-        receipt["datasetSha256"] = sha256(duplicate_bytes)
-        (config_dir / "official-verification.json").write_bytes(json_bytes(receipt))
-        profile["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(json_bytes(receipt))
-        (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
-        rejected = invoke(Path(temporary) / "duplicate-out")
-        require(rejected.returncode != 0 and not (Path(temporary) / "duplicate-out").exists(), "self-test duplicate coordinate was not rejected before output")
-
-        source_path.write_bytes(source_bytes)
-        profile["dataset"]["json"].update({"sha256": sha256(source_bytes), "bytes": len(source_bytes)})
-        receipt["datasetSha256"] = sha256(source_bytes)
-        receipt_bytes = json_bytes(receipt)
-        (config_dir / "official-verification.json").write_bytes(receipt_bytes)
-        profile["dataset"]["sourceCoordinateVerification"]["receiptSha256"] = sha256(receipt_bytes)
-        (config_dir / "source-profile.json").write_bytes(json_bytes(profile))
-        japanese_companion = load_json(config_dir / "first-batch-japanese.json")
-        japanese_companion["records"].pop()
-        (config_dir / "first-batch-japanese.json").write_bytes(json_bytes(japanese_companion))
-        rejected = invoke(Path(temporary) / "missing-japanese-out")
-        require(rejected.returncode != 0 and not (Path(temporary) / "missing-japanese-out").exists(), "self-test incomplete Japanese companion was not rejected before output")
-    print("self-test passed: clean CLI repeat, dirty output preservation, symlink output rejection, source hash drift, contradictory source and official receipt identity, invalid future batch plan, duplicate coordinates, incomplete Japanese companion")
+    print(f"self-test passed: {rejection_case_count} negative CLI probes plus clean/repeat/empty-dir CLI success")
 
 
 def main(argv: list[str] | None = None) -> int:
