@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create the admitted HearMandarin HSK source manifest and first draft batch."""
+"""Rebuild the manifest and draft batches declared by the pinned HSK inputs."""
 
 from __future__ import annotations
 
