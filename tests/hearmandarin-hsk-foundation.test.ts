@@ -1,19 +1,62 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 interface SourceProfile {
   profileVersion: number;
-  plannedBatches: { repositoryPublishedBatches?: number };
+  expectedSourceMetadata: Record<string, string | number>;
+  coordinate: { expectedLevelCounts: Record<string, number> };
+  counts: {
+    sourceCandidates: number;
+    eligible: number;
+    blocked: number;
+    firstBatch: number;
+    eligibleLevelCounts: Record<string, number>;
+    duplicateGroups: number;
+    duplicateRows: number;
+    supplementarySourceLevelLabels: number;
+  };
+  plannedBatches: {
+    repositoryPublishedBatches?: number;
+    firstBatch: string;
+    firstBatchPrimaryLevel: number;
+    subsequentMaxRows: number;
+    subsequentOrdering: string;
+  };
   dataset: {
+    publisher: string;
+    datasetName: string;
+    datasetVersion: string;
+    generated: string;
+    downloadPageVersionLabel: string;
+    homepage: string;
     json: { sha256: string };
     jsonDownloadUrl: string;
     csvDownloadUrl: string;
+    provenance: string;
+    disclaimer: string;
     termsUrl: string;
+    termsSummary: string;
+    attribution: string;
+    license: string;
+    licenseUrl: string;
+    modificationNotice: string;
+    excludedFields: string[];
     artifactScopeRationale: string;
+    sourceCoordinateVerification: {
+      receiptSha256: string;
+      page: string;
+      officialArtifactSha256: string;
+      scope: string;
+    };
   };
+}
+
+interface PublicationIndex {
+  publicationIndexVersion: number;
+  placements: string[];
 }
 
 interface VerificationReceipt {
@@ -66,7 +109,7 @@ interface ManifestAccounting {
 
 interface HskManifest {
   manifestVersion: number;
-  source: { termsUrl: string; artifactScopeRationale: string; jsonSha256: string };
+  source: Record<string, unknown>;
   accounting: ManifestAccounting;
   officialCoordinateVerification: { eligibleProjectionSha256: string };
   publication: {
@@ -91,28 +134,93 @@ interface VocabularyRecord {
 }
 
 interface FoundationArtifacts {
+  profile: SourceProfile;
+  publicationIndex: PublicationIndex;
   manifest: HskManifest;
   receipt: VerificationReceipt;
-  japanese: { authoring: Record<string, unknown>; records: JapaneseDraft[] };
-  batch: { vocabulary: VocabularyRecord[] };
+  receiptBytes: Uint8Array;
+  companions: Record<string, { authoring: Record<string, unknown>; records: JapaneseDraft[] }>;
+  batches: Record<string, { vocabulary: VocabularyRecord[] }>;
+  batchBytes: Record<string, Uint8Array>;
+  companionFiles: string[];
+  batchFiles: string[];
 }
 
 const root = process.cwd();
 const importDir = 'data/hsk-import/hearmandarin-hsk-2025-v1';
 
 function readJson<T>(relativePath: string): T {
-  return JSON.parse(readFileSync(path.join(root, relativePath), 'utf8')) as T;
+  const json = readFileSync(path.join(root, relativePath), 'utf8');
+  assertStrictJson(json);
+  return JSON.parse(json) as T;
+}
+
+function assertStrictJson(json: string): void {
+  const validator = [
+    'import json, sys',
+    'def unique_object(pairs):',
+    '    result = {}',
+    '    for key, value in pairs:',
+    '        if key in result:',
+    '            raise ValueError("duplicate JSON key: " + key)',
+    '        result[key] = value',
+    '    return result',
+    'json.load(sys.stdin, object_pairs_hook=unique_object)',
+  ].join('\n');
+  execFileSync('python3', ['-c', validator], { input: json, cwd: root, stdio: ['pipe', 'pipe', 'pipe'] });
 }
 
 const profile = readJson<SourceProfile>(path.join(importDir, 'source-profile.json'));
-const publicationIndex = readJson<{ publicationIndexVersion: number; placements: string[] }>(path.join(importDir, 'publication-index.json'));
+const publicationIndex = readJson<PublicationIndex>(path.join(importDir, 'publication-index.json'));
 const receiptBytes = readFileSync(path.join(root, importDir, 'official-verification.json'));
+assertStrictJson(receiptBytes.toString('utf8'));
 const receipt = JSON.parse(receiptBytes.toString('utf8')) as VerificationReceipt;
 const japanese = readJson<{ authoring: Record<string, unknown>; records: JapaneseDraft[] }>(path.join(importDir, 'first-batch-japanese.json'));
 const manifest = readJson<HskManifest>(path.join(importDir, 'manifest.json'));
 const batchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
 const immutablePlanSha256 = '7a1dd56a17d6d973600bcaa487035108dd61ede3b488ff88dff60c3a1a1c4bd3';
+const immutableFirstBatchSha256 = '76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e';
 const batch = readJson<{ vocabulary: VocabularyRecord[] }>(batchPath);
+
+function expectedBatchFilename(placement: string): string {
+  if (placement === 'batch-001') return 'hsk-vocabulary-batch-001.json';
+  const match = /^planned-level-([1-4])-batch-(\d{3})$/.exec(placement);
+  if (!match) throw new Error(`invalid placement in test artifact: ${placement}`);
+  return `hsk-vocabulary-level-${match[1]}-batch-${match[2]}.json`;
+}
+
+function expectedCompanionFilename(placement: string): string {
+  if (placement === 'batch-001') return 'first-batch-japanese.json';
+  return `japanese/level-${placement.slice('planned-level-'.length)}.json`;
+}
+
+const importRoot = path.join(root, importDir);
+const importJapaneseDir = path.join(importRoot, 'japanese');
+const companionFiles = [
+  'first-batch-japanese.json',
+  ...(existsSync(importJapaneseDir) ? readdirSync(importJapaneseDir).map((name) => `japanese/${name}`) : []),
+].sort();
+const batchDirectory = path.join(root, 'data/hsk-vocabulary');
+const batchFiles = readdirSync(batchDirectory)
+  .filter((name) => name.startsWith('hsk-vocabulary-batch-') || name.startsWith('hsk-vocabulary-level-'))
+  .sort();
+const foundationArtifacts: FoundationArtifacts = {
+  profile,
+  publicationIndex,
+  manifest,
+  receipt,
+  receiptBytes,
+  companions: Object.fromEntries(publicationIndex.placements.map((placement) => [
+    placement,
+    placement === 'batch-001'
+      ? japanese
+      : readJson(path.join(importDir, expectedCompanionFilename(placement))),
+  ])),
+  batches: Object.fromEntries(batchFiles.map((filename) => [filename, readJson(`data/hsk-vocabulary/${filename}`)])),
+  batchBytes: Object.fromEntries(batchFiles.map((filename) => [filename, readFileSync(path.join(batchDirectory, filename))])),
+  companionFiles,
+  batchFiles,
+};
 
 function requireInvariant(condition: boolean, invariant: string): asserts condition {
   if (!condition) throw new Error(`manifest invariant: ${invariant}`);
@@ -123,11 +231,55 @@ function sameJson(left: unknown, right: unknown): boolean {
 }
 
 function assertFoundation(artifacts: FoundationArtifacts): void {
-  const { manifest: candidate, receipt: proof, japanese: companion, batch: published } = artifacts;
+  const { profile: candidateProfile, publicationIndex, manifest: candidate, receipt: proof } = artifacts;
   const blockedBySequence = new Map(proof.blocked.map((row) => [row.globalSequence, row.reasons]));
   const supplementaryLabels = proof.supplementarySourceLevelLabels;
   const recordIds = new Set<string>();
   const sourceIds = new Set<string>();
+
+  requireInvariant(candidateProfile.profileVersion === 2, 'source-profile-version');
+  requireInvariant(!Object.hasOwn(candidateProfile.plannedBatches, 'repositoryPublishedBatches'), 'mutable-profile-publication-count-removed');
+  requireInvariant(candidateProfile.plannedBatches.firstBatch === expectedBatchFilename('batch-001')
+    && candidateProfile.plannedBatches.firstBatchPrimaryLevel === 1
+    && candidateProfile.plannedBatches.subsequentMaxRows === 50
+    && candidateProfile.plannedBatches.subsequentOrdering === 'global-sequence-within-primary-level', 'profile-publication-plan');
+  requireInvariant(publicationIndex.publicationIndexVersion === 1, 'publication-index-version');
+  requireInvariant(publicationIndex.placements.length > 0 && publicationIndex.placements[0] === 'batch-001', 'publication-index-first-placement');
+  requireInvariant(new Set(publicationIndex.placements).size === publicationIndex.placements.length, 'publication-index-unique-placements');
+  requireInvariant(candidate.manifestVersion === 2, 'manifest-version');
+  requireInvariant(createHash('sha256').update(artifacts.receiptBytes).digest('hex') === candidateProfile.dataset.sourceCoordinateVerification.receiptSha256,
+    'source-profile-receipt-sha256');
+  requireInvariant(candidateProfile.dataset.json.sha256 === proof.datasetSha256 && candidate.source.jsonSha256 === proof.datasetSha256,
+    'profile-manifest-receipt-source-identity');
+  const sourceJoins: Array<[keyof HskManifest['source'], unknown]> = [
+    ['publisher', candidateProfile.dataset.publisher],
+    ['datasetName', candidateProfile.dataset.datasetName],
+    ['datasetVersion', candidateProfile.dataset.datasetVersion],
+    ['generated', candidateProfile.dataset.generated],
+    ['downloadPageVersionLabel', candidateProfile.dataset.downloadPageVersionLabel],
+    ['jsonDownloadUrl', candidateProfile.dataset.jsonDownloadUrl],
+    ['csvDownloadUrl', candidateProfile.dataset.csvDownloadUrl],
+    ['jsonSha256', candidateProfile.dataset.json.sha256],
+    ['license', candidateProfile.dataset.license],
+    ['licenseUrl', candidateProfile.dataset.licenseUrl],
+    ['termsUrl', candidateProfile.dataset.termsUrl],
+    ['termsSummary', candidateProfile.dataset.termsSummary],
+    ['artifactScopeRationale', candidateProfile.dataset.artifactScopeRationale],
+    ['attribution', candidateProfile.dataset.attribution],
+    ['sourceUrl', candidateProfile.dataset.homepage],
+    ['provenanceUrl', candidateProfile.dataset.provenance],
+    ['disclaimerUrl', candidateProfile.dataset.disclaimer],
+    ['modificationNotice', candidateProfile.dataset.modificationNotice],
+    ['excludedFields', candidateProfile.dataset.excludedFields],
+  ];
+  for (const [key, value] of sourceJoins) requireInvariant(sameJson(candidate.source[key], value), `source-profile-manifest-${key}`);
+  requireInvariant(candidate.officialCoordinateVerification.authorityUrl === candidateProfile.dataset.sourceCoordinateVerification.page
+    && candidate.officialCoordinateVerification.artifactSha256 === candidateProfile.dataset.sourceCoordinateVerification.officialArtifactSha256
+    && candidate.officialCoordinateVerification.receiptSha256 === candidateProfile.dataset.sourceCoordinateVerification.receiptSha256
+    && candidate.officialCoordinateVerification.intendedCount === proof.intendedCount
+    && candidate.officialCoordinateVerification.eligibleProjectionSha256 === proof.eligibleProjectionSha256
+    && candidate.officialCoordinateVerification.scope === candidateProfile.dataset.sourceCoordinateVerification.scope,
+  'profile-manifest-official-coordinate-provenance');
 
   requireInvariant(candidate.rows.length === 2000, 'row-count');
   requireInvariant(candidate.rows.every((row, index) => row.globalSequence === index + 1), 'global-sequence-order');
@@ -157,26 +309,31 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
 
   const eligibleRows = candidate.rows.filter((row) => row.sourceEligible);
   const blockedRows = candidate.rows.filter((row) => !row.sourceEligible);
-  requireInvariant(proof.intendedCount === 2000 && candidate.accounting.sourceCandidates === proof.intendedCount, 'candidate-count');
+  requireInvariant(proof.intendedCount === 2000 && candidateProfile.counts.sourceCandidates === proof.intendedCount
+    && candidate.accounting.sourceCandidates === proof.intendedCount, 'candidate-count');
   requireInvariant(candidate.source.jsonSha256 === proof.datasetSha256, 'manifest-source-receipt-identity');
   requireInvariant(blockedRows.length === proof.blocked.length && eligibleRows.length === proof.eligibleCount, 'receipt-eligibility-counts');
   requireInvariant(sameJson(blockedRows.map((row) => [row.globalSequence, row.blockedReason]), proof.blocked.map((row) => [row.globalSequence, row.reasons])), 'quarantine-coordinates-match-receipt');
-  requireInvariant(candidate.accounting.blocked === blockedRows.length && candidate.accounting.eligible === eligibleRows.length, 'manifest-accounting');
-  requireInvariant(candidate.accounting.repeatedWordPinyinGroupsWhollyBlocked === 8, 'repeated-word-pinyin-group-count');
-  requireInvariant(candidate.accounting.repeatedWordPinyinRowsBlocked === 16, 'repeated-word-pinyin-row-count');
+  requireInvariant(candidate.accounting.blocked === blockedRows.length && candidate.accounting.eligible === eligibleRows.length
+    && candidateProfile.counts.blocked === blockedRows.length && candidateProfile.counts.eligible === eligibleRows.length, 'manifest-accounting');
+  requireInvariant(candidate.accounting.repeatedWordPinyinGroupsWhollyBlocked === candidateProfile.counts.duplicateGroups, 'repeated-word-pinyin-group-count');
+  requireInvariant(candidate.accounting.repeatedWordPinyinRowsBlocked === candidateProfile.counts.duplicateRows, 'repeated-word-pinyin-row-count');
   requireInvariant(sameJson(candidate.accounting.excludedFieldDiscrepancies, proof.excludedFieldDiscrepancies), 'excluded-field-discrepancies');
 
   const primaryCounts = Object.fromEntries([1, 2, 3, 4].map((level) => [String(level), candidate.rows.filter((row) => row.primaryLevel === level).length]));
   const eligibleLevelCounts = Object.fromEntries([1, 2, 3, 4].map((level) => [String(level), eligibleRows.filter((row) => row.primaryLevel === level).length]));
   requireInvariant(sameJson(primaryCounts, proof.primaryLevelCounts), 'receipt-primary-level-counts');
   requireInvariant(sameJson(eligibleLevelCounts, proof.eligibleLevelCounts), 'receipt-eligible-level-counts');
+  requireInvariant(sameJson(primaryCounts, candidateProfile.coordinate.expectedLevelCounts), 'profile-primary-level-counts');
+  requireInvariant(sameJson(eligibleLevelCounts, candidateProfile.counts.eligibleLevelCounts), 'profile-eligible-level-counts');
   requireInvariant(sameJson(candidate.accounting.primaryLevelCounts, proof.primaryLevelCounts), 'manifest-primary-level-counts');
   requireInvariant(sameJson(candidate.accounting.eligibleLevelCounts, proof.eligibleLevelCounts), 'manifest-eligible-level-counts');
   requireInvariant(Object.keys(supplementaryLabels).length === candidate.accounting.supplementarySourceLevelLabels, 'supplementary-label-count');
 
   const projection = eligibleRows.map((row) => [row.sourceId, row.globalSequence, row.primaryLevel, row.simplified, row.pinyin]);
   const projectionSha256 = createHash('sha256').update(JSON.stringify(projection), 'utf8').digest('hex');
-  requireInvariant(projectionSha256 === proof.eligibleProjectionSha256, 'eligible-projection-sha256');
+  requireInvariant(projectionSha256 === proof.eligibleProjectionSha256
+    && projectionSha256 === 'a207a42633daa821c7c22d1d4d24ce163612dbbc1450b7cfd8b1c0fcc864effa', 'eligible-projection-sha256');
   requireInvariant(candidate.officialCoordinateVerification.eligibleProjectionSha256 === projectionSha256, 'manifest-eligible-projection-sha256');
 
   const immutablePlan = candidate.rows.map((row) => [
@@ -195,64 +352,123 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
 
   const firstBatch = eligibleRows.slice(0, 20);
   const firstBatchSequences = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  requireInvariant(candidateProfile.counts.firstBatch === firstBatchSequences.length, 'profile-first-batch-count');
   requireInvariant(sameJson(firstBatch.map((row) => row.globalSequence), firstBatchSequences), 'first-batch-sequences');
   requireInvariant(firstBatch.every((row) => row.primaryLevel === 1 && row.batchPlacement === 'batch-001'), 'first-batch-placement');
   const firstBatchSequencesSet = new Set(firstBatch.map((row) => row.globalSequence));
+  const groups = new Map<string, ManifestRow[]>();
+  for (const row of eligibleRows) {
+    requireInvariant(typeof row.batchPlacement === 'string' && row.batchPlacement.length > 0, 'eligible-placement-present');
+    const group = groups.get(row.batchPlacement) ?? [];
+    group.push(row);
+    groups.set(row.batchPlacement, group);
+  }
+  const declaredPlacements = publicationIndex.placements;
+  requireInvariant(declaredPlacements.every((placement) => groups.has(placement)), 'publication-index-known-placement');
+  requireInvariant(declaredPlacements.every((placement, index) => index === 0 || groups.has(declaredPlacements[index - 1] ?? '')), 'publication-index-order');
+  requireInvariant(sameJson(declaredPlacements, [...groups.keys()].filter((placement) => declaredPlacements.includes(placement))), 'publication-index-order');
+  requireInvariant(sameJson(Object.keys(artifacts.companions).sort(), [...declaredPlacements].sort()), 'companion-artifact-set');
+  const expectedCompanionFiles = declaredPlacements.map(expectedCompanionFilename).sort();
+  requireInvariant(sameJson(artifacts.companionFiles, expectedCompanionFiles), 'companion-filesystem-set');
+  const expectedBatchFiles = declaredPlacements.map(expectedBatchFilename).sort();
+  requireInvariant(sameJson(Object.keys(artifacts.batches).sort(), expectedBatchFiles), 'batch-artifact-set');
+  requireInvariant(sameJson(Object.keys(artifacts.batchBytes).sort(), expectedBatchFiles), 'batch-byte-set');
+  requireInvariant(sameJson(artifacts.batchFiles, expectedBatchFiles), 'batch-filesystem-set');
+
+  const declaredSet = new Set(declaredPlacements);
   for (const row of candidate.rows) {
+    const isPublished = row.sourceEligible && typeof row.batchPlacement === 'string' && declaredSet.has(row.batchPlacement);
     const expectedPublication = !row.sourceEligible
       ? 'blocked'
-      : firstBatchSequencesSet.has(row.globalSequence)
+      : isPublished
         ? 'draft-published-to-repository'
         : 'planned-not-published';
     requireInvariant(row.repositoryPublication === expectedPublication, 'repository-publication-consistency');
     requireInvariant(row.sourceEligible || row.batchPlacement === null, 'blocked-row-has-batch-placement');
     requireInvariant(row.sourceEligible || row.repositoryPublication === 'blocked', 'blocked-row-publication');
-    requireInvariant(firstBatchSequencesSet.has(row.globalSequence)
-      ? row.repositoryBatchFile === 'hsk-vocabulary-batch-001.json'
-      : row.repositoryBatchFile === undefined, 'repository-batch-file-consistency');
+    const expectedFile = isPublished ? expectedBatchFilename(row.batchPlacement ?? '') : undefined;
+    requireInvariant(row.repositoryBatchFile === expectedFile, 'repository-batch-file-consistency');
   }
-  requireInvariant(candidate.publication.batches.length === 1, 'repository-published-batches');
-  requireInvariant(candidate.publication.batches[0].placement === 'batch-001'
-    && candidate.publication.batches[0].file === 'hsk-vocabulary-batch-001.json'
-    && candidate.publication.batches[0].records === 20
-    && candidate.publication.batches[0].primaryLevel === 1, 'first-batch-metadata');
-  requireInvariant(candidate.publication.repositoryPublishedBatchCount === 1, 'repository-published-batch-count');
-  requireInvariant(candidate.publication.repositoryPublishedRecordCount === 20 && published.vocabulary.length === 20, 'repository-published-record-count');
+  const expectedPublicationEntries = declaredPlacements.map((placement) => {
+    const file = expectedBatchFilename(placement);
+    const rows = groups.get(placement) ?? [];
+    return { placement, file, records: rows.length, primaryLevel: rows[0]?.primaryLevel ?? 0 };
+  });
+  requireInvariant(candidate.publication.batches.length === expectedPublicationEntries.length, 'repository-published-batches');
+  for (const [index, expected] of expectedPublicationEntries.entries()) {
+    const actual = candidate.publication.batches[index];
+    requireInvariant(actual !== undefined && sameJson(Object.keys(actual).sort(), ['file', 'placement', 'primaryLevel', 'records', 'sha256']),
+      `publication-entry-schema-${index + 1}`);
+    requireInvariant(actual?.placement === expected.placement && actual.file === expected.file
+      && actual.records === expected.records && actual.primaryLevel === expected.primaryLevel, `publication-entry-${index + 1}`);
+  }
+  requireInvariant(candidate.publication.repositoryPublishedBatchCount === declaredPlacements.length, 'repository-published-batch-count');
+  const publishedRecordCount = expectedPublicationEntries.reduce((total, entry) => total + entry.records, 0);
+  requireInvariant(candidate.publication.repositoryPublishedRecordCount === publishedRecordCount, 'repository-published-record-count');
+  requireInvariant(candidate.publication.batches[0]?.sha256 === immutableFirstBatchSha256, 'first-batch-sha256-frozen');
   requireInvariant(candidate.publication.sourceEligibleIsHumanReviewed === false, 'source-eligibility-is-not-human-review');
   requireInvariant(candidate.publication.sourceEligibleIsRuntimeAvailable === false, 'source-eligibility-is-not-runtime-availability');
 
-  for (const row of eligibleRows.filter((entry) => !firstBatchSequencesSet.has(entry.globalSequence))) {
-    requireInvariant(row.batchPlacement !== null && row.batchPlacement !== 'batch-001', 'planned-eligible-placement');
-  }
-  const plans = new Map<string, ManifestRow[]>();
-  for (const row of eligibleRows) {
-    if (row.batchPlacement === null) throw new Error('manifest invariant: eligible-placement-present');
-    const group = plans.get(row.batchPlacement) ?? [];
-    group.push(row);
-    plans.set(row.batchPlacement, group);
-  }
-  for (const [name, group] of plans) {
-    requireInvariant(group.length <= (name === 'batch-001' ? 20 : 50), `batch-size-${name}`);
-    requireInvariant(new Set(group.map((row) => row.primaryLevel)).size === 1, `single-level-batch-${name}`);
-    requireInvariant(group.every((row, index) => index === 0 || group[index - 1].globalSequence < row.globalSequence), `ordered-batch-${name}`);
-  }
-
-  requireInvariant(companion.records.length === 20, 'japanese-first-batch-count');
-  for (const [index, row] of firstBatch.entries()) {
-    const japaneseRow = companion.records[index];
-    const batchRow = published.vocabulary[index];
-    requireInvariant(japaneseRow.sourceId === row.sourceId && japaneseRow.globalSequence === row.globalSequence, `japanese-source-join-${index + 1}`);
-    requireInvariant(japaneseRow.simplified === row.simplified && japaneseRow.pinyin === row.pinyin, `japanese-content-join-${index + 1}`);
-    requireInvariant(batchRow.id === row.recordId, `batch-record-id-join-${index + 1}`);
-    requireInvariant(batchRow.simplified === row.simplified && batchRow.pinyin === row.pinyin && batchRow.japanese === japaneseRow.japanese, `batch-content-join-${index + 1}`);
-    requireInvariant(batchRow.hsk.standardVersion === 'hsk-3.0', `batch-hsk-standard-${index + 1}`);
-    requireInvariant(batchRow.hsk.introducedAtLevel === row.primaryLevel, `batch-hsk-level-join-${index + 1}`);
-    requireInvariant(batchRow.hsk.sourceLevelLabel === row.sourceLevelLabel, `batch-hsk-label-join-${index + 1}`);
+  requireInvariant(firstBatchSequencesSet.size === 20, 'first-batch-frozen-count');
+  const expectedAuthoring = {
+    method: 'Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.',
+    status: 'ai-provisional',
+    reviewStatus: 'draft',
+    humanReview: false,
+    excludedSourceFieldsUsed: [],
+  };
+  for (const placement of declaredPlacements) {
+    const group = groups.get(placement) ?? [];
+    const companion = artifacts.companions[placement];
+    const batchFilename = expectedBatchFilename(placement);
+    const published = artifacts.batches[batchFilename];
+    requireInvariant(group.length > 0 && group.length <= (placement === 'batch-001' ? candidateProfile.counts.firstBatch : candidateProfile.plannedBatches.subsequentMaxRows), `batch-size-${placement}`);
+    requireInvariant(new Set(group.map((row) => row.primaryLevel)).size === 1, `single-level-batch-${placement}`);
+    requireInvariant(group.every((row, index) => index === 0 || group[index - 1].globalSequence < row.globalSequence), `ordered-batch-${placement}`);
+    requireInvariant(companion !== undefined && published !== undefined, `declared-output-present-${placement}`);
+    requireInvariant(sameJson(Object.keys(companion).sort(), ['authoring', 'records']), `japanese-root-keys-${placement}`);
+    requireInvariant(sameJson(companion.authoring, expectedAuthoring), `japanese-authoring-${placement}`);
+    requireInvariant(companion.records.length === group.length, `japanese-count-${placement}`);
+    requireInvariant(published.vocabulary.length === group.length, `batch-count-${placement}`);
+    const declared = candidate.publication.batches.find((entry) => entry.placement === placement);
+    requireInvariant(declared !== undefined && createHash('sha256').update(artifacts.batchBytes[batchFilename] ?? []).digest('hex') === declared.sha256,
+      `batch-sha256-${placement}`);
+    for (const [index, row] of group.entries()) {
+      const japaneseRow = companion.records[index];
+      const batchRow = published.vocabulary[index];
+      requireInvariant(japaneseRow !== undefined && sameJson(Object.keys(japaneseRow).sort(), ['globalSequence', 'japanese', 'pinyin', 'simplified', 'sourceId']), `japanese-record-schema-${placement}-${index + 1}`);
+      requireInvariant(japaneseRow.globalSequence === row.globalSequence && japaneseRow.sourceId === row.sourceId, `japanese-source-join-${placement}-${index + 1}`);
+      requireInvariant(japaneseRow.simplified === row.simplified && japaneseRow.pinyin === row.pinyin && typeof japaneseRow.japanese === 'string' && japaneseRow.japanese.length > 0,
+        `japanese-content-join-${placement}-${index + 1}`);
+      requireInvariant(batchRow !== undefined && sameJson(Object.keys(batchRow).sort(), ['hsk', 'id', 'japanese', 'pinyin', 'reviewStatus', 'simplified', 'simplifiedStatus', 'source']), `batch-record-schema-${placement}-${index + 1}`);
+      requireInvariant(sameJson(Object.keys(batchRow.hsk).sort(), ['introducedAtLevel', 'sourceLevelLabel', 'standardVersion']), `batch-hsk-schema-${placement}-${index + 1}`);
+      requireInvariant(sameJson(Object.keys(batchRow.source).sort(), ['note', 'type']), `batch-source-schema-${placement}-${index + 1}`);
+      requireInvariant(batchRow.id === row.recordId, `batch-record-id-join-${placement}-${index + 1}`);
+      requireInvariant(batchRow.simplified === row.simplified && batchRow.pinyin === row.pinyin && batchRow.japanese === japaneseRow.japanese, `batch-content-join-${placement}-${index + 1}`);
+      requireInvariant(batchRow.reviewStatus === 'draft' && batchRow.simplifiedStatus === 'authored', `batch-provisional-status-${placement}-${index + 1}`);
+      requireInvariant(batchRow.hsk.standardVersion === 'hsk-3.0' && batchRow.hsk.introducedAtLevel === row.primaryLevel
+        && batchRow.hsk.sourceLevelLabel === row.sourceLevelLabel, `batch-hsk-join-${placement}-${index + 1}`);
+      requireInvariant(batchRow.source.type === 'hearmandarin-hsk-json', `batch-source-type-${placement}-${index + 1}`);
+      requireInvariant(batchRow.source.note.includes(candidateProfile.dataset.licenseUrl)
+        && batchRow.source.note.includes(candidateProfile.dataset.termsUrl)
+        && batchRow.source.note.includes('AI-authored and provisional')
+        && batchRow.source.note.includes(`Source ID ${row.sourceId}; global sequence ${row.globalSequence}; primary level ${row.primaryLevel}; source level label ${row.sourceLevelLabel}.`),
+      `batch-source-provenance-${placement}-${index + 1}`);
+      requireInvariant(!Object.hasOwn(batchRow, 'traditional'), `batch-excluded-field-${placement}-${index + 1}`);
+    }
   }
 }
 
 function serializedBatchSha256(candidate: { vocabulary: VocabularyRecord[] }): string {
   return createHash('sha256').update(`${JSON.stringify(candidate, null, 2)}\n`, 'utf8').digest('hex');
+}
+
+function serializedBatchBytes(candidate: { vocabulary: VocabularyRecord[] }): Uint8Array {
+  return new TextEncoder().encode(`${JSON.stringify(candidate, null, 2)}\n`);
+}
+
+function cloneArtifacts(): FoundationArtifacts {
+  return structuredClone(foundationArtifacts) as FoundationArtifacts;
 }
 
 describe('HearMandarin HSK source foundation', () => {
@@ -285,12 +501,17 @@ describe('HearMandarin HSK source foundation', () => {
     ]);
   });
 
-  it('accounts for each official coordinate once and places only the first 20 eligible rows in repository output', () => {
-    expect(() => assertFoundation({ manifest, receipt, japanese, batch })).not.toThrow();
-    expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batches[0].sha256);
+  it('rejects duplicate keys when loading repository publication JSON', () => {
+    expect(() => assertStrictJson('{"publicationIndexVersion":1,"publicationIndexVersion":2}')).toThrow(/duplicate JSON key: publicationIndexVersion/);
   });
 
-  it('rejects independent manifest and first-batch drift copies through the same validators', () => {
+  it('accounts for official coordinates and reconciles every declared repository output', () => {
+    expect(() => assertFoundation(foundationArtifacts)).not.toThrow();
+    expect(createHash('sha256').update(readFileSync(path.join(root, batchPath))).digest('hex')).toBe(manifest.publication.batches[0].sha256);
+    expect(manifest.publication.batches[0]?.sha256).toBe(immutableFirstBatchSha256);
+  });
+
+  it('rejects independent profile, manifest, index, companion, and batch drift copies through the same validators', () => {
     const cases: Array<{ name: string; invariant: string; mutate: (candidate: FoundationArtifacts) => void }> = [
       {
         name: 'Simplified content drift',
@@ -382,41 +603,211 @@ describe('HearMandarin HSK source foundation', () => {
       },
       {
         name: 'first-batch Japanese source join drift',
-        invariant: 'japanese-source-join-1',
+        invariant: 'japanese-source-join-batch-001-1',
         mutate: (candidate) => {
-          candidate.japanese.records[0].sourceId = 'wrong-opaque-id';
+          candidate.companions['batch-001']!.records[0]!.sourceId = 'wrong-opaque-id';
         },
       },
       {
         name: 'first-batch repository source join drift',
-        invariant: 'batch-record-id-join-1',
+        invariant: 'batch-record-id-join-batch-001-1',
         mutate: (candidate) => {
-          candidate.batch.vocabulary[0].id = 'hm-hsk3-wrong-opaque-id';
+          candidate.batches['hsk-vocabulary-batch-001.json']!.vocabulary[0]!.id = 'hm-hsk3-wrong-opaque-id';
         },
       },
       {
         name: 'first-batch HSK level drift with recalculated batch hash',
-        invariant: 'batch-hsk-level-join-1',
+        invariant: 'first-batch-sha256-frozen',
         mutate: (candidate) => {
-          candidate.batch.vocabulary[0].hsk.introducedAtLevel = 2;
-          candidate.manifest.publication.batches[0].sha256 = serializedBatchSha256(candidate.batch);
+          const filename = 'hsk-vocabulary-batch-001.json';
+          const output = candidate.batches[filename]!;
+          output.vocabulary[0]!.hsk.introducedAtLevel = 2;
+          candidate.batchBytes[filename] = serializedBatchBytes(output);
+          candidate.manifest.publication.batches[0]!.sha256 = serializedBatchSha256(output);
         },
       },
       {
         name: 'first-batch HSK source label drift with recalculated batch hash',
-        invariant: 'batch-hsk-label-join-1',
+        invariant: 'first-batch-sha256-frozen',
         mutate: (candidate) => {
-          candidate.batch.vocabulary[0].hsk.sourceLevelLabel = 'incorrect-source-label';
-          candidate.manifest.publication.batches[0].sha256 = serializedBatchSha256(candidate.batch);
+          const filename = 'hsk-vocabulary-batch-001.json';
+          const output = candidate.batches[filename]!;
+          output.vocabulary[0]!.hsk.sourceLevelLabel = 'incorrect-source-label';
+          candidate.batchBytes[filename] = serializedBatchBytes(output);
+          candidate.manifest.publication.batches[0]!.sha256 = serializedBatchSha256(output);
+        },
+      },
+      {
+        name: 'publication index duplicate placement',
+        invariant: 'publication-index-unique-placements',
+        mutate: (candidate) => {
+          candidate.publicationIndex.placements.push('batch-001');
+        },
+      },
+      {
+        name: 'publication index references unknown placement',
+        invariant: 'publication-index-known-placement',
+        mutate: (candidate) => {
+          candidate.publicationIndex.placements.push('planned-level-2-batch-999');
+        },
+      },
+      {
+        name: 'manifest provenance drift from profile',
+        invariant: 'source-profile-manifest-licenseUrl',
+        mutate: (candidate) => {
+          candidate.manifest.source.licenseUrl = 'https://example.invalid/license';
+        },
+      },
+      {
+        name: 'missing declared Japanese row',
+        invariant: 'japanese-count-batch-001',
+        mutate: (candidate) => {
+          candidate.companions['batch-001']!.records.pop();
+        },
+      },
+      {
+        name: 'reordered declared Japanese rows',
+        invariant: 'japanese-source-join-batch-001-1',
+        mutate: (candidate) => {
+          candidate.companions['batch-001']!.records.reverse();
+        },
+      },
+      {
+        name: 'extra Japanese authoring field',
+        invariant: 'japanese-authoring-batch-001',
+        mutate: (candidate) => {
+          candidate.companions['batch-001']!.authoring.extra = true;
+        },
+      },
+      {
+        name: 'missing declared Japanese output',
+        invariant: 'companion-artifact-set',
+        mutate: (candidate) => {
+          delete candidate.companions['batch-001'];
+        },
+      },
+      {
+        name: 'missing declared vocabulary output',
+        invariant: 'batch-artifact-set',
+        mutate: (candidate) => {
+          delete candidate.batches['hsk-vocabulary-batch-001.json'];
+        },
+      },
+      {
+        name: 'extra companion file in managed directory',
+        invariant: 'companion-filesystem-set',
+        mutate: (candidate) => {
+          candidate.companionFiles.push('japanese/unlisted.json');
+          candidate.companionFiles.sort();
+        },
+      },
+      {
+        name: 'extra managed vocabulary output file',
+        invariant: 'batch-filesystem-set',
+        mutate: (candidate) => {
+          candidate.batchFiles.push('hsk-vocabulary-level-2-batch-999.json');
+          candidate.batchFiles.sort();
+        },
+      },
+      {
+        name: 'extra excluded field in vocabulary record',
+        invariant: 'batch-record-schema-batch-001-1',
+        mutate: (candidate) => {
+          (candidate.batches['hsk-vocabulary-batch-001.json']!.vocabulary[0] as VocabularyRecord & { traditional?: string }).traditional = '愛';
+        },
+      },
+      {
+        name: 'human review flag drift',
+        invariant: 'source-eligibility-is-not-human-review',
+        mutate: (candidate) => {
+          candidate.manifest.publication.sourceEligibleIsHumanReviewed = true;
+        },
+      },
+      {
+        name: 'runtime availability flag drift',
+        invariant: 'source-eligibility-is-not-runtime-availability',
+        mutate: (candidate) => {
+          candidate.manifest.publication.sourceEligibleIsRuntimeAvailable = true;
         },
       },
     ];
 
     for (const testCase of cases) {
-      const candidate = JSON.parse(JSON.stringify({ manifest, receipt, japanese, batch })) as FoundationArtifacts;
+      const candidate = cloneArtifacts();
       testCase.mutate(candidate);
       expect(() => assertFoundation(candidate), testCase.name).toThrow(`manifest invariant: ${testCase.invariant}`);
     }
+  });
+
+  it('accepts a later independently declared placement with its complete output set', () => {
+    const candidate = cloneArtifacts();
+    const placement = 'planned-level-2-batch-002';
+    const filename = expectedBatchFilename(placement);
+    const group = candidate.manifest.rows.filter((row) => row.sourceEligible && row.batchPlacement === placement);
+    const sourceNotePrefix = candidate.batches['hsk-vocabulary-batch-001.json']!.vocabulary[0]!.source.note.replace(/Source ID .*$/, '');
+    const records = group.map((row) => {
+      const japaneseText = `合成訳${row.globalSequence}`;
+      return {
+        sourceId: row.sourceId,
+        globalSequence: row.globalSequence,
+        simplified: row.simplified ?? '',
+        pinyin: row.pinyin ?? '',
+        japanese: japaneseText,
+      };
+    });
+    const vocabulary = group.map((row, index): VocabularyRecord => ({
+      id: row.recordId,
+      pinyin: row.pinyin ?? '',
+      japanese: records[index]?.japanese ?? '',
+      reviewStatus: 'draft',
+      hsk: { standardVersion: 'hsk-3.0', introducedAtLevel: row.primaryLevel, sourceLevelLabel: row.sourceLevelLabel },
+      simplified: row.simplified ?? '',
+      simplifiedStatus: 'authored',
+      source: {
+        type: 'hearmandarin-hsk-json',
+        note: `${sourceNotePrefix}Source ID ${row.sourceId}; global sequence ${row.globalSequence}; primary level ${row.primaryLevel}; source level label ${row.sourceLevelLabel}.`,
+      },
+    }));
+    const output = { vocabulary };
+    const bytes = serializedBatchBytes(output);
+    candidate.publicationIndex.placements.push(placement);
+    candidate.companions[placement] = {
+      authoring: {
+        method: 'Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.',
+        status: 'ai-provisional',
+        reviewStatus: 'draft',
+        humanReview: false,
+        excludedSourceFieldsUsed: [],
+      },
+      records,
+    };
+    candidate.batches[filename] = output;
+    candidate.batchBytes[filename] = bytes;
+    candidate.companionFiles.push(expectedCompanionFilename(placement));
+    candidate.companionFiles.sort();
+    candidate.batchFiles.push(filename);
+    candidate.batchFiles.sort();
+    candidate.manifest.publication.batches.push({
+      placement,
+      file: filename,
+      records: group.length,
+      primaryLevel: 2,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+    });
+    candidate.manifest.publication.repositoryPublishedBatchCount += 1;
+    candidate.manifest.publication.repositoryPublishedRecordCount += group.length;
+    for (const row of group) {
+      row.repositoryPublication = 'draft-published-to-repository';
+      row.repositoryBatchFile = filename;
+    }
+    expect(() => assertFoundation(candidate)).not.toThrow();
+
+    const semanticDrift = structuredClone(candidate) as FoundationArtifacts;
+    const laterOutput = semanticDrift.batches[filename]!;
+    laterOutput.vocabulary[0]!.hsk.introducedAtLevel = 3;
+    semanticDrift.batchBytes[filename] = serializedBatchBytes(laterOutput);
+    semanticDrift.manifest.publication.batches[1]!.sha256 = serializedBatchSha256(laterOutput);
+    expect(() => assertFoundation(semanticDrift)).toThrow('manifest invariant: batch-hsk-join-planned-level-2-batch-002-1');
   });
 
   it('keeps the first Japanese batch provisional and carries source credit and modification details per row', () => {
@@ -447,8 +838,11 @@ describe('HearMandarin HSK source foundation', () => {
   });
 
   it('passes the existing vocabulary and script-status validators without changing their contracts', () => {
-    execFileSync('python3', ['scripts/validate-content-schema.py', '--check', batchPath], { cwd: root, stdio: 'pipe' });
-    execFileSync('python3', ['scripts/validate-script-status.py', '--check', batchPath], { cwd: root, stdio: 'pipe' });
+    for (const filename of foundationArtifacts.batchFiles) {
+      const target = `data/hsk-vocabulary/${filename}`;
+      execFileSync('python3', ['scripts/validate-content-schema.py', '--check', target], { cwd: root, stdio: 'pipe' });
+      execFileSync('python3', ['scripts/validate-script-status.py', '--check', target], { cwd: root, stdio: 'pipe' });
+    }
   });
 
   it('self-tests the actual CLI, clean repeat, and fail-closed dirty and drift cases', () => {
