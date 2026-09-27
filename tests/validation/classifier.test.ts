@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
@@ -463,7 +463,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(git(cwd, ['commit', '-m', message]).status).toBe(0);
   }
 
-  function runClassify(cwd: string): {
+  function runClassify(cwd: string, base = 'HEAD'): {
     status: number;
     stdout: string;
     stderr: string;
@@ -475,7 +475,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     );
     const result = spawnSync(
       process.execPath,
-      [scriptPath, 'classify', '--base', 'HEAD', '--emit-github-output'],
+      [scriptPath, 'classify', '--base', base, '--emit-github-output'],
       { cwd, env: { ...process.env, GITHUB_OUTPUT: outputPath }, encoding: 'utf8' },
     );
     return {
@@ -484,6 +484,46 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       stderr: result.stderr ?? '',
       outputPath,
     };
+  }
+
+  const managedBatchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
+  const lowRiskDocsPath = 'docs/ordinary.md';
+  const managedBatchContent = '{"vocabulary":[] }\n';
+
+  function seedManagedBatchRepo(): { repo: string; base: string } {
+    const repo = createTempRepo();
+    expect(git(repo, ['config', 'diff.renames', 'true']).status).toBe(0);
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    commitFile(repo, managedBatchPath, managedBatchContent, 'add managed HSK batch');
+    const base = git(repo, ['rev-parse', 'HEAD']).stdout.trim();
+    expect(base).not.toBe('');
+    return { repo, base };
+  }
+
+  function moveManagedBatchToDocs(repo: string): void {
+    mkdirSync(dirname(join(repo, lowRiskDocsPath)), { recursive: true });
+    renameSync(join(repo, managedBatchPath), join(repo, lowRiskDocsPath));
+  }
+
+  function expectRenameEndpoints(output: string): void {
+    expect(output.split('\n')).toContain(`D\t${managedBatchPath}`);
+    expect(output.split('\n')).toContain(`A\t${lowRiskDocsPath}`);
+  }
+
+  function expectHskRenameSelection(result: ReturnType<typeof runClassify>): void {
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('tier=t1');
+    expect(result.stdout).toContain('content/data, docs/static');
+    expect(result.stdout).toContain('run_affected_vitest=true');
+    expect(result.stdout).toContain('run_content=true');
+    expect(result.stdout).toContain('HearMandarin HSK publication surface → T1 foundation contract suite');
+    expect(result.stdout).toContain('run_full_vitest=false');
+    expect(result.stdout).toContain('run_visual=false');
+    expect(result.stdout).toContain('run_a11y=false');
+    const emitted = readFileSync(result.outputPath, 'utf8');
+    expect(emitted).toContain('run_affected_vitest=true');
+    expect(emitted).toContain('run_content=true');
+    expect(emitted).toContain('HearMandarin HSK publication surface → T1 foundation contract suite');
   }
 
   afterAll(() => {
@@ -518,9 +558,13 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     try {
       expect(status).toBe(0);
       expect(stdout).toContain('tier=t0');
+      expect(stdout).toContain('run_affected_vitest=false');
+      expect(stdout).toContain('run_content=false');
       expect(stdout).toContain('run_visual=false');
       expect(stdout).toContain('run_a11y=false');
       const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('run_affected_vitest=false');
+      expect(emitted).toContain('run_content=false');
       expect(emitted).toContain('run_visual=false');
       expect(emitted).toContain('run_a11y=false');
     } finally {
@@ -654,6 +698,49 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       rmSync(outputPath, { force: true });
     }
   });
+
+  it.each(['committed', 'staged', 'unstaged'] as const)(
+    'keeps both managed-batch rename endpoints in the real %s diff collection',
+    (state) => {
+      const { repo, base } = seedManagedBatchRepo();
+      moveManagedBatchToDocs(repo);
+
+      let classificationBase = 'HEAD';
+      if (state === 'committed') {
+        expect(git(repo, ['add', '-A']).status).toBe(0);
+        expect(git(repo, ['commit', '-m', 'move HSK batch under docs']).status).toBe(0);
+        classificationBase = base;
+        const defaultDiff = git(repo, ['diff', '--name-status', `${base}...HEAD`]);
+        expect(defaultDiff.status).toBe(0);
+        expect(defaultDiff.stdout).toContain(`R100\t${managedBatchPath}\t${lowRiskDocsPath}`);
+        const unrenamedDiff = git(repo, ['diff', '--name-status', '--no-renames', `${base}...HEAD`]);
+        expect(unrenamedDiff.status).toBe(0);
+        expectRenameEndpoints(unrenamedDiff.stdout);
+      } else if (state === 'staged') {
+        expect(git(repo, ['add', '-A']).status).toBe(0);
+        const defaultDiff = git(repo, ['diff', '--cached', '--name-status']);
+        expect(defaultDiff.status).toBe(0);
+        expect(defaultDiff.stdout).toContain(`R100\t${managedBatchPath}\t${lowRiskDocsPath}`);
+        const unrenamedDiff = git(repo, ['diff', '--cached', '--name-status', '--no-renames']);
+        expect(unrenamedDiff.status).toBe(0);
+        expectRenameEndpoints(unrenamedDiff.stdout);
+      } else {
+        const unrenamedDiff = git(repo, ['diff', '--name-status', '--no-renames']);
+        expect(unrenamedDiff.status).toBe(0);
+        expect(unrenamedDiff.stdout.split('\n')).toContain(`D\t${managedBatchPath}`);
+        const untracked = git(repo, ['ls-files', '--others', '--exclude-standard']);
+        expect(untracked.status).toBe(0);
+        expect(untracked.stdout.split('\n')).toContain(lowRiskDocsPath);
+      }
+
+      const result = runClassify(repo, classificationBase);
+      try {
+        expectHskRenameSelection(result);
+      } finally {
+        rmSync(result.outputPath, { force: true });
+      }
+    },
+  );
 
   it('#359: a manifest-allowlisted source change escalates to t2 (run_full_vitest=true)', () => {
     const repo = createTempRepo();
