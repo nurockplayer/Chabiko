@@ -457,7 +457,7 @@ describe('HearMandarin HSK source foundation', () => {
       encoding: 'utf8',
     });
     expect(result.status, result.stderr || result.stdout).toBe(0);
-    expect(result.stdout).toContain('32 negative CLI probes');
+    expect(result.stdout).toContain('41 negative CLI probes');
     expect(result.stdout).toContain('clean/repeat/empty-dir CLI success');
   });
 });

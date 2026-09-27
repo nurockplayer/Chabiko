@@ -232,9 +232,15 @@ def _validate_receipt(rows: list[dict[str, Any]], profile: dict[str, Any], recei
     return blocked, labels, projection_sha
 
 
-def _validate_japanese(japanese: dict[str, Any], placement_rows: list[dict[str, Any]], placement: str) -> list[dict[str, Any]]:
+def _validate_japanese(japanese: Any, placement_rows: list[dict[str, Any]], placement: str) -> list[dict[str, Any]]:
+    require(isinstance(japanese, dict), "Japanese companion root must be an object")
+    require(set(japanese) == {"authoring", "records"}, "Japanese companion must contain exactly authoring and records")
     authoring = japanese.get("authoring")
-    require(isinstance(authoring, dict), "Japanese authoring metadata is missing")
+    require(isinstance(authoring, dict), "Japanese authoring metadata must be an object")
+    require(set(authoring) == {"method", "status", "reviewStatus", "humanReview", "excludedSourceFieldsUsed"},
+            "Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed")
+    require(authoring.get("method") == "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+            "Japanese authoring method is missing or unsupported")
     require(authoring.get("status") == "ai-provisional" and authoring.get("reviewStatus") == "draft", "Japanese authoring must remain AI-provisional draft")
     require(authoring.get("humanReview") is False, "Japanese authoring cannot claim human review")
     require(authoring.get("excludedSourceFieldsUsed") == [], "Japanese authoring declares use of excluded source fields")
@@ -242,8 +248,14 @@ def _validate_japanese(japanese: dict[str, Any], placement_rows: list[dict[str, 
     require(isinstance(records, list) and len(records) == len(placement_rows), f"Japanese companion must contain exactly placement {placement}")
     for index, (companion, source) in enumerate(zip(records, placement_rows, strict=True), start=1):
         require(isinstance(companion, dict), f"Japanese companion row {index} is not an object")
+        require(set(companion) == {"sourceId", "globalSequence", "simplified", "pinyin", "japanese"},
+                f"Japanese companion row {index} must contain exactly sourceId/globalSequence/simplified/pinyin/japanese")
+        sequence = companion.get("globalSequence")
+        require(isinstance(sequence, int) and not isinstance(sequence, bool),
+                f"Japanese companion globalSequence must be a non-Boolean integer at row {index}")
         for key in ("sourceId", "globalSequence", "simplified", "pinyin"):
-            require(companion.get(key) == source[key], f"Japanese companion {key} mismatch at row {index}")
+            require(companion.get(key) == source[key] and (key == "globalSequence" or isinstance(companion.get(key), str)),
+                    f"Japanese companion {key} mismatch at row {index}")
         require(isinstance(companion.get("japanese"), str) and companion["japanese"].strip(), f"Japanese draft is empty at row {index}")
     return records
 
@@ -563,7 +575,7 @@ def self_test(script_path: Path) -> None:
         receipt_bytes = json_bytes(receipt)
         (config_dir / "official-verification.json").write_bytes(receipt_bytes)
         (config_dir / "source-profile.json").write_bytes(json_bytes(_mini_profile(source_bytes, receipt_bytes)))
-        companion = {"authoring": {"status": "ai-provisional", "reviewStatus": "draft", "humanReview": False, "excludedSourceFieldsUsed": []}, "records": [
+        companion = {"authoring": {"method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.", "status": "ai-provisional", "reviewStatus": "draft", "humanReview": False, "excludedSourceFieldsUsed": []}, "records": [
             {"sourceId": row["id"], "globalSequence": row["hsk3_seq"], "simplified": row["simplified"], "pinyin": row["pinyin"], "japanese": f"語彙{index}。"}
             for index, row in enumerate(source["words"][:20], start=1)
         ]}
@@ -748,6 +760,25 @@ def self_test(script_path: Path) -> None:
                     setup=japanese_probe(lambda value: value["records"].pop()))
         reject_case("extra Japanese record", "Japanese companion must contain exactly placement batch-001",
                     setup=japanese_probe(lambda value: value["records"].append(clone(value["records"][-1]))))
+        reject_case("missing Japanese authoring method", "Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed",
+                    setup=japanese_probe(lambda value: value["authoring"].pop("method")))
+        reject_case("contradictory Japanese authoring method", "Japanese authoring method is missing or unsupported",
+                    setup=japanese_probe(lambda value: value["authoring"].__setitem__("method", "Used excluded source fields.")))
+        reject_case("extra Japanese record field", "Japanese companion row 1 must contain exactly sourceId/globalSequence/simplified/pinyin/japanese",
+                    setup=japanese_probe(lambda value: value["records"][0].__setitem__("english", "excluded")))
+        reject_case("extra Japanese companion root field", "Japanese companion must contain exactly authoring and records",
+                    setup=japanese_probe(lambda value: value.__setitem__("excludedFieldsUsed", [])))
+        reject_case("extra Japanese authoring field", "Japanese authoring metadata must contain exactly method/status/reviewStatus/humanReview/excludedSourceFieldsUsed",
+                    setup=japanese_probe(lambda value: value["authoring"].__setitem__("source", "excluded")))
+        reject_case("Boolean Japanese coordinate", "Japanese companion globalSequence must be a non-Boolean integer at row 1",
+                    setup=japanese_probe(lambda value: value["records"][0].__setitem__("globalSequence", True)))
+        reject_case("Japanese companion root wrong type", "Japanese companion root must be an object",
+                    setup=lambda _output: (write_inputs(source_bytes, clone(base_profile), clone(base_receipt), clone(companion)),
+                                           (config_dir / "first-batch-japanese.json").write_bytes(json_bytes([])), source_path)[-1])
+        reject_case("Japanese authoring wrong type", "Japanese authoring metadata must be an object",
+                    setup=japanese_probe(lambda value: value.__setitem__("authoring", "draft")))
+        reject_case("Japanese records wrong type", "Japanese companion must contain exactly placement batch-001",
+                    setup=japanese_probe(lambda value: value.__setitem__("records", "not-an-array")))
 
         reject_case("malformed source JSON", "cannot read valid UTF-8 source JSON",
                     setup=lambda _output: (source_path.write_bytes(b"{not-json"), source_path)[1])
@@ -790,7 +821,7 @@ def self_test(script_path: Path) -> None:
         reject_case("broken symlink output", "output directory cannot be a symlink", setup=broken_symlink_setup, expected_output_exists=True,
                     preserve=lambda output: output.is_symlink() and not broken_target.exists())
 
-        require(rejection_case_count == 32, f"self-test negative CLI probe count changed: {rejection_case_count}")
+        require(rejection_case_count == 41, f"self-test negative CLI probe count changed: {rejection_case_count}")
 
     print(f"self-test passed: {rejection_case_count} negative CLI probes plus clean/repeat/empty-dir CLI success")
 
