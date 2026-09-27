@@ -1,0 +1,205 @@
+{
+  "schemaVersion": "teacher-source-profile-v1",
+  "source": {
+    "filename": "单词表(带图).xlsx",
+    "driveFileId": "1oOel762eE093e7Ni9_KILPY19J9i0H_8",
+    "sizeBytes": 144849,
+    "sha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37",
+    "storage": "authoring-only; workbook binary and local path are not committed"
+  },
+  "sourceSemantics": {
+    "curriculum": "Teacher-authored curriculum difficulty and teaching sequence developed through years of in-person teaching experience.",
+    "hskRelationship": "none; teacher grouping, stars, sheet names, and row positions do not indicate or imply HSK levels or membership."
+  },
+  "rights": {
+    "authority": "https://github.com/nurockplayer/Chabiko/issues/81#issuecomment-5853229347",
+    "scope": [
+      "original teacher-authored workbook text",
+      "Chabiko product use",
+      "deterministic transformation",
+      "repository storage",
+      "Chabiko publication and distribution"
+    ],
+    "attribution": "No additional attribution is required by the attestation.",
+    "relicensing": "No broader relicensing grant is asserted.",
+    "notCovered": [
+      "unrelated third-party material",
+      "broader reuse or relicensing outside the attested Chabiko use"
+    ]
+  },
+  "productDecision": {
+    "authority": "https://github.com/nurockplayer/Chabiko/issues/81#issuecomment-5853390946",
+    "authorization": "Teacher-only #81 outcome; do not map or infer any teacher group as an HSK level."
+  },
+  "toolchain": {
+    "command": "uv run --locked python scripts/import-teacher-vocabulary-xlsx.py <workbook.xlsx> <new-empty-output-dir>",
+    "runtime": "Python 3.14.3",
+    "uv": "0.12.13",
+    "lockfile": "uv.lock",
+    "lockfileSha256": "6f56647e5741b00b8f4d99809bd84f9941dea3daccaaf9d219ccd6dfb21e39a8",
+    "parser": "scripts/import-teacher-vocabulary-xlsx.py",
+    "parserSha256": "ccd677fda10d3a97824819e5924230eb7cc2f6c818a6e75476b50f0d9f4b0740",
+    "contract": "Existing #112 teacher-core-v1 importer contract; no parser, admission, difficulty-check, taxonomy, or normalization changes."
+  },
+  "headers": {
+    "workbookSheetOrder": [
+      "難易度☆",
+      "名词1",
+      "动词1",
+      "形容词1",
+      "副词",
+      "難易度☆☆",
+      "名词2",
+      "形容词2",
+      "动词2"
+    ],
+    "dataSheetHeaders": {
+      "名词1": [
+        null,
+        "名词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "动词1": [
+        null,
+        "动词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "形容词1": [
+        null,
+        "形容词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "副词": [
+        null,
+        "副词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "名词2": [
+        null,
+        "名词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "形容词2": [
+        null,
+        "形容词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ],
+      "动词2": [
+        null,
+        "动词",
+        "单词",
+        "拼音",
+        "难易度",
+        "日语翻译",
+        "造词/造句",
+        "日文字",
+        "备注"
+      ]
+    },
+    "separatorSheetHeaders": {
+      "難易度☆": [],
+      "難易度☆☆": []
+    },
+    "oneBasedResolvedColumns": {
+      "simplified": 3,
+      "pinyin": 4,
+      "difficulty_check": 5,
+      "japanese": 6,
+      "example": 7,
+      "ignored": [
+        "日文字:8",
+        "备注:9"
+      ]
+    },
+    "blankLeadingCells": 1,
+    "trailingBlankCellsTrimmed": 0
+  },
+  "diagnostic": {
+    "candidateCount": 1865,
+    "accepted": 20,
+    "rejected": 1845,
+    "duplicateRejected": 0,
+    "batchCount": 1,
+    "admission": "Existing required-field, formula, difficulty-check, duplicate identity, and ID collision checks remain in force; all 1,845 rejection records and exact reasons are retained in manifest.json."
+  },
+  "artifacts": {
+    "manifest": {
+      "path": "data/teacher-import/teacher-core-v1/manifest.json",
+      "sha256": "d1b65807c2d837982bc84386ea89533e88801efdbc86eb54af09e031b6747f38"
+    },
+    "sourceBatch": {
+      "path": "data/teacher-import/teacher-core-v1/teacher-vocabulary-batch-01.json",
+      "sha256": "7de26e919bead636f84cd269af8f64cfbfb941647326f7fe2c05f35c86912795",
+      "recordCount": 20,
+      "maximumPerBatch": 50
+    }
+  },
+  "repeatEvidence": {
+    "runs": [
+      "fresh real-source CLI run A",
+      "fresh real-source CLI run B"
+    ],
+    "result": "manifest.json and teacher-vocabulary-batch-01.json were byte-identical across both fresh runs and to the prior captured proof output."
+  },
+  "productionReconciliation": {
+    "currentSourceBatch": "data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json",
+    "currentSourceBatchSha256": "8cbc3e6bff77f3e6823fa13ef7b86a66ecf7cf053bb43bc2004b32107f469e27",
+    "currentBatchCount": 20,
+    "matching": "All 20 IDs, global order, Simplified text, pinyin, curriculum difficulty/POS, and source sheet/row coordinates match the importer derivative.",
+    "japaneseGlossDifferences": 11,
+    "japaneseGlossDisposition": "Keep the workbook-authored strings in the authoring derivative. Preserve current production Japanese glosses and their existing AI-provisional note unchanged; do not claim they match teacher text or are human-reviewed.",
+    "traditionalDisposition": "Importer output does not author Traditional values. Preserve existing production Traditional values/status and provenance unchanged.",
+    "learnerCorpus": {
+      "manifest": "data/teacher-vocabulary-preview/learner-manifest.json",
+      "sha256": "1a334649c477658a3ace0c9c7ad0c3d75021188cbf9d64700f9131ac408553ce",
+      "rows": 1582,
+      "disposition": "Canonical learner corpus, order, eligibility, and manifest remain unchanged."
+    }
+  },
+  "consumers": [
+    "scripts/import-teacher-vocabulary-xlsx.py (authoring CLI)",
+    "scripts/validate-content-schema.py (batch schema validator)",
+    "src/content/loadTeacherVocabulary.ts (existing compatibility adapter)",
+    "src/content/loadProductionLearnerCorpus.ts (canonical learner loader)",
+    "data/vocabulary/teacher-core-v1/teacher-vocabulary-batch-01.json (current 20-row teacher slice)",
+    "data/teacher-vocabulary-preview/learner-manifest.json (canonical 1,582-row learner corpus)"
+  ],
+  "runtimeBoundary": "This profile, manifest, and derivative batch are authoring evidence only. They are not imported by runtime code and do not replace, regenerate, reorder, or promote existing production content.",
+  "separateHskGate": "The HSK source, membership/level evidence, allowed-use evidence, manifest, and first production slice remain separately owned by Issue #73. Teacher groups and source rows provide no HSK evidence. Completion of teacher-only Issue #81 does not close or unblock Issues #82, #83, or #265; their own gates and downstream holds remain."
+}
