@@ -1,0 +1,31 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    { "sourceId": "w00001", "globalSequence": 1, "simplified": "爱", "pinyin": "ài", "japanese": "愛する。好き。" },
+    { "sourceId": "w00002", "globalSequence": 2, "simplified": "八", "pinyin": "bā", "japanese": "八。数字の8。" },
+    { "sourceId": "w00003", "globalSequence": 3, "simplified": "爸爸", "pinyin": "bàba", "japanese": "お父さん。" },
+    { "sourceId": "w00004", "globalSequence": 4, "simplified": "吧", "pinyin": "ba", "japanese": "文末で提案や確認をやわらげる語。" },
+    { "sourceId": "w00005", "globalSequence": 5, "simplified": "白天", "pinyin": "báitiān", "japanese": "昼間。" },
+    { "sourceId": "w00006", "globalSequence": 6, "simplified": "百", "pinyin": "bǎi", "japanese": "百。数字の100。" },
+    { "sourceId": "w00007", "globalSequence": 7, "simplified": "半", "pinyin": "bàn", "japanese": "半分。" },
+    { "sourceId": "w00008", "globalSequence": 8, "simplified": "包子", "pinyin": "bāozi", "japanese": "具を包んで蒸した中国の食べ物。" },
+    { "sourceId": "w00009", "globalSequence": 9, "simplified": "杯子", "pinyin": "bēizi", "japanese": "コップ。" },
+    { "sourceId": "w00011", "globalSequence": 11, "simplified": "边", "pinyin": "biān", "japanese": "端。そば。" },
+    { "sourceId": "w00012", "globalSequence": 12, "simplified": "病", "pinyin": "bìng", "japanese": "病気。" },
+    { "sourceId": "w00013", "globalSequence": 13, "simplified": "不", "pinyin": "bù", "japanese": "〜ない。否定を表す語。" },
+    { "sourceId": "w00014", "globalSequence": 14, "simplified": "不客气", "pinyin": "bú kèqi", "japanese": "どういたしまして。" },
+    { "sourceId": "w00015", "globalSequence": 15, "simplified": "不要", "pinyin": "búyào", "japanese": "〜しないで。いらない。" },
+    { "sourceId": "w00016", "globalSequence": 16, "simplified": "菜", "pinyin": "cài", "japanese": "料理。野菜。" },
+    { "sourceId": "w00017", "globalSequence": 17, "simplified": "茶", "pinyin": "chá", "japanese": "お茶。" },
+    { "sourceId": "w00018", "globalSequence": 18, "simplified": "唱", "pinyin": "chàng", "japanese": "歌う。" },
+    { "sourceId": "w00019", "globalSequence": 19, "simplified": "超市", "pinyin": "chāoshì", "japanese": "スーパーマーケット。" },
+    { "sourceId": "w00020", "globalSequence": 20, "simplified": "车", "pinyin": "chē", "japanese": "車。乗り物。" },
+    { "sourceId": "w00021", "globalSequence": 21, "simplified": "吃", "pinyin": "chī", "japanese": "食べる。" }
+  ]
+}

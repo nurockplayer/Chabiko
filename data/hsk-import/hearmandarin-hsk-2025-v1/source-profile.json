@@ -1,0 +1,105 @@
+{
+  "profileVersion": 1,
+  "dataset": {
+    "publisher": "HearMandarin",
+    "datasetName": "HSK 3.0 word list",
+    "datasetVersion": "2026-09-09",
+    "generated": "2026-09-23",
+    "downloadPageVersionLabel": "2026-09-23",
+    "homepage": "https://hearmandarin.com/datasets/",
+    "jsonDownloadUrl": "https://hearmandarin.com/datasets/hsk-3-0-words.json",
+    "csvDownloadUrl": "https://hearmandarin.com/datasets/hsk-3-0-words.csv",
+    "provenance": "https://hearmandarin.com/data-sources/",
+    "disclaimer": "https://hearmandarin.com/data-sources/",
+    "termsUrl": "https://hearmandarin.com/terms/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "HearMandarin (https://hearmandarin.com)",
+    "modificationNotice": "Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts.",
+    "allowedUse": "The publisher licenses the downloadable dataset under CC BY 4.0 and permits adaptation and commercial product use with attribution.",
+    "termsSummary": "The general site terms restrict copying substantial site or audio content to republish, resell, or build a competing product, and refer larger uses of site material to the publisher. The terms do not specifically name the separately licensed open JSON artifact.",
+    "artifactScopeRationale": "Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports.",
+    "notAffiliatedDisclaimer": "HearMandarin is an independent study aid and is not affiliated with or endorsed by the HSK exam organizers. See the publisher data-sources and disclaimer page.",
+    "json": {
+      "sha256": "5b67eb8acc69d99654646e7226e57f6fb799c111d1ee67d778e1a2954128acc0",
+      "bytes": 2393509,
+      "rows": 11147
+    },
+    "csv": {
+      "sha256": "d7b72d6f2268bdf740ec2abf25582b3b968150871e74b47e1bb8d98e7df1c4f8",
+      "bytes": 850313,
+      "rows": 11147,
+      "reconcilesExactlyWithJson": true
+    },
+    "fieldProvenance": {
+      "sourceId": "HearMandarin dataset row ID; retained as provenance, not used as a Chabiko runtime identifier.",
+      "simplified": "HearMandarin publisher dataset, retained verbatim only for coordinates admitted by the independent current CTI verification receipt.",
+      "pinyin": "HearMandarin publisher dataset tone-marked pinyin, retained verbatim only when it matches the independent current CTI verification receipt.",
+      "primaryLevel": "HearMandarin primary HSK 3.0 band, independently checked against CTI current 2025 syllabus coordinates.",
+      "globalSequence": "Observed HSK 3.0 global order in the publisher dataset and independently checked against CTI current 2025 syllabus coordinates.",
+      "japanese": "Separately authored by AI from the supplied Simplified Chinese and pinyin only; provisional draft, not human reviewed."
+    },
+    "excludedFields": [
+      "English glosses",
+      "Traditional Chinese",
+      "part of speech",
+      "numbered pinyin",
+      "legacy HSK levels",
+      "audio",
+      "dictionary material"
+    ],
+    "sourceCoordinateVerification": {
+      "authority": "China Testing International (CTI), current 2025 HSK 3.0 syllabus",
+      "page": "https://www.chinesetest.cn/syllabus",
+      "officialArtifactSha256": "ec74ce0439e837bbb15154be13e747ae798903b2fd3a331629df6c3b45504941",
+      "verificationReceipt": "official-verification.json",
+      "receiptSha256": "d084bb096f5ab6f2183a829308e002e23c3b9ef7c68658207c25e612103ca28e",
+      "scope": "Membership, primary level, and global sequence coordinates for the intended first 2000 rows; no CTI PDF or extracted table redistribution right is asserted."
+    }
+  },
+  "expectedSourceMetadata": {
+    "name": "HearMandarin HSK 3.0 Word List Dataset",
+    "version": "2026-09-09",
+    "generated": "2026-09-23",
+    "count": 11147,
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "HearMandarin (https://hearmandarin.com)",
+    "homepage": "https://hearmandarin.com/datasets/"
+  },
+  "coordinate": {
+    "primaryLevelField": "hsk3_band",
+    "globalSequenceField": "hsk3_seq",
+    "firstVerifiedSequence": 1,
+    "lastVerifiedSequence": 2000,
+    "expectedLevelCounts": {
+      "1": 300,
+      "2": 200,
+      "3": 500,
+      "4": 1000
+    }
+  },
+  "counts": {
+    "sourceCandidates": 2000,
+    "eligible": 1969,
+    "blocked": 31,
+    "excludedPosDiscrepancies": 1,
+    "supplementarySourceLevelLabels": 90,
+    "firstBatch": 20,
+    "duplicateGroups": 8,
+    "duplicateRows": 16,
+    "eligibleLevelCounts": {
+      "1": 294,
+      "2": 191,
+      "3": 495,
+      "4": 989
+    }
+  },
+  "plannedBatches": {
+    "firstBatch": "hsk-vocabulary-batch-001.json",
+    "firstBatchPrimaryLevel": 1,
+    "subsequentMaxRows": 50,
+    "subsequentOrdering": "global-sequence-within-primary-level",
+    "repositoryPublishedBatches": 1
+  }
+}
