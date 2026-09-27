@@ -184,6 +184,72 @@ describe('low-risk changes skip irrelevant expensive suites', () => {
     );
   });
 
+  it.each([
+    ['source profile', 'data/hsk-import/hearmandarin-hsk-2025-v1/source-profile.json'],
+    ['publication index', 'data/hsk-import/hearmandarin-hsk-2025-v1/publication-index.json'],
+    ['manifest', 'data/hsk-import/hearmandarin-hsk-2025-v1/manifest.json'],
+    ['verification receipt', 'data/hsk-import/hearmandarin-hsk-2025-v1/official-verification.json'],
+    ['first Japanese companion', 'data/hsk-import/hearmandarin-hsk-2025-v1/first-batch-japanese.json'],
+    ['future Japanese companion', 'data/hsk-import/hearmandarin-hsk-2025-v1/japanese/level-2-batch-002.json'],
+    ['current vocabulary output', 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json'],
+    ['future vocabulary output', 'data/hsk-vocabulary/hsk-vocabulary-level-2-batch-002.json'],
+  ])('runs the HSK foundation contract suite for the %s (%s)', (_name, path) => {
+    const classification = classifyFiles([path]);
+    expect(classification.tier).toBe('t1');
+    expect(classification.affectedContent).toBe(true);
+    expect(classification.affectedTestGlobs).toContain(
+      'tests/hearmandarin-hsk-foundation.test.ts',
+    );
+    expect(classification.runAffectedVitest).toBe(true);
+    expect(classification.runContent).toBe(true);
+  });
+
+  it('normalizes the exact HSK package prefixes and canonical workflow path', () => {
+    for (const path of [
+      'DATA\\HSK-IMPORT\\HEARMANDARIN-HSK-2025-V1\\PUBLICATION-INDEX.JSON',
+      'DATA\\HSK-VOCABULARY\\HSK-VOCABULARY-BATCH-001.JSON',
+      'DOCS\\CONTENT\\HEARMANDARIN-HSK-FOUNDATION.MD',
+    ]) {
+      expect(classifyFiles([path]).affectedTestGlobs).toContain(
+        'tests/hearmandarin-hsk-foundation.test.ts',
+      );
+    }
+  });
+
+  it('keeps adjacent HSK prefixes and ordinary docs outside the foundation suite', () => {
+    const adjacentData = classifyFiles([
+      'data/hsk-import/hearmandarin-hsk-2025-v10/publication-index.json',
+      'data/hsk-vocabulary-extra/hsk-vocabulary-batch-001.json',
+    ]);
+    expect(adjacentData.tier).toBe('t1');
+    expect(adjacentData.affectedContent).toBe(true);
+    expect(adjacentData.affectedTestGlobs).not.toContain(
+      'tests/hearmandarin-hsk-foundation.test.ts',
+    );
+
+    const adjacentDoc = classifyFiles([
+      'docs/content/hearmandarin-hsk-foundation-extra.md',
+      'docs/content/ordinary-workflow.md',
+    ]);
+    expect(adjacentDoc.tier).toBe('t0');
+    expect(adjacentDoc.affectedTestGlobs).not.toContain(
+      'tests/hearmandarin-hsk-foundation.test.ts',
+    );
+    expect(adjacentDoc.runAffectedVitest).toBe(false);
+  });
+
+  it('keeps higher-tier escalation when an HSK publication path is combined with UI', () => {
+    const classification = classifyFiles([
+      'data/hsk-vocabulary/hsk-vocabulary-batch-001.json',
+      'docs/content/hearmandarin-hsk-foundation.md',
+      'src/components/LessonPractice.astro',
+    ]);
+    expect(classification.tier).toBe('t3');
+    expect(classification.runFullVitest).toBe(true);
+    expect(classification.runVisual).toBe(true);
+    expect(classification.runA11y).toBe(true);
+  });
+
   it('a pure domain change runs affected tests but not visual/a11y/build', () => {
     const classification = classifyFiles(['src/domain/tonePractice.ts']);
     expect(classification.tier).toBe('t1');
@@ -507,6 +573,63 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     expect(normalizedOutput).toMatch(/Test Files 1 passed/);
     expect(normalizedOutput).toMatch(/Tests [1-9]\d* passed/);
   });
+
+  it.each([
+    [
+      'data-only publication package change',
+      'data/hsk-import/hearmandarin-hsk-2025-v1/publication-index.json',
+      'run_content=true',
+      'HearMandarin HSK publication surface → T1 foundation contract suite',
+    ],
+    [
+      'exact HSK workflow document change',
+      'docs/content/hearmandarin-hsk-foundation.md',
+      'run_content=false',
+      'canonical workflow → T1 HSK foundation contract suite',
+    ],
+  ])('the real classify CLI selects HSK validation for a %s', (_name, path, contentFlag, reason) => {
+    const repo = createTempRepo();
+    commitFile(repo, 'docs/base.md', '# base\n', 'base');
+    writeFile(repo, path, '{}\n');
+
+    const { status, stdout, outputPath } = runClassify(repo);
+    try {
+      expect(status).toBe(0);
+      expect(stdout).toContain('tier=t1');
+      expect(stdout).toContain('run_affected_vitest=true');
+      expect(stdout).toContain(contentFlag);
+      expect(stdout).toContain(reason);
+      const emitted = readFileSync(outputPath, 'utf8');
+      expect(emitted).toContain('tier=t1');
+      expect(emitted).toContain('run_affected_vitest=true');
+      expect(emitted).toContain(contentFlag);
+      expect(emitted).toContain(reason);
+    } finally {
+      rmSync(outputPath, { force: true });
+    }
+  });
+
+  it('the real affected CLI executes the HSK foundation suite for package, output, and workflow paths', () => {
+    const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
+    for (const path of [
+      'data/hsk-import/hearmandarin-hsk-2025-v1/publication-index.json',
+      'data/hsk-vocabulary/hsk-vocabulary-batch-001.json',
+      'docs/content/hearmandarin-hsk-foundation.md',
+    ]) {
+      const result = spawnSync(
+        process.execPath,
+        [scriptPath, 'affected', '--files', path],
+        { cwd: repositoryRoot, encoding: 'utf8' },
+      );
+      const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+      const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
+
+      expect(result.status, `${path}: ${output}`).toBe(0);
+      expect(normalizedOutput).toContain('tests/hearmandarin-hsk-foundation.test.ts');
+      expect(normalizedOutput).toMatch(/Test Files 1 passed/);
+      expect(normalizedOutput).toMatch(/Tests [1-9]\d* passed/);
+    }
+  }, 120_000);
 
   it('a delete-only learner-visible UI change still triggers visual + a11y (gitChangedFiles D path)', () => {
     const repo = createTempRepo();

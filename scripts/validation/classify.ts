@@ -464,6 +464,13 @@ const TAIWAN_TRAVEL_WAVE1_WORKFLOW_PATH =
   'docs/content/taiwan-travel-wave-1-candidates.md';
 const CONTENT_REVIEW_WORKFLOW_PATH =
   'docs/content/content-review-workflow.md';
+const HEARMANDARIN_HSK_IMPORT_PREFIX =
+  'data/hsk-import/hearmandarin-hsk-2025-v1/';
+const HSK_VOCABULARY_PREFIX = 'data/hsk-vocabulary/';
+const HEARMANDARIN_HSK_WORKFLOW_PATH =
+  'docs/content/hearmandarin-hsk-foundation.md';
+const HEARMANDARIN_HSK_FOUNDATION_TEST =
+  'tests/hearmandarin-hsk-foundation.test.ts';
 const TAIWAN_TRAVEL_PRODUCTION_LESSONS_PATH =
   'data/examples/valid/lessons.json';
 const TAIWAN_TRAVEL_WAVE1_PACKET_TEST =
@@ -537,6 +544,28 @@ export function classifyFiles(files: string[], options: ClassifyOptions = {}): C
     if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
     reasons.push(
       `${CONTENT_REVIEW_WORKFLOW_PATH}: canonical review contract → T1 candidate matrix self-test`,
+    );
+  }
+
+  // The HearMandarin HSK publication package and generated vocabulary batches
+  // share an aggregate contract suite. Keep these exact data prefixes and the
+  // one canonical workflow document on that suite while preserving T1 content
+  // validation and ordinary-document T0 behavior.
+  const hearMandarinHskPublicationFiles = files.filter((file) => {
+    const normalized = normalize(file);
+    return normalized.startsWith(HEARMANDARIN_HSK_IMPORT_PREFIX) ||
+      normalized.startsWith(HSK_VOCABULARY_PREFIX);
+  });
+  const hearMandarinHskWorkflowChanged = files.some(
+    (file) => normalize(file) === HEARMANDARIN_HSK_WORKFLOW_PATH,
+  );
+  if (hearMandarinHskPublicationFiles.length > 0 || hearMandarinHskWorkflowChanged) {
+    affectedTestGlobs.add(HEARMANDARIN_HSK_FOUNDATION_TEST);
+    if (TIER_ORDER[tier] < TIER_ORDER.t1) tier = 't1';
+    reasons.push(
+      hearMandarinHskWorkflowChanged
+        ? `${HEARMANDARIN_HSK_WORKFLOW_PATH}: canonical workflow → T1 HSK foundation contract suite`
+        : 'HearMandarin HSK publication surface → T1 foundation contract suite',
     );
   }
 
