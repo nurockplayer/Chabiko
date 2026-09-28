@@ -74,10 +74,17 @@
         "records": 20,
         "primaryLevel": 1,
         "sha256": "76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e"
+      },
+      {
+        "placement": "planned-level-1-batch-002",
+        "file": "hsk-vocabulary-level-1-batch-002.json",
+        "records": 50,
+        "primaryLevel": 1,
+        "sha256": "22d407a4f0356408808d0fb63cd44e60c9ad3f132f6820667c023117e9b0d2b2"
       }
     ],
-    "repositoryPublishedBatchCount": 1,
-    "repositoryPublishedRecordCount": 20,
+    "repositoryPublishedBatchCount": 2,
+    "repositoryPublishedRecordCount": 70,
     "sourceEligibleIsHumanReviewed": false,
     "sourceEligibleIsRuntimeAvailable": false
   },
@@ -383,11 +390,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "出租车",
-      "pinyin": "chūzūchē"
+      "pinyin": "chūzūchē",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00023",
@@ -396,11 +404,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "穿",
-      "pinyin": "chuān"
+      "pinyin": "chuān",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00024",
@@ -409,11 +418,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "打电话",
-      "pinyin": "dǎ diànhuà"
+      "pinyin": "dǎ diànhuà",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00025",
@@ -422,11 +432,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "大",
-      "pinyin": "dà"
+      "pinyin": "dà",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00026",
@@ -435,11 +446,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "大家",
-      "pinyin": "dàjiā"
+      "pinyin": "dàjiā",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00027",
@@ -448,11 +460,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "大学",
-      "pinyin": "dàxué"
+      "pinyin": "dàxué",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00028",
@@ -461,11 +474,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "大学生",
-      "pinyin": "dàxuéshēng"
+      "pinyin": "dàxuéshēng",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00029",
@@ -474,11 +488,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "到",
-      "pinyin": "dào"
+      "pinyin": "dào",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00030",
@@ -487,11 +502,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "的",
-      "pinyin": "de"
+      "pinyin": "de",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00031",
@@ -500,11 +516,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "第",
-      "pinyin": "dì"
+      "pinyin": "dì",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00032",
@@ -513,11 +530,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "弟弟",
-      "pinyin": "dìdi"
+      "pinyin": "dìdi",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00033",
@@ -540,11 +558,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "店",
-      "pinyin": "diàn"
+      "pinyin": "diàn",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00035",
@@ -553,11 +572,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "电话",
-      "pinyin": "diànhuà"
+      "pinyin": "diànhuà",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00036",
@@ -566,11 +586,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "电脑",
-      "pinyin": "diànnǎo"
+      "pinyin": "diànnǎo",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00037",
@@ -579,11 +600,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "电视",
-      "pinyin": "diànshì"
+      "pinyin": "diànshì",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00038",
@@ -592,11 +614,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "电影",
-      "pinyin": "diànyǐng"
+      "pinyin": "diànyǐng",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00039",
@@ -605,11 +628,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "电影院",
-      "pinyin": "diànyǐngyuàn"
+      "pinyin": "diànyǐngyuàn",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00040",
@@ -618,11 +642,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "东西",
-      "pinyin": "dōngxi"
+      "pinyin": "dōngxi",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00041",
@@ -631,11 +656,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "都",
-      "pinyin": "dōu"
+      "pinyin": "dōu",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00042",
@@ -644,11 +670,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "读",
-      "pinyin": "dú"
+      "pinyin": "dú",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00043",
@@ -657,11 +684,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "读书",
-      "pinyin": "dúshū"
+      "pinyin": "dúshū",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00044",
@@ -670,11 +698,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（4）",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "对",
-      "pinyin": "duì"
+      "pinyin": "duì",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00045",
@@ -683,11 +712,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "对不起",
-      "pinyin": "duìbuqǐ"
+      "pinyin": "duìbuqǐ",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00046",
@@ -696,11 +726,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（2）",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "多",
-      "pinyin": "duō"
+      "pinyin": "duō",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00047",
@@ -709,11 +740,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "多少",
-      "pinyin": "duōshao"
+      "pinyin": "duōshao",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00048",
@@ -722,11 +754,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "儿子",
-      "pinyin": "érzi"
+      "pinyin": "érzi",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00049",
@@ -735,11 +768,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "二",
-      "pinyin": "èr"
+      "pinyin": "èr",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00050",
@@ -748,11 +782,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "饭",
-      "pinyin": "fàn"
+      "pinyin": "fàn",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00051",
@@ -761,11 +796,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "饭店",
-      "pinyin": "fàndiàn"
+      "pinyin": "fàndiàn",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00052",
@@ -774,11 +810,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "房间",
-      "pinyin": "fángjiān"
+      "pinyin": "fángjiān",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00053",
@@ -787,11 +824,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "非常",
-      "pinyin": "fēicháng"
+      "pinyin": "fēicháng",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00054",
@@ -800,11 +838,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "飞机",
-      "pinyin": "fēijī"
+      "pinyin": "fēijī",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00055",
@@ -813,11 +852,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（3）",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "分",
-      "pinyin": "fēn"
+      "pinyin": "fēn",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00056",
@@ -826,11 +866,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "分钟",
-      "pinyin": "fēnzhōng"
+      "pinyin": "fēnzhōng",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00057",
@@ -839,11 +880,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "高兴",
-      "pinyin": "gāoxìng"
+      "pinyin": "gāoxìng",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00058",
@@ -852,11 +894,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "歌",
-      "pinyin": "gē"
+      "pinyin": "gē",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00059",
@@ -865,11 +908,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "哥哥",
-      "pinyin": "gēge"
+      "pinyin": "gēge",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00060",
@@ -878,11 +922,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "个",
-      "pinyin": "gè"
+      "pinyin": "gè",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00061",
@@ -891,11 +936,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（2）",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "给",
-      "pinyin": "gěi"
+      "pinyin": "gěi",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00062",
@@ -904,11 +950,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "公司",
-      "pinyin": "gōngsī"
+      "pinyin": "gōngsī",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00063",
@@ -917,11 +964,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "工作",
-      "pinyin": "gōngzuò"
+      "pinyin": "gōngzuò",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00064",
@@ -930,11 +978,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "狗",
-      "pinyin": "gǒu"
+      "pinyin": "gǒu",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00065",
@@ -943,11 +992,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "贵",
-      "pinyin": "guì"
+      "pinyin": "guì",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00066",
@@ -956,11 +1006,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "国",
-      "pinyin": "guó"
+      "pinyin": "guó",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00067",
@@ -969,11 +1020,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "还",
-      "pinyin": "hái"
+      "pinyin": "hái",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00068",
@@ -982,11 +1034,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "孩子",
-      "pinyin": "háizi"
+      "pinyin": "háizi",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00069",
@@ -995,11 +1048,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "汉语",
-      "pinyin": "Hànyǔ"
+      "pinyin": "Hànyǔ",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00070",
@@ -1008,11 +1062,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "汉字",
-      "pinyin": "Hànzì"
+      "pinyin": "Hànzì",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00071",
@@ -1021,11 +1076,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1（2）（4）",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "好",
-      "pinyin": "hǎo"
+      "pinyin": "hǎo",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00072",
@@ -1034,11 +1090,12 @@
       "primaryLevel": 1,
       "sourceLevelLabel": "1",
       "sourceEligible": true,
-      "repositoryPublication": "planned-not-published",
+      "repositoryPublication": "draft-published-to-repository",
       "batchPlacement": "planned-level-1-batch-002",
       "disposition": "eligible",
       "simplified": "好吃",
-      "pinyin": "hǎochī"
+      "pinyin": "hǎochī",
+      "repositoryBatchFile": "hsk-vocabulary-level-1-batch-002.json"
     },
     {
       "recordId": "hm-hsk3-w00073",

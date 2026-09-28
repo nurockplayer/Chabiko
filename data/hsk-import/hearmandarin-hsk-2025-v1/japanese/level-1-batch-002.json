@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00022",
+      "globalSequence": 22,
+      "simplified": "出租车",
+      "pinyin": "chūzūchē",
+      "japanese": "タクシー"
+    },
+    {
+      "sourceId": "w00023",
+      "globalSequence": 23,
+      "simplified": "穿",
+      "pinyin": "chuān",
+      "japanese": "着る；身につける"
+    },
+    {
+      "sourceId": "w00024",
+      "globalSequence": 24,
+      "simplified": "打电话",
+      "pinyin": "dǎ diànhuà",
+      "japanese": "電話をかける"
+    },
+    {
+      "sourceId": "w00025",
+      "globalSequence": 25,
+      "simplified": "大",
+      "pinyin": "dà",
+      "japanese": "大きい"
+    },
+    {
+      "sourceId": "w00026",
+      "globalSequence": 26,
+      "simplified": "大家",
+      "pinyin": "dàjiā",
+      "japanese": "みんな；皆さん"
+    },
+    {
+      "sourceId": "w00027",
+      "globalSequence": 27,
+      "simplified": "大学",
+      "pinyin": "dàxué",
+      "japanese": "大学"
+    },
+    {
+      "sourceId": "w00028",
+      "globalSequence": 28,
+      "simplified": "大学生",
+      "pinyin": "dàxuéshēng",
+      "japanese": "大学生"
+    },
+    {
+      "sourceId": "w00029",
+      "globalSequence": 29,
+      "simplified": "到",
+      "pinyin": "dào",
+      "japanese": "到着する；〜まで"
+    },
+    {
+      "sourceId": "w00030",
+      "globalSequence": 30,
+      "simplified": "的",
+      "pinyin": "de",
+      "japanese": "〜の（修飾を表す助詞）"
+    },
+    {
+      "sourceId": "w00031",
+      "globalSequence": 31,
+      "simplified": "第",
+      "pinyin": "dì",
+      "japanese": "第〜；順序を表す"
+    },
+    {
+      "sourceId": "w00032",
+      "globalSequence": 32,
+      "simplified": "弟弟",
+      "pinyin": "dìdi",
+      "japanese": "弟"
+    },
+    {
+      "sourceId": "w00034",
+      "globalSequence": 34,
+      "simplified": "店",
+      "pinyin": "diàn",
+      "japanese": "店"
+    },
+    {
+      "sourceId": "w00035",
+      "globalSequence": 35,
+      "simplified": "电话",
+      "pinyin": "diànhuà",
+      "japanese": "電話"
+    },
+    {
+      "sourceId": "w00036",
+      "globalSequence": 36,
+      "simplified": "电脑",
+      "pinyin": "diànnǎo",
+      "japanese": "コンピューター"
+    },
+    {
+      "sourceId": "w00037",
+      "globalSequence": 37,
+      "simplified": "电视",
+      "pinyin": "diànshì",
+      "japanese": "テレビ"
+    },
+    {
+      "sourceId": "w00038",
+      "globalSequence": 38,
+      "simplified": "电影",
+      "pinyin": "diànyǐng",
+      "japanese": "映画"
+    },
+    {
+      "sourceId": "w00039",
+      "globalSequence": 39,
+      "simplified": "电影院",
+      "pinyin": "diànyǐngyuàn",
+      "japanese": "映画館"
+    },
+    {
+      "sourceId": "w00040",
+      "globalSequence": 40,
+      "simplified": "东西",
+      "pinyin": "dōngxi",
+      "japanese": "物；もの"
+    },
+    {
+      "sourceId": "w00041",
+      "globalSequence": 41,
+      "simplified": "都",
+      "pinyin": "dōu",
+      "japanese": "みんな；すべて"
+    },
+    {
+      "sourceId": "w00042",
+      "globalSequence": 42,
+      "simplified": "读",
+      "pinyin": "dú",
+      "japanese": "読む"
+    },
+    {
+      "sourceId": "w00043",
+      "globalSequence": 43,
+      "simplified": "读书",
+      "pinyin": "dúshū",
+      "japanese": "読書する；本を読む"
+    },
+    {
+      "sourceId": "w00044",
+      "globalSequence": 44,
+      "simplified": "对",
+      "pinyin": "duì",
+      "japanese": "正しい；〜に対して"
+    },
+    {
+      "sourceId": "w00045",
+      "globalSequence": 45,
+      "simplified": "对不起",
+      "pinyin": "duìbuqǐ",
+      "japanese": "ごめんなさい"
+    },
+    {
+      "sourceId": "w00046",
+      "globalSequence": 46,
+      "simplified": "多",
+      "pinyin": "duō",
+      "japanese": "多い；どれほど"
+    },
+    {
+      "sourceId": "w00047",
+      "globalSequence": 47,
+      "simplified": "多少",
+      "pinyin": "duōshao",
+      "japanese": "いくつ；いくら"
+    },
+    {
+      "sourceId": "w00048",
+      "globalSequence": 48,
+      "simplified": "儿子",
+      "pinyin": "érzi",
+      "japanese": "息子"
+    },
+    {
+      "sourceId": "w00049",
+      "globalSequence": 49,
+      "simplified": "二",
+      "pinyin": "èr",
+      "japanese": "二"
+    },
+    {
+      "sourceId": "w00050",
+      "globalSequence": 50,
+      "simplified": "饭",
+      "pinyin": "fàn",
+      "japanese": "ご飯；食事"
+    },
+    {
+      "sourceId": "w00051",
+      "globalSequence": 51,
+      "simplified": "饭店",
+      "pinyin": "fàndiàn",
+      "japanese": "レストラン；食堂"
+    },
+    {
+      "sourceId": "w00052",
+      "globalSequence": 52,
+      "simplified": "房间",
+      "pinyin": "fángjiān",
+      "japanese": "部屋"
+    },
+    {
+      "sourceId": "w00053",
+      "globalSequence": 53,
+      "simplified": "非常",
+      "pinyin": "fēicháng",
+      "japanese": "とても；非常に"
+    },
+    {
+      "sourceId": "w00054",
+      "globalSequence": 54,
+      "simplified": "飞机",
+      "pinyin": "fēijī",
+      "japanese": "飛行機"
+    },
+    {
+      "sourceId": "w00055",
+      "globalSequence": 55,
+      "simplified": "分",
+      "pinyin": "fēn",
+      "japanese": "分ける；分（時間などの単位）"
+    },
+    {
+      "sourceId": "w00056",
+      "globalSequence": 56,
+      "simplified": "分钟",
+      "pinyin": "fēnzhōng",
+      "japanese": "分（時間の単位）"
+    },
+    {
+      "sourceId": "w00057",
+      "globalSequence": 57,
+      "simplified": "高兴",
+      "pinyin": "gāoxìng",
+      "japanese": "うれしい；楽しい"
+    },
+    {
+      "sourceId": "w00058",
+      "globalSequence": 58,
+      "simplified": "歌",
+      "pinyin": "gē",
+      "japanese": "歌"
+    },
+    {
+      "sourceId": "w00059",
+      "globalSequence": 59,
+      "simplified": "哥哥",
+      "pinyin": "gēge",
+      "japanese": "兄"
+    },
+    {
+      "sourceId": "w00060",
+      "globalSequence": 60,
+      "simplified": "个",
+      "pinyin": "gè",
+      "japanese": "個；（量詞）"
+    },
+    {
+      "sourceId": "w00061",
+      "globalSequence": 61,
+      "simplified": "给",
+      "pinyin": "gěi",
+      "japanese": "与える；〜に"
+    },
+    {
+      "sourceId": "w00062",
+      "globalSequence": 62,
+      "simplified": "公司",
+      "pinyin": "gōngsī",
+      "japanese": "会社"
+    },
+    {
+      "sourceId": "w00063",
+      "globalSequence": 63,
+      "simplified": "工作",
+      "pinyin": "gōngzuò",
+      "japanese": "仕事；働く"
+    },
+    {
+      "sourceId": "w00064",
+      "globalSequence": 64,
+      "simplified": "狗",
+      "pinyin": "gǒu",
+      "japanese": "犬"
+    },
+    {
+      "sourceId": "w00065",
+      "globalSequence": 65,
+      "simplified": "贵",
+      "pinyin": "guì",
+      "japanese": "値段が高い；高価だ"
+    },
+    {
+      "sourceId": "w00066",
+      "globalSequence": 66,
+      "simplified": "国",
+      "pinyin": "guó",
+      "japanese": "国"
+    },
+    {
+      "sourceId": "w00067",
+      "globalSequence": 67,
+      "simplified": "还",
+      "pinyin": "hái",
+      "japanese": "まだ；そのうえ"
+    },
+    {
+      "sourceId": "w00068",
+      "globalSequence": 68,
+      "simplified": "孩子",
+      "pinyin": "háizi",
+      "japanese": "子ども"
+    },
+    {
+      "sourceId": "w00069",
+      "globalSequence": 69,
+      "simplified": "汉语",
+      "pinyin": "Hànyǔ",
+      "japanese": "中国語"
+    },
+    {
+      "sourceId": "w00070",
+      "globalSequence": 70,
+      "simplified": "汉字",
+      "pinyin": "Hànzì",
+      "japanese": "漢字"
+    },
+    {
+      "sourceId": "w00071",
+      "globalSequence": 71,
+      "simplified": "好",
+      "pinyin": "hǎo",
+      "japanese": "よい；好ましい"
+    },
+    {
+      "sourceId": "w00072",
+      "globalSequence": 72,
+      "simplified": "好吃",
+      "pinyin": "hǎochī",
+      "japanese": "おいしい"
+    }
+  ]
+}
