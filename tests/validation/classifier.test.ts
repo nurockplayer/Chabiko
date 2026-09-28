@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
@@ -963,5 +963,243 @@ describe('tier ordering and risk-class table are complete', () => {
     for (const rule of DOMAIN_TEST_RULES) {
       expect(rule.testGlobs.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('validation runner child-process outcomes', () => {
+  const scriptPath = fileURLToPath(new URL('../../scripts/validation/run.ts', import.meta.url));
+
+  function runCli(mode: 'exit' | 'signal' | 'spawn-error', childExitCode = 0): {
+    status: number | null;
+    stdout: string;
+    stderr: string;
+    trace: string;
+  } {
+    const root = mkdtempSync(join(tmpdir(), 'chabiko-validation-child-'));
+    const repo = join(root, 'repo');
+    const bin = join(root, 'bin');
+    mkdirSync(repo);
+    mkdirSync(bin);
+
+    try {
+      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
+      expect(gitPath).not.toBe('');
+      const fixtureEnv = {
+        ...process.env,
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_GLOBAL: '/dev/null',
+      };
+      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
+      expect(git(['config', 'user.email', 'validation-child-test@example.invalid']).status).toBe(0);
+      expect(git(['config', 'user.name', 'Validation Child Test']).status).toBe(0);
+      writeFileSync(join(repo, 'base.md'), 'fixture base\n');
+      expect(git(['add', 'base.md']).status).toBe(0);
+      expect(git(['commit', '-qm', 'fixture base']).status).toBe(0);
+
+      writeFileSync(
+        join(bin, 'git'),
+        '#!/bin/sh\nexec "$REAL_GIT" "$@"\n',
+        { mode: 0o755 },
+      );
+      const tracePath = join(root, 'pnpm-trace.log');
+      if (mode !== 'spawn-error') {
+        writeFileSync(
+          join(bin, 'pnpm'),
+          '#!/bin/sh\nprintf "%s\\n" "$*" >> "$PNPM_TRACE"\nif [ "$PNPM_MODE" = signal ]; then kill -TERM $$; fi\nexit "$PNPM_STATUS"\n',
+          { mode: 0o755 },
+        );
+      }
+
+      const result = spawnSync(
+        process.execPath,
+        [scriptPath, 'run', '--tier', 't1', '--base', 'HEAD'],
+        {
+          cwd: repo,
+          env: {
+            ...fixtureEnv,
+            PATH: bin,
+            REAL_GIT: gitPath,
+            PNPM_MODE: mode,
+            PNPM_STATUS: String(childExitCode),
+            PNPM_TRACE: tracePath,
+          },
+          encoding: 'utf8',
+          timeout: 30_000,
+        },
+      );
+      return {
+        status: result.status,
+        stdout: result.stdout ?? '',
+        stderr: result.stderr ?? '',
+        trace: existsSync(tracePath) ? readFileSync(tracePath, 'utf8') : '',
+      };
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+
+  it.each([0, 1, 125])('preserves ordinary child exit behavior for status %i', (childExitCode) => {
+    const result = runCli('exit', childExitCode);
+    const label = childExitCode === 0 ? 'ok' : 'FAIL';
+
+    expect(result.status).toBe(childExitCode === 0 ? 0 : 1);
+    expect(result.stderr).toContain(`[${label}] pnpm lint`);
+    expect(result.stderr).toContain(`[${label}] pnpm typecheck`);
+    if (childExitCode !== 0) expect(result.stderr).not.toContain('[ok]');
+    expect(result.trace).toBe('lint\ntypecheck\n');
+  });
+
+  it('fails and never prints success when a child terminates by SIGTERM', () => {
+    const result = runCli('signal');
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('[FAIL] pnpm lint');
+    expect(result.stderr).toContain('[FAIL] pnpm typecheck');
+    expect(result.stderr).not.toContain('[ok]');
+    expect(result.trace).toBe('lint\ntypecheck\n');
+  });
+
+  it('fails and never prints success when spawning a child returns ENOENT', () => {
+    const result = runCli('spawn-error');
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('[FAIL] pnpm lint');
+    expect(result.stderr).toContain('[FAIL] pnpm typecheck');
+    expect(result.stderr).not.toContain('[ok]');
+  });
+});
+
+describe('validation runner Git discovery failures', () => {
+  const scriptPath = fileURLToPath(new URL('../../scripts/validation/run.ts', import.meta.url));
+  type GitStage = 'committed' | 'unstaged' | 'staged' | 'untracked';
+  type FailureMode = 'exit' | 'signal' | 'spawn-error';
+
+  function runCli(failStage: GitStage, mode: FailureMode): {
+    status: number | null;
+    stdout: string;
+    stderr: string;
+    outputBefore: Buffer;
+    outputAfter: Buffer;
+    trace: string;
+  } {
+    const root = mkdtempSync(join(tmpdir(), 'chabiko-validation-git-'));
+    const repo = join(root, 'repo');
+    const bin = join(root, 'bin');
+    const outputPath = join(root, 'github-output.txt');
+    const outputSentinel = Buffer.from([0, 0x67, 0x61, 0x74, 0x65, 0xff, 10]);
+    mkdirSync(repo);
+    mkdirSync(bin);
+
+    try {
+      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
+      expect(gitPath).not.toBe('');
+      const fixtureEnv = {
+        ...process.env,
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_GLOBAL: '/dev/null',
+      };
+      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
+      expect(git(['config', 'user.email', 'validation-git-test@example.invalid']).status).toBe(0);
+      expect(git(['config', 'user.name', 'Validation Git Test']).status).toBe(0);
+      writeFileSync(join(repo, 'base.md'), 'fixture base\n');
+      expect(git(['add', 'base.md']).status).toBe(0);
+      expect(git(['commit', '-qm', 'fixture base']).status).toBe(0);
+      writeFileSync(outputPath, outputSentinel);
+
+      const tracePath = join(root, 'git-trace.log');
+      const markerPath = join(root, 'remove-git-after-first-call');
+      if (mode === 'spawn-error') writeFileSync(markerPath, 'test-owned marker');
+      writeFileSync(
+        join(bin, 'git'),
+        [
+          '#!/bin/sh',
+          'args="$*"',
+          'printf "%s\\n" "$args" >> "$WRAPPER_TRACE"',
+          'matched=false',
+          'case "$FAIL_STAGE:$args" in',
+          '  committed:*...HEAD*) matched=true ;;',
+          '  unstaged:*diff*) case "$args" in *...HEAD*|*--cached*) ;; *) matched=true ;; esac ;;',
+          '  staged:*--cached*) matched=true ;;',
+          '  untracked:*ls-files*) matched=true ;;',
+          'esac',
+          'if [ "$matched" = true ] && [ "$FAIL_MODE" = exit ]; then exit 42; fi',
+          'if [ "$matched" = true ] && [ "$FAIL_MODE" = signal ]; then kill -TERM $$; fi',
+          'if [ -f "$REMOVE_GIT_MARKER" ]; then /bin/rm -f "$REMOVE_GIT_MARKER" "$0"; fi',
+          'exec "$REAL_GIT" "$@"',
+          '',
+        ].join('\n'),
+        { mode: 0o755 },
+      );
+
+      const result = spawnSync(
+        process.execPath,
+        [scriptPath, 'classify', '--base', 'HEAD', '--emit-github-output'],
+        {
+          cwd: repo,
+          env: {
+            ...fixtureEnv,
+            PATH: bin,
+            REAL_GIT: gitPath,
+            FAIL_STAGE: failStage,
+            FAIL_MODE: mode,
+            WRAPPER_TRACE: tracePath,
+            GITHUB_OUTPUT: outputPath,
+            REMOVE_GIT_MARKER: markerPath,
+          },
+          encoding: 'utf8',
+          timeout: 30_000,
+        },
+      );
+      return {
+        status: result.status,
+        stdout: result.stdout ?? '',
+        stderr: result.stderr ?? '',
+        outputBefore: outputSentinel,
+        outputAfter: readFileSync(outputPath),
+        trace: existsSync(tracePath) ? readFileSync(tracePath, 'utf8') : '',
+      };
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+
+  it.each(['committed', 'unstaged', 'staged', 'untracked'] as const)(
+    'aborts before emitting gate output when the %s Git discovery command exits nonzero',
+    (stage) => {
+      const result = runCli(stage, 'exit');
+
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toContain(`git discovery failed at ${stage === 'untracked' ? 'untracked files' : `${stage} diff`}`);
+      expect(result.stderr).toContain('exited with status 42');
+      expect(result.stderr).not.toContain('tier=');
+      expect(result.outputAfter).toEqual(result.outputBefore);
+      expect(result.trace.split('\n').filter(Boolean)).toHaveLength(
+        stage === 'committed' ? 1 : stage === 'unstaged' ? 2 : stage === 'staged' ? 3 : 4,
+      );
+    },
+  );
+
+  it('aborts with signal details when a Git discovery child is terminated', () => {
+    const result = runCli('staged', 'signal');
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain('git discovery failed at staged diff');
+    expect(result.stderr).toContain('terminated by signal SIGTERM');
+    expect(result.outputAfter).toEqual(result.outputBefore);
+  });
+
+  it('aborts with spawn details and missing-output protection after Git becomes unavailable', () => {
+    const result = runCli('unstaged', 'spawn-error');
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain('git discovery failed at unstaged diff');
+    expect(result.stderr).toContain('spawn error:');
+    expect(result.stderr).toContain('ENOENT');
+    expect(result.outputAfter).toEqual(result.outputBefore);
   });
 });

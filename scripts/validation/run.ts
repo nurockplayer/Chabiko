@@ -28,40 +28,82 @@ import {
 
 const repoRoot = process.cwd();
 
+interface GitCommandResult {
+  status: number | null;
+  signal: string | null;
+  error?: Error;
+  stdout: unknown;
+  stderr?: string | null;
+}
+
+function requireGitOutput(stage: string, args: string[], result: GitCommandResult): string {
+  if (
+    result.status === 0 &&
+    !result.error &&
+    !result.signal &&
+    typeof result.stdout === 'string'
+  ) {
+    return result.stdout;
+  }
+
+  const command = `git ${args.join(' ')}`;
+  const reason = result.error
+    ? `spawn error: ${result.error.message}`
+    : result.signal
+      ? `terminated by signal ${result.signal}`
+      : result.status === null
+        ? 'missing exit status'
+        : result.status !== 0
+          ? `exited with status ${result.status}`
+          : 'missing string stdout';
+  const stderr = typeof result.stderr === 'string' ? result.stderr.trim() : '';
+  throw new Error(
+    `git discovery failed at ${stage}: ${command}; ${reason}${stderr ? `: ${stderr}` : ''}`,
+  );
+}
+
 function gitChangedFiles(base: string): string[] {
   const changed = new Set<string>();
 
   // Committed changes since the merge-base with `base` (three-dot). In CI the
   // checkout is clean, so this alone yields the PR's change set.
+  const committedArgs = [
+    'diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', `${base}...HEAD`,
+  ];
   const committed = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', `${base}...HEAD`],
+    committedArgs,
     { cwd: repoRoot, encoding: 'utf8' },
   );
-  if (committed.status !== 0) {
-    throw new Error(`git diff failed: ${committed.stderr?.trim() ?? committed.error?.message}`);
+  for (const line of splitLines(requireGitOutput('committed diff', committedArgs, committed))) {
+    changed.add(line);
   }
-  for (const line of splitLines(committed.stdout)) changed.add(line);
 
   // Uncommitted working-tree changes (staged + unstaged) and untracked files.
   // Agents run `pnpm validate` mid-cycle, before changes are committed, so the
   // diff alone would under-report.
+  const unstagedArgs = ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT'];
   const unstaged = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT'],
+    unstagedArgs,
     { cwd: repoRoot, encoding: 'utf8' },
   );
+  const unstagedOutput = requireGitOutput('unstaged diff', unstagedArgs, unstaged);
+  const stagedArgs = ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', '--cached'];
   const staged = spawnSync(
     'git',
-    ['diff', '--no-renames', '--name-only', '--diff-filter=ACMRDT', '--cached'],
+    stagedArgs,
     { cwd: repoRoot, encoding: 'utf8' },
   );
+  const stagedOutput = requireGitOutput('staged diff', stagedArgs, staged);
+  const untrackedArgs = ['ls-files', '--others', '--exclude-standard'];
   const untracked = spawnSync(
     'git',
-    ['ls-files', '--others', '--exclude-standard'],
+    untrackedArgs,
     { cwd: repoRoot, encoding: 'utf8' },
   );
-  for (const lines of [unstaged.stdout, staged.stdout, untracked.stdout]) {
+  const untrackedOutput = requireGitOutput('untracked files', untrackedArgs, untracked);
+  for (const lines of [unstagedOutput, stagedOutput, untrackedOutput]) {
     for (const line of splitLines(lines)) changed.add(line);
   }
 
@@ -178,10 +220,10 @@ function run(command: string, args: string[]): number {
   const started = Date.now();
   const result = spawnSync(command, args, { cwd: repoRoot, stdio: 'inherit' });
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
-  const status = result.status ?? (result.error ? 1 : 0);
-  const ok = status === 0;
+  const status = result.status ?? 1;
+  const ok = result.status === 0 && !result.error && !result.signal;
   process.stderr.write(`  [${ok ? 'ok' : 'FAIL'}] ${command} ${args.join(' ')} (${seconds}s)\n`);
-  return status;
+  return ok ? 0 : status === 0 ? 1 : status;
 }
 
 /**
