@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative } from 'node:path';
+import { delimiter, dirname, join, relative } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -1219,6 +1219,187 @@ describe('validation runner child-process outcomes', () => {
       }
     },
   );
+});
+
+describe('validation runner affected-test selection', () => {
+  const scriptPath = fileURLToPath(new URL('../../scripts/validation/run.ts', import.meta.url));
+
+  function runAffectedCli(
+    sources: string[],
+    testFiles: string[],
+    dirtyCaller = false,
+    changedTests: string[] = [],
+  ): {
+    status: number | null;
+    stdout: string;
+    stderr: string;
+    trace: string;
+    outputBefore: Buffer;
+    outputAfter: Buffer;
+    callerBefore?: ReturnType<ReturnType<typeof createDirtyCallerFixture>['snapshot']>;
+    callerAfter?: ReturnType<ReturnType<typeof createDirtyCallerFixture>['snapshot']>;
+    callerSourcesBefore?: Record<string, Buffer>;
+    callerSourcesAfter?: Record<string, Buffer>;
+    inheritedEnvBefore?: NodeJS.ProcessEnv;
+    inheritedEnvAfter?: NodeJS.ProcessEnv;
+    processEnvBefore: NodeJS.ProcessEnv;
+    processEnvAfter: NodeJS.ProcessEnv;
+  } {
+    const root = mkdtempSync(join(tmpdir(), 'chabiko-validation-affected-'));
+    const repo = join(root, 'repo');
+    const bin = join(root, 'bin');
+    mkdirSync(repo);
+    mkdirSync(bin);
+
+    const caller = dirtyCaller ? createDirtyCallerFixture('repository') : undefined;
+    try {
+      const fixtureEnv = isolatedFixtureEnvironment();
+      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
+      expect(gitPath).not.toBe('');
+      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
+      expect(git(['config', 'user.email', 'validation-affected-test@example.invalid']).status).toBe(0);
+      expect(git(['config', 'user.name', 'Validation Affected Test']).status).toBe(0);
+
+      writeFileSync(join(repo, 'base.md'), 'fixture base\n');
+      mkdirSync(join(repo, 'tests'), { recursive: true });
+      for (const file of [...new Set([...testFiles, ...changedTests])]) {
+        const fullPath = join(repo, file);
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, '// committed selector fixture\n');
+      }
+      if (!caller) {
+        for (const file of sources) {
+          const fullPath = join(repo, file);
+          mkdirSync(dirname(fullPath), { recursive: true });
+          writeFileSync(fullPath, '// baseline selector fixture\n');
+        }
+      }
+      expect(git(['add', '.']).status).toBe(0);
+      expect(git(['commit', '-qm', 'affected selection baseline']).status).toBe(0);
+
+      if (caller) {
+        for (const file of sources) {
+          const fullPath = join(caller.repo, file);
+          mkdirSync(dirname(fullPath), { recursive: true });
+          writeFileSync(fullPath, '// caller-owned changed source\n');
+        }
+      } else {
+        for (const file of sources) {
+          writeFileSync(join(repo, file), '// changed selector fixture\n');
+        }
+        for (const file of changedTests) {
+          writeFileSync(join(repo, file), '// changed explicit test fixture\n');
+        }
+      }
+
+      const tracePath = join(root, 'pnpm-trace.log');
+      const outputPath = caller ? join(caller.root, 'github-output.txt') : join(root, 'github-output.txt');
+      const outputSentinel = Buffer.from([0, 0x67, 0x61, 0x74, 0x65, 0xff, 10]);
+      writeFileSync(outputPath, outputSentinel);
+      const callerBefore = caller?.snapshot();
+      const callerSourcesBefore = caller
+        ? Object.fromEntries(sources.map((file) => [file, readFileSync(join(caller.repo, file))]))
+        : undefined;
+      const inheritedEnvBefore = caller ? { ...caller.inheritedEnv } : undefined;
+
+      writeFileSync(join(bin, 'git'), '#!/bin/sh\nexec "$REAL_GIT" "$@"\n', { mode: 0o755 });
+      writeFileSync(
+        join(bin, 'pnpm'),
+        '#!/bin/sh\nprintf "%s\\n" "$*" >> "$PNPM_TRACE"\nexit 0\n',
+        { mode: 0o755 },
+      );
+      const childEnv = {
+        ...(caller?.inheritedEnv ?? fixtureEnv),
+        PATH: `${bin}${delimiter}${process.env.PATH ?? ''}`,
+        REAL_GIT: gitPath,
+        PNPM_TRACE: tracePath,
+        GITHUB_OUTPUT: outputPath,
+      };
+      const processEnvBefore = { ...process.env };
+      const result = spawnSync(
+        process.execPath,
+        [scriptPath, 'affected', '--base', 'HEAD'],
+        { cwd: repo, env: childEnv, encoding: 'utf8', timeout: 30_000 },
+      );
+      return {
+        status: result.status,
+        stdout: result.stdout ?? '',
+        stderr: result.stderr ?? '',
+        trace: existsSync(tracePath) ? readFileSync(tracePath, 'utf8') : '',
+        outputBefore: outputSentinel,
+        outputAfter: readFileSync(outputPath),
+        callerBefore,
+        callerAfter: caller?.snapshot(),
+        callerSourcesBefore,
+        callerSourcesAfter: caller
+          ? Object.fromEntries(sources.map((file) => [file, readFileSync(join(caller.repo, file))]))
+          : undefined,
+        inheritedEnvBefore,
+        inheritedEnvAfter: caller ? { ...caller.inheritedEnv } : undefined,
+        processEnvBefore,
+        processEnvAfter: { ...process.env },
+      };
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+      if (caller) rmSync(caller.root, { recursive: true, force: true });
+    }
+  }
+
+  it('falls back on a missing mapped glob despite another match and an explicit changed test', () => {
+    const result = runAffectedCli(
+      ['src/domain/tonePractice.ts', 'src/lib/progress.ts'],
+      ['tests/tone-practice-owned.test.ts'],
+      false,
+      ['tests/lessons.test.ts'],
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.trace).toBe('exec vitest run\n');
+    expect(result.trace).not.toContain('tone-practice-owned.test.ts');
+    expect(result.outputAfter).toEqual(result.outputBefore);
+  });
+
+  it('passes all resolved mapped paths once in sorted order', () => {
+    const result = runAffectedCli(
+      ['src/domain/practice.ts'],
+      [
+        'tests/lesson-practice-ui.test.ts',
+        'tests/practice-content-validation.test.ts',
+        'tests/practice-alpha.test.ts',
+      ],
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.trace).toBe(
+      'exec vitest run tests/lesson-practice-ui.test.ts tests/practice-alpha.test.ts tests/practice-content-validation.test.ts\n',
+    );
+    expect(result.outputAfter).toEqual(result.outputBefore);
+  });
+
+  it('falls back to the full suite when all mapped globs are empty', () => {
+    const result = runAffectedCli(['src/domain/tonePractice.ts'], []);
+
+    expect(result.status).toBe(0);
+    expect(result.trace).toBe('exec vitest run\n');
+    expect(result.outputAfter).toEqual(result.outputBefore);
+  });
+
+  it('preserves hostile dirty-caller Git state, configuration, environment, and output', () => {
+    const result = runAffectedCli(
+      ['src/domain/tonePractice.ts', 'src/lib/progress.ts'],
+      ['tests/tone-practice-owned.test.ts'],
+      true,
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.trace).toBe('exec vitest run\n');
+    expect(result.callerAfter).toEqual(result.callerBefore);
+    expect(result.callerSourcesAfter).toEqual(result.callerSourcesBefore);
+    expect(result.inheritedEnvAfter).toEqual(result.inheritedEnvBefore);
+    expect(result.processEnvAfter).toEqual(result.processEnvBefore);
+    expect(result.outputAfter).toEqual(result.outputBefore);
+  });
 });
 
 describe('validation runner Git discovery failures', () => {
