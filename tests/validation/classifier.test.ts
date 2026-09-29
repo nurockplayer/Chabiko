@@ -15,6 +15,62 @@ import {
   type Tier,
 } from '../../scripts/validation/classify';
 
+function isolatedFixtureEnvironment(inheritedEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const env = { ...inheritedEnv };
+  for (const key of Object.keys(env)) {
+    if (key.startsWith('GIT_')) delete env[key];
+  }
+  env.GIT_CONFIG_NOSYSTEM = '1';
+  env.GIT_CONFIG_GLOBAL = '/dev/null';
+  return env;
+}
+
+function createDirtyCallerFixture(routing: 'repository' | 'index-only') {
+  const root = mkdtempSync(join(tmpdir(), 'chabiko-validation-caller-'));
+  const repo = join(root, 'repo');
+  mkdirSync(repo);
+  const env = isolatedFixtureEnvironment();
+  const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env }).stdout.trim();
+  expect(gitPath).not.toBe('');
+  const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env, encoding: 'utf8' });
+  expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
+  expect(git(['config', 'user.email', 'caller@example.invalid']).status).toBe(0);
+  expect(git(['config', 'user.name', 'Surrogate Caller']).status).toBe(0);
+  writeFileSync(join(repo, 'base.md'), Buffer.from('caller base\0\xff\n'));
+  writeFileSync(join(repo, 'caller-dirty.txt'), Buffer.from('tracked caller baseline\0\xff'));
+  expect(git(['add', 'base.md']).status).toBe(0);
+  expect(git(['add', 'caller-dirty.txt']).status).toBe(0);
+  expect(git(['commit', '-qm', 'caller base']).status).toBe(0);
+  writeFileSync(join(repo, 'caller-staged.bin'), Buffer.from('staged caller bytes\0\xff'));
+  expect(git(['add', 'caller-staged.bin']).status).toBe(0);
+  writeFileSync(join(repo, 'caller-dirty.txt'), Buffer.from('tracked dirty bytes\0\xff'));
+  writeFileSync(join(repo, 'caller-untracked.md'), Buffer.from('untracked caller bytes\0\xff'));
+
+  const inheritedEnv: NodeJS.ProcessEnv = { ...process.env };
+  if (routing === 'repository') {
+    inheritedEnv.GIT_DIR = join(repo, '.git');
+    inheritedEnv.GIT_WORK_TREE = repo;
+    inheritedEnv.GIT_COMMON_DIR = join(repo, '.git');
+    inheritedEnv.GIT_OBJECT_DIRECTORY = join(repo, '.git', 'objects');
+    inheritedEnv.GIT_ALTERNATE_OBJECT_DIRECTORIES = join(repo, '.git', 'objects');
+    inheritedEnv.GIT_INDEX_FILE = join(repo, '.git', 'index');
+  } else {
+    inheritedEnv.GIT_INDEX_FILE = join(repo, '.git', 'index');
+  }
+
+  const snapshot = () => ({
+    head: git(['rev-parse', 'HEAD']).stdout.trim(),
+    index: readFileSync(join(repo, '.git', 'index')),
+    config: readFileSync(join(repo, '.git', 'config')),
+    base: readFileSync(join(repo, 'base.md')),
+    staged: readFileSync(join(repo, 'caller-staged.bin')),
+    dirty: readFileSync(join(repo, 'caller-dirty.txt')),
+    untracked: readFileSync(join(repo, 'caller-untracked.md')),
+  });
+
+  return { root, repo, inheritedEnv, snapshot };
+}
+
 // Representative change surfaces → the intended minimum tier. This is the
 // "deterministic risk classification" contract from Issue #339: each risk
 // class must select its documented tier, cross-cutting/unknown must escalate,
@@ -969,7 +1025,7 @@ describe('tier ordering and risk-class table are complete', () => {
 describe('validation runner child-process outcomes', () => {
   const scriptPath = fileURLToPath(new URL('../../scripts/validation/run.ts', import.meta.url));
 
-  function runCli(mode: 'exit' | 'signal' | 'spawn-error', childExitCode = 0): {
+  function runCli(mode: 'exit' | 'signal' | 'spawn-error', childExitCode = 0, inheritedEnv = process.env): {
     status: number | null;
     stdout: string;
     stderr: string;
@@ -982,13 +1038,9 @@ describe('validation runner child-process outcomes', () => {
     mkdirSync(bin);
 
     try {
-      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
+      const fixtureEnv = isolatedFixtureEnvironment(inheritedEnv);
+      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
       expect(gitPath).not.toBe('');
-      const fixtureEnv = {
-        ...process.env,
-        GIT_CONFIG_NOSYSTEM: '1',
-        GIT_CONFIG_GLOBAL: '/dev/null',
-      };
       const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
       expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
       expect(git(['config', 'user.email', 'validation-child-test@example.invalid']).status).toBe(0);
@@ -1068,6 +1120,25 @@ describe('validation runner child-process outcomes', () => {
     expect(result.stderr).toContain('[FAIL] pnpm typecheck');
     expect(result.stderr).not.toContain('[ok]');
   });
+
+  it.each(['repository', 'index-only'] as const)(
+    'preserves a dirty caller repository with inherited %s Git routing',
+    (routing) => {
+      const caller = createDirtyCallerFixture(routing);
+      try {
+        const before = caller.snapshot();
+        const result = runCli('exit', 0, caller.inheritedEnv);
+
+        expect(result.status).toBe(0);
+        expect(result.stderr).toContain('[ok] pnpm lint');
+        expect(result.stderr).toContain('[ok] pnpm typecheck');
+        expect(result.trace).toBe('lint\ntypecheck\n');
+        expect(caller.snapshot()).toEqual(before);
+      } finally {
+        rmSync(caller.root, { recursive: true, force: true });
+      }
+    },
+  );
 });
 
 describe('validation runner Git discovery failures', () => {
@@ -1075,7 +1146,7 @@ describe('validation runner Git discovery failures', () => {
   type GitStage = 'committed' | 'unstaged' | 'staged' | 'untracked';
   type FailureMode = 'exit' | 'signal' | 'spawn-error';
 
-  function runCli(failStage: GitStage, mode: FailureMode): {
+  function runCli(failStage: GitStage, mode: FailureMode, inheritedEnv = process.env): {
     status: number | null;
     stdout: string;
     stderr: string;
@@ -1092,13 +1163,9 @@ describe('validation runner Git discovery failures', () => {
     mkdirSync(bin);
 
     try {
-      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8' }).stdout.trim();
+      const fixtureEnv = isolatedFixtureEnvironment(inheritedEnv);
+      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
       expect(gitPath).not.toBe('');
-      const fixtureEnv = {
-        ...process.env,
-        GIT_CONFIG_NOSYSTEM: '1',
-        GIT_CONFIG_GLOBAL: '/dev/null',
-      };
       const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
       expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
       expect(git(['config', 'user.email', 'validation-git-test@example.invalid']).status).toBe(0);
@@ -1202,4 +1269,26 @@ describe('validation runner Git discovery failures', () => {
     expect(result.stderr).toContain('ENOENT');
     expect(result.outputAfter).toEqual(result.outputBefore);
   });
+
+  it.each(['repository', 'index-only'] as const)(
+    'preserves a dirty caller repository with inherited %s Git routing',
+    (routing) => {
+      const caller = createDirtyCallerFixture(routing);
+      try {
+        const before = caller.snapshot();
+        const result = runCli('unstaged', 'exit', caller.inheritedEnv);
+
+        expect(result.status).toBe(1);
+        expect(result.stdout).toBe('');
+        expect(result.stderr).toContain('git discovery failed at unstaged diff');
+        expect(result.stderr).toContain('exited with status 42');
+        expect(result.stderr).not.toContain('tier=');
+        expect(result.outputAfter).toEqual(result.outputBefore);
+        expect(result.trace.split('\n').filter(Boolean)).toHaveLength(2);
+        expect(caller.snapshot()).toEqual(before);
+      } finally {
+        rmSync(caller.root, { recursive: true, force: true });
+      }
+    },
+  );
 });
