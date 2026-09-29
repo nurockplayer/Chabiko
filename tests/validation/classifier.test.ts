@@ -54,6 +54,15 @@ function createDirtyCallerFixture(routing: 'repository' | 'index-only') {
     inheritedEnv.GIT_OBJECT_DIRECTORY = join(repo, '.git', 'objects');
     inheritedEnv.GIT_ALTERNATE_OBJECT_DIRECTORIES = join(repo, '.git', 'objects');
     inheritedEnv.GIT_INDEX_FILE = join(repo, '.git', 'index');
+    const globalConfigPath = join(root, 'caller-global.gitconfig');
+    const systemConfigPath = join(root, 'caller-system.gitconfig');
+    inheritedEnv.GIT_CONFIG_GLOBAL = globalConfigPath;
+    inheritedEnv.GIT_CONFIG_SYSTEM = systemConfigPath;
+    inheritedEnv.GIT_CONFIG_COUNT = '1';
+    inheritedEnv.GIT_CONFIG_KEY_0 = 'user.name';
+    inheritedEnv.GIT_CONFIG_VALUE_0 = 'Injected Caller Identity';
+    writeFileSync(globalConfigPath, '[user]\n\tname = Global Caller Identity\n');
+    writeFileSync(systemConfigPath, '[user]\n\temail = system-caller@example.invalid\n');
   } else {
     inheritedEnv.GIT_INDEX_FILE = join(repo, '.git', 'index');
   }
@@ -62,6 +71,13 @@ function createDirtyCallerFixture(routing: 'repository' | 'index-only') {
     head: git(['rev-parse', 'HEAD']).stdout.trim(),
     index: readFileSync(join(repo, '.git', 'index')),
     config: readFileSync(join(repo, '.git', 'config')),
+    globalConfig: existsSync(join(root, 'caller-global.gitconfig'))
+      ? readFileSync(join(root, 'caller-global.gitconfig'))
+      : null,
+    systemConfig: existsSync(join(root, 'caller-system.gitconfig'))
+      ? readFileSync(join(root, 'caller-system.gitconfig'))
+      : null,
+    stagedListing: git(['diff', '--cached', '--name-only']).stdout.trimEnd(),
     base: readFileSync(join(repo, 'base.md')),
     staged: readFileSync(join(repo, 'caller-staged.bin')),
     dirty: readFileSync(join(repo, 'caller-dirty.txt')),
@@ -491,20 +507,24 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
   const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
   const tempRepos: string[] = [];
 
-  function git(cwd: string, args: string[]): {
+  function git(cwd: string, args: string[], inheritedEnv: NodeJS.ProcessEnv = process.env): {
     status: number | null;
     stdout: string;
     stderr: string;
   } {
-    return spawnSync('git', args, { cwd, encoding: 'utf8' });
+    return spawnSync('git', args, {
+      cwd,
+      env: isolatedFixtureEnvironment(inheritedEnv),
+      encoding: 'utf8',
+    });
   }
 
-  function createTempRepo(): string {
+  function createTempRepo(inheritedEnv: NodeJS.ProcessEnv = process.env): string {
     const dir = mkdtempSync(join(tmpdir(), 'chabiko-classifier-'));
     tempRepos.push(dir);
-    expect(git(dir, ['init', '-b', 'main']).status).toBe(0);
-    expect(git(dir, ['config', 'user.email', 'classifier-test@example.com']).status).toBe(0);
-    expect(git(dir, ['config', 'user.name', 'Classifier Test']).status).toBe(0);
+    expect(git(dir, ['init', '-b', 'main'], inheritedEnv).status).toBe(0);
+    expect(git(dir, ['config', 'user.email', 'classifier-test@example.com'], inheritedEnv).status).toBe(0);
+    expect(git(dir, ['config', 'user.name', 'Classifier Test'], inheritedEnv).status).toBe(0);
     return dir;
   }
 
@@ -514,13 +534,24 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     writeFileSync(filePath, content, { flag: 'wx' });
   }
 
-  function commitFile(cwd: string, path: string, content: string, message: string): void {
+  function commitFile(
+    cwd: string,
+    path: string,
+    content: string,
+    message: string,
+    inheritedEnv: NodeJS.ProcessEnv = process.env,
+  ): void {
     writeFile(cwd, path, content);
-    expect(git(cwd, ['add', path]).status).toBe(0);
-    expect(git(cwd, ['commit', '-m', message]).status).toBe(0);
+    expect(git(cwd, ['add', path], inheritedEnv).status).toBe(0);
+    expect(git(cwd, ['commit', '-m', message], inheritedEnv).status).toBe(0);
   }
 
-  function runClassify(cwd: string, base = 'HEAD', files?: string): {
+  function runClassify(
+    cwd: string,
+    base = 'HEAD',
+    files?: string,
+    inheritedEnv: NodeJS.ProcessEnv = process.env,
+  ): {
     status: number;
     stdout: string;
     stderr: string;
@@ -533,7 +564,11 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     const result = spawnSync(
       process.execPath,
       [scriptPath, 'classify', '--base', base, ...(files ? ['--files', files] : []), '--emit-github-output'],
-      { cwd, env: { ...process.env, GITHUB_OUTPUT: outputPath }, encoding: 'utf8' },
+      {
+        cwd,
+        env: { ...isolatedFixtureEnvironment(inheritedEnv), GITHUB_OUTPUT: outputPath },
+        encoding: 'utf8',
+      },
     );
     return {
       status: result.status ?? -1,
@@ -543,7 +578,12 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     };
   }
 
-  function runAffected(cwd: string, base = 'HEAD', files?: string): {
+  function runAffected(
+    cwd: string,
+    base = 'HEAD',
+    files?: string,
+    inheritedEnv: NodeJS.ProcessEnv = process.env,
+  ): {
     status: number;
     stdout: string;
     stderr: string;
@@ -551,7 +591,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     const result = spawnSync(
       process.execPath,
       [realpathSync(join(cwd, 'scripts/validation/run.ts')), 'affected', '--base', base, ...(files ? ['--files', files] : [])],
-      { cwd, encoding: 'utf8', timeout: 120_000 },
+      { cwd, env: isolatedFixtureEnvironment(inheritedEnv), encoding: 'utf8', timeout: 120_000 },
     );
     return {
       status: result.status ?? -1,
@@ -564,18 +604,18 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
   const lowRiskDocsPath = 'docs/ordinary.md';
   const managedBatchContent = '{"vocabulary":[] }\n';
 
-  function seedManagedBatchRepo(): { repo: string; base: string } {
-    const repo = createTempRepo();
-    expect(git(repo, ['config', 'diff.renames', 'true']).status).toBe(0);
-    commitFile(repo, 'docs/base.md', '# base\n', 'base');
-    commitFile(repo, managedBatchPath, managedBatchContent, 'add managed HSK batch');
-    const base = git(repo, ['rev-parse', 'HEAD']).stdout.trim();
+  function seedManagedBatchRepo(inheritedEnv: NodeJS.ProcessEnv = process.env): { repo: string; base: string } {
+    const repo = createTempRepo(inheritedEnv);
+    expect(git(repo, ['config', 'diff.renames', 'true'], inheritedEnv).status).toBe(0);
+    commitFile(repo, 'docs/base.md', '# base\n', 'base', inheritedEnv);
+    commitFile(repo, managedBatchPath, managedBatchContent, 'add managed HSK batch', inheritedEnv);
+    const base = git(repo, ['rev-parse', 'HEAD'], inheritedEnv).stdout.trim();
     expect(base).not.toBe('');
     return { repo, base };
   }
 
-  function seedFoundationRepo(): { repo: string; base: string } {
-    const repo = createTempRepo();
+  function seedFoundationRepo(inheritedEnv: NodeJS.ProcessEnv = process.env): { repo: string; base: string } {
+    const repo = createTempRepo(inheritedEnv);
     cpSync(repositoryRoot, repo, {
       recursive: true,
       filter: (source) => {
@@ -585,9 +625,9 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       },
     });
     symlinkSync(join(repositoryRoot, 'node_modules'), join(repo, 'node_modules'), 'dir');
-    expect(git(repo, ['add', '-A']).status).toBe(0);
-    expect(git(repo, ['commit', '-m', 'seed full package for type-change probe']).status).toBe(0);
-    const base = git(repo, ['rev-parse', 'HEAD']).stdout.trim();
+    expect(git(repo, ['add', '-A'], inheritedEnv).status).toBe(0);
+    expect(git(repo, ['commit', '-m', 'seed full package for type-change probe'], inheritedEnv).status).toBe(0);
+    const base = git(repo, ['rev-parse', 'HEAD'], inheritedEnv).stdout.trim();
     expect(base).not.toBe('');
     return { repo, base };
   }
@@ -625,6 +665,46 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
   afterAll(() => {
     for (const dir of tempRepos) rmSync(dir, { recursive: true, force: true });
   });
+
+  it.each(['repository', 'index-only'] as const)(
+    'isolates fixture setup and classify/affected launches from inherited %s Git routing',
+    (routing) => {
+      const caller = createDirtyCallerFixture(routing);
+      try {
+        const callerBefore = caller.snapshot();
+        const inheritedEnvBefore = { ...caller.inheritedEnv };
+        const processEnvBefore = { ...process.env };
+        const { repo } = seedFoundationRepo(caller.inheritedEnv);
+
+        writeFile(repo, 'src/components/vocabulary/fixture-isolation-probe.astro', '<div>probe</div>\n');
+        const classification = runClassify(repo, 'HEAD', undefined, caller.inheritedEnv);
+        try {
+          expect(classification.status, classification.stderr).toBe(0);
+          expect(classification.stdout).toContain('tier=t3');
+          expect(classification.stdout).toContain('run_visual=true');
+          expect(classification.stdout).toContain('run_a11y=true');
+          expect(readFileSync(classification.outputPath, 'utf8')).toContain('run_visual=true');
+        } finally {
+          rmSync(classification.outputPath, { force: true });
+        }
+
+        const affected = runAffected(repo, 'HEAD', managedBatchPath, caller.inheritedEnv);
+        const output = `${affected.stdout}\n${affected.stderr}`;
+        const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
+        expect(affected.status, output).toBe(0);
+        expect(normalizedOutput).toContain('tests/hearmandarin-hsk-foundation.test.ts');
+        expect(normalizedOutput).toMatch(/Test Files 1 passed/);
+        expect(normalizedOutput).toMatch(/Tests [1-9]\d* passed/);
+
+        expect(caller.snapshot()).toEqual(callerBefore);
+        expect(caller.inheritedEnv).toEqual(inheritedEnvBefore);
+        expect(process.env).toEqual(processEnvBefore);
+      } finally {
+        rmSync(caller.root, { recursive: true, force: true });
+      }
+    },
+    120_000,
+  );
 
   it('a learner-visible UI add escalates to t3 and emits run_visual=true / run_a11y=true', () => {
     const repo = createTempRepo();
@@ -703,7 +783,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
         '--files',
         'docs/content/content-review-workflow.md',
       ],
-      { cwd: repositoryRoot, encoding: 'utf8' },
+      { cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
     );
     const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
     const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
@@ -759,7 +839,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       const result = spawnSync(
         process.execPath,
         [scriptPath, 'affected', '--files', path],
-        { cwd: repositoryRoot, encoding: 'utf8' },
+        { cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
       );
       const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
       const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
