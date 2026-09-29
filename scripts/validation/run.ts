@@ -235,8 +235,11 @@ function run(command: string, args: string[]): number {
  */
 function runAffectedVitest(plan: Classification): number {
   const files = new Set<string>();
+  let missingMappedGlob = false;
   for (const glob of plan.affectedTestGlobs) {
-    for (const file of globSync(glob)) files.add(file);
+    const matches = globSync(glob);
+    if (matches.length === 0) missingMappedGlob = true;
+    for (const file of matches) files.add(file);
   }
   // A deleted test path (tracked with D) can land in `affectedTests` but no
   // longer exists on disk; passing it to vitest fails with "No test files
@@ -245,7 +248,7 @@ function runAffectedVitest(plan: Classification): number {
     if (existsSync(file)) files.add(file);
   }
 
-  if (files.size === 0) {
+  if (missingMappedGlob || files.size === 0) {
     return run('pnpm', ['exec', 'vitest', 'run']);
   }
   return run('pnpm', ['exec', 'vitest', 'run', ...[...files].sort()]);
