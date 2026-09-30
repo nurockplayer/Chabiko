@@ -4,11 +4,13 @@ import { loadHskLevelEntries, loadHskVocabulary } from '../src/content/loadHskVo
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 describe('loadHskVocabulary', () => {
-  it('loads the default HSK vocabulary fixture', () => {
+  it('loads the declared source snapshot without treating draft records as learner content', () => {
     const bundle = loadHskVocabulary();
-    expect(bundle).toBeDefined();
-    expect(Array.isArray(bundle.vocabulary)).toBe(true);
-    expect(bundle.vocabulary.length).toBeGreaterThan(0);
+    expect(bundle.vocabulary).toHaveLength(70);
+    expect(bundle.vocabulary.every((entry) => entry.reviewStatus === 'draft')).toBe(true);
+    expect(bundle.learnerVocabulary).toEqual([]);
+    expect(bundle.diagnostic).toContain('humanReviewed=false');
+    expect(bundle.diagnostic).toContain('runtimeAvailable=false');
   });
 
   it('every entry has a valid hsk object', () => {

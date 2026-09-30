@@ -263,7 +263,7 @@ describe('source and route contract (Issue #281)', () => {
       ['src/components/vocabulary/BasicVocabularyCatalog.astro', '.basic-vocabulary-catalog-back a'],
       ['src/components/vocabulary/BasicVocabularyQuiz.astro', '.basic-vocabulary-quiz-back a'],
       ['src/components/vocabulary/BasicVocabularyDetail.astro', '.basic-vocabulary-detail-back a'],
-      ['src/pages/vocabulary/hsk/1/index.astro', '.back-link'],
+      ['src/pages/vocabulary/hsk/[level]/index.astro', '.back-link'],
     ] as const;
 
     for (const [path, selector] of sources) {
