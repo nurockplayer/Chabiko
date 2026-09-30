@@ -3,7 +3,16 @@ import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadHskLevelPools, loadHskVocabulary } from '../src/content/loadHskVocabulary';
+import {
+  GET as getHskAnswers,
+  getStaticPaths as getHskAnswerPaths,
+} from '../src/pages/data/hsk/[level].json';
+import {
+  loadHskLearnerProjection,
+  loadHskLevelPools,
+  loadHskPublication,
+  loadHskVocabulary,
+} from '../src/content/loadHskVocabulary';
 import { buildHskLevelPools } from '../src/domain/hskLevelPool';
 import type { HskVocabularyType } from '../src/types/vocabulary';
 
@@ -88,6 +97,45 @@ function markReviewed(batch: TestBatch): void {
   }
 }
 
+function openSnapshotForLearners(root: string): void {
+  const manifest = readManifest(root);
+  manifest.publication.sourceEligibleIsHumanReviewed = true;
+  manifest.publication.sourceEligibleIsRuntimeAvailable = true;
+  manifest.source.modificationNotice = 'Modified retained source fields; Japanese glosses are separately authored and carry per-record review status.';
+  writeManifest(root, manifest);
+  updateBatch(root, 'hsk-vocabulary-batch-001.json', markReviewed);
+}
+
+async function expectUnavailableSnapshotAcrossConsumers(root: string): Promise<void> {
+  const previousRoot = process.cwd();
+  process.chdir(root);
+  try {
+    const bundle = loadHskVocabulary();
+    expect(bundle.vocabulary).toEqual([]);
+    expect(bundle.learnerVocabulary).toEqual([]);
+    expect(bundle.diagnostic).toBeTruthy();
+
+    const { pools, sourceNotice } = loadHskPublication();
+    expect(pools).toHaveLength(4);
+    expect(pools.every((pool) => pool.status === 'unavailable' && pool.fullRange.length === 0)).toBe(true);
+    expect(sourceNotice).toBeNull();
+
+    const projection = loadHskLearnerProjection();
+    expect(projection.availability).toBe('unavailable');
+    expect(projection.eligibleIds).toEqual([]);
+
+    const paths = getHskAnswerPaths();
+    expect(paths.map((path) => path.params.level)).toEqual(['1', '2', '3', '4']);
+    for (const { params } of paths) {
+      const response = await getHskAnswers({ params } as never);
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toMatchObject({ entries: [], notice: null });
+    }
+  } finally {
+    process.chdir(previousRoot);
+  }
+}
+
 afterEach(() => {
   for (const root of tempRoots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
@@ -168,6 +216,76 @@ describe('production HSK source adapter', () => {
     writeManifest(root, manifest);
     expect(loadHskVocabularyFromRoot(root).vocabulary).toEqual([]);
     expect(loadHskVocabularyFromRoot(root).diagnostic).toContain('level accounting');
+  });
+
+  it.each([
+    ['missing Japanese answer', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      delete (batch.vocabulary[0] as Record<string, unknown>).japanese;
+    })],
+    ['non-string Japanese answer', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      (batch.vocabulary[0] as Record<string, unknown>).japanese = 123;
+    })],
+    ['whitespace-only Japanese answer', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      (batch.vocabulary[0] as Record<string, unknown>).japanese = '  \t';
+    })],
+    ['whitespace-only Simplified answer', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const manifest = readManifest(root);
+      (manifest.rows[0] as Record<string, unknown>).simplified = '  ';
+      writeManifest(root, manifest);
+      (batch.vocabulary[0] as Record<string, unknown>).simplified = '  ';
+    })],
+    ['whitespace-only pinyin answer', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const manifest = readManifest(root);
+      (manifest.rows[0] as Record<string, unknown>).pinyin = '\t';
+      writeManifest(root, manifest);
+      (batch.vocabulary[0] as Record<string, unknown>).pinyin = '\t';
+    })],
+    ['matching whitespace-only record identity', (root: string) => {
+      const manifest = readManifest(root);
+      manifest.rows[0].recordId = '  ';
+      writeManifest(root, manifest);
+      updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+        batch.vocabulary[0].id = '  ';
+      });
+    }],
+    ['matching empty record identity', (root: string) => {
+      const manifest = readManifest(root);
+      manifest.rows[0].recordId = '';
+      writeManifest(root, manifest);
+      updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+        batch.vocabulary[0].id = '';
+      });
+    }],
+    ['whitespace-only source identity', (root: string) => {
+      const manifest = readManifest(root);
+      (manifest.rows[0] as Record<string, unknown>).sourceId = ' \t ';
+      writeManifest(root, manifest);
+    }],
+    ['whitespace-only batch placement identity', (root: string) => {
+      const manifest = readManifest(root);
+      (manifest.publication.batches[0] as Record<string, unknown>).placement = '  ';
+      writeManifest(root, manifest);
+    }],
+  ])('quarantines the complete snapshot across production consumers for %s', async (_label, corrupt) => {
+    const root = createSnapshot();
+    openSnapshotForLearners(root);
+    corrupt(root);
+    await expectUnavailableSnapshotAcrossConsumers(root);
+  });
+
+  it('validates opaque record IDs without normalizing their bytes', () => {
+    const root = createSnapshot();
+    const opaqueId = ' source-specific opaque ID ';
+    const manifest = readManifest(root);
+    manifest.rows[0].recordId = opaqueId;
+    writeManifest(root, manifest);
+    updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      batch.vocabulary[0].id = opaqueId;
+    });
+
+    const bundle = loadHskVocabulary(undefined, root);
+    expect(bundle.vocabulary[0]?.id).toBe(opaqueId);
+    expect(bundle.diagnostic).toContain('humanReviewed=false');
   });
 
   it('emits declared rows in global manifest order when batch declarations are reversed', () => {

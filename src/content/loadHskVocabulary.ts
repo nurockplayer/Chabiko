@@ -96,7 +96,7 @@ interface HskManifest {
 }
 
 interface HskBatch {
-  vocabulary: HskVocabularyType[];
+  vocabulary: unknown[];
 }
 
 export interface HskRenderableEntry {
@@ -109,6 +109,10 @@ export interface HskRenderableEntry {
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function nonemptyTrimmedString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function fail(message: string): never {
@@ -168,6 +172,20 @@ function validateEntryRights(entry: HskVocabularyType, row: HskManifestRow): voi
   }
 }
 
+function validateSnapshotEntry(value: unknown): asserts value is HskVocabularyType {
+  if (!record(value) || !nonemptyTrimmedString(value.id)) {
+    fail('HSK batch contains an empty or malformed identity');
+  }
+  if (
+    !nonemptyTrimmedString(value.simplified) ||
+    !nonemptyTrimmedString(value.pinyin) ||
+    !nonemptyTrimmedString(value.japanese)
+  ) {
+    fail(`HSK batch entry '${value.id}' has an empty or malformed required answer field`);
+  }
+  if (!record(value.hsk)) fail(`HSK batch entry '${value.id}' has malformed HSK coordinates`);
+}
+
 function expectedCounts(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> {
   const counts = {} as Record<1 | 2 | 3 | 4, number>;
   for (const level of [1, 2, 3, 4] as const) {
@@ -193,7 +211,7 @@ function validateManifest(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> 
   let previousSequence = 0;
   for (const row of manifest.rows) {
     if (
-      !row || typeof row.recordId !== 'string' || typeof row.sourceId !== 'string' || sourceIds.has(row.sourceId) ||
+      !row || !nonemptyTrimmedString(row.recordId) || !nonemptyTrimmedString(row.sourceId) || sourceIds.has(row.sourceId) ||
       !Number.isSafeInteger(row.globalSequence) || row.globalSequence <= previousSequence ||
       sequences.has(row.globalSequence) || ids.has(row.recordId) ||
       !Number.isSafeInteger(row.primaryLevel) || row.primaryLevel < 1 || row.primaryLevel > 4 ||
@@ -239,7 +257,7 @@ function validateManifest(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> 
   let declaredRecords = 0;
   for (const batch of manifest.publication.batches) {
     if (
-      !batch || typeof batch.placement !== 'string' || !batch.placement || placements.has(batch.placement) ||
+      !batch || !nonemptyTrimmedString(batch.placement) || placements.has(batch.placement) ||
       typeof batch.file !== 'string' || !/^hsk-vocabulary-[a-z0-9-]+\.json$/.test(batch.file) || files.has(batch.file) ||
       !Number.isSafeInteger(batch.records) || batch.records < 1 ||
       !Number.isSafeInteger(batch.primaryLevel) || batch.primaryLevel < 1 || batch.primaryLevel > 4 ||
@@ -288,6 +306,7 @@ function loadProductionSnapshot(root: string): HskBundle {
       );
       if (declaredRows.length !== batch.vocabulary.length) fail(`HSK batch join count mismatch for '${declaration.file}'`);
       for (const [index, entry] of batch.vocabulary.entries()) {
+        validateSnapshotEntry(entry);
         const row = declaredRows[index];
         if (!row || seenBatchIds.has(entry.id)) fail('HSK batch contains a missing or duplicate row');
         if (
