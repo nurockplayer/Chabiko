@@ -18,7 +18,6 @@ export const GET: APIRoute = ({ params }) => {
       simplified: entry.simplified,
       pinyin: entry.pinyin,
       japanese: entry.japanese,
-      traditional: 'traditional' in entry ? entry.traditional : undefined,
     }));
 
   return new Response(JSON.stringify({ version: 1, entries, notice: sourceNotice }), {

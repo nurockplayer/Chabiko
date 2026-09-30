@@ -50,7 +50,6 @@ const title = `HSK ${level} 単語フラッシュカード`;
           simplified: entry.simplified,
           pinyin: entry.pinyin,
           japanese: entry.japanese,
-          traditional: 'traditional' in entry ? entry.traditional : undefined,
         }))} answerSource={`/data/hsk/${level}.json`} />
         {sourceNotice && (
           <aside class="source-notice" aria-label="単語データの出典とライセンス">

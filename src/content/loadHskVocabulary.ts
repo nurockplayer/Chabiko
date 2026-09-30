@@ -115,6 +115,10 @@ function nonemptyTrimmedString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function hasOnlyKeys(value: Record<string, unknown>, allowed: readonly string[]): boolean {
+  return Object.keys(value).every((key) => allowed.includes(key));
+}
+
 function fail(message: string): never {
   throw new Error(message);
 }
@@ -176,6 +180,12 @@ function validateSnapshotEntry(value: unknown): asserts value is HskVocabularyTy
   if (!record(value) || !nonemptyTrimmedString(value.id)) {
     fail('HSK batch contains an empty or malformed identity');
   }
+  if ('traditional' in value || 'traditionalStatus' in value) {
+    fail(`HSK batch entry '${value.id}' contains excluded Traditional fields`);
+  }
+  if (!hasOnlyKeys(value, ['id', 'pinyin', 'japanese', 'reviewStatus', 'hsk', 'simplified', 'simplifiedStatus', 'source'])) {
+    fail(`HSK batch entry '${value.id}' contains a field outside the authorized retained shape`);
+  }
   if (
     !nonemptyTrimmedString(value.simplified) ||
     !nonemptyTrimmedString(value.pinyin) ||
@@ -183,7 +193,16 @@ function validateSnapshotEntry(value: unknown): asserts value is HskVocabularyTy
   ) {
     fail(`HSK batch entry '${value.id}' has an empty or malformed required answer field`);
   }
-  if (!record(value.hsk)) fail(`HSK batch entry '${value.id}' has malformed HSK coordinates`);
+  if (
+    value.simplifiedStatus !== 'authored' && value.simplifiedStatus !== 'verified'
+  ) fail(`HSK batch entry '${value.id}' has an unsupported Simplified status`);
+  if (
+    !record(value.hsk) ||
+    !hasOnlyKeys(value.hsk, ['standardVersion', 'introducedAtLevel', 'sourceLevelLabel'])
+  ) fail(`HSK batch entry '${value.id}' has malformed HSK coordinates`);
+  if (!record(value.source) || !hasOnlyKeys(value.source, ['type', 'note'])) {
+    fail(`HSK batch entry '${value.id}' has malformed or expanded source metadata`);
+  }
 }
 
 function expectedCounts(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> {
@@ -402,10 +421,6 @@ export function loadHskPublication(root = process.cwd()): HskPublication {
   };
 }
 
-function hasTraditional(entry: HskVocabularyType): boolean {
-  return 'traditional' in entry && typeof (entry as unknown as Record<string, unknown>).traditional === 'string';
-}
-
 /** Load the admitted full-range learner pool for a requested level. */
 export function loadHskLevelEntries(level: number, filePath?: string): HskRenderableEntry[] {
   const bundle = loadHskVocabulary(filePath);
@@ -428,6 +443,6 @@ export function loadHskLevelEntries(level: number, filePath?: string): HskRender
     simplified: entry.simplified,
     pinyin: entry.pinyin,
     japanese: entry.japanese,
-    traditional: hasTraditional(entry) ? entry.traditional : undefined,
+    ...(filePath && 'traditional' in entry ? { traditional: entry.traditional } : {}),
   }));
 }

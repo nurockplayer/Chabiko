@@ -9,6 +9,7 @@ import {
 } from '../src/pages/data/hsk/[level].json';
 import {
   loadHskLearnerProjection,
+  loadHskLevelEntries,
   loadHskLevelPools,
   loadHskPublication,
   loadHskVocabulary,
@@ -153,7 +154,7 @@ describe('production HSK source adapter', () => {
     ]);
   });
 
-  it('allows only reviewed rows after both global flags open and reports partial counts', () => {
+  it('allows only reviewed rows after both global flags open and reports partial counts', async () => {
     const root = createSnapshot();
     const manifest = readManifest(root);
     manifest.publication.sourceEligibleIsHumanReviewed = true;
@@ -172,9 +173,25 @@ describe('production HSK source adapter', () => {
     expect(levelOne?.fullRange.map((entry) => entry.id)).toEqual(
       bundle.learnerVocabulary.map((entry) => entry.id),
     );
+
+    const previousRoot = process.cwd();
+    process.chdir(root);
+    try {
+      const response = await getHskAnswers({ params: { level: '1' } } as never);
+      const payload = await response.json() as {
+        entries: Array<Record<string, unknown>>;
+        notice: { attribution: string };
+      };
+      expect(response.status).toBe(200);
+      expect(payload.entries).toHaveLength(20);
+      expect(payload.entries.every((entry) => !('traditional' in entry))).toBe(true);
+      expect(payload.notice.attribution).toContain('HearMandarin');
+    } finally {
+      process.chdir(previousRoot);
+    }
   });
 
-  it('reports available pools only when the admitted snapshot meets each expected denominator', () => {
+  it('reports available pools only when the admitted snapshot meets each expected denominator', async () => {
     const root = createSnapshot();
     const manifest = readManifest(root);
     manifest.rows = manifest.rows.filter((row) => row.repositoryBatchFile === 'hsk-vocabulary-batch-001.json');
@@ -197,6 +214,27 @@ describe('production HSK source adapter', () => {
     expect(pools.map((pool) => pool.status)).toEqual(['available', 'available', 'available', 'available']);
     expect(pools.map((pool) => pool.counts.fullRange)).toEqual([20, 20, 20, 20]);
     expect(pools.map((pool) => pool.counts.newWords)).toEqual([20, 0, 0, 0]);
+
+    const previousRoot = process.cwd();
+    process.chdir(root);
+    try {
+      const projectedEntries = loadHskLevelEntries(1);
+      expect(projectedEntries).toHaveLength(20);
+      expect(projectedEntries.every((entry) => !('traditional' in entry))).toBe(true);
+      const response = await getHskAnswers({ params: { level: '1' } } as never);
+      const payload = await response.json() as {
+        entries: Array<Record<string, unknown>>;
+        notice: { attribution: string; licenseUrl: string };
+      };
+      expect(response.status).toBe(200);
+      expect(payload.entries).toHaveLength(20);
+      expect(payload.entries.every((entry) => !('traditional' in entry))).toBe(true);
+      expect(payload.entries[0]).toEqual(expect.objectContaining({ id: expect.any(String), simplified: expect.any(String), pinyin: expect.any(String), japanese: expect.any(String) }));
+      expect(payload.notice.attribution).toContain('HearMandarin');
+      expect(payload.notice.licenseUrl).toBe('https://creativecommons.org/licenses/by/4.0/');
+    } finally {
+      process.chdir(previousRoot);
+    }
   });
 
   it('fails closed if a reviewed row conflicts with a closed manifest gate', () => {
@@ -266,6 +304,22 @@ describe('production HSK source adapter', () => {
       (manifest.publication.batches[0] as Record<string, unknown>).placement = '  ';
       writeManifest(root, manifest);
     }],
+    ['generated Traditional with a value', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      entry.traditional = '未審核繁體';
+      entry.traditionalStatus = 'generated';
+    })],
+    ['unavailable Traditional status with a value', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      entry.traditional = '未審核繁體';
+      entry.traditionalStatus = 'unavailable';
+    })],
+    ['excluded publisher English gloss field', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      (batch.vocabulary[0] as unknown as Record<string, unknown>).english = 'unlicensed gloss';
+    })],
+    ['generated Simplified status', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      (batch.vocabulary[0] as unknown as Record<string, unknown>).simplifiedStatus = 'generated';
+    })],
   ])('quarantines the complete snapshot across production consumers for %s', async (_label, corrupt) => {
     const root = createSnapshot();
     openSnapshotForLearners(root);

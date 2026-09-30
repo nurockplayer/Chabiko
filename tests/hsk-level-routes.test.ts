@@ -29,6 +29,8 @@ describe('HSK level route contract', () => {
     expect(answerSource).toContain("pool.status === 'unavailable'");
     expect(answerSource).toContain('pool.fullRange.map');
     expect(answerSource).toContain('notice: sourceNotice');
+    expect(answerSource).not.toContain('traditional:');
+    expect(pageSource).not.toContain('traditional:');
 
     const notice = loadHskPublication().sourceNotice;
     expect(notice?.attribution).toContain('HearMandarin');
