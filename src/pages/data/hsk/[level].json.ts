@@ -16,8 +16,11 @@ export const GET: APIRoute = ({ params }) => {
     : pool.fullRange.map((entry) => ({
       id: entry.id,
       simplified: entry.simplified,
+      simplifiedStatus: entry.simplifiedStatus,
       pinyin: entry.pinyin,
       japanese: entry.japanese,
+      ...(typeof entry.traditional === 'string' ? { traditional: entry.traditional } : {}),
+      traditionalStatus: entry.traditionalStatus ?? 'unavailable',
     }));
 
   return new Response(JSON.stringify({ version: 1, entries, notice: sourceNotice }), {
