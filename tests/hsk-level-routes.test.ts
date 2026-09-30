@@ -23,13 +23,28 @@ describe('HSK level route contract', () => {
     expect(pageSource).toContain('answerSource={`/data/hsk/${level}.json`}');
   });
 
+  it('passes the ordered full and new-word pool IDs into page-memory session setup', () => {
+    const sessionSource = readFileSync(new URL('../src/components/FlashcardSession.astro', import.meta.url), 'utf8');
+    expect(pageSource).toContain('entries={entries.map((entry) => ({');
+    expect(pageSource).toContain('newPoolIds={pool.newWords.map((entry) => entry.id)}');
+    expect(sessionSource).toContain('ids: fullPoolIds');
+    expect(sessionSource).toContain('newPoolIds,');
+    expect(sessionSource).toContain('HSK {level} 全範囲');
+    expect(sessionSource).toContain('HSK {level} 新出単語');
+    expect(sessionSource).toContain('const hasDistinctNewPool =');
+    expect(sessionSource).toContain('disabled={newPoolIds.length === 0}');
+    expect(sessionSource).not.toContain('localStorage');
+    expect(sessionSource).not.toContain('URLSearchParams');
+  });
+
   it('serves answer-side entries from admitted pools and carries validated notices as JSON metadata', () => {
     expect(answerSource).toContain('const { pools, sourceNotice } = loadHskPublication();');
     expect(answerSource).toContain('export function getStaticPaths()');
     expect(answerSource).toContain("pool.status === 'unavailable'");
     expect(answerSource).toContain('pool.fullRange.map');
     expect(answerSource).toContain('notice: sourceNotice');
-    expect(answerSource).not.toContain('traditional:');
+    expect(answerSource).toContain('simplifiedStatus: entry.simplifiedStatus');
+    expect(answerSource).toContain('traditionalStatus: entry.traditionalStatus ?? \'unavailable\'');
     expect(pageSource).not.toContain('traditional:');
 
     const notice = loadHskPublication().sourceNotice;

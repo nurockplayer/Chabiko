@@ -5,14 +5,18 @@ import {
   mountFlashcardSession,
 } from '../src/client/flashcardSession';
 import type { SessionData } from '../src/client/flashcardSession';
+import { SCRIPT_PREFERENCE_EVENT } from '../src/client/scriptPreferenceControl';
+import { initScriptPreferenceControl } from '../src/client/scriptPreferenceControl';
+import { SCRIPT_PREFERENCE_STORAGE_KEY } from '../src/lib/scriptPreference';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const SAMPLE_ENTRIES: SessionData = {
   ids: ['hsk-001', 'hsk-002'],
+  newPoolIds: ['hsk-002'],
   entries: [
-    { id: 'hsk-001', simplified: '你好', pinyin: 'nǐ hǎo', japanese: 'こんにちは', traditional: '你好' },
-    { id: 'hsk-002', simplified: '再见', pinyin: 'zàijiàn', japanese: 'さようなら' },
+    { id: 'hsk-001', simplified: '你好', simplifiedStatus: 'verified', pinyin: 'nǐ hǎo', japanese: 'こんにちは', traditional: '妳好', traditionalStatus: 'authored' },
+    { id: 'hsk-002', simplified: '再见', simplifiedStatus: 'authored', pinyin: 'zàijiàn', japanese: 'さようなら', traditionalStatus: 'unavailable' },
   ],
 };
 
@@ -21,9 +25,16 @@ const SAMPLE_ENTRIES: SessionData = {
 function createFlashcardHTML(data: SessionData): HTMLElement {
   const root = document.createElement('div');
   root.className = 'flashcard-session-root';
-  root.setAttribute('data-session', JSON.stringify(data));
+  root.setAttribute('data-session', JSON.stringify({ ids: data.ids, newPoolIds: data.newPoolIds ?? [] }));
   root.innerHTML = `
     <div id="setup-panel" class="setup-panel">
+      <fieldset class="setup-group setup-pool-group">
+        <legend class="setup-label">単語プール</legend>
+        <div class="setup-options">
+          <label class="setup-option setup-option--active" for="pool-full"><input id="pool-full" type="radio" name="pool" value="full" data-pool="full" checked />HSK 3 全範囲</label>
+          <label class="setup-option" for="pool-new"><input id="pool-new" type="radio" name="pool" value="new" data-pool="new" />HSK 3 新出単語</label>
+        </div>
+      </fieldset>
       <div class="setup-group">
         <span class="setup-label">セッションサイズ</span>
         <div class="setup-options" role="radiogroup" aria-label="セッションサイズ">
@@ -51,10 +62,11 @@ function createFlashcardHTML(data: SessionData): HTMLElement {
       <div class="flashcard-container">
         <div class="flashcard-card" id="flashcard-card">
           <p data-front class="flashcard-front" lang="zh-Hans"></p>
+          <p data-prompt-fallback class="flashcard-script-fallback" hidden></p>
           <div data-back class="flashcard-back hidden">
             <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
             <p data-japanese class="flashcard-japanese"></p>
-            <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
+            <p data-answer-fallback class="flashcard-script-fallback" hidden></p>
             <p data-progress-hint class="flashcard-progress-hint hidden"></p>
           </div>
         </div>
@@ -97,26 +109,45 @@ function getCardElements(root: HTMLElement) {
   };
 }
 
+function changeScriptPreference(preference: 'path-default' | 'simplified' | 'traditional') {
+  document.documentElement.dataset.scriptPreference = preference;
+  document.dispatchEvent(new Event(SCRIPT_PREFERENCE_EVENT));
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('FlashcardSession DOM lifecycle', () => {
   let root: HTMLElement;
+  let cleanupSession: (() => void) | null = null;
+  let cleanupPreferenceControl: (() => void) | null = null;
+
+  function mountSession(data: SessionData = SAMPLE_ENTRIES): () => void {
+    cleanupSession = mountFlashcardSession(data);
+    return cleanupSession;
+  }
 
   beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.dataset.scriptPreference = 'path-default';
     root = createFlashcardHTML(SAMPLE_ENTRIES);
     document.body.appendChild(root);
   });
 
   afterEach(() => {
+    cleanupPreferenceControl?.();
+    cleanupPreferenceControl = null;
+    cleanupSession?.();
+    cleanupSession = null;
+    delete document.documentElement.dataset.scriptPreference;
     document.body.innerHTML = '';
   });
 
   it('mounts without error', () => {
-    expect(() => mountFlashcardSession(SAMPLE_ENTRIES)).not.toThrow();
+    expect(() => mountSession()).not.toThrow();
   });
 
   it('starts session and renders first card', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     // Click start button to begin session
@@ -133,10 +164,66 @@ describe('FlashcardSession DOM lifecycle', () => {
     // Reveal button visible, ratings hidden
     expect(el.revealBtn.classList.contains('hidden')).toBe(false);
     expect(el.ratingActions.classList.contains('hidden')).toBe(true);
+    expect((root.querySelector('[data-pool="full"]') as HTMLInputElement).disabled).toBe(true);
+    expect((root.querySelector('[data-size="20"]') as HTMLButtonElement).disabled).toBe(true);
+    expect((root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('uses the ordered new-word pool, locks setup during play, and retains it on restart', () => {
+    mountSession();
+    const el = getCardElements(root);
+    const count = root.querySelector('#setup-count') as HTMLElement;
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+
+    expect(count.textContent).toContain('利用可能な単語: 2語');
+    expect((root.querySelector('[data-pool="full"]') as HTMLInputElement).checked).toBe(true);
+    newPool.click();
+    expect(newPool.checked).toBe(true);
+    expect(count.textContent).toContain('利用可能な単語: 1語（セッション: 1語）');
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+    expect(newPool.disabled).toBe(true);
+    newPool.click();
+    expect(el.front.textContent).toBe('再见');
+
+    el.revealBtn.click();
+    el.knownBtn.click();
+    (root.querySelector('#btn-restart') as HTMLButtonElement).click();
+    expect(count.textContent).toContain('利用可能な単語: 1語（セッション: 1語）');
+    expect(newPool.checked).toBe(true);
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+  });
+
+  it('keeps an empty new-word pool non-interactive', () => {
+    const data = { ...SAMPLE_ENTRIES, newPoolIds: [] };
+    mountSession(data);
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+
+    expect(newPool.disabled).toBe(true);
+    newPool.click();
+    expect(newPool.checked).toBe(false);
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent).toContain('利用可能な単語: 2語');
+  });
+
+  it('exposes the pool as associated, focusable native radio controls', () => {
+    mountSession();
+    const fullPool = root.querySelector('#pool-full') as HTMLInputElement;
+    const newPool = root.querySelector('#pool-new') as HTMLInputElement;
+
+    expect(fullPool.type).toBe('radio');
+    expect(newPool.type).toBe('radio');
+    expect(fullPool.name).toBe(newPool.name);
+    expect(root.querySelector('label[for="pool-full"]')?.textContent).toContain('HSK 3 全範囲');
+    expect(root.querySelector('label[for="pool-new"]')?.textContent).toContain('HSK 3 新出単語');
+    newPool.focus();
+    expect(document.activeElement).toBe(newPool);
   });
 
   it('reveals answer on reveal button click', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     // Start session first
@@ -167,11 +254,121 @@ describe('FlashcardSession DOM lifecycle', () => {
     el.revealBtn.click();
     expect(el.pinyin.textContent).toBe('nǐ hǎo');
     expect(el.japanese.textContent).toBe('你好');
-    expect(root.querySelector('[data-traditional]')?.textContent).toBe('你好');
+    expect(el.japanese.textContent).toBe('你好');
+    expect(el.japanese.lang).toBe('zh-Hans');
+  });
+
+  it('updates the visible prompt script without changing focus, state, or HSK progress', () => {
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+
+    expect(el.front.textContent).toBe('你好');
+    const focused = document.activeElement;
+    const progress = el.progressEl.textContent;
+    changeScriptPreference('traditional');
+
+    expect(el.front.textContent).toBe('妳好');
+    expect(el.front.lang).toBe('zh-Hant');
+    expect(document.activeElement).toBe(focused);
+    expect(el.progressEl.textContent).toBe(progress);
+    expect(el.back.classList.contains('hidden')).toBe(true);
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+  });
+
+  it('applies the global preference event emitted by storage and pageshow refreshes', () => {
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    const select = document.createElement('select');
+    select.id = 'script-preference-select';
+    select.innerHTML = '<option value="path-default">コース標準</option><option value="traditional">繁体字</option><option value="simplified">簡体字</option>';
+    document.body.appendChild(select);
+    cleanupPreferenceControl = initScriptPreferenceControl(document.documentElement, select);
+    const focused = document.activeElement;
+
+    localStorage.setItem(SCRIPT_PREFERENCE_STORAGE_KEY, JSON.stringify({ version: 1, preference: 'traditional' }));
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: SCRIPT_PREFERENCE_STORAGE_KEY,
+      newValue: localStorage.getItem(SCRIPT_PREFERENCE_STORAGE_KEY),
+      storageArea: localStorage,
+    }));
+    expect(el.front.textContent).toBe('妳好');
+    expect(document.activeElement).toBe(focused);
+
+    localStorage.setItem(SCRIPT_PREFERENCE_STORAGE_KEY, JSON.stringify({ version: 1, preference: 'simplified' }));
+    window.dispatchEvent(new Event('pageshow'));
+    expect(el.front.textContent).toBe('你好');
+    expect(document.activeElement).toBe(focused);
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+  });
+
+  it('removes the script-preference listener when the session is disposed', () => {
+    const cleanup = mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    cleanup();
+    cleanupSession = null;
+
+    changeScriptPreference('traditional');
+
+    expect(el.front.textContent).toBe('你好');
+    expect(el.front.lang).toBe('zh-Hans');
+  });
+
+  it('keeps reverse-direction answer data absent before reveal and updates only the revealed answer', () => {
+    mountSession();
+    const el = getCardElements(root);
+    (root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement).click();
+    el.startBtn.click();
+
+    expect(el.front.textContent).toBe('こんにちは');
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.japanese.textContent).toBe('');
+    expect(root.outerHTML).not.toContain('你好');
+    expect(root.outerHTML).not.toContain('妳好');
+    expect(root.outerHTML).not.toContain('nǐ hǎo');
+    expect(root.outerHTML).not.toContain('未収録');
+
+    const focused = document.activeElement;
+    changeScriptPreference('traditional');
+    expect(root.outerHTML).not.toContain('妳好');
+    expect(document.activeElement).toBe(focused);
+
+    el.revealBtn.click();
+    expect(el.japanese.textContent).toBe('妳好');
+    expect(el.japanese.lang).toBe('zh-Hant');
+    const ratingFocus = document.activeElement;
+    const progress = el.progressEl.textContent;
+    changeScriptPreference('simplified');
+    expect(el.japanese.textContent).toBe('你好');
+    expect(el.japanese.lang).toBe('zh-Hans');
+    expect(document.activeElement).toBe(ratingFocus);
+    expect(el.progressEl.textContent).toBe(progress);
+    expect(el.ratingActions.classList.contains('hidden')).toBe(false);
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+  });
+
+  it('does not promote Traditional text when its status is missing or generated', () => {
+    const data: SessionData = {
+      ids: ['synthetic-missing', 'synthetic-generated'],
+      entries: [
+        { id: 'synthetic-missing', simplified: '简体甲', simplifiedStatus: 'verified', traditional: '繁體甲', pinyin: 'jiǎ', japanese: '甲' },
+        { id: 'synthetic-generated', simplified: '简体乙', simplifiedStatus: 'authored', traditional: '繁體乙', traditionalStatus: 'generated', pinyin: 'yǐ', japanese: '乙' },
+      ],
+    };
+    mountSession(data);
+    const el = getCardElements(root);
+    el.startBtn.click();
+    changeScriptPreference('traditional');
+
+    expect(el.front.textContent).toBe('简体甲');
+    expect(root.querySelector('[data-prompt-fallback]')?.textContent).toBe('この表記は未収録のため、コース標準を表示しています。');
+    expect(el.front.lang).toBe('zh-Hans');
   });
 
   it('completes session and shows completion view', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     // Start session first
@@ -195,7 +392,7 @@ describe('FlashcardSession DOM lifecycle', () => {
   });
 
   it('restart after completion does not crash and shows unrevealed card', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     // Start and complete session
@@ -227,7 +424,7 @@ describe('FlashcardSession DOM lifecycle', () => {
   });
 
   it('repeated restarts do not throw and preserve card state', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     const runFullCycle = () => {
@@ -253,7 +450,7 @@ describe('FlashcardSession DOM lifecycle', () => {
   });
 
   it('repeated restarts do not accumulate event listeners', () => {
-    mountFlashcardSession(SAMPLE_ENTRIES);
+    mountSession();
     const el = getCardElements(root);
 
     // Run 3 full cycles

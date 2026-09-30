@@ -2,14 +2,20 @@
 import type { HskRenderableEntry } from '../content/loadHskVocabulary';
 
 export interface Props {
+  level: 1 | 2 | 3 | 4;
   entries: HskRenderableEntry[];
+  newPoolIds: string[];
   answerSource: string;
 }
 
-const { entries, answerSource } = Astro.props;
+const { level, entries, newPoolIds, answerSource } = Astro.props;
+const fullPoolIds = entries.map((entry) => entry.id);
+const hasDistinctNewPool = fullPoolIds.length !== newPoolIds.length ||
+  fullPoolIds.some((id, index) => id !== newPoolIds[index]);
 
 const json = JSON.stringify({
-  ids: entries.map((e) => e.id),
+  ids: fullPoolIds,
+  newPoolIds,
   answerSource,
 });
 ---
@@ -21,6 +27,23 @@ const json = JSON.stringify({
     <>
       <!-- Setup panel – visible before session starts and on restart -->
       <div id="setup-panel" class="setup-panel">
+        <fieldset class="setup-group setup-pool-group">
+          <legend class="setup-label">単語プール</legend>
+          <div class="setup-options">
+            <label class="setup-option setup-option--active" for="pool-full">
+              <input id="pool-full" class="setup-pool-radio" type="radio" name="pool" value="full"
+                     data-pool="full" checked />
+              HSK {level} 全範囲
+            </label>
+            {hasDistinctNewPool && (
+              <label class="setup-option" for="pool-new">
+                <input id="pool-new" class="setup-pool-radio" type="radio" name="pool" value="new"
+                       data-pool="new" disabled={newPoolIds.length === 0} />
+                HSK {level} 新出単語
+              </label>
+            )}
+          </div>
+        </fieldset>
         <div class="setup-group">
           <span class="setup-label">セッションサイズ</span>
           <div class="setup-options" role="radiogroup" aria-label="セッションサイズ">
@@ -61,10 +84,11 @@ const json = JSON.stringify({
         <div class="flashcard-container">
           <div class="flashcard-card" id="flashcard-card">
             <p data-front class="flashcard-front" lang="zh-Hans"></p>
+            <p data-prompt-fallback class="flashcard-script-fallback" hidden></p>
             <div data-back class="flashcard-back hidden">
               <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
               <p data-japanese class="flashcard-japanese"></p>
-              <p data-traditional class="flashcard-traditional" lang="zh-Hant" style="display:none"></p>
+              <p data-answer-fallback class="flashcard-script-fallback" hidden></p>
               <p data-progress-hint class="flashcard-progress-hint hidden"></p>
             </div>
           </div>
@@ -143,6 +167,12 @@ const json = JSON.stringify({
     flex-direction: column;
     gap: var(--sp-2);
   }
+  .setup-pool-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
   .setup-label {
     font-size: 0.8rem;
     font-weight: 700;
@@ -154,6 +184,9 @@ const json = JSON.stringify({
     min-width: 0;
   }
   .setup-option {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
     flex: 1;
     min-width: 0;
     padding: var(--sp-2) var(--sp-4);
@@ -175,6 +208,10 @@ const json = JSON.stringify({
     color: var(--jade-ink);
   }
   .setup-option:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  .setup-pool-radio:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
@@ -234,8 +271,8 @@ const json = JSON.stringify({
   .flashcard-japanese {
     font-size: 1.1rem; color: var(--ink); margin: 0;
   }
-  .flashcard-traditional {
-    font-size: 0.9rem; color: var(--ink-secondary); margin: var(--sp-1) 0 0;
+  .flashcard-script-fallback {
+    font-size: 0.75rem; color: var(--ink-secondary); margin: 0;
   }
   .flashcard-progress-hint {
     font-size: 0.75rem; color: var(--jade-ink); margin: var(--sp-1) 0 0;

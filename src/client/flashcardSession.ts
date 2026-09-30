@@ -15,29 +15,61 @@ import {
   applyVocabularySessionAction,
 } from '../domain/vocabularySession';
 import type { VocabularySessionState } from '../domain/vocabularySession';
+import {
+  FALLBACK_ANNOTATION,
+  selectScript,
+  type ScriptStatus,
+} from '../domain/scriptSelection';
+import type { ScriptPreference } from '../lib/scriptPreference';
 import { VocabularyProgressStore } from '../domain/vocabularyProgress';
+import { SCRIPT_PREFERENCE_EVENT } from './scriptPreferenceControl';
+
+const sessionCleanups = new WeakMap<HTMLElement, () => void>();
 
 export interface SessionEntry {
   id: string;
   simplified: string;
+  simplifiedStatus: 'authored' | 'verified';
   pinyin: string;
   japanese: string;
   traditional?: string;
+  traditionalStatus?: ScriptStatus;
 }
 
 export interface SessionData {
   ids: string[];
   entries: SessionEntry[];
+  newPoolIds?: string[];
 }
 
 export interface RemoteSessionData {
   ids: string[];
+  newPoolIds: string[];
   answerSource: string;
 }
 
 interface AnswerPayload {
   version: 1;
   entries: SessionEntry[];
+}
+
+const SCRIPT_STATUSES: readonly ScriptStatus[] = [
+  'authored', 'verified', 'generated', 'unavailable', 'absent',
+];
+
+function isScriptStatus(value: unknown): value is ScriptStatus {
+  return SCRIPT_STATUSES.includes(value as ScriptStatus);
+}
+
+function isDirectScriptStatus(value: unknown): value is 'authored' | 'verified' {
+  return value === 'authored' || value === 'verified';
+}
+
+function currentScriptPreference(): ScriptPreference {
+  const value = document.documentElement.dataset.scriptPreference;
+  return value === 'traditional' || value === 'simplified' || value === 'path-default'
+    ? value
+    : 'path-default';
 }
 
 const LOAD_ERROR_MESSAGE =
@@ -67,9 +99,12 @@ function parseAnswerPayload(payload: unknown, expectedIds: string[]): AnswerPayl
       entry.id !== expectedIds[index] ||
       seen.has(entry.id) ||
       !isNonEmptyString(entry.simplified) ||
+      !isDirectScriptStatus(entry.simplifiedStatus) ||
       !isNonEmptyString(entry.pinyin) ||
       !isNonEmptyString(entry.japanese) ||
-      (entry.traditional !== undefined && !isNonEmptyString(entry.traditional))
+      (entry.traditional !== undefined && !isNonEmptyString(entry.traditional)) ||
+      (entry.traditionalStatus !== undefined && !isScriptStatus(entry.traditionalStatus)) ||
+      (isDirectScriptStatus(entry.traditionalStatus) && !isNonEmptyString(entry.traditional))
     ) {
       return null;
     }
@@ -78,20 +113,22 @@ function parseAnswerPayload(payload: unknown, expectedIds: string[]): AnswerPayl
     entries.push({
       id: entry.id,
       simplified: entry.simplified,
+      simplifiedStatus: entry.simplifiedStatus,
       pinyin: entry.pinyin,
       japanese: entry.japanese,
       traditional: entry.traditional as string | undefined,
+      traditionalStatus: entry.traditionalStatus as ScriptStatus | undefined,
     });
   }
 
   return { version: 1, entries };
 }
 
-export async function mountRemoteFlashcardSession(data: RemoteSessionData): Promise<void> {
+export async function mountRemoteFlashcardSession(data: RemoteSessionData): Promise<() => void> {
   const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
   const startButton = document.getElementById('btn-start') as HTMLButtonElement | null;
   const errorMessage = document.getElementById('session-load-error') as HTMLElement | null;
-  if (!root || !startButton || !errorMessage) return;
+  if (!root || !startButton || !errorMessage) return () => undefined;
 
   try {
     if (
@@ -99,6 +136,9 @@ export async function mountRemoteFlashcardSession(data: RemoteSessionData): Prom
       data.ids.length === 0 ||
       data.ids.some((id) => !isNonEmptyString(id)) ||
       new Set(data.ids).size !== data.ids.length ||
+      !Array.isArray(data.newPoolIds) ||
+      data.newPoolIds.some((id) => !isNonEmptyString(id) || !data.ids.includes(id)) ||
+      new Set(data.newPoolIds).size !== data.newPoolIds.length ||
       !isNonEmptyString(data.answerSource)
     ) {
       throw new Error('Invalid HSK session bootstrap data');
@@ -118,22 +158,26 @@ export async function mountRemoteFlashcardSession(data: RemoteSessionData): Prom
     const payload = parseAnswerPayload(await response.json(), data.ids);
     if (!payload) throw new Error('Invalid HSK answer payload');
 
-    mountFlashcardSession({ ids: data.ids, entries: payload.entries });
+    const cleanup = mountFlashcardSession({ ids: data.ids, newPoolIds: data.newPoolIds, entries: payload.entries });
     startButton.disabled = false;
     startButton.removeAttribute('aria-busy');
+    return cleanup;
   } catch {
     startButton.disabled = true;
     startButton.removeAttribute('aria-busy');
     errorMessage.textContent = LOAD_ERROR_MESSAGE;
     errorMessage.hidden = false;
+    return () => undefined;
   }
 }
 
-export function mountFlashcardSession(data: SessionData): void {
+export function mountFlashcardSession(data: SessionData): () => void {
   const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
-  if (!root) return;
+  if (!root) return () => undefined;
+  sessionCleanups.get(root)?.();
 
   const allIds = data.ids;
+  const newPoolIds = data.newPoolIds ?? [];
   const rawEntries = data.entries;
 
   const entryMap = new Map(rawEntries.map((e) => [e.id, e]));
@@ -145,6 +189,7 @@ export function mountFlashcardSession(data: SessionData): void {
   // ── Page-memory preferences (not persisted) ───────────────────────────
   let sessionSize: 10 | 20 = 10;
   let direction: 'zh-to-ja' | 'ja-to-zh' = 'zh-to-ja';
+  let pool: 'full' | 'new' = 'full';
 
   // ── Progress store ────────────────────────────────────────────────────
   let progressStore: InstanceType<typeof VocabularyProgressStore> | null = null;
@@ -162,11 +207,14 @@ export function mountFlashcardSession(data: SessionData): void {
   const setupCount = document.getElementById('setup-count') as HTMLElement;
   const completionTemplate = document.getElementById('completion-template') as HTMLTemplateElement;
 
-  if (!setupPanel || !sessionArea || !completionTemplate) return;
+  if (!setupPanel || !sessionArea || !completionTemplate) return () => undefined;
+  const listeners = new AbortController();
+  const listenerOptions: AddEventListenerOptions = { signal: listeners.signal };
 
   // ── Setup controls ────────────────────────────────────────────────────
   const sizeButtons = setupPanel.querySelectorAll('[data-size]');
   const dirButtons = setupPanel.querySelectorAll('[data-dir]');
+  const poolInputs = setupPanel.querySelectorAll<HTMLInputElement>('[data-pool]');
   const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
 
   // ── Refs rebuilt on each bindRefs ─────────────────────────────────────
@@ -175,7 +223,8 @@ export function mountFlashcardSession(data: SessionData): void {
   let backEl: HTMLElement;
   let pinyinEl: HTMLElement;
   let japaneseEl: HTMLElement;
-  let traditionalEl: HTMLElement;
+  let promptFallbackEl: HTMLElement;
+  let answerFallbackEl: HTMLElement;
   let progressHintEl: HTMLElement;
   let btnReveal: HTMLButtonElement;
   let ratingActions: HTMLElement;
@@ -191,7 +240,8 @@ export function mountFlashcardSession(data: SessionData): void {
     backEl = document.querySelector('[data-back]') as HTMLElement;
     pinyinEl = document.querySelector('[data-pinyin]') as HTMLElement;
     japaneseEl = document.querySelector('[data-japanese]') as HTMLElement;
-    traditionalEl = document.querySelector('[data-traditional]') as HTMLElement;
+    promptFallbackEl = document.querySelector('[data-prompt-fallback]') as HTMLElement;
+    answerFallbackEl = document.querySelector('[data-answer-fallback]') as HTMLElement;
     progressHintEl = document.querySelector('[data-progress-hint]') as HTMLElement;
     btnReveal = document.getElementById('btn-reveal') as HTMLButtonElement;
     ratingActions = document.getElementById('rating-actions') as HTMLElement;
@@ -207,14 +257,26 @@ export function mountFlashcardSession(data: SessionData): void {
 
   function buildSession(): VocabularySessionState {
     const store = getProgressStore();
-    const prioritized = store.prioritize(allIds);
+    const selectedIds = pool === 'new' ? newPoolIds : allIds;
+    const prioritized = store.prioritize(selectedIds);
     return createVocabularySession(prioritized, sessionSize, direction);
   }
 
   // ── Setup UI ──────────────────────────────────────────────────────────
   function updateSetupCount() {
-    const count = Math.min(sessionSize, allIds.length);
-    setupCount.textContent = `利用可能な単語: ${allIds.length}語（セッション: ${count}語）`;
+    const availableCount = (pool === 'new' ? newPoolIds : allIds).length;
+    const count = Math.min(sessionSize, availableCount);
+    setupCount.textContent = `利用可能な単語: ${availableCount}語（セッション: ${count}語）`;
+  }
+
+  function lockSetupControls(locked: boolean) {
+    setupPanel.querySelectorAll<HTMLButtonElement>('[data-size], [data-dir]')
+      .forEach((button) => {
+        button.disabled = locked;
+      });
+    poolInputs.forEach((input) => {
+      input.disabled = locked || (input.value === 'new' && newPoolIds.length === 0);
+    });
   }
 
   function selectSize(size: 10 | 20) {
@@ -238,14 +300,30 @@ export function mountFlashcardSession(data: SessionData): void {
     });
   }
 
+  function selectPool(nextPool: 'full' | 'new') {
+    if (state?.status === 'active' || (nextPool === 'new' && newPoolIds.length === 0)) {
+      poolInputs.forEach((input) => { input.checked = input.value === pool; });
+      return;
+    }
+    pool = nextPool;
+    poolInputs.forEach((input) => {
+      const isActive = input.value === nextPool;
+      input.checked = isActive;
+      input.closest('label')?.classList.toggle('setup-option--active', isActive);
+    });
+    updateSetupCount();
+  }
+
   function showSetup() {
     setupPanel.classList.remove('hidden');
     sessionArea.classList.add('hidden');
+    lockSetupControls(false);
     updateSetupCount();
   }
 
   function startSession() {
     state = buildSession();
+    lockSetupControls(true);
     // When restarting after completion, restore card visibility that was
     // hidden by renderCompleted. The card DOM still exists (we only hide
     // it, not innerHTML = ''), so bindRefs() finds all elements.
@@ -302,23 +380,67 @@ export function mountFlashcardSession(data: SessionData): void {
     if (direction === 'ja-to-zh') {
       frontEl.textContent = entry.japanese;
       frontEl.lang = 'ja';
+      promptFallbackEl.textContent = '';
+      promptFallbackEl.hidden = true;
     } else {
-      frontEl.textContent = entry.simplified;
-      frontEl.lang = 'zh-Hans';
+      renderChinese(frontEl, promptFallbackEl, entry);
     }
     pinyinEl.textContent = '';
     japaneseEl.textContent = '';
-    traditionalEl.textContent = '';
-    traditionalEl.style.display = 'none';
+    japaneseEl.removeAttribute('lang');
+    answerFallbackEl.textContent = '';
+    answerFallbackEl.hidden = true;
     showProgressHint();
   }
 
+  function renderChinese(target: HTMLElement, fallback: HTMLElement, entry: SessionEntry) {
+    const preference = currentScriptPreference();
+    const selection = selectScript(entry.simplified, entry.simplifiedStatus, preference, {
+      simplified: entry.simplified,
+      simplifiedStatus: entry.simplifiedStatus,
+      traditional: entry.traditional,
+      traditionalStatus: entry.traditionalStatus,
+    });
+    if (selection.status === 'unavailable') {
+      target.textContent = '';
+      target.removeAttribute('lang');
+      fallback.textContent = '';
+      fallback.hidden = true;
+      return;
+    }
+    const usesTraditional = preference === 'traditional' &&
+      typeof entry.traditional === 'string' &&
+      isDirectScriptStatus(entry.traditionalStatus);
+    target.textContent = selection.script;
+    target.lang = usesTraditional ? 'zh-Hant' : 'zh-Hans';
+    fallback.textContent = selection.isFallback
+      ? selection.fallbackReason ?? FALLBACK_ANNOTATION
+      : '';
+    fallback.hidden = !selection.isFallback;
+  }
+
   function renderAnswer(entry: SessionEntry) {
+    if (direction === 'ja-to-zh') {
+      renderChinese(japaneseEl, answerFallbackEl, entry);
+    } else {
+      japaneseEl.textContent = entry.japanese;
+      japaneseEl.lang = 'ja';
+      answerFallbackEl.textContent = '';
+      answerFallbackEl.hidden = true;
+    }
     pinyinEl.textContent = entry.pinyin;
-    japaneseEl.textContent = direction === 'ja-to-zh' ? entry.simplified : entry.japanese;
-    if (entry.traditional) {
-      traditionalEl.textContent = entry.traditional;
-      traditionalEl.style.display = '';
+  }
+
+  function handleScriptPreferenceChange() {
+    if (state?.status !== 'active') return;
+    const entry = getEntry(state.activeItemId);
+    if (!entry) return;
+    if (direction === 'zh-to-ja') {
+      renderChinese(frontEl, promptFallbackEl, entry);
+      return;
+    }
+    if (!backEl.classList.contains('hidden')) {
+      renderChinese(japaneseEl, answerFallbackEl, entry);
     }
   }
 
@@ -371,7 +493,7 @@ export function mountFlashcardSession(data: SessionData): void {
     if (completionRoot) {
       const restartBtn = completionRoot.querySelector('#btn-restart') as HTMLButtonElement | null;
       if (restartBtn) {
-        restartBtn.addEventListener('click', restartToSetup);
+        restartBtn.addEventListener('click', restartToSetup, listenerOptions);
       }
     }
     // Hide card elements instead of destroying them, so restart can
@@ -407,15 +529,15 @@ export function mountFlashcardSession(data: SessionData): void {
   // ── Event binding (called once at init; card elements persist across
   // restarts since renderCompleted now hides rather than destroys them) ──
   function bindEvents() {
-    btnReveal?.addEventListener('click', revealAnswer);
-    btnAgain?.addEventListener('click', () => applyRating('again'));
-    btnUnsure?.addEventListener('click', () => applyRating('unsure'));
-    btnKnown?.addEventListener('click', () => applyRating('known'));
+    btnReveal?.addEventListener('click', revealAnswer, listenerOptions);
+    btnAgain?.addEventListener('click', () => applyRating('again'), listenerOptions);
+    btnUnsure?.addEventListener('click', () => applyRating('unsure'), listenerOptions);
+    btnKnown?.addEventListener('click', () => applyRating('known'), listenerOptions);
   }
 
   // btnReset lives in sessionArea (outside container), so its listener is
   // bound once at init to avoid accumulation on repeated startSession calls.
-  document.getElementById('btn-reset-progress')?.addEventListener('click', handleReset);
+  document.getElementById('btn-reset-progress')?.addEventListener('click', handleReset, listenerOptions);
 
   // ── Global listeners ──────────────────────────────────────────────────
   window.addEventListener('pageshow', () => {
@@ -423,7 +545,7 @@ export function mountFlashcardSession(data: SessionData): void {
       progressStore.refresh();
       updateResetButton();
     }
-  });
+  }, listenerOptions);
 
   window.addEventListener('storage', (event) => {
     if (event.key === null || event.key === 'chabiko:hsk-vocabulary-progress:v1') {
@@ -432,28 +554,46 @@ export function mountFlashcardSession(data: SessionData): void {
         updateResetButton();
       }
     }
-  });
+  }, listenerOptions);
+
+  document.addEventListener(SCRIPT_PREFERENCE_EVENT, handleScriptPreferenceChange, listenerOptions);
 
   // ── Setup control bindings ────────────────────────────────────────────
   sizeButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (state?.status === 'active') return;
       const sz = Number(btn.getAttribute('data-size')) as 10 | 20;
       selectSize(sz);
-    });
+    }, listenerOptions);
   });
 
   dirButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (state?.status === 'active') return;
       const d = btn.getAttribute('data-dir') as 'zh-to-ja' | 'ja-to-zh';
       selectDirection(d);
-    });
+    }, listenerOptions);
   });
 
-  btnStart.addEventListener('click', startSession);
+  poolInputs.forEach((input) => {
+    input.addEventListener('change', () => {
+      selectPool(input.value as 'full' | 'new');
+    }, listenerOptions);
+  });
+
+  btnStart.addEventListener('click', startSession, listenerOptions);
 
   // ── Initial state ─────────────────────────────────────────────────────
   bindRefs();
   bindEvents();
+  lockSetupControls(false);
   updateResetButton();
   showSetup();
+
+  const cleanup = () => {
+    listeners.abort();
+    if (sessionCleanups.get(root) === cleanup) sessionCleanups.delete(root);
+  };
+  sessionCleanups.set(root, cleanup);
+  return cleanup;
 }
