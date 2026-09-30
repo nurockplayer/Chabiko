@@ -1,6 +1,6 @@
 # HearMandarin HSK source foundation
 
-This authoring package admits only HearMandarin source IDs, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed global sequence for the 2,000 verified coordinates. The importer creates a complete disposition manifest and exactly the complete draft placements declared by the publication index. The current real declaration contains `batch-001` (20 rows) followed by `planned-level-1-batch-002` (50 rows), both AI-provisional Japanese draft batches. These authoring files are not connected to learner runtime data, and draft rows do not become human reviewed or runtime available through import.
+This authoring package admits only HearMandarin source IDs, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed global sequence for the 2,000 verified coordinates. The importer creates a complete disposition manifest and exactly the complete draft placements declared by the publication index. The current real declaration contains `batch-001` (20 rows) followed by `planned-level-1-batch-002` (50 rows), both AI-provisional Japanese draft batches. The #265 adapter reads the declared manifest and batch files behind its strict learner-eligibility gate; current draft rows remain unavailable to learners and importing does not make them human reviewed or runtime available.
 
 ## Source and rights boundary
 
