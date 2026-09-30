@@ -23,7 +23,7 @@ const quizRouteSource = readSource('../src/pages/vocabulary/basic/quiz/index.ast
 const detailRouteSource = readSource(
   '../src/pages/vocabulary/basic/words/[learnerId]/index.astro',
 );
-const hskSource = readSource('../src/pages/vocabulary/hsk/1/index.astro');
+const hskSource = readSource('../src/pages/vocabulary/hsk/[level]/index.astro');
 const toneSource = readSource('../src/pages/practice/tones/index.astro');
 const wordOrderSource = readSource('../src/pages/practice/word-order/index.astro');
 const phrasebookSource = readSource('../src/pages/phrasebook/index.astro');

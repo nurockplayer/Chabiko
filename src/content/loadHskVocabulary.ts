@@ -23,6 +23,23 @@ export interface HskBundle {
   /** Null for a complete, internally consistent repository snapshot. */
   diagnostic: string | null;
   expectedNewWordCounts: Readonly<Record<1 | 2 | 3 | 4, number>>;
+  sourceNotice: HskSourceNotice | null;
+}
+
+export interface HskSourceNotice {
+  readonly attribution: string;
+  readonly sourceUrl: string;
+  readonly license: string;
+  readonly licenseUrl: string;
+  readonly termsUrl: string;
+  readonly provenanceUrl: string;
+  readonly disclaimerUrl: string;
+  readonly modificationNotice: string;
+}
+
+export interface HskPublication {
+  readonly pools: HskLevelPools;
+  readonly sourceNotice: HskSourceNotice | null;
 }
 
 interface HskManifestRow {
@@ -296,7 +313,17 @@ function loadProductionSnapshot(root: string): HskBundle {
     const diagnostic = learnerAllowed
       ? null
       : `Manifest learner gate is closed (humanReviewed=${manifest.publication.sourceEligibleIsHumanReviewed}, runtimeAvailable=${manifest.publication.sourceEligibleIsRuntimeAvailable})`;
-    return { vocabulary, learnerVocabulary, diagnostic, expectedNewWordCounts: counts };
+    const sourceNotice: HskSourceNotice = Object.freeze({
+      attribution: manifest.source.attribution,
+      sourceUrl: manifest.source.sourceUrl,
+      license: manifest.source.license,
+      licenseUrl: manifest.source.licenseUrl,
+      termsUrl: manifest.source.termsUrl,
+      provenanceUrl: manifest.source.provenanceUrl,
+      disclaimerUrl: manifest.source.disclaimerUrl,
+      modificationNotice: manifest.source.modificationNotice,
+    });
+    return { vocabulary, learnerVocabulary, diagnostic, expectedNewWordCounts: counts, sourceNotice };
   } catch (error) {
     const diagnostic = error instanceof Error ? error.message : 'HSK source snapshot is invalid';
     return {
@@ -304,6 +331,7 @@ function loadProductionSnapshot(root: string): HskBundle {
       learnerVocabulary: [],
       diagnostic,
       expectedNewWordCounts: Object.freeze({ 1: 0, 2: 0, 3: 0, 4: 0 }),
+      sourceNotice: null,
     };
   }
 }
@@ -318,6 +346,7 @@ function parseExplicitHskFixture(raw: string, path: string): HskBundle {
     learnerVocabulary: parsed.vocabulary as HskVocabularyType[],
     diagnostic: null,
     expectedNewWordCounts: Object.freeze({ 1: 0, 2: 0, 3: 0, 4: 0 }),
+    sourceNotice: null,
   };
 }
 
@@ -338,12 +367,20 @@ export function loadHskLearnerProjection(filePath?: string): HskLearnerProjectio
 
 /** Read-only immutable pool adapter for the four source-backed HSK levels. */
 export function loadHskLevelPools(root = process.cwd()): HskLevelPools {
+  return loadHskPublication(root).pools;
+}
+
+/** Load admitted pools and the validated source notice from one snapshot. */
+export function loadHskPublication(root = process.cwd()): HskPublication {
   const bundle = loadProductionSnapshot(root);
-  return buildHskLevelPools(
-    bundle.learnerVocabulary,
-    bundle.expectedNewWordCounts,
-    bundle.diagnostic ?? undefined,
-  );
+  return {
+    pools: buildHskLevelPools(
+      bundle.learnerVocabulary,
+      bundle.expectedNewWordCounts,
+      bundle.diagnostic ?? undefined,
+    ),
+    sourceNotice: bundle.sourceNotice,
+  };
 }
 
 function hasTraditional(entry: HskVocabularyType): boolean {
