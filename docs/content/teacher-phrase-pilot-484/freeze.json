@@ -1,0 +1,27 @@
+{
+  "contractId": "teacher-phrase-pilot-freeze-v1",
+  "sourceOnlySidecarSha256": "7861d891abe4c65ce73ddb508731a2fd25d30347570d432edd64ac7155bc8063",
+  "candidateSidecarSha256": "5c3f85144cac43a20299a356f0ec48432c21226dd144d504ccf0103c4a7600e2",
+  "files": {
+    "selection.json": "22ce906ecbef29048ab3797fd15fc3f846aa0f9a66cd812b53219622120caa18",
+    "candidates.json": "dd9dc2e7b8d69501a3f76dc1083d7c24bee4af482562f31a64f8d36e3d191421",
+    "provenance.md": "eb4cba28479ee71b014be4c3a20b53c0c4a75a786603ec37caeb5d6dbd0d302f",
+    "review-instructions.md": "058b85cd495de96827462ccb573b9b1c87e9e83df9b851b258a277fb392cedf4",
+    "human-review.json": "a39d7edb3a582fb2262fdf6380c60470b179633d4e800eb316a28a3228efbae1",
+    "reviewer-packet.md": "3305554c344a54e9c7b890ec93a463261fa71d64169150d0a76c18360386b397"
+  },
+  "reviewVersions": {
+    "teacher-learner-5762bc98cd920b67": "6247f72aae8b15efab4123ab4a76f665a8b44e5a380a32822278959ba5ba0b08",
+    "teacher-learner-19f92faeca6b3484": "39ebdc5b508aac373893f30fa25d8071b2c9824764ae2d7e850df95b11a0704d",
+    "teacher-learner-c248f4ac6f5be489": "fa572b328cc71013eb863821d1d30fbab589df55508e1da28295b545233d12cd",
+    "teacher-learner-3e6949f60abfc7f4": "2d53356ca9b663d297d9ce1724f310dca9a5604ca0e7dc83ed0433b41a934934",
+    "teacher-star-1-37e0eb213f0f": "d2521b791495866c3ab101b637c8c2e46b9d64a7060ff319f68f05b119938652",
+    "teacher-star-1-a66948a76fda": "ece60c9a9afad73307f9cf2edd45c2360b3f47ee207d12a9bf0d5e76af246d50",
+    "teacher-learner-6d2e021571bd7dea": "9f4754dfc8a69387f4027afb5cc0c15a4ca334ebe6a95597bdc9fe0374dd9c53",
+    "teacher-learner-0750c62ba42852c3": "b3a1934df6514bac93b95a52a481430e96c37af15abd2103ce6ab4580c43c486",
+    "teacher-learner-7ee1d177b4cedae7": "7f67d65a650e7a33bee9012d0f07cf8c5b7c92650bd0af88bec377f894f4faac",
+    "teacher-learner-805da746fddfb977": "e09386b9ddaedfb574feadb94b392c6be79049c6fa837da6b5cee97f33d463b7",
+    "teacher-learner-d35d9c0fdfef4f04": "512c75dcdd4f4fac322a42e2e890ef28bbdf9766db84dac5198132328f17e9d6",
+    "teacher-learner-b76c830de32b0ac7": "20baa3645216b352063db1b2bb432017725a113bc2046e14c1da50a6df8b5fef"
+  }
+}

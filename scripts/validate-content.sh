@@ -24,6 +24,10 @@ uv run --locked python scripts/build-teacher-learner-manifest.py --test
 # dirty-neighbor behavior without requiring the rights-restricted workbook in CI.
 uv run --locked python scripts/build-teacher-phrase-sidecar.py --test
 
+# The bounded #484 packet remains draft-only and must stay byte/version current.
+uv run --locked python tests/python/test_teacher_phrase_pilot.py
+uv run --locked python scripts/teacher_phrase_pilot.py --check
+
 # Teacher phrase promotion: prove the exact human gate and require the
 # repository-owned learner projection to be canonical and match the current
 # manifest/workbook base without erasing future non-empty promoted records.
