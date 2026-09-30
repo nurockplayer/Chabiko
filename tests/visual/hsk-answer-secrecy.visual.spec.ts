@@ -1,171 +1,77 @@
 import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:4321';
+const LEVELS = [1, 2, 3, 4] as const;
+const VIEWPORTS = [
+  { width: 320, height: 800 },
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+];
 
-test.describe('/vocabulary/hsk/1/ answer secrecy', () => {
-  test('keeps every flashcard lifecycle state inside narrow viewports', async ({ page }) => {
-    const viewports = [
-      { width: 320, height: 800 },
-      { width: 390, height: 844 },
-    ];
-
+test.describe('unavailable HSK levels do not expose learner answers', () => {
+  test('all four routes remain noninteractive and contained in light and dark themes', async ({
+    page,
+  }) => {
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme });
-      for (const viewport of viewports) {
+      for (const viewport of VIEWPORTS) {
         await page.setViewportSize(viewport);
-        await page.goto(`${BASE_URL}/vocabulary/hsk/1/`, { waitUntil: 'load' });
-
-        const assertContained = async (selector: string) => {
-          const boxes = await page.locator(selector).evaluateAll((elements) =>
-            elements
-              .filter((element) => getComputedStyle(element).display !== 'none')
-              .map((element) => {
-                const box = element.getBoundingClientRect();
-                return { left: box.left, right: box.right, width: box.width };
-              }),
+        for (const level of LEVELS) {
+          await page.goto(`${BASE_URL}/vocabulary/hsk/${level}/`, {
+            waitUntil: 'load',
+          });
+          await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+            `HSK ${level} 単語フラッシュカード`,
           );
-          for (const box of boxes) {
-            expect(box.left, `${selector} left`).toBeGreaterThanOrEqual(0);
-            expect(box.right, `${selector} right`).toBeLessThanOrEqual(viewport.width);
-            expect(box.width, `${selector} width`).toBeLessThanOrEqual(viewport.width);
-          }
+          await expect(page.getByRole('heading', { name: '準備中' })).toBeVisible();
+          await expect(
+            page.getByText('このレベルの単語は、公開できる状態になり次第追加します。'),
+          ).toBeVisible();
+          await expect(page.locator('.flashcard-session-root')).toHaveCount(0);
+          await expect(page.locator('#session-area')).toHaveCount(0);
+          await expect(
+            page.locator('#btn-start, #btn-reveal, #btn-again, #btn-unsure, #btn-known, #btn-restart'),
+          ).toHaveCount(0);
+
+          const html = await page.locator('body').innerHTML();
+          expect(html).not.toMatch(/hsk-(?:001|002|003|004|005)\b/);
+          expect(html).not.toContain('reviewStatus');
+          expect(html).not.toContain('nǐ hǎo');
+          expect(html).not.toContain('こんにちは');
+
+          const backLink = page.getByRole('link', { name: 'ホームに戻る' });
+          await expect(backLink).toHaveAttribute('href', '/');
+          await backLink.focus();
+          await expect(backLink).toBeFocused();
+          const box = await backLink.boundingBox();
+          expect(box).not.toBeNull();
+          expect(box!.x).toBeGreaterThanOrEqual(0);
+          expect(box!.y).toBeGreaterThanOrEqual(0);
+          expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+          expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
+
           expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
             await page.evaluate(() => document.documentElement.clientWidth),
           );
-        };
-
-        await assertContained('#setup-panel');
-        const start = page.getByRole('button', { name: 'スタート' });
-        await expect(start).toBeEnabled();
-        await start.click();
-        await assertContained('#flashcard-card, .flashcard-actions, #btn-reveal');
-
-        await page.getByRole('button', { name: '答えを見る' }).click();
-        await assertContained('#flashcard-card, #rating-actions, #btn-again, #btn-unsure, #btn-known');
-        await page.getByRole('button', { name: '覚えた' }).click();
-        await page.getByRole('button', { name: '答えを見る' }).click();
-        await page.getByRole('button', { name: '覚えた' }).click();
-        await assertContained('.flashcard-completion, #btn-restart');
-
-        await page.getByRole('button', { name: 'もう一度' }).click();
-        await assertContained('#setup-panel');
+        }
       }
     }
   });
 
-  test('answer artifact contains exactly the production-eligible HSK 1 entries', async ({
-    request,
-  }) => {
-    const response = await request.get(`${BASE_URL}/data/hsk/1.json`);
+  test('every answer artifact contains no learner rows or draft records', async ({ request }) => {
+    for (const level of LEVELS) {
+      const response = await request.get(`${BASE_URL}/data/hsk/${level}.json`);
+      expect(response.ok()).toBe(true);
+      expect(response.headers()['content-type']).toContain('application/json');
 
-    expect(response.ok()).toBe(true);
-    expect(response.headers()['content-type']).toContain('application/json');
-
-    const payload = await response.json();
-    expect(payload).toEqual({
-      version: 1,
-      entries: [
-        {
-          id: 'hsk-002',
-          simplified: '你好',
-          pinyin: 'nǐ hǎo',
-          japanese: 'こんにちは',
-          traditional: '你好',
-        },
-        {
-          id: 'hsk-005',
-          simplified: '狗',
-          pinyin: 'gǒu',
-          japanese: '犬',
-        },
-      ],
-    });
-
-    const serialized = JSON.stringify(payload);
-    expect(serialized).not.toContain('hsk-001');
-    expect(serialized).not.toContain('hsk-003');
-    expect(serialized).not.toContain('hsk-004');
-    expect(serialized).not.toContain('reviewStatus');
+      const payload = await response.json();
+      expect(payload.version).toBe(1);
+      expect(payload.entries).toEqual([]);
+      expect(payload.notice).toBeTruthy();
+      const serialized = JSON.stringify(payload);
+      expect(serialized).not.toMatch(/hsk-(?:001|002|003|004|005)\b/);
+      expect(serialized).not.toContain('reviewStatus');
+      expect(serialized).not.toContain('nǐ hǎo');
+    }
   });
-
-  test('initial HTML carries opaque eligible IDs without answer-side content', async ({
-    page,
-  }) => {
-    const response = await page.goto(`${BASE_URL}/vocabulary/hsk/1/`, {
-      waitUntil: 'load',
-    });
-    expect(response).not.toBeNull();
-
-    const html = await response!.text();
-    expect(html).toContain('hsk-002');
-    expect(html).toContain('hsk-005');
-    expect(html).not.toContain('&quot;entries&quot;');
-    expect(html).not.toContain('nǐ hǎo');
-    expect(html).not.toContain('こんにちは');
-    expect(html).not.toContain('gǒu');
-    expect(html).not.toContain('reviewStatus');
-  });
-
-  test('loads eligible answers while keeping the active answer empty until reveal', async ({
-    page,
-  }) => {
-    await page.goto(`${BASE_URL}/vocabulary/hsk/1/`, { waitUntil: 'load' });
-
-    const start = page.getByRole('button', { name: 'スタート' });
-    await expect(start).toBeEnabled();
-    await start.click();
-
-    await expect(page.locator('[data-front]')).toHaveText('你好');
-    await expect(page.locator('[data-pinyin]')).toHaveText('');
-    await expect(page.locator('[data-japanese]')).toHaveText('');
-
-    await page.getByRole('button', { name: '答えを見る' }).click();
-    await expect(page.locator('[data-pinyin]')).toHaveText('nǐ hǎo');
-    await expect(page.locator('[data-japanese]')).toHaveText('こんにちは');
-  });
-
-  for (const invalidArtifact of [
-    {
-      name: 'malformed',
-      payload: { version: 1, entries: 'not-an-array' },
-    },
-    {
-      name: 'duplicate',
-      payload: {
-        version: 1,
-        entries: [
-          { id: 'hsk-002', simplified: '你好', pinyin: 'nǐ hǎo', japanese: 'こんにちは' },
-          { id: 'hsk-002', simplified: '你好', pinyin: 'nǐ hǎo', japanese: 'こんにちは' },
-        ],
-      },
-    },
-    {
-      name: 'orphan or reordered',
-      payload: {
-        version: 1,
-        entries: [
-          { id: 'hsk-005', simplified: '狗', pinyin: 'gǒu', japanese: '犬' },
-          { id: 'hsk-999', simplified: '洩漏', pinyin: 'xièlòu', japanese: '不正なデータ' },
-        ],
-      },
-    },
-  ]) {
-    test(`fails closed for a ${invalidArtifact.name} answer artifact`, async ({ page }) => {
-      await page.route('**/data/hsk/1.json', async (route) => {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify(invalidArtifact.payload),
-        });
-      });
-
-      await page.goto(`${BASE_URL}/vocabulary/hsk/1/`, { waitUntil: 'load' });
-
-      await expect(page.getByRole('button', { name: 'スタート' })).toBeDisabled();
-      await expect(page.getByRole('status')).toHaveText(
-        '単語データを読み込めませんでした。ページを再読み込みしてください。',
-      );
-      await expect(page.locator('#session-area')).toHaveClass(/hidden/);
-      await expect(page.locator('[data-front]')).toHaveText('');
-    });
-  }
 });

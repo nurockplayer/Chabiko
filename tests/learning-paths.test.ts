@@ -88,15 +88,13 @@ describe('loadLearningPaths', () => {
     // kanji-bridge is unavailable until its route/data exist.
     expect(byId.get('kanji-bridge')?.availabilityReason).toBe('unavailable');
     expect(byId.get('kanji-bridge')?.availability).toBe('unavailable');
-    // hsk-vocabulary availability is derived from current production HSK data.
+    // The source-backed rows are currently draft and globally unadmitted, so
+    // the production learner projection must remain empty.
     expect(byId.get('hsk-vocabulary')?.availabilityReason).toBe('hsk');
-    expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
-    expect(byId.get('hsk-vocabulary')?.availabilityLabelJa).toBe('利用できます');
+    expect(byId.get('hsk-vocabulary')?.availability).toBe('unavailable');
+    expect(byId.get('hsk-vocabulary')?.availabilityLabelJa).toBe('準備中です');
     expect(byId.get('hsk-vocabulary')?.hsk?.levels).toEqual([1]);
-    expect(byId.get('hsk-vocabulary')?.members).toEqual([
-      ref('vocabulary', 'hsk-002'),
-      ref('vocabulary', 'hsk-005'),
-    ]);
+    expect(byId.get('hsk-vocabulary')?.members).toEqual([]);
   });
 
   it('fails the HSK path closed when no entry is eligible', () => {

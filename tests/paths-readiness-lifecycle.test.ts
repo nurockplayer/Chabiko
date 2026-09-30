@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 vi.mock('../src/lib/supabaseBrowserClient', () => ({
   getSupabaseBrowserClient: vi.fn(),
@@ -31,6 +33,7 @@ import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { ROLEPLAY_PROGRESS_KEY } from '../src/lib/roleplayProgress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
+import { loadHskVocabulary } from '../src/content/loadHskVocabulary';
 import learnerManifest from '../data/teacher-vocabulary-preview/learner-manifest.json';
 import readinessData from '../data/travel-quest-readiness.json';
 import type { LearnerManifest } from '../src/types/learnerManifest';
@@ -49,7 +52,28 @@ import { basicVocabularyRelevantIds } from '../src/domain/pathsProgress';
 
 const cleanups = new Set<() => void>();
 
-const document_ = loadLearningPaths();
+const testFixturePaths: string[] = [];
+
+function writeHskProgressFixture(): string {
+  const rows = structuredClone(loadHskVocabulary().vocabulary);
+  const levelOneRows = rows.filter((entry) => entry.hsk.introducedAtLevel === 1);
+  levelOneRows.slice(0, 5).forEach((entry, index) => {
+    entry.id = `hsk-00${index + 1}`;
+  });
+  for (const entry of levelOneRows.slice(0, 2)) entry.reviewStatus = 'reviewed';
+  const path = join(
+    'tests',
+    'fixtures',
+    `tmp-path-readiness-hsk-${Date.now()}-${Math.random().toString(36).slice(2)}.json`,
+  );
+  writeFileSync(path, JSON.stringify({ vocabulary: rows }), 'utf-8');
+  testFixturePaths.push(path);
+  return path;
+}
+
+// This lifecycle suite exercises progress mechanics with an isolated fixture.
+// Production unavailability is asserted separately by loader and route tests.
+const document_ = loadLearningPaths(undefined, writeHskProgressFixture());
 const readinessDocument_ = readinessData as TravelQuestReadinessDocument;
 
 /** Build the route root exactly as the /paths/ page renders it: each card plus
@@ -243,6 +267,7 @@ function target(root: HTMLElement, id: string): HTMLElement {
 }
 
 afterEach(() => {
+  for (const path of testFixturePaths.splice(0)) rmSync(path, { force: true });
   for (const cleanup of cleanups) cleanup();
   cleanups.clear();
   document.body.replaceChildren();

@@ -3,6 +3,7 @@ import {
   buildLearningContentGraph,
   loadLearningContentGraph,
 } from '../src/content/loadLearningContentGraph';
+import { loadHskVocabulary } from '../src/content/loadHskVocabulary';
 import type {
   ContentRef,
   LearningContentGraphSources,
@@ -149,12 +150,17 @@ describe('learning content graph', () => {
     ]);
     // 24 canonical lessons + the existing 4 vocabulary and 7 phrase members.
     expect(graph.getPathContent('taiwan-travel')).toHaveLength(35);
-    // The HSK path contains only the current production-eligible level-1
-    // projection; draft and unrouted records remain outside the learner path.
-    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(2);
-    expect(graph.resolve(ref('vocabulary', 'hsk-002', 'hskVocabulary'))?.record.reviewStatus).toBe(
-      'reviewed',
+    // Authoring graph retains source-backed draft records, while the learner
+    // path stays empty until the production manifest admits eligible rows.
+    const sourceHskRows = loadHskVocabulary().vocabulary;
+    const hskObjects = graph.objects.filter(
+      (object) => object.ref.collection === 'hskVocabulary',
     );
+    expect(hskObjects).toHaveLength(sourceHskRows.length);
+    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(0);
+    expect(
+      graph.resolve(ref('vocabulary', sourceHskRows[0].id, 'hskVocabulary'))?.record.reviewStatus,
+    ).toBe('draft');
     const phraseRecord = graph.resolve(ref('phrase', 'phrase-001'))
       ?.record as PhrasebookPhrase | undefined;
     expect(phraseRecord?.relatedVocabulary).toEqual(['voc-001']);
