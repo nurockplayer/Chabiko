@@ -302,8 +302,14 @@ function validateManifest(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> 
       if (row.sourceEligible !== true || row.disposition !== 'eligible' || declarations.length !== 1) {
         fail(`HSK manifest placement is invalid for '${row.recordId}'`);
       }
-    } else if (row.repositoryBatchFile != null) {
-      fail(`Undeclared HSK row '${row.recordId}' references a batch`);
+    } else {
+      const expectedPublication = row.sourceEligible ? 'planned-not-published' : 'blocked';
+      if (row.repositoryPublication !== expectedPublication) {
+        fail(`HSK manifest publication state is invalid for '${row.recordId}'`);
+      }
+      if (row.repositoryBatchFile != null) {
+        fail(`Undeclared HSK row '${row.recordId}' references a batch`);
+      }
     }
   }
   return counts;

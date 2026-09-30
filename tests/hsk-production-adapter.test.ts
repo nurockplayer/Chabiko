@@ -71,6 +71,20 @@ function readManifest(root: string): TestManifest {
   return JSON.parse(readFileSync(join(root, 'data/hsk-import/hearmandarin-hsk-2025-v1/manifest.json'), 'utf8')) as TestManifest;
 }
 
+function findUnpublishedEligibleRow(manifest: TestManifest): TestManifest['rows'][number] {
+  const row = manifest.rows.find((candidate) =>
+    candidate.sourceEligible === true && candidate.repositoryPublication === 'planned-not-published',
+  );
+  if (!row) throw new Error('No planned eligible test row is available');
+  return row;
+}
+
+function findBlockedRow(manifest: TestManifest): TestManifest['rows'][number] {
+  const row = manifest.rows.find((candidate) => candidate.sourceEligible === false);
+  if (!row) throw new Error('No blocked test row is available');
+  return row;
+}
+
 function writeManifest(root: string, manifest: TestManifest): void {
   writeFileSync(join(root, 'data/hsk-import/hearmandarin-hsk-2025-v1/manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 }
@@ -105,6 +119,24 @@ function openSnapshotForLearners(root: string): void {
   manifest.source.modificationNotice = 'Modified retained source fields; Japanese glosses are separately authored and carry per-record review status.';
   writeManifest(root, manifest);
   updateBatch(root, 'hsk-vocabulary-batch-001.json', markReviewed);
+}
+
+function reviewedNoticeTokens(root: string): string[] {
+  const manifest = readManifest(root);
+  const row = manifest.rows.find((candidate) => candidate.repositoryBatchFile === 'hsk-vocabulary-batch-001.json');
+  if (!row) throw new Error('No published test row is available');
+  return [
+    'HearMandarin',
+    'https://hearmandarin.com/datasets/',
+    'https://creativecommons.org/licenses/by/4.0/',
+    'https://hearmandarin.com/terms/',
+    'https://hearmandarin.com/data-sources/',
+    'Modified by retaining only',
+    `Source ID ${row.sourceId};`,
+    `global sequence ${row.globalSequence};`,
+    `primary level ${row.primaryLevel};`,
+    'Japanese glosses are human reviewed.',
+  ];
 }
 
 async function expectUnavailableSnapshotAcrossConsumers(root: string): Promise<void> {
@@ -166,6 +198,10 @@ describe('production HSK source adapter', () => {
     const bundle = loadHskVocabularyFromRoot(root);
     expect(bundle.vocabulary).toHaveLength(70);
     expect(bundle.learnerVocabulary).toHaveLength(20);
+    expect(bundle.learnerVocabulary[0]?.source.note).toContain('Japanese glosses are human reviewed.');
+    expect(new Set(readManifest(root).rows.map((row) => row.repositoryPublication))).toEqual(
+      new Set(['draft-published-to-repository', 'planned-not-published', 'blocked']),
+    );
     const levelOne = loadHskLevelPools(root)[0];
     expect(levelOne?.status).toBe('partial');
     expect(levelOne?.counts).toEqual({ fullRange: 20, newWords: 20, expectedFullRange: 294, expectedNewWords: 294 });
@@ -191,15 +227,39 @@ describe('production HSK source adapter', () => {
     }
   });
 
+  it('accepts the required reviewed notice tokens when they are scalar text', () => {
+    const root = createSnapshot();
+    openSnapshotForLearners(root);
+    updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      (entry.source as Record<string, unknown>).note = reviewedNoticeTokens(root).join(' ');
+    });
+
+    const bundle = loadHskVocabularyFromRoot(root);
+    expect(bundle.diagnostic).toBeNull();
+    expect(bundle.learnerVocabulary).toHaveLength(20);
+    expect(bundle.learnerVocabulary[0]?.source.note).toBe(reviewedNoticeTokens(root).join(' '));
+  });
+
   it('reports available pools only when the admitted snapshot meets each expected denominator', async () => {
     const root = createSnapshot();
     const manifest = readManifest(root);
     manifest.rows = manifest.rows.filter((row) => row.repositoryBatchFile === 'hsk-vocabulary-batch-001.json');
-    manifest.accounting.sourceCandidates = 20;
     manifest.accounting.eligible = 20;
-    manifest.accounting.blocked = 0;
+    manifest.accounting.blocked = 1;
     manifest.accounting.eligibleLevelCounts = { '1': 20, '2': 0, '3': 0, '4': 0 };
-    manifest.accounting.primaryLevelCounts = { '1': 20, '2': 0, '3': 0, '4': 0 };
+    manifest.accounting.primaryLevelCounts = { '1': 21, '2': 0, '3': 0, '4': 0 };
+    manifest.accounting.sourceCandidates = 21;
+    manifest.rows.push({
+      recordId: 'synthetic-blocked-record',
+      sourceId: 'synthetic-blocked-source',
+      globalSequence: 2001,
+      primaryLevel: 1,
+      sourceLevelLabel: '1',
+      sourceEligible: false,
+      repositoryPublication: 'blocked',
+      disposition: 'blocked',
+    });
     manifest.publication.batches = manifest.publication.batches.slice(0, 1);
     manifest.publication.repositoryPublishedBatchCount = 1;
     manifest.publication.repositoryPublishedRecordCount = 20;
@@ -210,6 +270,9 @@ describe('production HSK source adapter', () => {
     updateBatch(root, 'hsk-vocabulary-batch-001.json', markReviewed);
 
     expect(loadHskVocabulary(undefined, root).diagnostic).toBeNull();
+    expect(new Set(readManifest(root).rows.map((row) => row.repositoryPublication))).toEqual(
+      new Set(['draft-published-to-repository', 'blocked']),
+    );
     const pools = loadHskLevelPools(root);
     expect(pools.map((pool) => pool.status)).toEqual(['available', 'available', 'available', 'available']);
     expect(pools.map((pool) => pool.counts.fullRange)).toEqual([20, 20, 20, 20]);
@@ -320,22 +383,23 @@ describe('production HSK source adapter', () => {
     ['generated Simplified status', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
       (batch.vocabulary[0] as unknown as Record<string, unknown>).simplifiedStatus = 'generated';
     })],
-    ['contradictory rights fragments in an array-valued reviewed note', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+    ['otherwise valid token array in a reviewed note', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      const source = entry.source as Record<string, unknown>;
+      source.note = reviewedNoticeTokens(root);
+    })],
+    ['contradictory full review sentence in a reviewed token array', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
       const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
       const source = entry.source as Record<string, unknown>;
       source.note = [
-        'HearMandarin',
-        'https://hearmandarin.com/datasets/',
-        'https://creativecommons.org/licenses/by/4.0/',
-        'https://hearmandarin.com/terms/',
-        'https://hearmandarin.com/data-sources/',
-        'Modified by retaining only',
-        'Source ID w00001;',
-        'global sequence 1;',
-        'primary level 1;',
-        'Japanese glosses are human reviewed.',
-        'not human reviewed',
+        ...reviewedNoticeTokens(root),
+        'Japanese is independently AI-authored and provisional, not human reviewed.',
       ];
+    })],
+    ['contradictory full review sentence in a reviewed scalar note', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      const source = entry.source as Record<string, unknown>;
+      source.note = [...reviewedNoticeTokens(root), 'Japanese is independently AI-authored and provisional, not human reviewed.'].join(' ');
     })],
     ['array-valued manifest attribution', (root: string) => {
       const manifest = readManifest(root);
@@ -378,6 +442,41 @@ describe('production HSK source adapter', () => {
       updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
         (batch.vocabulary[0].hsk as unknown as Record<string, unknown>).sourceLevelLabel = ' \t ';
       });
+    }],
+    ['missing unpublished eligible publication state', (root: string) => {
+      const manifest = readManifest(root);
+      delete findUnpublishedEligibleRow(manifest).repositoryPublication;
+      writeManifest(root, manifest);
+    }],
+    ['array-valued unpublished eligible publication state', (root: string) => {
+      const manifest = readManifest(root);
+      findUnpublishedEligibleRow(manifest).repositoryPublication = ['planned-not-published'];
+      writeManifest(root, manifest);
+    }],
+    ['null unpublished eligible publication state', (root: string) => {
+      const manifest = readManifest(root);
+      findUnpublishedEligibleRow(manifest).repositoryPublication = null;
+      writeManifest(root, manifest);
+    }],
+    ['unknown unpublished eligible publication state', (root: string) => {
+      const manifest = readManifest(root);
+      findUnpublishedEligibleRow(manifest).repositoryPublication = 'published';
+      writeManifest(root, manifest);
+    }],
+    ['blank unpublished eligible publication state', (root: string) => {
+      const manifest = readManifest(root);
+      findUnpublishedEligibleRow(manifest).repositoryPublication = ' \t ';
+      writeManifest(root, manifest);
+    }],
+    ['eligible unpublished row claiming blocked state', (root: string) => {
+      const manifest = readManifest(root);
+      findUnpublishedEligibleRow(manifest).repositoryPublication = 'blocked';
+      writeManifest(root, manifest);
+    }],
+    ['blocked row claiming planned state', (root: string) => {
+      const manifest = readManifest(root);
+      findBlockedRow(manifest).repositoryPublication = 'planned-not-published';
+      writeManifest(root, manifest);
     }],
   ])('quarantines the complete snapshot across production consumers for %s', async (_label, corrupt) => {
     const root = createSnapshot();
