@@ -141,7 +141,9 @@ function validateSourceNotice(manifest: HskManifest): void {
     source.termsUrl !== TERMS_URL ||
     source.provenanceUrl !== PROVENANCE_URL ||
     source.disclaimerUrl !== PROVENANCE_URL ||
+    !nonemptyTrimmedString(source.attribution) ||
     !source.attribution.includes('HearMandarin') ||
+    !nonemptyTrimmedString(source.modificationNotice) ||
     !source.modificationNotice.includes('Japanese glosses are separately authored')
   ) {
     fail('HSK source attribution, license, terms, provenance, or modification notice is incomplete');
@@ -149,7 +151,10 @@ function validateSourceNotice(manifest: HskManifest): void {
 }
 
 function validateEntryRights(entry: HskVocabularyType, row: HskManifestRow): void {
-  const note = entry.source?.note ?? '';
+  const note: unknown = entry.source?.note;
+  if (!nonemptyTrimmedString(note)) {
+    fail(`HSK rights or provenance notice is missing or malformed for '${row.recordId}'`);
+  }
   if (
     entry.source?.type !== 'hearmandarin-hsk-json' ||
     !note.includes('HearMandarin') ||
@@ -234,9 +239,9 @@ function validateManifest(manifest: HskManifest): Record<1 | 2 | 3 | 4, number> 
       !Number.isSafeInteger(row.globalSequence) || row.globalSequence <= previousSequence ||
       sequences.has(row.globalSequence) || ids.has(row.recordId) ||
       !Number.isSafeInteger(row.primaryLevel) || row.primaryLevel < 1 || row.primaryLevel > 4 ||
-      typeof row.sourceLevelLabel !== 'string' || !row.sourceLevelLabel ||
+      !nonemptyTrimmedString(row.sourceLevelLabel) ||
       typeof row.sourceEligible !== 'boolean' || typeof row.disposition !== 'string' ||
-      row.sourceEligible && (typeof row.simplified !== 'string' || !row.simplified || typeof row.pinyin !== 'string' || !row.pinyin)
+      row.sourceEligible && (!nonemptyTrimmedString(row.simplified) || !nonemptyTrimmedString(row.pinyin))
     ) fail('HSK manifest rows have malformed or duplicate identities/coordinates');
     ids.add(row.recordId);
     sourceIds.add(row.sourceId);

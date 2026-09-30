@@ -33,7 +33,7 @@ interface TestManifest {
     eligibleLevelCounts: Record<string, number>;
     primaryLevelCounts: Record<string, number>;
   };
-  source: { modificationNotice: string };
+  source: { attribution: string; modificationNotice: string };
   publication: {
     batches: Array<{ file: string; sha256: string }>;
     repositoryPublishedBatchCount: number;
@@ -320,6 +320,65 @@ describe('production HSK source adapter', () => {
     ['generated Simplified status', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
       (batch.vocabulary[0] as unknown as Record<string, unknown>).simplifiedStatus = 'generated';
     })],
+    ['contradictory rights fragments in an array-valued reviewed note', (root: string) => updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+      const entry = batch.vocabulary[0] as unknown as Record<string, unknown>;
+      const source = entry.source as Record<string, unknown>;
+      source.note = [
+        'HearMandarin',
+        'https://hearmandarin.com/datasets/',
+        'https://creativecommons.org/licenses/by/4.0/',
+        'https://hearmandarin.com/terms/',
+        'https://hearmandarin.com/data-sources/',
+        'Modified by retaining only',
+        'Source ID w00001;',
+        'global sequence 1;',
+        'primary level 1;',
+        'Japanese glosses are human reviewed.',
+        'not human reviewed',
+      ];
+    })],
+    ['array-valued manifest attribution', (root: string) => {
+      const manifest = readManifest(root);
+      (manifest.source as unknown as Record<string, unknown>).attribution = ['HearMandarin'];
+      writeManifest(root, manifest);
+    }],
+    ['array-valued manifest modification notice', (root: string) => {
+      const manifest = readManifest(root);
+      (manifest.source as unknown as Record<string, unknown>).modificationNotice = [
+        'Japanese glosses are separately authored',
+      ];
+      writeManifest(root, manifest);
+    }],
+    ['unpublished eligible row with whitespace Simplified coordinate', (root: string) => {
+      const manifest = readManifest(root);
+      const row = manifest.rows.find((candidate) =>
+        candidate.repositoryPublication !== 'draft-published-to-repository' && candidate.sourceEligible === true,
+      );
+      if (!row) throw new Error('No unpublished eligible test row is available');
+      row.simplified = ' \t ';
+      writeManifest(root, manifest);
+    }],
+    ['unpublished eligible row with whitespace pinyin coordinate', (root: string) => {
+      const manifest = readManifest(root);
+      const row = manifest.rows.find((candidate) =>
+        candidate.repositoryPublication !== 'draft-published-to-repository' && candidate.sourceEligible === true,
+      );
+      if (!row) throw new Error('No unpublished eligible test row is available');
+      row.pinyin = ' \t ';
+      writeManifest(root, manifest);
+    }],
+    ['matching whitespace manifest and batch source-level label', (root: string) => {
+      const manifest = readManifest(root);
+      const row = manifest.rows.find((candidate) =>
+        candidate.repositoryBatchFile === 'hsk-vocabulary-batch-001.json',
+      );
+      if (!row) throw new Error('No declared test batch row is available');
+      row.sourceLevelLabel = ' \t ';
+      writeManifest(root, manifest);
+      updateBatch(root, 'hsk-vocabulary-batch-001.json', (batch) => {
+        (batch.vocabulary[0].hsk as unknown as Record<string, unknown>).sourceLevelLabel = ' \t ';
+      });
+    }],
   ])('quarantines the complete snapshot across production consumers for %s', async (_label, corrupt) => {
     const root = createSnapshot();
     openSnapshotForLearners(root);
