@@ -20,16 +20,17 @@ interface SyntheticEntry {
   traditionalStatus?: 'authored' | 'verified' | 'generated' | 'unavailable' | 'absent';
 }
 
-function createRouteFixture(entry: SyntheticEntry) {
+function createRouteFixture(entryOrEntries: SyntheticEntry | SyntheticEntry[], newWordIds: string[] = []) {
   // Synthetic status/form inputs exercise transport only. The production HSK
   // loader currently excludes Traditional fields and all real HSK routes stay unavailable.
+  const entries = Array.isArray(entryOrEntries) ? entryOrEntries : [entryOrEntries];
   syntheticPublication.current = {
     pools: [{
       level: 1,
       status: 'partial',
-      fullRange: [entry],
-      newWords: [],
-      counts: { fullRange: 1, newWords: 0, expectedFullRange: 1, expectedNewWords: 1 },
+      fullRange: entries,
+      newWords: entries.filter((entry) => newWordIds.includes(entry.id)),
+      counts: { fullRange: entries.length, newWords: newWordIds.length, expectedFullRange: entries.length, expectedNewWords: Math.max(newWordIds.length, 1) },
       missingEvidence: [],
     }],
     sourceNotice: null,
@@ -42,6 +43,14 @@ function createSessionRoot(): HTMLElement {
   root.setAttribute('data-session', JSON.stringify({ ids: ['synthetic-session-entry'] }));
   root.innerHTML = `
     <div id="setup-panel">
+      <fieldset>
+        <label class="setup-option setup-option--active" for="pool-full">
+          <input id="pool-full" type="radio" name="pool" value="full" data-pool="full" checked />HSK 1 全範囲
+        </label>
+        <label class="setup-option" for="pool-new">
+          <input id="pool-new" type="radio" name="pool" value="new" data-pool="new" />HSK 1 新出単語
+        </label>
+      </fieldset>
       <p id="setup-count"></p>
       <button id="btn-start" type="button" disabled></button>
       <p id="session-load-error" role="status" hidden></p>
@@ -141,6 +150,49 @@ describe('HSK answer transport and script selection', () => {
     expect(fallbackElement.textContent).toBe(fallback
       ? 'この表記は未収録のため、コース標準を表示しています。'
       : '');
+    cleanup();
+  });
+
+  it('preserves a native new-pool selection made while the answer response is pending', async () => {
+    const entries: SyntheticEntry[] = [
+      { id: 'synthetic-full-first', simplified: '全範囲先頭', simplifiedStatus: 'authored', pinyin: 'quán', japanese: '全範囲の先頭' },
+      { id: 'synthetic-new-only', simplified: '新出単語先頭', simplifiedStatus: 'verified', pinyin: 'xīn', japanese: '新出単語の先頭' },
+    ];
+    createRouteFixture(entries, ['synthetic-new-only']);
+    const response = await getHskAnswers({ params: { level: '1' } } as never);
+    const body = await response.text();
+    const root = createSessionRoot();
+
+    let resolveResponse!: (value: Response) => void;
+    const pendingResponse = new Promise<Response>((resolve) => { resolveResponse = resolve; });
+    vi.stubGlobal('fetch', vi.fn(() => pendingResponse));
+    const pendingMount = mountRemoteFlashcardSession({
+      ids: entries.map((entry) => entry.id),
+      newPoolIds: ['synthetic-new-only'],
+      answerSource: '/data/hsk/1.json',
+    });
+
+    const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    newPool.click();
+    expect(newPool.checked).toBe(true);
+    expect(fullPool.checked).toBe(false);
+    expect((root.querySelector('#btn-start') as HTMLButtonElement).disabled).toBe(true);
+
+    resolveResponse(new Response(body, { headers: { 'Content-Type': 'application/json' } }));
+    const cleanup = await pendingMount;
+
+    expect(newPool.checked).toBe(true);
+    expect(fullPool.checked).toBe(false);
+    expect(newPool.closest('label')?.classList.contains('setup-option--active')).toBe(true);
+    expect(fullPool.closest('label')?.classList.contains('setup-option--active')).toBe(false);
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 1語（セッション: 1語）');
+    const start = root.querySelector('#btn-start') as HTMLButtonElement;
+    expect(start.disabled).toBe(false);
+    start.click();
+    expect((root.querySelector('[data-front]') as HTMLElement).textContent).toBe('新出単語先頭');
+    expect((root.querySelector('[data-progress-text]') as HTMLElement).textContent).toBe('0 / 1');
     cleanup();
   });
 

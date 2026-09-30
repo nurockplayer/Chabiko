@@ -197,6 +197,28 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect(el.front.textContent).toBe('再见');
   });
 
+  it('restores the checked pool and count on a same-root remount', () => {
+    mountSession();
+    const el = getCardElements(root);
+    const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+
+    newPool.click();
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 1語（セッション: 1語）');
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+
+    expect(newPool.checked).toBe(true);
+    expect(fullPool.checked).toBe(false);
+    expect(newPool.closest('label')?.classList.contains('setup-option--active')).toBe(true);
+    expect(fullPool.closest('label')?.classList.contains('setup-option--active')).toBe(false);
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 1語（セッション: 1語）');
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+  });
+
   it('keeps an empty new-word pool non-interactive', () => {
     const data = { ...SAMPLE_ENTRIES, newPoolIds: [] };
     mountSession(data);
@@ -205,6 +227,14 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect(newPool.disabled).toBe(true);
     newPool.click();
     expect(newPool.checked).toBe(false);
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent).toContain('利用可能な単語: 2語');
+
+    // Guard against stale or externally manipulated native state on remount.
+    newPool.checked = true;
+    cleanupSession = mountFlashcardSession(data);
+    expect(newPool.checked).toBe(false);
+    expect((root.querySelector('[data-pool="full"]') as HTMLInputElement).checked).toBe(true);
+    expect(newPool.disabled).toBe(true);
     expect((root.querySelector('#setup-count') as HTMLElement).textContent).toContain('利用可能な単語: 2語');
   });
 

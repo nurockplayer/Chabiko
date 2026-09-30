@@ -321,6 +321,16 @@ export function mountFlashcardSession(data: SessionData): () => void {
     updateSetupCount();
   }
 
+  function restorePoolSelectionFromControls() {
+    const selectedInput = Array.from(poolInputs).find((input) => input.checked);
+    pool = selectedInput?.value === 'new' && newPoolIds.length > 0 ? 'new' : 'full';
+    poolInputs.forEach((input) => {
+      const isActive = input.value === pool;
+      input.checked = isActive;
+      input.closest('label')?.classList.toggle('setup-option--active', isActive);
+    });
+  }
+
   function startSession() {
     state = buildSession();
     lockSetupControls(true);
@@ -586,6 +596,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
   // ── Initial state ─────────────────────────────────────────────────────
   bindRefs();
   bindEvents();
+  restorePoolSelectionFromControls();
   lockSetupControls(false);
   updateResetButton();
   showSetup();
