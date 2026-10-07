@@ -5,6 +5,7 @@ import {
   mountFlashcardSession,
 } from '../src/client/flashcardSession';
 import type { SessionData } from '../src/client/flashcardSession';
+import { VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import { SCRIPT_PREFERENCE_EVENT } from '../src/client/scriptPreferenceControl';
 import { initScriptPreferenceControl } from '../src/client/scriptPreferenceControl';
 import { SCRIPT_PREFERENCE_STORAGE_KEY } from '../src/lib/scriptPreference';
@@ -251,6 +252,15 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect((root.querySelector('#setup-count') as HTMLElement).textContent)
       .toContain('利用可能な単語: 21語（セッション: 20語）');
 
+    const el = getCardElements(root);
+    el.startBtn.click();
+    expect(el.progressEl.textContent).toBe('0 / 20');
+    expect(el.front.textContent).toBe('項目01');
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.japanese.textContent).toBe('');
+    el.revealBtn.click();
+    expect(el.japanese.textContent).toBe('简体甲01');
+
     cleanupSession = mountFlashcardSession(data);
 
     expect.soft(size20.getAttribute('aria-checked')).toBe('true');
@@ -261,7 +271,6 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect.soft((root.querySelector('#setup-count') as HTMLElement).textContent)
       .toContain('利用可能な単語: 21語（セッション: 20語）');
 
-    const el = getCardElements(root);
     el.startBtn.click();
     expect.soft(el.progressEl.textContent).toBe('0 / 20');
     expect.soft(el.front.textContent).toBe('項目01');
@@ -274,39 +283,50 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect.soft(el.japanese.textContent).toBe('简体甲01');
     expect.soft(el.pinyin.textContent).toBe('jiǎ01');
 
+    const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
     el.knownBtn.click();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
     expect.soft(el.front.textContent).toBe('項目02');
     expect.soft(el.progressEl.textContent).toBe('1 / 20');
     expect(root.querySelector('.flashcard-completion')).toBeNull();
   });
 
-  it('normalizes missing or invalid size and direction selections to defaults', () => {
-    const data = createSyntheticEntries(12);
-    root.remove();
-    root = createFlashcardHTML(data);
-    const size10 = root.querySelector('[data-size="10"]') as HTMLButtonElement;
-    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
-    const forward = root.querySelector('[data-dir="zh-to-ja"]') as HTMLButtonElement;
-    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
-    size10.setAttribute('aria-checked', 'false');
-    size20.setAttribute('aria-checked', 'true');
-    size20.dataset.size = '30';
-    forward.setAttribute('aria-checked', 'false');
-    reverse.setAttribute('aria-checked', 'true');
-    reverse.dataset.dir = 'ja-to-zh-invalid';
-    document.body.appendChild(root);
+  it.each(['missing', 'invalid'] as const)(
+    'normalizes %s size and direction selections to defaults',
+    (selectionState) => {
+      const data = createSyntheticEntries(12);
+      root.remove();
+      root = createFlashcardHTML(data);
+      const size10 = root.querySelector('[data-size="10"]') as HTMLButtonElement;
+      const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+      const forward = root.querySelector('[data-dir="zh-to-ja"]') as HTMLButtonElement;
+      const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+      forward.setAttribute('aria-checked', 'false');
+      reverse.setAttribute('aria-checked', 'false');
+      if (selectionState === 'missing') {
+        size10.setAttribute('aria-checked', 'false');
+        size20.setAttribute('aria-checked', 'false');
+      } else {
+        size10.setAttribute('aria-checked', 'false');
+        size20.setAttribute('aria-checked', 'true');
+        size20.dataset.size = '30';
+        reverse.setAttribute('aria-checked', 'true');
+        reverse.dataset.dir = 'ja-to-zh-invalid';
+      }
+      document.body.appendChild(root);
 
-    mountSession(data);
+      mountSession(data);
 
-    expect(size10.getAttribute('aria-checked')).toBe('true');
-    expect(size10.classList.contains('setup-option--active')).toBe(true);
-    expect(size20.getAttribute('aria-checked')).toBe('false');
-    expect(forward.getAttribute('aria-checked')).toBe('true');
-    expect(forward.classList.contains('setup-option--active')).toBe(true);
-    expect(reverse.getAttribute('aria-checked')).toBe('false');
-    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
-      .toContain('利用可能な単語: 12語（セッション: 10語）');
-  });
+      expect(size10.getAttribute('aria-checked')).toBe('true');
+      expect(size10.classList.contains('setup-option--active')).toBe(true);
+      expect(size20.getAttribute('aria-checked')).toBe('false');
+      expect(forward.getAttribute('aria-checked')).toBe('true');
+      expect(forward.classList.contains('setup-option--active')).toBe(true);
+      expect(reverse.getAttribute('aria-checked')).toBe('false');
+      expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+        .toContain('利用可能な単語: 12語（セッション: 10語）');
+    },
+  );
 
   it('retains valid size and direction through completion and restart', () => {
     mountSession();
