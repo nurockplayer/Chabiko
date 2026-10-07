@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   mountFlashcardSession,
 } from '../src/client/flashcardSession';
@@ -19,6 +19,24 @@ const SAMPLE_ENTRIES: SessionData = {
     { id: 'hsk-002', simplified: '再见', simplifiedStatus: 'authored', pinyin: 'zàijiàn', japanese: 'さようなら', traditionalStatus: 'unavailable' },
   ],
 };
+
+function createSyntheticEntries(count: number): SessionData {
+  const entries = Array.from({ length: count }, (_, index) => {
+    const number = String(index + 1).padStart(2, '0');
+    return {
+      id: `synthetic-${number}`,
+      simplified: `简体甲${number}`,
+      simplifiedStatus: 'verified' as const,
+      pinyin: `jiǎ${number}`,
+      japanese: `項目${number}`,
+    };
+  });
+  return {
+    ids: entries.map((entry) => entry.id),
+    newPoolIds: entries.slice(0, count - 1).map((entry) => entry.id),
+    entries,
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -134,6 +152,7 @@ describe('FlashcardSession DOM lifecycle', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     cleanupPreferenceControl?.();
     cleanupPreferenceControl = null;
     cleanupSession?.();
@@ -217,6 +236,139 @@ describe('FlashcardSession DOM lifecycle', () => {
       .toContain('利用可能な単語: 1語（セッション: 1語）');
     el.startBtn.click();
     expect(el.front.textContent).toBe('再见');
+  });
+
+  it('restores the selected size and direction on remount and builds that session', () => {
+    const data = createSyntheticEntries(22);
+    mountSession(data);
+    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+
+    size20.click();
+    reverse.click();
+    newPool.click();
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 21語（セッション: 20語）');
+
+    cleanupSession = mountFlashcardSession(data);
+
+    expect.soft(size20.getAttribute('aria-checked')).toBe('true');
+    expect.soft((root.querySelector('[data-size="10"]') as HTMLButtonElement).getAttribute('aria-checked')).toBe('false');
+    expect.soft(reverse.getAttribute('aria-checked')).toBe('true');
+    expect.soft((root.querySelector('[data-dir="zh-to-ja"]') as HTMLButtonElement).getAttribute('aria-checked')).toBe('false');
+    expect(newPool.checked).toBe(true);
+    expect.soft((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 21語（セッション: 20語）');
+
+    const el = getCardElements(root);
+    el.startBtn.click();
+    expect.soft(el.progressEl.textContent).toBe('0 / 20');
+    expect.soft(el.front.textContent).toBe('項目01');
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.japanese.textContent).toBe('');
+    expect.soft(root.outerHTML).not.toContain('简体甲01');
+    expect.soft(root.outerHTML).not.toContain('jiǎ01');
+
+    el.revealBtn.click();
+    expect.soft(el.japanese.textContent).toBe('简体甲01');
+    expect.soft(el.pinyin.textContent).toBe('jiǎ01');
+
+    el.knownBtn.click();
+    expect.soft(el.front.textContent).toBe('項目02');
+    expect.soft(el.progressEl.textContent).toBe('1 / 20');
+    expect(root.querySelector('.flashcard-completion')).toBeNull();
+  });
+
+  it('normalizes missing or invalid size and direction selections to defaults', () => {
+    const data = createSyntheticEntries(12);
+    root.remove();
+    root = createFlashcardHTML(data);
+    const size10 = root.querySelector('[data-size="10"]') as HTMLButtonElement;
+    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+    const forward = root.querySelector('[data-dir="zh-to-ja"]') as HTMLButtonElement;
+    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+    size10.setAttribute('aria-checked', 'false');
+    size20.setAttribute('aria-checked', 'true');
+    size20.dataset.size = '30';
+    forward.setAttribute('aria-checked', 'false');
+    reverse.setAttribute('aria-checked', 'true');
+    reverse.dataset.dir = 'ja-to-zh-invalid';
+    document.body.appendChild(root);
+
+    mountSession(data);
+
+    expect(size10.getAttribute('aria-checked')).toBe('true');
+    expect(size10.classList.contains('setup-option--active')).toBe(true);
+    expect(size20.getAttribute('aria-checked')).toBe('false');
+    expect(forward.getAttribute('aria-checked')).toBe('true');
+    expect(forward.classList.contains('setup-option--active')).toBe(true);
+    expect(reverse.getAttribute('aria-checked')).toBe('false');
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 12語（セッション: 10語）');
+  });
+
+  it('retains valid size and direction through completion and restart', () => {
+    mountSession();
+    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+    const el = getCardElements(root);
+
+    size20.click();
+    reverse.click();
+    el.startBtn.click();
+    expect(el.progressEl.textContent).toBe('0 / 2');
+    el.revealBtn.click();
+    el.knownBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(root.querySelector('.flashcard-completion')).not.toBeNull();
+
+    (root.querySelector('#btn-restart') as HTMLButtonElement).click();
+    expect(size20.getAttribute('aria-checked')).toBe('true');
+    expect(reverse.getAttribute('aria-checked')).toBe('true');
+    expect((root.querySelector('#setup-count') as HTMLElement).textContent)
+      .toContain('利用可能な単語: 2語（セッション: 2語）');
+    el.startBtn.click();
+    expect(el.progressEl.textContent).toBe('0 / 2');
+    expect(['こんにちは', 'さようなら']).toContain(el.front.textContent);
+    expect(el.japanese.textContent).toBe('');
+    expect(el.pinyin.textContent).toBe('');
+  });
+
+  it('keeps the active session and setup options when progress reset is cancelled or confirmed', () => {
+    mountSession();
+    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+    const el = getCardElements(root);
+    size20.click();
+    reverse.click();
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    expect(resetButton.hidden).toBe(false);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+    const savedProgress = localStorage.getItem('chabiko:hsk-vocabulary-progress:v1');
+    const confirm = vi.spyOn(window, 'confirm');
+
+    confirm.mockReturnValue(false);
+    resetButton.click();
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBe(savedProgress);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+    expect(el.front.textContent).toBe('さようなら');
+    expect(size20.disabled).toBe(true);
+    expect(reverse.disabled).toBe(true);
+
+    confirm.mockReturnValue(true);
+    resetButton.click();
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+    expect(resetButton.hidden).toBe(true);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+    expect(el.front.textContent).toBe('さようなら');
+    expect(size20.disabled).toBe(true);
+    expect(reverse.disabled).toBe(true);
   });
 
   it('keeps an empty new-word pool non-interactive', () => {

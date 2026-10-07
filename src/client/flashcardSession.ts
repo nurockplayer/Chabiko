@@ -331,6 +331,18 @@ export function mountFlashcardSession(data: SessionData): () => void {
     });
   }
 
+  function restoreSetupOptionsFromControls() {
+    const selectedSize = Array.from(sizeButtons)
+      .find((button) => button.getAttribute('aria-checked') === 'true');
+    selectSize(selectedSize?.getAttribute('data-size') === '20' ? 20 : 10);
+
+    const selectedDirection = Array.from(dirButtons)
+      .find((button) => button.getAttribute('aria-checked') === 'true');
+    selectDirection(selectedDirection?.getAttribute('data-dir') === 'ja-to-zh'
+      ? 'ja-to-zh'
+      : 'zh-to-ja');
+  }
+
   function startSession() {
     state = buildSession();
     lockSetupControls(true);
@@ -597,6 +609,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
   bindRefs();
   bindEvents();
   restorePoolSelectionFromControls();
+  restoreSetupOptionsFromControls();
   lockSetupControls(false);
   updateResetButton();
   showSetup();
