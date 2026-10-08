@@ -212,7 +212,7 @@ jobs:
           counts = Counter((state, viewport) for _, state, viewport, *_ in candidates)
           if len(candidates) != 40 or dict(counts) != expected:
               raise SystemExit(f"expected 40 PNGs and two per state/viewport; got {len(candidates)} and {dict(counts)}")
-          stage = results / "hsk2-synthetic-artifact"
+          stage = repo / "hsk2-synthetic-artifact"
           if stage.exists() or stage.is_symlink():
               raise SystemExit(f"staging directory already exists: {stage}")
           stage.mkdir(exist_ok=False)
@@ -252,7 +252,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hsk2-synthetic-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
-          path: test-results/hsk2-synthetic-artifact
+          path: hsk2-synthetic-artifact
           retention-days: 7
           if-no-files-found: error
           compression-level: 0
