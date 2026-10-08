@@ -97,16 +97,21 @@ async function focusVisible(page: Page, locator: Locator, name: string): Promise
   expect.soft(appearance.width, `${name} focus indicator should be at least 2px`).toBeGreaterThanOrEqual(2);
 }
 
-async function tabUntil(page: Page, locator: Locator, name: string): Promise<void> {
+async function tabUntil(
+  page: Page,
+  locator: Locator,
+  name: string,
+  key: 'Tab' | 'Shift+Tab' = 'Tab',
+): Promise<void> {
   for (let index = 0; index < 30; index += 1) {
     if (await locator.evaluate((element) => element === document.activeElement)) return;
-    await tabOnce(page);
+    await tabOnce(page, key);
   }
-  throw new Error(`Tab traversal did not reach ${name}`);
+  throw new Error(`${key} traversal did not reach ${name}`);
 }
 
-async function tabOnce(page: Page): Promise<void> {
-  await page.keyboard.press('Tab');
+async function tabOnce(page: Page, key: 'Tab' | 'Shift+Tab' = 'Tab'): Promise<void> {
+  await page.keyboard.press(key);
   const stop = await page.evaluate(() => {
     const element = document.activeElement;
     if (!(element instanceof HTMLElement)) return null;
@@ -163,16 +168,16 @@ async function tabOnce(page: Page): Promise<void> {
       shadowDeepestActiveElement: describe(deepestActiveElement),
     };
   });
-  const diagnostic = `[keyboard-step=Tab selector=document.activeElement metadata=${JSON.stringify(stop)}]`;
+  const diagnostic = `[keyboard-step=${key} selector=document.activeElement metadata=${JSON.stringify(stop)}]`;
   if (!stop) console.error(`[hsk2-tab-stop-failure] ${diagnostic}`);
-  expect.soft(stop, `${diagnostic} each Tab stop must be visible, nonzero, and visibly focused`).not.toBeNull();
+  expect.soft(stop, `${diagnostic} each ${key} stop must be visible, nonzero, and visibly focused`).not.toBeNull();
   if (stop) {
     if (!stop.visible || !stop.nonzero || !stop.focusStyle) {
       console.error(`[hsk2-tab-stop-failure] ${diagnostic}`);
     }
-    expect.soft(stop.visible, `${diagnostic} Tab stop ${stop.id} must be visible`).toBe(true);
-    expect.soft(stop.nonzero, `${diagnostic} Tab stop ${stop.id} must have a nonzero box`).toBe(true);
-    expect.soft(stop.focusStyle, `${diagnostic} Tab stop ${stop.id} must have a visible focus indicator`).toBe(true);
+    expect.soft(stop.visible, `${diagnostic} ${key} stop ${stop.id} must be visible`).toBe(true);
+    expect.soft(stop.nonzero, `${diagnostic} ${key} stop ${stop.id} must have a nonzero box`).toBe(true);
+    expect.soft(stop.focusStyle, `${diagnostic} ${key} stop ${stop.id} must have a visible focus indicator`).toBe(true);
   }
 }
 
@@ -441,7 +446,7 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   )).toEqual([{ id: newPoolIds[0], rating: 'known' }]);
 
   const reset = page.locator('#btn-reset-progress');
-  await tabUntil(page, reset, 'Reset progress button');
+  await tabUntil(page, reset, 'Reset progress button', 'Shift+Tab');
   await focusVisible(page, reset, 'Reset progress button');
   const cancelDialog = page.waitForEvent('dialog').then(async (dialog) => {
     expect(dialog.message()).toContain('進捗をリセット');
@@ -637,7 +642,7 @@ for (const theme of THEMES) {
       await recordFocusedVisibleTarget('Known rating to next card');
 
       const resetButton = page.locator('#btn-reset-progress');
-      await tabUntil(page, resetButton, 'Reset progress button');
+      await tabUntil(page, resetButton, 'Reset progress button', 'Shift+Tab');
       await focusVisible(page, resetButton, 'Reset progress button');
       const cancelDialog = page.waitForEvent('dialog').then(async (dialog) => {
         expect(dialog.message()).toContain('進捗をリセット');
