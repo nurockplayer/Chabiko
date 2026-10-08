@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../../src/layouts/BaseLayout.astro';
+import Header from '../../../src/components/Header.astro';
+import FlashcardSession from '../../../src/components/FlashcardSession.astro';
+import { entries, newPoolIds } from './data';
+---
+
+<BaseLayout title="HSK 2 active-session acceptance fixture" themeEnabled>
+  <Fragment slot="header">
+    <Header themeEnabled />
+  </Fragment>
+  <div class="flashcard-page">
+    <a class="back-link" href="/">← ホームに戻る</a>
+    <h1 class="page-title">HSK 2 単語フラッシュカード</h1>
+    <p class="page-subtitle">簡体字を見て、ピンインと日本語の意味を確認しよう。</p>
+    <FlashcardSession
+      level={2}
+      entries={entries}
+      newPoolIds={newPoolIds}
+      answerSource="/__acceptance/hsk2.json"
+    />
+  </div>
+</BaseLayout>
