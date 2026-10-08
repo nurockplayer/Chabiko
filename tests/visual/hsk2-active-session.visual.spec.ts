@@ -322,7 +322,10 @@ async function capture(page: Page, testInfo: TestInfo, state: string): Promise<v
     expect.soft(box!.y + box!.height, `${diagnostic} bottom edge must be within the capture`).toBeLessThanOrEqual(viewport!.height);
   }
 
-  const png = await page.screenshot({ fullPage: false });
+  const png = await page.screenshot({
+    path: testInfo.outputPath(`hsk2-synthetic-${state}-${viewport!.width}x${viewport!.height}.png`),
+    fullPage: false,
+  });
   expect.soft(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
   expect.soft(png.readUInt32BE(16)).toBe(viewport!.width);
   expect.soft(png.readUInt32BE(20)).toBe(viewport!.height);

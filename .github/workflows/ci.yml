@@ -160,6 +160,103 @@ jobs:
       - name: Verify production learner journey snapshots
         run: pnpm test:visual
 
+      - name: Stage synthetic HSK 2 acceptance evidence
+        env:
+          HSK2_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HSK2_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import struct
+          import subprocess
+          from collections import Counter
+          from pathlib import Path
+
+          states = ("setup", "revealed", "post-remount-setup", "post-remount-pre-reveal", "post-remount-revealed")
+          viewports = ("320x800", "375x812", "390x844", "1440x900")
+          pattern = re.compile(
+              rf"^hsk2-synthetic-({'|'.join(map(re.escape, states))})-"
+              rf"({'|'.join(map(re.escape, viewports))})\.png$"
+          )
+          repo = Path.cwd().resolve(strict=True)
+          results = repo / "test-results"
+          visual = results / "visual"
+          if results.is_symlink() or visual.is_symlink() or not visual.is_dir():
+              raise SystemExit("test-results/visual must be a real directory")
+          visual_root = visual.resolve(strict=True)
+          if not visual_root.is_relative_to(results.resolve(strict=True)):
+              raise SystemExit("visual output resolves outside test-results")
+          candidates = []
+          for path in visual.rglob("hsk2-synthetic-*.png"):
+              if path.is_symlink() or any(parent.is_symlink() for parent in path.parents if parent != visual):
+                  raise SystemExit(f"synthetic PNG path contains a symlink: {path}")
+              resolved = path.resolve(strict=True)
+              if not resolved.is_relative_to(visual_root) or not resolved.is_file():
+                  raise SystemExit(f"synthetic PNG resolves outside visual output: {path}")
+              match = pattern.fullmatch(path.name)
+              if not match:
+                  raise SystemExit(f"unexpected synthetic PNG name: {path.name}")
+              state, viewport = match.groups()
+              contents = resolved.read_bytes()
+              if len(contents) < 24 or contents[:8] != b"\x89PNG\r\n\x1a\n" or contents[12:16] != b"IHDR":
+                  raise SystemExit(f"invalid PNG signature or IHDR: {path}")
+              width, height = struct.unpack(">II", contents[16:24])
+              if (width, height) != tuple(map(int, viewport.split("x"))):
+                  raise SystemExit(f"PNG dimensions do not match its viewport name: {path}")
+              candidates.append((path, state, viewport, contents, width, height))
+
+          expected = {(state, viewport): 2 for state in states for viewport in viewports}
+          counts = Counter((state, viewport) for _, state, viewport, *_ in candidates)
+          if len(candidates) != 40 or dict(counts) != expected:
+              raise SystemExit(f"expected 40 PNGs and two per state/viewport; got {len(candidates)} and {dict(counts)}")
+          stage = results / "hsk2-synthetic-artifact"
+          if stage.exists() or stage.is_symlink():
+              raise SystemExit(f"staging directory already exists: {stage}")
+          stage.mkdir(exist_ok=False)
+          screenshots = stage / "screenshots"
+          screenshots.mkdir(exist_ok=False)
+          files = []
+          for path, state, viewport, contents, width, height in sorted(candidates, key=lambda item: item[0].as_posix()):
+              relative = path.relative_to(visual)
+              destination = screenshots / relative
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              destination.write_bytes(contents)
+              files.append({
+                  "path": (Path("screenshots") / relative).as_posix(),
+                  "sha256": hashlib.sha256(contents).hexdigest(),
+                  "width": width,
+                  "height": height,
+                  "state": state,
+              })
+
+          revision = lambda ref: subprocess.check_output(["git", "rev-parse", ref], cwd=repo, text=True).strip()
+          metadata = {
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "pull_request_head_sha": os.environ["HSK2_PULL_REQUEST_HEAD_SHA"],
+              "pull_request_base_sha": os.environ["HSK2_PULL_REQUEST_BASE_SHA"],
+              "checkout_sha": revision("HEAD"),
+              "checkout_tree": revision("HEAD^{tree}"),
+              "workflow_sha": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "count": len(files),
+              "files": files,
+          }
+          (stage / "metadata.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload synthetic HSK 2 acceptance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: hsk2-synthetic-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/hsk2-synthetic-artifact
+          retention-days: 7
+          if-no-files-found: error
+          compression-level: 0
+
   accessibility:
     name: Accessibility
     needs: classify
