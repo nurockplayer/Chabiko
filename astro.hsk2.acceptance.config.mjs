@@ -11,6 +11,7 @@ export default defineConfig({
   srcDir: './tests/fixtures/hsk2-acceptance',
   outDir: './test-results/hsk2-acceptance-dist',
   cacheDir: './node_modules/.astro-hsk2-acceptance',
+  devToolbar: { enabled: false },
   integrations: [
     ...(baseConfig.integrations ?? []),
     {
