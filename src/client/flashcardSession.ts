@@ -159,6 +159,8 @@ export async function mountRemoteFlashcardSession(data: RemoteSessionData): Prom
     if (!payload) throw new Error('Invalid HSK answer payload');
 
     const cleanup = mountFlashcardSession({ ids: data.ids, newPoolIds: data.newPoolIds, entries: payload.entries });
+    errorMessage.textContent = '';
+    errorMessage.hidden = true;
     startButton.disabled = false;
     startButton.removeAttribute('aria-busy');
     return cleanup;

@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mountRemoteFlashcardSession } from '../src/client/flashcardSession';
 import { GET as getHskAnswers } from '../src/pages/data/hsk/[level].json';
+import { VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 
 const syntheticPublication = vi.hoisted(() => ({ current: null as unknown }));
 
@@ -220,4 +221,76 @@ describe('HSK answer transport and script selection', () => {
     expect((document.querySelector('#btn-start') as HTMLButtonElement).disabled).toBe(true);
     expect(document.querySelector('#session-load-error')?.textContent).toContain('読み込めません');
   });
+
+  it.each(['invalid payload', 'request failure'] as const)(
+    'recovers the same root after an %s and mounts one usable session',
+    async (failure) => {
+      const entry: SyntheticEntry = {
+        id: 'synthetic-recovery-entry',
+        simplified: '回復成功',
+        simplifiedStatus: 'verified',
+        pinyin: 'huí fù chéng gōng',
+        japanese: '復旧成功',
+      };
+      createRouteFixture(entry);
+      const response = await getHskAnswers({ params: { level: '1' } } as never);
+      const validBody = await response.text();
+      const root = createSessionRoot();
+      const bootstrap = {
+        ids: [entry.id],
+        newPoolIds: [],
+        answerSource: '/data/hsk/1.json',
+      };
+      const fetchMock = vi.fn();
+      if (failure === 'invalid payload') {
+        fetchMock
+          .mockResolvedValueOnce(new Response(JSON.stringify({ version: 1, entries: [] }), {
+            headers: { 'Content-Type': 'application/json' },
+          }))
+          .mockResolvedValueOnce(new Response(validBody, {
+            headers: { 'Content-Type': 'application/json' },
+          }));
+      } else {
+        fetchMock
+          .mockRejectedValueOnce(new Error('network unavailable'))
+          .mockResolvedValueOnce(new Response(validBody, {
+            headers: { 'Content-Type': 'application/json' },
+          }));
+      }
+      vi.stubGlobal('fetch', fetchMock);
+
+      await mountRemoteFlashcardSession(bootstrap);
+
+      const start = root.querySelector('#btn-start') as HTMLButtonElement;
+      const error = root.querySelector('#session-load-error') as HTMLElement;
+      expect(start.disabled).toBe(true);
+      expect(start.getAttribute('aria-busy')).toBeNull();
+      expect(error.hidden).toBe(false);
+      expect(error.textContent).toContain('読み込めません');
+
+      const cleanup = await mountRemoteFlashcardSession(bootstrap);
+
+      expect(document.querySelector('.flashcard-session-root')).toBe(root);
+      expect(start.disabled).toBe(false);
+      expect(start.getAttribute('aria-busy')).toBeNull();
+      expect(error.hidden).toBe(true);
+      expect(error.textContent).toBe('');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
+      const setItemSpy = vi.spyOn(localStorage, 'setItem');
+      start.click();
+      expect((root.querySelector('[data-front]') as HTMLElement).textContent).toBe('回復成功');
+      (root.querySelector('#btn-reveal') as HTMLButtonElement).click();
+      expect((root.querySelector('[data-japanese]') as HTMLElement).textContent).toBe('復旧成功');
+      (root.querySelector('#btn-known') as HTMLButtonElement).click();
+
+      expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+      expect(root.querySelectorAll('#btn-restart')).toHaveLength(1);
+      expect(setItemSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+        .toHaveLength(1);
+      expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toContain(entry.id);
+      cleanup();
+    },
+  );
 });
