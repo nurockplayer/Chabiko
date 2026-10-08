@@ -12,7 +12,7 @@ export const entries: HskRenderableEntry[] = Array.from({ length: 22 }, (_, inde
 });
 
 export const ids = entries.map((entry) => entry.id);
-export const newPoolIds = ids.slice(0, 21);
+export const newPoolIds = ids.slice(1);
 
 export const answerEntries: SessionEntry[] = entries.map((entry): SessionEntry => ({
   ...entry,

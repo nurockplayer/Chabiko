@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { answerPayload, ids, newPoolIds } from '../fixtures/hsk2-acceptance/data';
 
 const BASE_URL = 'http://127.0.0.1:4322';
@@ -9,6 +10,23 @@ const VIEWPORTS = [
   { width: 1440, height: 900 },
 ] as const;
 const THEMES = ['light', 'dark'] as const;
+
+function readPageStyle(path: URL): string {
+  const source = readFileSync(path, 'utf8');
+  const blocks = Array.from(source.matchAll(/<style>[\s\S]*?<\/style>/g), (match) => match[0]);
+  expect(blocks).toHaveLength(1);
+  return blocks[0];
+}
+
+test('active HSK2 fixture wrapper style stays byte-identical to the production level route', () => {
+  const productionStyle = readPageStyle(
+    new URL('../../src/pages/vocabulary/hsk/[level]/index.astro', import.meta.url),
+  );
+  const fixtureStyle = readPageStyle(
+    new URL('../fixtures/hsk2-acceptance/index.astro', import.meta.url),
+  );
+  expect(fixtureStyle).toBe(productionStyle);
+});
 
 async function focusVisible(page: Page, locator: Locator, name: string): Promise<void> {
   await expect.soft(locator).toBeFocused();
@@ -137,7 +155,9 @@ async function selectPoolWithKeyboard(page: Page): Promise<void> {
 test('390px keyboard acceptance preserves active HSK 2 choices through same-root remount', async ({ page }) => {
   expect(ids).toHaveLength(22);
   expect(newPoolIds).toHaveLength(21);
-  expect(newPoolIds).toEqual(ids.slice(0, 21));
+  expect(newPoolIds).toEqual(ids.slice(1));
+  expect(newPoolIds[0]).not.toBe(ids[0]);
+  expect(newPoolIds).not.toContain(ids[0]);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem('chabiko_theme', 'light'));
   await page.route('**/__acceptance/hsk2.json', (route) => route.fulfill({
@@ -167,12 +187,12 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   await expect(page.getByRole('button', { name: '答えを見る' })).toHaveAccessibleName('答えを見る');
   await expect(page.locator('#btn-reveal')).toBeFocused();
   await checkActiveOptions(page);
-  await expect(page.locator('[data-front]')).toHaveText('日本語の意味001');
+  await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
   await assertUnrevealedAnswerAbsent(page);
   await page.keyboard.press('Enter');
   await expect(page.locator('#btn-again')).toBeFocused();
   await expect(page.getByRole('button', { name: '覚えた' })).toHaveAccessibleName('覚えた');
-  await expect(page.locator('[data-japanese]')).toHaveText('中合成語001');
+  await expect(page.locator('[data-japanese]')).toHaveText('中合成語002');
 
   await page.evaluate(async () => {
     const importer = (specifier: string) => import(specifier);
@@ -213,12 +233,12 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   await tabUntil(page, page.locator('#btn-start'), 'Start after remount');
   await page.keyboard.press('Enter');
   await checkActiveOptions(page);
-  await expect(page.locator('[data-front]')).toHaveText('日本語の意味001');
+  await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
   await expect(page.locator('[data-pinyin]')).toHaveText('');
   await expect(page.locator('[data-japanese]')).toHaveText('');
   await assertUnrevealedAnswerAbsent(page);
   await page.keyboard.press('Enter');
-  await expect(page.locator('[data-japanese]')).toHaveText('中合成語001');
+  await expect(page.locator('[data-japanese]')).toHaveText('中合成語002');
   await tabOnce(page);
   await tabOnce(page);
   await expect(page.locator('#btn-known')).toHaveAccessibleName('覚えた');
@@ -226,7 +246,7 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   await expect(page.locator('#flashcard-progress [data-progress-text]')).toHaveText('1 / 20');
   expect(await page.evaluate(() =>
     (window as Window & { __hskRateCalls?: Array<{ id: string; rating: string }> }).__hskRateCalls,
-  )).toEqual([{ id: ids[0], rating: 'known' }]);
+  )).toEqual([{ id: newPoolIds[0], rating: 'known' }]);
 
   const reset = page.locator('#btn-reset-progress');
   await tabUntil(page, reset, 'Reset progress button');
@@ -238,7 +258,7 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   await Promise.all([page.keyboard.press('Enter'), cancelDialog]);
   await expect.soft(reset).toBeFocused();
   await expect(page.locator('#flashcard-progress [data-progress-text]')).toHaveText('1 / 20');
-  await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
+  await expect(page.locator('[data-front]')).toHaveText('日本語の意味003');
   await tabUntil(page, reset, 'Reset progress button after cancel');
   const confirmDialog = page.waitForEvent('dialog').then(async (dialog) => {
     expect(dialog.message()).toContain('進捗をリセット');
@@ -247,7 +267,7 @@ test('390px keyboard acceptance preserves active HSK 2 choices through same-root
   await Promise.all([page.keyboard.press('Enter'), confirmDialog]);
   await expect(page.locator('#flashcard-progress [data-progress-text]')).toHaveText('1 / 20');
   await expect(reset).toBeHidden();
-  await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
+  await expect(page.locator('[data-front]')).toHaveText('日本語の意味003');
   await expect(page.locator('#pool-new')).toBeChecked();
   await expect(page.locator('#size-20')).toHaveAttribute('aria-checked', 'true');
   await expect(page.locator('#dir-ja-zh')).toHaveAttribute('aria-checked', 'true');
@@ -330,15 +350,15 @@ for (const theme of THEMES) {
       await recordFocusedVisibleTarget('Start to Reveal');
       await expect(page.getByRole('button', { name: '答えを見る' })).toHaveAccessibleName('答えを見る');
       await checkActiveOptions(page);
-      await expect(page.locator('[data-front]')).toHaveText('日本語の意味001');
+      await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
       await assertUnrevealedAnswerAbsent(page);
 
       await page.keyboard.press('Enter');
       await expect.soft(page.locator('#btn-again')).toBeFocused();
       await recordFocusedVisibleTarget('Reveal to Again');
       await expect(page.getByRole('button', { name: '覚えた' })).toHaveAccessibleName('覚えた');
-      await expect(page.locator('[data-pinyin]')).toHaveText('zhōng hé chéng yǔ 001');
-      await expect(page.locator('[data-japanese]')).toHaveText('中合成語001');
+      await expect(page.locator('[data-pinyin]')).toHaveText('zhōng hé chéng yǔ 002');
+      await expect(page.locator('[data-japanese]')).toHaveText('中合成語002');
       await capture(page, testInfo, 'revealed');
 
       // The production API is mounted again over the same Astro-rendered root. Wrap the
@@ -396,7 +416,7 @@ for (const theme of THEMES) {
       await expect.soft(page.locator('#btn-reveal')).toBeFocused();
       await recordFocusedVisibleTarget('Start after same-root remount');
       await checkActiveOptions(page);
-      await expect(page.locator('[data-front]')).toHaveText('日本語の意味001');
+      await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
       await expect(page.locator('[data-pinyin]')).toHaveText('');
       await expect(page.locator('[data-japanese]')).toHaveText('');
       await assertUnrevealedAnswerAbsent(page);
@@ -405,7 +425,7 @@ for (const theme of THEMES) {
       await page.keyboard.press('Enter');
       await expect.soft(page.locator('#btn-again')).toBeFocused();
       await recordFocusedVisibleTarget('Reveal after same-root remount');
-      await expect(page.locator('[data-japanese]')).toHaveText('中合成語001');
+      await expect(page.locator('[data-japanese]')).toHaveText('中合成語002');
       await capture(page, testInfo, 'post-remount-revealed');
       await tabOnce(page);
       await tabOnce(page);
@@ -416,7 +436,7 @@ for (const theme of THEMES) {
       await expect(page.locator('#btn-reset-progress')).toBeVisible();
       expect(await page.evaluate(() =>
         (window as Window & { __hskRateCalls?: Array<{id: string; rating: string}> }).__hskRateCalls,
-      )).toEqual([{ id: ids[0], rating: 'known' }]);
+      )).toEqual([{ id: newPoolIds[0], rating: 'known' }]);
       await recordFocusedVisibleTarget('Known rating to next card');
 
       const resetButton = page.locator('#btn-reset-progress');
@@ -430,7 +450,7 @@ for (const theme of THEMES) {
       await expect.soft(resetButton).toBeFocused();
       await recordFocusedVisibleTarget('canceled reset dialog');
       await expect(page.locator('#flashcard-progress [data-progress-text]')).toHaveText('1 / 20');
-      await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
+      await expect(page.locator('[data-front]')).toHaveText('日本語の意味003');
       await expect(page.locator('#pool-new')).toBeChecked();
       await expect(page.locator('#size-20')).toHaveAttribute('aria-checked', 'true');
       await expect(page.locator('#dir-ja-zh')).toHaveAttribute('aria-checked', 'true');
@@ -443,7 +463,7 @@ for (const theme of THEMES) {
       await Promise.all([page.keyboard.press('Enter'), confirmDialog]);
       await expect(page.locator('#flashcard-progress [data-progress-text]')).toHaveText('1 / 20');
       await expect(resetButton).toBeHidden();
-      await expect(page.locator('[data-front]')).toHaveText('日本語の意味002');
+      await expect(page.locator('[data-front]')).toHaveText('日本語の意味003');
       await expect(page.locator('#pool-new')).toBeChecked();
       await expect(page.locator('#size-20')).toHaveAttribute('aria-checked', 'true');
       await expect(page.locator('#dir-ja-zh')).toHaveAttribute('aria-checked', 'true');

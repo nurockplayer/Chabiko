@@ -21,3 +21,63 @@ import { entries, newPoolIds } from './data';
     />
   </div>
 </BaseLayout>
+
+<style>
+  .flashcard-page {
+    max-width: 40rem;
+    margin: 0 auto;
+    min-width: 0;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-lg);
+    color: var(--jade-ink);
+    font-weight: 600;
+    min-height: 44px;
+    align-content: center;
+  }
+  .page-title {
+    font-family: var(--font-serif-ja);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: var(--sp-1);
+    overflow-wrap: anywhere;
+  }
+  .page-subtitle {
+    font-size: 0.85rem;
+    color: var(--ink-secondary);
+    margin-bottom: var(--sp-8);
+  }
+  .empty-fallback {
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-content);
+    padding: var(--sp-8);
+    text-align: center;
+    color: var(--ink-secondary);
+    overflow-wrap: anywhere;
+  }
+  .empty-fallback h2 {
+    font-family: var(--font-serif-ja);
+    color: var(--ink);
+  }
+  .availability-note {
+    color: var(--ink-secondary);
+    margin-bottom: var(--sp-4);
+  }
+  .source-notice {
+    margin-top: var(--sp-8);
+    padding: var(--sp-4);
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-secondary);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+  .source-notice p + p { margin-top: var(--sp-2); }
+  .source-notice a {
+    color: var(--jade-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+</style>
