@@ -251,6 +251,10 @@ const json = JSON.stringify({
     transition: border-color 0.15s, color 0.15s;
   }
   .flashcard-reset-btn:hover { border-color: var(--coral-deep); color: var(--coral-deep); }
+  .flashcard-reset-btn:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 
   /* ── Card ─────────────────────────────────────────────────────────────── */
   .flashcard-container {
