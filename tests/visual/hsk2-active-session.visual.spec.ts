@@ -10,6 +10,65 @@ const VIEWPORTS = [
   { width: 1440, height: 900 },
 ] as const;
 const THEMES = ['light', 'dark'] as const;
+const CONTROL_SELECTOR = 'a, button, input, select, [tabindex]:not([tabindex="-1"])';
+const EVIDENCE_SELECTOR = '.flashcard-session-root, .setup-panel, [data-front], [data-back], [data-progress-text]';
+
+async function elementDiagnostic(locator: Locator): Promise<string> {
+  const details = await locator.evaluate((element) => {
+    const describe = (target: Element | null) => {
+      if (!target) return null;
+      const style = getComputedStyle(target);
+      const box = target.getBoundingClientRect();
+      return {
+        tag: target.tagName,
+        id: target.id,
+        classes: typeof target.className === 'string' ? target.className : target.getAttribute('class'),
+        href: target.getAttribute('href'),
+        text: (target.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 160),
+        role: target.getAttribute('role'),
+        ariaLabel: target.getAttribute('aria-label'),
+        ariaLabelledby: target.getAttribute('aria-labelledby'),
+        ariaDescribedby: target.getAttribute('aria-describedby'),
+        ariaChecked: target.getAttribute('aria-checked'),
+        ariaExpanded: target.getAttribute('aria-expanded'),
+        ariaCurrent: target.getAttribute('aria-current'),
+        name: target.getAttribute('name'),
+        value: target.getAttribute('value'),
+        tabIndex: target.getAttribute('tabindex'),
+        box: {
+          x: box.x,
+          y: box.y,
+          width: box.width,
+          height: box.height,
+          top: box.top,
+          right: box.right,
+          bottom: box.bottom,
+          left: box.left,
+        },
+        outline: {
+          style: style.outlineStyle,
+          width: style.outlineWidth,
+          color: style.outlineColor,
+          offset: style.outlineOffset,
+        },
+      };
+    };
+    const activeElement = document.activeElement;
+    let deepestActiveElement: Element | null = activeElement;
+    while (
+      deepestActiveElement instanceof HTMLElement &&
+      deepestActiveElement.shadowRoot?.activeElement
+    ) {
+      deepestActiveElement = deepestActiveElement.shadowRoot.activeElement;
+    }
+    return {
+      element: describe(element),
+      documentActiveElement: describe(activeElement),
+      shadowDeepestActiveElement: describe(deepestActiveElement),
+    };
+  });
+  return JSON.stringify(details);
+}
 
 function readPageStyle(path: URL): string {
   const source = readFileSync(path, 'utf8');
@@ -53,18 +112,67 @@ async function tabOnce(page: Page): Promise<void> {
     if (!(element instanceof HTMLElement)) return null;
     const style = getComputedStyle(element);
     const box = element.getBoundingClientRect();
+    const describe = (target: Element | null) => {
+      if (!target) return null;
+      const targetStyle = getComputedStyle(target);
+      const targetBox = target.getBoundingClientRect();
+      return {
+        tag: target.tagName,
+        id: target.id,
+        classes: typeof target.className === 'string' ? target.className : target.getAttribute('class'),
+        href: target.getAttribute('href'),
+        text: (target.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 160),
+        role: target.getAttribute('role'),
+        ariaLabel: target.getAttribute('aria-label'),
+        ariaLabelledby: target.getAttribute('aria-labelledby'),
+        ariaChecked: target.getAttribute('aria-checked'),
+        name: target.getAttribute('name'),
+        value: target.getAttribute('value'),
+        tabIndex: target.getAttribute('tabindex'),
+        box: {
+          x: targetBox.x,
+          y: targetBox.y,
+          width: targetBox.width,
+          height: targetBox.height,
+          top: targetBox.top,
+          right: targetBox.right,
+          bottom: targetBox.bottom,
+          left: targetBox.left,
+        },
+        outline: {
+          style: targetStyle.outlineStyle,
+          width: targetStyle.outlineWidth,
+          color: targetStyle.outlineColor,
+          offset: targetStyle.outlineOffset,
+        },
+      };
+    };
+    let deepestActiveElement: Element = element;
+    while (
+      deepestActiveElement instanceof HTMLElement &&
+      deepestActiveElement.shadowRoot?.activeElement
+    ) {
+      deepestActiveElement = deepestActiveElement.shadowRoot.activeElement;
+    }
     return {
       id: element.id,
       visible: element.getClientRects().length > 0 && style.visibility !== 'hidden',
       nonzero: box.width > 0 && box.height > 0,
       focusStyle: style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) >= 2,
+      documentActiveElement: describe(document.activeElement),
+      shadowDeepestActiveElement: describe(deepestActiveElement),
     };
   });
-  expect.soft(stop, 'each Tab stop must be visible, nonzero, and visibly focused').not.toBeNull();
+  const diagnostic = `[keyboard-step=Tab selector=document.activeElement metadata=${JSON.stringify(stop)}]`;
+  if (!stop) console.error(`[hsk2-tab-stop-failure] ${diagnostic}`);
+  expect.soft(stop, `${diagnostic} each Tab stop must be visible, nonzero, and visibly focused`).not.toBeNull();
   if (stop) {
-    expect.soft(stop.visible, `Tab stop ${stop.id} must be visible`).toBe(true);
-    expect.soft(stop.nonzero, `Tab stop ${stop.id} must have a nonzero box`).toBe(true);
-    expect.soft(stop.focusStyle, `Tab stop ${stop.id} must have a visible focus indicator`).toBe(true);
+    if (!stop.visible || !stop.nonzero || !stop.focusStyle) {
+      console.error(`[hsk2-tab-stop-failure] ${diagnostic}`);
+    }
+    expect.soft(stop.visible, `${diagnostic} Tab stop ${stop.id} must be visible`).toBe(true);
+    expect.soft(stop.nonzero, `${diagnostic} Tab stop ${stop.id} must have a nonzero box`).toBe(true);
+    expect.soft(stop.focusStyle, `${diagnostic} Tab stop ${stop.id} must have a visible focus indicator`).toBe(true);
   }
 }
 
@@ -82,10 +190,17 @@ async function capture(page: Page, testInfo: TestInfo, state: string): Promise<v
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth,
   }));
-  expect.soft(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth);
+  const overflowIdentity = await elementDiagnostic(page.locator('html'));
+  const overflowDiagnostic = `[capture=${state} selector=document.documentElement element=${overflowIdentity} overflow=${JSON.stringify(overflow)}]`;
+  if (overflow.scrollWidth > overflow.clientWidth) {
+    console.error(`[hsk2-containment-failure] ${overflowDiagnostic}`);
+  }
+  expect.soft(overflow.scrollWidth, overflowDiagnostic).toBeLessThanOrEqual(overflow.clientWidth);
 
-  const visibleControls = page.locator('a, button, input, select, [tabindex]:not([tabindex="-1"])');
-  for (const control of await visibleControls.all()) {
+  const visibleControls = page.locator(CONTROL_SELECTOR);
+  const controls = await visibleControls.all();
+  for (let index = 0; index < controls.length; index += 1) {
+    const control = controls[index];
     // BaseLayout's keyboard skip link is intentionally clipped offscreen until
     // focused. Ignore only its exact, inactive 1px clipping contract.
     const inactiveClippedSkipLink = await control.evaluate((element) => {
@@ -102,27 +217,47 @@ async function capture(page: Page, testInfo: TestInfo, state: string): Promise<v
     );
     if (!(await control.isVisible())) continue;
     const box = await control.boundingBox();
-    expect.soft(box, 'every visible interactive control in the capture must have a box').not.toBeNull();
+    const identity = await elementDiagnostic(control);
+    const diagnostic = `[capture=${state} selector=${CONTROL_SELECTOR} index=${index} element=${identity}]`;
+    if (!box) console.error(`[hsk2-containment-failure] ${diagnostic} playwrightBox=null`);
+    expect.soft(box, `${diagnostic} expected a visible interactive control box`).not.toBeNull();
     if (!box) continue;
     const intersectsCapture = box.x + box.width > 0 && box.x < viewport!.width &&
       box.y + box.height > 0 && box.y < viewport!.height;
     // Every visible session control must fit, even outside the current scroll
     // fragment. Other controls are checked when they intersect the PNG.
     if (!isRootControl && !intersectsCapture) continue;
-    expect.soft(box!.x).toBeGreaterThanOrEqual(0);
-    expect.soft(box!.y).toBeGreaterThanOrEqual(0);
-    expect.soft(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width);
-    expect.soft(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height);
+    if (
+      box.x < 0 || box.y < 0 || box.x + box.width > viewport!.width ||
+      box.y + box.height > viewport!.height
+    ) {
+      console.error(`[hsk2-containment-failure] ${diagnostic} playwrightBox=${JSON.stringify(box)} viewport=${JSON.stringify(viewport)}`);
+    }
+    expect.soft(box!.x, `${diagnostic} x must be within the capture`).toBeGreaterThanOrEqual(0);
+    expect.soft(box!.y, `${diagnostic} y must be within the capture`).toBeGreaterThanOrEqual(0);
+    expect.soft(box!.x + box!.width, `${diagnostic} right edge must be within the capture`).toBeLessThanOrEqual(viewport!.width);
+    expect.soft(box!.y + box!.height, `${diagnostic} bottom edge must be within the capture`).toBeLessThanOrEqual(viewport!.height);
   }
-  for (const evidence of await page.locator('.flashcard-session-root, .setup-panel, [data-front], [data-back], [data-progress-text]').all()) {
+  const evidenceElements = await page.locator(EVIDENCE_SELECTOR).all();
+  for (let index = 0; index < evidenceElements.length; index += 1) {
+    const evidence = evidenceElements[index];
     if (!(await evidence.isVisible())) continue;
     const box = await evidence.boundingBox();
-    expect.soft(box, 'every visible evidence element must have a box').not.toBeNull();
+    const identity = await elementDiagnostic(evidence);
+    const diagnostic = `[capture=${state} selector=${EVIDENCE_SELECTOR} index=${index} element=${identity}]`;
+    if (!box) console.error(`[hsk2-containment-failure] ${diagnostic} playwrightBox=null`);
+    expect.soft(box, `${diagnostic} expected a visible evidence element box`).not.toBeNull();
     if (!box) continue;
-    expect.soft(box!.x).toBeGreaterThanOrEqual(0);
-    expect.soft(box!.y).toBeGreaterThanOrEqual(0);
-    expect.soft(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width);
-    expect.soft(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height);
+    if (
+      box.x < 0 || box.y < 0 || box.x + box.width > viewport!.width ||
+      box.y + box.height > viewport!.height
+    ) {
+      console.error(`[hsk2-containment-failure] ${diagnostic} playwrightBox=${JSON.stringify(box)} viewport=${JSON.stringify(viewport)}`);
+    }
+    expect.soft(box!.x, `${diagnostic} x must be within the capture`).toBeGreaterThanOrEqual(0);
+    expect.soft(box!.y, `${diagnostic} y must be within the capture`).toBeGreaterThanOrEqual(0);
+    expect.soft(box!.x + box!.width, `${diagnostic} right edge must be within the capture`).toBeLessThanOrEqual(viewport!.width);
+    expect.soft(box!.y + box!.height, `${diagnostic} bottom edge must be within the capture`).toBeLessThanOrEqual(viewport!.height);
   }
 
   const png = await page.screenshot({ fullPage: false });
