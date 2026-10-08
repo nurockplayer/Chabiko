@@ -182,9 +182,66 @@ async function assertUnrevealedAnswerAbsent(page: Page): Promise<void> {
   expect(html).not.toContain('zhōng hé chéng yǔ');
 }
 
+async function frameFlashcardRoot(page: Page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
+    if (!root) throw new Error('The production flashcard session root is missing');
+
+    const describeElement = (element: Element | null) => element ? {
+      tag: element.tagName,
+      id: element.id,
+      classes: element.getAttribute('class'),
+      role: element.getAttribute('role'),
+      ariaLabel: element.getAttribute('aria-label'),
+    } : null;
+    const describeBox = (element: Element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        x: box.x,
+        y: box.y,
+        width: box.width,
+        height: box.height,
+        top: box.top,
+        right: box.right,
+        bottom: box.bottom,
+        left: box.left,
+      };
+    };
+
+    const activeElementBefore = document.activeElement;
+    const rootBoxBefore = describeBox(root);
+    const scrollBefore = { x: window.scrollX, y: window.scrollY };
+    root.scrollIntoView({ block: 'center', inline: 'nearest' });
+    const activeElementAfter = document.activeElement;
+
+    return {
+      selector: '.flashcard-session-root',
+      root: describeElement(root),
+      rootBoxBefore,
+      rootBoxAfter: describeBox(root),
+      scrollBefore,
+      scrollAfter: { x: window.scrollX, y: window.scrollY },
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      activeElementPreserved: activeElementBefore === activeElementAfter,
+      activeElementBefore: describeElement(activeElementBefore),
+      activeElementAfter: describeElement(activeElementAfter),
+    };
+  });
+}
+
 async function capture(page: Page, testInfo: TestInfo, state: string): Promise<void> {
   const viewport = page.viewportSize();
   expect(viewport).not.toBeNull();
+
+  const framing = await frameFlashcardRoot(page);
+  await testInfo.attach(`${state}-frame.json`, {
+    body: JSON.stringify(framing, null, 2),
+    contentType: 'application/json',
+  });
+  expect.soft(
+    framing.activeElementPreserved,
+    `[capture=${state}] native session-root scrollIntoView must preserve document.activeElement: ${JSON.stringify(framing)}`,
+  ).toBe(true);
 
   const overflow = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
@@ -415,6 +472,7 @@ for (const theme of THEMES) {
       const focusFailures: string[] = [];
       const focusObservations: unknown[] = [];
       const recordFocusedVisibleTarget = async (transition: string) => {
+        const framing = await frameFlashcardRoot(page);
         const target = await page.evaluate(() => {
           const element = document.activeElement;
           if (!(element instanceof HTMLElement)) return null;
@@ -428,7 +486,11 @@ for (const theme of THEMES) {
             inViewport: box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight,
           };
         });
-        focusObservations.push({ transition, activeElement: target });
+        focusObservations.push({ transition, framing, activeElement: target });
+        expect.soft(
+          framing.activeElementPreserved,
+          `[focus transition=${transition}] native session-root scrollIntoView must preserve document.activeElement: ${JSON.stringify(framing)}`,
+        ).toBe(true);
         if (!target?.visible || !target.focusedStyle || !target.inViewport) {
           focusFailures.push(`${transition}: ${JSON.stringify(target)}`);
         }
