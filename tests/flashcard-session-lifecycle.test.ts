@@ -291,6 +291,80 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect(root.querySelector('.flashcard-completion')).toBeNull();
   });
 
+  it('clears stale card content on remount and completion restart while preserving setup and progress', () => {
+    mountSession();
+    const el = getCardElements(root);
+    const size20 = root.querySelector('[data-size="20"]') as HTMLButtonElement;
+    const reverse = root.querySelector('[data-dir="ja-to-zh"]') as HTMLButtonElement;
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    const promptFallback = root.querySelector('[data-prompt-fallback]') as HTMLElement;
+    const answerFallback = root.querySelector('[data-answer-fallback]') as HTMLElement;
+    const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
+
+    size20.click();
+    newPool.click();
+    changeScriptPreference('traditional');
+    el.startBtn.click();
+    el.revealBtn.click();
+
+    expect(el.pinyin.textContent).toBe('zàijiàn');
+    expect(el.pinyin.lang).toBe('zh-Latn');
+    expect(el.front.lang).toBe('zh-Hans');
+    expect(promptFallback.textContent).toBe('この表記は未収録のため、コース標準を表示しています。');
+    const progressBeforeRemount = el.progressEl.textContent;
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+
+    expect(root.querySelector('#setup-panel')?.classList.contains('hidden')).toBe(false);
+    expect(newPool.checked).toBe(true);
+    expect(size20.getAttribute('aria-checked')).toBe('true');
+    expect(reverse.getAttribute('aria-checked')).toBe('false');
+    expect(document.activeElement).toBe(el.startBtn);
+    expect(el.front.textContent).toBe('');
+    expect(el.front.hasAttribute('lang')).toBe(false);
+    expect(promptFallback.textContent).toBe('');
+    expect(promptFallback.hidden).toBe(true);
+    expect(el.japanese.textContent).toBe('');
+    expect(el.japanese.hasAttribute('lang')).toBe(false);
+    expect(answerFallback.textContent).toBe('');
+    expect(answerFallback.hidden).toBe(true);
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.pinyin.lang).toBe('zh-Latn');
+    expect(el.progressEl.textContent).toBe(progressBeforeRemount);
+    expect(applyRatingSpy).not.toHaveBeenCalled();
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
+
+    reverse.click();
+    el.startBtn.click();
+    el.revealBtn.click();
+    expect(el.japanese.lang).toBe('zh-Hans');
+    expect(answerFallback.textContent).toBe('この表記は未収録のため、コース標準を表示しています。');
+    el.knownBtn.click();
+    expect(root.querySelector('.flashcard-completion')).not.toBeNull();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+    const progressAfterCompletion = localStorage.getItem('chabiko:hsk-vocabulary-progress:v1');
+
+    (root.querySelector('#btn-restart') as HTMLButtonElement).click();
+
+    expect(root.querySelector('#setup-panel')?.classList.contains('hidden')).toBe(false);
+    expect(newPool.checked).toBe(true);
+    expect(size20.getAttribute('aria-checked')).toBe('true');
+    expect(reverse.getAttribute('aria-checked')).toBe('true');
+    expect(el.front.textContent).toBe('');
+    expect(el.front.hasAttribute('lang')).toBe(false);
+    expect(promptFallback.textContent).toBe('');
+    expect(promptFallback.hidden).toBe(true);
+    expect(el.japanese.textContent).toBe('');
+    expect(el.japanese.hasAttribute('lang')).toBe(false);
+    expect(answerFallback.textContent).toBe('');
+    expect(answerFallback.hidden).toBe(true);
+    expect(el.pinyin.textContent).toBe('');
+    expect(el.pinyin.lang).toBe('zh-Latn');
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBe(progressAfterCompletion);
+  });
+
   it.each(['missing', 'invalid'] as const)(
     'normalizes %s size and direction selections to defaults',
     (selectionState) => {

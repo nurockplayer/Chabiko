@@ -338,6 +338,17 @@ export function mountFlashcardSession(data: SessionData): () => void {
 
   function showSetup() {
     const restoreStartFocus = sessionArea.contains(document.activeElement);
+    frontEl.textContent = '';
+    frontEl.removeAttribute('lang');
+    promptFallbackEl.textContent = '';
+    promptFallbackEl.hidden = true;
+    pinyinEl.textContent = '';
+    japaneseEl.textContent = '';
+    japaneseEl.removeAttribute('lang');
+    answerFallbackEl.textContent = '';
+    answerFallbackEl.hidden = true;
+    progressHintEl.textContent = '';
+    progressHintEl.classList.add('hidden');
     setupPanel.classList.remove('hidden');
     sessionArea.classList.add('hidden');
     lockSetupControls(false);

@@ -611,6 +611,16 @@ for (const theme of THEMES) {
       await expect(page.locator('#pool-new')).toBeChecked();
       await expect(page.locator('#size-20')).toHaveAttribute('aria-checked', 'true');
       await expect(page.locator('#dir-ja-zh')).toHaveAttribute('aria-checked', 'true');
+      await expect(page.locator('[data-front]')).toHaveText('');
+      expect(await page.locator('[data-front]').getAttribute('lang')).toBeNull();
+      await expect(page.locator('[data-prompt-fallback]')).toHaveText('');
+      await expect(page.locator('[data-prompt-fallback]')).toBeHidden();
+      await expect(page.locator('[data-pinyin]')).toHaveText('');
+      expect(await page.locator('[data-pinyin]').getAttribute('lang')).toBe('zh-Latn');
+      await expect(page.locator('[data-japanese]')).toHaveText('');
+      expect(await page.locator('[data-japanese]').getAttribute('lang')).toBeNull();
+      await expect(page.locator('[data-answer-fallback]')).toHaveText('');
+      await expect(page.locator('[data-answer-fallback]')).toBeHidden();
       await recordFocusedVisibleTarget('same-root remount to setup');
       await capture(page, testInfo, 'post-remount-setup');
 
