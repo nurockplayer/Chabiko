@@ -314,11 +314,35 @@ export function mountFlashcardSession(data: SessionData): () => void {
     updateSetupCount();
   }
 
+  function focusCurrentSessionAction() {
+    if (state?.status === 'completed') {
+      const restartButton = container.querySelector('#btn-restart') as HTMLButtonElement | null;
+      if (restartButton && !restartButton.hidden && !restartButton.disabled) {
+        restartButton.focus();
+      }
+      return;
+    }
+
+    if (state?.status === 'active') {
+      const action = backEl.classList.contains('hidden') ? btnReveal : btnAgain;
+      if (action && !action.disabled && !action.classList.contains('hidden')) {
+        action.focus();
+      }
+      return;
+    }
+
+    if (!setupPanel.classList.contains('hidden') && !btnStart.disabled) {
+      btnStart.focus();
+    }
+  }
+
   function showSetup() {
+    const restoreStartFocus = sessionArea.contains(document.activeElement);
     setupPanel.classList.remove('hidden');
     sessionArea.classList.add('hidden');
     lockSetupControls(false);
     updateSetupCount();
+    if (restoreStartFocus && !btnStart.disabled) btnStart.focus();
   }
 
   function restorePoolSelectionFromControls() {
@@ -487,18 +511,21 @@ export function mountFlashcardSession(data: SessionData): () => void {
   function applyRating(rating: 'again' | 'unsure' | 'known') {
     const activeId = state?.status === 'active' ? state.activeItemId : null;
     if (!state) return;
+    const restoreActionFocus = ratingActions.contains(document.activeElement);
     const result = applyVocabularySessionAction(state, { kind: 'rate', rating });
     if (result.kind === 'accepted') {
       state = result.state;
     }
 
+    let resetFocusMoved = false;
     if (activeId) {
       getProgressStore().applyRating(activeId, rating);
-      updateResetButton();
+      resetFocusMoved = updateResetButton();
     }
 
     if (state.status === 'completed') {
       renderCompleted();
+      if (restoreActionFocus || resetFocusMoved) focusCurrentSessionAction();
       return;
     }
 
@@ -507,6 +534,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
     ratingActions.classList.add('hidden');
     renderCard();
     updateProgress();
+    if (restoreActionFocus || resetFocusMoved) btnReveal.focus();
   }
 
   function renderCompleted() {
@@ -536,10 +564,14 @@ export function mountFlashcardSession(data: SessionData): () => void {
   }
 
   // ── Reset ─────────────────────────────────────────────────────────────
-  function updateResetButton() {
-    if (!btnReset) return;
+  function updateResetButton(): boolean {
+    if (!btnReset) return false;
     const all = getProgressStore().getAllEntries();
-    btnReset.hidden = Object.keys(all).length === 0;
+    const nextHidden = Object.keys(all).length === 0;
+    const restoreActionFocus = nextHidden && btnReset.contains(document.activeElement);
+    btnReset.hidden = nextHidden;
+    if (restoreActionFocus) focusCurrentSessionAction();
+    return restoreActionFocus;
   }
 
   function handleReset() {
@@ -611,8 +643,8 @@ export function mountFlashcardSession(data: SessionData): () => void {
   restorePoolSelectionFromControls();
   restoreSetupOptionsFromControls();
   lockSetupControls(false);
-  updateResetButton();
   showSetup();
+  updateResetButton();
 
   const cleanup = () => {
     listeners.abort();

@@ -374,21 +374,138 @@ describe('FlashcardSession DOM lifecycle', () => {
     const confirm = vi.spyOn(window, 'confirm');
 
     confirm.mockReturnValue(false);
+    resetButton.focus();
     resetButton.click();
     expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBe(savedProgress);
+    expect(document.activeElement).toBe(resetButton);
     expect(el.progressEl.textContent).toBe('1 / 2');
     expect(el.front.textContent).toBe('さようなら');
     expect(size20.disabled).toBe(true);
     expect(reverse.disabled).toBe(true);
 
     confirm.mockReturnValue(true);
+    resetButton.focus();
     resetButton.click();
     expect(localStorage.getItem('chabiko:hsk-vocabulary-progress:v1')).toBeNull();
     expect(resetButton.hidden).toBe(true);
+    expect(document.activeElement).toBe(el.revealBtn);
     expect(el.progressEl.textContent).toBe('1 / 2');
     expect(el.front.textContent).toBe('さようなら');
     expect(size20.disabled).toBe(true);
     expect(reverse.disabled).toBe(true);
+  });
+
+  it('restores focus after remount only when the focused element is hidden', () => {
+    const outsideButton = document.createElement('button');
+    outsideButton.id = 'outside-session';
+    document.body.appendChild(outsideButton);
+    outsideButton.focus();
+    mountSession();
+    expect(document.activeElement).toBe(outsideButton);
+
+    const el = getCardElements(root);
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.focus();
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(document.activeElement).toBe(el.startBtn);
+
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    newPool.focus();
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(document.activeElement).toBe(newPool);
+
+    outsideButton.focus();
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(document.activeElement).toBe(outsideButton);
+  });
+
+  it('returns focus to Reveal after a focused nonterminal rating without stealing external focus', () => {
+    const outsideButton = document.createElement('button');
+    outsideButton.id = 'outside-session';
+    document.body.appendChild(outsideButton);
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    el.revealBtn.click();
+
+    el.knownBtn.focus();
+    el.knownBtn.click();
+    expect(document.activeElement).toBe(el.revealBtn);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+
+    el.revealBtn.click();
+    outsideButton.focus();
+    el.againBtn.click();
+    expect(document.activeElement).toBe(outsideButton);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+  });
+
+  it('moves focus from the final rating to Restart after completion is appended', () => {
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    el.revealBtn.click();
+
+    el.knownBtn.focus();
+    el.knownBtn.click();
+    expect(document.activeElement).toBe(root.querySelector('#btn-restart'));
+  });
+
+  it('moves focus from Reset to the current action when storage refresh hides Reset', () => {
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    el.revealBtn.click();
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    const storageKey = 'chabiko:hsk-vocabulary-progress:v1';
+
+    resetButton.focus();
+    localStorage.removeItem(storageKey);
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: storageKey,
+      newValue: null,
+      storageArea: localStorage,
+    }));
+    expect(resetButton.hidden).toBe(true);
+    expect(document.activeElement).toBe(el.againBtn);
+
+    el.againBtn.click();
+    const outsideButton = document.createElement('button');
+    outsideButton.id = 'outside-session';
+    document.body.appendChild(outsideButton);
+    outsideButton.focus();
+    localStorage.removeItem(storageKey);
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: storageKey,
+      newValue: null,
+      storageArea: localStorage,
+    }));
+    expect(resetButton.hidden).toBe(true);
+    expect(document.activeElement).toBe(outsideButton);
+  });
+
+  it('moves focus to Restart when pageshow hides focused Reset after completion', () => {
+    mountSession();
+    const el = getCardElements(root);
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    const restartButton = root.querySelector('#btn-restart') as HTMLButtonElement;
+
+    resetButton.focus();
+    localStorage.removeItem('chabiko:hsk-vocabulary-progress:v1');
+    window.dispatchEvent(new Event('pageshow'));
+
+    expect(resetButton.hidden).toBe(true);
+    expect(document.activeElement).toBe(restartButton);
   });
 
   it('keeps an empty new-word pool non-interactive', () => {
@@ -607,10 +724,12 @@ describe('FlashcardSession DOM lifecycle', () => {
     // Click restart button in completion view
     const restartBtn = root.querySelector('#btn-restart') as HTMLButtonElement;
     expect(restartBtn).not.toBeNull();
+    restartBtn.focus();
     restartBtn.click();
 
     // Setup panel visible again
     expect(root.querySelector('#setup-panel')?.classList.contains('hidden')).toBe(false);
+    expect(document.activeElement).toBe(el.startBtn);
 
     // Start a new session
     el.startBtn.click();
