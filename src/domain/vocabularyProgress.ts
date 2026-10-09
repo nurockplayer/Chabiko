@@ -238,6 +238,9 @@ function getDefaultStorage(): StorageLike | null {
 export class VocabularyProgressStore {
   private document: VocabularyProgressDocument;
   private storage: StorageLike | null;
+  private persistencePending = false;
+  private hasObservedStorageValue = false;
+  private lastObservedStorageValue: string | null = null;
 
   constructor(storage?: StorageLike | null) {
     this.document = emptyDocument();
@@ -304,8 +307,11 @@ export class VocabularyProgressStore {
     this.document = emptyDocument();
     try {
       this.storage?.removeItem(VOCABULARY_PROGRESS_KEY);
+      this.persistencePending = false;
+      this.rememberStorageValue(null);
     } catch {
-      /* best-effort */
+      /* keep the reset in memory until storage can be reconciled */
+      this.persistencePending = true;
     }
   }
 
@@ -313,7 +319,9 @@ export class VocabularyProgressStore {
 
   private load(): void {
     try {
-      const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY);
+      const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY) ?? null;
+      if (this.shouldKeepPendingDocument(raw)) return;
+      this.rememberStorageValue(raw);
       if (typeof raw === 'string') {
         const doc = parseDocument(raw);
         if (doc !== null) {
@@ -323,6 +331,8 @@ export class VocabularyProgressStore {
       }
     } catch {
       /* keep defaults */
+      if (!this.persistencePending) this.document = emptyDocument();
+      return;
     }
     this.document = emptyDocument();
   }
@@ -338,6 +348,8 @@ export class VocabularyProgressStore {
     if (this.storage === null) return;
     try {
       const raw = this.storage.getItem(VOCABULARY_PROGRESS_KEY);
+      if (this.shouldKeepPendingDocument(raw)) return;
+      this.rememberStorageValue(raw);
       if (typeof raw === 'string') {
         const doc = parseDocument(raw);
         if (doc !== null) {
@@ -354,14 +366,28 @@ export class VocabularyProgressStore {
     }
   }
 
+  private shouldKeepPendingDocument(raw: string | null): boolean {
+    if (!this.persistencePending) return false;
+    if (this.hasObservedStorageValue && raw === this.lastObservedStorageValue) return true;
+    this.persistencePending = false;
+    return false;
+  }
+
+  private rememberStorageValue(raw: string | null): void {
+    this.lastObservedStorageValue = raw;
+    this.hasObservedStorageValue = true;
+  }
+
   private persist(): void {
+    if (this.storage === null) return;
     try {
-      this.storage?.setItem(
-        VOCABULARY_PROGRESS_KEY,
-        JSON.stringify(this.document),
-      );
+      const raw = JSON.stringify(this.document);
+      this.storage.setItem(VOCABULARY_PROGRESS_KEY, raw);
+      this.persistencePending = false;
+      this.rememberStorageValue(raw);
     } catch {
       /* storage full or unavailable — keep in-memory state */
+      this.persistencePending = true;
     }
   }
 }
