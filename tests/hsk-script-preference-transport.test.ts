@@ -293,4 +293,112 @@ describe('HSK answer transport and script selection', () => {
       cleanup();
     },
   );
+
+  it.each(['invalid payload', 'request failure'] as const)(
+    'restores Start focus after an active same-root remount recovers from an %s',
+    async (failure) => {
+      const entries: SyntheticEntry[] = [
+        { id: 'synthetic-active-first', simplified: '復旧一語', simplifiedStatus: 'verified', pinyin: 'fù jiù yī', japanese: '復旧一語目' },
+        { id: 'synthetic-active-second', simplified: '復旧二語', simplifiedStatus: 'authored', pinyin: 'fù jiù èr', japanese: '復旧二語目' },
+      ];
+      createRouteFixture(entries);
+      const response = await getHskAnswers({ params: { level: '1' } } as never);
+      const validBody = await response.text();
+      const validResponse = () => new Response(validBody, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const root = createSessionRoot();
+      const bootstrap = {
+        ids: entries.map((entry) => entry.id),
+        newPoolIds: [],
+        answerSource: '/data/hsk/1.json',
+      };
+      const fetchMock = vi.fn();
+      fetchMock.mockResolvedValueOnce(validResponse());
+      if (failure === 'invalid payload') {
+        fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ version: 1, entries: [] }), {
+          headers: { 'Content-Type': 'application/json' },
+        }));
+      } else {
+        fetchMock.mockRejectedValueOnce(new Error('network unavailable'));
+      }
+
+      let resolveRetry!: (retryResponse: Response) => void;
+      const pendingRetry = new Promise<Response>((resolve) => { resolveRetry = resolve; });
+      fetchMock
+        .mockImplementationOnce(() => pendingRetry)
+        .mockImplementation(() => Promise.resolve(validResponse()));
+      vi.stubGlobal('fetch', fetchMock);
+
+      let cleanup = await mountRemoteFlashcardSession(bootstrap);
+      const start = root.querySelector('#btn-start') as HTMLButtonElement;
+      const again = root.querySelector('#btn-again') as HTMLButtonElement;
+      const error = root.querySelector('#session-load-error') as HTMLElement;
+      const sessionArea = root.querySelector('#session-area') as HTMLElement;
+      const setupPanel = root.querySelector('#setup-panel') as HTMLElement;
+      const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
+      const progressWriteSpy = vi.spyOn(localStorage, 'setItem');
+
+      expect(start.disabled).toBe(false);
+      start.click();
+      (root.querySelector('#btn-reveal') as HTMLButtonElement).click();
+      again.focus();
+      expect(document.activeElement).toBe(again);
+
+      await mountRemoteFlashcardSession(bootstrap);
+      expect(start.disabled).toBe(true);
+      expect(start.getAttribute('aria-busy')).toBeNull();
+      expect(error.hidden).toBe(false);
+      expect(sessionArea.classList.contains('hidden')).toBe(false);
+
+      const retryMount = mountRemoteFlashcardSession(bootstrap);
+      expect(start.disabled).toBe(true);
+      expect(document.querySelector('.flashcard-session-root')).toBe(root);
+      expect(applyRatingSpy).not.toHaveBeenCalled();
+      expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+        .toHaveLength(0);
+
+      resolveRetry(validResponse());
+      cleanup = await retryMount;
+
+      expect(start.disabled).toBe(false);
+      expect(start.getAttribute('aria-busy')).toBeNull();
+      expect(error.hidden).toBe(true);
+      expect(error.textContent).toBe('');
+      expect(setupPanel.classList.contains('hidden')).toBe(false);
+      expect(sessionArea.classList.contains('hidden')).toBe(true);
+      expect(document.querySelector('.flashcard-session-root')).toBe(root);
+      expect(document.activeElement).toBe(start);
+      expect(applyRatingSpy).not.toHaveBeenCalled();
+      expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+        .toHaveLength(0);
+
+      start.click();
+      expect((root.querySelector('[data-front]') as HTMLElement).textContent).toBe('復旧一語');
+      (root.querySelector('#btn-reveal') as HTMLButtonElement).click();
+      expect((root.querySelector('[data-japanese]') as HTMLElement).textContent).toBe('復旧一語目');
+      (root.querySelector('#btn-known') as HTMLButtonElement).click();
+      expect((root.querySelector('[data-progress-text]') as HTMLElement).textContent).toBe('1 / 2');
+      expect(root.querySelector('#btn-restart')).toBeNull();
+      expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+      expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+        .toHaveLength(1);
+
+      const outsideButton = document.createElement('button');
+      document.body.appendChild(outsideButton);
+      outsideButton.focus();
+      cleanup = await mountRemoteFlashcardSession(bootstrap);
+      expect(document.activeElement).toBe(outsideButton);
+
+      const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+      fullPool.focus();
+      expect(document.activeElement).toBe(fullPool);
+      cleanup = await mountRemoteFlashcardSession(bootstrap);
+      expect(document.activeElement).toBe(fullPool);
+      expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+      expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+        .toHaveLength(1);
+      cleanup();
+    },
+  );
 });

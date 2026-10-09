@@ -25,6 +25,7 @@ import { VocabularyProgressStore } from '../domain/vocabularyProgress';
 import { SCRIPT_PREFERENCE_EVENT } from './scriptPreferenceControl';
 
 const sessionCleanups = new WeakMap<HTMLElement, () => void>();
+const progressStores = new WeakMap<HTMLElement, InstanceType<typeof VocabularyProgressStore>>();
 
 export interface SessionEntry {
   id: string;
@@ -158,11 +159,11 @@ export async function mountRemoteFlashcardSession(data: RemoteSessionData): Prom
     const payload = parseAnswerPayload(await response.json(), data.ids);
     if (!payload) throw new Error('Invalid HSK answer payload');
 
+    startButton.disabled = false;
+    startButton.removeAttribute('aria-busy');
     const cleanup = mountFlashcardSession({ ids: data.ids, newPoolIds: data.newPoolIds, entries: payload.entries });
     errorMessage.textContent = '';
     errorMessage.hidden = true;
-    startButton.disabled = false;
-    startButton.removeAttribute('aria-busy');
     return cleanup;
   } catch {
     startButton.disabled = true;
@@ -177,6 +178,8 @@ export function mountFlashcardSession(data: SessionData): () => void {
   const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
   if (!root) return () => undefined;
   sessionCleanups.get(root)?.();
+  const previousProgressStore = progressStores.get(root);
+  previousProgressStore?.refresh();
 
   const allIds = data.ids;
   const newPoolIds = data.newPoolIds ?? [];
@@ -194,11 +197,12 @@ export function mountFlashcardSession(data: SessionData): () => void {
   let pool: 'full' | 'new' = 'full';
 
   // ── Progress store ────────────────────────────────────────────────────
-  let progressStore: InstanceType<typeof VocabularyProgressStore> | null = null;
+  let progressStore: InstanceType<typeof VocabularyProgressStore> | null = previousProgressStore ?? null;
 
   function getProgressStore(): InstanceType<typeof VocabularyProgressStore> {
     if (!progressStore) {
       progressStore = new VocabularyProgressStore();
+      progressStores.set(root, progressStore);
     }
     return progressStore;
   }

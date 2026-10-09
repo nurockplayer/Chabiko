@@ -239,6 +239,230 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect(el.front.textContent).toBe('再见');
   });
 
+  it('keeps unavailable-storage progress across repeated remounts without persistence writes', () => {
+    const storageUnavailable = vi.spyOn(localStorage, 'setItem')
+      .mockImplementation(() => { throw new DOMException('Storage unavailable', 'SecurityError'); });
+    mountSession();
+    storageUnavailable.mockRestore();
+
+    const el = getCardElements(root);
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    const progressWriteSpy = vi.spyOn(localStorage, 'setItem');
+    const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
+
+    newPool.click();
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+    expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+      .toHaveLength(0);
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(resetButton.hidden).toBe(false);
+    expect(newPool.checked).toBe(true);
+    expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+      .toHaveLength(0);
+
+    // Simulate another tab persisting a reset. A store created with unavailable
+    // storage keeps its page-memory progress when refresh events arrive.
+    localStorage.setItem('chabiko:hsk-vocabulary-progress:v1', JSON.stringify({ version: 1, entries: {} }));
+    progressWriteSpy.mockClear();
+    const refreshSpy = vi.spyOn(VocabularyProgressStore.prototype, 'refresh');
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'chabiko:hsk-vocabulary-progress:v1',
+      newValue: JSON.stringify({ version: 1, entries: {} }),
+      storageArea: localStorage,
+    }));
+    window.dispatchEvent(new Event('pageshow'));
+    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(resetButton.hidden).toBe(false);
+
+    // Repeated same-root remounts must retain both streak and priority.
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(resetButton.hidden).toBe(false);
+    fullPool.click();
+    expect(fullPool.checked).toBe(true);
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+    const progressHint = root.querySelector('[data-progress-hint]') as HTMLElement;
+    expect(progressHint.classList.contains('hidden')).toBe(false);
+    expect(progressHint.textContent).toBe('正解ストリーク: 1');
+    el.revealBtn.click();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+    expect(progressWriteSpy.mock.calls.filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1'))
+      .toHaveLength(0);
+
+    // An actual second root gets its own empty store. Returning to the first
+    // root must recover that root's in-memory progress.
+    cleanupSession?.();
+    cleanupSession = null;
+    root.remove();
+    const firstRoot = root;
+    root = createFlashcardHTML(SAMPLE_ENTRIES);
+    document.body.appendChild(root);
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    const secondRootStart = getCardElements(root).startBtn;
+    secondRootStart.click();
+    expect(getCardElements(root).front.textContent).toBe('你好');
+    progressWriteSpy.mockClear();
+
+    cleanupSession?.();
+    cleanupSession = null;
+    root.remove();
+    root = firstRoot;
+    document.body.appendChild(root);
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect((root.querySelector('#btn-reset-progress') as HTMLButtonElement).hidden).toBe(false);
+    fullPool.click();
+    getCardElements(root).startBtn.click();
+    expect(getCardElements(root).front.textContent).toBe('再见');
+    const returnedProgressHint = root.querySelector('[data-progress-hint]') as HTMLElement;
+    expect(returnedProgressHint.classList.contains('hidden')).toBe(false);
+    expect(returnedProgressHint.textContent).toBe('正解ストリーク: 1');
+    getCardElements(root).revealBtn.click();
+
+    const refreshCallsBeforeCleanup = refreshSpy.mock.calls.length;
+    cleanupSession?.();
+    cleanupSession = null;
+    window.dispatchEvent(new Event('pageshow'));
+    expect(refreshSpy).toHaveBeenCalledTimes(refreshCallsBeforeCleanup);
+  });
+
+  it('refreshes persisted progress on a same-root remount after an external reset', () => {
+    mountSession();
+    const el = getCardElements(root);
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    const progressWriteSpy = vi.spyOn(localStorage, 'setItem');
+
+    newPool.click();
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(resetButton.hidden).toBe(false);
+    const progressWrites = () => progressWriteSpy.mock.calls
+      .filter(([key]) => key === 'chabiko:hsk-vocabulary-progress:v1');
+    expect(progressWrites()).toHaveLength(1);
+
+    cleanupSession?.();
+    localStorage.removeItem('chabiko:hsk-vocabulary-progress:v1');
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+
+    expect(resetButton.hidden).toBe(true);
+    expect(progressWrites()).toHaveLength(1);
+    const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+    fullPool.click();
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('你好');
+    expect(root.querySelector('[data-progress-hint]')?.classList.contains('hidden')).toBe(true);
+    expect(progressWrites()).toHaveLength(1);
+  });
+
+  it.each([
+    { physicalState: 'absent', initialRaw: null },
+    {
+      physicalState: 'populated',
+      initialRaw: JSON.stringify({
+        version: 1,
+        entries: { 'hsk-001': { status: 'learned', knownStreak: 2 } },
+      }),
+    },
+  ])('keeps quota-fallback progress through same-root refreshes with $physicalState storage', ({ initialRaw }) => {
+    const storageKey = 'chabiko:hsk-vocabulary-progress:v1';
+    const nativeSetItem = localStorage.setItem.bind(localStorage);
+    if (initialRaw !== null) nativeSetItem(storageKey, initialRaw);
+    let failedProgressWrites = 0;
+    const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === storageKey) {
+        failedProgressWrites += 1;
+        throw new DOMException('storage quota exceeded', 'QuotaExceededError');
+      }
+      nativeSetItem(key, value);
+    });
+    mountSession();
+    expect(setItemSpy.mock.calls.some(([key]) => key === '__chabiko_vocab_probe__')).toBe(true);
+    expect(localStorage.getItem('__chabiko_vocab_probe__')).toBeNull();
+
+    const el = getCardElements(root);
+    const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
+    const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
+    const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
+    const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
+    const failedWrites = () => setItemSpy.mock.calls.filter(([key]) => key === storageKey);
+
+    newPool.click();
+    el.startBtn.click();
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(1);
+    expect(failedProgressWrites).toBe(1);
+    expect(failedWrites()).toHaveLength(1);
+    expect(resetButton.hidden).toBe(false);
+    expect(localStorage.getItem(storageKey)).toBe(initialRaw);
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(resetButton.hidden).toBe(false);
+    expect(failedWrites()).toHaveLength(1);
+    expect(localStorage.getItem(storageKey)).toBe(initialRaw);
+    window.dispatchEvent(new Event('pageshow'));
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: storageKey,
+      newValue: null,
+      storageArea: localStorage,
+    }));
+    expect(resetButton.hidden).toBe(false);
+    expect(failedWrites()).toHaveLength(1);
+    expect(localStorage.getItem(storageKey)).toBe(initialRaw);
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(resetButton.hidden).toBe(false);
+    fullPool.click();
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('再见');
+    const progressHint = root.querySelector('[data-progress-hint]') as HTMLElement;
+    expect(progressHint.classList.contains('hidden')).toBe(false);
+    expect(progressHint.textContent).toBe('正解ストリーク: 1');
+    expect(failedWrites()).toHaveLength(1);
+    expect(localStorage.getItem(storageKey)).toBe(initialRaw);
+
+    el.revealBtn.click();
+    el.knownBtn.click();
+    expect(applyRatingSpy).toHaveBeenCalledTimes(2);
+    expect(failedProgressWrites).toBe(2);
+    expect(failedWrites()).toHaveLength(2);
+    expect(el.progressEl.textContent).toBe('1 / 2');
+    expect(el.front.textContent).toBe('你好');
+    expect(localStorage.getItem(storageKey)).toBe(initialRaw);
+
+    cleanupSession = mountFlashcardSession(SAMPLE_ENTRIES);
+    expect(resetButton.hidden).toBe(false);
+    expect(failedWrites()).toHaveLength(2);
+    fullPool.click();
+    el.startBtn.click();
+    expect(el.front.textContent).toBe('你好');
+    const finalHint = root.querySelector('[data-progress-hint]') as HTMLElement;
+    if (initialRaw === null) {
+      expect(finalHint.classList.contains('hidden')).toBe(true);
+    } else {
+      expect(finalHint.classList.contains('hidden')).toBe(false);
+      expect(finalHint.textContent).toBe('習得済み');
+    }
+    expect(applyRatingSpy).toHaveBeenCalledTimes(2);
+    expect(failedWrites()).toHaveLength(2);
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    resetButton.click();
+    expect(resetButton.hidden).toBe(true);
+    expect(localStorage.getItem(storageKey)).toBeNull();
+    window.dispatchEvent(new Event('pageshow'));
+    expect(resetButton.hidden).toBe(true);
+    expect(failedWrites()).toHaveLength(2);
+  });
+
   it('restores the selected size and direction on remount and builds that session', () => {
     const data = createSyntheticEntries(22);
     mountSession(data);
