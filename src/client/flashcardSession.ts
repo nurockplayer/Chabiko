@@ -177,6 +177,7 @@ export async function mountRemoteFlashcardSession(data: RemoteSessionData): Prom
 export function mountFlashcardSession(data: SessionData): () => void {
   const root = document.querySelector('.flashcard-session-root') as HTMLElement | null;
   if (!root) return () => undefined;
+  const sessionRoot = root;
   sessionCleanups.get(root)?.();
   const previousProgressStore = progressStores.get(root);
   previousProgressStore?.refresh();
@@ -202,7 +203,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
   function getProgressStore(): InstanceType<typeof VocabularyProgressStore> {
     if (!progressStore) {
       progressStore = new VocabularyProgressStore();
-      progressStores.set(root, progressStore);
+      progressStores.set(sessionRoot, progressStore);
     }
     return progressStore;
   }
