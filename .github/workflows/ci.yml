@@ -141,8 +141,8 @@ jobs:
 
   visual:
     name: Visual regression
-    needs: classify
-    if: ${{ needs.classify.outputs.run_visual == 'true' }}
+    needs: [classify, app]
+    if: ${{ !cancelled() && needs.classify.result == 'success' && needs.classify.outputs.run_visual == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -259,8 +259,8 @@ jobs:
 
   accessibility:
     name: Accessibility
-    needs: classify
-    if: ${{ needs.classify.outputs.run_a11y == 'true' }}
+    needs: [classify, app, visual]
+    if: ${{ !cancelled() && needs.classify.result == 'success' && needs.classify.outputs.run_a11y == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
