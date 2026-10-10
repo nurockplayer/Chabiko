@@ -326,8 +326,9 @@ export class VocabularyProgressStore {
         const doc = parseDocument(raw);
         if (doc !== null) {
           this.document = doc;
-          return;
         }
+        // A malformed snapshot is not an explicit reset of page-memory progress.
+        return;
       }
     } catch {
       /* Preserve page-memory progress when storage is temporarily unreadable. */
