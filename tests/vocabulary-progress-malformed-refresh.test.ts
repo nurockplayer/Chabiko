@@ -7,11 +7,16 @@ import {
 
 const savedEntries = { prior: { status: 'learned', knownStreak: 2 } };
 const savedDocument = JSON.stringify({ version: 1, entries: savedEntries });
+const arraySnapshots = [
+  { name: 'empty entries array', raw: JSON.stringify({ version: 1, entries: [] }) },
+  { name: 'populated entries array', raw: JSON.stringify({ version: 1, entries: [savedEntries.prior] }) },
+];
 const invalidSnapshots = [
   { name: 'invalid JSON', raw: '{broken' },
   { name: 'unsupported schema version', raw: JSON.stringify({ version: 2, entries: {} }) },
   { name: 'invalid entries field', raw: JSON.stringify({ version: 1, entries: 'invalid' }) },
   { name: 'JSON null', raw: 'null' },
+  ...arraySnapshots,
 ];
 
 function createStorage(initial: string | null) {
@@ -46,6 +51,62 @@ function createStorage(initial: string | null) {
 }
 
 describe('vocabulary progress refresh with malformed storage', () => {
+  for (const { name, raw } of arraySnapshots) {
+    it(`preserves saved progress through a pre-rating ${name}`, () => {
+      const fixture = createStorage(savedDocument);
+      const store = new VocabularyProgressStore(fixture.storage);
+      fixture.external(raw);
+      store.applyRating('new', 'known');
+      assert.deepEqual(JSON.parse(fixture.getRaw()!).entries, {
+        ...savedEntries,
+        new: { status: 'learning', knownStreak: 1 },
+      });
+      assert.equal(fixture.getWrites(), 1);
+    });
+
+    it(`keeps a pending rating across a ${name} roundtrip`, () => {
+      const fixture = createStorage(savedDocument);
+      const store = new VocabularyProgressStore(fixture.storage);
+      fixture.setWriteFailure(true);
+      store.applyRating('new', 'known');
+      fixture.external(raw);
+      store.refresh();
+      fixture.external(savedDocument);
+      store.refresh();
+      assert.deepEqual(store.getAllEntries(), {
+        ...savedEntries,
+        new: { status: 'learning', knownStreak: 1 },
+      });
+      assert.equal(fixture.getWrites(), 1);
+    });
+
+    it(`does not resurrect a failed reset across a ${name} roundtrip`, () => {
+      const fixture = createStorage(savedDocument);
+      const store = new VocabularyProgressStore(fixture.storage);
+      fixture.setRemovalFailure(true);
+      store.resetAll();
+      fixture.external(raw);
+      store.refresh();
+      fixture.external(savedDocument);
+      store.refresh();
+      assert.deepEqual(store.getAllEntries(), {});
+      assert.equal(fixture.getWrites(), 0);
+    });
+  }
+
+  it('accepts object-map entries with numeric-looking keys', () => {
+    const numericEntries = { '0': savedEntries.prior };
+    const fixture = createStorage(JSON.stringify({ version: 1, entries: numericEntries }));
+    const store = new VocabularyProgressStore(fixture.storage);
+    assert.deepEqual(store.getAllEntries(), numericEntries);
+    store.applyRating('new', 'known');
+    assert.deepEqual(JSON.parse(fixture.getRaw()!).entries, {
+      ...numericEntries,
+      new: { status: 'learning', knownStreak: 1 },
+    });
+    assert.equal(fixture.getWrites(), 1);
+  });
+
   for (const { name, raw } of invalidSnapshots) {
     it(`retains established progress through ${name} and the next rating`, () => {
       const fixture = createStorage(savedDocument);

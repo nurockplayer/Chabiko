@@ -174,6 +174,7 @@ function parseDocument(raw: string): VocabularyProgressDocument | null {
       typeof parsed !== 'object' ||
       parsed.version !== CURRENT_SCHEMA_VERSION ||
       parsed.entries === null ||
+      Array.isArray(parsed.entries) ||
       typeof parsed.entries !== 'object'
     ) {
       return null;
