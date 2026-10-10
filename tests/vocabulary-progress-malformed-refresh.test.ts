@@ -17,6 +17,8 @@ const invalidSnapshots = [
 function createStorage(initial: string | null) {
   let raw = initial;
   let writes = 0;
+  let failWrites = false;
+  let failRemovals = false;
   return {
     storage: {
       getItem(key: string): string | null {
@@ -26,14 +28,18 @@ function createStorage(initial: string | null) {
       setItem(key: string, value: string): void {
         assert.equal(key, VOCABULARY_PROGRESS_KEY);
         writes += 1;
+        if (failWrites) throw new Error('Storage write failed');
         raw = value;
       },
       removeItem(key: string): void {
         assert.equal(key, VOCABULARY_PROGRESS_KEY);
+        if (failRemovals) throw new Error('Storage removal failed');
         raw = null;
       },
     },
     external(value: string | null) { raw = value; },
+    setWriteFailure(value: boolean) { failWrites = value; },
+    setRemovalFailure(value: boolean) { failRemovals = value; },
     getRaw: () => raw,
     getWrites: () => writes,
   };
@@ -104,5 +110,59 @@ describe('vocabulary progress refresh with malformed storage', () => {
     store.refresh();
     assert.deepEqual(store.getAllEntries(), replacement);
     assert.equal(fixture.getWrites(), 0);
+  });
+
+  it('keeps a pending rating when malformed storage returns to its last valid snapshot', () => {
+    const fixture = createStorage(savedDocument);
+    const store = new VocabularyProgressStore(fixture.storage);
+    fixture.setWriteFailure(true);
+    store.applyRating('new', 'known');
+    fixture.external('{broken');
+    store.refresh();
+    fixture.external(savedDocument);
+    store.refresh();
+    assert.equal(store.getKnownStreak('new'), 1);
+    assert.equal(store.getKnownStreak('prior'), 2);
+    assert.equal(fixture.getWrites(), 1);
+    fixture.setWriteFailure(false);
+    store.applyRating('new', 'known');
+    assert.deepEqual(JSON.parse(fixture.getRaw()!).entries, {
+      ...savedEntries,
+      new: { status: 'learned', knownStreak: 2 },
+    });
+  });
+
+  it('does not resurrect a failed reset after a malformed-to-original snapshot roundtrip', () => {
+    const fixture = createStorage(savedDocument);
+    const store = new VocabularyProgressStore(fixture.storage);
+    fixture.setRemovalFailure(true);
+    store.resetAll();
+    fixture.external('{broken');
+    store.refresh();
+    fixture.external(savedDocument);
+    store.refresh();
+    assert.deepEqual(store.getAllEntries(), {});
+    assert.equal(fixture.getRaw(), savedDocument);
+    assert.equal(fixture.getWrites(), 0);
+    fixture.external(JSON.stringify({ version: 1, entries: { external: savedEntries.prior } }));
+    store.refresh();
+    assert.deepEqual(store.getAllEntries(), { external: savedEntries.prior });
+  });
+
+  it('does not replace the valid pending-write baseline with a malformed pre-rating read', () => {
+    const fixture = createStorage(savedDocument);
+    const store = new VocabularyProgressStore(fixture.storage);
+    fixture.setWriteFailure(true);
+    store.applyRating('new', 'known');
+    fixture.external('{broken');
+    store.applyRating('new', 'known');
+    fixture.external(savedDocument);
+    store.refresh();
+    assert.equal(store.getKnownStreak('new'), 2);
+    assert.equal(store.getKnownStreak('prior'), 2);
+    assert.equal(fixture.getWrites(), 2);
+    fixture.external(null);
+    store.refresh();
+    assert.deepEqual(store.getAllEntries(), {});
   });
 });

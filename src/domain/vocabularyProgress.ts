@@ -320,21 +320,16 @@ export class VocabularyProgressStore {
   private load(): void {
     try {
       const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY) ?? null;
+      const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
+      // Rejected snapshots cannot reset progress or its pending-write baseline.
+      if (doc === null) return;
       if (this.shouldKeepPendingDocument(raw)) return;
       this.rememberStorageValue(raw);
-      if (typeof raw === 'string') {
-        const doc = parseDocument(raw);
-        if (doc !== null) {
-          this.document = doc;
-        }
-        // A malformed snapshot is not an explicit reset of page-memory progress.
-        return;
-      }
+      this.document = doc;
     } catch {
       /* Preserve page-memory progress when storage is temporarily unreadable. */
       return;
     }
-    this.document = emptyDocument();
   }
 
   /**
@@ -348,19 +343,11 @@ export class VocabularyProgressStore {
     if (this.storage === null) return;
     try {
       const raw = this.storage.getItem(VOCABULARY_PROGRESS_KEY);
+      const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
+      if (doc === null) return;
       if (this.shouldKeepPendingDocument(raw)) return;
       this.rememberStorageValue(raw);
-      if (typeof raw === 'string') {
-        const doc = parseDocument(raw);
-        if (doc !== null) {
-          this.document = doc;
-        } else {
-          // malformed — keep existing in-memory state
-        }
-      } else {
-        // null / absent — storage was cleared (e.g. resetAll)
-        this.document = emptyDocument();
-      }
+      this.document = doc;
     } catch {
       /* storage malformed — keep existing in-memory state */
     }
