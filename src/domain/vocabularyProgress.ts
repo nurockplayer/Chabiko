@@ -330,8 +330,7 @@ export class VocabularyProgressStore {
         }
       }
     } catch {
-      /* keep defaults */
-      if (!this.persistencePending) this.document = emptyDocument();
+      /* Preserve page-memory progress when storage is temporarily unreadable. */
       return;
     }
     this.document = emptyDocument();
