@@ -437,6 +437,25 @@ const json = JSON.stringify(questions);
     font-size: 13px;
     margin: 0;
   }
+  /* Restrained answer feedback motion (A1: no confetti/reward spam). Each
+   * animation settles on the static state captured by visual baselines.
+   * Motion-safe only: with reduced motion feedback appears at rest. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.practice-feedback.feedback-visible),
+    :global(.practice-complete) {
+      animation: chabiko-rise var(--motion-base) var(--ease-out-calm) backwards;
+    }
+    :global(.feedback-correct .feedback-icon),
+    :global(.practice-choice--correct .practice-choice__indicator) {
+      animation: chabiko-pop 320ms var(--ease-out-calm) backwards;
+    }
+    :global(.practice-choice--incorrect) {
+      animation: chabiko-nudge 280ms ease-in-out;
+    }
+    :global(.practice-complete-icon) {
+      animation: chabiko-pop 360ms var(--ease-out-calm) 80ms backwards;
+    }
+  }
   .loading-placeholder {
     color: var(--ink-secondary);
     font-size: 13px;

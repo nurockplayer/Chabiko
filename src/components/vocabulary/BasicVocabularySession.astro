@@ -17,9 +17,18 @@ const sessionSize = Math.min(10, ids.length);
   data-basic-vocabulary-ids={JSON.stringify(ids)}
   data-basic-vocabulary-session-size={sessionSize}
 >
-  <p class="basic-vocabulary-total" data-total>全{totalCount}語</p>
-  <p class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</p>
-  <p class="basic-vocabulary-progress" data-progress aria-live="polite">今回 0 / {sessionSize}語</p>
+  <div class="basic-vocabulary-session-head">
+    <p class="basic-vocabulary-progress" data-progress aria-live="polite">今回 0 / {sessionSize}語</p>
+    <!-- Decorative mirror of the live progress text above; screen readers get
+         the text, sighted learners also get momentum at a glance. -->
+    <div class="basic-vocabulary-meter" aria-hidden="true">
+      <span class="basic-vocabulary-meter__fill" data-progress-meter></span>
+    </div>
+    <p class="basic-vocabulary-totals">
+      <span class="basic-vocabulary-total" data-total>全{totalCount}語</span>
+      <span class="basic-vocabulary-summary" data-summary>新規 {ids.length}語・学習中 0語・習得済み 0語</span>
+    </p>
+  </div>
   <!-- Recall-first reveal (#356): the opening card is the front word only.
        The illustration is answer feedback, rendered client-side together with
        the answer when 「答えを見る」 is pressed — never a pre-reveal hint. -->
@@ -56,20 +65,50 @@ const sessionSize = Math.min(10, ids.length);
     width: 100%;
   }
 
-  .basic-vocabulary-total,
-  .basic-vocabulary-summary {
-    margin: 0 0 var(--sp-1);
-    color: var(--ink-secondary);
-    font-size: 0.8125rem;
-    text-align: right;
+  /* Session head: this-session progress leads (text + meter); corpus totals
+   * are quieter metadata on one wrapping line. */
+  .basic-vocabulary-session-head {
+    display: grid;
+    gap: var(--sp-2);
+    margin: 0 0 var(--sp-3);
   }
 
   .basic-vocabulary-progress {
-    margin: 0 0 var(--sp-2);
-    color: var(--ink-secondary);
+    margin: 0;
+    color: var(--ink);
     font-size: 0.875rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    text-align: right;
+  }
+
+  .basic-vocabulary-meter {
+    height: 4px;
+    overflow: hidden;
+    background: var(--hairline);
+  }
+
+  .basic-vocabulary-meter__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--jade);
+    transform: scaleX(var(--session-progress, 0));
+    transform-origin: left center;
+  }
+
+  .basic-vocabulary-totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--sp-3);
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .basic-vocabulary-total,
+  .basic-vocabulary-summary {
+    overflow-wrap: anywhere;
   }
 
   .basic-vocabulary-reset {
@@ -141,6 +180,39 @@ const sessionSize = Math.min(10, ids.length);
     background: var(--paper-deep);
     padding: clamp(1rem, 5vw, 2rem);
     text-align: center;
+  }
+
+  /* Every render replaces the card's children, so new content eases in
+   * (front word, revealed answer, next card, completion) instead of
+   * hard-swapping. Motion-safe only: with reduced motion nothing animates
+   * and content is shown at rest immediately. */
+  @media (prefers-reduced-motion: no-preference) {
+    .basic-vocabulary-card > *,
+    .basic-vocabulary-completion > * {
+      animation: chabiko-rise var(--motion-base) var(--ease-out-calm) backwards;
+    }
+
+    .basic-vocabulary-card > :nth-child(2),
+    .basic-vocabulary-completion > :nth-child(2) {
+      animation-delay: 40ms;
+    }
+
+    .basic-vocabulary-card > :nth-child(n + 3),
+    .basic-vocabulary-completion > :nth-child(n + 3) {
+      animation-delay: 80ms;
+    }
+
+    .basic-vocabulary-meter__fill {
+      transition: transform var(--motion-base) var(--ease-out-calm);
+    }
+
+    .basic-vocabulary-rating,
+    .basic-vocabulary-action {
+      transition:
+        background var(--motion-quick) ease,
+        border-color var(--motion-quick) ease,
+        transform var(--motion-quick) ease;
+    }
   }
 
   .basic-vocabulary-completion {
@@ -430,6 +502,19 @@ const sessionSize = Math.min(10, ids.length);
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  @media (max-width: 767px) {
+    /* Phone ergonomics: anchor card content to the top so the front word and
+     * 「答えを見る」 sit inside the first screen, and the revealed answer reads
+     * from the top of the card instead of re-centering inside it. */
+    .basic-vocabulary-card {
+      justify-content: flex-start;
+    }
+
+    .basic-vocabulary-card > .basic-vocabulary-simplified:first-child {
+      margin-top: clamp(1.5rem, 9vh, 5rem);
+    }
   }
 
   @media (max-width: 480px) {
