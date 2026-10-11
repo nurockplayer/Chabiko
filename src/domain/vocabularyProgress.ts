@@ -174,6 +174,7 @@ function parseDocument(raw: string): VocabularyProgressDocument | null {
       typeof parsed !== 'object' ||
       parsed.version !== CURRENT_SCHEMA_VERSION ||
       parsed.entries === null ||
+      Array.isArray(parsed.entries) ||
       typeof parsed.entries !== 'object'
     ) {
       return null;
@@ -238,6 +239,9 @@ function getDefaultStorage(): StorageLike | null {
 export class VocabularyProgressStore {
   private document: VocabularyProgressDocument;
   private storage: StorageLike | null;
+  private persistencePending = false;
+  private hasObservedStorageValue = false;
+  private lastObservedStorageValue: string | null = null;
 
   constructor(storage?: StorageLike | null) {
     this.document = emptyDocument();
@@ -304,8 +308,11 @@ export class VocabularyProgressStore {
     this.document = emptyDocument();
     try {
       this.storage?.removeItem(VOCABULARY_PROGRESS_KEY);
+      this.persistencePending = false;
+      this.rememberStorageValue(null);
     } catch {
-      /* best-effort */
+      /* keep the reset in memory until storage can be reconciled */
+      this.persistencePending = true;
     }
   }
 
@@ -313,18 +320,17 @@ export class VocabularyProgressStore {
 
   private load(): void {
     try {
-      const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY);
-      if (typeof raw === 'string') {
-        const doc = parseDocument(raw);
-        if (doc !== null) {
-          this.document = doc;
-          return;
-        }
-      }
+      const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY) ?? null;
+      const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
+      // Rejected snapshots cannot reset progress or its pending-write baseline.
+      if (doc === null) return;
+      if (this.shouldKeepPendingDocument(raw)) return;
+      this.rememberStorageValue(raw);
+      this.document = doc;
     } catch {
-      /* keep defaults */
+      /* Preserve page-memory progress when storage is temporarily unreadable. */
+      return;
     }
-    this.document = emptyDocument();
   }
 
   /**
@@ -338,30 +344,38 @@ export class VocabularyProgressStore {
     if (this.storage === null) return;
     try {
       const raw = this.storage.getItem(VOCABULARY_PROGRESS_KEY);
-      if (typeof raw === 'string') {
-        const doc = parseDocument(raw);
-        if (doc !== null) {
-          this.document = doc;
-        } else {
-          // malformed — keep existing in-memory state
-        }
-      } else {
-        // null / absent — storage was cleared (e.g. resetAll)
-        this.document = emptyDocument();
-      }
+      const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
+      if (doc === null) return;
+      if (this.shouldKeepPendingDocument(raw)) return;
+      this.rememberStorageValue(raw);
+      this.document = doc;
     } catch {
       /* storage malformed — keep existing in-memory state */
     }
   }
 
+  private shouldKeepPendingDocument(raw: string | null): boolean {
+    if (!this.persistencePending) return false;
+    if (this.hasObservedStorageValue && raw === this.lastObservedStorageValue) return true;
+    this.persistencePending = false;
+    return false;
+  }
+
+  private rememberStorageValue(raw: string | null): void {
+    this.lastObservedStorageValue = raw;
+    this.hasObservedStorageValue = true;
+  }
+
   private persist(): void {
+    if (this.storage === null) return;
     try {
-      this.storage?.setItem(
-        VOCABULARY_PROGRESS_KEY,
-        JSON.stringify(this.document),
-      );
+      const raw = JSON.stringify(this.document);
+      this.storage.setItem(VOCABULARY_PROGRESS_KEY, raw);
+      this.persistencePending = false;
+      this.rememberStorageValue(raw);
     } catch {
       /* storage full or unavailable — keep in-memory state */
+      this.persistencePending = true;
     }
   }
 }

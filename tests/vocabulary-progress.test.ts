@@ -28,6 +28,41 @@ function entry(entries: Record<string, VocabularyProgressEntry>): string {
   return JSON.stringify({ version: 1, entries });
 }
 
+function createQuotaStorage(initialValue: string | null = null) {
+  let raw = initialValue;
+  let failWrites = true;
+  let failReads = false;
+  const failedWriteValues: string[] = [];
+  const writeAttempts: string[] = [];
+  return {
+    storage: {
+      getItem: (): string | null => {
+        if (failReads) throw new Error('storage read failed');
+        return raw;
+      },
+      setItem: (key: string, value: string): void => {
+        if (key === VOCABULARY_PROGRESS_KEY) {
+          writeAttempts.push(value);
+          if (failWrites) {
+            failedWriteValues.push(value);
+            throw new DOMException('storage quota exceeded', 'QuotaExceededError');
+          }
+          raw = value;
+        }
+      },
+      removeItem: (key: string): void => {
+        if (key === VOCABULARY_PROGRESS_KEY) raw = null;
+      },
+    },
+    failedWriteValues,
+    writeAttempts,
+    getRaw: () => raw,
+    setRaw: (value: string | null) => { raw = value; },
+    setWriteFailure: (fails: boolean) => { failWrites = fails; },
+    setReadFailure: (fails: boolean) => { failReads = fails; },
+  };
+}
+
 // ─── Empty document ───────────────────────────────────────────────────────────
 
 describe('emptyDocument', () => {
@@ -253,6 +288,75 @@ describe('VocabularyProgressStore', () => {
       expect(() => flakyStore.applyRating('a', 'known')).not.toThrow();
       expect(flakyStore.getStatus('a')).toBe('learning');
     });
+
+    it.each([
+      { physicalState: 'absent', initialRaw: null },
+      {
+        physicalState: 'populated',
+        initialRaw: entry({ existing: { status: 'learned', knownStreak: 2 } }),
+      },
+    ])('keeps quota-fallback progress across unchanged $physicalState snapshots', ({ initialRaw }) => {
+      const quota = createQuotaStorage(initialRaw);
+      const fallbackStore = new VocabularyProgressStore(quota.storage);
+
+      fallbackStore.applyRating('a', 'known');
+      expect(fallbackStore.getKnownStreak('a')).toBe(1);
+      fallbackStore.refresh();
+      fallbackStore.refresh();
+      expect(fallbackStore.getKnownStreak('a')).toBe(1);
+
+      fallbackStore.applyRating('a', 'known');
+      expect(fallbackStore.getStatus('a')).toBe('learned');
+      expect(fallbackStore.getKnownStreak('a')).toBe(2);
+      fallbackStore.refresh();
+      expect(fallbackStore.getKnownStreak('a')).toBe(2);
+      expect(quota.getRaw()).toBe(initialRaw);
+      expect(fallbackStore.getStatus('existing')).toBe(initialRaw === null ? 'new' : 'learned');
+      expect(quota.failedWriteValues).toHaveLength(2);
+      expect(quota.writeAttempts).toHaveLength(2);
+    });
+
+    it('keeps quota-fallback progress when refresh and pre-rating reads fail', () => {
+      const quota = createQuotaStorage();
+      const fallbackStore = new VocabularyProgressStore(quota.storage);
+      fallbackStore.applyRating('a', 'known');
+      quota.setReadFailure(true);
+
+      fallbackStore.refresh();
+      expect(fallbackStore.getKnownStreak('a')).toBe(1);
+      fallbackStore.applyRating('a', 'known');
+      expect(fallbackStore.getStatus('a')).toBe('learned');
+      expect(fallbackStore.getKnownStreak('a')).toBe(2);
+      expect(quota.failedWriteValues).toHaveLength(2);
+      expect(quota.writeAttempts).toHaveLength(2);
+    });
+
+    it.each([
+      {
+        change: 'a genuinely changed valid document',
+        nextRaw: entry({ external: { status: 'learned', knownStreak: 2 } }),
+        expectedStatus: 'learned',
+        expectedStreak: 2,
+      },
+      {
+        change: 'removal of a populated key',
+        nextRaw: null,
+        expectedStatus: 'new',
+        expectedStreak: 0,
+      },
+    ])('honors $change during quota fallback', ({ nextRaw, expectedStatus, expectedStreak }) => {
+      const quota = createQuotaStorage(entry({ existing: { status: 'learning', knownStreak: 1 } }));
+      const fallbackStore = new VocabularyProgressStore(quota.storage);
+      fallbackStore.applyRating('local', 'known');
+      quota.setRaw(nextRaw);
+
+      fallbackStore.refresh();
+
+      expect(fallbackStore.getStatus('local')).toBe('new');
+      expect(fallbackStore.getStatus(nextRaw === null ? 'existing' : 'external')).toBe(expectedStatus);
+      expect(fallbackStore.getKnownStreak(nextRaw === null ? 'existing' : 'external')).toBe(expectedStreak);
+      expect(quota.writeAttempts).toHaveLength(1);
+    });
   });
 
   // ── prioritize ─────────────────────────────────────────────────────────────
@@ -342,6 +446,46 @@ describe('VocabularyProgressStore', () => {
       flakyStore.applyRating('a', 'known');
       expect(() => flakyStore.resetAll()).not.toThrow();
       expect(flakyStore.getStatus('a')).toBe('new');
+    });
+
+    it('clears quota fallback on reset and accepts a later external document', () => {
+      const priorRaw = entry({ prior: { status: 'learned', knownStreak: 2 } });
+      const quota = createQuotaStorage(priorRaw);
+      const fallbackStore = new VocabularyProgressStore(quota.storage);
+      fallbackStore.applyRating('local', 'known');
+      expect(fallbackStore.getKnownStreak('local')).toBe(1);
+
+      fallbackStore.resetAll();
+      expect(fallbackStore.getStatus('local')).toBe('new');
+      expect(quota.getRaw()).toBeNull();
+
+      quota.setRaw(priorRaw);
+      fallbackStore.refresh();
+      expect(fallbackStore.getStatus('prior')).toBe('learned');
+      expect(fallbackStore.getKnownStreak('prior')).toBe(2);
+      expect(fallbackStore.getStatus('local')).toBe('new');
+    });
+  });
+
+  describe('quota persistence recovery', () => {
+    it('clears fallback after a successful write and then honors an external reset', () => {
+      const quota = createQuotaStorage();
+      const fallbackStore = new VocabularyProgressStore(quota.storage);
+      fallbackStore.applyRating('a', 'known');
+      expect(fallbackStore.getKnownStreak('a')).toBe(1);
+
+      quota.setWriteFailure(false);
+      fallbackStore.applyRating('a', 'known');
+      expect(fallbackStore.getStatus('a')).toBe('learned');
+      expect(fallbackStore.getKnownStreak('a')).toBe(2);
+      expect(JSON.parse(quota.getRaw()!).entries.a).toEqual({ status: 'learned', knownStreak: 2 });
+      expect(quota.failedWriteValues).toHaveLength(1);
+      expect(quota.writeAttempts).toHaveLength(2);
+
+      quota.setRaw(null);
+      fallbackStore.refresh();
+      expect(fallbackStore.getStatus('a')).toBe('new');
+      expect(fallbackStore.getKnownStreak('a')).toBe(0);
     });
   });
 

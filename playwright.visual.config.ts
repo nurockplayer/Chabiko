@@ -43,13 +43,24 @@ export default defineConfig({
       ],
     },
   },
-  webServer: {
-    command:
-      'corepack pnpm build && corepack pnpm exec astro preview --host 127.0.0.1 --port 4321',
-    url: 'http://127.0.0.1:4321/',
-    reuseExistingServer: false,
-    timeout: 120_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+  webServer: [
+    {
+      command:
+        'corepack pnpm build && corepack pnpm exec astro preview --host 127.0.0.1 --port 4321',
+      url: 'http://127.0.0.1:4321/',
+      reuseExistingServer: false,
+      timeout: 120_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    {
+      command:
+        'corepack pnpm exec astro dev --config astro.hsk2.acceptance.config.mjs --host 127.0.0.1 --port 4322',
+      url: 'http://127.0.0.1:4322/__acceptance/hsk2/',
+      reuseExistingServer: false,
+      timeout: 120_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+  ],
 });

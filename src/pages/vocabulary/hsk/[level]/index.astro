@@ -45,12 +45,13 @@ const title = `HSK ${level} 単語フラッシュカード`;
         {pool.status === 'partial' && (
           <p class="availability-note" role="status">一部の単語を公開中です。</p>
         )}
-        <FlashcardSession entries={entries.map((entry) => ({
+        <FlashcardSession level={level} entries={entries.map((entry) => ({
           id: entry.id,
           simplified: entry.simplified,
           pinyin: entry.pinyin,
           japanese: entry.japanese,
-        }))} answerSource={`/data/hsk/${level}.json`} />
+        }))} newPoolIds={pool.newWords.map((entry) => entry.id)}
+          answerSource={`/data/hsk/${level}.json`} />
         {sourceNotice && (
           <aside class="source-notice" aria-label="単語データの出典とライセンス">
             <p><a href={sourceNotice.sourceUrl} rel="noreferrer">{sourceNotice.attribution}</a></p>
@@ -78,6 +79,10 @@ const title = `HSK ${level} 単語フラッシュカード`;
     font-weight: 600;
     min-height: 44px;
     align-content: center;
+  }
+  .back-link:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
   }
   .page-title {
     font-family: var(--font-serif-ja);
