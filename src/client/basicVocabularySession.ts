@@ -316,6 +316,7 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
   const progressElement = progress;
   const summaryElement = summary;
   const totalElement = total;
+  const progressMeter = root.querySelector<HTMLElement>('[data-progress-meter]');
 
   function updateProgress(): void {
     // Preserve persistent live-region announcements (identity-switch or reset,
@@ -330,6 +331,12 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     progressElement.textContent =
       `今回 ${state.completedUniqueCount} / ${state.selectedItemIds.length}語`;
     for (const announcement of announcements) progressElement.append(announcement);
+    // Decorative meter (aria-hidden) mirrors the same session counts.
+    const size = state.selectedItemIds.length;
+    progressMeter?.style.setProperty(
+      '--session-progress',
+      String(size > 0 ? Math.min(state.completedUniqueCount / size, 1) : 0),
+    );
   }
 
   function updateSummary(): void {

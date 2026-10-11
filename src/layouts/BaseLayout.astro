@@ -115,6 +115,12 @@ const canonical = url.href;
         --radius-content: 10px;
         --radius-card: 12px;
         --radius-hero: 16px;
+        /* Restrained feedback motion (A1 §9/§10): short, calm, never
+         * celebratory spam. Consumers apply it only inside
+         * `@media (prefers-reduced-motion: no-preference)`. */
+        --motion-quick: 160ms;
+        --motion-base: 240ms;
+        --ease-out-calm: cubic-bezier(0.2, 0.7, 0.2, 1);
         /* ── Transitional legacy aliases · Issue #393 ──────────────
          * Role-mapped to A1 values so not-yet-migrated surfaces keep
          * functioning with the A1 visual language. Removed surface by
@@ -387,6 +393,48 @@ const canonical = url.href;
       @media (width >= 1024px) {
         .main-content {
           padding-block: var(--space-2xl) var(--space-3xl);
+        }
+      }
+      /* Shared feedback keyframes (names are not scoped by Astro). Each one
+       * ends on the element's natural resting state, so static captures are
+       * unchanged. Consumers must gate usage on
+       * `prefers-reduced-motion: no-preference`: the reduced-motion rule
+       * below is scoped to this layout's own elements and does not reach
+       * component markup. */
+      /* Transform-only on purpose: content is never translucent, so text
+       * contrast is identical to the static state at every frame. */
+      @keyframes chabiko-rise {
+        from {
+          transform: translateY(6px);
+        }
+        to {
+          transform: none;
+        }
+      }
+      @keyframes chabiko-pop {
+        0% {
+          transform: scale(0.6);
+        }
+        60% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: none;
+        }
+      }
+      @keyframes chabiko-nudge {
+        0%,
+        100% {
+          transform: none;
+        }
+        25% {
+          transform: translateX(-4px);
+        }
+        50% {
+          transform: translateX(3px);
+        }
+        75% {
+          transform: translateX(-2px);
         }
       }
       @media (prefers-reduced-motion: reduce) {

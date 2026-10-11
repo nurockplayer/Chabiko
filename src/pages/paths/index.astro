@@ -195,6 +195,10 @@ const pathsPayload = JSON.stringify({
     list-style: none;
     display: grid;
     gap: var(--sp-4);
+    /* Reset the UA <ol> inset so path cards align with the page heading
+     * instead of losing 40px of width on phones. */
+    margin: 0;
+    padding: 0;
   }
   .paths-list-item {
     min-width: 0;
@@ -234,6 +238,8 @@ const pathsPayload = JSON.stringify({
     list-style: none;
     display: grid;
     gap: var(--sp-3);
+    margin: 0;
+    padding: 0;
   }
   .readiness-list-item {
     min-width: 0;
