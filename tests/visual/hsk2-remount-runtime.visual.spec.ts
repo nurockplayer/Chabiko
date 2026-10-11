@@ -5,7 +5,7 @@ const URL = 'http://127.0.0.1:4322/__acceptance/hsk2/';
 const KEY = 'chabiko:hsk-vocabulary-progress:v1';
 type Failure = 'invalid-payload' | 'request-failure';
 type StorageMode = 'available' | 'unavailable' | 'quota-absent' | 'quota-populated';
-type ProbeWindow = Window & {
+type ProbeWindow = typeof window & {
   __remountProbe: { writes: number; ratings: Array<{ id: string; rating: string }>; root?: Element };
 };
 
