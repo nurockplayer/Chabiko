@@ -18,7 +18,7 @@ Chabiko is a Japanese-first Mandarin Chinese learning website. Its learner goal 
 - Deployed via [Cloudflare Pages](https://pages.cloudflare.com/) from the `main` branch of `nurockplayer/Chabiko`.
 - Build command: `pnpm install --frozen-lockfile && pnpm build`
 - Build output directory: `dist`
-- Current deployment variables include `NODE_VERSION=24.18.0`, `PNPM_VERSION=10.33.0`, and `SKIP_DEPENDENCY_INSTALL=1`.
+- Deployment requires `NODE_VERSION=24.18.0`, `PNPM_VERSION=12.11.2`, and `SKIP_DEPENDENCY_INSTALL=1`.
 
 ## Repository Authority
 
@@ -34,7 +34,7 @@ This is an implemented, deployed product rather than a greenfield scaffold. The 
 
 - Astro
 - TypeScript
-- pnpm
+- pnpm 12.11.2
 - Vitest
 - Playwright-based visual/accessibility gates
 - structured content files and deterministic validation tooling
