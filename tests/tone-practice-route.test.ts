@@ -301,7 +301,7 @@ describe('tone route wiring', () => {
     if (item.toneContourId === 't4-falling') expect(heights[0]).toBeLessThan(heights[1]);
     const choices = root.querySelectorAll<HTMLButtonElement>('.tone-choice');
     expect([...choices].map((button) => button.textContent)).toEqual([
-      item.correctAnswer, ...item.distractors,
+      '第一声', '第二声', '第三声', '第四声',
     ]);
     choices[1].click();
     expect(visibleText()).not.toContain(item.correctAnswer);

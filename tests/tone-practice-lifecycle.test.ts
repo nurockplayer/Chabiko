@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { mountTonePractice } from '../src/client/tonePractice';
+import { loadTonePractice } from '../src/content/loadTonePractice';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -10,7 +11,7 @@ interface FixtureItem {
   recordId: string;
   promptJa: string;
   correctAnswer: string;
-  distractors: string[];
+  distractors: readonly string[];
   contrastId: string;
   toneContourId: string;
   toneContourHintJa: string;
@@ -222,6 +223,45 @@ describe('tone practice lifecycle', () => {
 // ─── Keyboard / focus / live feedback ───────────────────────────────────────
 
 describe('tone practice keyboard, focus, and feedback', () => {
+  it('renders canonical tone order with each answer in a different position across current items', () => {
+    const items = loadTonePractice();
+    expect(items).toHaveLength(4);
+    const root = createPracticeHTML({ items });
+    const controller = mountTonePractice(root);
+    const answerPositions: number[] = [];
+    try {
+      for (const item of items) {
+        const labels = choiceButtons(root).map((button) => button.textContent);
+        expect(labels).toEqual(['第一声', '第二声', '第三声', '第四声']);
+        expect(document.activeElement).toBe(choiceButton(root, '第一声'));
+        answerPositions.push(labels.indexOf(item.correctAnswer));
+        choiceButton(root, item.correctAnswer).click();
+        submitButton(root).click();
+        (root.querySelector('.tone-action--next') as HTMLButtonElement).click();
+      }
+      expect(answerPositions).toEqual([0, 1, 2, 3]);
+    } finally {
+      controller.dispose();
+      resetDom();
+    }
+  });
+
+  it.each(loadTonePractice())('focuses 第一声 regardless of the answer for $recordId, including after retry', (item) => {
+    const root = createPracticeHTML({ items: [item] });
+    const controller = mountTonePractice(root);
+    try {
+      expect(document.activeElement).toBe(choiceButton(root, '第一声'));
+      choiceButton(root, item.distractors[0]).click();
+      submitButton(root).click();
+      (root.querySelector('.tone-action--retry') as HTMLButtonElement).click();
+      expect(document.activeElement).toBe(choiceButton(root, '第一声'));
+      expect(choiceButtons(root)[0].getAttribute('aria-pressed')).toBe('false');
+    } finally {
+      controller.dispose();
+      resetDom();
+    }
+  });
+
   it('renders a single polite aria-live feedback region', () => {
     const root = mount({ items: [fixtureItem('rec-a')] });
     const live = root.querySelectorAll('[aria-live="polite"]');

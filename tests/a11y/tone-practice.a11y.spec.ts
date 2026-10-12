@@ -46,14 +46,22 @@ for (const theme of ['light', 'dark'] as const) {
         };
         await assertSecret();
         await expect(root.getByRole('group', { name: '声調を選ぶ' })).toBeVisible();
-        await expect(root.getByRole('button', { name: item.correctAnswer, exact: true })).toBeFocused();
+        const choices = root.locator('.tone-choice');
+        const canonicalOrder = ['第一声', '第二声', '第三声', '第四声'];
+        await expect(choices).toHaveText(canonicalOrder);
+        await expect(choices.first()).toBeFocused();
         const focus = await page.evaluate(() => {
           const style = getComputedStyle(document.activeElement!);
           return { width: style.outlineWidth, style: style.outlineStyle };
         });
         expect(focus.width).not.toBe('0px');
         expect(focus.style).not.toBe('none');
-        // Enter selects the first (correct) choice; native focus moves to submit.
+        // Initial focus always starts at 第一声. Navigate by the canonical
+        // order to the intended answer, then select it with the keyboard.
+        for (let index = 0; index < canonicalOrder.indexOf(item.correctAnswer); index += 1) {
+          await page.keyboard.press('Tab');
+        }
+        await expect(root.getByRole('button', { name: item.correctAnswer, exact: true })).toBeFocused();
         await page.keyboard.press('Enter');
         await assertSecret();
         await expect(root.getByRole('button', { name: '答え合わせ', exact: true })).toBeFocused();

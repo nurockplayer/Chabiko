@@ -16,6 +16,7 @@ import type {
   TonePracticeState,
 } from '../domain/tonePractice';
 import {
+  TONE_CHOICES,
   isToneChoice,
   applyTonePracticeAction,
   createTonePracticeSession,
@@ -159,9 +160,10 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     interferenceView.hidden = false;
 
     // ── Four named choices ────────────────────────────────────────────────
-    const choices = [item.correctAnswer, ...item.distractors];
+    // Canonical tone order keeps answer position and initial focus independent
+    // of the correct answer, while remaining stable across renders.
     choicesView.replaceChildren();
-    for (const choice of choices) {
+    for (const choice of TONE_CHOICES) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'tone-choice';
