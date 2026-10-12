@@ -31,10 +31,7 @@ const serialized = JSON.stringify({
     <p class="tone-practice-prompt" data-tone-prompt></p>
   </div>
 
-  <div class="tone-contour" data-tone-contour aria-hidden="true">
-    <span class="tone-contour__label" data-tone-contour-label></span>
-  </div>
-  <p class="tone-hint" data-tone-hint></p>
+  <div class="tone-contour" data-tone-contour></div>
   <p class="tone-interference" data-tone-interference></p>
 
   <div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>
@@ -106,19 +103,35 @@ const serialized = JSON.stringify({
     overflow: hidden;
   }
 
-  .tone-contour__label {
-    display: inline-block;
-    color: var(--ink);
-    font-size: 1.25rem;
-    font-weight: 800;
-    line-height: 1.2;
-    text-align: center;
+  .tone-contour[hidden] {
+    display: none;
+  }
+
+  .tone-contour__drawing {
+    display: block;
+    width: 100%;
+    max-width: 15rem;
+    height: auto;
+  }
+
+  .tone-contour__grid {
+    stroke: var(--hairline);
+    stroke-width: 1;
+  }
+
+  .tone-contour__line {
+    fill: none;
+    stroke: var(--jade);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .tone-hint {
     margin: 0;
     color: var(--ink-secondary);
     font-size: 0.8125rem;
+    font-weight: 400;
     overflow-wrap: anywhere;
   }
 

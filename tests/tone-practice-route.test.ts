@@ -226,9 +226,7 @@ function createPracticeHTML(data: { items: unknown[] }): HTMLElement {
     '<div class="tone-practice-header">' +
     '<p class="tone-practice-progress" data-tone-progress></p>' +
     '<p class="tone-practice-prompt" data-tone-prompt></p></div>' +
-    '<div class="tone-contour" data-tone-contour aria-hidden="true">' +
-    '<span class="tone-contour__label" data-tone-contour-label></span></div>' +
-    '<p class="tone-hint" data-tone-hint></p>' +
+    '<div class="tone-contour" data-tone-contour></div>' +
     '<p class="tone-interference" data-tone-interference></p>' +
     '<div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>' +
     '<div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>' +
@@ -257,18 +255,68 @@ describe('tone route wiring', () => {
     expect(choiceTexts).toHaveLength(4);
     expect(choiceTexts).toEqual(expect.arrayContaining(['第一声', '第二声', '第三声', '第四声']));
     expect(new Set(choiceTexts).size).toBe(4);
-    // The contour carries the controlled id and the existing hint and
-    // interference guidance.
+    // The contour carries geometry, while only interference guidance is shown.
     const contour = root.querySelector<HTMLElement>('[data-tone-contour]');
     expect(contour?.dataset.contour).toBe('t1-high-flat');
-    expect(root.querySelector('[data-tone-hint]')?.textContent).toBe(
-      VALID_TONE.toneContourHintJa,
-    );
+    expect(root.querySelector('[data-tone-hint]')).toBeNull();
+    expect(contour?.querySelector('svg')).not.toBeNull();
+    expect(contour?.querySelectorAll('line')).toHaveLength(5);
     expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
       VALID_TONE.interferenceJa,
     );
     // No pre-solved answer in the markup; submit starts disabled.
     expect(root.querySelector('.tone-action--submit')?.hasAttribute('disabled')).toBe(true);
+  });
+
+  it.each(loadTonePractice())('conceals the answer outside choices before submitting $recordId', (item) => {
+    const root = mount({ items: [item] });
+    // Choice labels are required; every other piece of visible text must be secret.
+    const visibleText = () => [...root.children]
+      .filter((element) => !element.matches('[data-tone-choices], [hidden]'))
+      .map((element) => element.textContent)
+      .join(' ');
+    // The simulated DOM has no layout engine. Check actual rendered copy,
+    // with a positive assertion so an empty text extraction cannot pass.
+    expect(visibleText()).toContain(item.promptJa);
+    expect(visibleText()).toContain(item.interferenceJa);
+    expect(visibleText()).not.toContain(item.correctAnswer);
+    expect(root.textContent).not.toContain(item.toneContourHintJa);
+    expect(root.querySelector('[data-tone-contour-label]')).toBeNull();
+    expect(root.querySelector('[data-tone-hint]')).toBeNull();
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(item.interferenceJa);
+    const contour = root.querySelector('[data-tone-contour]')!;
+    const accessibleDescriptions = {
+      't1-high-flat': '高い音のまま平らに続く形',
+      't2-rising': '中くらいの高さから高く上がる形',
+      't3-dip-rise': 'いったん低く下がってから上がる形',
+      't4-falling': '高いところから一気に下がる形',
+    } as const;
+    const graphic = contour.querySelector('svg[role="img"]')!;
+    const description = accessibleDescriptions[item.toneContourId as keyof typeof accessibleDescriptions];
+    expect(graphic.getAttribute('aria-label')).toBe(description);
+    expect(['第一声', '第二声', '第三声', '第四声'].some((label) => description.includes(label))).toBe(false);
+    expect(description).not.toMatch(/[0-9０-９]|[一二三四]声/);
+    expect([...contour.querySelectorAll('line')].map((line) => line.getAttribute('y1')))
+      .toEqual(['12', '36', '60', '84', '108']);
+    const points = contour.querySelector('polyline')!.getAttribute('points')!
+      .split(' ').map((point) => point.split(',').map(Number));
+    const heights = points.map((point) => point[1]);
+    if (item.toneContourId === 't1-high-flat') expect(heights).toEqual([12, 12]);
+    if (item.toneContourId === 't2-rising') expect(heights[0]).toBeGreaterThan(heights[1]);
+    if (item.toneContourId === 't3-dip-rise') {
+      expect(heights).toHaveLength(3);
+      expect(heights[1]).toBeGreaterThan(heights[0]);
+      expect(heights[1]).toBeGreaterThan(heights[2]);
+    }
+    if (item.toneContourId === 't4-falling') expect(heights[0]).toBeLessThan(heights[1]);
+    const choices = root.querySelectorAll<HTMLButtonElement>('.tone-choice');
+    expect([...choices].map((button) => button.textContent)).toEqual([
+      '第一声', '第二声', '第三声', '第四声',
+    ]);
+    choices[1].click();
+    expect(visibleText()).not.toContain(item.correctAnswer);
+    expect(root.textContent).not.toContain(item.toneContourHintJa);
+    expect(contour.querySelector('svg[role="img"]')?.getAttribute('aria-label')).toBe(description);
   });
 
   it('rejects mounting with no items', () => {
