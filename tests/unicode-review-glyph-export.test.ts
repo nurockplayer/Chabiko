@@ -17,7 +17,7 @@ import { sha256Json } from '../scripts/unicode_visual_contract';
 const roots: string[] = [];
 const image = 'mcr.microsoft.com/playwright@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48';
 const linuxCiExportTimeoutMs = 900_000;
-const pinnedPnpmCommand = ['pnpm@10.33.0'];
+const pinnedPnpmCommand = ['pnpm@12.11.2'];
 const canonicalJsonPaths = [
   'data/unicode/source-manifest.json',
   'data/unicode/generated/scalar-inventory.json',

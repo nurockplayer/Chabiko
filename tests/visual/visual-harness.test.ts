@@ -65,6 +65,10 @@ describe('visual regression harness contract', () => {
     // declare it safe before git ls-files runs during the Astro build.
     for (const args of [verifyArgs, updateArgs]) {
       const command = args.at(-1) as string;
+      expect(command).toContain('corepack prepare pnpm@12.11.2 --activate');
+      expect(command.indexOf('corepack prepare')).toBeLessThan(
+        command.indexOf('pnpm install --frozen-lockfile'),
+      );
       expect(command).toContain(
         'git config --global --add safe.directory /work',
       );

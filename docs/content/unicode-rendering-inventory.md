@@ -43,7 +43,7 @@ Captured from the machine that runs the repository workflow
 | OS | macOS 15.7.4 (Darwin 24.6.0) |
 | Architecture | arm64 |
 | Node.js | v24.15.0 |
-| pnpm | 10.33.0 (matches `packageManager` in `package.json`) |
+| pnpm | 10.33.0 (matched `packageManager` in `package.json` at capture) |
 | npm | 11.17.0 (bundled; not the repo package manager) |
 | uv | 0.10.9 (Homebrew) |
 | Python | 3.14.3 (matches `.python-version`) |
@@ -52,6 +52,8 @@ Captured from the machine that runs the repository workflow
 | fontconfig | available via Homebrew (`fc-list`, `fc-match`) |
 
 ### 2.2 CI (GitHub Actions)
+
+Captured workflow at the inventory date above; consult `.github/workflows/ci.yml` for the current toolchain.
 
 | Job | Runner | Runtime |
 |-----|--------|---------|

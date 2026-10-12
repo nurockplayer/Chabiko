@@ -60,6 +60,10 @@ describe('accessibility suite harness contract', () => {
     expect(args).toContain(PLAYWRIGHT_IMAGE);
     expect(PLAYWRIGHT_IMAGE).toContain('@sha256:');
     const command = args.at(-1) as string;
+    expect(command).toContain('corepack prepare pnpm@12.11.2 --activate');
+    expect(command.indexOf('corepack prepare')).toBeLessThan(
+      command.indexOf('pnpm install --frozen-lockfile'),
+    );
     expect(command).toContain('pnpm install --frozen-lockfile');
     expect(command).toContain('--config=playwright.a11y.config.ts');
     // The bind-mounted checkout is owned by the host, so the container must

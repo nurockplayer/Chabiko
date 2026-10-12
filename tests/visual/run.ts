@@ -25,6 +25,7 @@ export function buildDockerArgs(
   const playwrightCommand = [
     'set -euo pipefail',
     'git config --global --add safe.directory /work',
+    'corepack prepare pnpm@12.11.2 --activate',
     'corepack pnpm config set store-dir /pnpm/store',
     'corepack pnpm install --frozen-lockfile',
     'corepack pnpm exec playwright test --config=playwright.visual.config.ts ' +

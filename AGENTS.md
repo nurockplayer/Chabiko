@@ -258,7 +258,7 @@ An unfinished CodeRabbit run is not an independent merge blocker unless the PR i
 
 ## JavaScript Package Manager
 
-- Use pnpm.
+- Use pnpm 12.11.2, matching `packageManager` in `package.json`.
 - Use the exact `packageManager` version already in `package.json`. Do not downgrade, upgrade, or rewrite it unless the issue explicitly requires that change.
 - Do not introduce `package-lock.json`, `yarn.lock`, `bun.lock`, or `bun.lockb`.
 - Do not add `preinstall`.
