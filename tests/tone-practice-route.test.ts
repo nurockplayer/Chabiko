@@ -226,7 +226,7 @@ function createPracticeHTML(data: { items: unknown[] }): HTMLElement {
     '<div class="tone-practice-header">' +
     '<p class="tone-practice-progress" data-tone-progress></p>' +
     '<p class="tone-practice-prompt" data-tone-prompt></p></div>' +
-    '<div class="tone-contour" data-tone-contour aria-hidden="true"></div>' +
+    '<div class="tone-contour" data-tone-contour></div>' +
     '<p class="tone-interference" data-tone-interference></p>' +
     '<div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>' +
     '<div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>' +
@@ -285,7 +285,17 @@ describe('tone route wiring', () => {
     expect(root.querySelector('[data-tone-hint]')).toBeNull();
     expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(item.interferenceJa);
     const contour = root.querySelector('[data-tone-contour]')!;
-    expect(contour.getAttribute('aria-hidden')).toBe('true');
+    const accessibleDescriptions = {
+      't1-high-flat': '高い音のまま平らに続く形',
+      't2-rising': '中くらいの高さから高く上がる形',
+      't3-dip-rise': 'いったん低く下がってから上がる形',
+      't4-falling': '高いところから一気に下がる形',
+    } as const;
+    const graphic = contour.querySelector('svg[role="img"]')!;
+    const description = accessibleDescriptions[item.toneContourId as keyof typeof accessibleDescriptions];
+    expect(graphic.getAttribute('aria-label')).toBe(description);
+    expect(['第一声', '第二声', '第三声', '第四声'].some((label) => description.includes(label))).toBe(false);
+    expect(description).not.toMatch(/[0-9０-９]|[一二三四]声/);
     expect([...contour.querySelectorAll('line')].map((line) => line.getAttribute('y1')))
       .toEqual(['12', '36', '60', '84', '108']);
     const points = contour.querySelector('polyline')!.getAttribute('points')!
@@ -306,6 +316,7 @@ describe('tone route wiring', () => {
     choices[1].click();
     expect(visibleText()).not.toContain(item.correctAnswer);
     expect(root.textContent).not.toContain(item.toneContourHintJa);
+    expect(contour.querySelector('svg[role="img"]')?.getAttribute('aria-label')).toBe(description);
   });
 
   it('rejects mounting with no items', () => {

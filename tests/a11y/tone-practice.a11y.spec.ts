@@ -3,6 +3,12 @@ import AxeBuilder from '@axe-core/playwright';
 import { loadTonePractice } from '../../src/content/loadTonePractice';
 
 const items = loadTonePractice();
+const contourDescriptions = {
+  't1-high-flat': '高い音のまま平らに続く形',
+  't2-rising': '中くらいの高さから高く上がる形',
+  't3-dip-rise': 'いったん低く下がってから上がる形',
+  't4-falling': '高いところから一気に下がる形',
+} as const;
 
 for (const theme of ['light', 'dark'] as const) {
   for (const width of [320, 375, 390, 768, 1024, 1440]) {
@@ -13,9 +19,15 @@ for (const theme of ['light', 'dark'] as const) {
       const root = page.locator('[data-tone-practice]');
       for (const item of items) {
         const contour = root.locator('[data-tone-contour]');
-        await expect(contour).toHaveAttribute('aria-hidden', 'true');
         await expect(contour).toHaveAttribute('data-contour', item.toneContourId);
         await expect(contour.locator('svg line')).toHaveCount(5);
+        const description = contourDescriptions[item.toneContourId as keyof typeof contourDescriptions];
+        const graphic = root.getByRole('img', { name: description, exact: true });
+        await expect(graphic).toHaveCount(1);
+        expect(description).not.toMatch(/[0-9０-９]|[一二三四]声/);
+        for (const choice of ['第一声', '第二声', '第三声', '第四声']) {
+          expect(description).not.toContain(choice);
+        }
         // A horizontal SVG line has a zero-height geometry box even when its
         // stroke is painted. Check the drawing viewport and stroke instead.
         await expect(contour.locator('svg')).toBeVisible();
@@ -43,6 +55,7 @@ for (const theme of ['light', 'dark'] as const) {
           expect(visibleText).not.toContain(item.correctAnswer);
           await expect(root.locator('[data-tone-hint]')).toHaveCount(0);
           await expect(root.locator('[data-tone-interference]')).toHaveText(item.interferenceJa);
+          await expect(graphic).toHaveAccessibleName(description);
         };
         await assertSecret();
         await expect(root.getByRole('group', { name: '声調を選ぶ' })).toBeVisible();

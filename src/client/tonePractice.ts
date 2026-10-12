@@ -52,11 +52,20 @@ const CONTOUR_POINTS: Record<ToneContourId, string> = {
   't4-falling': '20,12 220,108',
 };
 
+const CONTOUR_ACCESSIBLE_LABELS: Record<ToneContourId, string> = {
+  't1-high-flat': '高い音のまま平らに続く形',
+  't2-rising': '中くらいの高さから高く上がる形',
+  't3-dip-rise': 'いったん低く下がってから上がる形',
+  't4-falling': '高いところから一気に下がる形',
+};
+
 function drawContour(id: ToneContourId): SVGSVGElement {
   const namespace = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(namespace, 'svg');
   svg.setAttribute('viewBox', '0 0 240 120');
   svg.setAttribute('class', 'tone-contour__drawing');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', CONTOUR_ACCESSIBLE_LABELS[id]);
   svg.setAttribute('focusable', 'false');
   for (const y of [12, 36, 60, 84, 108]) {
     const line = document.createElementNS(namespace, 'line');

@@ -40,7 +40,7 @@ function createPracticeHTML(data: { items: FixtureItem[] }): HTMLElement {
     '<div class="tone-practice-header">' +
     '<p class="tone-practice-progress" data-tone-progress></p>' +
     '<p class="tone-practice-prompt" data-tone-prompt></p></div>' +
-    '<div class="tone-contour" data-tone-contour aria-hidden="true"></div>' +
+    '<div class="tone-contour" data-tone-contour></div>' +
     '<p class="tone-interference" data-tone-interference></p>' +
     '<div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>' +
     '<div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>' +
