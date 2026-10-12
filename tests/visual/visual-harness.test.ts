@@ -9,6 +9,7 @@ import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 import { TAIWAN_TRAVEL_PATH_VISUAL_CASES } from './taiwanTravelPathCases';
 import { SMALL_TALK_LAB_VISUAL_CASES } from './smallTalkLabCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
+import { TONE_VISUAL_CASES } from './tonePracticeCases';
 
 const snapshotsDirectory = fileURLToPath(
   new URL('./__screenshots__/', import.meta.url),
@@ -88,6 +89,7 @@ describe('visual regression harness contract', () => {
       (phrasebookCase) => phrasebookCase.snapshotName,
     );
     const expected = [
+      ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,
       ...expectedKanji,

@@ -43,6 +43,36 @@ export interface TonePracticeController {
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
 
+// Five equally spaced pitch levels, from high (y=12) to low (y=108).
+const CONTOUR_POINTS: Record<ToneContourId, string> = {
+  't1-high-flat': '20,12 220,12',
+  't2-rising': '20,60 220,12',
+  't3-dip-rise': '20,84 100,108 220,36',
+  't4-falling': '20,12 220,108',
+};
+
+function drawContour(id: ToneContourId): SVGSVGElement {
+  const namespace = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(namespace, 'svg');
+  svg.setAttribute('viewBox', '0 0 240 120');
+  svg.setAttribute('class', 'tone-contour__drawing');
+  svg.setAttribute('focusable', 'false');
+  for (const y of [12, 36, 60, 84, 108]) {
+    const line = document.createElementNS(namespace, 'line');
+    line.setAttribute('x1', '12');
+    line.setAttribute('x2', '228');
+    line.setAttribute('y1', String(y));
+    line.setAttribute('y2', String(y));
+    line.setAttribute('class', 'tone-contour__grid');
+    svg.append(line);
+  }
+  const contour = document.createElementNS(namespace, 'polyline');
+  contour.setAttribute('points', CONTOUR_POINTS[id]);
+  contour.setAttribute('class', 'tone-contour__line');
+  svg.append(contour);
+  return svg;
+}
+
 export function mountTonePractice(root: HTMLElement): TonePracticeController {
   // A single controller is supported per root. Repeated mounts (Astro
   // navigation) tear down the previous listeners first.
@@ -86,16 +116,14 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const promptEl = root.querySelector<HTMLElement>('[data-tone-prompt]');
   const progressEl = root.querySelector<HTMLElement>('[data-tone-progress]');
   const contourEl = root.querySelector<HTMLElement>('[data-tone-contour]');
-  const contourLabelEl = root.querySelector<HTMLElement>('[data-tone-contour-label]');
-  const hintEl = root.querySelector<HTMLElement>('[data-tone-hint]');
   const interferenceEl = root.querySelector<HTMLElement>('[data-tone-interference]');
   const choicesEl = root.querySelector<HTMLElement>('[data-tone-choices]');
   const feedbackEl = root.querySelector<HTMLElement>('[data-tone-feedback]');
   const actionsEl = root.querySelector<HTMLElement>('[data-tone-actions]');
 
   if (
-    !promptEl || !progressEl || !contourEl || !contourLabelEl ||
-    !hintEl || !interferenceEl || !choicesEl || !feedbackEl || !actionsEl
+    !promptEl || !progressEl || !contourEl ||
+    !interferenceEl || !choicesEl || !feedbackEl || !actionsEl
   ) {
     throw new Error('tone practice markup is missing');
   }
@@ -103,8 +131,6 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const promptView: HTMLElement = promptEl;
   const progressView: HTMLElement = progressEl;
   const contourView: HTMLElement = contourEl;
-  const contourLabelView: HTMLElement = contourLabelEl;
-  const hintView: HTMLElement = hintEl;
   const interferenceView: HTMLElement = interferenceEl;
   const choicesView: HTMLElement = choicesEl;
   const feedbackView: HTMLElement = feedbackEl;
@@ -125,13 +151,10 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     promptView.textContent = item.promptJa;
     progressView.textContent = `${state.currentIndex + 1} / ${state.items.length}`;
 
-    // ── Tone contour: repository-defined text/CSS geometry only ───────────
+    // The shape is the visual question; the explanation belongs to feedback.
     contourView.dataset.contour = item.toneContourId;
-    contourLabelView.textContent = item.toneContourHintJa;
-    // The hint and interference guidance stay visible from the first render
-    // of the item, so retry returns to the same item with the same guidance.
-    hintView.textContent = item.toneContourHintJa;
-    hintView.hidden = false;
+    contourView.hidden = false;
+    contourView.replaceChildren(drawContour(item.toneContourId));
     interferenceView.textContent = item.interferenceJa;
     interferenceView.hidden = false;
 
@@ -172,6 +195,11 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
         line2.append(correctSpan);
         feedbackView.append(line1, line2);
       }
+      const hint = document.createElement('p');
+      hint.className = 'tone-hint';
+      hint.setAttribute('data-tone-hint', '');
+      hint.textContent = item.toneContourHintJa;
+      feedbackView.append(hint);
     }
 
     // ── Actions ───────────────────────────────────────────────────────────
@@ -240,9 +268,8 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     promptView.textContent = '';
     progressView.textContent = '完了';
     contourView.removeAttribute('data-contour');
-    contourLabelView.textContent = '';
-    hintView.textContent = '';
-    hintView.hidden = true;
+    contourView.replaceChildren();
+    contourView.hidden = true;
     interferenceView.textContent = '';
     interferenceView.hidden = true;
     choicesView.replaceChildren();

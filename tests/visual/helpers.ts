@@ -50,7 +50,7 @@ async function readStorage(page: Page): Promise<Record<string, string>> {
   );
 }
 
-async function installNetworkBoundary(
+export async function installNetworkBoundary(
   page: Page,
 ): Promise<Set<string>> {
   const externalRequests = new Set<string>();
@@ -85,7 +85,7 @@ async function installNetworkBoundary(
   return externalRequests;
 }
 
-async function installFixedFont(page: Page): Promise<void> {
+export async function installFixedFont(page: Page): Promise<void> {
   await page.addStyleTag({ content: fixedFontOverride });
   const fontState = await page.evaluate(async (fontFamily) => {
     await document.fonts.ready;
