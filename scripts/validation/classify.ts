@@ -3,7 +3,7 @@
 // mapping is fully unit-testable and reviewable, and the same code drives both
 // the Agent-facing `pnpm validate:*` commands and the CI tier gate.
 //
-// Tier ladder (see AGENTS.md「驗證階梯（risk-based validation ladder）」):
+// Tier ladder (see the Validation section of AGENTS.md):
 //   T0 Smoke       — focused test/validator during implementation (no repo-wide command).
 //   T1 Affected    — affected-domain tests/validators + lint + typecheck.
 //   T2 Integration — full Vitest + lint + typecheck + build.
