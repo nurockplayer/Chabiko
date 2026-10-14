@@ -71,6 +71,11 @@ describe('pronunciation selection', () => {
     spoken[1].onend?.();
     await second;
   });
+  it('refuses to speak Mandarin when only Cantonese voices are installed', async () => {
+    voices = [voice('zh-HK'), voice('yue-Hant-HK')];
+    expect(await playPronunciation('你好', { lang: 'zh-TW' })).toBe(false);
+    expect(spoken).toHaveLength(0);
+  });
   it('cancels the previous utterance and settles its pending promise', async () => {
     const first = playPronunciation('你好');
     const second = playPronunciation('再見');

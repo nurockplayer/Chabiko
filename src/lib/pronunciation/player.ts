@@ -100,7 +100,10 @@ export function playPronunciation(text: string, { lang = 'zh-TW', rate = 0.9 }: 
         utterance = new window.SpeechSynthesisUtterance(normalizeText(text));
         utterance.lang = lang.replace(/_/g, '-');
         utterance.rate = rate;
-        const voice = selectVoice(window.speechSynthesis.getVoices(), lang);
+        const voices = window.speechSynthesis.getVoices();
+        const voice = selectVoice(voices, lang);
+        // Loaded voices but no Mandarin one (e.g. Cantonese only): do not let the OS pick a wrong-language default.
+        if (!voice && voices.length > 0) { finish(false); return; }
         if (voice) utterance.voice = voice;
         utterance.onend = () => finish(true);
         utterance.onerror = () => finish(false);

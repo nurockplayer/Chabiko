@@ -11,6 +11,8 @@ export function refreshPronunciationButtons(): void {
     const text = button.dataset.pronunciationText ?? '';
     const lang = button.dataset.pronunciationLang ?? 'zh-TW';
     button.hidden = !canPlayPronunciation(text, lang);
+    // Register the live region before any click so the first failure is announced.
+    if (!button.hidden) ensureStatus(button);
     const label = `${button.dataset.pronunciationSlow === 'true' ? 'ゆっくり発音を聞く' : '発音を聞く'}：${text}`;
     if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
   });
