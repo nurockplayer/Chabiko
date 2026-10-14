@@ -9,6 +9,8 @@ export interface PronunciationEntry {
   sha256: string;
   generatedAt: string;
   source: 'tts' | 'teacher-recording';
+  reviewStatus?: 'draft' | 'reviewed';
+  humanReview?: boolean;
 }
 
 // Alternatives written with a slash (e.g. 小姐/女士) are spoken as a list with a pause (小姐，女士).

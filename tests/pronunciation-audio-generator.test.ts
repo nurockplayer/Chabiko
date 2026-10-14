@@ -119,7 +119,7 @@ describe('pronunciation audio generation', () => {
     await generatePronunciationAudio({ root, inputs, manifest: [], dryRun: false, provider, log: () => undefined });
     expect(calls).toBe(1);
     const manifest = JSON.parse(readFileSync(join(root, 'src/lib/pronunciation/manifest.json'), 'utf8')) as PronunciationManifestEntry[];
-    expect(manifest[0]).toMatchObject({ text: '你好', lang: 'zh-CN', source: 'tts', provider: 'mock', file: `/audio/${manifest[0]?.sha256}.mp3` });
+    expect(manifest[0]).toMatchObject({ text: '你好', lang: 'zh-CN', source: 'tts', reviewStatus: 'draft', humanReview: false, provider: 'mock', file: `/audio/${manifest[0]?.sha256}.mp3` });
     await generatePronunciationAudio({ root, inputs, manifest, dryRun: false, provider, log: () => undefined });
     expect(calls).toBe(1);
   });

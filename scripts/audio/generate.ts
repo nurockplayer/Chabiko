@@ -188,6 +188,9 @@ export interface PronunciationManifestEntry {
   readonly sha256: string;
   readonly generatedAt: string;
   readonly source: 'tts' | 'teacher-recording';
+  /** Generated clips start unreviewed; only a real reviewer record may change this. */
+  readonly reviewStatus?: 'draft' | 'reviewed';
+  readonly humanReview?: boolean;
 }
 
 export interface GenerationOptions {
@@ -292,6 +295,8 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
       sha256,
       generatedAt: new Date().toISOString(),
       source: 'tts',
+      reviewStatus: 'draft',
+      humanReview: false,
     };
     if (current === -1) manifest.push(entry);
     else if (manifest[current]?.source !== 'teacher-recording') manifest[current] = entry;
