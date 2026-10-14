@@ -24,6 +24,8 @@ export type ToneContourId = 't1-high-flat' | 't2-rising' | 't3-dip-rise' | 't4-f
 export interface TonePracticeItem {
   readonly recordId: string;
   readonly promptJa: string;
+  /** Han text to pronounce after submission (empty when the record has none). */
+  readonly audioText?: string;
   readonly correctAnswer: ToneChoice;
   readonly distractors: readonly [ToneChoice, ToneChoice, ToneChoice];
   readonly contrastId: string;

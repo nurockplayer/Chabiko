@@ -49,8 +49,9 @@ describe('pronunciation audio source collection', () => {
     expect(inputs).toEqual(expect.arrayContaining([
       { text: '你好', lang: 'zh-CN' },
       { text: '谢谢', lang: 'zh-CN' },
-      { text: '谢谢你', lang: 'zh-CN' },
-      { text: '请问到台北', lang: 'zh-CN' },
+      { text: '谢谢你', lang: 'zh-TW' },
+      { text: '谢谢', lang: 'zh-TW' },
+      { text: '请问到台北', lang: 'zh-TW' }, // Taiwan-path Simplified keeps the Taiwan locale
       { text: '謝謝', lang: 'zh-TW' },
       { text: '謝謝你', lang: 'zh-TW' },
       { text: '謝謝 你', lang: 'zh-TW' },
@@ -60,7 +61,7 @@ describe('pronunciation audio source collection', () => {
       { text: '請問到台北', lang: 'zh-TW' },
       { text: '老師好', lang: 'zh-TW' },
     ]));
-    expect(inputs).toHaveLength(12);
+    expect(inputs).toHaveLength(13);
     expect(inputs.some((input) => input.text.includes('答え'))).toBe(false);
     expect(inputs.some((input) => input.text === '不要読まない')).toBe(false);
   });

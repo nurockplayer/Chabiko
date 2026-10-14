@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 
 export type PronunciationLanguage = 'zh-TW' | 'zh-CN';
 
@@ -55,7 +55,16 @@ function addInput(
   }
 }
 
-function collectFromValue(value: unknown, output: Map<string, PronunciationInput>): void {
+/**
+ * Taiwan-path content is always spoken in zh-TW, even its Simplified forms: the
+ * script toggle changes characters, not pronunciation, and the lesson/phrasebook/
+ * roleplay controls request zh-TW. HSK and teacher vocabulary use per-field locales.
+ */
+export function isTaiwanPathSource(relativePath: string): boolean {
+  return !/^data\/(hsk-vocabulary|vocabulary\/teacher-core-v1|teacher-vocabulary-preview)\//u.test(relativePath);
+}
+
+function collectFromValue(value: unknown, output: Map<string, PronunciationInput>, taiwanPath = false): void {
   if (!Array.isArray(value) && value && typeof value === 'object') {
     const record = value as Record<string, unknown>;
     if (record.type === 'tone-discrimination' && typeof record.promptJa === 'string') {
@@ -65,7 +74,7 @@ function collectFromValue(value: unknown, output: Map<string, PronunciationInput
     }
   }
   if (Array.isArray(value)) {
-    for (const item of value) collectFromValue(item, output);
+    for (const item of value) collectFromValue(item, output, taiwanPath);
     return;
   }
   if (!value || typeof value !== 'object') return;
@@ -73,9 +82,9 @@ function collectFromValue(value: unknown, output: Map<string, PronunciationInput
   for (const [key, nested] of Object.entries(value)) {
     const lang = LANGUAGE_FIELDS[key];
     if (lang && typeof nested === 'string') {
-      addInput(output, nested, lang);
+      addInput(output, nested, taiwanPath ? 'zh-TW' : lang);
     }
-    collectFromValue(nested, output);
+    collectFromValue(nested, output, taiwanPath);
   }
 }
 
@@ -89,16 +98,16 @@ function listJsonFiles(directory: string): string[] {
 
 export function collectPronunciationInputs(root = process.cwd()): PronunciationInput[] {
   const paths = [
-    ...CONTENT_FILES.map((path) => join(root, path)),
+    ...CONTENT_FILES,
     ...CONTENT_DIRECTORIES.flatMap((directory) =>
-      listJsonFiles(join(root, directory)),
+      listJsonFiles(join(root, directory)).map((path) => relative(root, path)),
     ),
   ];
   const results = new Map<string, PronunciationInput>();
 
   for (const path of paths) {
-    const data: unknown = JSON.parse(readFileSync(path, 'utf8'));
-    collectFromValue(data, results);
+    const data: unknown = JSON.parse(readFileSync(join(root, path), 'utf8'));
+    collectFromValue(data, results, isTaiwanPathSource(path.split(sep).join('/')));
   }
 
   return [...results.values()].sort((left, right) => {

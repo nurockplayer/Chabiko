@@ -1,5 +1,6 @@
 ---
 import type { HskRenderableEntry } from '../content/loadHskVocabulary';
+import PronounceButton from './PronounceButton.astro';
 
 export interface Props {
   level: 1 | 2 | 3 | 4;
@@ -97,6 +98,7 @@ const json = JSON.stringify({
             <p data-prompt-fallback class="flashcard-script-fallback" hidden></p>
             <div data-back class="flashcard-back hidden">
               <p data-pinyin class="flashcard-pinyin" lang="zh-Latn"></p>
+              <div data-hsk-pronunciation class="flashcard-pronunciation"><PronounceButton text="" lang="zh-CN" /></div>
               <p data-japanese class="flashcard-japanese"></p>
               <p data-answer-fallback class="flashcard-script-fallback" hidden></p>
               <p data-progress-hint class="flashcard-progress-hint hidden"></p>

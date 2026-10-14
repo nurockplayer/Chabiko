@@ -182,6 +182,7 @@ describe('loadTonePractice — source order and validity', () => {
     expect(items[0]).toEqual({
       recordId: 'practice-001',
       promptJa: VALID_TONE.promptJa,
+      audioText: '媽',
       correctAnswer: '第一声',
       distractors: ['第二声', '第三声', '第四声'],
       contrastId: 'tone-t1-vs-t2-t3-t4',
@@ -355,7 +356,7 @@ describe('tone route page structure', () => {
     const page = readAstroSource('src/pages/practice/tones/index.astro');
     const component = readAstroSource('src/components/TonePractice.astro');
     expect(component).toContain('PronounceButton');
-    expect(component).toContain('audioText: item.promptJa.match');
+    expect(component).toContain("audioText: item.audioText ?? ''");
     expect(component).not.toMatch(/getUserMedia|MediaRecorder|SpeechRecognition|webkitAudioContext/i);
     expect(page).not.toMatch(/getUserMedia|MediaRecorder|SpeechRecognition|webkitAudioContext/i);
   });

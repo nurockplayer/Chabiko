@@ -18,7 +18,7 @@ const serialized = JSON.stringify({
     toneContourId: item.toneContourId,
     toneContourHintJa: item.toneContourHintJa,
     interferenceJa: item.interferenceJa,
-    audioText: item.promptJa.match(/「([^」]+)」/)?.[1].match(/\p{Script=Han}+/gu)?.join('') ?? '',
+    audioText: item.audioText ?? '',
   })),
 });
 ---
