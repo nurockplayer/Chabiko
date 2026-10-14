@@ -18,7 +18,7 @@ import {
 } from '../domain/wordOrderPractice';
 import type { Lesson } from '../types/lesson';
 import { loadAllRenderableLessons } from './loadLessons';
-import cues from '../../data/practice/word-order-cues.json';
+import cues from '../../data/practice/word-order-cues.json' with { type: 'json' };
 import { applyWordOrderCues } from './wordOrderCues';
 
 const DEFAULT_DATA_PATH = 'data/examples/valid/practice.json';

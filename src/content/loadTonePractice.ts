@@ -12,7 +12,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import presentation from '../../data/practice/tone-presentation.json';
+import presentation from '../../data/practice/tone-presentation.json' with { type: 'json' };
 import type { ToneChoice, ToneContourId, TonePracticeItem } from '../domain/tonePractice';
 import {
   CONTOUR_BY_TONE,
