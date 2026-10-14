@@ -55,9 +55,9 @@ const cleanups = new Set<() => void>();
 const testFixturePaths: string[] = [];
 
 function writeHskProgressFixture(): string {
-  const rows = structuredClone(loadHskVocabulary().vocabulary);
+  const rows = structuredClone(loadHskVocabulary().vocabulary).slice(0, 2);
   const levelOneRows = rows.filter((entry) => entry.hsk.introducedAtLevel === 1);
-  levelOneRows.slice(0, 5).forEach((entry, index) => {
+  levelOneRows.forEach((entry, index) => {
     entry.id = `hsk-00${index + 1}`;
   });
   for (const entry of levelOneRows.slice(0, 2)) entry.reviewStatus = 'reviewed';
@@ -72,7 +72,7 @@ function writeHskProgressFixture(): string {
 }
 
 // This lifecycle suite exercises progress mechanics with an isolated fixture.
-// Production unavailability is asserted separately by loader and route tests.
+// Production release completeness is asserted separately by loader and route tests.
 const document_ = loadLearningPaths(undefined, writeHskProgressFixture());
 const readinessDocument_ = readinessData as TravelQuestReadinessDocument;
 

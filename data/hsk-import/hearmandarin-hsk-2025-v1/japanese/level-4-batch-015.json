@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01658",
+      "globalSequence": 1658,
+      "simplified": "实际",
+      "pinyin": "shíjì",
+      "japanese": "実際の。実際。"
+    },
+    {
+      "sourceId": "w01659",
+      "globalSequence": 1659,
+      "simplified": "时间表",
+      "pinyin": "shíjiānbiǎo",
+      "japanese": "予定表。時刻表。"
+    },
+    {
+      "sourceId": "w01660",
+      "globalSequence": 1660,
+      "simplified": "实际上",
+      "pinyin": "shíjìshàng",
+      "japanese": "実際には。"
+    },
+    {
+      "sourceId": "w01661",
+      "globalSequence": 1661,
+      "simplified": "食品",
+      "pinyin": "shípǐn",
+      "japanese": "食品。"
+    },
+    {
+      "sourceId": "w01662",
+      "globalSequence": 1662,
+      "simplified": "食堂",
+      "pinyin": "shítáng",
+      "japanese": "食堂。"
+    },
+    {
+      "sourceId": "w01663",
+      "globalSequence": 1663,
+      "simplified": "食物",
+      "pinyin": "shíwù",
+      "japanese": "食べ物。"
+    },
+    {
+      "sourceId": "w01664",
+      "globalSequence": 1664,
+      "simplified": "实在",
+      "pinyin": "shízài",
+      "japanese": "本当に。誠実な。"
+    },
+    {
+      "sourceId": "w01665",
+      "globalSequence": 1665,
+      "simplified": "十字路口",
+      "pinyin": "shízì lùkǒu",
+      "japanese": "十字路。"
+    },
+    {
+      "sourceId": "w01666",
+      "globalSequence": 1666,
+      "simplified": "使",
+      "pinyin": "shǐ",
+      "japanese": "〜させる。使う。"
+    },
+    {
+      "sourceId": "w01667",
+      "globalSequence": 1667,
+      "simplified": "使馆",
+      "pinyin": "shǐguǎn",
+      "japanese": "大使館。公使館。"
+    },
+    {
+      "sourceId": "w01668",
+      "globalSequence": 1668,
+      "simplified": "使用",
+      "pinyin": "shǐyòng",
+      "japanese": "使用する。"
+    },
+    {
+      "sourceId": "w01669",
+      "globalSequence": 1669,
+      "simplified": "市场",
+      "pinyin": "shìchǎng",
+      "japanese": "市場。"
+    },
+    {
+      "sourceId": "w01670",
+      "globalSequence": 1670,
+      "simplified": "是否",
+      "pinyin": "shìfǒu",
+      "japanese": "〜かどうか。"
+    },
+    {
+      "sourceId": "w01671",
+      "globalSequence": 1671,
+      "simplified": "适合",
+      "pinyin": "shìhé",
+      "japanese": "適する。"
+    },
+    {
+      "sourceId": "w01672",
+      "globalSequence": 1672,
+      "simplified": "世纪",
+      "pinyin": "shìjì",
+      "japanese": "世紀。"
+    },
+    {
+      "sourceId": "w01673",
+      "globalSequence": 1673,
+      "simplified": "视频",
+      "pinyin": "shìpín",
+      "japanese": "動画。映像。"
+    },
+    {
+      "sourceId": "w01674",
+      "globalSequence": 1674,
+      "simplified": "市区",
+      "pinyin": "shìqū",
+      "japanese": "市街地。"
+    },
+    {
+      "sourceId": "w01675",
+      "globalSequence": 1675,
+      "simplified": "试题",
+      "pinyin": "shìtí",
+      "japanese": "試験問題。"
+    },
+    {
+      "sourceId": "w01676",
+      "globalSequence": 1676,
+      "simplified": "适应",
+      "pinyin": "shìyìng",
+      "japanese": "適応する。慣れる。"
+    },
+    {
+      "sourceId": "w01677",
+      "globalSequence": 1677,
+      "simplified": "收费",
+      "pinyin": "shōufèi",
+      "japanese": "料金を取る。"
+    },
+    {
+      "sourceId": "w01678",
+      "globalSequence": 1678,
+      "simplified": "收入",
+      "pinyin": "shōurù",
+      "japanese": "収入。"
+    },
+    {
+      "sourceId": "w01679",
+      "globalSequence": 1679,
+      "simplified": "收拾",
+      "pinyin": "shōushi",
+      "japanese": "片づける。整える。"
+    },
+    {
+      "sourceId": "w01680",
+      "globalSequence": 1680,
+      "simplified": "收听",
+      "pinyin": "shōutīng",
+      "japanese": "ラジオなどを聞く。"
+    },
+    {
+      "sourceId": "w01681",
+      "globalSequence": 1681,
+      "simplified": "首",
+      "pinyin": "shǒu",
+      "japanese": "歌・詩を数える「〜曲・首」。最初の。"
+    },
+    {
+      "sourceId": "w01682",
+      "globalSequence": 1682,
+      "simplified": "首都",
+      "pinyin": "shǒudū",
+      "japanese": "首都。"
+    },
+    {
+      "sourceId": "w01683",
+      "globalSequence": 1683,
+      "simplified": "首先",
+      "pinyin": "shǒuxiān",
+      "japanese": "まず。第一に。"
+    },
+    {
+      "sourceId": "w01684",
+      "globalSequence": 1684,
+      "simplified": "受不了",
+      "pinyin": "shòubuliǎo",
+      "japanese": "耐えられない。"
+    },
+    {
+      "sourceId": "w01685",
+      "globalSequence": 1685,
+      "simplified": "售票员",
+      "pinyin": "shòupiàoyuán",
+      "japanese": "切符販売員。"
+    },
+    {
+      "sourceId": "w01686",
+      "globalSequence": 1686,
+      "simplified": "受伤",
+      "pinyin": "shòushāng",
+      "japanese": "けがをする。"
+    },
+    {
+      "sourceId": "w01687",
+      "globalSequence": 1687,
+      "simplified": "输",
+      "pinyin": "shū",
+      "japanese": "負ける。送る。"
+    },
+    {
+      "sourceId": "w01688",
+      "globalSequence": 1688,
+      "simplified": "熟",
+      "pinyin": "shú/shóu",
+      "japanese": "よく知っている。熟した。火が通った。"
+    },
+    {
+      "sourceId": "w01689",
+      "globalSequence": 1689,
+      "simplified": "熟悉",
+      "pinyin": "shúxi",
+      "japanese": "よく知っている。慣れている。"
+    },
+    {
+      "sourceId": "w01690",
+      "globalSequence": 1690,
+      "simplified": "暑假",
+      "pinyin": "shǔjià",
+      "japanese": "夏休み。"
+    },
+    {
+      "sourceId": "w01691",
+      "globalSequence": 1691,
+      "simplified": "数",
+      "pinyin": "shù",
+      "japanese": "数。数量。"
+    },
+    {
+      "sourceId": "w01692",
+      "globalSequence": 1692,
+      "simplified": "数量",
+      "pinyin": "shùliàng",
+      "japanese": "数量。"
+    },
+    {
+      "sourceId": "w01693",
+      "globalSequence": 1693,
+      "simplified": "树林",
+      "pinyin": "shùlín",
+      "japanese": "林。"
+    },
+    {
+      "sourceId": "w01694",
+      "globalSequence": 1694,
+      "simplified": "数字",
+      "pinyin": "shùzì",
+      "japanese": "数字。"
+    },
+    {
+      "sourceId": "w01695",
+      "globalSequence": 1695,
+      "simplified": "帅",
+      "pinyin": "shuài",
+      "japanese": "かっこいい。"
+    },
+    {
+      "sourceId": "w01696",
+      "globalSequence": 1696,
+      "simplified": "顺便",
+      "pinyin": "shùnbiàn",
+      "japanese": "ついでに。"
+    },
+    {
+      "sourceId": "w01697",
+      "globalSequence": 1697,
+      "simplified": "顺利",
+      "pinyin": "shùnlì",
+      "japanese": "順調な。"
+    },
+    {
+      "sourceId": "w01698",
+      "globalSequence": 1698,
+      "simplified": "顺序",
+      "pinyin": "shùnxù",
+      "japanese": "順序。"
+    },
+    {
+      "sourceId": "w01699",
+      "globalSequence": 1699,
+      "simplified": "说法",
+      "pinyin": "shuōfǎ",
+      "japanese": "言い方。見解。"
+    },
+    {
+      "sourceId": "w01700",
+      "globalSequence": 1700,
+      "simplified": "说明",
+      "pinyin": "shuōmíng",
+      "japanese": "説明する。示す。"
+    },
+    {
+      "sourceId": "w01701",
+      "globalSequence": 1701,
+      "simplified": "说明书",
+      "pinyin": "shuōmíngshū",
+      "japanese": "説明書。"
+    },
+    {
+      "sourceId": "w01702",
+      "globalSequence": 1702,
+      "simplified": "硕士",
+      "pinyin": "shuòshì",
+      "japanese": "修士。"
+    },
+    {
+      "sourceId": "w01703",
+      "globalSequence": 1703,
+      "simplified": "死",
+      "pinyin": "sǐ",
+      "japanese": "死ぬ。"
+    },
+    {
+      "sourceId": "w01704",
+      "globalSequence": 1704,
+      "simplified": "速度",
+      "pinyin": "sùdù",
+      "japanese": "速度。"
+    },
+    {
+      "sourceId": "w01705",
+      "globalSequence": 1705,
+      "simplified": "塑料",
+      "pinyin": "sùliào",
+      "japanese": "プラスチック。"
+    },
+    {
+      "sourceId": "w01706",
+      "globalSequence": 1706,
+      "simplified": "酸",
+      "pinyin": "suān",
+      "japanese": "酸っぱい。"
+    },
+    {
+      "sourceId": "w01707",
+      "globalSequence": 1707,
+      "simplified": "酸奶",
+      "pinyin": "suānnǎi",
+      "japanese": "ヨーグルト。"
+    }
+  ]
+}

@@ -150,14 +150,14 @@ describe('learning content graph', () => {
     ]);
     // 24 canonical lessons + the existing 4 vocabulary and 7 phrase members.
     expect(graph.getPathContent('taiwan-travel')).toHaveLength(35);
-    // Authoring graph retains source-backed draft records, while the learner
-    // path stays empty until the production manifest admits eligible rows.
+    // The released learner path includes every source-eligible draft, with
+    // authoring review status preserved.
     const sourceHskRows = loadHskVocabulary().vocabulary;
     const hskObjects = graph.objects.filter(
       (object) => object.ref.collection === 'hskVocabulary',
     );
     expect(hskObjects).toHaveLength(sourceHskRows.length);
-    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(0);
+    expect(graph.getPathContent('hsk-vocabulary')).toHaveLength(sourceHskRows.length);
     expect(
       graph.resolve(ref('vocabulary', sourceHskRows[0].id, 'hskVocabulary'))?.record.reviewStatus,
     ).toBe('draft');

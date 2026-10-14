@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01102",
+      "globalSequence": 1102,
+      "simplified": "从此",
+      "pinyin": "cóngcǐ",
+      "japanese": "これ以来。それから。"
+    },
+    {
+      "sourceId": "w01103",
+      "globalSequence": 1103,
+      "simplified": "从来",
+      "pinyin": "cónglái",
+      "japanese": "これまでずっと。否定と使って「一度も」。"
+    },
+    {
+      "sourceId": "w01104",
+      "globalSequence": 1104,
+      "simplified": "从中",
+      "pinyin": "cóngzhōng",
+      "japanese": "その中から。"
+    },
+    {
+      "sourceId": "w01105",
+      "globalSequence": 1105,
+      "simplified": "粗",
+      "pinyin": "cū",
+      "japanese": "太い。粗い。"
+    },
+    {
+      "sourceId": "w01106",
+      "globalSequence": 1106,
+      "simplified": "粗心",
+      "pinyin": "cūxīn",
+      "japanese": "不注意な。"
+    },
+    {
+      "sourceId": "w01107",
+      "globalSequence": 1107,
+      "simplified": "村",
+      "pinyin": "cūn",
+      "japanese": "村。"
+    },
+    {
+      "sourceId": "w01108",
+      "globalSequence": 1108,
+      "simplified": "存",
+      "pinyin": "cún",
+      "japanese": "保存する。預ける。存在する。"
+    },
+    {
+      "sourceId": "w01109",
+      "globalSequence": 1109,
+      "simplified": "错过",
+      "pinyin": "cuòguò",
+      "japanese": "逃す。すれ違う。"
+    },
+    {
+      "sourceId": "w01110",
+      "globalSequence": 1110,
+      "simplified": "错误",
+      "pinyin": "cuòwù",
+      "japanese": "誤り。間違った。"
+    },
+    {
+      "sourceId": "w01111",
+      "globalSequence": 1111,
+      "simplified": "答应",
+      "pinyin": "dāying",
+      "japanese": "承諾する。返事をする。"
+    },
+    {
+      "sourceId": "w01112",
+      "globalSequence": 1112,
+      "simplified": "答",
+      "pinyin": "dá",
+      "japanese": "答える。"
+    },
+    {
+      "sourceId": "w01113",
+      "globalSequence": 1113,
+      "simplified": "答案",
+      "pinyin": "dá’àn",
+      "japanese": "答え。"
+    },
+    {
+      "sourceId": "w01114",
+      "globalSequence": 1114,
+      "simplified": "达到",
+      "pinyin": "dádào",
+      "japanese": "達する。"
+    },
+    {
+      "sourceId": "w01115",
+      "globalSequence": 1115,
+      "simplified": "打招呼",
+      "pinyin": "dǎ zhāohu",
+      "japanese": "挨拶する。声をかける。"
+    },
+    {
+      "sourceId": "w01116",
+      "globalSequence": 1116,
+      "simplified": "打败",
+      "pinyin": "dǎbài",
+      "japanese": "打ち負かす。"
+    },
+    {
+      "sourceId": "w01117",
+      "globalSequence": 1117,
+      "simplified": "打工",
+      "pinyin": "dǎgōng",
+      "japanese": "雇われて働く。アルバイトをする。"
+    },
+    {
+      "sourceId": "w01118",
+      "globalSequence": 1118,
+      "simplified": "打扰",
+      "pinyin": "dǎrǎo",
+      "japanese": "邪魔する。"
+    },
+    {
+      "sourceId": "w01119",
+      "globalSequence": 1119,
+      "simplified": "打印",
+      "pinyin": "dǎyìn",
+      "japanese": "印刷する。"
+    },
+    {
+      "sourceId": "w01120",
+      "globalSequence": 1120,
+      "simplified": "打印机",
+      "pinyin": "dǎyìnjī",
+      "japanese": "プリンター。"
+    },
+    {
+      "sourceId": "w01121",
+      "globalSequence": 1121,
+      "simplified": "打折",
+      "pinyin": "dǎzhé",
+      "japanese": "割引する。"
+    },
+    {
+      "sourceId": "w01122",
+      "globalSequence": 1122,
+      "simplified": "打针",
+      "pinyin": "dǎzhēn",
+      "japanese": "注射をする。注射を受ける。"
+    },
+    {
+      "sourceId": "w01123",
+      "globalSequence": 1123,
+      "simplified": "大巴",
+      "pinyin": "dàbā",
+      "japanese": "大型バス。"
+    },
+    {
+      "sourceId": "w01124",
+      "globalSequence": 1124,
+      "simplified": "大大",
+      "pinyin": "dàdà",
+      "japanese": "大いに。"
+    },
+    {
+      "sourceId": "w01125",
+      "globalSequence": 1125,
+      "simplified": "大夫",
+      "pinyin": "dàifu",
+      "japanese": "医師。"
+    },
+    {
+      "sourceId": "w01126",
+      "globalSequence": 1126,
+      "simplified": "大量",
+      "pinyin": "dàliàng",
+      "japanese": "大量。"
+    },
+    {
+      "sourceId": "w01127",
+      "globalSequence": 1127,
+      "simplified": "大赛",
+      "pinyin": "dàsài",
+      "japanese": "大規模な競技大会。"
+    },
+    {
+      "sourceId": "w01128",
+      "globalSequence": 1128,
+      "simplified": "大厅",
+      "pinyin": "dàtīng",
+      "japanese": "ホール。ロビー。"
+    },
+    {
+      "sourceId": "w01129",
+      "globalSequence": 1129,
+      "simplified": "大约",
+      "pinyin": "dàyuē",
+      "japanese": "およそ。たぶん。"
+    },
+    {
+      "sourceId": "w01130",
+      "globalSequence": 1130,
+      "simplified": "大自然",
+      "pinyin": "dàzìrán",
+      "japanese": "大自然。"
+    },
+    {
+      "sourceId": "w01131",
+      "globalSequence": 1131,
+      "simplified": "待",
+      "pinyin": "dāi",
+      "japanese": "とどまる。いる。"
+    },
+    {
+      "sourceId": "w01132",
+      "globalSequence": 1132,
+      "simplified": "戴",
+      "pinyin": "dài",
+      "japanese": "身につける（帽子・眼鏡など）。"
+    },
+    {
+      "sourceId": "w01133",
+      "globalSequence": 1133,
+      "simplified": "袋子",
+      "pinyin": "dàizi",
+      "japanese": "袋。"
+    },
+    {
+      "sourceId": "w01134",
+      "globalSequence": 1134,
+      "simplified": "单位",
+      "pinyin": "dānwèi",
+      "japanese": "単位。勤務先・組織。"
+    },
+    {
+      "sourceId": "w01135",
+      "globalSequence": 1135,
+      "simplified": "当",
+      "pinyin": "dāng",
+      "japanese": "〜になる。〜を務める。〜の時に。"
+    },
+    {
+      "sourceId": "w01136",
+      "globalSequence": 1136,
+      "simplified": "当时",
+      "pinyin": "dāngshí",
+      "japanese": "その時。当時。"
+    },
+    {
+      "sourceId": "w01137",
+      "globalSequence": 1137,
+      "simplified": "刀",
+      "pinyin": "dāo",
+      "japanese": "刀。ナイフ。"
+    },
+    {
+      "sourceId": "w01138",
+      "globalSequence": 1138,
+      "simplified": "导游",
+      "pinyin": "dǎoyóu",
+      "japanese": "観光ガイド。"
+    },
+    {
+      "sourceId": "w01139",
+      "globalSequence": 1139,
+      "simplified": "倒",
+      "pinyin": "dào",
+      "japanese": "注ぐ。逆さまにする。かえって。"
+    },
+    {
+      "sourceId": "w01140",
+      "globalSequence": 1140,
+      "simplified": "道",
+      "pinyin": "dào",
+      "japanese": "道。料理・問題などを数える語。"
+    },
+    {
+      "sourceId": "w01141",
+      "globalSequence": 1141,
+      "simplified": "到底",
+      "pinyin": "dàodǐ",
+      "japanese": "いったい。結局。"
+    },
+    {
+      "sourceId": "w01142",
+      "globalSequence": 1142,
+      "simplified": "到来",
+      "pinyin": "dàolái",
+      "japanese": "やってくる。到来。"
+    },
+    {
+      "sourceId": "w01143",
+      "globalSequence": 1143,
+      "simplified": "道路",
+      "pinyin": "dàolù",
+      "japanese": "道路。"
+    },
+    {
+      "sourceId": "w01144",
+      "globalSequence": 1144,
+      "simplified": "道歉",
+      "pinyin": "dàoqiàn",
+      "japanese": "謝る。"
+    },
+    {
+      "sourceId": "w01145",
+      "globalSequence": 1145,
+      "simplified": "得意",
+      "pinyin": "déyì",
+      "japanese": "得意になる。満足している。"
+    },
+    {
+      "sourceId": "w01146",
+      "globalSequence": 1146,
+      "simplified": "登机",
+      "pinyin": "dēngjī",
+      "japanese": "飛行機に搭乗する。"
+    },
+    {
+      "sourceId": "w01148",
+      "globalSequence": 1148,
+      "simplified": "等到",
+      "pinyin": "děngdào",
+      "japanese": "〜まで待つ。〜になったら。"
+    },
+    {
+      "sourceId": "w01149",
+      "globalSequence": 1149,
+      "simplified": "低",
+      "pinyin": "dī",
+      "japanese": "低い。"
+    },
+    {
+      "sourceId": "w01150",
+      "globalSequence": 1150,
+      "simplified": "低价",
+      "pinyin": "dījià",
+      "japanese": "安値。"
+    },
+    {
+      "sourceId": "w01151",
+      "globalSequence": 1151,
+      "simplified": "低温",
+      "pinyin": "dīwēn",
+      "japanese": "低温。"
+    },
+    {
+      "sourceId": "w01152",
+      "globalSequence": 1152,
+      "simplified": "低于",
+      "pinyin": "dīyú",
+      "japanese": "〜より低い。"
+    }
+  ]
+}

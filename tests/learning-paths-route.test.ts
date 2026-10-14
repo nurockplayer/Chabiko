@@ -87,11 +87,10 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     // The home page links to the exact route, once.
     expect(homeSource.match(/href="\/paths\/"/g)).toHaveLength(1);
     expect(builtHomeHtml).toContain('href="/paths/"');
-    // The built route links to available paths only; HSK remains inert while
-    // the production publication gate admits no learner rows.
+    // The built route links to both released learning paths.
     const fragment = builtRouteFragment();
     expect(fragment).toContain('href="/paths/taiwan-travel/"');
-    expect(fragment).not.toContain('href="/vocabulary/hsk/1/"');
+    expect(fragment).toContain('href="/vocabulary/hsk/1/"');
   });
 
   it('loads paths only through loadLearningPaths() in deterministic frozen order', () => {
@@ -133,7 +132,7 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
 
   it('available paths are real links; unavailable paths are inert text', () => {
     const fragment = builtRouteFragment();
-    // Taiwan Travel is available; HSK and Kanji Bridge remain noninteractive.
+    // Taiwan Travel and HSK are available; Kanji Bridge stays inert.
     const lessonsHref = fragment.match(
       /<a[^>]*href="\/paths\/taiwan-travel\/"[^>]*>/g,
     );
@@ -142,14 +141,14 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     const hskBlock = fragment.slice(
       fragment.indexOf('data-path-id="hsk-vocabulary"'),
       fragment.indexOf('data-path-id="kanji-bridge"'),
-    );
-    expect(hskBlock).toContain('準備中です');
-    expect(hskBlock).not.toMatch(/href=|onclick|onClick|button|tabindex|tabIndex|role="link"/);
+    ).split('</li>')[0];
+    expect(hskBlock).toContain('利用できます');
+    expect(hskBlock).toContain('href="/vocabulary/hsk/1/"');
     // Unavailable: no link, button, click handler, or focusability at all.
     expect(fragment).not.toContain('href="/vocabulary/kanji-bridge/"');
     const kanjiBlock = fragment.slice(
       fragment.indexOf('data-path-id="kanji-bridge"'),
-    );
+    ).split('</li>')[0];
     expect(kanjiBlock).not.toMatch(
       /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
     );
@@ -167,7 +166,7 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
     expect(fragment).toContain('準備中です');
     // The card is a plain non-focusable <div> — no anchor, button, or tabindex.
     const kanjiStart = fragment.indexOf('data-path-id="kanji-bridge"');
-    const kanjiBlock = fragment.slice(kanjiStart, fragment.length);
+    const kanjiBlock = fragment.slice(kanjiStart).split('</li>')[0];
     expect(kanjiBlock).not.toContain('<a ');
     expect(kanjiBlock).not.toMatch(/<button\b|tabindex|onclick|onClick/);
     // The component renders the unavailable branch with the card surface.
@@ -325,10 +324,10 @@ describe('/paths/ — wayfinding refinement (Issue #367)', () => {
     const hskBlock = fragment.slice(
       hskStart,
       fragment.indexOf('data-path-id="kanji-bridge"'),
-    );
+    ).split('</li>')[0];
     expect(hskBlock).not.toContain('data-path-primary-badge');
     // The unavailable kanji-bridge card stays inert and badge-free.
-    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"')).split('</li>')[0];
     expect(kanjiBlock).not.toContain('data-path-primary-badge');
     expect(kanjiBlock).not.toMatch(
       /href=|onclick|onClick|button|tabindex|tabIndex|role="link"/,
@@ -400,8 +399,8 @@ describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
     ].map((m) => m[1]);
     // Exact destinations of available paths plus the home link.
     expect(hrefs).toContain('paths/taiwan-travel/');
-    // Unavailable HSK and Kanji Bridge destinations never appear as links.
-    expect(hrefs).not.toContain('vocabulary/hsk/1/');
+    // Released HSK links are present; Kanji Bridge stays unavailable.
+    for (const level of [1, 2, 3, 4]) expect(hrefs).toContain(`vocabulary/hsk/${level}/`);
     expect(hrefs).not.toContain('vocabulary/kanji-bridge/');
   });
 
@@ -420,7 +419,7 @@ describe('/paths/ — availability reflects the frozen contract (source-level)',
       document.learningPaths.map((path) => [path.id, path]),
     );
     expect(byId.get('taiwan-travel')?.availability).toBe('available');
-    expect(byId.get('hsk-vocabulary')?.availability).toBe('unavailable');
+    expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
     expect(byId.get('kanji-bridge')?.availability).toBe('unavailable');
     // The card component branches on availability, with a primary modifier
     // for the first path only.
@@ -464,9 +463,9 @@ describe('/paths/ — Taiwan Travel 総合テスト entry (Issue #376)', () => {
     const hskBlock = fragment.slice(
       fragment.indexOf('data-path-id="hsk-vocabulary"'),
       fragment.indexOf('data-path-id="kanji-bridge"'),
-    );
+    ).split('</li>')[0];
     expect(hskBlock).not.toContain('data-path-quiz');
-    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"'));
+    const kanjiBlock = fragment.slice(fragment.indexOf('data-path-id="kanji-bridge"')).split('</li>')[0];
     expect(kanjiBlock).not.toContain('data-path-quiz');
     // The quiz entry is a real anchor, keyboard-focusable and not inert.
     expect(fragment).toMatch(/<a[^>]*class="learning-path-card__quiz"[^>]*href="\/paths\/taiwan-travel\/quiz\/"[^>]*>/);

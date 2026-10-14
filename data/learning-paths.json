@@ -49,12 +49,12 @@
     {
       "id": "hsk-vocabulary",
       "labelJa": "HSK対策",
-      "descriptionJa": "HSK 1級の単語をフラッシュカードで学ぶルート。簡体字を基本表示にします。",
+      "descriptionJa": "HSK 1〜4の単語をフラッシュカードで学ぶルート。簡体字を基本表示にします。",
       "script": "simplified",
       "destination": "/vocabulary/hsk/1/",
       "availabilityReason": "hsk",
       "hsk": {
-        "levels": [1],
+        "levels": [1, 2, 3, 4],
         "status": "available"
       },
       "members": []

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00126",
+      "globalSequence": 126,
+      "simplified": "面包",
+      "pinyin": "miànbāo",
+      "japanese": "パン。"
+    },
+    {
+      "sourceId": "w00127",
+      "globalSequence": 127,
+      "simplified": "面条儿",
+      "pinyin": "miàntiáor",
+      "japanese": "麺。"
+    },
+    {
+      "sourceId": "w00128",
+      "globalSequence": 128,
+      "simplified": "明年",
+      "pinyin": "míngnián",
+      "japanese": "来年。"
+    },
+    {
+      "sourceId": "w00129",
+      "globalSequence": 129,
+      "simplified": "明天",
+      "pinyin": "míngtiān",
+      "japanese": "明日。"
+    },
+    {
+      "sourceId": "w00130",
+      "globalSequence": 130,
+      "simplified": "名字",
+      "pinyin": "míngzi",
+      "japanese": "名前。"
+    },
+    {
+      "sourceId": "w00131",
+      "globalSequence": 131,
+      "simplified": "哪",
+      "pinyin": "nǎ",
+      "japanese": "どの。どれ。"
+    },
+    {
+      "sourceId": "w00132",
+      "globalSequence": 132,
+      "simplified": "哪个",
+      "pinyin": "nǎge",
+      "japanese": "どれ。どの〜。"
+    },
+    {
+      "sourceId": "w00133",
+      "globalSequence": 133,
+      "simplified": "哪里",
+      "pinyin": "nǎlǐ",
+      "japanese": "どこ。"
+    },
+    {
+      "sourceId": "w00134",
+      "globalSequence": 134,
+      "simplified": "哪儿",
+      "pinyin": "nǎr",
+      "japanese": "どこ。"
+    },
+    {
+      "sourceId": "w00135",
+      "globalSequence": 135,
+      "simplified": "哪些",
+      "pinyin": "nǎxiē",
+      "japanese": "どれら。どの〜たち。"
+    },
+    {
+      "sourceId": "w00136",
+      "globalSequence": 136,
+      "simplified": "那",
+      "pinyin": "nà",
+      "japanese": "あの。それ。"
+    },
+    {
+      "sourceId": "w00137",
+      "globalSequence": 137,
+      "simplified": "那边",
+      "pinyin": "nàbiān",
+      "japanese": "あちら。そちら。"
+    },
+    {
+      "sourceId": "w00138",
+      "globalSequence": 138,
+      "simplified": "那个",
+      "pinyin": "nàge",
+      "japanese": "あれ。それ。"
+    },
+    {
+      "sourceId": "w00139",
+      "globalSequence": 139,
+      "simplified": "那里",
+      "pinyin": "nàlǐ",
+      "japanese": "あそこ。そこ。"
+    },
+    {
+      "sourceId": "w00140",
+      "globalSequence": 140,
+      "simplified": "那儿",
+      "pinyin": "nàr",
+      "japanese": "あそこ。そこ。"
+    },
+    {
+      "sourceId": "w00141",
+      "globalSequence": 141,
+      "simplified": "那些",
+      "pinyin": "nàxiē",
+      "japanese": "あれら。それら。"
+    },
+    {
+      "sourceId": "w00142",
+      "globalSequence": 142,
+      "simplified": "男",
+      "pinyin": "nán",
+      "japanese": "男。男性の。"
+    },
+    {
+      "sourceId": "w00143",
+      "globalSequence": 143,
+      "simplified": "男朋友",
+      "pinyin": "nánpéngyou",
+      "japanese": "彼氏。男性の友達。"
+    },
+    {
+      "sourceId": "w00144",
+      "globalSequence": 144,
+      "simplified": "呢",
+      "pinyin": "ne",
+      "japanese": "文末で問い返しや状況の継続を表す語。"
+    },
+    {
+      "sourceId": "w00145",
+      "globalSequence": 145,
+      "simplified": "能",
+      "pinyin": "néng",
+      "japanese": "〜できる。"
+    },
+    {
+      "sourceId": "w00146",
+      "globalSequence": 146,
+      "simplified": "你",
+      "pinyin": "nǐ",
+      "japanese": "あなた。"
+    },
+    {
+      "sourceId": "w00147",
+      "globalSequence": 147,
+      "simplified": "你好",
+      "pinyin": "nǐ hǎo",
+      "japanese": "こんにちは。"
+    },
+    {
+      "sourceId": "w00148",
+      "globalSequence": 148,
+      "simplified": "你们",
+      "pinyin": "nǐmen",
+      "japanese": "あなたたち。"
+    },
+    {
+      "sourceId": "w00149",
+      "globalSequence": 149,
+      "simplified": "年",
+      "pinyin": "nián",
+      "japanese": "年。"
+    },
+    {
+      "sourceId": "w00150",
+      "globalSequence": 150,
+      "simplified": "您",
+      "pinyin": "nín",
+      "japanese": "あなた（敬称）。"
+    },
+    {
+      "sourceId": "w00151",
+      "globalSequence": 151,
+      "simplified": "牛奶",
+      "pinyin": "niúnǎi",
+      "japanese": "牛乳。"
+    },
+    {
+      "sourceId": "w00152",
+      "globalSequence": 152,
+      "simplified": "女",
+      "pinyin": "nǚ",
+      "japanese": "女。女性の。"
+    },
+    {
+      "sourceId": "w00153",
+      "globalSequence": 153,
+      "simplified": "女儿",
+      "pinyin": "nǚ’ér",
+      "japanese": "娘。"
+    },
+    {
+      "sourceId": "w00154",
+      "globalSequence": 154,
+      "simplified": "女朋友",
+      "pinyin": "nǚpéngyou",
+      "japanese": "彼女。女性の友達。"
+    },
+    {
+      "sourceId": "w00155",
+      "globalSequence": 155,
+      "simplified": "女士",
+      "pinyin": "nǚshì",
+      "japanese": "女性への敬称。〜さん。"
+    },
+    {
+      "sourceId": "w00156",
+      "globalSequence": 156,
+      "simplified": "朋友",
+      "pinyin": "péngyou",
+      "japanese": "友達。"
+    },
+    {
+      "sourceId": "w00157",
+      "globalSequence": 157,
+      "simplified": "便宜",
+      "pinyin": "piányi",
+      "japanese": "安い。"
+    },
+    {
+      "sourceId": "w00158",
+      "globalSequence": 158,
+      "simplified": "漂亮",
+      "pinyin": "piàoliang",
+      "japanese": "きれいな。"
+    },
+    {
+      "sourceId": "w00159",
+      "globalSequence": 159,
+      "simplified": "苹果",
+      "pinyin": "píngguǒ",
+      "japanese": "リンゴ。"
+    },
+    {
+      "sourceId": "w00160",
+      "globalSequence": 160,
+      "simplified": "七",
+      "pinyin": "qī",
+      "japanese": "七。"
+    },
+    {
+      "sourceId": "w00161",
+      "globalSequence": 161,
+      "simplified": "起床",
+      "pinyin": "qǐchuáng",
+      "japanese": "起床する。"
+    },
+    {
+      "sourceId": "w00162",
+      "globalSequence": 162,
+      "simplified": "千",
+      "pinyin": "qiān",
+      "japanese": "千。"
+    },
+    {
+      "sourceId": "w00163",
+      "globalSequence": 163,
+      "simplified": "前",
+      "pinyin": "qián",
+      "japanese": "前。"
+    },
+    {
+      "sourceId": "w00164",
+      "globalSequence": 164,
+      "simplified": "钱",
+      "pinyin": "qián",
+      "japanese": "お金。"
+    },
+    {
+      "sourceId": "w00165",
+      "globalSequence": 165,
+      "simplified": "请",
+      "pinyin": "qǐng",
+      "japanese": "どうぞ。お願いする。"
+    },
+    {
+      "sourceId": "w00166",
+      "globalSequence": 166,
+      "simplified": "请问",
+      "pinyin": "qǐngwèn",
+      "japanese": "お尋ねしますが。"
+    },
+    {
+      "sourceId": "w00167",
+      "globalSequence": 167,
+      "simplified": "去",
+      "pinyin": "qù",
+      "japanese": "行く。"
+    },
+    {
+      "sourceId": "w00168",
+      "globalSequence": 168,
+      "simplified": "去年",
+      "pinyin": "qùnián",
+      "japanese": "去年。"
+    },
+    {
+      "sourceId": "w00169",
+      "globalSequence": 169,
+      "simplified": "热",
+      "pinyin": "rè",
+      "japanese": "暑い。熱い。"
+    },
+    {
+      "sourceId": "w00170",
+      "globalSequence": 170,
+      "simplified": "人",
+      "pinyin": "rén",
+      "japanese": "人。"
+    },
+    {
+      "sourceId": "w00171",
+      "globalSequence": 171,
+      "simplified": "认识",
+      "pinyin": "rènshi",
+      "japanese": "知っている。知り合う。"
+    },
+    {
+      "sourceId": "w00172",
+      "globalSequence": 172,
+      "simplified": "日",
+      "pinyin": "rì",
+      "japanese": "日。太陽。"
+    },
+    {
+      "sourceId": "w00173",
+      "globalSequence": 173,
+      "simplified": "三",
+      "pinyin": "sān",
+      "japanese": "三。"
+    },
+    {
+      "sourceId": "w00174",
+      "globalSequence": 174,
+      "simplified": "商店",
+      "pinyin": "shāngdiàn",
+      "japanese": "店。"
+    },
+    {
+      "sourceId": "w00175",
+      "globalSequence": 175,
+      "simplified": "上",
+      "pinyin": "shàng",
+      "japanese": "上。上がる。"
+    }
+  ]
+}

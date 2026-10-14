@@ -1,5 +1,7 @@
 # HSK Import Plan and Teacher Source Reconciliation
 
+> Historical import planning. The owner-authorized HSK 1–4 draft release and current rebuild commands are documented in [HearMandarin HSK source foundation](hearmandarin-hsk-foundation.md). Any earlier human-review prerequisite here does not describe current learner availability.
+
 This issue-owned plan path now records the teacher-only outcome for Issue #81 and keeps the HSK source gate separate. Teacher workbook groups are the teacher's own curriculum difficulty and sequence, built through years of in-person teaching. They have no relationship to HSK levels. No teacher group, star, sheet, row, count, or record may be mapped to or used to infer HSK membership or level.
 
 ## Frozen Impact Map

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01253",
+      "globalSequence": 1253,
+      "simplified": "功课",
+      "pinyin": "gōngkè",
+      "japanese": "学科。勉強・宿題。"
+    },
+    {
+      "sourceId": "w01254",
+      "globalSequence": 1254,
+      "simplified": "公里",
+      "pinyin": "gōnglǐ",
+      "japanese": "キロメートル。"
+    },
+    {
+      "sourceId": "w01255",
+      "globalSequence": 1255,
+      "simplified": "公路",
+      "pinyin": "gōnglù",
+      "japanese": "道路。幹線道路。"
+    },
+    {
+      "sourceId": "w01256",
+      "globalSequence": 1256,
+      "simplified": "工人",
+      "pinyin": "gōngrén",
+      "japanese": "労働者。"
+    },
+    {
+      "sourceId": "w01257",
+      "globalSequence": 1257,
+      "simplified": "工资",
+      "pinyin": "gōngzī",
+      "japanese": "給料。"
+    },
+    {
+      "sourceId": "w01258",
+      "globalSequence": 1258,
+      "simplified": "共",
+      "pinyin": "gòng",
+      "japanese": "合計で。共に。"
+    },
+    {
+      "sourceId": "w01259",
+      "globalSequence": 1259,
+      "simplified": "共同",
+      "pinyin": "gòngtóng",
+      "japanese": "共通の。共同で。"
+    },
+    {
+      "sourceId": "w01260",
+      "globalSequence": 1260,
+      "simplified": "够",
+      "pinyin": "gòu",
+      "japanese": "足りる。"
+    },
+    {
+      "sourceId": "w01261",
+      "globalSequence": 1261,
+      "simplified": "购买",
+      "pinyin": "gòumǎi",
+      "japanese": "購入する。"
+    },
+    {
+      "sourceId": "w01262",
+      "globalSequence": 1262,
+      "simplified": "购物",
+      "pinyin": "gòuwù",
+      "japanese": "買い物をする。"
+    },
+    {
+      "sourceId": "w01263",
+      "globalSequence": 1263,
+      "simplified": "估计",
+      "pinyin": "gūjì",
+      "japanese": "推測する。見積もる。"
+    },
+    {
+      "sourceId": "w01264",
+      "globalSequence": 1264,
+      "simplified": "姑娘",
+      "pinyin": "gūniang",
+      "japanese": "若い女性。娘。"
+    },
+    {
+      "sourceId": "w01265",
+      "globalSequence": 1265,
+      "simplified": "鼓励",
+      "pinyin": "gǔlì",
+      "japanese": "励ます。"
+    },
+    {
+      "sourceId": "w01266",
+      "globalSequence": 1266,
+      "simplified": "顾客",
+      "pinyin": "gùkè",
+      "japanese": "客。顧客。"
+    },
+    {
+      "sourceId": "w01267",
+      "globalSequence": 1267,
+      "simplified": "故意",
+      "pinyin": "gùyì",
+      "japanese": "わざと。"
+    },
+    {
+      "sourceId": "w01268",
+      "globalSequence": 1268,
+      "simplified": "挂",
+      "pinyin": "guà",
+      "japanese": "掛ける。電話を切る。"
+    },
+    {
+      "sourceId": "w01269",
+      "globalSequence": 1269,
+      "simplified": "关键",
+      "pinyin": "guānjiàn",
+      "japanese": "鍵となる点。肝心な。"
+    },
+    {
+      "sourceId": "w01270",
+      "globalSequence": 1270,
+      "simplified": "观看",
+      "pinyin": "guānkàn",
+      "japanese": "観覧する。見る。"
+    },
+    {
+      "sourceId": "w01271",
+      "globalSequence": 1271,
+      "simplified": "观众",
+      "pinyin": "guānzhòng",
+      "japanese": "観客。"
+    },
+    {
+      "sourceId": "w01272",
+      "globalSequence": 1272,
+      "simplified": "管",
+      "pinyin": "guǎn",
+      "japanese": "管理する。管。"
+    },
+    {
+      "sourceId": "w01273",
+      "globalSequence": 1273,
+      "simplified": "管理",
+      "pinyin": "guǎnlǐ",
+      "japanese": "管理する。"
+    },
+    {
+      "sourceId": "w01274",
+      "globalSequence": 1274,
+      "simplified": "光",
+      "pinyin": "guāng",
+      "japanese": "光。〜だけ。"
+    },
+    {
+      "sourceId": "w01275",
+      "globalSequence": 1275,
+      "simplified": "广播",
+      "pinyin": "guǎngbō",
+      "japanese": "放送。放送する。"
+    },
+    {
+      "sourceId": "w01276",
+      "globalSequence": 1276,
+      "simplified": "广告",
+      "pinyin": "guǎnggào",
+      "japanese": "広告。"
+    },
+    {
+      "sourceId": "w01277",
+      "globalSequence": 1277,
+      "simplified": "逛",
+      "pinyin": "guàng",
+      "japanese": "ぶらぶら歩く。見て回る。"
+    },
+    {
+      "sourceId": "w01278",
+      "globalSequence": 1278,
+      "simplified": "规定",
+      "pinyin": "guīdìng",
+      "japanese": "規定する。規定。"
+    },
+    {
+      "sourceId": "w01279",
+      "globalSequence": 1279,
+      "simplified": "国籍",
+      "pinyin": "guójí",
+      "japanese": "国籍。"
+    },
+    {
+      "sourceId": "w01280",
+      "globalSequence": 1280,
+      "simplified": "国际",
+      "pinyin": "guójì",
+      "japanese": "国際的な。"
+    },
+    {
+      "sourceId": "w01281",
+      "globalSequence": 1281,
+      "simplified": "果汁",
+      "pinyin": "guǒzhī",
+      "japanese": "果汁。フルーツジュース。"
+    },
+    {
+      "sourceId": "w01282",
+      "globalSequence": 1282,
+      "simplified": "过程",
+      "pinyin": "guòchéng",
+      "japanese": "過程。"
+    },
+    {
+      "sourceId": "w01283",
+      "globalSequence": 1283,
+      "simplified": "海洋",
+      "pinyin": "hǎiyáng",
+      "japanese": "海洋。"
+    },
+    {
+      "sourceId": "w01284",
+      "globalSequence": 1284,
+      "simplified": "害羞",
+      "pinyin": "hàixiū",
+      "japanese": "恥ずかしがる。"
+    },
+    {
+      "sourceId": "w01285",
+      "globalSequence": 1285,
+      "simplified": "寒假",
+      "pinyin": "hánjià",
+      "japanese": "冬休み。"
+    },
+    {
+      "sourceId": "w01286",
+      "globalSequence": 1286,
+      "simplified": "寒冷",
+      "pinyin": "hánlěng",
+      "japanese": "寒い。"
+    },
+    {
+      "sourceId": "w01287",
+      "globalSequence": 1287,
+      "simplified": "喊",
+      "pinyin": "hǎn",
+      "japanese": "叫ぶ。大声で呼ぶ。"
+    },
+    {
+      "sourceId": "w01288",
+      "globalSequence": 1288,
+      "simplified": "汗",
+      "pinyin": "hàn",
+      "japanese": "汗。"
+    },
+    {
+      "sourceId": "w01289",
+      "globalSequence": 1289,
+      "simplified": "航班",
+      "pinyin": "hángbān",
+      "japanese": "航空便。"
+    },
+    {
+      "sourceId": "w01291",
+      "globalSequence": 1291,
+      "simplified": "好好",
+      "pinyin": "hǎohǎo",
+      "japanese": "しっかり。十分に。"
+    },
+    {
+      "sourceId": "w01292",
+      "globalSequence": 1292,
+      "simplified": "好笑",
+      "pinyin": "hǎoxiào",
+      "japanese": "おかしい。笑える。"
+    },
+    {
+      "sourceId": "w01293",
+      "globalSequence": 1293,
+      "simplified": "合格",
+      "pinyin": "hégé",
+      "japanese": "合格する。基準を満たす。"
+    },
+    {
+      "sourceId": "w01294",
+      "globalSequence": 1294,
+      "simplified": "盒子",
+      "pinyin": "hézi",
+      "japanese": "箱。"
+    },
+    {
+      "sourceId": "w01295",
+      "globalSequence": 1295,
+      "simplified": "红包",
+      "pinyin": "hóngbāo",
+      "japanese": "お祝いの金銭を入れる赤い袋。ご祝儀。"
+    },
+    {
+      "sourceId": "w01296",
+      "globalSequence": 1296,
+      "simplified": "厚",
+      "pinyin": "hòu",
+      "japanese": "厚い。"
+    },
+    {
+      "sourceId": "w01297",
+      "globalSequence": 1297,
+      "simplified": "后悔",
+      "pinyin": "hòuhuǐ",
+      "japanese": "後悔する。"
+    },
+    {
+      "sourceId": "w01298",
+      "globalSequence": 1298,
+      "simplified": "忽然",
+      "pinyin": "hūrán",
+      "japanese": "突然。"
+    },
+    {
+      "sourceId": "w01299",
+      "globalSequence": 1299,
+      "simplified": "互联网",
+      "pinyin": "hùliánwǎng",
+      "japanese": "インターネット。"
+    },
+    {
+      "sourceId": "w01300",
+      "globalSequence": 1300,
+      "simplified": "护士",
+      "pinyin": "hùshi",
+      "japanese": "看護師。"
+    },
+    {
+      "sourceId": "w01301",
+      "globalSequence": 1301,
+      "simplified": "互相",
+      "pinyin": "hùxiāng",
+      "japanese": "互いに。"
+    },
+    {
+      "sourceId": "w01302",
+      "globalSequence": 1302,
+      "simplified": "话剧",
+      "pinyin": "huàjù",
+      "japanese": "台詞を中心とする演劇。"
+    },
+    {
+      "sourceId": "w01303",
+      "globalSequence": 1303,
+      "simplified": "怀疑",
+      "pinyin": "huáiyí",
+      "japanese": "疑う。"
+    }
+  ]
+}

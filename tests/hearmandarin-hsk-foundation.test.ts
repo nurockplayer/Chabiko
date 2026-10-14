@@ -557,7 +557,7 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
   requireInvariant(candidate.publication.repositoryPublishedRecordCount === publishedRecordCount, 'repository-published-record-count');
   requireInvariant(candidate.publication.batches[0]?.sha256 === immutableFirstBatchSha256, 'first-batch-sha256-frozen');
   requireInvariant(candidate.publication.sourceEligibleIsHumanReviewed === false, 'source-eligibility-is-not-human-review');
-  requireInvariant(candidate.publication.sourceEligibleIsRuntimeAvailable === false, 'source-eligibility-is-not-runtime-availability');
+  requireInvariant(candidate.publication.sourceEligibleIsRuntimeAvailable === true, 'owner-released-runtime-availability');
 
   requireInvariant(firstBatchSequencesSet.size === 20, 'first-batch-frozen-count');
   const expectedAuthoring = {
@@ -1209,9 +1209,9 @@ describe('HearMandarin HSK source foundation', () => {
       },
       {
         name: 'runtime availability flag drift',
-        invariant: 'source-eligibility-is-not-runtime-availability',
+        invariant: 'owner-released-runtime-availability',
         mutate: (candidate) => {
-          candidate.manifest.publication.sourceEligibleIsRuntimeAvailable = true;
+          candidate.manifest.publication.sourceEligibleIsRuntimeAvailable = false;
         },
       },
     ];

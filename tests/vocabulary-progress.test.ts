@@ -352,7 +352,7 @@ describe('VocabularyProgressStore', () => {
 
       fallbackStore.refresh();
 
-      expect(fallbackStore.getStatus('local')).toBe('new');
+      expect(fallbackStore.getStatus('local')).toBe(nextRaw === null ? 'new' : 'learning');
       expect(fallbackStore.getStatus(nextRaw === null ? 'existing' : 'external')).toBe(expectedStatus);
       expect(fallbackStore.getKnownStreak(nextRaw === null ? 'existing' : 'external')).toBe(expectedStreak);
       expect(quota.writeAttempts).toHaveLength(1);
@@ -536,5 +536,118 @@ describe('VocabularyProgressStore', () => {
       expect(store.getStatus('b')).toBe('learning');
       expect(store.getKnownStreak('b')).toBe(1);
     });
+  });
+});
+
+describe('HSK stored entry validation (#514)', () => {
+  it.each([
+    ['unknown status', '{"status":"done","knownStreak":2}'],
+    ['negative streak', '{"status":"learning","knownStreak":-1}'],
+    ['fractional streak', '{"status":"learning","knownStreak":1.5}'],
+    ['numeric overflow', '{"status":"learned","knownStreak":1e400}'],
+    ['null streak', '{"status":"learned","knownStreak":null}'],
+  ])('filters %s while retaining valid siblings', (_, invalid) => {
+    const storage = createMockStorage();
+    storage._map.set(VOCABULARY_PROGRESS_KEY, `{"version":1,"entries":{"bad":${invalid},"good":{"status":"learning","knownStreak":1}}}`);
+    const store = new VocabularyProgressStore(storage);
+    expect(store.getAllEntries()).toEqual({ good: { status: 'learning', knownStreak: 1 } });
+    store.applyRating('good', 'known');
+    expect(store.getStatus('good')).toBe('learned');
+  });
+
+  it('accepts all statuses and nonnegative integers without extra consistency constraints', () => {
+    const storage = createMockStorage();
+    const valid = { a: { status: 'new' as const, knownStreak: 4 }, b: { status: 'learning' as const, knownStreak: 0 }, c: { status: 'learned' as const, knownStreak: 1 } };
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry(valid));
+    expect(new VocabularyProgressStore(storage).getAllEntries()).toEqual(valid);
+  });
+});
+
+describe('HSK pending page-memory ratings (#508)', () => {
+  it.each([null, entry({})])('merges pending IDs and unrelated cross-tab writes, then recovers (%s)', (initial) => {
+    const quota = createQuotaStorage(initial);
+    const store = new VocabularyProgressStore(quota.storage);
+    store.applyRating('a', 'known');
+    store.applyRating('b', 'known');
+    quota.setRaw(entry({ external: { status: 'learned', knownStreak: 2 } }));
+    store.refresh();
+    expect(store.getKnownStreak('a')).toBe(1);
+    expect(store.getKnownStreak('b')).toBe(1);
+    expect(store.getStatus('external')).toBe('learned');
+    quota.setRaw('malformed');
+    store.refresh();
+    expect(store.getKnownStreak('a')).toBe(1);
+    quota.setRaw(entry({ external: { status: 'learned', knownStreak: 2 } }));
+    quota.setWriteFailure(false);
+    store.applyRating('a', 'known');
+    expect(JSON.parse(quota.getRaw()!).entries).toEqual({ external: { status: 'learned', knownStreak: 2 }, b: { status: 'learning', knownStreak: 1 }, a: { status: 'learned', knownStreak: 2 } });
+    expect(quota.writeAttempts).toHaveLength(3);
+  });
+
+  it('an explicit clear wins even when the initial key was absent; a delayed clear cannot wipe newer data', () => {
+    const quota = createQuotaStorage();
+    const store = new VocabularyProgressStore(quota.storage);
+    store.applyRating('a', 'known');
+    store.refresh(true);
+    expect(store.getStatus('a')).toBe('new');
+    quota.setWriteFailure(false);
+    store.applyRating('b', 'known');
+    store.refresh(true);
+    expect(store.getKnownStreak('b')).toBe(1);
+    expect(JSON.parse(quota.getRaw()!).entries.a).toBeUndefined();
+  });
+
+  it('failed reset removal cannot revive the old document during refresh or a later rating', () => {
+    const storage = createMockStorage();
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry({ old: { status: 'learned', knownStreak: 2 } }));
+    const store = new VocabularyProgressStore({ ...storage, removeItem: () => { throw new Error('blocked removal'); } });
+    store.resetAll();
+    store.refresh();
+    expect(store.getAllEntries()).toEqual({});
+    store.applyRating('fresh', 'known');
+    expect(JSON.parse(storage._map.get(VOCABULARY_PROGRESS_KEY)!).entries).toEqual({ fresh: { status: 'learning', knownStreak: 1 } });
+  });
+});
+
+describe('HSK reset retries after storage failure (#508)', () => {
+  it('reconciles unobserved disk entries before resetting and never revives them after repeated failures', () => {
+    const storage = createMockStorage();
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry({ old: { status: 'learned', knownStreak: 2 } }));
+    let writesFail = true;
+    const store = new VocabularyProgressStore({
+      getItem: storage.getItem,
+      removeItem: () => { throw new Error('removal blocked'); },
+      setItem: (key, value) => { if (writesFail) throw new Error('quota'); storage.setItem(key, value); },
+    });
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry({ old: { status: 'learned', knownStreak: 2 }, unseen: { status: 'learned', knownStreak: 2 } }));
+    store.resetAll();
+    store.refresh();
+    expect(store.getAllEntries()).toEqual({});
+    store.applyRating('fresh', 'known');
+    store.resetAll();
+    store.refresh();
+    expect(store.getAllEntries()).toEqual({});
+    writesFail = false;
+    store.applyRating('fresh', 'known');
+    expect(JSON.parse(storage._map.get(VOCABULARY_PROGRESS_KEY)!).entries).toEqual({ fresh: { status: 'learning', knownStreak: 1 } });
+  });
+
+  it('keeps a reset authoritative when both its pre-reset read and removal fail', () => {
+    const storage = createMockStorage();
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry({ old: { status: 'learned', knownStreak: 2 } }));
+    let readsFail = false;
+    const store = new VocabularyProgressStore({
+      getItem: (key) => { if (readsFail) throw new Error('unreadable'); return storage.getItem(key); },
+      setItem: storage.setItem,
+      removeItem: () => { throw new Error('removal blocked'); },
+    });
+    storage._map.set(VOCABULARY_PROGRESS_KEY, entry({ old: { status: 'learned', knownStreak: 2 }, unseen: { status: 'learned', knownStreak: 2 } }));
+    readsFail = true;
+    store.resetAll();
+    readsFail = false;
+    store.refresh();
+    expect(store.getAllEntries()).toEqual({});
+    store.applyRating('fresh', 'known');
+    expect(JSON.parse(storage._map.get(VOCABULARY_PROGRESS_KEY)!).entries).toEqual({ fresh: { status: 'learning', knownStreak: 1 } });
   });
 });

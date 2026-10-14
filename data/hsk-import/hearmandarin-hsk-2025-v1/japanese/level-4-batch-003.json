@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01051",
+      "globalSequence": 1051,
+      "simplified": "不得不",
+      "pinyin": "bùdébù",
+      "japanese": "〜せざるを得ない。"
+    },
+    {
+      "sourceId": "w01052",
+      "globalSequence": 1052,
+      "simplified": "部分",
+      "pinyin": "bùfen",
+      "japanese": "部分。"
+    },
+    {
+      "sourceId": "w01053",
+      "globalSequence": 1053,
+      "simplified": "不管",
+      "pinyin": "bùguǎn",
+      "japanese": "〜にかかわらず。構わない。"
+    },
+    {
+      "sourceId": "w01054",
+      "globalSequence": 1054,
+      "simplified": "不光",
+      "pinyin": "bùguāng",
+      "japanese": "〜だけでなく。"
+    },
+    {
+      "sourceId": "w01055",
+      "globalSequence": 1055,
+      "simplified": "不仅",
+      "pinyin": "bùjǐn",
+      "japanese": "〜だけでなく。"
+    },
+    {
+      "sourceId": "w01056",
+      "globalSequence": 1056,
+      "simplified": "不满",
+      "pinyin": "bùmǎn",
+      "japanese": "不満。不満を持つ。"
+    },
+    {
+      "sourceId": "w01057",
+      "globalSequence": 1057,
+      "simplified": "部门",
+      "pinyin": "bùmén",
+      "japanese": "部門。"
+    },
+    {
+      "sourceId": "w01058",
+      "globalSequence": 1058,
+      "simplified": "不如",
+      "pinyin": "bùrú",
+      "japanese": "〜に及ばない。〜したほうがよい。"
+    },
+    {
+      "sourceId": "w01059",
+      "globalSequence": 1059,
+      "simplified": "擦",
+      "pinyin": "cā",
+      "japanese": "拭く。こする。"
+    },
+    {
+      "sourceId": "w01060",
+      "globalSequence": 1060,
+      "simplified": "猜",
+      "pinyin": "cāi",
+      "japanese": "推測する。当てる。"
+    },
+    {
+      "sourceId": "w01061",
+      "globalSequence": 1061,
+      "simplified": "材料",
+      "pinyin": "cáiliào",
+      "japanese": "材料。資料。"
+    },
+    {
+      "sourceId": "w01062",
+      "globalSequence": 1062,
+      "simplified": "参观",
+      "pinyin": "cānguān",
+      "japanese": "見学する。"
+    },
+    {
+      "sourceId": "w01063",
+      "globalSequence": 1063,
+      "simplified": "参赛",
+      "pinyin": "cānsài",
+      "japanese": "試合に参加する。"
+    },
+    {
+      "sourceId": "w01064",
+      "globalSequence": 1064,
+      "simplified": "餐厅",
+      "pinyin": "cāntīng",
+      "japanese": "レストラン。食堂。"
+    },
+    {
+      "sourceId": "w01065",
+      "globalSequence": 1065,
+      "simplified": "操场",
+      "pinyin": "cāochǎng",
+      "japanese": "運動場。"
+    },
+    {
+      "sourceId": "w01066",
+      "globalSequence": 1066,
+      "simplified": "厕所",
+      "pinyin": "cèsuǒ",
+      "japanese": "トイレ。"
+    },
+    {
+      "sourceId": "w01067",
+      "globalSequence": 1067,
+      "simplified": "查看",
+      "pinyin": "chákàn",
+      "japanese": "調べて確認する。"
+    },
+    {
+      "sourceId": "w01068",
+      "globalSequence": 1068,
+      "simplified": "茶叶",
+      "pinyin": "cháyè",
+      "japanese": "茶葉。"
+    },
+    {
+      "sourceId": "w01069",
+      "globalSequence": 1069,
+      "simplified": "查找",
+      "pinyin": "cházhǎo",
+      "japanese": "探す。検索する。"
+    },
+    {
+      "sourceId": "w01070",
+      "globalSequence": 1070,
+      "simplified": "差点儿",
+      "pinyin": "chàdiǎnr",
+      "japanese": "もう少しで。危うく。"
+    },
+    {
+      "sourceId": "w01071",
+      "globalSequence": 1071,
+      "simplified": "产生",
+      "pinyin": "chǎnshēng",
+      "japanese": "生じる。生み出す。"
+    },
+    {
+      "sourceId": "w01072",
+      "globalSequence": 1072,
+      "simplified": "厂",
+      "pinyin": "chǎng",
+      "japanese": "工場。"
+    },
+    {
+      "sourceId": "w01073",
+      "globalSequence": 1073,
+      "simplified": "场",
+      "pinyin": "chǎng",
+      "japanese": "場所。試合や催しを数える「〜回」。"
+    },
+    {
+      "sourceId": "w01074",
+      "globalSequence": 1074,
+      "simplified": "超过",
+      "pinyin": "chāoguò",
+      "japanese": "超える。"
+    },
+    {
+      "sourceId": "w01075",
+      "globalSequence": 1075,
+      "simplified": "车速",
+      "pinyin": "chēsù",
+      "japanese": "車の速度。"
+    },
+    {
+      "sourceId": "w01076",
+      "globalSequence": 1076,
+      "simplified": "车位",
+      "pinyin": "chēwèi",
+      "japanese": "駐車スペース。"
+    },
+    {
+      "sourceId": "w01077",
+      "globalSequence": 1077,
+      "simplified": "城",
+      "pinyin": "chéng",
+      "japanese": "都市。城壁。"
+    },
+    {
+      "sourceId": "w01079",
+      "globalSequence": 1079,
+      "simplified": "成功",
+      "pinyin": "chénggōng",
+      "japanese": "成功する。成功。"
+    },
+    {
+      "sourceId": "w01080",
+      "globalSequence": 1080,
+      "simplified": "乘客",
+      "pinyin": "chéngkè",
+      "japanese": "乗客。"
+    },
+    {
+      "sourceId": "w01081",
+      "globalSequence": 1081,
+      "simplified": "诚实",
+      "pinyin": "chéngshí",
+      "japanese": "正直な。"
+    },
+    {
+      "sourceId": "w01082",
+      "globalSequence": 1082,
+      "simplified": "成为",
+      "pinyin": "chéngwéi",
+      "japanese": "〜になる。"
+    },
+    {
+      "sourceId": "w01083",
+      "globalSequence": 1083,
+      "simplified": "乘坐",
+      "pinyin": "chéngzuò",
+      "japanese": "乗る。"
+    },
+    {
+      "sourceId": "w01084",
+      "globalSequence": 1084,
+      "simplified": "吃惊",
+      "pinyin": "chījīng",
+      "japanese": "驚く。"
+    },
+    {
+      "sourceId": "w01085",
+      "globalSequence": 1085,
+      "simplified": "迟",
+      "pinyin": "chí",
+      "japanese": "遅い。"
+    },
+    {
+      "sourceId": "w01086",
+      "globalSequence": 1086,
+      "simplified": "重",
+      "pinyin": "chóng",
+      "japanese": "重なる。再び。"
+    },
+    {
+      "sourceId": "w01087",
+      "globalSequence": 1087,
+      "simplified": "重新",
+      "pinyin": "chóngxīn",
+      "japanese": "改めて。やり直して。"
+    },
+    {
+      "sourceId": "w01088",
+      "globalSequence": 1088,
+      "simplified": "出差",
+      "pinyin": "chūchāi",
+      "japanese": "出張する。"
+    },
+    {
+      "sourceId": "w01089",
+      "globalSequence": 1089,
+      "simplified": "出口",
+      "pinyin": "chūkǒu",
+      "japanese": "出口。輸出する。"
+    },
+    {
+      "sourceId": "w01090",
+      "globalSequence": 1090,
+      "simplified": "出现",
+      "pinyin": "chūxiàn",
+      "japanese": "現れる。"
+    },
+    {
+      "sourceId": "w01091",
+      "globalSequence": 1091,
+      "simplified": "出行",
+      "pinyin": "chūxíng",
+      "japanese": "出かける。移動する。"
+    },
+    {
+      "sourceId": "w01092",
+      "globalSequence": 1092,
+      "simplified": "出租",
+      "pinyin": "chūzū",
+      "japanese": "貸し出す。"
+    },
+    {
+      "sourceId": "w01093",
+      "globalSequence": 1093,
+      "simplified": "厨房",
+      "pinyin": "chúfáng",
+      "japanese": "台所。"
+    },
+    {
+      "sourceId": "w01094",
+      "globalSequence": 1094,
+      "simplified": "厨师",
+      "pinyin": "chúshī",
+      "japanese": "料理人。"
+    },
+    {
+      "sourceId": "w01095",
+      "globalSequence": 1095,
+      "simplified": "窗",
+      "pinyin": "chuāng",
+      "japanese": "窓。"
+    },
+    {
+      "sourceId": "w01096",
+      "globalSequence": 1096,
+      "simplified": "窗户",
+      "pinyin": "chuānghu",
+      "japanese": "窓。"
+    },
+    {
+      "sourceId": "w01097",
+      "globalSequence": 1097,
+      "simplified": "吹",
+      "pinyin": "chuī",
+      "japanese": "吹く。"
+    },
+    {
+      "sourceId": "w01098",
+      "globalSequence": 1098,
+      "simplified": "词语",
+      "pinyin": "cíyǔ",
+      "japanese": "語句。"
+    },
+    {
+      "sourceId": "w01099",
+      "globalSequence": 1099,
+      "simplified": "此",
+      "pinyin": "cǐ",
+      "japanese": "この。これ。"
+    },
+    {
+      "sourceId": "w01100",
+      "globalSequence": 1100,
+      "simplified": "此次",
+      "pinyin": "cǐ cì",
+      "japanese": "今回。"
+    },
+    {
+      "sourceId": "w01101",
+      "globalSequence": 1101,
+      "simplified": "此外",
+      "pinyin": "cǐwài",
+      "japanese": "このほかに。"
+    }
+  ]
+}

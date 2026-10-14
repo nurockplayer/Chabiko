@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01354",
+      "globalSequence": 1354,
+      "simplified": "建议",
+      "pinyin": "jiànyì",
+      "japanese": "提案する。提案。"
+    },
+    {
+      "sourceId": "w01355",
+      "globalSequence": 1355,
+      "simplified": "江",
+      "pinyin": "jiāng",
+      "japanese": "大きな川。"
+    },
+    {
+      "sourceId": "w01356",
+      "globalSequence": 1356,
+      "simplified": "将",
+      "pinyin": "jiāng",
+      "japanese": "まもなく〜する。〜を。"
+    },
+    {
+      "sourceId": "w01357",
+      "globalSequence": 1357,
+      "simplified": "将来",
+      "pinyin": "jiānglái",
+      "japanese": "将来。"
+    },
+    {
+      "sourceId": "w01358",
+      "globalSequence": 1358,
+      "simplified": "将要",
+      "pinyin": "jiāngyào",
+      "japanese": "まもなく〜する。"
+    },
+    {
+      "sourceId": "w01359",
+      "globalSequence": 1359,
+      "simplified": "奖",
+      "pinyin": "jiǎng",
+      "japanese": "賞。褒める。"
+    },
+    {
+      "sourceId": "w01360",
+      "globalSequence": 1360,
+      "simplified": "奖金",
+      "pinyin": "jiǎngjīn",
+      "japanese": "賞金。ボーナス。"
+    },
+    {
+      "sourceId": "w01361",
+      "globalSequence": 1361,
+      "simplified": "奖学金",
+      "pinyin": "jiǎngxuéjīn",
+      "japanese": "奨学金。"
+    },
+    {
+      "sourceId": "w01362",
+      "globalSequence": 1362,
+      "simplified": "降",
+      "pinyin": "jiàng",
+      "japanese": "下がる。下げる。"
+    },
+    {
+      "sourceId": "w01363",
+      "globalSequence": 1363,
+      "simplified": "降低",
+      "pinyin": "jiàngdī",
+      "japanese": "低下する。下げる。"
+    },
+    {
+      "sourceId": "w01364",
+      "globalSequence": 1364,
+      "simplified": "降价",
+      "pinyin": "jiàngjià",
+      "japanese": "値下げする。"
+    },
+    {
+      "sourceId": "w01365",
+      "globalSequence": 1365,
+      "simplified": "降落",
+      "pinyin": "jiàngluò",
+      "japanese": "着陸する。降下する。"
+    },
+    {
+      "sourceId": "w01366",
+      "globalSequence": 1366,
+      "simplified": "降温",
+      "pinyin": "jiàngwēn",
+      "japanese": "気温が下がる。冷却する。"
+    },
+    {
+      "sourceId": "w01367",
+      "globalSequence": 1367,
+      "simplified": "交",
+      "pinyin": "jiāo",
+      "japanese": "渡す。交際する。"
+    },
+    {
+      "sourceId": "w01368",
+      "globalSequence": 1368,
+      "simplified": "骄傲",
+      "pinyin": "jiāo’ào",
+      "japanese": "誇らしい。おごり高ぶった。"
+    },
+    {
+      "sourceId": "w01369",
+      "globalSequence": 1369,
+      "simplified": "交警",
+      "pinyin": "jiāojǐng",
+      "japanese": "交通警察官。"
+    },
+    {
+      "sourceId": "w01370",
+      "globalSequence": 1370,
+      "simplified": "交流",
+      "pinyin": "jiāoliú",
+      "japanese": "交流する。やり取り。"
+    },
+    {
+      "sourceId": "w01371",
+      "globalSequence": 1371,
+      "simplified": "郊区",
+      "pinyin": "jiāoqū",
+      "japanese": "郊外。"
+    },
+    {
+      "sourceId": "w01372",
+      "globalSequence": 1372,
+      "simplified": "交通",
+      "pinyin": "jiāotōng",
+      "japanese": "交通。"
+    },
+    {
+      "sourceId": "w01373",
+      "globalSequence": 1373,
+      "simplified": "教练",
+      "pinyin": "jiàoliàn",
+      "japanese": "コーチ。指導する。"
+    },
+    {
+      "sourceId": "w01374",
+      "globalSequence": 1374,
+      "simplified": "教师",
+      "pinyin": "jiàoshī",
+      "japanese": "教師。"
+    },
+    {
+      "sourceId": "w01375",
+      "globalSequence": 1375,
+      "simplified": "教授",
+      "pinyin": "jiàoshòu",
+      "japanese": "教授。教え授ける。"
+    },
+    {
+      "sourceId": "w01376",
+      "globalSequence": 1376,
+      "simplified": "教学",
+      "pinyin": "jiàoxué",
+      "japanese": "授業。教育を行うこと。"
+    },
+    {
+      "sourceId": "w01377",
+      "globalSequence": 1377,
+      "simplified": "教育",
+      "pinyin": "jiàoyù",
+      "japanese": "教育。教育する。"
+    },
+    {
+      "sourceId": "w01378",
+      "globalSequence": 1378,
+      "simplified": "叫作",
+      "pinyin": "jiàozuò",
+      "japanese": "〜と呼ぶ。"
+    },
+    {
+      "sourceId": "w01379",
+      "globalSequence": 1379,
+      "simplified": "街道",
+      "pinyin": "jiēdào",
+      "japanese": "街路。通り。"
+    },
+    {
+      "sourceId": "w01380",
+      "globalSequence": 1380,
+      "simplified": "接受",
+      "pinyin": "jiēshòu",
+      "japanese": "受け入れる。"
+    },
+    {
+      "sourceId": "w01381",
+      "globalSequence": 1381,
+      "simplified": "接着",
+      "pinyin": "jiēzhe",
+      "japanese": "続いて。"
+    },
+    {
+      "sourceId": "w01382",
+      "globalSequence": 1382,
+      "simplified": "结果",
+      "pinyin": "jiéguǒ",
+      "japanese": "結果。その結果。"
+    },
+    {
+      "sourceId": "w01383",
+      "globalSequence": 1383,
+      "simplified": "节假日",
+      "pinyin": "jiéjiàrì",
+      "japanese": "祝休日。"
+    },
+    {
+      "sourceId": "w01384",
+      "globalSequence": 1384,
+      "simplified": "节约",
+      "pinyin": "jiéyuē",
+      "japanese": "節約する。"
+    },
+    {
+      "sourceId": "w01385",
+      "globalSequence": 1385,
+      "simplified": "结账",
+      "pinyin": "jiézhàng",
+      "japanese": "会計を済ませる。"
+    },
+    {
+      "sourceId": "w01386",
+      "globalSequence": 1386,
+      "simplified": "解释",
+      "pinyin": "jiěshì",
+      "japanese": "説明する。解釈する。"
+    },
+    {
+      "sourceId": "w01387",
+      "globalSequence": 1387,
+      "simplified": "今后",
+      "pinyin": "jīnhòu",
+      "japanese": "今後。"
+    },
+    {
+      "sourceId": "w01388",
+      "globalSequence": 1388,
+      "simplified": "仅",
+      "pinyin": "jǐn",
+      "japanese": "わずか。〜だけ。"
+    },
+    {
+      "sourceId": "w01389",
+      "globalSequence": 1389,
+      "simplified": "尽管",
+      "pinyin": "jǐnguǎn",
+      "japanese": "〜にもかかわらず。遠慮なく。"
+    },
+    {
+      "sourceId": "w01390",
+      "globalSequence": 1390,
+      "simplified": "仅仅",
+      "pinyin": "jǐnjǐn",
+      "japanese": "たった。〜だけ。"
+    },
+    {
+      "sourceId": "w01391",
+      "globalSequence": 1391,
+      "simplified": "紧张",
+      "pinyin": "jǐnzhāng",
+      "japanese": "緊張する。余裕がない。"
+    },
+    {
+      "sourceId": "w01392",
+      "globalSequence": 1392,
+      "simplified": "进入",
+      "pinyin": "jìnrù",
+      "japanese": "入る。"
+    },
+    {
+      "sourceId": "w01393",
+      "globalSequence": 1393,
+      "simplified": "进行",
+      "pinyin": "jìnxíng",
+      "japanese": "行う。進行する。"
+    },
+    {
+      "sourceId": "w01394",
+      "globalSequence": 1394,
+      "simplified": "禁止",
+      "pinyin": "jìnzhǐ",
+      "japanese": "禁止する。"
+    },
+    {
+      "sourceId": "w01395",
+      "globalSequence": 1395,
+      "simplified": "精彩",
+      "pinyin": "jīngcǎi",
+      "japanese": "すばらしい。見事な。"
+    },
+    {
+      "sourceId": "w01396",
+      "globalSequence": 1396,
+      "simplified": "经济",
+      "pinyin": "jīngjì",
+      "japanese": "経済。"
+    },
+    {
+      "sourceId": "w01397",
+      "globalSequence": 1397,
+      "simplified": "京剧",
+      "pinyin": "jīngjù",
+      "japanese": "京劇。"
+    },
+    {
+      "sourceId": "w01398",
+      "globalSequence": 1398,
+      "simplified": "经历",
+      "pinyin": "jīnglì",
+      "japanese": "経験する。経歴。"
+    },
+    {
+      "sourceId": "w01399",
+      "globalSequence": 1399,
+      "simplified": "经验",
+      "pinyin": "jīngyàn",
+      "japanese": "経験。"
+    },
+    {
+      "sourceId": "w01400",
+      "globalSequence": 1400,
+      "simplified": "警察",
+      "pinyin": "jǐngchá",
+      "japanese": "警察官。警察。"
+    },
+    {
+      "sourceId": "w01401",
+      "globalSequence": 1401,
+      "simplified": "景点",
+      "pinyin": "jǐngdiǎn",
+      "japanese": "観光スポット。"
+    },
+    {
+      "sourceId": "w01402",
+      "globalSequence": 1402,
+      "simplified": "景区",
+      "pinyin": "jǐngqū",
+      "japanese": "観光地区。"
+    },
+    {
+      "sourceId": "w01403",
+      "globalSequence": 1403,
+      "simplified": "景色",
+      "pinyin": "jǐngsè",
+      "japanese": "景色。"
+    }
+  ]
+}

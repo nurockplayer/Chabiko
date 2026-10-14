@@ -39,7 +39,7 @@ export const DASHBOARD_TRACK_LABELS: Record<DashboardTrackId, string> = {
 export const DASHBOARD_TRACK_DESCRIPTIONS: Record<DashboardTrackId, string> = {
   'basic-vocabulary':
     '中国語の先生が選んだ単語を、イラスト付きの短いセッションで練習します。',
-  hsk: 'HSK 1級の単語をフラッシュカードで学びます。',
+  hsk: 'HSK 1〜4の単語をフラッシュカードで学びます。',
   'taiwan-travel':
     '台湾旅行で使える中国語を、レッスンで順番に学びます。',
 };

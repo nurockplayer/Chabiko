@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01304",
+      "globalSequence": 1304,
+      "simplified": "坏处",
+      "pinyin": "huàichù",
+      "japanese": "悪い点。害。"
+    },
+    {
+      "sourceId": "w01305",
+      "globalSequence": 1305,
+      "simplified": "环保",
+      "pinyin": "huánbǎo",
+      "japanese": "環境保護。"
+    },
+    {
+      "sourceId": "w01306",
+      "globalSequence": 1306,
+      "simplified": "换乘",
+      "pinyin": "huànchéng",
+      "japanese": "乗り換える。"
+    },
+    {
+      "sourceId": "w01307",
+      "globalSequence": 1307,
+      "simplified": "回复",
+      "pinyin": "huífù",
+      "japanese": "返信する。回復する。"
+    },
+    {
+      "sourceId": "w01308",
+      "globalSequence": 1308,
+      "simplified": "回信",
+      "pinyin": "huíxìn",
+      "japanese": "返事の手紙。手紙で返事をする。"
+    },
+    {
+      "sourceId": "w01309",
+      "globalSequence": 1309,
+      "simplified": "回忆",
+      "pinyin": "huíyì",
+      "japanese": "思い出す。思い出。"
+    },
+    {
+      "sourceId": "w01310",
+      "globalSequence": 1310,
+      "simplified": "会员",
+      "pinyin": "huìyuán",
+      "japanese": "会員。"
+    },
+    {
+      "sourceId": "w01311",
+      "globalSequence": 1311,
+      "simplified": "活",
+      "pinyin": "huó",
+      "japanese": "生きる。生きている。"
+    },
+    {
+      "sourceId": "w01312",
+      "globalSequence": 1312,
+      "simplified": "活动",
+      "pinyin": "huódòng",
+      "japanese": "活動。活動する。"
+    },
+    {
+      "sourceId": "w01313",
+      "globalSequence": 1313,
+      "simplified": "活泼",
+      "pinyin": "huópō",
+      "japanese": "活発な。"
+    },
+    {
+      "sourceId": "w01314",
+      "globalSequence": 1314,
+      "simplified": "火",
+      "pinyin": "huǒ",
+      "japanese": "火。人気がある。"
+    },
+    {
+      "sourceId": "w01315",
+      "globalSequence": 1315,
+      "simplified": "货",
+      "pinyin": "huò",
+      "japanese": "商品。貨物。"
+    },
+    {
+      "sourceId": "w01316",
+      "globalSequence": 1316,
+      "simplified": "获得",
+      "pinyin": "huòdé",
+      "japanese": "獲得する。"
+    },
+    {
+      "sourceId": "w01317",
+      "globalSequence": 1317,
+      "simplified": "获奖",
+      "pinyin": "huòjiǎng",
+      "japanese": "受賞する。"
+    },
+    {
+      "sourceId": "w01318",
+      "globalSequence": 1318,
+      "simplified": "获取",
+      "pinyin": "huòqǔ",
+      "japanese": "取得する。"
+    },
+    {
+      "sourceId": "w01319",
+      "globalSequence": 1319,
+      "simplified": "基本",
+      "pinyin": "jīběn",
+      "japanese": "基本。基本的な。"
+    },
+    {
+      "sourceId": "w01320",
+      "globalSequence": 1320,
+      "simplified": "基本上",
+      "pinyin": "jīběnshàng",
+      "japanese": "基本的に。ほぼ。"
+    },
+    {
+      "sourceId": "w01321",
+      "globalSequence": 1321,
+      "simplified": "基础",
+      "pinyin": "jīchǔ",
+      "japanese": "基礎。"
+    },
+    {
+      "sourceId": "w01322",
+      "globalSequence": 1322,
+      "simplified": "激动",
+      "pinyin": "jīdòng",
+      "japanese": "興奮する。感激する。"
+    },
+    {
+      "sourceId": "w01323",
+      "globalSequence": 1323,
+      "simplified": "积极",
+      "pinyin": "jījí",
+      "japanese": "積極的な。"
+    },
+    {
+      "sourceId": "w01324",
+      "globalSequence": 1324,
+      "simplified": "积累",
+      "pinyin": "jīlěi",
+      "japanese": "蓄積する。積み重ね。"
+    },
+    {
+      "sourceId": "w01325",
+      "globalSequence": 1325,
+      "simplified": "及时",
+      "pinyin": "jíshí",
+      "japanese": "間に合って。適時に。"
+    },
+    {
+      "sourceId": "w01326",
+      "globalSequence": 1326,
+      "simplified": "即使",
+      "pinyin": "jíshǐ",
+      "japanese": "たとえ〜でも。"
+    },
+    {
+      "sourceId": "w01327",
+      "globalSequence": 1327,
+      "simplified": "既",
+      "pinyin": "jì",
+      "japanese": "すでに。〜でもあり。"
+    },
+    {
+      "sourceId": "w01328",
+      "globalSequence": 1328,
+      "simplified": "寄",
+      "pinyin": "jì",
+      "japanese": "郵送する。"
+    },
+    {
+      "sourceId": "w01329",
+      "globalSequence": 1329,
+      "simplified": "计划",
+      "pinyin": "jìhuà",
+      "japanese": "計画。計画する。"
+    },
+    {
+      "sourceId": "w01330",
+      "globalSequence": 1330,
+      "simplified": "既然",
+      "pinyin": "jìrán",
+      "japanese": "〜である以上。〜なのだから。"
+    },
+    {
+      "sourceId": "w01331",
+      "globalSequence": 1331,
+      "simplified": "技术",
+      "pinyin": "jìshù",
+      "japanese": "技術。"
+    },
+    {
+      "sourceId": "w01332",
+      "globalSequence": 1332,
+      "simplified": "继续",
+      "pinyin": "jìxù",
+      "japanese": "続ける。"
+    },
+    {
+      "sourceId": "w01333",
+      "globalSequence": 1333,
+      "simplified": "记者",
+      "pinyin": "jìzhě",
+      "japanese": "記者。"
+    },
+    {
+      "sourceId": "w01334",
+      "globalSequence": 1334,
+      "simplified": "加班",
+      "pinyin": "jiābān",
+      "japanese": "残業する。"
+    },
+    {
+      "sourceId": "w01335",
+      "globalSequence": 1335,
+      "simplified": "家具",
+      "pinyin": "jiājù",
+      "japanese": "家具。"
+    },
+    {
+      "sourceId": "w01336",
+      "globalSequence": 1336,
+      "simplified": "加快",
+      "pinyin": "jiākuài",
+      "japanese": "速める。"
+    },
+    {
+      "sourceId": "w01337",
+      "globalSequence": 1337,
+      "simplified": "加强",
+      "pinyin": "jiāqiáng",
+      "japanese": "強める。"
+    },
+    {
+      "sourceId": "w01338",
+      "globalSequence": 1338,
+      "simplified": "加入",
+      "pinyin": "jiārù",
+      "japanese": "加わる。加入する。"
+    },
+    {
+      "sourceId": "w01339",
+      "globalSequence": 1339,
+      "simplified": "加上",
+      "pinyin": "jiāshàng",
+      "japanese": "加える。そのうえ。"
+    },
+    {
+      "sourceId": "w01340",
+      "globalSequence": 1340,
+      "simplified": "家庭",
+      "pinyin": "jiātíng",
+      "japanese": "家庭。"
+    },
+    {
+      "sourceId": "w01341",
+      "globalSequence": 1341,
+      "simplified": "家乡",
+      "pinyin": "jiāxiāng",
+      "japanese": "故郷。"
+    },
+    {
+      "sourceId": "w01342",
+      "globalSequence": 1342,
+      "simplified": "加油",
+      "pinyin": "jiāyóu",
+      "japanese": "給油する。頑張る。頑張れ。"
+    },
+    {
+      "sourceId": "w01343",
+      "globalSequence": 1343,
+      "simplified": "加油站",
+      "pinyin": "jiāyóuzhàn",
+      "japanese": "ガソリンスタンド。"
+    },
+    {
+      "sourceId": "w01344",
+      "globalSequence": 1344,
+      "simplified": "家长",
+      "pinyin": "jiāzhǎng",
+      "japanese": "保護者。"
+    },
+    {
+      "sourceId": "w01345",
+      "globalSequence": 1345,
+      "simplified": "假",
+      "pinyin": "jiǎ",
+      "japanese": "偽物の。偽りの。"
+    },
+    {
+      "sourceId": "w01346",
+      "globalSequence": 1346,
+      "simplified": "价格",
+      "pinyin": "jiàgé",
+      "japanese": "価格。"
+    },
+    {
+      "sourceId": "w01347",
+      "globalSequence": 1347,
+      "simplified": "价钱",
+      "pinyin": "jiàqián",
+      "japanese": "値段。"
+    },
+    {
+      "sourceId": "w01348",
+      "globalSequence": 1348,
+      "simplified": "假日",
+      "pinyin": "jiàrì",
+      "japanese": "休日。"
+    },
+    {
+      "sourceId": "w01349",
+      "globalSequence": 1349,
+      "simplified": "减",
+      "pinyin": "jiǎn",
+      "japanese": "減らす。引く。"
+    },
+    {
+      "sourceId": "w01350",
+      "globalSequence": 1350,
+      "simplified": "减轻",
+      "pinyin": "jiǎnqīng",
+      "japanese": "軽減する。"
+    },
+    {
+      "sourceId": "w01351",
+      "globalSequence": 1351,
+      "simplified": "减少",
+      "pinyin": "jiǎnshǎo",
+      "japanese": "減る。減らす。"
+    },
+    {
+      "sourceId": "w01352",
+      "globalSequence": 1352,
+      "simplified": "健身",
+      "pinyin": "jiànshēn",
+      "japanese": "体を鍛える。"
+    },
+    {
+      "sourceId": "w01353",
+      "globalSequence": 1353,
+      "simplified": "健身房",
+      "pinyin": "jiànshēnfáng",
+      "japanese": "ジム。"
+    }
+  ]
+}

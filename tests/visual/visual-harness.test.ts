@@ -8,6 +8,7 @@ import { KANJI_BRIDGE_VISUAL_CASES } from './kanjiBridgeCases';
 import { PHRASEBOOK_VISUAL_CASES } from './phrasebookCases';
 import { TAIWAN_TRAVEL_PATH_VISUAL_CASES } from './taiwanTravelPathCases';
 import { SMALL_TALK_LAB_VISUAL_CASES } from './smallTalkLabCases';
+import { HSK_STUDY_VISUAL_CASES } from './hskStudyCases';
 import { PLAYWRIGHT_IMAGE, buildDockerArgs } from './run';
 import { TONE_VISUAL_CASES } from './tonePracticeCases';
 
@@ -89,6 +90,7 @@ describe('visual regression harness contract', () => {
       (phrasebookCase) => phrasebookCase.snapshotName,
     );
     const expected = [
+      ...HSK_STUDY_VISUAL_CASES.flatMap((capture) => [capture.setupSnapshot, capture.answerSnapshot]),
       ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,
@@ -107,6 +109,15 @@ describe('visual regression harness contract', () => {
           .sort()
       : [];
     expect(actual).toEqual(expected);
+
+    for (const capture of HSK_STUDY_VISUAL_CASES) {
+      for (const name of [capture.setupSnapshot, capture.answerSnapshot]) {
+        const png = readFileSync(join(snapshotsDirectory, name));
+        expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+        expect(png.readUInt32BE(16)).toBe(capture.captureWidth);
+        expect(png.readUInt32BE(20)).toBeGreaterThan(44);
+      }
+    }
 
     for (const visualCase of VISUAL_CASES) {
       const png = readFileSync(

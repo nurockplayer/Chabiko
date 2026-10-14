@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00653",
+      "globalSequence": 653,
+      "simplified": "关机",
+      "pinyin": "guānjī",
+      "japanese": "電源を切る。"
+    },
+    {
+      "sourceId": "w00654",
+      "globalSequence": 654,
+      "simplified": "关系",
+      "pinyin": "guānxì",
+      "japanese": "関係。"
+    },
+    {
+      "sourceId": "w00655",
+      "globalSequence": 655,
+      "simplified": "关心",
+      "pinyin": "guānxīn",
+      "japanese": "気にかける。"
+    },
+    {
+      "sourceId": "w00656",
+      "globalSequence": 656,
+      "simplified": "关于",
+      "pinyin": "guānyú",
+      "japanese": "〜について。"
+    },
+    {
+      "sourceId": "w00657",
+      "globalSequence": 657,
+      "simplified": "关注",
+      "pinyin": "guānzhù",
+      "japanese": "関心を持つ。注目する。"
+    },
+    {
+      "sourceId": "w00658",
+      "globalSequence": 658,
+      "simplified": "国家",
+      "pinyin": "guójiā",
+      "japanese": "国。"
+    },
+    {
+      "sourceId": "w00659",
+      "globalSequence": 659,
+      "simplified": "过节",
+      "pinyin": "guòjié",
+      "japanese": "祝日を祝う。祝日を過ごす。"
+    },
+    {
+      "sourceId": "w00661",
+      "globalSequence": 661,
+      "simplified": "海",
+      "pinyin": "hǎi",
+      "japanese": "海。"
+    },
+    {
+      "sourceId": "w00662",
+      "globalSequence": 662,
+      "simplified": "害怕",
+      "pinyin": "hàipà",
+      "japanese": "怖がる。"
+    },
+    {
+      "sourceId": "w00663",
+      "globalSequence": 663,
+      "simplified": "好多",
+      "pinyin": "hǎoduō",
+      "japanese": "たくさん。"
+    },
+    {
+      "sourceId": "w00664",
+      "globalSequence": 664,
+      "simplified": "好久",
+      "pinyin": "hǎojiǔ",
+      "japanese": "長い間。"
+    },
+    {
+      "sourceId": "w00665",
+      "globalSequence": 665,
+      "simplified": "好像",
+      "pinyin": "hǎoxiàng",
+      "japanese": "〜のようだ。似ている。"
+    },
+    {
+      "sourceId": "w00666",
+      "globalSequence": 666,
+      "simplified": "号码",
+      "pinyin": "hàomǎ",
+      "japanese": "番号。"
+    },
+    {
+      "sourceId": "w00667",
+      "globalSequence": 667,
+      "simplified": "河",
+      "pinyin": "hé",
+      "japanese": "川。"
+    },
+    {
+      "sourceId": "w00668",
+      "globalSequence": 668,
+      "simplified": "合适",
+      "pinyin": "héshì",
+      "japanese": "適切な。ちょうどよい。"
+    },
+    {
+      "sourceId": "w00669",
+      "globalSequence": 669,
+      "simplified": "黑板",
+      "pinyin": "hēibǎn",
+      "japanese": "黒板。"
+    },
+    {
+      "sourceId": "w00670",
+      "globalSequence": 670,
+      "simplified": "红绿灯",
+      "pinyin": "hóng-lǜdēng",
+      "japanese": "信号機。"
+    },
+    {
+      "sourceId": "w00671",
+      "globalSequence": 671,
+      "simplified": "后来",
+      "pinyin": "hòulái",
+      "japanese": "その後。"
+    },
+    {
+      "sourceId": "w00672",
+      "globalSequence": 672,
+      "simplified": "后年",
+      "pinyin": "hòunián",
+      "japanese": "再来年。"
+    },
+    {
+      "sourceId": "w00673",
+      "globalSequence": 673,
+      "simplified": "后天",
+      "pinyin": "hòutiān",
+      "japanese": "明後日。"
+    },
+    {
+      "sourceId": "w00674",
+      "globalSequence": 674,
+      "simplified": "护照",
+      "pinyin": "hùzhào",
+      "japanese": "パスポート。"
+    },
+    {
+      "sourceId": "w00675",
+      "globalSequence": 675,
+      "simplified": "花园",
+      "pinyin": "huāyuán",
+      "japanese": "庭。花園。"
+    },
+    {
+      "sourceId": "w00676",
+      "globalSequence": 676,
+      "simplified": "画家",
+      "pinyin": "huàjiā",
+      "japanese": "画家。"
+    },
+    {
+      "sourceId": "w00677",
+      "globalSequence": 677,
+      "simplified": "欢迎",
+      "pinyin": "huānyíng",
+      "japanese": "歓迎する。ようこそ。"
+    },
+    {
+      "sourceId": "w00678",
+      "globalSequence": 678,
+      "simplified": "还",
+      "pinyin": "huán",
+      "japanese": "返す。戻る。"
+    },
+    {
+      "sourceId": "w00679",
+      "globalSequence": 679,
+      "simplified": "环境",
+      "pinyin": "huánjìng",
+      "japanese": "環境。"
+    },
+    {
+      "sourceId": "w00680",
+      "globalSequence": 680,
+      "simplified": "换",
+      "pinyin": "huàn",
+      "japanese": "交換する。替える。"
+    },
+    {
+      "sourceId": "w00681",
+      "globalSequence": 681,
+      "simplified": "黄色",
+      "pinyin": "huángsè",
+      "japanese": "黄色。"
+    },
+    {
+      "sourceId": "w00682",
+      "globalSequence": 682,
+      "simplified": "回答",
+      "pinyin": "huídá",
+      "japanese": "答える。回答。"
+    },
+    {
+      "sourceId": "w00684",
+      "globalSequence": 684,
+      "simplified": "会议",
+      "pinyin": "huìyì",
+      "japanese": "会議。"
+    },
+    {
+      "sourceId": "w00685",
+      "globalSequence": 685,
+      "simplified": "或",
+      "pinyin": "huò",
+      "japanese": "または。"
+    },
+    {
+      "sourceId": "w00686",
+      "globalSequence": 686,
+      "simplified": "或者",
+      "pinyin": "huòzhě",
+      "japanese": "または。あるいは。"
+    },
+    {
+      "sourceId": "w00687",
+      "globalSequence": 687,
+      "simplified": "鸡",
+      "pinyin": "jī",
+      "japanese": "鶏。"
+    },
+    {
+      "sourceId": "w00688",
+      "globalSequence": 688,
+      "simplified": "几乎",
+      "pinyin": "jīhū",
+      "japanese": "ほとんど。"
+    },
+    {
+      "sourceId": "w00689",
+      "globalSequence": 689,
+      "simplified": "机会",
+      "pinyin": "jīhuì",
+      "japanese": "機会。チャンス。"
+    },
+    {
+      "sourceId": "w00690",
+      "globalSequence": 690,
+      "simplified": "极",
+      "pinyin": "jí",
+      "japanese": "極めて。極限。"
+    },
+    {
+      "sourceId": "w00691",
+      "globalSequence": 691,
+      "simplified": "急",
+      "pinyin": "jí",
+      "japanese": "急ぐ。焦る。"
+    },
+    {
+      "sourceId": "w00692",
+      "globalSequence": 692,
+      "simplified": "记",
+      "pinyin": "jì",
+      "japanese": "覚える。記録する。"
+    },
+    {
+      "sourceId": "w00693",
+      "globalSequence": 693,
+      "simplified": "季",
+      "pinyin": "jì",
+      "japanese": "季節。四半期。"
+    },
+    {
+      "sourceId": "w00694",
+      "globalSequence": 694,
+      "simplified": "季节",
+      "pinyin": "jìjié",
+      "japanese": "季節。"
+    },
+    {
+      "sourceId": "w00695",
+      "globalSequence": 695,
+      "simplified": "加",
+      "pinyin": "jiā",
+      "japanese": "加える。"
+    },
+    {
+      "sourceId": "w00696",
+      "globalSequence": 696,
+      "simplified": "假期",
+      "pinyin": "jiàqī",
+      "japanese": "休暇。"
+    },
+    {
+      "sourceId": "w00697",
+      "globalSequence": 697,
+      "simplified": "坚持",
+      "pinyin": "jiānchí",
+      "japanese": "続ける。堅持する。"
+    },
+    {
+      "sourceId": "w00698",
+      "globalSequence": 698,
+      "simplified": "检查",
+      "pinyin": "jiǎnchá",
+      "japanese": "検査する。調べる。"
+    },
+    {
+      "sourceId": "w00699",
+      "globalSequence": 699,
+      "simplified": "简单",
+      "pinyin": "jiǎndān",
+      "japanese": "簡単な。"
+    },
+    {
+      "sourceId": "w00700",
+      "globalSequence": 700,
+      "simplified": "检票",
+      "pinyin": "jiǎnpiào",
+      "japanese": "切符を確認する。"
+    },
+    {
+      "sourceId": "w00701",
+      "globalSequence": 701,
+      "simplified": "健康",
+      "pinyin": "jiànkāng",
+      "japanese": "健康な。健康。"
+    },
+    {
+      "sourceId": "w00702",
+      "globalSequence": 702,
+      "simplified": "见面",
+      "pinyin": "jiànmiàn",
+      "japanese": "会う。"
+    },
+    {
+      "sourceId": "w00703",
+      "globalSequence": 703,
+      "simplified": "讲",
+      "pinyin": "jiǎng",
+      "japanese": "話す。説明する。"
+    },
+    {
+      "sourceId": "w00704",
+      "globalSequence": 704,
+      "simplified": "角",
+      "pinyin": "jiǎo",
+      "japanese": "角。中国の通貨単位「元」の10分の1。"
+    }
+  ]
+}

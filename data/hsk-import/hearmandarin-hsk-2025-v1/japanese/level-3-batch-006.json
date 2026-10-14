@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00705",
+      "globalSequence": 705,
+      "simplified": "脚",
+      "pinyin": "jiǎo",
+      "japanese": "足。"
+    },
+    {
+      "sourceId": "w00706",
+      "globalSequence": 706,
+      "simplified": "接",
+      "pinyin": "jiē",
+      "japanese": "受け取る。迎える。つなぐ。"
+    },
+    {
+      "sourceId": "w00707",
+      "globalSequence": 707,
+      "simplified": "街",
+      "pinyin": "jiē",
+      "japanese": "通り。"
+    },
+    {
+      "sourceId": "w00708",
+      "globalSequence": 708,
+      "simplified": "节",
+      "pinyin": "jié",
+      "japanese": "節。授業などを数える「〜時限」。"
+    },
+    {
+      "sourceId": "w00709",
+      "globalSequence": 709,
+      "simplified": "结婚",
+      "pinyin": "jiéhūn",
+      "japanese": "結婚する。"
+    },
+    {
+      "sourceId": "w00710",
+      "globalSequence": 710,
+      "simplified": "节目",
+      "pinyin": "jiémù",
+      "japanese": "番組。演目。"
+    },
+    {
+      "sourceId": "w00711",
+      "globalSequence": 711,
+      "simplified": "节日",
+      "pinyin": "jiérì",
+      "japanese": "祝日。記念日。"
+    },
+    {
+      "sourceId": "w00712",
+      "globalSequence": 712,
+      "simplified": "结束",
+      "pinyin": "jiéshù",
+      "japanese": "終わる。終える。"
+    },
+    {
+      "sourceId": "w00713",
+      "globalSequence": 713,
+      "simplified": "解决",
+      "pinyin": "jiějué",
+      "japanese": "解決する。"
+    },
+    {
+      "sourceId": "w00714",
+      "globalSequence": 714,
+      "simplified": "姐妹",
+      "pinyin": "jiěmèi",
+      "japanese": "姉妹。"
+    },
+    {
+      "sourceId": "w00715",
+      "globalSequence": 715,
+      "simplified": "借",
+      "pinyin": "jiè",
+      "japanese": "借りる。貸す。"
+    },
+    {
+      "sourceId": "w00716",
+      "globalSequence": 716,
+      "simplified": "斤",
+      "pinyin": "jīn",
+      "japanese": "斤（中国で500グラムの重さの単位）。"
+    },
+    {
+      "sourceId": "w00717",
+      "globalSequence": 717,
+      "simplified": "经过",
+      "pinyin": "jīngguò",
+      "japanese": "通る。経過する。"
+    },
+    {
+      "sourceId": "w00718",
+      "globalSequence": 718,
+      "simplified": "经理",
+      "pinyin": "jīnglǐ",
+      "japanese": "管理職。マネージャー。"
+    },
+    {
+      "sourceId": "w00719",
+      "globalSequence": 719,
+      "simplified": "久",
+      "pinyin": "jiǔ",
+      "japanese": "時間が長い。"
+    },
+    {
+      "sourceId": "w00720",
+      "globalSequence": 720,
+      "simplified": "酒",
+      "pinyin": "jiǔ",
+      "japanese": "酒。"
+    },
+    {
+      "sourceId": "w00721",
+      "globalSequence": 721,
+      "simplified": "旧",
+      "pinyin": "jiù",
+      "japanese": "古い。以前の。"
+    },
+    {
+      "sourceId": "w00722",
+      "globalSequence": 722,
+      "simplified": "句",
+      "pinyin": "jù",
+      "japanese": "文を数える「〜文・句」。"
+    },
+    {
+      "sourceId": "w00723",
+      "globalSequence": 723,
+      "simplified": "句子",
+      "pinyin": "jùzi",
+      "japanese": "文。"
+    },
+    {
+      "sourceId": "w00724",
+      "globalSequence": 724,
+      "simplified": "决定",
+      "pinyin": "juédìng",
+      "japanese": "決める。決定。"
+    },
+    {
+      "sourceId": "w00725",
+      "globalSequence": 725,
+      "simplified": "卡",
+      "pinyin": "kǎ",
+      "japanese": "カード。"
+    },
+    {
+      "sourceId": "w00726",
+      "globalSequence": 726,
+      "simplified": "开花",
+      "pinyin": "kāihuā",
+      "japanese": "花が咲く。"
+    },
+    {
+      "sourceId": "w00727",
+      "globalSequence": 727,
+      "simplified": "开会",
+      "pinyin": "kāihuì",
+      "japanese": "会議をする。"
+    },
+    {
+      "sourceId": "w00728",
+      "globalSequence": 728,
+      "simplified": "开机",
+      "pinyin": "kāijī",
+      "japanese": "電源を入れる。"
+    },
+    {
+      "sourceId": "w00729",
+      "globalSequence": 729,
+      "simplified": "开心",
+      "pinyin": "kāixīn",
+      "japanese": "楽しい。うれしい。"
+    },
+    {
+      "sourceId": "w00730",
+      "globalSequence": 730,
+      "simplified": "看来",
+      "pinyin": "kànlái",
+      "japanese": "どうやら〜のようだ。"
+    },
+    {
+      "sourceId": "w00731",
+      "globalSequence": 731,
+      "simplified": "可",
+      "pinyin": "kě",
+      "japanese": "〜できる。しかし。"
+    },
+    {
+      "sourceId": "w00732",
+      "globalSequence": 732,
+      "simplified": "渴",
+      "pinyin": "kě",
+      "japanese": "喉が渇いた。"
+    },
+    {
+      "sourceId": "w00733",
+      "globalSequence": 733,
+      "simplified": "可爱",
+      "pinyin": "kě’ài",
+      "japanese": "かわいい。"
+    },
+    {
+      "sourceId": "w00734",
+      "globalSequence": 734,
+      "simplified": "可是",
+      "pinyin": "kěshì",
+      "japanese": "しかし。"
+    },
+    {
+      "sourceId": "w00735",
+      "globalSequence": 735,
+      "simplified": "刻",
+      "pinyin": "kè",
+      "japanese": "15分。刻む。"
+    },
+    {
+      "sourceId": "w00736",
+      "globalSequence": 736,
+      "simplified": "课本",
+      "pinyin": "kèběn",
+      "japanese": "教科書。"
+    },
+    {
+      "sourceId": "w00737",
+      "globalSequence": 737,
+      "simplified": "客人",
+      "pinyin": "kèrén",
+      "japanese": "客。"
+    },
+    {
+      "sourceId": "w00738",
+      "globalSequence": 738,
+      "simplified": "课文",
+      "pinyin": "kèwén",
+      "japanese": "教科書の本文。"
+    },
+    {
+      "sourceId": "w00739",
+      "globalSequence": 739,
+      "simplified": "空调",
+      "pinyin": "kōngtiáo",
+      "japanese": "エアコン。"
+    },
+    {
+      "sourceId": "w00740",
+      "globalSequence": 740,
+      "simplified": "哭",
+      "pinyin": "kū",
+      "japanese": "泣く。"
+    },
+    {
+      "sourceId": "w00741",
+      "globalSequence": 741,
+      "simplified": "筷子",
+      "pinyin": "kuàizi",
+      "japanese": "箸。"
+    },
+    {
+      "sourceId": "w00742",
+      "globalSequence": 742,
+      "simplified": "矿泉水",
+      "pinyin": "kuàngquánshuǐ",
+      "japanese": "ミネラルウォーター。"
+    },
+    {
+      "sourceId": "w00743",
+      "globalSequence": 743,
+      "simplified": "来自",
+      "pinyin": "láizì",
+      "japanese": "〜から来る。〜に由来する。"
+    },
+    {
+      "sourceId": "w00744",
+      "globalSequence": 744,
+      "simplified": "蓝",
+      "pinyin": "lán",
+      "japanese": "青い。"
+    },
+    {
+      "sourceId": "w00745",
+      "globalSequence": 745,
+      "simplified": "老",
+      "pinyin": "lǎo",
+      "japanese": "年を取った。古い。"
+    },
+    {
+      "sourceId": "w00746",
+      "globalSequence": 746,
+      "simplified": "老人",
+      "pinyin": "lǎorén",
+      "japanese": "お年寄り。"
+    },
+    {
+      "sourceId": "w00747",
+      "globalSequence": 747,
+      "simplified": "离开",
+      "pinyin": "líkāi",
+      "japanese": "離れる。去る。"
+    },
+    {
+      "sourceId": "w00748",
+      "globalSequence": 748,
+      "simplified": "礼物",
+      "pinyin": "lǐwù",
+      "japanese": "贈り物。"
+    },
+    {
+      "sourceId": "w00749",
+      "globalSequence": 749,
+      "simplified": "历史",
+      "pinyin": "lìshǐ",
+      "japanese": "歴史。"
+    },
+    {
+      "sourceId": "w00750",
+      "globalSequence": 750,
+      "simplified": "脸",
+      "pinyin": "liǎn",
+      "japanese": "顔。"
+    },
+    {
+      "sourceId": "w00751",
+      "globalSequence": 751,
+      "simplified": "练",
+      "pinyin": "liàn",
+      "japanese": "練習する。"
+    },
+    {
+      "sourceId": "w00752",
+      "globalSequence": 752,
+      "simplified": "练习",
+      "pinyin": "liànxí",
+      "japanese": "練習する。練習。"
+    },
+    {
+      "sourceId": "w00753",
+      "globalSequence": 753,
+      "simplified": "凉快",
+      "pinyin": "liángkuai",
+      "japanese": "涼しい。"
+    },
+    {
+      "sourceId": "w00754",
+      "globalSequence": 754,
+      "simplified": "辆",
+      "pinyin": "liàng",
+      "japanese": "車両を数える「〜台」。"
+    }
+  ]
+}

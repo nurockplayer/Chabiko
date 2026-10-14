@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01708",
+      "globalSequence": 1708,
+      "simplified": "算",
+      "pinyin": "suàn",
+      "japanese": "計算する。〜と見なす。"
+    },
+    {
+      "sourceId": "w01709",
+      "globalSequence": 1709,
+      "simplified": "随便",
+      "pinyin": "suíbiàn",
+      "japanese": "自由に。適当に。"
+    },
+    {
+      "sourceId": "w01710",
+      "globalSequence": 1710,
+      "simplified": "随着",
+      "pinyin": "suízhe",
+      "japanese": "〜につれて。"
+    },
+    {
+      "sourceId": "w01711",
+      "globalSequence": 1711,
+      "simplified": "孙女",
+      "pinyin": "sūnnǚ",
+      "japanese": "息子の娘。孫娘。"
+    },
+    {
+      "sourceId": "w01712",
+      "globalSequence": 1712,
+      "simplified": "孙子",
+      "pinyin": "sūnzi",
+      "japanese": "息子の息子。孫息子。"
+    },
+    {
+      "sourceId": "w01713",
+      "globalSequence": 1713,
+      "simplified": "所有",
+      "pinyin": "suǒyǒu",
+      "japanese": "すべての。所有する。"
+    },
+    {
+      "sourceId": "w01714",
+      "globalSequence": 1714,
+      "simplified": "台",
+      "pinyin": "tái",
+      "japanese": "台。機械などを数える「〜台」。"
+    },
+    {
+      "sourceId": "w01715",
+      "globalSequence": 1715,
+      "simplified": "抬",
+      "pinyin": "tái",
+      "japanese": "持ち上げる。"
+    },
+    {
+      "sourceId": "w01716",
+      "globalSequence": 1716,
+      "simplified": "抬头",
+      "pinyin": "táitóu",
+      "japanese": "頭を上げる。"
+    },
+    {
+      "sourceId": "w01717",
+      "globalSequence": 1717,
+      "simplified": "态度",
+      "pinyin": "tàidù",
+      "japanese": "態度。"
+    },
+    {
+      "sourceId": "w01718",
+      "globalSequence": 1718,
+      "simplified": "弹",
+      "pinyin": "tán",
+      "japanese": "弾く（楽器）。はじく。"
+    },
+    {
+      "sourceId": "w01719",
+      "globalSequence": 1719,
+      "simplified": "谈",
+      "pinyin": "tán",
+      "japanese": "話す。語り合う。"
+    },
+    {
+      "sourceId": "w01720",
+      "globalSequence": 1720,
+      "simplified": "汤",
+      "pinyin": "tāng",
+      "japanese": "スープ。"
+    },
+    {
+      "sourceId": "w01721",
+      "globalSequence": 1721,
+      "simplified": "躺",
+      "pinyin": "tǎng",
+      "japanese": "横になる。"
+    },
+    {
+      "sourceId": "w01722",
+      "globalSequence": 1722,
+      "simplified": "趟",
+      "pinyin": "tàng",
+      "japanese": "往来・移動の回数を数える「〜回」。"
+    },
+    {
+      "sourceId": "w01723",
+      "globalSequence": 1723,
+      "simplified": "讨论",
+      "pinyin": "tǎolùn",
+      "japanese": "討論する。話し合う。"
+    },
+    {
+      "sourceId": "w01724",
+      "globalSequence": 1724,
+      "simplified": "讨厌",
+      "pinyin": "tǎoyàn",
+      "japanese": "嫌いな。うっとうしい。"
+    },
+    {
+      "sourceId": "w01725",
+      "globalSequence": 1725,
+      "simplified": "特点",
+      "pinyin": "tèdiǎn",
+      "japanese": "特徴。"
+    },
+    {
+      "sourceId": "w01726",
+      "globalSequence": 1726,
+      "simplified": "提",
+      "pinyin": "tí",
+      "japanese": "手に提げる。取り上げる。"
+    },
+    {
+      "sourceId": "w01727",
+      "globalSequence": 1727,
+      "simplified": "提出",
+      "pinyin": "tíchū",
+      "japanese": "提案する。提出する。"
+    },
+    {
+      "sourceId": "w01728",
+      "globalSequence": 1728,
+      "simplified": "提到",
+      "pinyin": "tídào",
+      "japanese": "言及する。"
+    },
+    {
+      "sourceId": "w01729",
+      "globalSequence": 1729,
+      "simplified": "提供",
+      "pinyin": "tígōng",
+      "japanese": "提供する。"
+    },
+    {
+      "sourceId": "w01730",
+      "globalSequence": 1730,
+      "simplified": "提前",
+      "pinyin": "tíqián",
+      "japanese": "前もって。予定を早める。"
+    },
+    {
+      "sourceId": "w01731",
+      "globalSequence": 1731,
+      "simplified": "提醒",
+      "pinyin": "tíxǐng",
+      "japanese": "注意を促す。思い出させる。"
+    },
+    {
+      "sourceId": "w01732",
+      "globalSequence": 1732,
+      "simplified": "体检",
+      "pinyin": "tǐjiǎn",
+      "japanese": "健康診断。"
+    },
+    {
+      "sourceId": "w01733",
+      "globalSequence": 1733,
+      "simplified": "体温",
+      "pinyin": "tǐwēn",
+      "japanese": "体温。"
+    },
+    {
+      "sourceId": "w01734",
+      "globalSequence": 1734,
+      "simplified": "体重",
+      "pinyin": "tǐzhòng",
+      "japanese": "体重。"
+    },
+    {
+      "sourceId": "w01735",
+      "globalSequence": 1735,
+      "simplified": "填写",
+      "pinyin": "tiánxiě",
+      "japanese": "記入する。"
+    },
+    {
+      "sourceId": "w01736",
+      "globalSequence": 1736,
+      "simplified": "条件",
+      "pinyin": "tiáojiàn",
+      "japanese": "条件。"
+    },
+    {
+      "sourceId": "w01737",
+      "globalSequence": 1737,
+      "simplified": "听力",
+      "pinyin": "tīnglì",
+      "japanese": "聴力。聞き取り能力。"
+    },
+    {
+      "sourceId": "w01738",
+      "globalSequence": 1738,
+      "simplified": "听众",
+      "pinyin": "tīngzhòng",
+      "japanese": "聴衆。リスナー。"
+    },
+    {
+      "sourceId": "w01739",
+      "globalSequence": 1739,
+      "simplified": "停",
+      "pinyin": "tíng",
+      "japanese": "止まる。止める。"
+    },
+    {
+      "sourceId": "w01740",
+      "globalSequence": 1740,
+      "simplified": "停车",
+      "pinyin": "tíngchē",
+      "japanese": "駐車する。車を止める。"
+    },
+    {
+      "sourceId": "w01741",
+      "globalSequence": 1741,
+      "simplified": "停车场",
+      "pinyin": "tíngchēchǎng",
+      "japanese": "駐車場。"
+    },
+    {
+      "sourceId": "w01742",
+      "globalSequence": 1742,
+      "simplified": "停止",
+      "pinyin": "tíngzhǐ",
+      "japanese": "停止する。"
+    },
+    {
+      "sourceId": "w01743",
+      "globalSequence": 1743,
+      "simplified": "通",
+      "pinyin": "tōng",
+      "japanese": "通じる。通る。"
+    },
+    {
+      "sourceId": "w01744",
+      "globalSequence": 1744,
+      "simplified": "通过",
+      "pinyin": "tōngguò",
+      "japanese": "通る。合格する。〜を通じて。"
+    },
+    {
+      "sourceId": "w01745",
+      "globalSequence": 1745,
+      "simplified": "通知",
+      "pinyin": "tōngzhī",
+      "japanese": "通知する。通知。"
+    },
+    {
+      "sourceId": "w01746",
+      "globalSequence": 1746,
+      "simplified": "童年",
+      "pinyin": "tóngnián",
+      "japanese": "子ども時代。"
+    },
+    {
+      "sourceId": "w01747",
+      "globalSequence": 1747,
+      "simplified": "同时",
+      "pinyin": "tóngshí",
+      "japanese": "同時に。"
+    },
+    {
+      "sourceId": "w01748",
+      "globalSequence": 1748,
+      "simplified": "同样",
+      "pinyin": "tóngyàng",
+      "japanese": "同じ。同様に。"
+    },
+    {
+      "sourceId": "w01749",
+      "globalSequence": 1749,
+      "simplified": "桶",
+      "pinyin": "tǒng",
+      "japanese": "バケツ。樽。"
+    },
+    {
+      "sourceId": "w01750",
+      "globalSequence": 1750,
+      "simplified": "痛",
+      "pinyin": "tòng",
+      "japanese": "痛い。苦痛。"
+    },
+    {
+      "sourceId": "w01751",
+      "globalSequence": 1751,
+      "simplified": "头痛",
+      "pinyin": "tóutòng",
+      "japanese": "頭痛がする。頭を悩ます。"
+    },
+    {
+      "sourceId": "w01752",
+      "globalSequence": 1752,
+      "simplified": "图",
+      "pinyin": "tú",
+      "japanese": "図。絵。"
+    },
+    {
+      "sourceId": "w01753",
+      "globalSequence": 1753,
+      "simplified": "图片",
+      "pinyin": "túpiàn",
+      "japanese": "画像。写真。"
+    },
+    {
+      "sourceId": "w01754",
+      "globalSequence": 1754,
+      "simplified": "土",
+      "pinyin": "tǔ",
+      "japanese": "土。"
+    },
+    {
+      "sourceId": "w01755",
+      "globalSequence": 1755,
+      "simplified": "推",
+      "pinyin": "tuī",
+      "japanese": "押す。推薦する。"
+    },
+    {
+      "sourceId": "w01756",
+      "globalSequence": 1756,
+      "simplified": "推迟",
+      "pinyin": "tuīchí",
+      "japanese": "延期する。"
+    },
+    {
+      "sourceId": "w01757",
+      "globalSequence": 1757,
+      "simplified": "推出",
+      "pinyin": "tuīchū",
+      "japanese": "送り出す。発表する。"
+    }
+  ]
+}

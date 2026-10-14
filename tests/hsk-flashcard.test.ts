@@ -4,13 +4,12 @@ import { loadHskLevelEntries, loadHskVocabulary } from '../src/content/loadHskVo
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 describe('loadHskVocabulary', () => {
-  it('loads the declared source snapshot without treating draft records as learner content', () => {
+  it('loads the declared source snapshot with disclosed draft records as learner content', () => {
     const bundle = loadHskVocabulary();
-    expect(bundle.vocabulary).toHaveLength(70);
+    expect(bundle.vocabulary).toHaveLength(1969);
     expect(bundle.vocabulary.every((entry) => entry.reviewStatus === 'draft')).toBe(true);
-    expect(bundle.learnerVocabulary).toEqual([]);
-    expect(bundle.diagnostic).toContain('humanReviewed=false');
-    expect(bundle.diagnostic).toContain('runtimeAvailable=false');
+    expect(bundle.learnerVocabulary).toEqual(bundle.vocabulary);
+    expect(bundle.diagnostic).toBeNull();
   });
 
   it('every entry has a valid hsk object', () => {

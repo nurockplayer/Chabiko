@@ -35,7 +35,7 @@ async function assertWcagAaClean(page: Page, level: number, theme: string): Prom
   }
 }
 
-async function assertUnavailablePage(
+async function assertStudyPage(
   page: Page,
   level: number,
   viewport: { width: number; height: number },
@@ -44,11 +44,18 @@ async function assertUnavailablePage(
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     `HSK ${level} 単語フラッシュカード`,
   );
-  await expect(page.getByRole('heading', { name: '準備中' })).toBeVisible();
-  await expect(page.locator('.flashcard-session-root')).toHaveCount(0);
-  await expect(
-    page.locator('#btn-start, #btn-reveal, #btn-again, #btn-unsure, #btn-known, #btn-restart'),
-  ).toHaveCount(0);
+  await expect(page.locator('#btn-start')).toBeEnabled();
+  await page.locator('#btn-start').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-front]')).not.toBeEmpty();
+  await assertWcagAaClean(page, level, theme);
+  await page.locator('#btn-reveal').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-japanese]')).toBeVisible();
+  await assertWcagAaClean(page, level, theme);
+  await page.locator('#btn-known').focus();
+  await page.keyboard.press('Enter');
+  await page.evaluate(() => window.scrollTo(0, 0));
   await assertStructuralContract(page);
 
   const backLink = page.getByRole('link', { name: 'ホームに戻る' });
@@ -67,7 +74,7 @@ async function assertUnavailablePage(
 }
 
 for (const theme of A11Y_THEMES) {
-  test.describe(`unavailable HSK routes ${theme} theme`, () => {
+  test.describe(`released HSK routes ${theme} theme`, () => {
     test.use({
       colorScheme: theme,
       storageState: fileURLToPath(
@@ -75,34 +82,20 @@ for (const theme of A11Y_THEMES) {
       ),
     });
 
-    test('all four levels stay noninteractive, focused, contained, and WCAG AA clean', async ({
-      page,
-    }) => {
-      const errors: string[] = [];
-      page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
-      });
-      page.on('pageerror', (error) => errors.push(error.message));
-
-      const externalRequests = await openUrl(
-        page,
-        `${BASE_URL}/vocabulary/hsk/1/`,
-        theme,
-      );
-      for (const viewport of VIEWPORTS) {
+    for (const viewport of VIEWPORTS) {
+      test(`all four levels support keyboard study and WCAG AA: ${viewport.width}px`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+        page.on('pageerror', (error) => errors.push(error.message));
         await page.setViewportSize(viewport);
+        const externalRequests = await openUrl(page, `${BASE_URL}/vocabulary/hsk/1/`, theme);
         for (const level of LEVELS) {
-          if (!(level === 1 && viewport === VIEWPORTS[0])) {
-            await page.goto(`${BASE_URL}/vocabulary/hsk/${level}/`, {
-              waitUntil: 'load',
-            });
-          }
-          await assertUnavailablePage(page, level, viewport, theme);
+          if (level !== 1) await page.goto(`${BASE_URL}/vocabulary/hsk/${level}/`, { waitUntil: 'load' });
+          await assertStudyPage(page, level, viewport, theme);
         }
-      }
-
-      assertNoExternalRequests(externalRequests);
-      expect(errors).toEqual([]);
-    });
+        assertNoExternalRequests(externalRequests);
+        expect(errors).toEqual([]);
+      });
+    }
   });
 }

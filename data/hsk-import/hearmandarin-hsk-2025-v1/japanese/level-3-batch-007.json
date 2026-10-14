@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00755",
+      "globalSequence": 755,
+      "simplified": "聊",
+      "pinyin": "liáo",
+      "japanese": "話す。おしゃべりする。"
+    },
+    {
+      "sourceId": "w00756",
+      "globalSequence": 756,
+      "simplified": "聊天儿",
+      "pinyin": "liáotiānr",
+      "japanese": "おしゃべりする。"
+    },
+    {
+      "sourceId": "w00757",
+      "globalSequence": 757,
+      "simplified": "了解",
+      "pinyin": "liǎojiě",
+      "japanese": "理解する。事情を知る。"
+    },
+    {
+      "sourceId": "w00758",
+      "globalSequence": 758,
+      "simplified": "邻居",
+      "pinyin": "línjū",
+      "japanese": "隣人。"
+    },
+    {
+      "sourceId": "w00759",
+      "globalSequence": 759,
+      "simplified": "留学",
+      "pinyin": "liúxué",
+      "japanese": "留学する。"
+    },
+    {
+      "sourceId": "w00760",
+      "globalSequence": 760,
+      "simplified": "留学生",
+      "pinyin": "liúxuéshēng",
+      "japanese": "留学生。"
+    },
+    {
+      "sourceId": "w00761",
+      "globalSequence": 761,
+      "simplified": "楼梯",
+      "pinyin": "lóutī",
+      "japanese": "階段。"
+    },
+    {
+      "sourceId": "w00762",
+      "globalSequence": 762,
+      "simplified": "路边",
+      "pinyin": "lùbiān",
+      "japanese": "道端。"
+    },
+    {
+      "sourceId": "w00763",
+      "globalSequence": 763,
+      "simplified": "路口",
+      "pinyin": "lùkǒu",
+      "japanese": "交差点。道の入り口。"
+    },
+    {
+      "sourceId": "w00764",
+      "globalSequence": 764,
+      "simplified": "马",
+      "pinyin": "mǎ",
+      "japanese": "馬。"
+    },
+    {
+      "sourceId": "w00765",
+      "globalSequence": 765,
+      "simplified": "马路",
+      "pinyin": "mǎlù",
+      "japanese": "道路。"
+    },
+    {
+      "sourceId": "w00766",
+      "globalSequence": 766,
+      "simplified": "马上",
+      "pinyin": "mǎshàng",
+      "japanese": "すぐに。"
+    },
+    {
+      "sourceId": "w00767",
+      "globalSequence": 767,
+      "simplified": "满意",
+      "pinyin": "mǎnyì",
+      "japanese": "満足する。"
+    },
+    {
+      "sourceId": "w00768",
+      "globalSequence": 768,
+      "simplified": "毛",
+      "pinyin": "máo",
+      "japanese": "毛。中国の通貨単位「角」の口語。"
+    },
+    {
+      "sourceId": "w00769",
+      "globalSequence": 769,
+      "simplified": "米",
+      "pinyin": "mǐ",
+      "japanese": "米。メートル。"
+    },
+    {
+      "sourceId": "w00770",
+      "globalSequence": 770,
+      "simplified": "面前",
+      "pinyin": "miànqián",
+      "japanese": "目の前。"
+    },
+    {
+      "sourceId": "w00771",
+      "globalSequence": 771,
+      "simplified": "明白",
+      "pinyin": "míngbai",
+      "japanese": "分かる。明らかな。"
+    },
+    {
+      "sourceId": "w00772",
+      "globalSequence": 772,
+      "simplified": "名单",
+      "pinyin": "míngdān",
+      "japanese": "名簿。"
+    },
+    {
+      "sourceId": "w00773",
+      "globalSequence": 773,
+      "simplified": "名人",
+      "pinyin": "míngrén",
+      "japanese": "有名人。"
+    },
+    {
+      "sourceId": "w00774",
+      "globalSequence": 774,
+      "simplified": "南",
+      "pinyin": "nán",
+      "japanese": "南。"
+    },
+    {
+      "sourceId": "w00775",
+      "globalSequence": 775,
+      "simplified": "难",
+      "pinyin": "nán",
+      "japanese": "難しい。"
+    },
+    {
+      "sourceId": "w00776",
+      "globalSequence": 776,
+      "simplified": "南方",
+      "pinyin": "nánfāng",
+      "japanese": "南方。南部。"
+    },
+    {
+      "sourceId": "w00777",
+      "globalSequence": 777,
+      "simplified": "难过",
+      "pinyin": "nánguò",
+      "japanese": "悲しい。つらい。"
+    },
+    {
+      "sourceId": "w00778",
+      "globalSequence": 778,
+      "simplified": "难看",
+      "pinyin": "nánkàn",
+      "japanese": "見た目が悪い。みっともない。"
+    },
+    {
+      "sourceId": "w00779",
+      "globalSequence": 779,
+      "simplified": "男人",
+      "pinyin": "nánrén",
+      "japanese": "男性。"
+    },
+    {
+      "sourceId": "w00780",
+      "globalSequence": 780,
+      "simplified": "男生",
+      "pinyin": "nánshēng",
+      "japanese": "男子。男子学生。"
+    },
+    {
+      "sourceId": "w00781",
+      "globalSequence": 781,
+      "simplified": "难题",
+      "pinyin": "nántí",
+      "japanese": "難しい問題。"
+    },
+    {
+      "sourceId": "w00782",
+      "globalSequence": 782,
+      "simplified": "难听",
+      "pinyin": "nántīng",
+      "japanese": "聞いて不快な。耳障りな。"
+    },
+    {
+      "sourceId": "w00783",
+      "globalSequence": 783,
+      "simplified": "年级",
+      "pinyin": "niánjí",
+      "japanese": "学年。"
+    },
+    {
+      "sourceId": "w00784",
+      "globalSequence": 784,
+      "simplified": "年轻",
+      "pinyin": "niánqīng",
+      "japanese": "若い。"
+    },
+    {
+      "sourceId": "w00785",
+      "globalSequence": 785,
+      "simplified": "牛",
+      "pinyin": "niú",
+      "japanese": "牛。"
+    },
+    {
+      "sourceId": "w00786",
+      "globalSequence": 786,
+      "simplified": "努力",
+      "pinyin": "nǔlì",
+      "japanese": "努力する。"
+    },
+    {
+      "sourceId": "w00787",
+      "globalSequence": 787,
+      "simplified": "女人",
+      "pinyin": "nǚrén",
+      "japanese": "女性。"
+    },
+    {
+      "sourceId": "w00788",
+      "globalSequence": 788,
+      "simplified": "女生",
+      "pinyin": "nǚshēng",
+      "japanese": "女子。女子学生。"
+    },
+    {
+      "sourceId": "w00789",
+      "globalSequence": 789,
+      "simplified": "爬",
+      "pinyin": "pá",
+      "japanese": "登る。はう。"
+    },
+    {
+      "sourceId": "w00790",
+      "globalSequence": 790,
+      "simplified": "怕",
+      "pinyin": "pà",
+      "japanese": "怖がる。心配する。"
+    },
+    {
+      "sourceId": "w00791",
+      "globalSequence": 791,
+      "simplified": "拍照",
+      "pinyin": "pāizhào",
+      "japanese": "写真を撮る。"
+    },
+    {
+      "sourceId": "w00792",
+      "globalSequence": 792,
+      "simplified": "盘子",
+      "pinyin": "pánzi",
+      "japanese": "皿。"
+    },
+    {
+      "sourceId": "w00793",
+      "globalSequence": 793,
+      "simplified": "胖",
+      "pinyin": "pàng",
+      "japanese": "太っている。"
+    },
+    {
+      "sourceId": "w00794",
+      "globalSequence": 794,
+      "simplified": "啤酒",
+      "pinyin": "píjiǔ",
+      "japanese": "ビール。"
+    },
+    {
+      "sourceId": "w00795",
+      "globalSequence": 795,
+      "simplified": "平时",
+      "pinyin": "píngshí",
+      "japanese": "普段。"
+    },
+    {
+      "sourceId": "w00796",
+      "globalSequence": 796,
+      "simplified": "瓶子",
+      "pinyin": "píngzi",
+      "japanese": "瓶。"
+    },
+    {
+      "sourceId": "w00797",
+      "globalSequence": 797,
+      "simplified": "骑",
+      "pinyin": "qí",
+      "japanese": "またがって乗る。"
+    },
+    {
+      "sourceId": "w00798",
+      "globalSequence": 798,
+      "simplified": "奇怪",
+      "pinyin": "qíguài",
+      "japanese": "奇妙な。不思議に思う。"
+    },
+    {
+      "sourceId": "w00799",
+      "globalSequence": 799,
+      "simplified": "其实",
+      "pinyin": "qíshí",
+      "japanese": "実は。"
+    },
+    {
+      "sourceId": "w00800",
+      "globalSequence": 800,
+      "simplified": "其他",
+      "pinyin": "qítā",
+      "japanese": "ほかの。"
+    },
+    {
+      "sourceId": "w00801",
+      "globalSequence": 801,
+      "simplified": "起",
+      "pinyin": "qǐ",
+      "japanese": "起きる。始まる。"
+    },
+    {
+      "sourceId": "w00802",
+      "globalSequence": 802,
+      "simplified": "起飞",
+      "pinyin": "qǐfēi",
+      "japanese": "離陸する。"
+    },
+    {
+      "sourceId": "w00803",
+      "globalSequence": 803,
+      "simplified": "汽车",
+      "pinyin": "qìchē",
+      "japanese": "自動車。"
+    },
+    {
+      "sourceId": "w00804",
+      "globalSequence": 804,
+      "simplified": "铅笔",
+      "pinyin": "qiānbǐ",
+      "japanese": "鉛筆。"
+    }
+  ]
+}

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00227",
+      "globalSequence": 227,
+      "simplified": "下雨",
+      "pinyin": "xià yǔ",
+      "japanese": "雨が降る。"
+    },
+    {
+      "sourceId": "w00228",
+      "globalSequence": 228,
+      "simplified": "下班",
+      "pinyin": "xiàbān",
+      "japanese": "仕事が終わる。退勤する。"
+    },
+    {
+      "sourceId": "w00229",
+      "globalSequence": 229,
+      "simplified": "下课",
+      "pinyin": "xiàkè",
+      "japanese": "授業が終わる。"
+    },
+    {
+      "sourceId": "w00230",
+      "globalSequence": 230,
+      "simplified": "下午",
+      "pinyin": "xiàwǔ",
+      "japanese": "午後。"
+    },
+    {
+      "sourceId": "w00231",
+      "globalSequence": 231,
+      "simplified": "先生",
+      "pinyin": "xiānsheng",
+      "japanese": "男性への敬称。夫。"
+    },
+    {
+      "sourceId": "w00232",
+      "globalSequence": 232,
+      "simplified": "现在",
+      "pinyin": "xiànzài",
+      "japanese": "今。"
+    },
+    {
+      "sourceId": "w00233",
+      "globalSequence": 233,
+      "simplified": "想",
+      "pinyin": "xiǎng",
+      "japanese": "〜したい。〜と思う。恋しく思う。"
+    },
+    {
+      "sourceId": "w00234",
+      "globalSequence": 234,
+      "simplified": "小",
+      "pinyin": "xiǎo",
+      "japanese": "小さい。"
+    },
+    {
+      "sourceId": "w00235",
+      "globalSequence": 235,
+      "simplified": "小朋友",
+      "pinyin": "xiǎopéngyǒu",
+      "japanese": "子ども。"
+    },
+    {
+      "sourceId": "w00236",
+      "globalSequence": 236,
+      "simplified": "小时",
+      "pinyin": "xiǎoshí",
+      "japanese": "時間の単位「〜時間」。"
+    },
+    {
+      "sourceId": "w00237",
+      "globalSequence": 237,
+      "simplified": "小学",
+      "pinyin": "xiǎoxué",
+      "japanese": "小学校。"
+    },
+    {
+      "sourceId": "w00238",
+      "globalSequence": 238,
+      "simplified": "小学生",
+      "pinyin": "xiǎoxuéshēng",
+      "japanese": "小学生。"
+    },
+    {
+      "sourceId": "w00239",
+      "globalSequence": 239,
+      "simplified": "些",
+      "pinyin": "xiē",
+      "japanese": "いくつか。少し。"
+    },
+    {
+      "sourceId": "w00240",
+      "globalSequence": 240,
+      "simplified": "写",
+      "pinyin": "xiě",
+      "japanese": "書く。"
+    },
+    {
+      "sourceId": "w00241",
+      "globalSequence": 241,
+      "simplified": "谢谢",
+      "pinyin": "xièxie",
+      "japanese": "ありがとう。"
+    },
+    {
+      "sourceId": "w00242",
+      "globalSequence": 242,
+      "simplified": "新",
+      "pinyin": "xīn",
+      "japanese": "新しい。"
+    },
+    {
+      "sourceId": "w00243",
+      "globalSequence": 243,
+      "simplified": "星期",
+      "pinyin": "xīngqī",
+      "japanese": "週。曜日。"
+    },
+    {
+      "sourceId": "w00244",
+      "globalSequence": 244,
+      "simplified": "星期日",
+      "pinyin": "xīngqīrì",
+      "japanese": "日曜日。"
+    },
+    {
+      "sourceId": "w00245",
+      "globalSequence": 245,
+      "simplified": "星期天",
+      "pinyin": "xīngqītiān",
+      "japanese": "日曜日。"
+    },
+    {
+      "sourceId": "w00246",
+      "globalSequence": 246,
+      "simplified": "休息",
+      "pinyin": "xiūxi",
+      "japanese": "休む。休憩する。"
+    },
+    {
+      "sourceId": "w00247",
+      "globalSequence": 247,
+      "simplified": "学",
+      "pinyin": "xué",
+      "japanese": "学ぶ。"
+    },
+    {
+      "sourceId": "w00248",
+      "globalSequence": 248,
+      "simplified": "学生",
+      "pinyin": "xuéshēng",
+      "japanese": "学生。生徒。"
+    },
+    {
+      "sourceId": "w00249",
+      "globalSequence": 249,
+      "simplified": "学习",
+      "pinyin": "xuéxí",
+      "japanese": "学習する。"
+    },
+    {
+      "sourceId": "w00250",
+      "globalSequence": 250,
+      "simplified": "学校",
+      "pinyin": "xuéxiào",
+      "japanese": "学校。"
+    },
+    {
+      "sourceId": "w00251",
+      "globalSequence": 251,
+      "simplified": "雪",
+      "pinyin": "xuě",
+      "japanese": "雪。"
+    },
+    {
+      "sourceId": "w00252",
+      "globalSequence": 252,
+      "simplified": "要",
+      "pinyin": "yào",
+      "japanese": "欲しい。〜するつもりだ。〜する必要がある。"
+    },
+    {
+      "sourceId": "w00253",
+      "globalSequence": 253,
+      "simplified": "也",
+      "pinyin": "yě",
+      "japanese": "〜も。"
+    },
+    {
+      "sourceId": "w00254",
+      "globalSequence": 254,
+      "simplified": "一",
+      "pinyin": "yī",
+      "japanese": "一。"
+    },
+    {
+      "sourceId": "w00255",
+      "globalSequence": 255,
+      "simplified": "衣服",
+      "pinyin": "yīfu",
+      "japanese": "服。"
+    },
+    {
+      "sourceId": "w00256",
+      "globalSequence": 256,
+      "simplified": "医生",
+      "pinyin": "yīshēng",
+      "japanese": "医師。"
+    },
+    {
+      "sourceId": "w00257",
+      "globalSequence": 257,
+      "simplified": "医院",
+      "pinyin": "yīyuàn",
+      "japanese": "病院。"
+    },
+    {
+      "sourceId": "w00258",
+      "globalSequence": 258,
+      "simplified": "一半",
+      "pinyin": "yíbàn",
+      "japanese": "半分。"
+    },
+    {
+      "sourceId": "w00259",
+      "globalSequence": 259,
+      "simplified": "一下",
+      "pinyin": "yíxià",
+      "japanese": "ちょっと。動作の回数の「1回」。"
+    },
+    {
+      "sourceId": "w00260",
+      "globalSequence": 260,
+      "simplified": "椅子",
+      "pinyin": "yǐzi",
+      "japanese": "椅子。"
+    },
+    {
+      "sourceId": "w00261",
+      "globalSequence": 261,
+      "simplified": "一点儿",
+      "pinyin": "yìdiǎnr",
+      "japanese": "少し。"
+    },
+    {
+      "sourceId": "w00262",
+      "globalSequence": 262,
+      "simplified": "一些",
+      "pinyin": "yìxiē",
+      "japanese": "いくつかの。少しの。"
+    },
+    {
+      "sourceId": "w00263",
+      "globalSequence": 263,
+      "simplified": "有",
+      "pinyin": "yǒu",
+      "japanese": "ある。持っている。"
+    },
+    {
+      "sourceId": "w00264",
+      "globalSequence": 264,
+      "simplified": "有的",
+      "pinyin": "yǒude",
+      "japanese": "あるもの。一部の。"
+    },
+    {
+      "sourceId": "w00265",
+      "globalSequence": 265,
+      "simplified": "有点儿",
+      "pinyin": "yǒudiǎnr",
+      "japanese": "少し（好ましくない程度）。"
+    },
+    {
+      "sourceId": "w00266",
+      "globalSequence": 266,
+      "simplified": "有些",
+      "pinyin": "yǒuxiē",
+      "japanese": "いくつかの。やや。"
+    },
+    {
+      "sourceId": "w00267",
+      "globalSequence": 267,
+      "simplified": "雨",
+      "pinyin": "yǔ",
+      "japanese": "雨。"
+    },
+    {
+      "sourceId": "w00268",
+      "globalSequence": 268,
+      "simplified": "元",
+      "pinyin": "yuán",
+      "japanese": "元（通貨単位）。"
+    },
+    {
+      "sourceId": "w00269",
+      "globalSequence": 269,
+      "simplified": "月",
+      "pinyin": "yuè",
+      "japanese": "月。"
+    },
+    {
+      "sourceId": "w00270",
+      "globalSequence": 270,
+      "simplified": "再",
+      "pinyin": "zài",
+      "japanese": "再び。また。"
+    },
+    {
+      "sourceId": "w00271",
+      "globalSequence": 271,
+      "simplified": "在",
+      "pinyin": "zài",
+      "japanese": "〜にいる。〜にある。〜している。"
+    },
+    {
+      "sourceId": "w00272",
+      "globalSequence": 272,
+      "simplified": "再见",
+      "pinyin": "zàijiàn",
+      "japanese": "さようなら。"
+    },
+    {
+      "sourceId": "w00273",
+      "globalSequence": 273,
+      "simplified": "早",
+      "pinyin": "zǎo",
+      "japanese": "早い。"
+    },
+    {
+      "sourceId": "w00274",
+      "globalSequence": 274,
+      "simplified": "早饭",
+      "pinyin": "zǎofàn",
+      "japanese": "朝食。"
+    },
+    {
+      "sourceId": "w00275",
+      "globalSequence": 275,
+      "simplified": "早上",
+      "pinyin": "zǎoshang",
+      "japanese": "朝。"
+    },
+    {
+      "sourceId": "w00276",
+      "globalSequence": 276,
+      "simplified": "怎么",
+      "pinyin": "zěnme",
+      "japanese": "どう。どうして。"
+    }
+  ]
+}

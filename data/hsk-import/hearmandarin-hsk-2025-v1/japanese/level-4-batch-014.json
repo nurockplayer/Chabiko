@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01605",
+      "globalSequence": 1605,
+      "simplified": "缺少",
+      "pinyin": "quēshǎo",
+      "japanese": "不足する。"
+    },
+    {
+      "sourceId": "w01606",
+      "globalSequence": 1606,
+      "simplified": "却",
+      "pinyin": "què",
+      "japanese": "ところが。かえって。"
+    },
+    {
+      "sourceId": "w01607",
+      "globalSequence": 1607,
+      "simplified": "确实",
+      "pinyin": "quèshí",
+      "japanese": "確かに。確かな。"
+    },
+    {
+      "sourceId": "w01608",
+      "globalSequence": 1608,
+      "simplified": "然而",
+      "pinyin": "rán’ér",
+      "japanese": "しかし。"
+    },
+    {
+      "sourceId": "w01609",
+      "globalSequence": 1609,
+      "simplified": "热闹",
+      "pinyin": "rènao",
+      "japanese": "にぎやかな。"
+    },
+    {
+      "sourceId": "w01610",
+      "globalSequence": 1610,
+      "simplified": "人生",
+      "pinyin": "rénshēng",
+      "japanese": "人生。"
+    },
+    {
+      "sourceId": "w01611",
+      "globalSequence": 1611,
+      "simplified": "人数",
+      "pinyin": "rénshù",
+      "japanese": "人数。"
+    },
+    {
+      "sourceId": "w01612",
+      "globalSequence": 1612,
+      "simplified": "人员",
+      "pinyin": "rényuán",
+      "japanese": "人員。スタッフ。"
+    },
+    {
+      "sourceId": "w01613",
+      "globalSequence": 1613,
+      "simplified": "任何",
+      "pinyin": "rènhé",
+      "japanese": "どんな〜でも。"
+    },
+    {
+      "sourceId": "w01614",
+      "globalSequence": 1614,
+      "simplified": "任务",
+      "pinyin": "rènwu",
+      "japanese": "任務。課題。"
+    },
+    {
+      "sourceId": "w01615",
+      "globalSequence": 1615,
+      "simplified": "扔",
+      "pinyin": "rēng",
+      "japanese": "投げる。捨てる。"
+    },
+    {
+      "sourceId": "w01616",
+      "globalSequence": 1616,
+      "simplified": "仍",
+      "pinyin": "réng",
+      "japanese": "依然として。"
+    },
+    {
+      "sourceId": "w01617",
+      "globalSequence": 1617,
+      "simplified": "仍然",
+      "pinyin": "réngrán",
+      "japanese": "依然として。やはり。"
+    },
+    {
+      "sourceId": "w01618",
+      "globalSequence": 1618,
+      "simplified": "日常",
+      "pinyin": "rìcháng",
+      "japanese": "日常の。"
+    },
+    {
+      "sourceId": "w01619",
+      "globalSequence": 1619,
+      "simplified": "日记",
+      "pinyin": "rìjì",
+      "japanese": "日記。"
+    },
+    {
+      "sourceId": "w01620",
+      "globalSequence": 1620,
+      "simplified": "日期",
+      "pinyin": "rìqī",
+      "japanese": "日付。"
+    },
+    {
+      "sourceId": "w01621",
+      "globalSequence": 1621,
+      "simplified": "日子",
+      "pinyin": "rìzi",
+      "japanese": "日。暮らし。"
+    },
+    {
+      "sourceId": "w01622",
+      "globalSequence": 1622,
+      "simplified": "入",
+      "pinyin": "rù",
+      "japanese": "入る。"
+    },
+    {
+      "sourceId": "w01623",
+      "globalSequence": 1623,
+      "simplified": "入口",
+      "pinyin": "rùkǒu",
+      "japanese": "入り口。"
+    },
+    {
+      "sourceId": "w01624",
+      "globalSequence": 1624,
+      "simplified": "入学",
+      "pinyin": "rùxué",
+      "japanese": "入学する。"
+    },
+    {
+      "sourceId": "w01625",
+      "globalSequence": 1625,
+      "simplified": "入住",
+      "pinyin": "rùzhù",
+      "japanese": "入居する。宿泊する。"
+    },
+    {
+      "sourceId": "w01626",
+      "globalSequence": 1626,
+      "simplified": "散步",
+      "pinyin": "sànbù",
+      "japanese": "散歩する。"
+    },
+    {
+      "sourceId": "w01627",
+      "globalSequence": 1627,
+      "simplified": "扫码",
+      "pinyin": "sǎomǎ",
+      "japanese": "コードを読み取る。"
+    },
+    {
+      "sourceId": "w01628",
+      "globalSequence": 1628,
+      "simplified": "森林",
+      "pinyin": "sēnlín",
+      "japanese": "森林。"
+    },
+    {
+      "sourceId": "w01629",
+      "globalSequence": 1629,
+      "simplified": "商量",
+      "pinyin": "shāngliang",
+      "japanese": "相談する。"
+    },
+    {
+      "sourceId": "w01630",
+      "globalSequence": 1630,
+      "simplified": "商品",
+      "pinyin": "shāngpǐn",
+      "japanese": "商品。"
+    },
+    {
+      "sourceId": "w01631",
+      "globalSequence": 1631,
+      "simplified": "伤心",
+      "pinyin": "shāngxīn",
+      "japanese": "悲しむ。心を痛める。"
+    },
+    {
+      "sourceId": "w01632",
+      "globalSequence": 1632,
+      "simplified": "上门",
+      "pinyin": "shàngmén",
+      "japanese": "訪問する。"
+    },
+    {
+      "sourceId": "w01633",
+      "globalSequence": 1633,
+      "simplified": "稍",
+      "pinyin": "shāo",
+      "japanese": "少し。"
+    },
+    {
+      "sourceId": "w01634",
+      "globalSequence": 1634,
+      "simplified": "稍微",
+      "pinyin": "shāowēi",
+      "japanese": "少し。ちょっと。"
+    },
+    {
+      "sourceId": "w01635",
+      "globalSequence": 1635,
+      "simplified": "少见",
+      "pinyin": "shǎojiàn",
+      "japanese": "めったに見られない。"
+    },
+    {
+      "sourceId": "w01636",
+      "globalSequence": 1636,
+      "simplified": "少量",
+      "pinyin": "shǎoliàng",
+      "japanese": "少量。"
+    },
+    {
+      "sourceId": "w01637",
+      "globalSequence": 1637,
+      "simplified": "少数",
+      "pinyin": "shǎoshù",
+      "japanese": "少数。"
+    },
+    {
+      "sourceId": "w01638",
+      "globalSequence": 1638,
+      "simplified": "少年",
+      "pinyin": "shàonián",
+      "japanese": "少年。"
+    },
+    {
+      "sourceId": "w01639",
+      "globalSequence": 1639,
+      "simplified": "社会",
+      "pinyin": "shèhuì",
+      "japanese": "社会。"
+    },
+    {
+      "sourceId": "w01640",
+      "globalSequence": 1640,
+      "simplified": "摄氏度",
+      "pinyin": "shèshìdù",
+      "japanese": "摂氏の「〜度」。"
+    },
+    {
+      "sourceId": "w01641",
+      "globalSequence": 1641,
+      "simplified": "身",
+      "pinyin": "shēn",
+      "japanese": "体。衣服一式を数える語。"
+    },
+    {
+      "sourceId": "w01642",
+      "globalSequence": 1642,
+      "simplified": "深",
+      "pinyin": "shēn",
+      "japanese": "深い。"
+    },
+    {
+      "sourceId": "w01643",
+      "globalSequence": 1643,
+      "simplified": "身份证",
+      "pinyin": "shēnfènzhèng",
+      "japanese": "身分証明書。"
+    },
+    {
+      "sourceId": "w01644",
+      "globalSequence": 1644,
+      "simplified": "申请",
+      "pinyin": "shēnqǐng",
+      "japanese": "申請する。"
+    },
+    {
+      "sourceId": "w01645",
+      "globalSequence": 1645,
+      "simplified": "甚至",
+      "pinyin": "shènzhì",
+      "japanese": "〜さえ。〜にまで。"
+    },
+    {
+      "sourceId": "w01648",
+      "globalSequence": 1648,
+      "simplified": "生命",
+      "pinyin": "shēngmìng",
+      "japanese": "生命。"
+    },
+    {
+      "sourceId": "w01649",
+      "globalSequence": 1649,
+      "simplified": "生意",
+      "pinyin": "shēngyi",
+      "japanese": "商売。"
+    },
+    {
+      "sourceId": "w01651",
+      "globalSequence": 1651,
+      "simplified": "剩",
+      "pinyin": "shèng",
+      "japanese": "残る。"
+    },
+    {
+      "sourceId": "w01652",
+      "globalSequence": 1652,
+      "simplified": "失败",
+      "pinyin": "shībài",
+      "japanese": "失敗する。失敗。"
+    },
+    {
+      "sourceId": "w01653",
+      "globalSequence": 1653,
+      "simplified": "师傅",
+      "pinyin": "shīfu",
+      "japanese": "職人・運転手などへの敬称。師匠。"
+    },
+    {
+      "sourceId": "w01654",
+      "globalSequence": 1654,
+      "simplified": "失去",
+      "pinyin": "shīqù",
+      "japanese": "失う。"
+    },
+    {
+      "sourceId": "w01655",
+      "globalSequence": 1655,
+      "simplified": "师生",
+      "pinyin": "shīshēng",
+      "japanese": "教師と生徒。"
+    },
+    {
+      "sourceId": "w01656",
+      "globalSequence": 1656,
+      "simplified": "失望",
+      "pinyin": "shīwàng",
+      "japanese": "失望する。"
+    },
+    {
+      "sourceId": "w01657",
+      "globalSequence": 1657,
+      "simplified": "十分",
+      "pinyin": "shífēn",
+      "japanese": "非常に。"
+    }
+  ]
+}

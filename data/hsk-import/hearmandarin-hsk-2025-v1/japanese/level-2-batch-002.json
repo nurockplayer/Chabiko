@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00301",
+      "globalSequence": 301,
+      "simplified": "啊",
+      "pinyin": "a",
+      "japanese": "ああ（感嘆や呼びかけの語）。"
+    },
+    {
+      "sourceId": "w00302",
+      "globalSequence": 302,
+      "simplified": "爱好",
+      "pinyin": "àihào",
+      "japanese": "趣味。好む。"
+    },
+    {
+      "sourceId": "w00303",
+      "globalSequence": 303,
+      "simplified": "白色",
+      "pinyin": "báisè",
+      "japanese": "白色。"
+    },
+    {
+      "sourceId": "w00304",
+      "globalSequence": 304,
+      "simplified": "班",
+      "pinyin": "bān",
+      "japanese": "クラス。班。"
+    },
+    {
+      "sourceId": "w00305",
+      "globalSequence": 305,
+      "simplified": "帮",
+      "pinyin": "bāng",
+      "japanese": "手伝う。助ける。"
+    },
+    {
+      "sourceId": "w00306",
+      "globalSequence": 306,
+      "simplified": "帮忙",
+      "pinyin": "bāngmáng",
+      "japanese": "手伝う。"
+    },
+    {
+      "sourceId": "w00307",
+      "globalSequence": 307,
+      "simplified": "包",
+      "pinyin": "bāo",
+      "japanese": "かばん。包む。"
+    },
+    {
+      "sourceId": "w00308",
+      "globalSequence": 308,
+      "simplified": "本子",
+      "pinyin": "běnzi",
+      "japanese": "ノート。"
+    },
+    {
+      "sourceId": "w00309",
+      "globalSequence": 309,
+      "simplified": "比",
+      "pinyin": "bǐ",
+      "japanese": "〜より。比べる。"
+    },
+    {
+      "sourceId": "w00310",
+      "globalSequence": 310,
+      "simplified": "笔",
+      "pinyin": "bǐ",
+      "japanese": "ペン。筆記具。"
+    },
+    {
+      "sourceId": "w00312",
+      "globalSequence": 312,
+      "simplified": "不错",
+      "pinyin": "búcuò",
+      "japanese": "悪くない。よい。"
+    },
+    {
+      "sourceId": "w00313",
+      "globalSequence": 313,
+      "simplified": "不好意思",
+      "pinyin": "bù hǎoyìsi",
+      "japanese": "すみません。恥ずかしい。"
+    },
+    {
+      "sourceId": "w00314",
+      "globalSequence": 314,
+      "simplified": "长",
+      "pinyin": "cháng",
+      "japanese": "長い。"
+    },
+    {
+      "sourceId": "w00315",
+      "globalSequence": 315,
+      "simplified": "车站",
+      "pinyin": "chēzhàn",
+      "japanese": "駅。停留所。"
+    },
+    {
+      "sourceId": "w00316",
+      "globalSequence": 316,
+      "simplified": "出",
+      "pinyin": "chū",
+      "japanese": "出る。"
+    },
+    {
+      "sourceId": "w00317",
+      "globalSequence": 317,
+      "simplified": "出国",
+      "pinyin": "chūguó",
+      "japanese": "外国へ行く。"
+    },
+    {
+      "sourceId": "w00318",
+      "globalSequence": 318,
+      "simplified": "出来",
+      "pinyin": "chūlái",
+      "japanese": "出てくる。"
+    },
+    {
+      "sourceId": "w00319",
+      "globalSequence": 319,
+      "simplified": "出门",
+      "pinyin": "chūmén",
+      "japanese": "外出する。"
+    },
+    {
+      "sourceId": "w00320",
+      "globalSequence": 320,
+      "simplified": "出去",
+      "pinyin": "chūqù",
+      "japanese": "出ていく。"
+    },
+    {
+      "sourceId": "w00321",
+      "globalSequence": 321,
+      "simplified": "床",
+      "pinyin": "chuáng",
+      "japanese": "ベッド。"
+    },
+    {
+      "sourceId": "w00322",
+      "globalSequence": 322,
+      "simplified": "词",
+      "pinyin": "cí",
+      "japanese": "単語。"
+    },
+    {
+      "sourceId": "w00323",
+      "globalSequence": 323,
+      "simplified": "次",
+      "pinyin": "cì",
+      "japanese": "回数の「〜回」。"
+    },
+    {
+      "sourceId": "w00324",
+      "globalSequence": 324,
+      "simplified": "从",
+      "pinyin": "cóng",
+      "japanese": "〜から。"
+    },
+    {
+      "sourceId": "w00325",
+      "globalSequence": 325,
+      "simplified": "从小",
+      "pinyin": "cóngxiǎo",
+      "japanese": "小さい頃から。"
+    },
+    {
+      "sourceId": "w00326",
+      "globalSequence": 326,
+      "simplified": "错",
+      "pinyin": "cuò",
+      "japanese": "間違い。間違っている。"
+    },
+    {
+      "sourceId": "w00328",
+      "globalSequence": 328,
+      "simplified": "打车",
+      "pinyin": "dǎchē",
+      "japanese": "タクシーに乗る。"
+    },
+    {
+      "sourceId": "w00329",
+      "globalSequence": 329,
+      "simplified": "打开",
+      "pinyin": "dǎkāi",
+      "japanese": "開ける。電源を入れる。"
+    },
+    {
+      "sourceId": "w00330",
+      "globalSequence": 330,
+      "simplified": "但",
+      "pinyin": "dàn",
+      "japanese": "しかし。"
+    },
+    {
+      "sourceId": "w00331",
+      "globalSequence": 331,
+      "simplified": "但是",
+      "pinyin": "dànshì",
+      "japanese": "しかし。"
+    },
+    {
+      "sourceId": "w00332",
+      "globalSequence": 332,
+      "simplified": "得",
+      "pinyin": "de",
+      "japanese": "動詞・形容詞の後で程度や様子を導く語。"
+    },
+    {
+      "sourceId": "w00333",
+      "globalSequence": 333,
+      "simplified": "地",
+      "pinyin": "de",
+      "japanese": "修飾語の後につけて動作の様子を表す語。"
+    },
+    {
+      "sourceId": "w00335",
+      "globalSequence": 335,
+      "simplified": "地铁",
+      "pinyin": "dìtiě",
+      "japanese": "地下鉄。"
+    },
+    {
+      "sourceId": "w00337",
+      "globalSequence": 337,
+      "simplified": "懂",
+      "pinyin": "dǒng",
+      "japanese": "分かる。理解する。"
+    },
+    {
+      "sourceId": "w00338",
+      "globalSequence": 338,
+      "simplified": "动",
+      "pinyin": "dòng",
+      "japanese": "動く。動かす。"
+    },
+    {
+      "sourceId": "w00339",
+      "globalSequence": 339,
+      "simplified": "饭馆",
+      "pinyin": "fànguǎn",
+      "japanese": "食堂。レストラン。"
+    },
+    {
+      "sourceId": "w00340",
+      "globalSequence": 340,
+      "simplified": "飞",
+      "pinyin": "fēi",
+      "japanese": "飛ぶ。"
+    },
+    {
+      "sourceId": "w00341",
+      "globalSequence": 341,
+      "simplified": "高",
+      "pinyin": "gāo",
+      "japanese": "高い。背が高い。"
+    },
+    {
+      "sourceId": "w00342",
+      "globalSequence": 342,
+      "simplified": "高中",
+      "pinyin": "gāozhōng",
+      "japanese": "高校。"
+    },
+    {
+      "sourceId": "w00343",
+      "globalSequence": 343,
+      "simplified": "告诉",
+      "pinyin": "gàosu",
+      "japanese": "伝える。教える。"
+    },
+    {
+      "sourceId": "w00344",
+      "globalSequence": 344,
+      "simplified": "个子",
+      "pinyin": "gèzi",
+      "japanese": "背丈。"
+    },
+    {
+      "sourceId": "w00345",
+      "globalSequence": 345,
+      "simplified": "跟",
+      "pinyin": "gēn",
+      "japanese": "〜と。ついていく。"
+    },
+    {
+      "sourceId": "w00346",
+      "globalSequence": 346,
+      "simplified": "公交车",
+      "pinyin": "gōngjiāochē",
+      "japanese": "路線バス。"
+    },
+    {
+      "sourceId": "w00347",
+      "globalSequence": 347,
+      "simplified": "过",
+      "pinyin": "guò",
+      "japanese": "通る。過ぎる。過ごす。"
+    },
+    {
+      "sourceId": "w00348",
+      "globalSequence": 348,
+      "simplified": "过来",
+      "pinyin": "guòlái",
+      "japanese": "こちらへ来る。"
+    },
+    {
+      "sourceId": "w00349",
+      "globalSequence": 349,
+      "simplified": "过年",
+      "pinyin": "guònián",
+      "japanese": "旧正月を過ごす。"
+    },
+    {
+      "sourceId": "w00351",
+      "globalSequence": 351,
+      "simplified": "过",
+      "pinyin": "guo",
+      "japanese": "動詞の後で過去の経験を表す語。"
+    },
+    {
+      "sourceId": "w00352",
+      "globalSequence": 352,
+      "simplified": "还是",
+      "pinyin": "háishi",
+      "japanese": "それとも。やはり。"
+    },
+    {
+      "sourceId": "w00353",
+      "globalSequence": 353,
+      "simplified": "黑色",
+      "pinyin": "hēisè",
+      "japanese": "黒色。"
+    },
+    {
+      "sourceId": "w00354",
+      "globalSequence": 354,
+      "simplified": "红茶",
+      "pinyin": "hóngchá",
+      "japanese": "紅茶。"
+    },
+    {
+      "sourceId": "w00355",
+      "globalSequence": 355,
+      "simplified": "红色",
+      "pinyin": "hóngsè",
+      "japanese": "赤色。"
+    }
+  ]
+}
