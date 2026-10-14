@@ -169,10 +169,13 @@ export function createAzureSpeechProvider(
           body: `<speak version="1.0" xml:lang="${lang}"><voice name="${voice}"><prosody rate="0%">${escapeXml(text)}</prosody></voice></speak>`,
         },
       );
-      if (!response.ok) {
+      // Only 200 OK carries the audio body; reject other 2xx and empty bodies.
+      if (response.status !== 200) {
         throw new Error(`Azure Speech returned HTTP ${response.status}.`);
       }
-      return new Uint8Array(await response.arrayBuffer());
+      const audio = new Uint8Array(await response.arrayBuffer());
+      if (audio.byteLength === 0) throw new Error('Azure Speech returned an empty audio body.');
+      return audio;
     },
   };
 }
