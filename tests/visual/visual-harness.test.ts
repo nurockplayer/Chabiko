@@ -89,6 +89,7 @@ describe('visual regression harness contract', () => {
       (phrasebookCase) => phrasebookCase.snapshotName,
     );
     const expected = [
+      'v1-word-order-alternative-375x812.png',
       ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,

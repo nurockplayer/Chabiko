@@ -28,6 +28,7 @@ const serialized = JSON.stringify({
 >
   <div class="tone-practice-header">
     <p class="tone-practice-progress" data-tone-progress></p>
+    <progress class="tone-practice-meter" max={items.length} value="0" aria-label="この回の声調練習の進み具合"></progress>
     <p class="tone-practice-prompt" data-tone-prompt></p>
   </div>
 
@@ -62,6 +63,7 @@ const serialized = JSON.stringify({
 </script>
 
 <style is:global>
+  .tone-practice-meter { width: 100%; height: 6px; accent-color: var(--jade); }
   .tone-practice {
     width: 100%;
     display: flex;

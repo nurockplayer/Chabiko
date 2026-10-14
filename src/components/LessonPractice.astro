@@ -59,6 +59,15 @@ const json = JSON.stringify(questions);
       }
     }
 
+    function appendNextStep() {
+      const destination = document.querySelector<HTMLAnchorElement>('.lesson-nav .nav-next');
+      const link = document.createElement('a');
+      link.className = 'practice-next-step';
+      link.href = destination?.getAttribute('href') ?? '/paths/taiwan-travel/quiz/';
+      link.textContent = destination ? '次のレッスンへ →' : '総合テストへ →';
+      root.querySelector('.practice-complete')?.append(link);
+    }
+
     function renderCompleted() {
       // markComplete already called in handleAnswer for the last correct answer
       syncBadge();
@@ -66,6 +75,7 @@ const json = JSON.stringify(questions);
         '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
       const complete = root.querySelector('.practice-complete') as HTMLElement | null;
       if (complete) complete.tabIndex = -1;
+      appendNextStep();
     }
 
     function render() {
@@ -81,6 +91,7 @@ const json = JSON.stringify(questions);
           '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">このレッスンは既に完了しています。</p></div>';
         const complete = root.querySelector('.practice-complete') as HTMLElement | null;
         if (complete) complete.tabIndex = -1;
+        appendNextStep();
         return;
       }
 
@@ -171,15 +182,15 @@ const json = JSON.stringify(questions);
         choices.forEach((c) => (c as HTMLButtonElement).disabled = true);
         feedback.tabIndex = -1;
         feedback.focus();
-        timer.schedule(() => {
-          // Preserve an explicit focus move away from the feedback.
-          const shouldTakeFocus = feedback.contains(document.activeElement);
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'practice-retry';
+        retry.textContent = 'もう一度';
+        retry.addEventListener('click', () => {
           render();
-          if (shouldTakeFocus) {
-            const firstChoice = root.querySelector('.practice-choice') as HTMLButtonElement | null;
-            if (firstChoice) firstChoice.focus();
-          }
-        }, 2000);
+          root.querySelector<HTMLButtonElement>('.practice-choice')?.focus();
+        });
+        feedback.append(retry);
       }
     }
 
@@ -206,6 +217,7 @@ const json = JSON.stringify(questions);
         syncBadge();
         root.innerHTML =
           '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+        appendNextStep();
       } else if (outcome.kind === 'reset') {
         const badge = document.getElementById('lesson-completion-badge');
         if (badge) {
@@ -236,6 +248,7 @@ const json = JSON.stringify(questions);
           syncBadge();
           root.innerHTML =
             '<div class="practice-complete" role="status" aria-live="polite"><p class="practice-complete-icon" aria-hidden="true">&#x2714;</p><p class="practice-complete-text">練習完了！レッスンをクリアしました。</p></div>';
+          appendNextStep();
         } else if (outcome.kind === 'reset') {
           const badge = document.getElementById('lesson-completion-badge');
           if (badge) {
@@ -258,6 +271,24 @@ const json = JSON.stringify(questions);
 </script>
 
 <style>
+  :global(.practice-retry), :global(.practice-next-step) {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    margin-top: var(--sp-3);
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--jade);
+    border-radius: var(--radius-control);
+    background: var(--jade-soft);
+    color: var(--jade-ink);
+    font: inherit;
+    cursor: pointer;
+  }
+  :global(.practice-retry:focus-visible), :global(.practice-next-step:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
   .lesson-practice {
     margin-top: var(--sp-10);
     padding-top: var(--sp-5);
@@ -369,8 +400,8 @@ const json = JSON.stringify(questions);
     background: var(--paper-deep);
   }
   :global(.practice-feedback) {
-    min-height: 0;
-    transition: min-height 0.2s;
+    box-sizing: border-box;
+    min-height: 9rem;
   }
   :global(.practice-feedback.feedback-visible) {
     padding: var(--sp-3) var(--sp-4);

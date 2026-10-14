@@ -160,13 +160,15 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
 
     promptView.textContent = item.promptJa;
     progressView.textContent = `${state.currentIndex + 1} / ${state.items.length}`;
+    const meter = root.querySelector<HTMLProgressElement>('progress');
+    if (meter) { meter.max = state.items.length; meter.value = state.currentIndex; }
 
     // The shape is the visual question; the explanation belongs to feedback.
     contourView.dataset.contour = item.toneContourId;
     contourView.hidden = false;
     contourView.replaceChildren(drawContour(item.toneContourId));
-    interferenceView.textContent = item.interferenceJa;
-    interferenceView.hidden = false;
+    interferenceView.textContent = state.status === 'submitted' ? item.interferenceJa : '';
+    interferenceView.hidden = state.status !== 'submitted';
 
     // ── Four named choices ────────────────────────────────────────────────
     // Canonical tone order keeps answer position and initial focus independent
@@ -278,6 +280,8 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   function renderCompleted(): void {
     promptView.textContent = '';
     progressView.textContent = '完了';
+    const meter = root.querySelector<HTMLProgressElement>('progress');
+    if (meter) meter.value = state.items.length;
     contourView.removeAttribute('data-contour');
     contourView.replaceChildren();
     contourView.hidden = true;

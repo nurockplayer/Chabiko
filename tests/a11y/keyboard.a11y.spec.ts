@@ -143,9 +143,7 @@ for (const theme of A11Y_THEMES) {
       await page.goto(`${BASE_URL}/lessons/lesson-001/`, {
         waitUntil: 'load',
       });
-      // Freeze before answering so the 2000ms retry transition timer stays
-      // frozen during the feedback assertions; the retry advances only via the
-      // explicit runFor below.
+      // Keep completion deterministic after the explicit retry button is used.
       await freezeClock(page);
       await expect(page.locator('.practice-choice').first()).toBeVisible();
 
@@ -170,9 +168,11 @@ for (const theme of A11Y_THEMES) {
       );
       await expect(page.locator('.practice-feedback')).toBeFocused();
 
-      // After the incorrect-timeout the same question re-renders; focus moves
-      // back to the first choice (retry path).
-      await page.clock.runFor(2000);
+      // Feedback remains until an explicit keyboard retry.
+      await page.clock.runFor(5000);
+      await expect(page.locator('.feedback-answer')).toBeVisible();
+      await page.getByRole('button', { name: 'もう一度', exact: true }).focus();
+      await page.keyboard.press('Enter');
       const retriedChoice = page.locator('.practice-choice').first();
       await expect(retriedChoice).toBeVisible();
       await expect(retriedChoice).toBeFocused();

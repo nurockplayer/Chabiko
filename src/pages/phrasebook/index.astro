@@ -100,6 +100,7 @@ const scenarioGroups = groupPhrasebookByScenario(eligible).filter(
       }
     </div>
   </section>
+  <p><a class="learning-next-step" href="/roleplay/">ロールプレイで使ってみる →</a></p>
 </BaseLayout>
 
 <script>
@@ -115,6 +116,20 @@ const scenarioGroups = groupPhrasebookByScenario(eligible).filter(
 </script>
 
 <style>
+  .learning-next-step {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--jade-ink);
+    font-size: 14px;
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+  .learning-next-step:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
   .phrasebook-page {
     width: 100%;
     max-width: 48rem;

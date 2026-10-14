@@ -138,6 +138,7 @@ export type WordOrderPhase = 'initial' | 'composing' | 'submitted' | 'completed'
 export interface WordOrderItem {
   readonly recordId: string;
   readonly promptJa: string;
+  readonly acceptableAnswersTraditional?: readonly string[];
   readonly chunks: readonly WordOrderChunk[];
   /** Separator between chunks in the canonical answer (source-derived). */
   readonly separator: ' ' | '';
@@ -281,7 +282,11 @@ function applySubmit(state: WordOrderState, item: WordOrderItem): WordOrderResul
   }
 
   const given = state.selected.map((shownPosition) => item.shownOrder[shownPosition]);
-  const isCorrect = given.every((value, index) => value === item.canonicalOrder[index]);
+  // Compare visible text, not token identity: repeated characters are interchangeable.
+  const answerText = given.map((index) => item.chunks[index].text).join(item.separator);
+  const canonicalText = item.canonicalOrder.map((index) => item.chunks[index].text).join(item.separator);
+  const isCorrect = answerText === canonicalText ||
+    (item.acceptableAnswersTraditional ?? []).includes(answerText);
 
   return {
     state: {

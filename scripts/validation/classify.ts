@@ -260,8 +260,8 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
     testGlobs: ['tests/tone-practice-*.test.ts'],
   },
   {
-    match: (b) => b.includes('wordorderpractice'),
-    testGlobs: ['tests/word-order-practice-*.test.ts'],
+    match: (b) => b.includes('wordorderpractice') || b.includes('wordordercues'),
+    testGlobs: ['tests/word-order-practice-*.test.ts', 'tests/word-order-cues.test.ts'],
   },
   {
     match: (b) => b.includes('roleplayrehearsal') || b.includes('roleplayprogress'),

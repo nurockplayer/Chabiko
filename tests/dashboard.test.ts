@@ -603,7 +603,7 @@ describe('dashboard track destination + summary helpers', () => {
 
 describe('dashboard home page (index.astro)', () => {
   it('renders one coherent learner dashboard hierarchy in order', () => {
-    const continuation = homeSource.indexOf('続きを学ぶ');
+    const continuation = homeSource.indexOf('id="continuation-heading"');
     const courses = homeSource.indexOf('学習コース');
     const achievements = homeSource.indexOf('実績');
     expect(continuation).toBeGreaterThan(0);

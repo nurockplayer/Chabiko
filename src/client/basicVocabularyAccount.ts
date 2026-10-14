@@ -132,7 +132,7 @@ function render(ui: UiParts, state: BasicVocabularyAuthState): void {
   } else if (state.kind === 'loading') {
     ui.status.textContent = 'ログイン状態を確認しています';
   } else {
-    ui.status.textContent = 'ログイン機能は現在利用できません';
+    ui.status.textContent = '';
   }
 }
 
@@ -164,6 +164,7 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
   const action: HTMLButtonElement = actionEl;
 
   const client = getSupabaseBrowserClient();
+  root.hidden = client === null;
   if (client === null) {
     render({ status, action }, { kind: 'unavailable' });
     dispatchState(root, { kind: 'unavailable' });

@@ -131,8 +131,8 @@ describe('word-order practice lifecycle', () => {
     selectAll(root);
     submitButton(root).click();
 
-    expect(root.textContent).toContain('並べ替えが違います');
-    expect(root.textContent).toContain('正解：');
+    expect(root.textContent).toContain('この練習の解答例と比べてみましょう');
+    expect(root.textContent).toContain('解答例：');
     expect(root.querySelector('.word-order-action--retry')).not.toBeNull();
     expect(root.querySelector('.word-order-action--next')).toBeNull();
 
@@ -269,8 +269,8 @@ describe('word-order practice keyboard, focus, and feedback', () => {
     selectAll(root);
     submitButton(root).click();
     const feedback = root.querySelector('[data-word-order-feedback]');
-    expect(feedback?.textContent).toContain('並べ替えが違います');
-    expect(feedback?.textContent).toContain('正解：');
+    expect(feedback?.textContent).toContain('この練習の解答例と比べてみましょう');
+    expect(feedback?.textContent).toContain('解答例：');
     resetDom();
   });
 });
