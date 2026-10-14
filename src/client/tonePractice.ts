@@ -148,6 +148,10 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const interferenceView: HTMLElement = interferenceEl;
   const choicesView: HTMLElement = choicesEl;
   const feedbackView: HTMLElement = feedbackEl;
+  // Audio sits beside (not inside) the feedback live region so feedback text stays exact.
+  const audioSlot = document.createElement('div');
+  audioSlot.className = 'tone-audio';
+  feedbackView.after(audioSlot);
   const actionsView: HTMLElement = actionsEl;
 
   function currentItem(): TonePracticeItem {
@@ -192,6 +196,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     }
 
     // ── Feedback ──────────────────────────────────────────────────────────
+    audioSlot.replaceChildren();
     feedbackView.textContent = '';
     feedbackView.className = 'tone-feedback';
     if (state.status === 'submitted') {
@@ -228,7 +233,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
         pronunciation.setAttribute('aria-label', `発音を聞く：${audioText}`);
         pronunciation.textContent = '🔊';
         pronunciation.hidden = true;
-        feedbackView.append(pronunciation);
+        audioSlot.append(pronunciation);
       }
     }
 
@@ -309,6 +314,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     const complete = document.createElement('p');
     complete.className = 'tone-complete-text';
     complete.textContent = '練習完了！すべての声調を見分けられました。';
+    audioSlot.replaceChildren();
     feedbackView.replaceChildren(complete);
     feedbackView.className = 'tone-feedback tone-feedback--complete';
 

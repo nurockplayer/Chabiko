@@ -85,6 +85,10 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
   const poolView: HTMLElement = poolEl;
   const answerView: HTMLElement = answerEl;
   const feedbackView: HTMLElement = feedbackEl;
+  // Audio sits beside (not inside) the feedback live region so feedback text stays exact.
+  const audioSlot = document.createElement('div');
+  audioSlot.className = 'word-order-audio';
+  feedbackView.after(audioSlot);
   const actionsView: HTMLElement = actionsEl;
 
   function currentItem(): WordOrderState['items'][number] {
@@ -148,6 +152,7 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
     for (const button of poolButtons) poolView.append(button);
 
     // ── Feedback ──────────────────────────────────────────────────────────
+    audioSlot.replaceChildren();
     feedbackView.textContent = '';
     feedbackView.className = 'word-order-feedback';
     if (state.status === 'submitted') {
@@ -184,7 +189,7 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
       pronunciation.setAttribute('aria-label', `発音を聞く：${canonical}`);
       pronunciation.textContent = '🔊';
       pronunciation.hidden = true;
-      feedbackView.append(pronunciation);
+      audioSlot.append(pronunciation);
     }
 
     // ── Actions ───────────────────────────────────────────────────────────
@@ -262,6 +267,7 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
     const complete = document.createElement('p');
     complete.className = 'word-order-complete-text';
     complete.textContent = '練習完了！すべて並べ替えられました。';
+    audioSlot.replaceChildren();
     feedbackView.replaceChildren(complete);
     feedbackView.className = 'word-order-feedback word-order-feedback--complete';
 
