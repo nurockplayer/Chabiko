@@ -11,7 +11,10 @@ export interface PronunciationEntry {
   source: 'tts' | 'teacher-recording';
 }
 
-export const normalizeText = (text: string): string => text.normalize('NFKC').trim().replace(/\s+/gu, ' ');
+// Alternatives written with a slash (e.g. 小姐/女士) are spoken as a list with a pause (小姐，女士).
+// Keep in sync with normalizePronunciationText in scripts/audio/generate.ts so manifest keys match.
+export const normalizeText = (text: string): string => text.normalize('NFKC').trim().replace(/\s+/gu, ' ')
+  .replace(/(\p{Script=Han})\s*\/\s*(?=\p{Script=Han})/gu, '$1，');
 export const normalizeLang = (lang: string): string => lang.replace(/_/g, '-').toLowerCase();
 
 export function findRecording(text: string, lang: string, entries: readonly PronunciationEntry[] = manifestData as PronunciationEntry[]): PronunciationEntry | undefined {

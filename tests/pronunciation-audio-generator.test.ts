@@ -20,6 +20,7 @@ afterEach(() => {
 describe('pronunciation audio source collection', () => {
   it('normalizes keys and collects only Chinese script fields with language tags', () => {
     expect(normalizePronunciationText('  謝謝\n  你  ')).toBe('謝謝 你');
+    expect(normalizePronunciationText('小姐/女士')).toBe('小姐，女士');
     const root = tempRoot();
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-wave-1'), { recursive: true });
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-golden'), { recursive: true });

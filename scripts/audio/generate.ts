@@ -41,7 +41,9 @@ const HAN_CHARACTER = /\p{Script=Han}/u;
 const JAPANESE_KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
 export function normalizePronunciationText(text: string): string {
-  return text.normalize('NFKC').trim().replace(/\s+/gu, ' ');
+  // Slash-separated alternatives (小姐/女士) are spoken as a list (小姐，女士); mirrors player normalizeText.
+  return text.normalize('NFKC').trim().replace(/\s+/gu, ' ')
+    .replace(/(\p{Script=Han})\s*\/\s*(?=\p{Script=Han})/gu, '$1，');
 }
 
 function addInput(

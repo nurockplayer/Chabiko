@@ -31,6 +31,8 @@ afterEach(() => { stopPronunciation(); vi.unstubAllGlobals(); });
 describe('pronunciation selection', () => {
   it('normalizes whitespace and width without conflating scripts or language', () => {
     expect(normalizeText('  Ａ\n 謝謝  ')).toBe('A 謝謝');
+    expect(normalizeText('小姐/女士')).toBe('小姐，女士');
+    expect(normalizeText('小姐／女士')).toBe('小姐，女士');
     const entries = [
       { text: '謝謝', lang: 'zh_TW', source: 'tts' },
       { text: '謝謝', lang: 'zh-TW', source: 'teacher-recording' },
