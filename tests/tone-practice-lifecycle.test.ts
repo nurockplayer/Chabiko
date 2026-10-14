@@ -328,6 +328,20 @@ describe('tone practice reinitialization and teardown', () => {
     resetDom();
   });
 
+  it('does not carry answer audio across a remount', () => {
+    const root = createPracticeHTML({ items: [fixtureItem('rec-a')] });
+    const first = mountTonePractice(root);
+    choiceButton(root, '第一声').click();
+    submitButton(root).click();
+    expect(root.querySelectorAll('[data-pronunciation-button]')).toHaveLength(1);
+    first.dispose();
+    const second = mountTonePractice(root);
+    expect(root.querySelectorAll('[data-pronunciation-button]')).toHaveLength(0);
+    expect(root.querySelectorAll('.tone-audio')).toHaveLength(1);
+    second.dispose();
+    resetDom();
+  });
+
   it('disposes listeners so reinit does not duplicate handlers', () => {
     const root = createPracticeHTML({ items: [fixtureItem('rec-a')] });
     const first = mountTonePractice(root);

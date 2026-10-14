@@ -86,9 +86,14 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
   const answerView: HTMLElement = answerEl;
   const feedbackView: HTMLElement = feedbackEl;
   // Audio sits beside (not inside) the feedback live region so feedback text stays exact.
-  const audioSlot = document.createElement('div');
+  // Reuse one slot per root across remounts and start empty, so a previous answer's audio never survives.
+  const existingSlot = feedbackView.nextElementSibling;
+  const audioSlot = existingSlot instanceof HTMLElement && existingSlot.classList.contains('word-order-audio')
+    ? existingSlot
+    : document.createElement('div');
   audioSlot.className = 'word-order-audio';
-  feedbackView.after(audioSlot);
+  audioSlot.replaceChildren();
+  if (!audioSlot.isConnected) feedbackView.after(audioSlot);
   const actionsView: HTMLElement = actionsEl;
 
   function currentItem(): WordOrderState['items'][number] {
