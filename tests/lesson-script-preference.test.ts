@@ -177,10 +177,10 @@ describe('initial script from the validated root dataset', () => {
     const audioButtons = root.querySelectorAll<HTMLButtonElement>('[data-pronunciation-button]');
     expect(audioButtons).toHaveLength(2);
     expect(audioButtons[0]?.dataset.pronunciationText).toBe(EXAMPLE_SIMPLIFIED);
-    expect(audioButtons[0]?.dataset.pronunciationLang).toBe('zh-CN');
+    expect(audioButtons[0]?.dataset.pronunciationLang).toBe('zh-TW');
     expect(audioButtons[0]?.getAttribute('aria-label')).toBe(`発音を聞く：${EXAMPLE_SIMPLIFIED}`);
     expect(audioButtons[1]?.dataset.pronunciationText).toBe(EXAMPLE_SIMPLIFIED);
-    expect(audioButtons[1]?.dataset.pronunciationLang).toBe('zh-CN');
+    expect(audioButtons[1]?.dataset.pronunciationLang).toBe('zh-TW');
     expect(audioButtons[1]?.getAttribute('aria-label')).toBe(`ゆっくり発音を聞く：${EXAMPLE_SIMPLIFIED}`);
     // Fields without a simplified form fall back to Traditional with the
     // exact #251 annotation.

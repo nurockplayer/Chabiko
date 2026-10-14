@@ -70,7 +70,7 @@ function renderLine(
   }
   if (pronunciation && script instanceof HTMLElement) {
     pronunciation.dataset.pronunciationText = result.script;
-    pronunciation.dataset.pronunciationLang = script.lang === 'zh-Hans' ? 'zh-CN' : 'zh-TW';
+    pronunciation.dataset.pronunciationLang = 'zh-TW'; // Taiwan path: script toggle never changes pronunciation
     pronunciation.setAttribute('aria-label', `発音を聞く：${result.script}`);
   }
   setText(pinyin, line.pinyin);

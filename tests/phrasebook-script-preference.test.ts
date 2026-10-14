@@ -316,9 +316,8 @@ describe('phrasebook script preference — exact prelaunch corpus', () => {
           expect(button?.dataset.pronunciationText, field.id).toBe(
             r.status === 'unavailable' ? field.traditional : r.script,
           );
-          expect(button?.dataset.pronunciationLang, field.id).toBe(
-            wantLang === 'zh-Hans' ? 'zh-CN' : 'zh-TW',
-          );
+          // Taiwan path: the script toggle never changes the pronunciation locale.
+          expect(button?.dataset.pronunciationLang, field.id).toBe('zh-TW');
         }
 
         expect(

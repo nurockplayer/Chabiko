@@ -47,13 +47,16 @@ export function isMandarinLocale(lang: string): boolean {
   return !subtags.some((tag) => NON_MANDARIN_ZH.has(tag));
 }
 
-function speechAvailable(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.speechSynthesis) && typeof window.SpeechSynthesisUtterance === 'function';
+function speechAvailable(lang = 'zh-TW'): boolean {
+  if (typeof window === 'undefined' || !window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return false;
+  // An empty list means voices are still loading; a loaded list must contain a Mandarin voice.
+  const voices = window.speechSynthesis.getVoices();
+  return voices.length === 0 || Boolean(selectVoice(voices, lang));
 }
 
 export function canPlayPronunciation(text: string, lang = 'zh-TW'): boolean {
   return Boolean(normalizeText(text)) && typeof window !== 'undefined'
-    && ((typeof window.Audio === 'function' && Boolean(findRecording(text, lang))) || speechAvailable());
+    && ((typeof window.Audio === 'function' && Boolean(findRecording(text, lang))) || speechAvailable(lang));
 }
 
 let cancelActive: (() => void) | undefined;
@@ -95,7 +98,7 @@ export function playPronunciation(text: string, { lang = 'zh-TW', rate = 0.9 }: 
     if (speechAvailable()) window.speechSynthesis.cancel();
     const speak = () => {
       if (finished) return;
-      if (!speechAvailable()) { finish(false); return; }
+      if (!speechAvailable(lang)) { finish(false); return; }
       try {
         utterance = new window.SpeechSynthesisUtterance(normalizeText(text));
         utterance.lang = lang.replace(/_/g, '-');

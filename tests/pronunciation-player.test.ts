@@ -75,6 +75,8 @@ describe('pronunciation selection', () => {
     voices = [voice('zh-HK'), voice('yue-Hant-HK')];
     expect(await playPronunciation('你好', { lang: 'zh-TW' })).toBe(false);
     expect(spoken).toHaveLength(0);
+    expect(canPlayPronunciation('你好', 'zh-TW')).toBe(false);
+    expect(canPlayPronunciation('謝謝', 'zh-TW')).toBe(true); // static recording still plays
   });
   it('cancels the previous utterance and settles its pending promise', async () => {
     const first = playPronunciation('你好');

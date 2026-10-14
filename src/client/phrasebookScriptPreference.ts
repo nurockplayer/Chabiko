@@ -149,7 +149,7 @@ function applyField(element: HTMLElement, preference: ScriptPreference): void {
 
     for (const pronunciation of pronunciationButtonsAfter(element)) {
       pronunciation.dataset.pronunciationText = result.script;
-      pronunciation.dataset.pronunciationLang = element.lang === 'zh-Hans' ? 'zh-CN' : 'zh-TW';
+      pronunciation.dataset.pronunciationLang = 'zh-TW'; // Taiwan path: script toggle never changes pronunciation
       const slow = pronunciation.dataset.pronunciationSlow === 'true';
       pronunciation.setAttribute(
         'aria-label',
