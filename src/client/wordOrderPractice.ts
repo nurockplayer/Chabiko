@@ -168,6 +168,19 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
         line2.append(canonicalSpan);
         feedbackView.append(line1, line2);
       }
+      const canonical = item.canonicalOrder
+        .map((chunkIndex) => item.chunks[chunkIndex].text)
+        .join(item.separator);
+      const pronunciation = document.createElement('button');
+      pronunciation.type = 'button';
+      pronunciation.className = 'pronunciation-control pronunciation-button';
+      pronunciation.dataset.pronunciationButton = '';
+      pronunciation.dataset.pronunciationText = canonical;
+      pronunciation.dataset.pronunciationLang = 'zh-TW';
+      pronunciation.setAttribute('aria-label', `発音を聞く：${canonical}`);
+      pronunciation.textContent = '🔊';
+      pronunciation.hidden = true;
+      feedbackView.append(pronunciation);
     }
 
     // ── Actions ───────────────────────────────────────────────────────────

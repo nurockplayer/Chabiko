@@ -6,6 +6,7 @@ import type {
   PhrasebookScenario,
   PhrasebookSpeaker,
 } from '../content/loadPhrasebook';
+import PronounceButton from './PronounceButton.astro';
 
 interface Props {
   scenario: PhrasebookScenario;
@@ -110,6 +111,7 @@ const hasContent = phrases.length > 0 || dialog !== null;
               )
             }
           </h3>
+          <PronounceButton text={phrase.traditional} lang="zh-TW" />
           <p class="phrasebook-phrase__pinyin" lang="zh-Latn">{phrase.pinyin}</p>
           <dl class="phrasebook-phrase__meta">
             <div class="phrasebook-phrase__meta-row">
@@ -144,6 +146,7 @@ const hasContent = phrases.length > 0 || dialog !== null;
                 <p class="phrasebook-dialog__speaker" lang="ja">
                   {SPEAKER_LABELS[turn.speaker]}（{turnIndex + 1}）
                 </p>
+                <PronounceButton text={turn.traditional} lang="zh-TW" />
                 <p
                   class="phrasebook-dialog__line"
                   lang="zh-Hant"

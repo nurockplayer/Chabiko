@@ -216,6 +216,25 @@ function button(
   return element;
 }
 
+function pronunciationButton(
+  document: Document,
+  text: string,
+  lang: 'zh-Hans' | 'zh-Hant',
+  slow = false,
+): HTMLButtonElement {
+  const element = document.createElement('button');
+  element.type = 'button';
+  element.className = 'pronunciation-control pronunciation-button';
+  element.dataset.pronunciationButton = '';
+  element.dataset.pronunciationText = text;
+  element.dataset.pronunciationLang = lang === 'zh-Hant' ? 'zh-TW' : 'zh-CN';
+  element.dataset.pronunciationSlow = String(slow);
+  element.setAttribute('aria-label', `${slow ? 'ゆっくり' : ''}発音を聞く：${text}`);
+  element.textContent = slow ? '🔊 ゆっくり' : '🔊';
+  element.hidden = true;
+  return element;
+}
+
 /**
  * Completion result metrics (Issue #277). Captured against the progress status
  * of each selected unique ID at session start, so requeues (again/unsure)
@@ -442,9 +461,16 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
       const wordBreakdown = document.createElement('section');
       wordBreakdown.className = 'basic-vocabulary-word-breakdown';
       wordBreakdown.setAttribute('aria-label', '単語の情報');
+      const pronunciationActions = document.createElement('div');
+      pronunciationActions.className = 'pronunciation-actions';
+      pronunciationActions.append(
+        pronunciationButton(document, front.script, front.lang),
+        pronunciationButton(document, front.script, front.lang, true),
+      );
       wordBreakdown.append(
         textElement(document, 'basic-vocabulary-word-label', '今回の単語', 'ja'),
         frontElement,
+        pronunciationActions,
       );
       if (front.isFallback) {
         wordBreakdown.append(
@@ -560,6 +586,22 @@ export function initBasicVocabularySession(root: HTMLElement): () => void {
     if (!frontElement) return;
     frontElement.textContent = front.script;
     frontElement.lang = front.lang;
+    const pronunciation = cardElement.querySelector<HTMLButtonElement>(
+      '[data-pronunciation-button]',
+    );
+    if (pronunciation) {
+      pronunciation.dataset.pronunciationText = front.script;
+      pronunciation.dataset.pronunciationLang = front.lang === 'zh-Hant' ? 'zh-TW' : 'zh-CN';
+      pronunciation.setAttribute('aria-label', `発音を聞く：${front.script}`);
+      const slowPronunciation = cardElement.querySelector<HTMLButtonElement>(
+        '[data-pronunciation-button][data-pronunciation-slow="true"]',
+      );
+      if (slowPronunciation) {
+        slowPronunciation.dataset.pronunciationText = front.script;
+        slowPronunciation.dataset.pronunciationLang = front.lang === 'zh-Hant' ? 'zh-TW' : 'zh-CN';
+        slowPronunciation.setAttribute('aria-label', `ゆっくり発音を聞く：${front.script}`);
+      }
+    }
 
     const existingFallback = cardElement.querySelector('.basic-vocabulary-script-fallback');
     if (front.isFallback) {

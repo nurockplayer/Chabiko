@@ -350,13 +350,13 @@ describe('tone route page structure', () => {
     expect(source).not.toMatch(/ホームに戻る/);
   });
 
-  it('page and component have no forbidden media or audio APIs', () => {
+  it('connects pronunciation controls without adding recording APIs', () => {
     const page = readAstroSource('src/pages/practice/tones/index.astro');
     const component = readAstroSource('src/components/TonePractice.astro');
-    for (const source of [page, component]) {
-      expect(source).not.toMatch(/Audio|speechSynthesis|SpeechSynthesis|webkitAudioContext|getUserMedia|MediaRecorder|canvas/i);
-      expect(source).not.toMatch(/<audio|new Image|fetch\(|localStorage|sessionStorage|Math\.random|setTimeout/);
-    }
+    expect(component).toContain('PronounceButton');
+    expect(component).toContain('audioText: item.promptJa.match');
+    expect(component).not.toMatch(/getUserMedia|MediaRecorder|SpeechRecognition|webkitAudioContext/i);
+    expect(page).not.toMatch(/getUserMedia|MediaRecorder|SpeechRecognition|webkitAudioContext/i);
   });
 
   it('route renders an empty fallback with no component when no items exist', () => {

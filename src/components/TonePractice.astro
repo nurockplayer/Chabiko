@@ -1,5 +1,6 @@
 ---
 import type { TonePracticeItem } from '../domain/tonePractice';
+import PronounceButton from './PronounceButton.astro';
 
 export interface Props {
   items: readonly TonePracticeItem[];
@@ -17,6 +18,7 @@ const serialized = JSON.stringify({
     toneContourId: item.toneContourId,
     toneContourHintJa: item.toneContourHintJa,
     interferenceJa: item.interferenceJa,
+    audioText: item.promptJa.match(/「([^」]+)」/)?.[1].match(/\p{Script=Han}+/gu)?.join('') ?? '',
   })),
 });
 ---
@@ -39,6 +41,8 @@ const serialized = JSON.stringify({
   <div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>
 
   <div class="tone-actions" data-tone-actions></div>
+  <!-- Loads the shared client runtime; answer audio appears only after submission. -->
+  <span hidden aria-hidden="true"><PronounceButton text="" /></span>
 </div>
 
 <script>

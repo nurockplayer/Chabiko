@@ -35,6 +35,7 @@ function renderLine(
   element.hidden = !visible;
   setText(element.querySelector('[data-roleplay-speaker]'), line.speaker === 'learner' ? 'あなた' : '相手');
   const script = element.querySelector<HTMLElement>('[data-roleplay-script]');
+  const pronunciation = element.querySelector<HTMLButtonElement>('[data-pronunciation-button]');
   const pinyin = element.querySelector<HTMLElement>('[data-roleplay-pinyin]');
   const japanese = element.querySelector<HTMLElement>('[data-roleplay-japanese]');
   const fallback = element.querySelector<HTMLElement>('[data-roleplay-fallback]');
@@ -43,6 +44,10 @@ function renderLine(
     setText(pinyin, '');
     setText(japanese, '');
     setText(fallback, '');
+    if (pronunciation) {
+      pronunciation.dataset.pronunciationText = '';
+      pronunciation.hidden = true;
+    }
     return;
   }
   const result = selectScript(line.traditional, line.traditionalStatus, preference, {
@@ -51,10 +56,22 @@ function renderLine(
     simplified: line.simplified,
     simplifiedStatus: line.simplifiedStatus,
   });
-  if (result.status === 'unavailable') return;
+  if (result.status === 'unavailable') {
+    if (script instanceof HTMLElement) script.textContent = '';
+    if (pronunciation) {
+      pronunciation.dataset.pronunciationText = '';
+      pronunciation.hidden = true;
+    }
+    return;
+  }
   setText(script, result.script);
   if (script instanceof HTMLElement) {
     script.lang = preference === 'simplified' && result.isFallback === false ? 'zh-Hans' : 'zh-Hant';
+  }
+  if (pronunciation && script instanceof HTMLElement) {
+    pronunciation.dataset.pronunciationText = result.script;
+    pronunciation.dataset.pronunciationLang = script.lang === 'zh-Hans' ? 'zh-CN' : 'zh-TW';
+    pronunciation.setAttribute('aria-label', `発音を聞く：${result.script}`);
   }
   setText(pinyin, line.pinyin);
   setText(japanese, line.japanese);
@@ -110,6 +127,7 @@ export function mountRoleplayRehearsal(root: HTMLElement): RoleplayRehearsalCont
       const visible = line.speaker === 'partner' || state.revealedLearnerLineIndexes.includes(index);
       renderLine(lineElement, line, visible, preference);
     }
+    document.dispatchEvent(new CustomEvent('pronunciation:refresh'));
   }
 
   function render(focus: HTMLElement | string | null = null): void {

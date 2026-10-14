@@ -81,6 +81,19 @@ function readFieldForms(element: HTMLElement): FieldForms | null {
   };
 }
 
+function pronunciationButtonsAfter(element: HTMLElement): HTMLButtonElement[] {
+  const buttons: HTMLButtonElement[] = [];
+  let sibling = element.nextElementSibling;
+  while (sibling !== null && !sibling.matches(SCRIPT_FIELD_SELECTOR)) {
+    if (sibling.matches('[data-pronunciation-button]')) {
+      buttons.push(sibling as HTMLButtonElement);
+    }
+    buttons.push(...sibling.querySelectorAll<HTMLButtonElement>('[data-pronunciation-button]'));
+    sibling = sibling.nextElementSibling;
+  }
+  return buttons;
+}
+
 // ─── Field application ─────────────────────────────────────────────────────────
 
 /**
@@ -134,6 +147,16 @@ function applyField(element: HTMLElement, preference: ScriptPreference): void {
     );
   }
   element.lang = lang;
+
+  for (const pronunciation of pronunciationButtonsAfter(element)) {
+    pronunciation.dataset.pronunciationText = result.script;
+    pronunciation.dataset.pronunciationLang = lang === 'zh-Hans' ? 'zh-CN' : 'zh-TW';
+    const slow = pronunciation.dataset.pronunciationSlow === 'true';
+    pronunciation.setAttribute(
+      'aria-label',
+      `${slow ? 'ゆっくり' : ''}発音を聞く：${result.script}`,
+    );
+  }
 
   if (result.isFallback) {
     if (annotation === null) {
@@ -192,6 +215,7 @@ export function initLessonScriptPreference(
     )) {
       applyField(field, preference);
     }
+    document.dispatchEvent(new CustomEvent('pronunciation:refresh'));
   }
 
   function onPreferenceChange(): void {

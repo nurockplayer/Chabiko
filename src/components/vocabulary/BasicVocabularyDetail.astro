@@ -1,5 +1,6 @@
 ---
 import type { BasicVocabularyDetailItem } from '../../content/basicVocabularyDetail';
+import PronounceButton from '../PronounceButton.astro';
 
 export interface Props {
   item: BasicVocabularyDetailItem | null;
@@ -28,9 +29,14 @@ const POS_JA: Record<string, string> = {
     <h1 class="basic-vocabulary-detail-simplified" lang="zh-Hans">
       {item.simplified}
     </h1>
+    <div class="pronunciation-actions">
+      <PronounceButton text={item.simplified} lang="zh-CN" />
+      <PronounceButton text={item.simplified} lang="zh-CN" slow />
+    </div>
     {item.traditional !== undefined && item.traditional !== item.simplified && (
       <p class="basic-vocabulary-detail-traditional" lang="zh-Hant">
         {item.traditional}
+        <PronounceButton text={item.traditional} lang="zh-TW" />
       </p>
     )}
     {item.pinyin !== undefined && (
@@ -51,6 +57,7 @@ const POS_JA: Record<string, string> = {
         <p class="basic-vocabulary-detail-example-sentence" lang="zh-Hans">
           {item.example}
         </p>
+        <PronounceButton text={item.example} lang="zh-CN" />
       </section>
     ) : (
       <p class="basic-vocabulary-detail-unavailable">例文はまだありません。</p>

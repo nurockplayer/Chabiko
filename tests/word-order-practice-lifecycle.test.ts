@@ -100,6 +100,8 @@ describe('word-order practice lifecycle', () => {
     expect(answerButtons(root)).toHaveLength(0);
     expect(submitButton(root).disabled).toBe(true);
 
+    expect(root.querySelector('[data-pronunciation-button]')).toBeNull();
+
     // composing after first toggle.
     poolButtons(root)[0].click();
     expect(answerButtons(root)).toHaveLength(1);
@@ -110,9 +112,12 @@ describe('word-order practice lifecycle', () => {
     expect(answerButtons(root)).toHaveLength(4);
     expect(submitButton(root).disabled).toBe(false);
 
+    expect(root.querySelector('[data-pronunciation-button]')).toBeNull();
+
     // submitted correct.
     submitButton(root).click();
     expect(root.textContent).toContain('正解！');
+    expect(root.querySelector<HTMLButtonElement>('[data-pronunciation-button]')?.dataset.pronunciationText).toBe('我 明天 去 台北');
     expect(submitButton(root).disabled).toBe(true);
     expect(root.querySelector('.word-order-action--next')).not.toBeNull();
     expect(root.querySelector('.word-order-action--retry')).toBeNull();
@@ -140,6 +145,7 @@ describe('word-order practice lifecycle', () => {
     (root.querySelector('.word-order-action--retry') as HTMLButtonElement).click();
     expect(answerButtons(root)).toHaveLength(0);
     expect(poolButtons(root)).toHaveLength(4);
+    expect(root.querySelector('[data-pronunciation-button]')).toBeNull();
     expect(root.querySelector('[data-word-order-progress]')?.textContent).toBe('1 / 1');
     // Prompt unchanged.
     expect(root.querySelector('[data-word-order-prompt]')?.textContent).toBe(itemA.promptJa);

@@ -115,10 +115,7 @@ async function assertTheme(page: Page, theme: VisualTheme): Promise<void> {
     'aria-pressed',
     theme === 'dark' ? 'true' : 'false',
   );
-  const colorScheme = await page.locator('html').evaluate(
-    (element) => getComputedStyle(element).colorScheme,
-  );
-  expect(colorScheme).toBe(theme);
+  await expect(page.locator('html')).toHaveCSS('color-scheme', theme);
 }
 
 async function clickPracticeAnswer(

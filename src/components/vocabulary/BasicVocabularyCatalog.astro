@@ -2,6 +2,7 @@
 import type { BasicVocabularyCatalogItem } from '../../content/basicVocabularyCatalog';
 import { selectBasicVocabularyCatalogPage } from '../../domain/basicVocabularyCatalog';
 import { buildBasicVocabularyCatalogDetailHref } from '../../domain/basicVocabularyCatalogState';
+import PronounceButton from '../PronounceButton.astro';
 
 export interface Props {
   items: readonly BasicVocabularyCatalogItem[];
@@ -98,6 +99,7 @@ const firstPage = selectBasicVocabularyCatalogPage(items, {}, {
                 {pageItem.item.simplified}
               </h3>
             </a>
+            <PronounceButton text={pageItem.item.simplified} lang="zh-CN" />
             {pageItem.item.traditional !== undefined && (
               <p class="basic-vocabulary-catalog-traditional" lang="zh-Hant">
                 {pageItem.item.traditional}

@@ -1,5 +1,6 @@
 ---
 import type { WordOrderItem } from '../domain/wordOrderPractice';
+import PronounceButton from './PronounceButton.astro';
 
 export interface Props {
   items: readonly WordOrderItem[];
@@ -39,6 +40,8 @@ const serialized = JSON.stringify({
   <div class="word-order-pool" data-word-order-pool role="group" aria-label="チャンクを選ぶ"></div>
 
   <div class="word-order-actions" data-word-order-actions></div>
+  <!-- Loads the shared client runtime; the answer is spoken only after submission. -->
+  <span hidden aria-hidden="true"><PronounceButton text="" /></span>
 </div>
 
 <script>

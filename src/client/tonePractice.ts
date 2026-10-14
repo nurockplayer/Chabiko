@@ -31,6 +31,7 @@ export interface SerializedTonePracticeItem {
   readonly toneContourId: string;
   readonly toneContourHintJa: string;
   readonly interferenceJa: string;
+  readonly audioText?: string;
 }
 
 export interface TonePracticeSessionData {
@@ -116,6 +117,9 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     toneContourHintJa: item.toneContourHintJa,
     interferenceJa: item.interferenceJa,
   }));
+  const audioTextById = new Map(
+    parsed.items.map((item) => [item.recordId, item.audioText ?? '']),
+  );
 
   if (items.length === 0) {
     throw new Error('tone practice has no items');
@@ -211,6 +215,19 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
       hint.setAttribute('data-tone-hint', '');
       hint.textContent = item.toneContourHintJa;
       feedbackView.append(hint);
+      const audioText = audioTextById.get(item.recordId);
+      if (audioText) {
+        const pronunciation = document.createElement('button');
+        pronunciation.type = 'button';
+        pronunciation.className = 'pronunciation-control pronunciation-button';
+        pronunciation.dataset.pronunciationButton = '';
+        pronunciation.dataset.pronunciationText = audioText;
+        pronunciation.dataset.pronunciationLang = 'zh-TW';
+        pronunciation.setAttribute('aria-label', `発音を聞く：${audioText}`);
+        pronunciation.textContent = '🔊';
+        pronunciation.hidden = true;
+        feedbackView.append(pronunciation);
+      }
     }
 
     // ── Actions ───────────────────────────────────────────────────────────

@@ -16,6 +16,7 @@ interface FixtureItem {
   toneContourId: string;
   toneContourHintJa: string;
   interferenceJa: string;
+  audioText?: string;
 }
 
 function fixtureItem(recordId: string, overrides?: Partial<FixtureItem>): FixtureItem {
@@ -28,6 +29,7 @@ function fixtureItem(recordId: string, overrides?: Partial<FixtureItem>): Fixtur
     toneContourId: 't1-high-flat',
     toneContourHintJa: '第一声は高く平らに保ちます。',
     interferenceJa: '日本語話者は声の高さを平らに伸ばしやすいので、音の高さを意識しましょう。',
+    audioText: '媽',
     ...overrides,
   };
 }
@@ -81,6 +83,7 @@ describe('tone practice lifecycle', () => {
     expect(choiceButtons(root)).toHaveLength(4);
     expect(submitButton(root).disabled).toBe(true);
     expect(root.querySelector('[data-tone-progress]')?.textContent).toBe('1 / 1');
+    expect(root.querySelector('[data-pronunciation-button]')).toBeNull();
 
     // selected.
     choiceButton(root, '第一声').click();
@@ -90,6 +93,7 @@ describe('tone practice lifecycle', () => {
     // submitted correct.
     submitButton(root).click();
     expect(root.textContent).toContain('正解！');
+    expect(root.querySelector<HTMLButtonElement>('[data-pronunciation-button]')?.dataset.pronunciationText).toBe('媽');
     expect(root.querySelector('[data-tone-feedback] [data-tone-hint]')?.textContent).toBe(
       fixtureItem('rec-a').toneContourHintJa,
     );
@@ -365,23 +369,23 @@ describe('tone practice reinitialization and teardown', () => {
 
 // ─── Forbidden runtime behaviors in sources ────────────────────────────────
 
-describe('no storage / network / audio / speech / canvas / timer', () => {
+describe('no storage / network / media capture / canvas / timer', () => {
   it('client source avoids forbidden runtime behaviors', () => {
     const source = readFileSync('src/client/tonePractice.ts', 'utf8');
     expect(source).not.toMatch(/localStorage|sessionStorage|fetch\(|XMLHttpRequest|Math\.random|setTimeout|Date\.now/);
-    expect(source).not.toMatch(/audio|speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
+    expect(source).not.toMatch(/speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
   });
 
   it('domain source avoids forbidden runtime behaviors', () => {
     const source = readFileSync('src/domain/tonePractice.ts', 'utf8');
     expect(source).not.toMatch(/localStorage|sessionStorage|fetch\(|XMLHttpRequest|Math\.random|setTimeout|Date\.now/);
-    expect(source).not.toMatch(/audio|speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
+    expect(source).not.toMatch(/speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
   });
 
   it('loader source avoids forbidden runtime behaviors', () => {
     const source = readFileSync('src/content/loadTonePractice.ts', 'utf8');
     expect(source).not.toMatch(/localStorage|sessionStorage|fetch\(|XMLHttpRequest|Math\.random|setTimeout|Date\.now/);
-    expect(source).not.toMatch(/audio|speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
+    expect(source).not.toMatch(/speechSynthesis|SpeechSynthesis|getUserMedia|MediaRecorder|canvas|new Image/);
   });
 });
 

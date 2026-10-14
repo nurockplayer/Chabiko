@@ -8,7 +8,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  timeout: 30_000,
+  // Multi-step journeys include repeated axe scans in the pinned amd64
+  // container; allow cold/emulated runs without relaxing assertion deadlines.
+  timeout: 90_000,
   reporter: [['line']],
   expect: {
     timeout: 5_000,
