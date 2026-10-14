@@ -10,7 +10,7 @@ export interface Props {
 
 const { title, description, robots, referrerPolicy, themeEnabled = false } = Astro.props;
 const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
-const pageRobots = robots ?? (/^\/(dev|teacher-review|auth)(\/|$)/.test(Astro.url.pathname) || Astro.url.pathname === '/404' || Astro.url.pathname === '/404.html' ? 'noindex, nofollow' : undefined);
+const pageRobots = robots ?? (/^\/(dev|teacher-review|auth)(\/|$)/.test(Astro.url.pathname) || /^\/404(?:\/|\.html)?$/.test(Astro.url.pathname) ? 'noindex, nofollow' : undefined);
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
 ---

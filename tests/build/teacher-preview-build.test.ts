@@ -100,7 +100,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
     for (const path of ['/dev/', '/teacher-review/', '/auth/', '/404', '/vocabulary/basic/preview/']) {
       expect(sitemap).not.toContain(path);
     }
-    for (const path of ['teacher-review/index.html', 'teacher-review/vocabulary/index.html']) {
+    for (const path of ['404.html', 'teacher-review/index.html', 'teacher-review/vocabulary/index.html']) {
       expect(readFileSync(resolve(BUILD_DIST, path), 'utf8')).toMatch(/name="robots" content="noindex/);
     }
   });
