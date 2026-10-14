@@ -3,7 +3,7 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { A11Y_THEMES } from './matrix';
 
 const ROUTES = [
-  { name: 'short-word-order', path: '/practice/word-order/' },
+  { name: 'short-kanji-bridge', path: '/vocabulary/kanji-bridge/' },
   { name: 'long-lesson', path: '/lessons/lesson-001/' },
 ] as const;
 
