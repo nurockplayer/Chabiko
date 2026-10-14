@@ -16,6 +16,19 @@ export function refreshPronunciationButtons(): void {
   });
 }
 
+/** Every control gets a live status region, including buttons created at runtime. */
+function ensureStatus(button: HTMLButtonElement): HTMLElement {
+  const existing = button.parentElement?.querySelector<HTMLElement>('[data-pronunciation-status]');
+  if (existing) return existing;
+  const status = document.createElement('span');
+  status.className = 'pronunciation-status';
+  status.setAttribute('data-pronunciation-status', '');
+  status.setAttribute('role', 'status');
+  status.setAttribute('lang', 'ja');
+  button.insertAdjacentElement('afterend', status);
+  return status;
+}
+
 function resetButton(): void {
   if (activeButton) {
     activeButton.removeAttribute('aria-busy');
@@ -37,8 +50,8 @@ export function installPronunciationButtons(): void {
     activeLang = button.dataset.pronunciationLang ?? 'zh-TW';
     button.setAttribute('aria-busy', 'true');
     button.setAttribute('data-playing', 'true');
-    const status = button.parentElement?.querySelector<HTMLElement>('[data-pronunciation-status]');
-    if (status) status.textContent = '';
+    const status = ensureStatus(button);
+    status.textContent = '';
     // Keep this call in the click stack for mobile Safari's user activation.
     void playPronunciation(button.dataset.pronunciationText ?? '', {
       lang: button.dataset.pronunciationLang ?? 'zh-TW',
@@ -46,7 +59,7 @@ export function installPronunciationButtons(): void {
     }).then((success) => {
       if (token !== generation) return;
       resetButton();
-      if (!success && status) status.textContent = '音声を再生できませんでした。もう一度お試しください。';
+      if (!success) status.textContent = '音声を再生できませんでした。もう一度お試しください。';
     });
   });
   const stop = () => { generation++; stopPronunciation(); resetButton(); };

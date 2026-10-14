@@ -45,6 +45,19 @@ describe('pronunciation selection', () => {
     expect(selectVoice(available, 'zh-HK')).toBe(available[1]);
     expect(selectVoice([voice('en-US')], 'zh-TW')).toBeUndefined();
   });
+  it('prefers natural standard voices over character voices in the same locale', () => {
+    const named = (lang: string, name: string) => ({ ...voice(lang), name }) as SpeechSynthesisVoice;
+    const available = [named('zh-TW', 'Eddy (Chinese (Taiwan))'), named('zh-TW', 'Grandpa (Chinese (Taiwan))'), named('zh-TW', 'Meijia'), named('zh-CN', 'Tingting')];
+    expect(selectVoice(available, 'zh-TW')?.name).toBe('Meijia');
+    expect(selectVoice(available, 'zh-CN')?.name).toBe('Tingting');
+    expect(selectVoice([named('zh-TW', 'Eddy (Chinese (Taiwan))')], 'zh-TW')?.name).toBe('Eddy (Chinese (Taiwan))');
+  });
+  it('never falls back to a Cantonese voice for Mandarin content', () => {
+    const available = [voice('zh-HK'), voice('yue-Hant-HK'), voice('zh-CN')];
+    expect(selectVoice(available, 'zh-TW')).toBe(available[2]);
+    expect(selectVoice([voice('zh-HK'), voice('zh_MO')], 'zh-TW')).toBeUndefined();
+    expect(selectVoice([voice('cmn-Hant-TW')], 'zh-TW')?.lang).toBe('cmn-Hant-TW');
+  });
   it('speaks in the gesture call stack even before voices load, then uses newly loaded voices', async () => {
     const first = playPronunciation('你好', { lang: 'zh-TW' });
     expect(spoken).toHaveLength(1);

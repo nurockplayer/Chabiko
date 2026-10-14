@@ -21,8 +21,30 @@ export function findRecording(text: string, lang: string, entries: readonly Pron
 
 export function selectVoice(voices: readonly SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | undefined {
   const requested = normalizeLang(lang);
-  return voices.find((voice) => normalizeLang(voice.lang) === requested)
-    ?? voices.find((voice) => normalizeLang(voice.lang).split('-')[0] === 'zh');
+  const best = (candidates: SpeechSynthesisVoice[]) =>
+    candidates.length ? candidates.reduce((a, b) => (voiceQuality(b) > voiceQuality(a) ? b : a)) : undefined;
+  return best(voices.filter((voice) => normalizeLang(voice.lang) === requested))
+    ?? best(voices.filter((voice) => isMandarinLocale(voice.lang)));
+}
+
+// Natural standard voices first; Apple's character voices (Eddy, Grandpa, ...) last.
+const PREFERRED_VOICE = /mei-?jia|ting-?ting|hsiaochen|hsiaoyu|yating|hanhan|xiaoxiao|google|microsoft|natural|premium|enhanced/i;
+const NOVELTY_VOICE = /^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+
+function voiceQuality(voice: SpeechSynthesisVoice): number {
+  if (PREFERRED_VOICE.test(voice.name)) return 2;
+  if (NOVELTY_VOICE.test(voice.name)) return 0;
+  return 1;
+}
+
+// Cantonese (zh-HK, zh-MO, yue-*) voices must never read Mandarin content.
+const NON_MANDARIN_ZH = new Set(['hk', 'mo', 'yue']);
+
+export function isMandarinLocale(lang: string): boolean {
+  const [language, ...subtags] = normalizeLang(lang).split('-');
+  if (language === 'cmn') return true;
+  if (language !== 'zh') return false;
+  return !subtags.some((tag) => NON_MANDARIN_ZH.has(tag));
 }
 
 function speechAvailable(): boolean {

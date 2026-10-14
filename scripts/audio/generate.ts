@@ -187,6 +187,8 @@ export interface GenerationOptions {
   readonly provider?: SpeechProvider;
   readonly key?: string;
   readonly region?: string;
+  /** Operator confirms the Azure resource is a paid tier; Microsoft grants neural-voice output use rights to paid-tier customers. */
+  readonly confirmPaidTier?: boolean;
   readonly root?: string;
   readonly log?: (message: string) => void;
 }
@@ -252,6 +254,9 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
   const region = options.region ?? process.env.AZURE_SPEECH_REGION;
   if (!options.provider && !key) throw new Error('AZURE_SPEECH_KEY is required. Set it in the environment; it is never written to the manifest.');
   if (!options.provider && !region) throw new Error('AZURE_SPEECH_REGION is required. Set it in the environment.');
+  if (!options.provider && !options.confirmPaidTier) {
+    throw new Error('Azure neural voice output may be published only from a paid-tier (S0) Speech resource. Confirm the resource tier, then re-run with --confirm-paid-tier.');
+  }
   const provider = options.provider ?? createAzureSpeechProvider(key!, region!);
 
   const rootAudio = join(root, 'public/audio');
@@ -301,20 +306,22 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
   log(`Manifest updated with ${manifest.length} entries.`);
 }
 
-function parseArguments(args: readonly string[]): { dryRun: boolean; limit?: number } {
+function parseArguments(args: readonly string[]): { dryRun: boolean; limit?: number; confirmPaidTier: boolean } {
   let dryRun = false;
+  let confirmPaidTier = false;
   let limit: number | undefined;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === '--') continue;
     else if (argument === '--dry-run') dryRun = true;
+    else if (argument === '--confirm-paid-tier') confirmPaidTier = true;
     else if (argument === '--limit') {
       const raw = args[++index];
       if (!raw || !/^\d+$/u.test(raw)) throw new Error('--limit requires a non-negative integer.');
       limit = Number(raw);
     } else throw new Error(`Unknown argument: ${argument}`);
   }
-  return { dryRun, limit };
+  return { dryRun, limit, confirmPaidTier };
 }
 
 export async function main(args = process.argv.slice(2)): Promise<void> {

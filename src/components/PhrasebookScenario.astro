@@ -146,7 +146,6 @@ const hasContent = phrases.length > 0 || dialog !== null;
                 <p class="phrasebook-dialog__speaker" lang="ja">
                   {SPEAKER_LABELS[turn.speaker]}（{turnIndex + 1}）
                 </p>
-                <PronounceButton text={turn.traditional} lang="zh-TW" />
                 <p
                   class="phrasebook-dialog__line"
                   lang="zh-Hant"
@@ -165,6 +164,7 @@ const hasContent = phrases.length > 0 || dialog !== null;
                     )
                   }
                 </p>
+                <PronounceButton text={turn.traditional} lang="zh-TW" />
                 <p class="phrasebook-dialog__pinyin" lang="zh-Latn">{turn.pinyin}</p>
                 <p class="phrasebook-dialog__japanese" lang="ja">{turn.japanese}</p>
               </li>

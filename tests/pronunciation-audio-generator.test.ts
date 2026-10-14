@@ -170,5 +170,6 @@ describe('pronunciation audio generation', () => {
 
   it('fails clearly when generation is requested without credentials', async () => {
     await expect(generatePronunciationAudio({ inputs: [{ text: '你好', lang: 'zh-CN' }], manifest: [], dryRun: false, key: '', region: 'eastasia' })).rejects.toThrow('AZURE_SPEECH_KEY is required');
+    await expect(generatePronunciationAudio({ inputs: [{ text: '你好', lang: 'zh-CN' }], manifest: [], dryRun: false, key: 'k', region: 'eastasia' })).rejects.toThrow('--confirm-paid-tier');
   });
 });
