@@ -25,7 +25,7 @@ interface TimerSwapState {
  * Run an axe scan while the page clock stays paused. Axe-core defers its work
  * with `setTimeout(fn, 0)`; with a paused Playwright clock those zero-delay
  * timers would never fire and the scan would stall. The practice transition
- * timers (+1200/+2000ms) are already scheduled inside the paused fake clock's
+ * timer (+1200ms) is already scheduled inside the paused fake clock's
  * queue, so for the scan we temporarily expose the real browser timers
  * (captured in openUrl before install): axe's new calls use real timers while
  * the frozen transition timers stay untouched in the paused queue. The
@@ -132,20 +132,18 @@ export async function readStorage(page: Page): Promise<Record<string, string>> {
 }
 
 /**
- * Pause the installed Playwright clock so the practice transition timers
- * (1200ms completion / 2000ms retry) can never fire during structural
+ * Pause the installed Playwright clock so the 1200ms practice completion timer
+ * can never fire during structural
  * assertions and the axe scan. `pauseAt` is the documented paused-clock
  * primitive: after it no timers fire unless runFor/fastForward/pauseAt/resume
  * is called, so the surface stays in its named transient state deterministically
  * regardless of wall-clock duration.
  *
  * This is always called before any practice interaction, when no transition
- * timer is scheduled yet (the app's only timers are the answer handlers' 1200ms
- * / 2000ms transitions), so pausing slightly ahead of the current clock time
+ * timer is scheduled yet (the answer handler schedules completion after 1200ms), so pausing slightly ahead of the current clock time
  * fires nothing: the small buffer only covers the round-trip between reading
  * the page clock and applying the pause, so the controller never sees a past
- * timestamp. Completion/retry surfaces then advance only explicitly (via
- * runFor in setupSurface / specs).
+ * timestamp. Completion advances via runFor in setupSurface / specs; retry uses its native button.
  */
 export async function freezeClock(page: Page): Promise<void> {
   const now = await page.evaluate(() => Date.now());
@@ -226,9 +224,8 @@ export async function setupSurface(
   }
 
   if (surface === 'practice-incorrect') {
-    // Freeze before interacting so the 2000ms retry transition timer is frozen
-    // the moment it is scheduled; the feedback assertions and axe scan see the
-    // stable practice-incorrect state.
+    // Use the same deterministic clock setup as the correct-answer surface.
+    // Incorrect feedback remains visible until the learner chooses to retry.
     await freezeClock(page);
     await answerPractice(page, 'incorrect');
     await expect(page.locator('.feedback-incorrect')).toContainText('不正解。');
