@@ -52,6 +52,10 @@ describe('pronunciation selection', () => {
     expect(selectVoice(available, 'zh-CN')?.name).toBe('Tingting');
     expect(selectVoice([named('zh-TW', 'Eddy (Chinese (Taiwan))')], 'zh-TW')?.name).toBe('Eddy (Chinese (Taiwan))');
   });
+  it('prefers an equivalent Taiwan tag over a Mainland voice', () => {
+    expect(selectVoice([voice('zh-CN'), voice('cmn-Hant-TW')], 'zh-TW')?.lang).toBe('cmn-Hant-TW');
+    expect(selectVoice([voice('cmn-Hant-TW'), voice('cmn-Hans-CN')], 'zh-CN')?.lang).toBe('cmn-Hans-CN');
+  });
   it('never falls back to a Cantonese voice for Mandarin content', () => {
     const available = [voice('zh-HK'), voice('yue-Hant-HK'), voice('zh-CN')];
     expect(selectVoice(available, 'zh-TW')).toBe(available[2]);

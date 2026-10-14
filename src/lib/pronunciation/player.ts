@@ -23,8 +23,19 @@ export function selectVoice(voices: readonly SpeechSynthesisVoice[], lang: strin
   const requested = normalizeLang(lang);
   const best = (candidates: SpeechSynthesisVoice[]) =>
     candidates.length ? candidates.reduce((a, b) => (voiceQuality(b) > voiceQuality(a) ? b : a)) : undefined;
+  const region = mandarinRegion(requested);
   return best(voices.filter((voice) => normalizeLang(voice.lang) === requested))
+    // Equivalent tags for the same region (e.g. cmn-Hant-TW for zh-TW) before any other Mandarin voice.
+    ?? best(voices.filter((voice) => isMandarinLocale(voice.lang) && region !== undefined && mandarinRegion(voice.lang) === region))
     ?? best(voices.filter((voice) => isMandarinLocale(voice.lang)));
+}
+
+/** 'tw' or 'cn' for Mandarin tags, using the region subtag or, failing that, the script subtag. */
+function mandarinRegion(lang: string): 'tw' | 'cn' | undefined {
+  const subtags = normalizeLang(lang).split('-').slice(1);
+  if (subtags.includes('tw') || (!subtags.includes('cn') && !subtags.includes('sg') && subtags.includes('hant'))) return 'tw';
+  if (subtags.includes('cn') || subtags.includes('sg') || subtags.includes('hans')) return 'cn';
+  return undefined;
 }
 
 // Natural standard voices first; Apple's character voices (Eddy, Grandpa, ...) last.

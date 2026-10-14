@@ -22,7 +22,7 @@ const { text, lang = 'zh-TW', slow = false } = Astro.props;
     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>
     {slow && <span>ゆっくり</span>}
   </button>
-  <span class="pronunciation-status" data-pronunciation-status role="status"></span>
+  <span class="pronunciation-status" data-pronunciation-status role="status" lang="ja"></span>
 </span>
 <script>
   import { installPronunciationButtons } from '../lib/pronunciation/buttons';
