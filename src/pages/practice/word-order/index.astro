@@ -34,11 +34,25 @@ const items = loadWordOrderPractice();
         </div>
       )
     }
-    <p><a href="/paths/taiwan-travel/">台湾旅行のレッスンで使ってみる →</a></p>
+    <p><a class="learning-next-step" href="/paths/taiwan-travel/">台湾旅行のレッスンで使ってみる →</a></p>
   </div>
 </BaseLayout>
 
 <style>
+  .learning-next-step {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--jade-ink);
+    font-size: 14px;
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+  .learning-next-step:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
   .word-order-page {
     max-width: 40rem;
     margin: 0 auto;

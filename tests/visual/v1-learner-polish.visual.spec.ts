@@ -51,7 +51,7 @@ test('travel lesson feedback persists and leads to the next lesson and assessmen
 test('phrasebook, roleplay and tone practice offer usable learning sessions', async ({ page }) => {
   await page.goto('/phrasebook/');
   await page.getByRole('combobox', { name: '場面で絞り込む' }).selectOption('food');
-  await page.getByRole('link', { name: '覚えたフレーズをロールプレイで使ってみる →' }).click();
+  await page.getByRole('link', { name: 'ロールプレイで使ってみる →' }).click();
   await page.locator('[data-roleplay-card-select]').first().click();
   await page.locator('[data-roleplay-start]').click();
   for (let index = 0; index < 10 && await page.locator('[data-roleplay-reveal]').isVisible(); index++) {

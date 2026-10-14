@@ -33,10 +33,24 @@ const items = loadTonePractice();
       )
     }
   </div>
-  <p><a href="/practice/word-order/">次は語順を練習する →</a></p>
+  <p><a class="learning-next-step" href="/practice/word-order/">次は語順を練習する →</a></p>
 </BaseLayout>
 
 <style>
+  .learning-next-step {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--jade-ink);
+    font-size: 14px;
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+  .learning-next-step:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
   .tone-page {
     max-width: 40rem;
     margin: 0 auto;
