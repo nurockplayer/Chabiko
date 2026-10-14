@@ -17,7 +17,7 @@ function entry(
 }
 
 describe('HSK learner projection', () => {
-  it('projects only the current two production-eligible level-1 entries', () => {
+  it('projects disclosed drafts and reviewed entries across all four released levels', () => {
     const projection = buildHskLearnerProjection([
       entry('hsk-001', 1, 'draft'),
       entry('hsk-002', 1, 'reviewed'),
@@ -30,14 +30,14 @@ describe('HSK learner projection', () => {
       availability: 'available',
       destination: '/vocabulary/hsk/1/',
       statusLabelJa: '利用できます',
-      eligibleIds: ['hsk-002', 'hsk-005'],
-      levels: [{ level: 1, ids: ['hsk-002', 'hsk-005'] }],
+      eligibleIds: ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-005', 'hsk-004'],
+      levels: [{ level: 1, ids: ['hsk-001', 'hsk-002', 'hsk-003', 'hsk-005'] }, { level: 2, ids: [] }, { level: 3, ids: [] }, { level: 4, ids: ['hsk-004'] }],
     });
   });
 
   it('fails closed when no entry is production eligible', () => {
     const projection = buildHskLearnerProjection([
-      entry('hsk-001', 1, 'draft'),
+      entry('hsk-001', 1, 'invalid'),
     ]);
 
     expect(projection).toEqual({
@@ -45,19 +45,19 @@ describe('HSK learner projection', () => {
       destination: null,
       statusLabelJa: '準備中です',
       eligibleIds: [],
-      levels: [{ level: 1, ids: [] }],
+      levels: [1, 2, 3, 4].map((level) => ({ level, ids: [] })),
     });
   });
 
-  it('does not fabricate level 1 when only another level is eligible', () => {
+  it('routes to the first available released level', () => {
     const projection = buildHskLearnerProjection([
       entry('hsk-999', 2, 'published'),
     ]);
 
-    expect(projection.availability).toBe('unavailable');
-    expect(projection.destination).toBeNull();
-    expect(projection.eligibleIds).toEqual([]);
-    expect(projection.levels).toEqual([{ level: 1, ids: [] }]);
+    expect(projection.availability).toBe('available');
+    expect(projection.destination).toBe('/vocabulary/hsk/2/');
+    expect(projection.eligibleIds).toEqual(['hsk-999']);
+    expect(projection.levels).toEqual([1, 2, 3, 4].map((level) => ({ level, ids: level === 2 ? ['hsk-999'] : [] })));
   });
 
   it('returns a deeply immutable deterministic contract', () => {

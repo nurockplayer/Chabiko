@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00855",
+      "globalSequence": 855,
+      "simplified": "甜",
+      "pinyin": "tián",
+      "japanese": "甘い。"
+    },
+    {
+      "sourceId": "w00856",
+      "globalSequence": 856,
+      "simplified": "跳",
+      "pinyin": "tiào",
+      "japanese": "跳ぶ。"
+    },
+    {
+      "sourceId": "w00857",
+      "globalSequence": 857,
+      "simplified": "听说",
+      "pinyin": "tīngshuō",
+      "japanese": "〜と聞いている。"
+    },
+    {
+      "sourceId": "w00858",
+      "globalSequence": 858,
+      "simplified": "挺",
+      "pinyin": "tǐng",
+      "japanese": "かなり。とても。"
+    },
+    {
+      "sourceId": "w00859",
+      "globalSequence": 859,
+      "simplified": "同事",
+      "pinyin": "tóngshì",
+      "japanese": "同僚。"
+    },
+    {
+      "sourceId": "w00860",
+      "globalSequence": 860,
+      "simplified": "同意",
+      "pinyin": "tóngyì",
+      "japanese": "同意する。"
+    },
+    {
+      "sourceId": "w00861",
+      "globalSequence": 861,
+      "simplified": "头发",
+      "pinyin": "tóufa",
+      "japanese": "髪の毛。"
+    },
+    {
+      "sourceId": "w00862",
+      "globalSequence": 862,
+      "simplified": "突然",
+      "pinyin": "tūrán",
+      "japanese": "突然。"
+    },
+    {
+      "sourceId": "w00863",
+      "globalSequence": 863,
+      "simplified": "图书馆",
+      "pinyin": "túshūguǎn",
+      "japanese": "図書館。"
+    },
+    {
+      "sourceId": "w00864",
+      "globalSequence": 864,
+      "simplified": "腿",
+      "pinyin": "tuǐ",
+      "japanese": "脚。"
+    },
+    {
+      "sourceId": "w00865",
+      "globalSequence": 865,
+      "simplified": "外地",
+      "pinyin": "wàidì",
+      "japanese": "よその土地。"
+    },
+    {
+      "sourceId": "w00866",
+      "globalSequence": 866,
+      "simplified": "外卖",
+      "pinyin": "wàimài",
+      "japanese": "出前。持ち帰りの食べ物。"
+    },
+    {
+      "sourceId": "w00867",
+      "globalSequence": 867,
+      "simplified": "外语",
+      "pinyin": "wàiyǔ",
+      "japanese": "外国語。"
+    },
+    {
+      "sourceId": "w00868",
+      "globalSequence": 868,
+      "simplified": "完成",
+      "pinyin": "wánchéng",
+      "japanese": "完成する。やり遂げる。"
+    },
+    {
+      "sourceId": "w00869",
+      "globalSequence": 869,
+      "simplified": "碗",
+      "pinyin": "wǎn",
+      "japanese": "茶碗。"
+    },
+    {
+      "sourceId": "w00870",
+      "globalSequence": 870,
+      "simplified": "晚点",
+      "pinyin": "wǎndiǎn",
+      "japanese": "定刻より遅れる。"
+    },
+    {
+      "sourceId": "w00871",
+      "globalSequence": 871,
+      "simplified": "晚会",
+      "pinyin": "wǎnhuì",
+      "japanese": "夜の集い。夕べの催し。"
+    },
+    {
+      "sourceId": "w00872",
+      "globalSequence": 872,
+      "simplified": "网球",
+      "pinyin": "wǎngqiú",
+      "japanese": "テニス。"
+    },
+    {
+      "sourceId": "w00873",
+      "globalSequence": 873,
+      "simplified": "网站",
+      "pinyin": "wǎngzhàn",
+      "japanese": "ウェブサイト。"
+    },
+    {
+      "sourceId": "w00874",
+      "globalSequence": 874,
+      "simplified": "忘记",
+      "pinyin": "wàngjì",
+      "japanese": "忘れる。"
+    },
+    {
+      "sourceId": "w00875",
+      "globalSequence": 875,
+      "simplified": "为",
+      "pinyin": "wèi",
+      "japanese": "〜のために。"
+    },
+    {
+      "sourceId": "w00876",
+      "globalSequence": 876,
+      "simplified": "为了",
+      "pinyin": "wèile",
+      "japanese": "〜するために。"
+    },
+    {
+      "sourceId": "w00877",
+      "globalSequence": 877,
+      "simplified": "卫生间",
+      "pinyin": "wèishēngjiān",
+      "japanese": "トイレ。洗面所。"
+    },
+    {
+      "sourceId": "w00878",
+      "globalSequence": 878,
+      "simplified": "文化",
+      "pinyin": "wénhuà",
+      "japanese": "文化。"
+    },
+    {
+      "sourceId": "w00879",
+      "globalSequence": 879,
+      "simplified": "屋子",
+      "pinyin": "wūzi",
+      "japanese": "部屋。家。"
+    },
+    {
+      "sourceId": "w00880",
+      "globalSequence": 880,
+      "simplified": "西",
+      "pinyin": "xī",
+      "japanese": "西。"
+    },
+    {
+      "sourceId": "w00881",
+      "globalSequence": 881,
+      "simplified": "西北",
+      "pinyin": "xīběi",
+      "japanese": "北西。"
+    },
+    {
+      "sourceId": "w00882",
+      "globalSequence": 882,
+      "simplified": "西方",
+      "pinyin": "xīfāng",
+      "japanese": "西方。西洋。"
+    },
+    {
+      "sourceId": "w00883",
+      "globalSequence": 883,
+      "simplified": "西瓜",
+      "pinyin": "xīguā",
+      "japanese": "スイカ。"
+    },
+    {
+      "sourceId": "w00884",
+      "globalSequence": 884,
+      "simplified": "西南",
+      "pinyin": "xīnán",
+      "japanese": "南西。"
+    },
+    {
+      "sourceId": "w00885",
+      "globalSequence": 885,
+      "simplified": "习惯",
+      "pinyin": "xíguàn",
+      "japanese": "習慣。慣れる。"
+    },
+    {
+      "sourceId": "w00886",
+      "globalSequence": 886,
+      "simplified": "喜爱",
+      "pinyin": "xǐ’ài",
+      "japanese": "好む。"
+    },
+    {
+      "sourceId": "w00887",
+      "globalSequence": 887,
+      "simplified": "洗衣机",
+      "pinyin": "xǐyījī",
+      "japanese": "洗濯機。"
+    },
+    {
+      "sourceId": "w00888",
+      "globalSequence": 888,
+      "simplified": "洗澡",
+      "pinyin": "xǐzǎo",
+      "japanese": "入浴する。"
+    },
+    {
+      "sourceId": "w00889",
+      "globalSequence": 889,
+      "simplified": "夏天",
+      "pinyin": "xiàtiān",
+      "japanese": "夏。"
+    },
+    {
+      "sourceId": "w00890",
+      "globalSequence": 890,
+      "simplified": "先",
+      "pinyin": "xiān",
+      "japanese": "先に。"
+    },
+    {
+      "sourceId": "w00891",
+      "globalSequence": 891,
+      "simplified": "香蕉",
+      "pinyin": "xiāngjiāo",
+      "japanese": "バナナ。"
+    },
+    {
+      "sourceId": "w00892",
+      "globalSequence": 892,
+      "simplified": "相信",
+      "pinyin": "xiāngxìn",
+      "japanese": "信じる。"
+    },
+    {
+      "sourceId": "w00893",
+      "globalSequence": 893,
+      "simplified": "箱子",
+      "pinyin": "xiāngzi",
+      "japanese": "箱。トランク。"
+    },
+    {
+      "sourceId": "w00894",
+      "globalSequence": 894,
+      "simplified": "向",
+      "pinyin": "xiàng",
+      "japanese": "〜に向かって。"
+    },
+    {
+      "sourceId": "w00895",
+      "globalSequence": 895,
+      "simplified": "像",
+      "pinyin": "xiàng",
+      "japanese": "似ている。〜のようだ。"
+    },
+    {
+      "sourceId": "w00896",
+      "globalSequence": 896,
+      "simplified": "相机",
+      "pinyin": "xiàngjī",
+      "japanese": "カメラ。"
+    },
+    {
+      "sourceId": "w00897",
+      "globalSequence": 897,
+      "simplified": "小区",
+      "pinyin": "xiǎoqū",
+      "japanese": "住宅団地。"
+    },
+    {
+      "sourceId": "w00898",
+      "globalSequence": 898,
+      "simplified": "小心",
+      "pinyin": "xiǎoxīn",
+      "japanese": "気をつける。慎重な。"
+    },
+    {
+      "sourceId": "w00899",
+      "globalSequence": 899,
+      "simplified": "校园",
+      "pinyin": "xiàoyuán",
+      "japanese": "学校の敷地。キャンパス。"
+    },
+    {
+      "sourceId": "w00900",
+      "globalSequence": 900,
+      "simplified": "校长",
+      "pinyin": "xiàozhǎng",
+      "japanese": "校長。"
+    },
+    {
+      "sourceId": "w00901",
+      "globalSequence": 901,
+      "simplified": "鞋",
+      "pinyin": "xié",
+      "japanese": "靴。"
+    },
+    {
+      "sourceId": "w00902",
+      "globalSequence": 902,
+      "simplified": "心里",
+      "pinyin": "xīnlǐ",
+      "japanese": "心の中。"
+    },
+    {
+      "sourceId": "w00903",
+      "globalSequence": 903,
+      "simplified": "新年",
+      "pinyin": "xīnnián",
+      "japanese": "新年。"
+    },
+    {
+      "sourceId": "w00904",
+      "globalSequence": 904,
+      "simplified": "新闻",
+      "pinyin": "xīnwén",
+      "japanese": "ニュース。"
+    }
+  ]
+}

@@ -1,0 +1,284 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01960",
+      "globalSequence": 1960,
+      "simplified": "重",
+      "pinyin": "zhòng",
+      "japanese": "重い。重大な。"
+    },
+    {
+      "sourceId": "w01961",
+      "globalSequence": 1961,
+      "simplified": "重点",
+      "pinyin": "zhòngdiǎn",
+      "japanese": "重点。要点。"
+    },
+    {
+      "sourceId": "w01962",
+      "globalSequence": 1962,
+      "simplified": "重视",
+      "pinyin": "zhòngshì",
+      "japanese": "重視する。"
+    },
+    {
+      "sourceId": "w01963",
+      "globalSequence": 1963,
+      "simplified": "周围",
+      "pinyin": "zhōuwéi",
+      "japanese": "周囲。"
+    },
+    {
+      "sourceId": "w01964",
+      "globalSequence": 1964,
+      "simplified": "主意",
+      "pinyin": "zhǔyi",
+      "japanese": "考え。案。"
+    },
+    {
+      "sourceId": "w01965",
+      "globalSequence": 1965,
+      "simplified": "祝",
+      "pinyin": "zhù",
+      "japanese": "祝う。願う。"
+    },
+    {
+      "sourceId": "w01966",
+      "globalSequence": 1966,
+      "simplified": "祝贺",
+      "pinyin": "zhùhè",
+      "japanese": "お祝いする。"
+    },
+    {
+      "sourceId": "w01967",
+      "globalSequence": 1967,
+      "simplified": "著名",
+      "pinyin": "zhùmíng",
+      "japanese": "著名な。"
+    },
+    {
+      "sourceId": "w01968",
+      "globalSequence": 1968,
+      "simplified": "专门",
+      "pinyin": "zhuānmén",
+      "japanese": "専門に。わざわざ。"
+    },
+    {
+      "sourceId": "w01969",
+      "globalSequence": 1969,
+      "simplified": "专业",
+      "pinyin": "zhuānyè",
+      "japanese": "専門。専攻。"
+    },
+    {
+      "sourceId": "w01970",
+      "globalSequence": 1970,
+      "simplified": "转",
+      "pinyin": "zhuǎn",
+      "japanese": "向きを変える。転換する。"
+    },
+    {
+      "sourceId": "w01971",
+      "globalSequence": 1971,
+      "simplified": "转发",
+      "pinyin": "zhuǎnfā",
+      "japanese": "転送する。再投稿する。"
+    },
+    {
+      "sourceId": "w01973",
+      "globalSequence": 1973,
+      "simplified": "赚",
+      "pinyin": "zhuàn",
+      "japanese": "稼ぐ。もうける。"
+    },
+    {
+      "sourceId": "w01974",
+      "globalSequence": 1974,
+      "simplified": "装",
+      "pinyin": "zhuāng",
+      "japanese": "入れる。装う。取り付ける。"
+    },
+    {
+      "sourceId": "w01975",
+      "globalSequence": 1975,
+      "simplified": "准",
+      "pinyin": "zhǔn",
+      "japanese": "正確な。許可する。"
+    },
+    {
+      "sourceId": "w01976",
+      "globalSequence": 1976,
+      "simplified": "准确",
+      "pinyin": "zhǔnquè",
+      "japanese": "正確な。"
+    },
+    {
+      "sourceId": "w01977",
+      "globalSequence": 1977,
+      "simplified": "准时",
+      "pinyin": "zhǔnshí",
+      "japanese": "時間どおりの。"
+    },
+    {
+      "sourceId": "w01978",
+      "globalSequence": 1978,
+      "simplified": "资料",
+      "pinyin": "zīliào",
+      "japanese": "資料。"
+    },
+    {
+      "sourceId": "w01979",
+      "globalSequence": 1979,
+      "simplified": "仔细",
+      "pinyin": "zǐxì",
+      "japanese": "注意深い。詳しく。"
+    },
+    {
+      "sourceId": "w01980",
+      "globalSequence": 1980,
+      "simplified": "自",
+      "pinyin": "zì",
+      "japanese": "〜から。自分で。"
+    },
+    {
+      "sourceId": "w01981",
+      "globalSequence": 1981,
+      "simplified": "自然",
+      "pinyin": "zìrán",
+      "japanese": "自然。自然な。当然。"
+    },
+    {
+      "sourceId": "w01982",
+      "globalSequence": 1982,
+      "simplified": "自习",
+      "pinyin": "zìxí",
+      "japanese": "自習する。"
+    },
+    {
+      "sourceId": "w01983",
+      "globalSequence": 1983,
+      "simplified": "自信",
+      "pinyin": "zìxìn",
+      "japanese": "自信。自信がある。"
+    },
+    {
+      "sourceId": "w01984",
+      "globalSequence": 1984,
+      "simplified": "自学",
+      "pinyin": "zìxué",
+      "japanese": "独学する。"
+    },
+    {
+      "sourceId": "w01985",
+      "globalSequence": 1985,
+      "simplified": "总结",
+      "pinyin": "zǒngjié",
+      "japanese": "まとめる。総括。"
+    },
+    {
+      "sourceId": "w01986",
+      "globalSequence": 1986,
+      "simplified": "租",
+      "pinyin": "zū",
+      "japanese": "借りる。貸す。"
+    },
+    {
+      "sourceId": "w01987",
+      "globalSequence": 1987,
+      "simplified": "组",
+      "pinyin": "zǔ",
+      "japanese": "組。組織する。"
+    },
+    {
+      "sourceId": "w01988",
+      "globalSequence": 1988,
+      "simplified": "最终",
+      "pinyin": "zuìzhōng",
+      "japanese": "最終的に。"
+    },
+    {
+      "sourceId": "w01989",
+      "globalSequence": 1989,
+      "simplified": "尊重",
+      "pinyin": "zūnzhòng",
+      "japanese": "尊重する。"
+    },
+    {
+      "sourceId": "w01990",
+      "globalSequence": 1990,
+      "simplified": "左右",
+      "pinyin": "zuǒyòu",
+      "japanese": "左右。およそ。"
+    },
+    {
+      "sourceId": "w01991",
+      "globalSequence": 1991,
+      "simplified": "座",
+      "pinyin": "zuò",
+      "japanese": "座。建物・山などを数える語。"
+    },
+    {
+      "sourceId": "w01992",
+      "globalSequence": 1992,
+      "simplified": "做法",
+      "pinyin": "zuòfǎ",
+      "japanese": "やり方。"
+    },
+    {
+      "sourceId": "w01993",
+      "globalSequence": 1993,
+      "simplified": "作家",
+      "pinyin": "zuòjiā",
+      "japanese": "作家。"
+    },
+    {
+      "sourceId": "w01994",
+      "globalSequence": 1994,
+      "simplified": "做梦",
+      "pinyin": "zuòmèng",
+      "japanese": "夢を見る。"
+    },
+    {
+      "sourceId": "w01995",
+      "globalSequence": 1995,
+      "simplified": "作品",
+      "pinyin": "zuòpǐn",
+      "japanese": "作品。"
+    },
+    {
+      "sourceId": "w01997",
+      "globalSequence": 1997,
+      "simplified": "座位",
+      "pinyin": "zuòwèi",
+      "japanese": "座席。"
+    },
+    {
+      "sourceId": "w01998",
+      "globalSequence": 1998,
+      "simplified": "作文",
+      "pinyin": "zuòwén",
+      "japanese": "作文。作文を書く。"
+    },
+    {
+      "sourceId": "w01999",
+      "globalSequence": 1999,
+      "simplified": "作用",
+      "pinyin": "zuòyòng",
+      "japanese": "作用。役割。"
+    },
+    {
+      "sourceId": "w02000",
+      "globalSequence": 2000,
+      "simplified": "作者",
+      "pinyin": "zuòzhě",
+      "japanese": "作者。"
+    }
+  ]
+}

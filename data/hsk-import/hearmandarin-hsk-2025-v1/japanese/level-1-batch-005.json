@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00176",
+      "globalSequence": 176,
+      "simplified": "上班",
+      "pinyin": "shàngbān",
+      "japanese": "出勤する。仕事をする。"
+    },
+    {
+      "sourceId": "w00177",
+      "globalSequence": 177,
+      "simplified": "上课",
+      "pinyin": "shàngkè",
+      "japanese": "授業を受ける。授業をする。"
+    },
+    {
+      "sourceId": "w00178",
+      "globalSequence": 178,
+      "simplified": "上午",
+      "pinyin": "shàngwǔ",
+      "japanese": "午前。"
+    },
+    {
+      "sourceId": "w00179",
+      "globalSequence": 179,
+      "simplified": "上学",
+      "pinyin": "shàngxué",
+      "japanese": "学校へ行く。通学する。"
+    },
+    {
+      "sourceId": "w00180",
+      "globalSequence": 180,
+      "simplified": "少",
+      "pinyin": "shǎo",
+      "japanese": "少ない。"
+    },
+    {
+      "sourceId": "w00181",
+      "globalSequence": 181,
+      "simplified": "谁",
+      "pinyin": "shéi/shuí",
+      "japanese": "誰。"
+    },
+    {
+      "sourceId": "w00182",
+      "globalSequence": 182,
+      "simplified": "什么",
+      "pinyin": "shénme",
+      "japanese": "何。"
+    },
+    {
+      "sourceId": "w00183",
+      "globalSequence": 183,
+      "simplified": "生病",
+      "pinyin": "shēngbìng",
+      "japanese": "病気になる。"
+    },
+    {
+      "sourceId": "w00184",
+      "globalSequence": 184,
+      "simplified": "十",
+      "pinyin": "shí",
+      "japanese": "十。"
+    },
+    {
+      "sourceId": "w00185",
+      "globalSequence": 185,
+      "simplified": "时候",
+      "pinyin": "shíhou",
+      "japanese": "時。頃。"
+    },
+    {
+      "sourceId": "w00186",
+      "globalSequence": 186,
+      "simplified": "时间",
+      "pinyin": "shíjiān",
+      "japanese": "時間。"
+    },
+    {
+      "sourceId": "w00187",
+      "globalSequence": 187,
+      "simplified": "事",
+      "pinyin": "shì",
+      "japanese": "事。用事。"
+    },
+    {
+      "sourceId": "w00188",
+      "globalSequence": 188,
+      "simplified": "是",
+      "pinyin": "shì",
+      "japanese": "〜である。はい、そのとおり。"
+    },
+    {
+      "sourceId": "w00189",
+      "globalSequence": 189,
+      "simplified": "手机",
+      "pinyin": "shǒujī",
+      "japanese": "携帯電話。"
+    },
+    {
+      "sourceId": "w00190",
+      "globalSequence": 190,
+      "simplified": "书",
+      "pinyin": "shū",
+      "japanese": "本。"
+    },
+    {
+      "sourceId": "w00191",
+      "globalSequence": 191,
+      "simplified": "书店",
+      "pinyin": "shūdiàn",
+      "japanese": "本屋。"
+    },
+    {
+      "sourceId": "w00192",
+      "globalSequence": 192,
+      "simplified": "水",
+      "pinyin": "shuǐ",
+      "japanese": "水。"
+    },
+    {
+      "sourceId": "w00193",
+      "globalSequence": 193,
+      "simplified": "水果",
+      "pinyin": "shuǐguǒ",
+      "japanese": "果物。"
+    },
+    {
+      "sourceId": "w00194",
+      "globalSequence": 194,
+      "simplified": "睡",
+      "pinyin": "shuì",
+      "japanese": "寝る。"
+    },
+    {
+      "sourceId": "w00195",
+      "globalSequence": 195,
+      "simplified": "睡觉",
+      "pinyin": "shuìjiào",
+      "japanese": "眠る。"
+    },
+    {
+      "sourceId": "w00196",
+      "globalSequence": 196,
+      "simplified": "说",
+      "pinyin": "shuō",
+      "japanese": "言う。話す。"
+    },
+    {
+      "sourceId": "w00197",
+      "globalSequence": 197,
+      "simplified": "说话",
+      "pinyin": "shuōhuà",
+      "japanese": "話す。"
+    },
+    {
+      "sourceId": "w00198",
+      "globalSequence": 198,
+      "simplified": "四",
+      "pinyin": "sì",
+      "japanese": "四。"
+    },
+    {
+      "sourceId": "w00199",
+      "globalSequence": 199,
+      "simplified": "岁",
+      "pinyin": "suì",
+      "japanese": "年齢の「〜歳」。"
+    },
+    {
+      "sourceId": "w00200",
+      "globalSequence": 200,
+      "simplified": "他",
+      "pinyin": "tā",
+      "japanese": "彼。"
+    },
+    {
+      "sourceId": "w00201",
+      "globalSequence": 201,
+      "simplified": "它",
+      "pinyin": "tā",
+      "japanese": "それ（物・動物）。"
+    },
+    {
+      "sourceId": "w00202",
+      "globalSequence": 202,
+      "simplified": "她",
+      "pinyin": "tā",
+      "japanese": "彼女。"
+    },
+    {
+      "sourceId": "w00203",
+      "globalSequence": 203,
+      "simplified": "他们",
+      "pinyin": "tāmen",
+      "japanese": "彼ら。"
+    },
+    {
+      "sourceId": "w00204",
+      "globalSequence": 204,
+      "simplified": "它们",
+      "pinyin": "tāmen",
+      "japanese": "それら（物・動物）。"
+    },
+    {
+      "sourceId": "w00205",
+      "globalSequence": 205,
+      "simplified": "她们",
+      "pinyin": "tāmen",
+      "japanese": "彼女たち。"
+    },
+    {
+      "sourceId": "w00206",
+      "globalSequence": 206,
+      "simplified": "太",
+      "pinyin": "tài",
+      "japanese": "あまりに。とても。"
+    },
+    {
+      "sourceId": "w00207",
+      "globalSequence": 207,
+      "simplified": "天",
+      "pinyin": "tiān",
+      "japanese": "日。空。"
+    },
+    {
+      "sourceId": "w00208",
+      "globalSequence": 208,
+      "simplified": "天气",
+      "pinyin": "tiānqì",
+      "japanese": "天気。"
+    },
+    {
+      "sourceId": "w00209",
+      "globalSequence": 209,
+      "simplified": "听",
+      "pinyin": "tīng",
+      "japanese": "聞く。"
+    },
+    {
+      "sourceId": "w00210",
+      "globalSequence": 210,
+      "simplified": "听见",
+      "pinyin": "tīngjiàn",
+      "japanese": "聞こえる。"
+    },
+    {
+      "sourceId": "w00211",
+      "globalSequence": 211,
+      "simplified": "同学",
+      "pinyin": "tóngxué",
+      "japanese": "同級生。学友。"
+    },
+    {
+      "sourceId": "w00212",
+      "globalSequence": 212,
+      "simplified": "外",
+      "pinyin": "wài",
+      "japanese": "外。"
+    },
+    {
+      "sourceId": "w00213",
+      "globalSequence": 213,
+      "simplified": "外边",
+      "pinyin": "wàibian",
+      "japanese": "外側。"
+    },
+    {
+      "sourceId": "w00214",
+      "globalSequence": 214,
+      "simplified": "玩",
+      "pinyin": "wán",
+      "japanese": "遊ぶ。"
+    },
+    {
+      "sourceId": "w00215",
+      "globalSequence": 215,
+      "simplified": "晚",
+      "pinyin": "wǎn",
+      "japanese": "遅い。夜。"
+    },
+    {
+      "sourceId": "w00216",
+      "globalSequence": 216,
+      "simplified": "晚饭",
+      "pinyin": "wǎnfàn",
+      "japanese": "夕食。"
+    },
+    {
+      "sourceId": "w00217",
+      "globalSequence": 217,
+      "simplified": "晚上",
+      "pinyin": "wǎnshang",
+      "japanese": "夜。晩。"
+    },
+    {
+      "sourceId": "w00219",
+      "globalSequence": 219,
+      "simplified": "问",
+      "pinyin": "wèn",
+      "japanese": "尋ねる。"
+    },
+    {
+      "sourceId": "w00220",
+      "globalSequence": 220,
+      "simplified": "问题",
+      "pinyin": "wèntí",
+      "japanese": "質問。問題。"
+    },
+    {
+      "sourceId": "w00221",
+      "globalSequence": 221,
+      "simplified": "我",
+      "pinyin": "wǒ",
+      "japanese": "私。"
+    },
+    {
+      "sourceId": "w00222",
+      "globalSequence": 222,
+      "simplified": "我们",
+      "pinyin": "wǒmen",
+      "japanese": "私たち。"
+    },
+    {
+      "sourceId": "w00223",
+      "globalSequence": 223,
+      "simplified": "五",
+      "pinyin": "wǔ",
+      "japanese": "五。"
+    },
+    {
+      "sourceId": "w00224",
+      "globalSequence": 224,
+      "simplified": "午饭",
+      "pinyin": "wǔfàn",
+      "japanese": "昼食。"
+    },
+    {
+      "sourceId": "w00225",
+      "globalSequence": 225,
+      "simplified": "喜欢",
+      "pinyin": "xǐhuan",
+      "japanese": "好きである。"
+    },
+    {
+      "sourceId": "w00226",
+      "globalSequence": 226,
+      "simplified": "下",
+      "pinyin": "xià",
+      "japanese": "下。下がる。次の。"
+    }
+  ]
+}

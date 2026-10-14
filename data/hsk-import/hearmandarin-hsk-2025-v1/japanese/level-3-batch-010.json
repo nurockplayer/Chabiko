@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00905",
+      "globalSequence": 905,
+      "simplified": "新鲜",
+      "pinyin": "xīnxiān",
+      "japanese": "新鮮な。目新しい。"
+    },
+    {
+      "sourceId": "w00906",
+      "globalSequence": 906,
+      "simplified": "信",
+      "pinyin": "xìn",
+      "japanese": "手紙。信じる。"
+    },
+    {
+      "sourceId": "w00907",
+      "globalSequence": 907,
+      "simplified": "信用卡",
+      "pinyin": "xìnyòngkǎ",
+      "japanese": "クレジットカード。"
+    },
+    {
+      "sourceId": "w00908",
+      "globalSequence": 908,
+      "simplified": "行",
+      "pinyin": "xíng",
+      "japanese": "よい。大丈夫。行う。"
+    },
+    {
+      "sourceId": "w00909",
+      "globalSequence": 909,
+      "simplified": "行李",
+      "pinyin": "xíngli",
+      "japanese": "荷物。"
+    },
+    {
+      "sourceId": "w00910",
+      "globalSequence": 910,
+      "simplified": "兴趣",
+      "pinyin": "xìngqù",
+      "japanese": "興味。"
+    },
+    {
+      "sourceId": "w00911",
+      "globalSequence": 911,
+      "simplified": "休假",
+      "pinyin": "xiūjià",
+      "japanese": "休暇を取る。"
+    },
+    {
+      "sourceId": "w00912",
+      "globalSequence": 912,
+      "simplified": "需要",
+      "pinyin": "xūyào",
+      "japanese": "必要とする。"
+    },
+    {
+      "sourceId": "w00913",
+      "globalSequence": 913,
+      "simplified": "选",
+      "pinyin": "xuǎn",
+      "japanese": "選ぶ。"
+    },
+    {
+      "sourceId": "w00914",
+      "globalSequence": 914,
+      "simplified": "选择",
+      "pinyin": "xuǎnzé",
+      "japanese": "選ぶ。選択。"
+    },
+    {
+      "sourceId": "w00915",
+      "globalSequence": 915,
+      "simplified": "学期",
+      "pinyin": "xuéqī",
+      "japanese": "学期。"
+    },
+    {
+      "sourceId": "w00916",
+      "globalSequence": 916,
+      "simplified": "牙",
+      "pinyin": "yá",
+      "japanese": "歯。"
+    },
+    {
+      "sourceId": "w00917",
+      "globalSequence": 917,
+      "simplified": "牙刷",
+      "pinyin": "yáshuā",
+      "japanese": "歯ブラシ。"
+    },
+    {
+      "sourceId": "w00918",
+      "globalSequence": 918,
+      "simplified": "羊",
+      "pinyin": "yáng",
+      "japanese": "羊。"
+    },
+    {
+      "sourceId": "w00919",
+      "globalSequence": 919,
+      "simplified": "养",
+      "pinyin": "yǎng",
+      "japanese": "育てる。飼う。"
+    },
+    {
+      "sourceId": "w00920",
+      "globalSequence": 920,
+      "simplified": "要求",
+      "pinyin": "yāoqiú",
+      "japanese": "求める。要求。"
+    },
+    {
+      "sourceId": "w00921",
+      "globalSequence": 921,
+      "simplified": "页",
+      "pinyin": "yè",
+      "japanese": "ページ。"
+    },
+    {
+      "sourceId": "w00922",
+      "globalSequence": 922,
+      "simplified": "一定",
+      "pinyin": "yídìng",
+      "japanese": "必ず。きっと。"
+    },
+    {
+      "sourceId": "w00923",
+      "globalSequence": 923,
+      "simplified": "一共",
+      "pinyin": "yígòng",
+      "japanese": "全部で。"
+    },
+    {
+      "sourceId": "w00924",
+      "globalSequence": 924,
+      "simplified": "一块儿",
+      "pinyin": "yíkuàir",
+      "japanese": "一緒に。"
+    },
+    {
+      "sourceId": "w00925",
+      "globalSequence": 925,
+      "simplified": "一样",
+      "pinyin": "yíyàng",
+      "japanese": "同じ。"
+    },
+    {
+      "sourceId": "w00926",
+      "globalSequence": 926,
+      "simplified": "以后",
+      "pinyin": "yǐhòu",
+      "japanese": "以後。これから。"
+    },
+    {
+      "sourceId": "w00927",
+      "globalSequence": 927,
+      "simplified": "以前",
+      "pinyin": "yǐqián",
+      "japanese": "以前。"
+    },
+    {
+      "sourceId": "w00928",
+      "globalSequence": 928,
+      "simplified": "以上",
+      "pinyin": "yǐshàng",
+      "japanese": "以上。"
+    },
+    {
+      "sourceId": "w00929",
+      "globalSequence": 929,
+      "simplified": "以外",
+      "pinyin": "yǐwài",
+      "japanese": "〜以外。"
+    },
+    {
+      "sourceId": "w00930",
+      "globalSequence": 930,
+      "simplified": "以为",
+      "pinyin": "yǐwéi",
+      "japanese": "〜と思い込む。"
+    },
+    {
+      "sourceId": "w00931",
+      "globalSequence": 931,
+      "simplified": "以下",
+      "pinyin": "yǐxià",
+      "japanese": "以下。"
+    },
+    {
+      "sourceId": "w00932",
+      "globalSequence": 932,
+      "simplified": "一般",
+      "pinyin": "yìbān",
+      "japanese": "一般的な。普通の。"
+    },
+    {
+      "sourceId": "w00933",
+      "globalSequence": 933,
+      "simplified": "一边",
+      "pinyin": "yìbiān",
+      "japanese": "一方。〜しながら。"
+    },
+    {
+      "sourceId": "w00934",
+      "globalSequence": 934,
+      "simplified": "一直",
+      "pinyin": "yìzhí",
+      "japanese": "ずっと。まっすぐ。"
+    },
+    {
+      "sourceId": "w00935",
+      "globalSequence": 935,
+      "simplified": "音乐",
+      "pinyin": "yīnyuè",
+      "japanese": "音楽。"
+    },
+    {
+      "sourceId": "w00936",
+      "globalSequence": 936,
+      "simplified": "银行",
+      "pinyin": "yínháng",
+      "japanese": "銀行。"
+    },
+    {
+      "sourceId": "w00937",
+      "globalSequence": 937,
+      "simplified": "银行卡",
+      "pinyin": "yínhángkǎ",
+      "japanese": "銀行カード。"
+    },
+    {
+      "sourceId": "w00938",
+      "globalSequence": 938,
+      "simplified": "饮料",
+      "pinyin": "yǐnliào",
+      "japanese": "飲み物。"
+    },
+    {
+      "sourceId": "w00939",
+      "globalSequence": 939,
+      "simplified": "应该",
+      "pinyin": "yīnggāi",
+      "japanese": "〜すべきだ。〜のはずだ。"
+    },
+    {
+      "sourceId": "w00940",
+      "globalSequence": 940,
+      "simplified": "影响",
+      "pinyin": "yǐngxiǎng",
+      "japanese": "影響。影響する。"
+    },
+    {
+      "sourceId": "w00941",
+      "globalSequence": 941,
+      "simplified": "用",
+      "pinyin": "yòng",
+      "japanese": "使う。"
+    },
+    {
+      "sourceId": "w00942",
+      "globalSequence": 942,
+      "simplified": "邮件",
+      "pinyin": "yóujiàn",
+      "japanese": "郵便物。電子メール。"
+    },
+    {
+      "sourceId": "w00943",
+      "globalSequence": 943,
+      "simplified": "游客",
+      "pinyin": "yóukè",
+      "japanese": "観光客。"
+    },
+    {
+      "sourceId": "w00944",
+      "globalSequence": 944,
+      "simplified": "游戏",
+      "pinyin": "yóuxì",
+      "japanese": "ゲーム。遊び。"
+    },
+    {
+      "sourceId": "w00945",
+      "globalSequence": 945,
+      "simplified": "邮箱",
+      "pinyin": "yóuxiāng",
+      "japanese": "郵便受け。メールボックス。"
+    },
+    {
+      "sourceId": "w00946",
+      "globalSequence": 946,
+      "simplified": "有关",
+      "pinyin": "yǒuguān",
+      "japanese": "関係がある。〜に関する。"
+    },
+    {
+      "sourceId": "w00947",
+      "globalSequence": 947,
+      "simplified": "有名",
+      "pinyin": "yǒumíng",
+      "japanese": "有名な。"
+    },
+    {
+      "sourceId": "w00948",
+      "globalSequence": 948,
+      "simplified": "有用",
+      "pinyin": "yǒuyòng",
+      "japanese": "役に立つ。"
+    },
+    {
+      "sourceId": "w00949",
+      "globalSequence": 949,
+      "simplified": "又",
+      "pinyin": "yòu",
+      "japanese": "また。さらに。"
+    },
+    {
+      "sourceId": "w00950",
+      "globalSequence": 950,
+      "simplified": "羽毛球",
+      "pinyin": "yǔmáoqiú",
+      "japanese": "バドミントン。"
+    },
+    {
+      "sourceId": "w00951",
+      "globalSequence": 951,
+      "simplified": "语言",
+      "pinyin": "yǔyán",
+      "japanese": "言語。"
+    },
+    {
+      "sourceId": "w00952",
+      "globalSequence": 952,
+      "simplified": "雨衣",
+      "pinyin": "yǔyī",
+      "japanese": "レインコート。"
+    },
+    {
+      "sourceId": "w00953",
+      "globalSequence": 953,
+      "simplified": "遇到",
+      "pinyin": "yùdào",
+      "japanese": "出会う。遭遇する。"
+    },
+    {
+      "sourceId": "w00954",
+      "globalSequence": 954,
+      "simplified": "遇见",
+      "pinyin": "yùjiàn",
+      "japanese": "出会う。"
+    }
+  ]
+}

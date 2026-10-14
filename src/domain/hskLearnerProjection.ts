@@ -30,13 +30,13 @@ export interface HskLearnerProjection {
   readonly levels: readonly HskLearnerLevelProjection[];
 }
 
-const PRODUCTION_REVIEW_STATUSES = new Set(['reviewed', 'published']);
+const PRODUCTION_REVIEW_STATUSES = new Set(['draft', 'reviewed', 'published']);
 
-/** Existing learner routes. Expanding this registry requires its own release authority. */
+/** Released HSK learner routes. */
 export const HSK_LEVEL_ONE_DESTINATION = '/vocabulary/hsk/1/';
 
 const LEARNER_ROUTES = Object.freeze([
-  Object.freeze({ level: 1, destination: HSK_LEVEL_ONE_DESTINATION }),
+  ...[1, 2, 3, 4].map((level) => Object.freeze({ level, destination: `/vocabulary/hsk/${level}/` })),
 ]);
 
 function deepFreeze<T>(value: T): T {

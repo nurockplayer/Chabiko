@@ -213,11 +213,10 @@ describe('dashboard build-time payload', () => {
   it('carries the production corpora and Taiwan destination metadata', () => {
     const payload = buildDashboardProgressPayload();
     expect(payload.basicVocabularyCorpusIds.length).toBeGreaterThan(0);
-    // Current source rows are drafts under a globally false learner gate.
-    expect(payload.hsk.destination).toBeNull();
-    expect(payload.hsk.statusLabelJa).toBe('準備中です');
-    expect(payload.hsk.eligibleIds).toEqual([]);
-    expect(payload.hsk.levels).toEqual([{ level: 1, ids: [] }]);
+    expect(payload.hsk.destination).toBe('/vocabulary/hsk/1/');
+    expect(payload.hsk.statusLabelJa).toBe('利用できます');
+    expect(payload.hsk.eligibleIds).toHaveLength(1969);
+    expect(payload.hsk.levels.map((level) => level.ids.length)).toEqual([294, 191, 495, 989]);
     expect(payload.taiwanCompletableLessonIds.length).toBeGreaterThan(0);
     for (const lesson of payload.taiwanLessons) {
       expect(lesson.id.length).toBeGreaterThan(0);

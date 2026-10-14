@@ -64,6 +64,19 @@ function createSnapshot(): string {
   for (const name of ['hsk-vocabulary-batch-001.json', 'hsk-vocabulary-level-1-batch-002.json']) {
     cpSync(resolve(repositoryRoot, 'data/hsk-vocabulary', name), join(root, 'data/hsk-vocabulary', name));
   }
+  // Keep this corruption/partial-publication fixture independent of growth
+  // in the real release, which is covered by the completeness test below.
+  const manifest = readManifest(root);
+  manifest.publication.batches = manifest.publication.batches.slice(0, 2);
+  manifest.publication.repositoryPublishedBatchCount = 2;
+  manifest.publication.repositoryPublishedRecordCount = 70;
+  for (const row of manifest.rows) {
+    if (row.repositoryBatchFile && !manifest.publication.batches.some((batch) => batch.file === row.repositoryBatchFile)) {
+      row.repositoryPublication = 'planned-not-published';
+      delete row.repositoryBatchFile;
+    }
+  }
+  writeManifest(root, manifest);
   return root;
 }
 
@@ -174,19 +187,34 @@ afterEach(() => {
 });
 
 describe('production HSK source adapter', () => {
-  it('uses the declared source snapshot, retains drafts for authoring, and closes learner pools on false flags', () => {
+  it('publishes every eligible draft without claiming human review', () => {
     const bundle = loadHskVocabulary();
-    expect(bundle.vocabulary).toHaveLength(70);
-    expect(bundle.vocabulary.every((entry) => entry.reviewStatus === 'draft')).toBe(true);
-    expect(bundle.learnerVocabulary).toEqual([]);
-    expect(bundle.diagnostic).toContain('humanReviewed=false');
-    expect(bundle.diagnostic).toContain('runtimeAvailable=false');
-    expect(loadHskLevelPools().map((pool) => [pool.status, pool.counts.fullRange])).toEqual([
-      ['unavailable', 0], ['unavailable', 0], ['unavailable', 0], ['unavailable', 0],
+    expect(bundle.diagnostic).toBeNull();
+    expect(bundle.vocabulary).toHaveLength(1969);
+    expect(bundle.learnerVocabulary).toEqual(bundle.vocabulary);
+    const manifest = readManifest(repositoryRoot);
+    expect(manifest.publication.sourceEligibleIsHumanReviewed).toBe(false);
+    expect(new Set(bundle.vocabulary.map((entry) => entry.id))).toEqual(new Set(
+      manifest.rows.filter((row) => row.sourceEligible).map((row) => row.recordId),
+    ));
+    expect(bundle.vocabulary.every((entry) => entry.reviewStatus === 'draft' && entry.japanese.trim().length > 0)).toBe(true);
+    expect(loadHskLevelPools().map((pool) => [pool.status, pool.counts.newWords, pool.counts.fullRange])).toEqual([
+      ['available', 294, 294], ['available', 191, 485], ['available', 495, 980], ['available', 989, 1969],
     ]);
   });
 
-  it('allows only reviewed rows after both global flags open and reports partial counts', async () => {
+  it('keeps the explicit runtime release switch independent of human review', () => {
+    const root = createSnapshot();
+    const manifest = readManifest(root);
+    manifest.publication.sourceEligibleIsRuntimeAvailable = false;
+    writeManifest(root, manifest);
+    const bundle = loadHskVocabulary(undefined, root);
+    expect(bundle.vocabulary).toHaveLength(70);
+    expect(bundle.learnerVocabulary).toEqual([]);
+    expect(bundle.diagnostic).toContain('runtimeAvailable=false');
+  });
+
+  it('allows disclosed drafts alongside reviewed rows and reports partial counts', async () => {
     const root = createSnapshot();
     const manifest = readManifest(root);
     manifest.publication.sourceEligibleIsHumanReviewed = true;
@@ -197,15 +225,15 @@ describe('production HSK source adapter', () => {
 
     const bundle = loadHskVocabularyFromRoot(root);
     expect(bundle.vocabulary).toHaveLength(70);
-    expect(bundle.learnerVocabulary).toHaveLength(20);
+    expect(bundle.learnerVocabulary).toHaveLength(70);
     expect(bundle.learnerVocabulary[0]?.source.note).toContain('Japanese glosses are human reviewed.');
     expect(new Set(readManifest(root).rows.map((row) => row.repositoryPublication))).toEqual(
       new Set(['draft-published-to-repository', 'planned-not-published', 'blocked']),
     );
     const levelOne = loadHskLevelPools(root)[0];
     expect(levelOne?.status).toBe('partial');
-    expect(levelOne?.counts).toEqual({ fullRange: 20, newWords: 20, expectedFullRange: 294, expectedNewWords: 294 });
-    expect(levelOne?.missingEvidence).toContain('Level 1 full range: expected 294, admitted 20');
+    expect(levelOne?.counts).toEqual({ fullRange: 70, newWords: 70, expectedFullRange: 294, expectedNewWords: 294 });
+    expect(levelOne?.missingEvidence).toContain('Level 1 full range: expected 294, admitted 70');
     expect(levelOne?.fullRange.map((entry) => entry.id)).toEqual(
       bundle.learnerVocabulary.map((entry) => entry.id),
     );
@@ -219,7 +247,7 @@ describe('production HSK source adapter', () => {
         notice: { attribution: string };
       };
       expect(response.status).toBe(200);
-      expect(payload.entries).toHaveLength(20);
+      expect(payload.entries).toHaveLength(70);
       expect(payload.entries.every((entry) => !('traditional' in entry))).toBe(true);
       expect(payload.notice.attribution).toContain('HearMandarin');
     } finally {
@@ -237,7 +265,7 @@ describe('production HSK source adapter', () => {
 
     const bundle = loadHskVocabularyFromRoot(root);
     expect(bundle.diagnostic).toBeNull();
-    expect(bundle.learnerVocabulary).toHaveLength(20);
+    expect(bundle.learnerVocabulary).toHaveLength(70);
     expect(bundle.learnerVocabulary[0]?.source.note).toBe(reviewedNoticeTokens(root).join(' '));
   });
 
@@ -497,7 +525,7 @@ describe('production HSK source adapter', () => {
 
     const bundle = loadHskVocabulary(undefined, root);
     expect(bundle.vocabulary[0]?.id).toBe(opaqueId);
-    expect(bundle.diagnostic).toContain('humanReviewed=false');
+    expect(bundle.diagnostic).toBeNull();
   });
 
   it('emits declared rows in global manifest order when batch declarations are reversed', () => {

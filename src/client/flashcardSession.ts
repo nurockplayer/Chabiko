@@ -620,9 +620,10 @@ export function mountFlashcardSession(data: SessionData): () => void {
   }, listenerOptions);
 
   window.addEventListener('storage', (event) => {
+    if (event.storageArea !== null && event.storageArea !== window.localStorage) return;
     if (event.key === null || event.key === 'chabiko:hsk-vocabulary-progress:v1') {
       if (progressStore) {
-        progressStore.refresh();
+        progressStore.refresh(event.newValue === null);
         updateResetButton();
       }
     }

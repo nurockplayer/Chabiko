@@ -1,0 +1,326 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00955",
+      "globalSequence": 955,
+      "simplified": "园",
+      "pinyin": "yuán",
+      "japanese": "庭。園。"
+    },
+    {
+      "sourceId": "w00956",
+      "globalSequence": 956,
+      "simplified": "员",
+      "pinyin": "yuán",
+      "japanese": "職員。成員。"
+    },
+    {
+      "sourceId": "w00957",
+      "globalSequence": 957,
+      "simplified": "愿意",
+      "pinyin": "yuànyì",
+      "japanese": "〜したいと思う。進んで〜する。"
+    },
+    {
+      "sourceId": "w00958",
+      "globalSequence": 958,
+      "simplified": "越",
+      "pinyin": "yuè",
+      "japanese": "ますます。越える。"
+    },
+    {
+      "sourceId": "w00959",
+      "globalSequence": 959,
+      "simplified": "月亮",
+      "pinyin": "yuèliang",
+      "japanese": "月。"
+    },
+    {
+      "sourceId": "w00960",
+      "globalSequence": 960,
+      "simplified": "运动会",
+      "pinyin": "yùndònghuì",
+      "japanese": "運動会。"
+    },
+    {
+      "sourceId": "w00961",
+      "globalSequence": 961,
+      "simplified": "运动员",
+      "pinyin": "yùndòngyuán",
+      "japanese": "スポーツ選手。"
+    },
+    {
+      "sourceId": "w00962",
+      "globalSequence": 962,
+      "simplified": "咱们",
+      "pinyin": "zánmen",
+      "japanese": "私たち（相手を含む）。"
+    },
+    {
+      "sourceId": "w00963",
+      "globalSequence": 963,
+      "simplified": "脏",
+      "pinyin": "zāng",
+      "japanese": "汚い。"
+    },
+    {
+      "sourceId": "w00964",
+      "globalSequence": 964,
+      "simplified": "怎么办",
+      "pinyin": "zěnme bàn",
+      "japanese": "どうすればよいか。"
+    },
+    {
+      "sourceId": "w00965",
+      "globalSequence": 965,
+      "simplified": "怎样",
+      "pinyin": "zěnyàng",
+      "japanese": "どのように。どう。"
+    },
+    {
+      "sourceId": "w00967",
+      "globalSequence": 967,
+      "simplified": "张",
+      "pinyin": "zhāng",
+      "japanese": "紙などを数える「〜枚」。"
+    },
+    {
+      "sourceId": "w00968",
+      "globalSequence": 968,
+      "simplified": "长",
+      "pinyin": "zhǎng",
+      "japanese": "成長する。増える。"
+    },
+    {
+      "sourceId": "w00969",
+      "globalSequence": 969,
+      "simplified": "着急",
+      "pinyin": "zháojí",
+      "japanese": "焦る。心配する。"
+    },
+    {
+      "sourceId": "w00970",
+      "globalSequence": 970,
+      "simplified": "照",
+      "pinyin": "zhào",
+      "japanese": "照らす。撮る。〜のとおりに。"
+    },
+    {
+      "sourceId": "w00971",
+      "globalSequence": 971,
+      "simplified": "照顾",
+      "pinyin": "zhàogù",
+      "japanese": "世話をする。"
+    },
+    {
+      "sourceId": "w00972",
+      "globalSequence": 972,
+      "simplified": "照片",
+      "pinyin": "zhàopiàn",
+      "japanese": "写真。"
+    },
+    {
+      "sourceId": "w00973",
+      "globalSequence": 973,
+      "simplified": "照相",
+      "pinyin": "zhàoxiàng",
+      "japanese": "写真を撮る。"
+    },
+    {
+      "sourceId": "w00974",
+      "globalSequence": 974,
+      "simplified": "直到",
+      "pinyin": "zhídào",
+      "japanese": "〜まで。"
+    },
+    {
+      "sourceId": "w00975",
+      "globalSequence": 975,
+      "simplified": "只",
+      "pinyin": "zhǐ",
+      "japanese": "ただ。〜だけ。"
+    },
+    {
+      "sourceId": "w00976",
+      "globalSequence": 976,
+      "simplified": "纸",
+      "pinyin": "zhǐ",
+      "japanese": "紙。"
+    },
+    {
+      "sourceId": "w00977",
+      "globalSequence": 977,
+      "simplified": "只能",
+      "pinyin": "zhǐ néng",
+      "japanese": "〜するしかない。"
+    },
+    {
+      "sourceId": "w00978",
+      "globalSequence": 978,
+      "simplified": "只是",
+      "pinyin": "zhǐshì",
+      "japanese": "ただ〜だけだ。ただし。"
+    },
+    {
+      "sourceId": "w00979",
+      "globalSequence": 979,
+      "simplified": "只要",
+      "pinyin": "zhǐyào",
+      "japanese": "〜さえすれば。"
+    },
+    {
+      "sourceId": "w00980",
+      "globalSequence": 980,
+      "simplified": "只有",
+      "pinyin": "zhǐyǒu",
+      "japanese": "〜だけが。〜してこそ。"
+    },
+    {
+      "sourceId": "w00981",
+      "globalSequence": 981,
+      "simplified": "中",
+      "pinyin": "zhōng",
+      "japanese": "中。中央。"
+    },
+    {
+      "sourceId": "w00982",
+      "globalSequence": 982,
+      "simplified": "中间",
+      "pinyin": "zhōngjiān",
+      "japanese": "真ん中。間。"
+    },
+    {
+      "sourceId": "w00983",
+      "globalSequence": 983,
+      "simplified": "终于",
+      "pinyin": "zhōngyú",
+      "japanese": "ついに。ようやく。"
+    },
+    {
+      "sourceId": "w00984",
+      "globalSequence": 984,
+      "simplified": "种",
+      "pinyin": "zhǒng",
+      "japanese": "種類。種類を数える「〜種」。"
+    },
+    {
+      "sourceId": "w00985",
+      "globalSequence": 985,
+      "simplified": "重要",
+      "pinyin": "zhòngyào",
+      "japanese": "重要な。"
+    },
+    {
+      "sourceId": "w00986",
+      "globalSequence": 986,
+      "simplified": "周末",
+      "pinyin": "zhōumò",
+      "japanese": "週末。"
+    },
+    {
+      "sourceId": "w00987",
+      "globalSequence": 987,
+      "simplified": "主要",
+      "pinyin": "zhǔyào",
+      "japanese": "主な。主要な。"
+    },
+    {
+      "sourceId": "w00988",
+      "globalSequence": 988,
+      "simplified": "注意",
+      "pinyin": "zhùyì",
+      "japanese": "注意する。"
+    },
+    {
+      "sourceId": "w00989",
+      "globalSequence": 989,
+      "simplified": "住院",
+      "pinyin": "zhùyuàn",
+      "japanese": "入院する。"
+    },
+    {
+      "sourceId": "w00990",
+      "globalSequence": 990,
+      "simplified": "字典",
+      "pinyin": "zìdiǎn",
+      "japanese": "字典。漢字辞典。"
+    },
+    {
+      "sourceId": "w00991",
+      "globalSequence": 991,
+      "simplified": "自行车",
+      "pinyin": "zìxíngchē",
+      "japanese": "自転車。"
+    },
+    {
+      "sourceId": "w00992",
+      "globalSequence": 992,
+      "simplified": "子",
+      "pinyin": "zi",
+      "japanese": "名詞などの末尾につける語。"
+    },
+    {
+      "sourceId": "w00993",
+      "globalSequence": 993,
+      "simplified": "总",
+      "pinyin": "zǒng",
+      "japanese": "いつも。全体の。"
+    },
+    {
+      "sourceId": "w00994",
+      "globalSequence": 994,
+      "simplified": "总是",
+      "pinyin": "zǒngshì",
+      "japanese": "いつも。"
+    },
+    {
+      "sourceId": "w00995",
+      "globalSequence": 995,
+      "simplified": "嘴",
+      "pinyin": "zuǐ",
+      "japanese": "口。"
+    },
+    {
+      "sourceId": "w00996",
+      "globalSequence": 996,
+      "simplified": "最好",
+      "pinyin": "zuìhǎo",
+      "japanese": "最もよい。〜したほうがよい。"
+    },
+    {
+      "sourceId": "w00997",
+      "globalSequence": 997,
+      "simplified": "最后",
+      "pinyin": "zuìhòu",
+      "japanese": "最後。"
+    },
+    {
+      "sourceId": "w00998",
+      "globalSequence": 998,
+      "simplified": "最近",
+      "pinyin": "zuìjìn",
+      "japanese": "最近。"
+    },
+    {
+      "sourceId": "w00999",
+      "globalSequence": 999,
+      "simplified": "做客",
+      "pinyin": "zuòkè",
+      "japanese": "客として訪問する。"
+    },
+    {
+      "sourceId": "w01000",
+      "globalSequence": 1000,
+      "simplified": "作业",
+      "pinyin": "zuòyè",
+      "japanese": "宿題。"
+    }
+  ]
+}

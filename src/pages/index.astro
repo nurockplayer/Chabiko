@@ -1,4 +1,5 @@
 ---
+import HskLevelLinks from '../components/HskLevelLinks.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import { ACHIEVEMENT_CATALOG } from '../domain/achievements';
@@ -188,6 +189,7 @@ const initialContinuation = deriveContinuation(
           );
         })}
       </ol>
+      <HskLevelLinks />
     </section>
 
     <!-- Milestones -->

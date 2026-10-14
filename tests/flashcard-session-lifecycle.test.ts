@@ -409,9 +409,11 @@ describe('FlashcardSession DOM lifecycle', () => {
     expect(failedWrites()).toHaveLength(1);
     expect(localStorage.getItem(storageKey)).toBe(initialRaw);
     window.dispatchEvent(new Event('pageshow'));
-    window.dispatchEvent(new StorageEvent('storage', {
+    // A null storage notification is an authoritative deletion, not an
+    // ordinary refresh of an initially absent key.
+    if (initialRaw !== null) window.dispatchEvent(new StorageEvent('storage', {
       key: storageKey,
-      newValue: null,
+      newValue: initialRaw,
       storageArea: localStorage,
     }));
     expect(resetButton.hidden).toBe(false);

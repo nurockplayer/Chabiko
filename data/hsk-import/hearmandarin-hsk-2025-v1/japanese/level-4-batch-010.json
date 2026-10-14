@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01404",
+      "globalSequence": 1404,
+      "simplified": "竟然",
+      "pinyin": "jìngrán",
+      "japanese": "意外にも。"
+    },
+    {
+      "sourceId": "w01405",
+      "globalSequence": 1405,
+      "simplified": "竞争",
+      "pinyin": "jìngzhēng",
+      "japanese": "競争する。"
+    },
+    {
+      "sourceId": "w01406",
+      "globalSequence": 1406,
+      "simplified": "镜子",
+      "pinyin": "jìngzi",
+      "japanese": "鏡。"
+    },
+    {
+      "sourceId": "w01407",
+      "globalSequence": 1407,
+      "simplified": "究竟",
+      "pinyin": "jiūjìng",
+      "japanese": "いったい。結局。"
+    },
+    {
+      "sourceId": "w01408",
+      "globalSequence": 1408,
+      "simplified": "就是",
+      "pinyin": "jiùshì",
+      "japanese": "まさに〜だ。たとえ〜でも。"
+    },
+    {
+      "sourceId": "w01409",
+      "globalSequence": 1409,
+      "simplified": "举",
+      "pinyin": "jǔ",
+      "japanese": "持ち上げる。挙げる。"
+    },
+    {
+      "sourceId": "w01410",
+      "globalSequence": 1410,
+      "simplified": "举办",
+      "pinyin": "jǔbàn",
+      "japanese": "開催する。主催する。"
+    },
+    {
+      "sourceId": "w01411",
+      "globalSequence": 1411,
+      "simplified": "举例",
+      "pinyin": "jǔlì",
+      "japanese": "例を挙げる。"
+    },
+    {
+      "sourceId": "w01412",
+      "globalSequence": 1412,
+      "simplified": "举行",
+      "pinyin": "jǔxíng",
+      "japanese": "行う。開催する。"
+    },
+    {
+      "sourceId": "w01413",
+      "globalSequence": 1413,
+      "simplified": "聚",
+      "pinyin": "jù",
+      "japanese": "集まる。"
+    },
+    {
+      "sourceId": "w01414",
+      "globalSequence": 1414,
+      "simplified": "聚餐",
+      "pinyin": "jùcān",
+      "japanese": "集まって食事をする。"
+    },
+    {
+      "sourceId": "w01415",
+      "globalSequence": 1415,
+      "simplified": "聚会",
+      "pinyin": "jùhuì",
+      "japanese": "集まる。集まり。"
+    },
+    {
+      "sourceId": "w01416",
+      "globalSequence": 1416,
+      "simplified": "拒绝",
+      "pinyin": "jùjué",
+      "japanese": "拒否する。"
+    },
+    {
+      "sourceId": "w01417",
+      "globalSequence": 1417,
+      "simplified": "距离",
+      "pinyin": "jùlí",
+      "japanese": "距離。〜から離れている。"
+    },
+    {
+      "sourceId": "w01418",
+      "globalSequence": 1418,
+      "simplified": "剧院",
+      "pinyin": "jùyuàn",
+      "japanese": "劇場。"
+    },
+    {
+      "sourceId": "w01419",
+      "globalSequence": 1419,
+      "simplified": "开玩笑",
+      "pinyin": "kāi wánxiào",
+      "japanese": "冗談を言う。"
+    },
+    {
+      "sourceId": "w01420",
+      "globalSequence": 1420,
+      "simplified": "看法",
+      "pinyin": "kànfǎ",
+      "japanese": "見方。意見。"
+    },
+    {
+      "sourceId": "w01421",
+      "globalSequence": 1421,
+      "simplified": "烤",
+      "pinyin": "kǎo",
+      "japanese": "あぶる。焼く。"
+    },
+    {
+      "sourceId": "w01422",
+      "globalSequence": 1422,
+      "simplified": "考虑",
+      "pinyin": "kǎolǜ",
+      "japanese": "考慮する。"
+    },
+    {
+      "sourceId": "w01423",
+      "globalSequence": 1423,
+      "simplified": "考生",
+      "pinyin": "kǎoshēng",
+      "japanese": "受験生。"
+    },
+    {
+      "sourceId": "w01424",
+      "globalSequence": 1424,
+      "simplified": "棵",
+      "pinyin": "kē",
+      "japanese": "木や草を数える「〜本」。"
+    },
+    {
+      "sourceId": "w01425",
+      "globalSequence": 1425,
+      "simplified": "科技",
+      "pinyin": "kējì",
+      "japanese": "科学技術。"
+    },
+    {
+      "sourceId": "w01426",
+      "globalSequence": 1426,
+      "simplified": "科学",
+      "pinyin": "kēxué",
+      "japanese": "科学。科学的な。"
+    },
+    {
+      "sourceId": "w01427",
+      "globalSequence": 1427,
+      "simplified": "咳",
+      "pinyin": "ké",
+      "japanese": "せきをする。"
+    },
+    {
+      "sourceId": "w01428",
+      "globalSequence": 1428,
+      "simplified": "咳嗽",
+      "pinyin": "késou",
+      "japanese": "せき。せきをする。"
+    },
+    {
+      "sourceId": "w01429",
+      "globalSequence": 1429,
+      "simplified": "可惜",
+      "pinyin": "kěxī",
+      "japanese": "残念な。"
+    },
+    {
+      "sourceId": "w01430",
+      "globalSequence": 1430,
+      "simplified": "克",
+      "pinyin": "kè",
+      "japanese": "グラム。克服する。"
+    },
+    {
+      "sourceId": "w01431",
+      "globalSequence": 1431,
+      "simplified": "课程",
+      "pinyin": "kèchéng",
+      "japanese": "課程。授業科目。"
+    },
+    {
+      "sourceId": "w01432",
+      "globalSequence": 1432,
+      "simplified": "客气",
+      "pinyin": "kèqi",
+      "japanese": "礼儀正しい。遠慮する。"
+    },
+    {
+      "sourceId": "w01433",
+      "globalSequence": 1433,
+      "simplified": "课堂",
+      "pinyin": "kètáng",
+      "japanese": "授業。教室。"
+    },
+    {
+      "sourceId": "w01434",
+      "globalSequence": 1434,
+      "simplified": "客厅",
+      "pinyin": "kètīng",
+      "japanese": "居間。"
+    },
+    {
+      "sourceId": "w01435",
+      "globalSequence": 1435,
+      "simplified": "肯定",
+      "pinyin": "kěndìng",
+      "japanese": "確かな。肯定する。きっと。"
+    },
+    {
+      "sourceId": "w01436",
+      "globalSequence": 1436,
+      "simplified": "空",
+      "pinyin": "kōng",
+      "japanese": "空の。空っぽの。"
+    },
+    {
+      "sourceId": "w01437",
+      "globalSequence": 1437,
+      "simplified": "空气",
+      "pinyin": "kōngqì",
+      "japanese": "空気。"
+    },
+    {
+      "sourceId": "w01438",
+      "globalSequence": 1438,
+      "simplified": "恐怕",
+      "pinyin": "kǒngpà",
+      "japanese": "おそらく。〜ではないかと心配する。"
+    },
+    {
+      "sourceId": "w01439",
+      "globalSequence": 1439,
+      "simplified": "空",
+      "pinyin": "kòng",
+      "japanese": "空き。暇。"
+    },
+    {
+      "sourceId": "w01440",
+      "globalSequence": 1440,
+      "simplified": "口语",
+      "pinyin": "kǒuyǔ",
+      "japanese": "話し言葉。"
+    },
+    {
+      "sourceId": "w01441",
+      "globalSequence": 1441,
+      "simplified": "苦",
+      "pinyin": "kǔ",
+      "japanese": "苦い。つらい。"
+    },
+    {
+      "sourceId": "w01442",
+      "globalSequence": 1442,
+      "simplified": "快餐",
+      "pinyin": "kuàicān",
+      "japanese": "ファストフード。"
+    },
+    {
+      "sourceId": "w01443",
+      "globalSequence": 1443,
+      "simplified": "快递",
+      "pinyin": "kuàidì",
+      "japanese": "宅配便。"
+    },
+    {
+      "sourceId": "w01444",
+      "globalSequence": 1444,
+      "simplified": "快速",
+      "pinyin": "kuàisù",
+      "japanese": "速い。高速の。"
+    },
+    {
+      "sourceId": "w01445",
+      "globalSequence": 1445,
+      "simplified": "困",
+      "pinyin": "kùn",
+      "japanese": "眠い。困窮する。"
+    },
+    {
+      "sourceId": "w01446",
+      "globalSequence": 1446,
+      "simplified": "困难",
+      "pinyin": "kùnnan",
+      "japanese": "困難な。困難。"
+    },
+    {
+      "sourceId": "w01447",
+      "globalSequence": 1447,
+      "simplified": "拉",
+      "pinyin": "lā",
+      "japanese": "引く。"
+    },
+    {
+      "sourceId": "w01448",
+      "globalSequence": 1448,
+      "simplified": "垃圾",
+      "pinyin": "lājī",
+      "japanese": "ごみ。"
+    },
+    {
+      "sourceId": "w01449",
+      "globalSequence": 1449,
+      "simplified": "辣",
+      "pinyin": "là",
+      "japanese": "辛い。"
+    },
+    {
+      "sourceId": "w01450",
+      "globalSequence": 1450,
+      "simplified": "来不及",
+      "pinyin": "láibují",
+      "japanese": "間に合わない。"
+    },
+    {
+      "sourceId": "w01451",
+      "globalSequence": 1451,
+      "simplified": "来得及",
+      "pinyin": "láidejí",
+      "japanese": "間に合う。"
+    },
+    {
+      "sourceId": "w01452",
+      "globalSequence": 1452,
+      "simplified": "懒",
+      "pinyin": "lǎn",
+      "japanese": "怠けた。面倒くさがる。"
+    },
+    {
+      "sourceId": "w01453",
+      "globalSequence": 1453,
+      "simplified": "浪费",
+      "pinyin": "làngfèi",
+      "japanese": "浪費する。"
+    }
+  ]
+}

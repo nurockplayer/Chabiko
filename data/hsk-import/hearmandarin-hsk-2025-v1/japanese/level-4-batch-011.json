@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01454",
+      "globalSequence": 1454,
+      "simplified": "浪漫",
+      "pinyin": "làngmàn",
+      "japanese": "ロマンチックな。"
+    },
+    {
+      "sourceId": "w01455",
+      "globalSequence": 1455,
+      "simplified": "老虎",
+      "pinyin": "lǎohǔ",
+      "japanese": "トラ。"
+    },
+    {
+      "sourceId": "w01456",
+      "globalSequence": 1456,
+      "simplified": "老家",
+      "pinyin": "lǎojiā",
+      "japanese": "故郷。実家。"
+    },
+    {
+      "sourceId": "w01457",
+      "globalSequence": 1457,
+      "simplified": "老年",
+      "pinyin": "lǎonián",
+      "japanese": "老年。"
+    },
+    {
+      "sourceId": "w01458",
+      "globalSequence": 1458,
+      "simplified": "老是",
+      "pinyin": "lǎoshì",
+      "japanese": "いつも。しょっちゅう。"
+    },
+    {
+      "sourceId": "w01459",
+      "globalSequence": 1459,
+      "simplified": "冷静",
+      "pinyin": "lěngjìng",
+      "japanese": "冷静な。落ち着く。"
+    },
+    {
+      "sourceId": "w01460",
+      "globalSequence": 1460,
+      "simplified": "理发",
+      "pinyin": "lǐfà",
+      "japanese": "散髪する。"
+    },
+    {
+      "sourceId": "w01461",
+      "globalSequence": 1461,
+      "simplified": "理解",
+      "pinyin": "lǐjiě",
+      "japanese": "理解する。"
+    },
+    {
+      "sourceId": "w01462",
+      "globalSequence": 1462,
+      "simplified": "礼貌",
+      "pinyin": "lǐmào",
+      "japanese": "礼儀。礼儀正しい。"
+    },
+    {
+      "sourceId": "w01463",
+      "globalSequence": 1463,
+      "simplified": "理想",
+      "pinyin": "lǐxiǎng",
+      "japanese": "理想。理想的な。"
+    },
+    {
+      "sourceId": "w01464",
+      "globalSequence": 1464,
+      "simplified": "厉害",
+      "pinyin": "lìhai",
+      "japanese": "すごい。厳しい。ひどい。"
+    },
+    {
+      "sourceId": "w01465",
+      "globalSequence": 1465,
+      "simplified": "力气",
+      "pinyin": "lìqi",
+      "japanese": "力。"
+    },
+    {
+      "sourceId": "w01466",
+      "globalSequence": 1466,
+      "simplified": "例如",
+      "pinyin": "lìrú",
+      "japanese": "例えば。"
+    },
+    {
+      "sourceId": "w01467",
+      "globalSequence": 1467,
+      "simplified": "例子",
+      "pinyin": "lìzi",
+      "japanese": "例。"
+    },
+    {
+      "sourceId": "w01468",
+      "globalSequence": 1468,
+      "simplified": "俩",
+      "pinyin": "liǎ",
+      "japanese": "二人。二つ。"
+    },
+    {
+      "sourceId": "w01469",
+      "globalSequence": 1469,
+      "simplified": "连",
+      "pinyin": "lián",
+      "japanese": "つなぐ。〜さえ。"
+    },
+    {
+      "sourceId": "w01470",
+      "globalSequence": 1470,
+      "simplified": "联系",
+      "pinyin": "liánxì",
+      "japanese": "連絡する。つながり。"
+    },
+    {
+      "sourceId": "w01471",
+      "globalSequence": 1471,
+      "simplified": "凉",
+      "pinyin": "liáng",
+      "japanese": "涼しい。冷たい。"
+    },
+    {
+      "sourceId": "w01472",
+      "globalSequence": 1472,
+      "simplified": "量",
+      "pinyin": "liáng",
+      "japanese": "測る。"
+    },
+    {
+      "sourceId": "w01474",
+      "globalSequence": 1474,
+      "simplified": "亮",
+      "pinyin": "liàng",
+      "japanese": "明るい。光る。"
+    },
+    {
+      "sourceId": "w01475",
+      "globalSequence": 1475,
+      "simplified": "列",
+      "pinyin": "liè",
+      "japanese": "列。並べる。"
+    },
+    {
+      "sourceId": "w01476",
+      "globalSequence": 1476,
+      "simplified": "零下",
+      "pinyin": "líng xià",
+      "japanese": "氷点下。"
+    },
+    {
+      "sourceId": "w01477",
+      "globalSequence": 1477,
+      "simplified": "零花钱",
+      "pinyin": "línghuāqián",
+      "japanese": "小遣い。"
+    },
+    {
+      "sourceId": "w01478",
+      "globalSequence": 1478,
+      "simplified": "零钱",
+      "pinyin": "língqián",
+      "japanese": "小銭。"
+    },
+    {
+      "sourceId": "w01479",
+      "globalSequence": 1479,
+      "simplified": "零食",
+      "pinyin": "língshí",
+      "japanese": "間食。お菓子。"
+    },
+    {
+      "sourceId": "w01480",
+      "globalSequence": 1480,
+      "simplified": "另",
+      "pinyin": "lìng",
+      "japanese": "別の。"
+    },
+    {
+      "sourceId": "w01481",
+      "globalSequence": 1481,
+      "simplified": "另外",
+      "pinyin": "lìngwài",
+      "japanese": "ほかに。別の。"
+    },
+    {
+      "sourceId": "w01482",
+      "globalSequence": 1482,
+      "simplified": "留",
+      "pinyin": "liú",
+      "japanese": "残る。残す。とどまる。"
+    },
+    {
+      "sourceId": "w01483",
+      "globalSequence": 1483,
+      "simplified": "流",
+      "pinyin": "liú",
+      "japanese": "流れる。"
+    },
+    {
+      "sourceId": "w01484",
+      "globalSequence": 1484,
+      "simplified": "流利",
+      "pinyin": "liúlì",
+      "japanese": "流暢な。"
+    },
+    {
+      "sourceId": "w01485",
+      "globalSequence": 1485,
+      "simplified": "留下",
+      "pinyin": "liúxia",
+      "japanese": "残す。とどまる。"
+    },
+    {
+      "sourceId": "w01486",
+      "globalSequence": 1486,
+      "simplified": "流行",
+      "pinyin": "liúxíng",
+      "japanese": "流行する。"
+    },
+    {
+      "sourceId": "w01487",
+      "globalSequence": 1487,
+      "simplified": "路过",
+      "pinyin": "lùguò",
+      "japanese": "通りかかる。"
+    },
+    {
+      "sourceId": "w01488",
+      "globalSequence": 1488,
+      "simplified": "旅馆",
+      "pinyin": "lǚguǎn",
+      "japanese": "旅館。ホテル。"
+    },
+    {
+      "sourceId": "w01489",
+      "globalSequence": 1489,
+      "simplified": "旅客",
+      "pinyin": "lǚkè",
+      "japanese": "旅行客。乗客。"
+    },
+    {
+      "sourceId": "w01490",
+      "globalSequence": 1490,
+      "simplified": "旅行",
+      "pinyin": "lǚxíng",
+      "japanese": "旅行する。旅行。"
+    },
+    {
+      "sourceId": "w01491",
+      "globalSequence": 1491,
+      "simplified": "律师",
+      "pinyin": "lǜshī",
+      "japanese": "弁護士。"
+    },
+    {
+      "sourceId": "w01492",
+      "globalSequence": 1492,
+      "simplified": "乱",
+      "pinyin": "luàn",
+      "japanese": "乱れた。むやみに。"
+    },
+    {
+      "sourceId": "w01493",
+      "globalSequence": 1493,
+      "simplified": "落",
+      "pinyin": "luò",
+      "japanese": "落ちる。"
+    },
+    {
+      "sourceId": "w01494",
+      "globalSequence": 1494,
+      "simplified": "麻烦",
+      "pinyin": "máfan",
+      "japanese": "面倒な。手数をかける。"
+    },
+    {
+      "sourceId": "w01495",
+      "globalSequence": 1495,
+      "simplified": "馒头",
+      "pinyin": "mántou",
+      "japanese": "具のない蒸しパン。"
+    },
+    {
+      "sourceId": "w01496",
+      "globalSequence": 1496,
+      "simplified": "满",
+      "pinyin": "mǎn",
+      "japanese": "満ちている。満〜。"
+    },
+    {
+      "sourceId": "w01497",
+      "globalSequence": 1497,
+      "simplified": "毛巾",
+      "pinyin": "máojīn",
+      "japanese": "タオル。"
+    },
+    {
+      "sourceId": "w01498",
+      "globalSequence": 1498,
+      "simplified": "毛衣",
+      "pinyin": "máoyī",
+      "japanese": "セーター。"
+    },
+    {
+      "sourceId": "w01499",
+      "globalSequence": 1499,
+      "simplified": "帽子",
+      "pinyin": "màozi",
+      "japanese": "帽子。"
+    },
+    {
+      "sourceId": "w01500",
+      "globalSequence": 1500,
+      "simplified": "美",
+      "pinyin": "měi",
+      "japanese": "美しい。"
+    },
+    {
+      "sourceId": "w01501",
+      "globalSequence": 1501,
+      "simplified": "美好",
+      "pinyin": "měihǎo",
+      "japanese": "すばらしい。美しくよい。"
+    },
+    {
+      "sourceId": "w01502",
+      "globalSequence": 1502,
+      "simplified": "美景",
+      "pinyin": "měijǐng",
+      "japanese": "美しい景色。"
+    },
+    {
+      "sourceId": "w01503",
+      "globalSequence": 1503,
+      "simplified": "美丽",
+      "pinyin": "měilì",
+      "japanese": "美しい。"
+    },
+    {
+      "sourceId": "w01504",
+      "globalSequence": 1504,
+      "simplified": "美食",
+      "pinyin": "měishí",
+      "japanese": "おいしい食べ物。"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 ---
+import HskLevelLinks from '../../components/HskLevelLinks.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
@@ -77,6 +78,7 @@ const pathsPayload = JSON.stringify({
           );
         })}
       </ol>
+      <HskLevelLinks />
     </section>
 
     <section

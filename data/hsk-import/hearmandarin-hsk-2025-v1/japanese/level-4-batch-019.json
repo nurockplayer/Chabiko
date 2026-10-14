@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01859",
+      "globalSequence": 1859,
+      "simplified": "要是",
+      "pinyin": "yàoshi",
+      "japanese": "もし〜なら。"
+    },
+    {
+      "sourceId": "w01860",
+      "globalSequence": 1860,
+      "simplified": "钥匙",
+      "pinyin": "yàoshi",
+      "japanese": "鍵。"
+    },
+    {
+      "sourceId": "w01861",
+      "globalSequence": 1861,
+      "simplified": "也许",
+      "pinyin": "yěxǔ",
+      "japanese": "たぶん。〜かもしれない。"
+    },
+    {
+      "sourceId": "w01862",
+      "globalSequence": 1862,
+      "simplified": "夜",
+      "pinyin": "yè",
+      "japanese": "夜。"
+    },
+    {
+      "sourceId": "w01863",
+      "globalSequence": 1863,
+      "simplified": "夜晚",
+      "pinyin": "yèwǎn",
+      "japanese": "夜。晩。"
+    },
+    {
+      "sourceId": "w01864",
+      "globalSequence": 1864,
+      "simplified": "叶子",
+      "pinyin": "yèzi",
+      "japanese": "葉。"
+    },
+    {
+      "sourceId": "w01865",
+      "globalSequence": 1865,
+      "simplified": "一切",
+      "pinyin": "yíqiè",
+      "japanese": "すべて。"
+    },
+    {
+      "sourceId": "w01866",
+      "globalSequence": 1866,
+      "simplified": "已",
+      "pinyin": "yǐ",
+      "japanese": "すでに。"
+    },
+    {
+      "sourceId": "w01867",
+      "globalSequence": 1867,
+      "simplified": "以内",
+      "pinyin": "yǐnèi",
+      "japanese": "以内。"
+    },
+    {
+      "sourceId": "w01868",
+      "globalSequence": 1868,
+      "simplified": "意见",
+      "pinyin": "yìjiàn",
+      "japanese": "意見。"
+    },
+    {
+      "sourceId": "w01869",
+      "globalSequence": 1869,
+      "simplified": "一生",
+      "pinyin": "yìshēng",
+      "japanese": "一生。"
+    },
+    {
+      "sourceId": "w01870",
+      "globalSequence": 1870,
+      "simplified": "艺术",
+      "pinyin": "yìshù",
+      "japanese": "芸術。"
+    },
+    {
+      "sourceId": "w01871",
+      "globalSequence": 1871,
+      "simplified": "因此",
+      "pinyin": "yīncǐ",
+      "japanese": "したがって。"
+    },
+    {
+      "sourceId": "w01872",
+      "globalSequence": 1872,
+      "simplified": "引起",
+      "pinyin": "yǐnqǐ",
+      "japanese": "引き起こす。"
+    },
+    {
+      "sourceId": "w01873",
+      "globalSequence": 1873,
+      "simplified": "印象",
+      "pinyin": "yìnxiàng",
+      "japanese": "印象。"
+    },
+    {
+      "sourceId": "w01874",
+      "globalSequence": 1874,
+      "simplified": "赢",
+      "pinyin": "yíng",
+      "japanese": "勝つ。"
+    },
+    {
+      "sourceId": "w01875",
+      "globalSequence": 1875,
+      "simplified": "赢得",
+      "pinyin": "yíngdé",
+      "japanese": "勝ち取る。"
+    },
+    {
+      "sourceId": "w01876",
+      "globalSequence": 1876,
+      "simplified": "应聘",
+      "pinyin": "yìngpìn",
+      "japanese": "求人に応募する。"
+    },
+    {
+      "sourceId": "w01877",
+      "globalSequence": 1877,
+      "simplified": "勇敢",
+      "pinyin": "yǒnggǎn",
+      "japanese": "勇敢な。"
+    },
+    {
+      "sourceId": "w01878",
+      "globalSequence": 1878,
+      "simplified": "永远",
+      "pinyin": "yǒngyuǎn",
+      "japanese": "永遠に。いつまでも。"
+    },
+    {
+      "sourceId": "w01879",
+      "globalSequence": 1879,
+      "simplified": "用来",
+      "pinyin": "yònglái",
+      "japanese": "〜するために使う。"
+    },
+    {
+      "sourceId": "w01880",
+      "globalSequence": 1880,
+      "simplified": "用于",
+      "pinyin": "yòngyú",
+      "japanese": "〜に用いる。"
+    },
+    {
+      "sourceId": "w01881",
+      "globalSequence": 1881,
+      "simplified": "优点",
+      "pinyin": "yōudiǎn",
+      "japanese": "長所。"
+    },
+    {
+      "sourceId": "w01882",
+      "globalSequence": 1882,
+      "simplified": "幽默",
+      "pinyin": "yōumò",
+      "japanese": "ユーモア。ユーモアのある。"
+    },
+    {
+      "sourceId": "w01883",
+      "globalSequence": 1883,
+      "simplified": "优秀",
+      "pinyin": "yōuxiù",
+      "japanese": "優秀な。"
+    },
+    {
+      "sourceId": "w01884",
+      "globalSequence": 1884,
+      "simplified": "由",
+      "pinyin": "yóu",
+      "japanese": "〜によって。〜から。"
+    },
+    {
+      "sourceId": "w01885",
+      "globalSequence": 1885,
+      "simplified": "油",
+      "pinyin": "yóu",
+      "japanese": "油。"
+    },
+    {
+      "sourceId": "w01886",
+      "globalSequence": 1886,
+      "simplified": "尤其",
+      "pinyin": "yóuqí",
+      "japanese": "特に。"
+    },
+    {
+      "sourceId": "w01887",
+      "globalSequence": 1887,
+      "simplified": "游玩",
+      "pinyin": "yóuwán",
+      "japanese": "遊びに行く。観光する。"
+    },
+    {
+      "sourceId": "w01888",
+      "globalSequence": 1888,
+      "simplified": "由于",
+      "pinyin": "yóuyú",
+      "japanese": "〜のために。〜が原因で。"
+    },
+    {
+      "sourceId": "w01889",
+      "globalSequence": 1889,
+      "simplified": "友好",
+      "pinyin": "yǒuhǎo",
+      "japanese": "友好的な。"
+    },
+    {
+      "sourceId": "w01890",
+      "globalSequence": 1890,
+      "simplified": "友情",
+      "pinyin": "yǒuqíng",
+      "japanese": "友情。"
+    },
+    {
+      "sourceId": "w01891",
+      "globalSequence": 1891,
+      "simplified": "有趣",
+      "pinyin": "yǒuqù",
+      "japanese": "おもしろい。"
+    },
+    {
+      "sourceId": "w01892",
+      "globalSequence": 1892,
+      "simplified": "有效",
+      "pinyin": "yǒuxiào",
+      "japanese": "有効な。"
+    },
+    {
+      "sourceId": "w01893",
+      "globalSequence": 1893,
+      "simplified": "友谊",
+      "pinyin": "yǒuyì",
+      "japanese": "友情。"
+    },
+    {
+      "sourceId": "w01894",
+      "globalSequence": 1894,
+      "simplified": "有着",
+      "pinyin": "yǒuzhe",
+      "japanese": "持っている。"
+    },
+    {
+      "sourceId": "w01895",
+      "globalSequence": 1895,
+      "simplified": "愉快",
+      "pinyin": "yúkuài",
+      "japanese": "愉快な。楽しい。"
+    },
+    {
+      "sourceId": "w01896",
+      "globalSequence": 1896,
+      "simplified": "于是",
+      "pinyin": "yúshì",
+      "japanese": "そこで。その結果。"
+    },
+    {
+      "sourceId": "w01897",
+      "globalSequence": 1897,
+      "simplified": "与",
+      "pinyin": "yǔ",
+      "japanese": "〜と。〜と共に。"
+    },
+    {
+      "sourceId": "w01898",
+      "globalSequence": 1898,
+      "simplified": "语法",
+      "pinyin": "yǔfǎ",
+      "japanese": "文法。"
+    },
+    {
+      "sourceId": "w01899",
+      "globalSequence": 1899,
+      "simplified": "预习",
+      "pinyin": "yùxí",
+      "japanese": "予習する。"
+    },
+    {
+      "sourceId": "w01900",
+      "globalSequence": 1900,
+      "simplified": "原来",
+      "pinyin": "yuánlái",
+      "japanese": "もともと。なんだ、〜だったのか。"
+    },
+    {
+      "sourceId": "w01901",
+      "globalSequence": 1901,
+      "simplified": "原谅",
+      "pinyin": "yuánliàng",
+      "japanese": "許す。"
+    },
+    {
+      "sourceId": "w01902",
+      "globalSequence": 1902,
+      "simplified": "原因",
+      "pinyin": "yuányīn",
+      "japanese": "原因。理由。"
+    },
+    {
+      "sourceId": "w01903",
+      "globalSequence": 1903,
+      "simplified": "远离",
+      "pinyin": "yuǎnlí",
+      "japanese": "遠ざかる。"
+    },
+    {
+      "sourceId": "w01904",
+      "globalSequence": 1904,
+      "simplified": "院长",
+      "pinyin": "yuànzhǎng",
+      "japanese": "病院・学院などの長。"
+    },
+    {
+      "sourceId": "w01905",
+      "globalSequence": 1905,
+      "simplified": "院子",
+      "pinyin": "yuànzi",
+      "japanese": "庭。"
+    },
+    {
+      "sourceId": "w01906",
+      "globalSequence": 1906,
+      "simplified": "约",
+      "pinyin": "yuē",
+      "japanese": "約束する。約〜。"
+    },
+    {
+      "sourceId": "w01907",
+      "globalSequence": 1907,
+      "simplified": "约会",
+      "pinyin": "yuēhuì",
+      "japanese": "会う約束。デートする。"
+    },
+    {
+      "sourceId": "w01908",
+      "globalSequence": 1908,
+      "simplified": "月饼",
+      "pinyin": "yuèbing",
+      "japanese": "月餅。"
+    }
+  ]
+}

@@ -202,7 +202,9 @@ function isValidProgressEntry(entry: unknown): boolean {
   if (entry === null || typeof entry !== 'object') return false;
   const e = entry as Record<string, unknown>;
   return (
-    typeof e.status === 'string' && typeof e.knownStreak === 'number'
+    (e.status === 'new' || e.status === 'learning' || e.status === 'learned') &&
+    typeof e.knownStreak === 'number' && Number.isFinite(e.knownStreak) &&
+    Number.isInteger(e.knownStreak) && e.knownStreak >= 0
   );
 }
 
@@ -219,7 +221,12 @@ function getDefaultStorage(): StorageLike | null {
       }
       return localStorage;
     }
-  } catch {
+  } catch (error) {
+    // Quota limits can block the probe while reads still work. Retain the
+    // storage handle so existing progress loads and later writes can recover.
+    if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'QuotaExceededError') {
+      try { return localStorage; } catch { /* Storage access itself is denied. */ }
+    }
     /* localStorage unavailable (SSR, private browsing, etc.) */
   }
   return null;
@@ -240,6 +247,10 @@ export class VocabularyProgressStore {
   private document: VocabularyProgressDocument;
   private storage: StorageLike | null;
   private persistencePending = false;
+  private pendingEntries: Record<string, VocabularyProgressEntry> = {};
+  private resetPending = false;
+  private resetEntryIds = new Set<string>();
+  private resetSnapshotUnknown = false;
   private hasObservedStorageValue = false;
   private lastObservedStorageValue: string | null = null;
 
@@ -278,7 +289,10 @@ export class VocabularyProgressStore {
   ): void {
     this.syncFromStorage();
     const current = this.document.entries[id];
+    // Reinsertion preserves least-recently-reviewed ordering for session fairness.
+    delete this.document.entries[id];
     this.document.entries[id] = applyRatingToProgress(current, rating);
+    this.pendingEntries[id] = this.document.entries[id];
     this.persist();
   }
 
@@ -293,9 +307,9 @@ export class VocabularyProgressStore {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   /** Re-read progress from storage. Call on `pageshow`. */
-  refresh(): void {
+  refresh(externalClear = false): void {
     if (this.storage !== null) {
-      this.load();
+      this.load(externalClear);
     }
     /* storage === null: keep in-memory state */
   }
@@ -305,10 +319,17 @@ export class VocabularyProgressStore {
    * Never clears lesson completion or unrelated localStorage.
    */
   resetAll(): void {
+    const observed = this.syncFromStorage();
+    this.resetSnapshotUnknown = this.resetSnapshotUnknown || !observed;
+    // Retain exclusions across repeated failed resets, including disk changes
+    // not yet observed by the page and newly accepted page-memory ratings.
+    for (const id of Object.keys(this.document.entries)) this.resetEntryIds.add(id);
     this.document = emptyDocument();
+    this.pendingEntries = {};
+    this.resetPending = true;
     try {
       this.storage?.removeItem(VOCABULARY_PROGRESS_KEY);
-      this.persistencePending = false;
+      this.clearPending();
       this.rememberStorageValue(null);
     } catch {
       /* keep the reset in memory until storage can be reconciled */
@@ -318,47 +339,53 @@ export class VocabularyProgressStore {
 
   // ── Internal ──────────────────────────────────────────────────────────────
 
-  private load(): void {
-    try {
-      const raw = this.storage?.getItem(VOCABULARY_PROGRESS_KEY) ?? null;
-      const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
-      // Rejected snapshots cannot reset progress or its pending-write baseline.
-      if (doc === null) return;
-      if (this.shouldKeepPendingDocument(raw)) return;
-      this.rememberStorageValue(raw);
-      this.document = doc;
-    } catch {
-      /* Preserve page-memory progress when storage is temporarily unreadable. */
-      return;
-    }
+  private load(externalClear = false): void {
+    this.syncFromStorage(externalClear);
   }
 
-  /**
-   * Re-read the current storage state before a write, matching
-   * the ProgressStore.markComplete cross-tab safety pattern.
-   *
-   * When storage is malformed, keeps existing in-memory state
-   * so progress survives the active page lifetime.
-   */
-  private syncFromStorage(): void {
-    if (this.storage === null) return;
+  private clearPending(): void {
+    this.persistencePending = false;
+    this.pendingEntries = {};
+    this.resetPending = false;
+    this.resetEntryIds.clear();
+    this.resetSnapshotUnknown = false;
+  }
+
+  /** Reconcile valid disk data with accepted, unsaved page-memory ratings. */
+  private syncFromStorage(externalClear = false): boolean {
+    if (this.storage === null) return false;
     try {
       const raw = this.storage.getItem(VOCABULARY_PROGRESS_KEY);
       const doc = typeof raw === 'string' ? parseDocument(raw) : emptyDocument();
-      if (doc === null) return;
-      if (this.shouldKeepPendingDocument(raw)) return;
+      if (doc === null) return false;
+      // A confirmed deletion wins over pending ratings. Verify current storage
+      // so a delayed deletion event cannot clear a newer persisted document.
+      const disappeared = raw === null && this.hasObservedStorageValue && this.lastObservedStorageValue !== null;
+      if (raw === null && (externalClear || disappeared)) {
+        this.clearPending();
+        this.document = emptyDocument();
+      } else if (this.resetPending) {
+        // An unreadable pre-reset snapshot cannot prove which disk entries
+        // are newer. Keep the reset authoritative until a successful write or
+        // deletion; known snapshots may still contribute unrelated new IDs.
+        const entries = this.resetSnapshotUnknown ? {} : doc.entries;
+        for (const id of this.resetEntryIds) delete entries[id];
+        this.document = { version: 1, entries: { ...entries, ...this.pendingEntries } };
+      } else if (this.persistencePending) {
+        for (const [id, entry] of Object.entries(this.pendingEntries)) {
+          delete doc.entries[id];
+          doc.entries[id] = entry;
+        }
+        this.document = doc;
+      } else {
+        this.document = doc;
+      }
       this.rememberStorageValue(raw);
-      this.document = doc;
+      return true;
     } catch {
-      /* storage malformed — keep existing in-memory state */
+      /* Unreadable storage is not evidence of a reset. Keep page memory. */
+      return false;
     }
-  }
-
-  private shouldKeepPendingDocument(raw: string | null): boolean {
-    if (!this.persistencePending) return false;
-    if (this.hasObservedStorageValue && raw === this.lastObservedStorageValue) return true;
-    this.persistencePending = false;
-    return false;
   }
 
   private rememberStorageValue(raw: string | null): void {
@@ -371,7 +398,7 @@ export class VocabularyProgressStore {
     try {
       const raw = JSON.stringify(this.document);
       this.storage.setItem(VOCABULARY_PROGRESS_KEY, raw);
-      this.persistencePending = false;
+      this.clearPending();
       this.rememberStorageValue(raw);
     } catch {
       /* storage full or unavailable — keep in-memory state */

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceManifestId": "chabiko-learner-unicode-sources-v1",
-  "sourceManifestSha256": "cef3726dbf03b4acd1f90da723701bfd9a6823783ab4067eee8e7a45fc24bcde",
+  "sourceManifestSha256": "70ca8d5d4abd307838a8b32ba161aa4885307797b0128b30fe2b93a82327fcc5",
   "unicodeVersion": "16.0.0",
   "evidence": [
     {
@@ -114437,7 +114437,7 @@
       "id": "evidence-0ed8c57da331315b",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/0/labelJa",
       "field": "labelJa",
       "language": "ja",
@@ -114487,7 +114487,7 @@
       "id": "evidence-f1c94b6d59ef851b",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/0/descriptionJa",
       "field": "descriptionJa",
       "language": "ja",
@@ -114672,7 +114672,7 @@
       "id": "evidence-dc22ac964b9c3619",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/1/labelJa",
       "field": "labelJa",
       "language": "ja",
@@ -114704,19 +114704,20 @@
       "id": "evidence-038b6d5e6651dc20",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/1/descriptionJa",
       "field": "descriptionJa",
       "language": "ja",
       "scriptStatus": null,
-      "text": "HSK 1級の単語をフラッシュカードで学ぶルート。簡体字を基本表示にします。",
+      "text": "HSK 1〜4の単語をフラッシュカードで学ぶルート。簡体字を基本表示にします。",
       "scalars": [
         72,
         83,
         75,
         32,
         49,
-        32026,
+        12316,
+        52,
         12398,
         21336,
         35486,
@@ -114756,7 +114757,8 @@
         75,
         32,
         49,
-        32026,
+        12316,
+        52,
         12398,
         21336,
         35486,
@@ -114796,7 +114798,8 @@
         75,
         32,
         49,
-        32026,
+        12316,
+        52,
         12398,
         21336,
         35486,
@@ -114835,7 +114838,7 @@
       "id": "evidence-3b3804366059faf4",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/2/labelJa",
       "field": "labelJa",
       "language": "ja",
@@ -114870,7 +114873,7 @@
       "id": "evidence-9275488f155a8c45",
       "sourceId": "learning-paths-v1",
       "sourcePath": "data/learning-paths.json",
-      "sourceSha256": "5214d22c09d005e5987f10ba84febf4950379914e9b39af30e4fa9d656a2698d",
+      "sourceSha256": "4dffd2452872ee201a82b6087ceb70d2ce0961d501107b3a43fc49d645cbd82f",
       "jsonPointer": "/learningPaths/2/descriptionJa",
       "field": "descriptionJa",
       "language": "ja",
@@ -226962,7 +226965,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 7
+          "scalarIndex": 8
         },
         {
           "evidenceRef": "evidence-28db5f96d09e1f2a",
@@ -228146,7 +228149,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 25
+          "scalarIndex": 26
         },
         {
           "evidenceRef": "evidence-28db5f96d09e1f2a",
@@ -229216,7 +229219,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 29
+          "scalarIndex": 30
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -232004,7 +232007,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 30
+          "scalarIndex": 31
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -232504,7 +232507,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 31
+          "scalarIndex": 32
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -238160,7 +238163,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 8
+          "scalarIndex": 9
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -243230,7 +243233,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 32
+          "scalarIndex": 33
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -248254,7 +248257,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 27
+          "scalarIndex": 28
         },
         {
           "evidenceRef": "evidence-3b3804366059faf4",
@@ -260370,7 +260373,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 19
+          "scalarIndex": 20
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -274838,7 +274841,7 @@
         },
         {
           "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 26
+          "scalarIndex": 27
         },
         {
           "evidenceRef": "evidence-9275488f155a8c45",
@@ -312697,24 +312700,6 @@
       ]
     },
     {
-      "id": "han-u7d1a",
-      "scalar": 32026,
-      "hex": "U+7D1A",
-      "character": "級",
-      "unicodeName": "CJK UNIFIED IDEOGRAPH-7D1A",
-      "firstOccurrenceRef": "evidence-038b6d5e6651dc20",
-      "occurrences": [
-        {
-          "evidenceRef": "evidence-038b6d5e6651dc20",
-          "scalarIndex": 5
-        },
-        {
-          "evidenceRef": "evidence-7d759b86fdb51c9f",
-          "scalarIndex": 2
-        }
-      ]
-    },
-    {
       "id": "han-u8fce",
       "scalar": 36814,
       "hex": "U+8FCE",
@@ -332837,6 +332822,20 @@
       ]
     },
     {
+      "id": "han-u7d1a",
+      "scalar": 32026,
+      "hex": "U+7D1A",
+      "character": "級",
+      "unicodeName": "CJK UNIFIED IDEOGRAPH-7D1A",
+      "firstOccurrenceRef": "evidence-7d759b86fdb51c9f",
+      "occurrences": [
+        {
+          "evidenceRef": "evidence-7d759b86fdb51c9f",
+          "scalarIndex": 2
+        }
+      ]
+    },
+    {
       "id": "han-u50da",
       "scalar": 20698,
       "hex": "U+50DA",
@@ -340085,6 +340084,6 @@
     "sources": 16,
     "evidence": 4520,
     "uniqueHanScalars": 1854,
-    "occurrences": 23791
+    "occurrences": 23790
   }
 }

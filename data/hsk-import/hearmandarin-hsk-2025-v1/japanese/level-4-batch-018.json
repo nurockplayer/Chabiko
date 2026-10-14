@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01809",
+      "globalSequence": 1809,
+      "simplified": "想法",
+      "pinyin": "xiǎngfǎ",
+      "japanese": "考え。思いつき。"
+    },
+    {
+      "sourceId": "w01810",
+      "globalSequence": 1810,
+      "simplified": "项",
+      "pinyin": "xiàng",
+      "japanese": "項目。事柄を数える「〜項・件」。"
+    },
+    {
+      "sourceId": "w01811",
+      "globalSequence": 1811,
+      "simplified": "消息",
+      "pinyin": "xiāoxi",
+      "japanese": "知らせ。ニュース。"
+    },
+    {
+      "sourceId": "w01812",
+      "globalSequence": 1812,
+      "simplified": "小吃",
+      "pinyin": "xiǎochī",
+      "japanese": "軽食。土地の手軽な食べ物。"
+    },
+    {
+      "sourceId": "w01813",
+      "globalSequence": 1813,
+      "simplified": "小伙子",
+      "pinyin": "xiǎohuǒzi",
+      "japanese": "若い男性。"
+    },
+    {
+      "sourceId": "w01814",
+      "globalSequence": 1814,
+      "simplified": "小说",
+      "pinyin": "xiǎoshuō",
+      "japanese": "小説。"
+    },
+    {
+      "sourceId": "w01815",
+      "globalSequence": 1815,
+      "simplified": "小组",
+      "pinyin": "xiǎozǔ",
+      "japanese": "小グループ。班。"
+    },
+    {
+      "sourceId": "w01816",
+      "globalSequence": 1816,
+      "simplified": "效果",
+      "pinyin": "xiàoguǒ",
+      "japanese": "効果。"
+    },
+    {
+      "sourceId": "w01817",
+      "globalSequence": 1817,
+      "simplified": "笑话",
+      "pinyin": "xiàohua",
+      "japanese": "笑い話。笑いものにする。"
+    },
+    {
+      "sourceId": "w01818",
+      "globalSequence": 1818,
+      "simplified": "血",
+      "pinyin": "xiě",
+      "japanese": "血。"
+    },
+    {
+      "sourceId": "w01819",
+      "globalSequence": 1819,
+      "simplified": "心",
+      "pinyin": "xīn",
+      "japanese": "心。心臓。"
+    },
+    {
+      "sourceId": "w01820",
+      "globalSequence": 1820,
+      "simplified": "辛苦",
+      "pinyin": "xīnkǔ",
+      "japanese": "苦労する。大変な。"
+    },
+    {
+      "sourceId": "w01821",
+      "globalSequence": 1821,
+      "simplified": "心情",
+      "pinyin": "xīnqíng",
+      "japanese": "気分。気持ち。"
+    },
+    {
+      "sourceId": "w01822",
+      "globalSequence": 1822,
+      "simplified": "信号",
+      "pinyin": "xìnhào",
+      "japanese": "信号。"
+    },
+    {
+      "sourceId": "w01823",
+      "globalSequence": 1823,
+      "simplified": "信息",
+      "pinyin": "xìnxī",
+      "japanese": "情報。"
+    },
+    {
+      "sourceId": "w01824",
+      "globalSequence": 1824,
+      "simplified": "信心",
+      "pinyin": "xìnxīn",
+      "japanese": "自信。信頼。"
+    },
+    {
+      "sourceId": "w01825",
+      "globalSequence": 1825,
+      "simplified": "兴奋",
+      "pinyin": "xīngfèn",
+      "japanese": "興奮する。"
+    },
+    {
+      "sourceId": "w01826",
+      "globalSequence": 1826,
+      "simplified": "星星",
+      "pinyin": "xīngxing",
+      "japanese": "星。"
+    },
+    {
+      "sourceId": "w01827",
+      "globalSequence": 1827,
+      "simplified": "醒",
+      "pinyin": "xǐng",
+      "japanese": "目が覚める。"
+    },
+    {
+      "sourceId": "w01828",
+      "globalSequence": 1828,
+      "simplified": "性",
+      "pinyin": "xìng",
+      "japanese": "性質。性。"
+    },
+    {
+      "sourceId": "w01829",
+      "globalSequence": 1829,
+      "simplified": "性别",
+      "pinyin": "xìngbié",
+      "japanese": "性別。"
+    },
+    {
+      "sourceId": "w01830",
+      "globalSequence": 1830,
+      "simplified": "幸福",
+      "pinyin": "xìngfú",
+      "japanese": "幸せな。幸福。"
+    },
+    {
+      "sourceId": "w01831",
+      "globalSequence": 1831,
+      "simplified": "性格",
+      "pinyin": "xìnggé",
+      "japanese": "性格。"
+    },
+    {
+      "sourceId": "w01832",
+      "globalSequence": 1832,
+      "simplified": "兄弟",
+      "pinyin": "xiōngdì",
+      "japanese": "兄弟。"
+    },
+    {
+      "sourceId": "w01833",
+      "globalSequence": 1833,
+      "simplified": "熊",
+      "pinyin": "xióng",
+      "japanese": "熊。"
+    },
+    {
+      "sourceId": "w01834",
+      "globalSequence": 1834,
+      "simplified": "修",
+      "pinyin": "xiū",
+      "japanese": "修理する。学ぶ。"
+    },
+    {
+      "sourceId": "w01835",
+      "globalSequence": 1835,
+      "simplified": "修理",
+      "pinyin": "xiūlǐ",
+      "japanese": "修理する。"
+    },
+    {
+      "sourceId": "w01836",
+      "globalSequence": 1836,
+      "simplified": "许多",
+      "pinyin": "xǔduō",
+      "japanese": "たくさんの。"
+    },
+    {
+      "sourceId": "w01837",
+      "globalSequence": 1837,
+      "simplified": "学费",
+      "pinyin": "xuéfèi",
+      "japanese": "学費。"
+    },
+    {
+      "sourceId": "w01838",
+      "globalSequence": 1838,
+      "simplified": "学院",
+      "pinyin": "xuéyuàn",
+      "japanese": "大学の学部。単科大学。"
+    },
+    {
+      "sourceId": "w01839",
+      "globalSequence": 1839,
+      "simplified": "压",
+      "pinyin": "yā",
+      "japanese": "押す。圧迫する。"
+    },
+    {
+      "sourceId": "w01840",
+      "globalSequence": 1840,
+      "simplified": "压力",
+      "pinyin": "yālì",
+      "japanese": "圧力。プレッシャー。"
+    },
+    {
+      "sourceId": "w01841",
+      "globalSequence": 1841,
+      "simplified": "牙膏",
+      "pinyin": "yágāo",
+      "japanese": "歯磨き粉。"
+    },
+    {
+      "sourceId": "w01842",
+      "globalSequence": 1842,
+      "simplified": "亚洲",
+      "pinyin": "Yàzhōu",
+      "japanese": "アジア。"
+    },
+    {
+      "sourceId": "w01843",
+      "globalSequence": 1843,
+      "simplified": "烟",
+      "pinyin": "yān",
+      "japanese": "煙。たばこ。"
+    },
+    {
+      "sourceId": "w01844",
+      "globalSequence": 1844,
+      "simplified": "盐",
+      "pinyin": "yán",
+      "japanese": "塩。"
+    },
+    {
+      "sourceId": "w01845",
+      "globalSequence": 1845,
+      "simplified": "严格",
+      "pinyin": "yángé",
+      "japanese": "厳しい。厳格な。"
+    },
+    {
+      "sourceId": "w01846",
+      "globalSequence": 1846,
+      "simplified": "研究",
+      "pinyin": "yánjiū",
+      "japanese": "研究する。研究。"
+    },
+    {
+      "sourceId": "w01847",
+      "globalSequence": 1847,
+      "simplified": "研究生",
+      "pinyin": "yánjiūshēng",
+      "japanese": "大学院生。"
+    },
+    {
+      "sourceId": "w01848",
+      "globalSequence": 1848,
+      "simplified": "严重",
+      "pinyin": "yánzhòng",
+      "japanese": "深刻な。重大な。"
+    },
+    {
+      "sourceId": "w01849",
+      "globalSequence": 1849,
+      "simplified": "演",
+      "pinyin": "yǎn",
+      "japanese": "演じる。"
+    },
+    {
+      "sourceId": "w01850",
+      "globalSequence": 1850,
+      "simplified": "演唱",
+      "pinyin": "yǎnchàng",
+      "japanese": "歌う。"
+    },
+    {
+      "sourceId": "w01851",
+      "globalSequence": 1851,
+      "simplified": "演出",
+      "pinyin": "yǎnchū",
+      "japanese": "公演する。公演。"
+    },
+    {
+      "sourceId": "w01852",
+      "globalSequence": 1852,
+      "simplified": "眼镜",
+      "pinyin": "yǎnjìng",
+      "japanese": "眼鏡。"
+    },
+    {
+      "sourceId": "w01853",
+      "globalSequence": 1853,
+      "simplified": "眼前",
+      "pinyin": "yǎnqián",
+      "japanese": "目の前。"
+    },
+    {
+      "sourceId": "w01854",
+      "globalSequence": 1854,
+      "simplified": "演员",
+      "pinyin": "yǎnyuán",
+      "japanese": "俳優。役者。"
+    },
+    {
+      "sourceId": "w01855",
+      "globalSequence": 1855,
+      "simplified": "阳光",
+      "pinyin": "yángguāng",
+      "japanese": "日光。明るく前向きな。"
+    },
+    {
+      "sourceId": "w01856",
+      "globalSequence": 1856,
+      "simplified": "养成",
+      "pinyin": "yǎngchéng",
+      "japanese": "身につける。習慣をつける。"
+    },
+    {
+      "sourceId": "w01857",
+      "globalSequence": 1857,
+      "simplified": "样子",
+      "pinyin": "yàngzi",
+      "japanese": "様子。姿。"
+    },
+    {
+      "sourceId": "w01858",
+      "globalSequence": 1858,
+      "simplified": "邀请",
+      "pinyin": "yāoqǐng",
+      "japanese": "招待する。"
+    }
+  ]
+}

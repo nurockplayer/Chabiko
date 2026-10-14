@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01505",
+      "globalSequence": 1505,
+      "simplified": "梦",
+      "pinyin": "mèng",
+      "japanese": "夢。"
+    },
+    {
+      "sourceId": "w01506",
+      "globalSequence": 1506,
+      "simplified": "梦想",
+      "pinyin": "mèngxiǎng",
+      "japanese": "夢。夢見る。"
+    },
+    {
+      "sourceId": "w01507",
+      "globalSequence": 1507,
+      "simplified": "密码",
+      "pinyin": "mìmǎ",
+      "japanese": "パスワード。暗証番号。"
+    },
+    {
+      "sourceId": "w01508",
+      "globalSequence": 1508,
+      "simplified": "免费",
+      "pinyin": "miǎnfèi",
+      "japanese": "無料の。"
+    },
+    {
+      "sourceId": "w01509",
+      "globalSequence": 1509,
+      "simplified": "面对",
+      "pinyin": "miànduì",
+      "japanese": "向き合う。直面する。"
+    },
+    {
+      "sourceId": "w01510",
+      "globalSequence": 1510,
+      "simplified": "面试",
+      "pinyin": "miànshì",
+      "japanese": "面接。面接する。"
+    },
+    {
+      "sourceId": "w01511",
+      "globalSequence": 1511,
+      "simplified": "秒",
+      "pinyin": "miǎo",
+      "japanese": "秒。"
+    },
+    {
+      "sourceId": "w01512",
+      "globalSequence": 1512,
+      "simplified": "民族",
+      "pinyin": "mínzú",
+      "japanese": "民族。"
+    },
+    {
+      "sourceId": "w01513",
+      "globalSequence": 1513,
+      "simplified": "末",
+      "pinyin": "mò",
+      "japanese": "末。終わり。"
+    },
+    {
+      "sourceId": "w01514",
+      "globalSequence": 1514,
+      "simplified": "母女",
+      "pinyin": "mǔnǚ",
+      "japanese": "母と娘。"
+    },
+    {
+      "sourceId": "w01515",
+      "globalSequence": 1515,
+      "simplified": "母亲",
+      "pinyin": "mǔqīn",
+      "japanese": "母。"
+    },
+    {
+      "sourceId": "w01516",
+      "globalSequence": 1516,
+      "simplified": "母子",
+      "pinyin": "mǔzǐ",
+      "japanese": "母と息子。"
+    },
+    {
+      "sourceId": "w01517",
+      "globalSequence": 1517,
+      "simplified": "目标",
+      "pinyin": "mùbiāo",
+      "japanese": "目標。"
+    },
+    {
+      "sourceId": "w01518",
+      "globalSequence": 1518,
+      "simplified": "目的",
+      "pinyin": "mùdì",
+      "japanese": "目的。"
+    },
+    {
+      "sourceId": "w01519",
+      "globalSequence": 1519,
+      "simplified": "目的地",
+      "pinyin": "mùdìdì",
+      "japanese": "目的地。"
+    },
+    {
+      "sourceId": "w01520",
+      "globalSequence": 1520,
+      "simplified": "目前",
+      "pinyin": "mùqián",
+      "japanese": "現在。目下。"
+    },
+    {
+      "sourceId": "w01521",
+      "globalSequence": 1521,
+      "simplified": "耐心",
+      "pinyin": "nàixīn",
+      "japanese": "忍耐強い。根気。"
+    },
+    {
+      "sourceId": "w01522",
+      "globalSequence": 1522,
+      "simplified": "南部",
+      "pinyin": "nánbù",
+      "japanese": "南部。"
+    },
+    {
+      "sourceId": "w01523",
+      "globalSequence": 1523,
+      "simplified": "难道",
+      "pinyin": "nándào",
+      "japanese": "まさか〜なのか（反語）。"
+    },
+    {
+      "sourceId": "w01524",
+      "globalSequence": 1524,
+      "simplified": "男士",
+      "pinyin": "nánshì",
+      "japanese": "男性。男性への敬称。"
+    },
+    {
+      "sourceId": "w01525",
+      "globalSequence": 1525,
+      "simplified": "难受",
+      "pinyin": "nánshòu",
+      "japanese": "つらい。気分が悪い。"
+    },
+    {
+      "sourceId": "w01526",
+      "globalSequence": 1526,
+      "simplified": "难忘",
+      "pinyin": "nánwàng",
+      "japanese": "忘れがたい。"
+    },
+    {
+      "sourceId": "w01527",
+      "globalSequence": 1527,
+      "simplified": "男性",
+      "pinyin": "nánxìng",
+      "japanese": "男性。"
+    },
+    {
+      "sourceId": "w01528",
+      "globalSequence": 1528,
+      "simplified": "内",
+      "pinyin": "nèi",
+      "japanese": "内。中。"
+    },
+    {
+      "sourceId": "w01529",
+      "globalSequence": 1529,
+      "simplified": "内容",
+      "pinyin": "nèiróng",
+      "japanese": "内容。"
+    },
+    {
+      "sourceId": "w01530",
+      "globalSequence": 1530,
+      "simplified": "内心",
+      "pinyin": "nèixīn",
+      "japanese": "心の中。"
+    },
+    {
+      "sourceId": "w01531",
+      "globalSequence": 1531,
+      "simplified": "能否",
+      "pinyin": "néng fǒu",
+      "japanese": "〜できるかどうか。"
+    },
+    {
+      "sourceId": "w01532",
+      "globalSequence": 1532,
+      "simplified": "能够",
+      "pinyin": "nénggòu",
+      "japanese": "〜できる。"
+    },
+    {
+      "sourceId": "w01533",
+      "globalSequence": 1533,
+      "simplified": "能力",
+      "pinyin": "nénglì",
+      "japanese": "能力。"
+    },
+    {
+      "sourceId": "w01534",
+      "globalSequence": 1534,
+      "simplified": "嗯",
+      "pinyin": "ǹg",
+      "japanese": "うん（承諾・相づち）。"
+    },
+    {
+      "sourceId": "w01535",
+      "globalSequence": 1535,
+      "simplified": "年底",
+      "pinyin": "niándǐ",
+      "japanese": "年末。"
+    },
+    {
+      "sourceId": "w01536",
+      "globalSequence": 1536,
+      "simplified": "年龄",
+      "pinyin": "niánlíng",
+      "japanese": "年齢。"
+    },
+    {
+      "sourceId": "w01537",
+      "globalSequence": 1537,
+      "simplified": "农村",
+      "pinyin": "nóngcūn",
+      "japanese": "農村。"
+    },
+    {
+      "sourceId": "w01538",
+      "globalSequence": 1538,
+      "simplified": "弄",
+      "pinyin": "nòng",
+      "japanese": "する。いじる。手に入れる。"
+    },
+    {
+      "sourceId": "w01539",
+      "globalSequence": 1539,
+      "simplified": "女性",
+      "pinyin": "nǚxìng",
+      "japanese": "女性。"
+    },
+    {
+      "sourceId": "w01540",
+      "globalSequence": 1540,
+      "simplified": "暖和",
+      "pinyin": "nuǎnhuo",
+      "japanese": "暖かい。"
+    },
+    {
+      "sourceId": "w01541",
+      "globalSequence": 1541,
+      "simplified": "偶尔",
+      "pinyin": "ǒu’ěr",
+      "japanese": "たまに。"
+    },
+    {
+      "sourceId": "w01542",
+      "globalSequence": 1542,
+      "simplified": "拍",
+      "pinyin": "pāi",
+      "japanese": "たたく。撮影する。"
+    },
+    {
+      "sourceId": "w01543",
+      "globalSequence": 1543,
+      "simplified": "排",
+      "pinyin": "pái",
+      "japanese": "並べる。列。"
+    },
+    {
+      "sourceId": "w01544",
+      "globalSequence": 1544,
+      "simplified": "牌",
+      "pinyin": "pái",
+      "japanese": "札。看板。"
+    },
+    {
+      "sourceId": "w01545",
+      "globalSequence": 1545,
+      "simplified": "排队",
+      "pinyin": "páiduì",
+      "japanese": "列に並ぶ。"
+    },
+    {
+      "sourceId": "w01546",
+      "globalSequence": 1546,
+      "simplified": "排球",
+      "pinyin": "páiqiú",
+      "japanese": "バレーボール。"
+    },
+    {
+      "sourceId": "w01547",
+      "globalSequence": 1547,
+      "simplified": "牌子",
+      "pinyin": "páizi",
+      "japanese": "看板。ブランド。"
+    },
+    {
+      "sourceId": "w01548",
+      "globalSequence": 1548,
+      "simplified": "判断",
+      "pinyin": "pànduàn",
+      "japanese": "判断する。"
+    },
+    {
+      "sourceId": "w01549",
+      "globalSequence": 1549,
+      "simplified": "陪",
+      "pinyin": "péi",
+      "japanese": "付き添う。相手をする。"
+    },
+    {
+      "sourceId": "w01550",
+      "globalSequence": 1550,
+      "simplified": "批评",
+      "pinyin": "pīpíng",
+      "japanese": "批判する。注意する。"
+    },
+    {
+      "sourceId": "w01551",
+      "globalSequence": 1551,
+      "simplified": "皮肤",
+      "pinyin": "pífū",
+      "japanese": "皮膚。"
+    },
+    {
+      "sourceId": "w01552",
+      "globalSequence": 1552,
+      "simplified": "脾气",
+      "pinyin": "píqi",
+      "japanese": "気性。かんしゃく。"
+    },
+    {
+      "sourceId": "w01553",
+      "globalSequence": 1553,
+      "simplified": "皮鞋",
+      "pinyin": "píxié",
+      "japanese": "革靴。"
+    },
+    {
+      "sourceId": "w01554",
+      "globalSequence": 1554,
+      "simplified": "篇",
+      "pinyin": "piān",
+      "japanese": "文章を数える「〜編」。"
+    }
+  ]
+}
