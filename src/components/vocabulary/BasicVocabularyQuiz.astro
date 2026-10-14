@@ -21,6 +21,7 @@ const total = Math.min(10, eligibleIds.length);
 
   <p class="basic-vocabulary-quiz-total" data-quiz-total>対象 {eligibleIds.length}語</p>
   <p class="basic-vocabulary-quiz-progress" data-quiz-progress aria-live="polite">0 / {total}</p>
+  <progress class="session-meter" data-session-meter max={Math.max(1, total)} value="0" aria-label="この回のテストの進み具合"></progress>
   <p class="basic-vocabulary-quiz-score" data-quiz-score>正解 0 / {total}</p>
 
   <div class="basic-vocabulary-quiz-card" data-quiz-card></div>
@@ -42,6 +43,7 @@ const total = Math.min(10, eligibleIds.length);
 </script>
 
 <style is:global>
+  .session-meter { width: 100%; height: 6px; accent-color: var(--jade); }
   .basic-vocabulary-quiz {
     width: 100%;
   }

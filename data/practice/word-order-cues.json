@@ -1,0 +1,141 @@
+{
+  "source": "AI-assembled from repository lesson translations; legacy cue and alternative authored by AI.",
+  "reviewStatus": "draft",
+  "humanReview": false,
+  "items": [
+    {
+      "recordId": "practice-002",
+      "targetTraditional": "我明天去台北",
+      "meaningJa": "私は明日台北に行きます。",
+      "acceptableAnswersTraditional": [
+        "明天我去台北"
+      ]
+    },
+    {
+      "recordId": "practice-006",
+      "targetTraditional": "我要這個",
+      "meaningJa": "これをください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-007",
+      "targetTraditional": "我要那個",
+      "meaningJa": "それをください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-008",
+      "targetTraditional": "這個多少錢？",
+      "meaningJa": "これはいくらですか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-009",
+      "targetTraditional": "那個多少錢？",
+      "meaningJa": "それはいくらですか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-010",
+      "targetTraditional": "捷運站在哪裡？",
+      "meaningJa": "MRTの駅はどこですか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-011",
+      "targetTraditional": "廁所在哪裡？",
+      "meaningJa": "トイレはどこですか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-012",
+      "targetTraditional": "我要去台北車站。",
+      "meaningJa": "台北駅に行きたいです",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-013",
+      "targetTraditional": "我要去廁所。",
+      "meaningJa": "トイレに行きたいです",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-014",
+      "targetTraditional": "我要兩個。",
+      "meaningJa": "二つください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-015",
+      "targetTraditional": "我要一個。",
+      "meaningJa": "一つください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-016",
+      "targetTraditional": "我要三個。",
+      "meaningJa": "三つください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-017",
+      "targetTraditional": "不要辣，謝謝。",
+      "meaningJa": "辛くしないでください、ありがとう",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-018",
+      "targetTraditional": "我不要辣。",
+      "meaningJa": "辛いのはやめてください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-019",
+      "targetTraditional": "可以刷卡嗎？",
+      "meaningJa": "カードで払えますか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-020",
+      "targetTraditional": "可以刷卡。",
+      "meaningJa": "カードで払えますよ",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-021",
+      "targetTraditional": "我有預約。",
+      "meaningJa": "予約をしています",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-022",
+      "targetTraditional": "你好，我有預約。",
+      "meaningJa": "こんにちは、予約をしています",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-023",
+      "targetTraditional": "可以再說慢一點嗎？",
+      "meaningJa": "もう一度、ゆっくり言ってもらえますか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-024",
+      "targetTraditional": "可以再說一次嗎？",
+      "meaningJa": "もう一度言ってもらえますか？",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-025",
+      "targetTraditional": "請幫幫我。",
+      "meaningJa": "助けてください",
+      "acceptableAnswersTraditional": []
+    },
+    {
+      "recordId": "practice-026",
+      "targetTraditional": "請幫我。",
+      "meaningJa": "手伝ってください（軽いお願い）",
+      "acceptableAnswersTraditional": []
+    }
+  ]
+}

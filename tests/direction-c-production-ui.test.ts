@@ -135,10 +135,11 @@ describe('Direction C production journey presentation', () => {
     expect(practiceSource).toContain('store.markComplete(session.lessonId)');
     // Answer/feedback focus management preserves the completion and next-question
     // lifecycle timers; renderCompleted and render are still scheduled after the
-    // correct (1200ms) and incorrect (2000ms) feedback timeouts.
+    // correct feedback (1200ms); incorrect feedback waits for an explicit retry.
     expect(practiceSource).toContain('renderCompleted()');
     expect(practiceSource).toContain('}, 1200);');
-    expect(practiceSource).toContain('}, 2000);');
+    expect(practiceSource).not.toContain('}, 2000);');
+    expect(practiceSource).toContain("retry.addEventListener('click'");
     expect(practiceSource).toContain('feedback.focus();');
     expect(practiceSource).toContain("window.addEventListener('pageshow'");
     expect(practiceSource).toContain("window.addEventListener('storage'");

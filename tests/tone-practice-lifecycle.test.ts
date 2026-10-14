@@ -127,7 +127,7 @@ describe('tone practice lifecycle', () => {
     expect(root.querySelector('.tone-action--retry')).not.toBeNull();
     expect(root.querySelector('.tone-action--next')).toBeNull();
 
-    // Retry clears the answer explanation and preserves interference guidance.
+    // Retry conceals both explanations until the next submission.
     (root.querySelector('.tone-action--retry') as HTMLButtonElement).click();
     expect(choiceButtons(root)).toHaveLength(4);
     expect(choiceButtons(root).every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
@@ -136,7 +136,7 @@ describe('tone practice lifecycle', () => {
     expect(root.querySelector('[data-tone-prompt]')?.textContent).toBe(fixtureItem('rec-a').promptJa);
     expect(root.querySelector('[data-tone-hint]')).toBeNull();
     expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
-      fixtureItem('rec-a').interferenceJa,
+      '',
     );
     resetDom();
   });
@@ -190,7 +190,7 @@ describe('tone practice lifecycle', () => {
     // The second item carries its own contour id and guidance.
     expect(root.querySelector('[data-tone-contour]')?.getAttribute('data-contour')).toBe('t2-rising');
     expect(root.querySelector('[data-tone-hint]')).toBeNull();
-    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(itemB.interferenceJa);
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe('');
 
     // Answer rec-b correctly → completed.
     choiceButton(root, '第二声').click();
@@ -215,10 +215,10 @@ describe('tone practice lifecycle', () => {
     expect(choiceButtons(root)).toHaveLength(4);
     expect(choiceButtons(root).every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
     expect(submitButton(root).disabled).toBe(true);
-    // Restart restores interference guidance without revealing the answer.
+    // Restart conceals all answer guidance.
     expect(root.querySelector('[data-tone-hint]')).toBeNull();
     expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
-      fixtureItem('rec-a').interferenceJa,
+      '',
     );
     resetDom();
   });

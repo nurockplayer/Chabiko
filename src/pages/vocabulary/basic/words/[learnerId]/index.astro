@@ -24,7 +24,7 @@ export const getStaticPaths = (() => {
 const { item } = Astro.props as { item: BasicVocabularyDetailItem };
 ---
 
-<BaseLayout title={item.simplified} themeEnabled>
+<BaseLayout title={`${item.simplified}の意味・読み方`} description={`${item.simplified}（${item.pinyin ?? "中国語"}）：${item.japanese ?? "単語の意味と使い方を確認しましょう。"}`} themeEnabled>
   <Fragment slot="header">
     <Header themeEnabled />
   </Fragment>

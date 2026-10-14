@@ -97,7 +97,7 @@ const exampleScriptAttrs = (example: {
 });
 ---
 
-<BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'} themeEnabled>
+<BaseLayout title={lesson?.titleJa ?? 'レッスンを読み込めませんでした'} description={lesson?.canDoJa} themeEnabled>
   <Fragment slot="header">
     <Header themeEnabled />
   </Fragment>

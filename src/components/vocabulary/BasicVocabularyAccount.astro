@@ -1,4 +1,6 @@
 ---
+import { readSupabasePublicConfig } from '../../lib/supabaseBrowserClient';
+const authConfigured = readSupabasePublicConfig() !== null;
 /**
  * Optional Google account control for the basic-vocabulary routes (Issue #290).
  *
@@ -9,7 +11,7 @@
  */
 ---
 
-<section class="basic-vocabulary-account" data-basic-vocabulary-account>
+<section class="basic-vocabulary-account" data-basic-vocabulary-account hidden={!authConfigured}>
   <p class="basic-vocabulary-account__status" data-basic-vocabulary-account-status aria-live="polite">
     ログイン状態を確認しています
   </p>
@@ -52,6 +54,10 @@
 </script>
 
 <style is:global>
+  .basic-vocabulary-account[hidden] {
+    display: none;
+  }
+
   .basic-vocabulary-account {
     display: grid;
     gap: var(--sp-1);
