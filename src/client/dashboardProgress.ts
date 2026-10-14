@@ -91,7 +91,7 @@ export function initDashboard(
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       if (
-        window.confirm('学習進捗をすべてリセットしますか？この操作は元に戻せません。')
+        window.confirm('台湾旅行のレッスンとロールプレイの進捗をリセットしますか？この操作は元に戻せません。')
       ) {
         new ProgressStore(storage).resetAll();
         new RoleplayProgressStore(storage).resetAll();
@@ -132,6 +132,10 @@ function renderContinuation(
   }
   empty.hidden = true;
   link.hidden = false;
+  const heading = root.querySelector<HTMLElement>('#continuation-heading');
+  const stage = link.querySelector<HTMLElement>('[data-continuation-stage]');
+  if (heading) heading.textContent = continuation.kind === 'start' ? 'はじめの一歩' : '続きを学ぶ';
+  if (stage) stage.textContent = continuation.kind === 'start' ? 'ここから始める' : '続きから';
   link.href = continuation.href;
   const kicker = link.querySelector<HTMLElement>('[data-continuation-kicker]');
   if (kicker) {

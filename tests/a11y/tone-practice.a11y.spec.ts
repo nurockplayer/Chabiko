@@ -54,7 +54,7 @@ for (const theme of ['light', 'dark'] as const) {
             .map((child) => (child as HTMLElement).innerText).join(' '));
           expect(visibleText).not.toContain(item.correctAnswer);
           await expect(root.locator('[data-tone-hint]')).toHaveCount(0);
-          await expect(root.locator('[data-tone-interference]')).toHaveText(item.interferenceJa);
+          await expect(root.locator('[data-tone-interference]')).toBeHidden();
           await expect(graphic).toHaveAccessibleName(description);
         };
         await assertSecret();

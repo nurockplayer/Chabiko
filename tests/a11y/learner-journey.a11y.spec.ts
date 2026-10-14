@@ -117,7 +117,7 @@ for (const theme of A11Y_THEMES) {
       page,
     }) => {
       await setupSurface(page, 'practice-incorrect', theme);
-      // Wait longer than the 2000ms retry transition in real wall-clock time;
+      // Wait past the former automatic-retry delay in real wall-clock time;
       // the feedback surface must not re-render the question.
       await page.waitForTimeout(2500);
       await expect(page.locator('.feedback-incorrect')).toContainText('不正解。');

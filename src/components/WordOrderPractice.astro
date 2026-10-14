@@ -11,6 +11,7 @@ const serialized = JSON.stringify({
   items: items.map((item) => ({
     recordId: item.recordId,
     promptJa: item.promptJa,
+    acceptableAnswersTraditional: item.acceptableAnswersTraditional,
     separator: item.separator,
     chunks: item.chunks.map((chunk) => ({ id: chunk.id, text: chunk.text })),
     canonicalOrder: item.canonicalOrder,
@@ -26,6 +27,7 @@ const serialized = JSON.stringify({
 >
   <div class="word-order-header">
     <p class="word-order-progress" data-word-order-progress></p>
+    <progress max={items.length} value="0" aria-label="この回の語順練習の進み具合"></progress>
     <p class="word-order-prompt" data-word-order-prompt></p>
   </div>
 
@@ -68,6 +70,8 @@ const serialized = JSON.stringify({
     flex-direction: column;
     gap: var(--sp-4);
   }
+
+  .word-order-header progress { width: 100%; height: 6px; accent-color: var(--jade); }
 
   .word-order-header {
     display: flex;

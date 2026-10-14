@@ -22,6 +22,7 @@ const total = lessonIds.length;
 
   <p class="taiwan-travel-quiz-total" data-quiz-total>対象 {total}レッスン</p>
   <p class="taiwan-travel-quiz-progress" data-quiz-progress aria-live="polite">0 / {total}</p>
+  <progress class="session-meter" data-session-meter max={Math.max(1, total)} value="0" aria-label="この回のテストの進み具合"></progress>
   <p class="taiwan-travel-quiz-score" data-quiz-score>正解 0 / {total}</p>
 
   <div class="taiwan-travel-quiz-card" data-quiz-card></div>
@@ -43,6 +44,7 @@ const total = lessonIds.length;
 </script>
 
 <style is:global>
+  .session-meter { width: 100%; height: 6px; accent-color: var(--jade); }
   .taiwan-travel-quiz {
     width: 100%;
     min-width: 0;

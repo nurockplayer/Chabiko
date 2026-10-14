@@ -35,7 +35,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'corepack pnpm build && corepack pnpm exec astro preview --host 127.0.0.1 --port 4321',
+      'CHABIKO_INCLUDE_DEV_ROUTES=1 corepack pnpm build && corepack pnpm exec astro preview --host 127.0.0.1 --port 4321',
     url: 'http://127.0.0.1:4321/',
     reuseExistingServer: false,
     timeout: 120_000,

@@ -91,6 +91,7 @@ describe('visual regression harness contract', () => {
     );
     const expected = [
       ...HSK_STUDY_VISUAL_CASES.flatMap((capture) => [capture.setupSnapshot, capture.answerSnapshot]),
+      'v1-word-order-alternative-375x812.png',
       ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,

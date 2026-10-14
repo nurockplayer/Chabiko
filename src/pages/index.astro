@@ -70,7 +70,7 @@ const initialContinuation = deriveContinuation(
       aria-labelledby="continuation-heading"
     >
       <div class="section-head">
-        <h2 id="continuation-heading">続きを学ぶ</h2>
+        <h2 id="continuation-heading">はじめの一歩</h2>
         <span class="en">CONTINUE</span>
       </div>
       <a
@@ -80,7 +80,7 @@ const initialContinuation = deriveContinuation(
         hidden={initialContinuation.href === null}
       >
         <p class="featured-kicker">
-          <span>続きから</span>
+          <span data-continuation-stage>ここから始める</span>
           <span class="sub" data-continuation-kicker>
             {initialContinuation.trackId
               ? DASHBOARD_TRACK_LABELS[initialContinuation.trackId]
@@ -225,7 +225,7 @@ const initialContinuation = deriveContinuation(
     <div class="dashboard-footer">
       <span class="copy-note">Chabiko ・ チャビコ</span>
       <button id="reset-progress-btn" class="reset-btn" type="button">
-        進捗をリセット
+        旅行の進捗をリセット
       </button>
     </div>
   </div>

@@ -16,6 +16,7 @@ import {
 export interface SerializedWordOrderItem {
   readonly recordId: string;
   readonly promptJa: string;
+  readonly acceptableAnswersTraditional?: readonly string[];
   readonly separator: ' ' | '';
   readonly chunks: readonly { id: string; text: string }[];
   readonly canonicalOrder: readonly number[];
@@ -53,6 +54,7 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
   const items: WordOrderState['items'] = parsed.items.map((item) => ({
     recordId: item.recordId,
     promptJa: item.promptJa,
+    acceptableAnswersTraditional: item.acceptableAnswersTraditional,
     separator: item.separator,
     chunks: item.chunks.map((chunk) => ({ id: chunk.id, text: chunk.text })),
     canonicalOrder: [...item.canonicalOrder],
@@ -99,6 +101,8 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
 
     promptView.textContent = item.promptJa;
     progressView.textContent = `${state.currentIndex + 1} / ${state.items.length}`;
+    const meter = root.querySelector<HTMLProgressElement>('progress');
+    if (meter) { meter.max = state.items.length; meter.value = state.currentIndex; }
 
     // ── Answer well: selected chunks in activation order ──────────────────
     const answerButtons = state.selected.map((shownPosition) => {
@@ -158,10 +162,10 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
         feedbackView.className = 'word-order-feedback word-order-feedback--incorrect';
         const line1 = document.createElement('p');
         line1.className = 'word-order-feedback__line';
-        line1.textContent = '並べ替えが違います。';
+        line1.textContent = 'この練習の解答例と比べてみましょう。';
         const line2 = document.createElement('p');
         line2.className = 'word-order-feedback__line';
-        line2.append('正解：');
+        line2.append('解答例：');
         const canonicalSpan = document.createElement('span');
         canonicalSpan.lang = 'zh-Hant';
         canonicalSpan.textContent = canonical;
@@ -234,6 +238,8 @@ export function mountWordOrderPractice(root: HTMLElement): WordOrderController {
   function renderCompleted(): void {
     promptView.textContent = '';
     progressView.textContent = '完了';
+    const meter = root.querySelector<HTMLProgressElement>('progress');
+    if (meter) meter.value = state.items.length;
     answerView.replaceChildren();
     poolView.replaceChildren();
 

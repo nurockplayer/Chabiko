@@ -29,7 +29,6 @@ const path = loadTaiwanTravelPathModel();
       <p class="taiwan-path-intro__kicker">台湾旅行</p>
       <h1>{path.labelJa}</h1>
       <p class="taiwan-path-intro__description">{path.descriptionJa}</p>
-      <p class="taiwan-path-intro__script">繁体字を基本表示にして学びます。</p>
     </header>
 
     <section class="taiwan-path-index" aria-labelledby="taiwan-path-lessons-heading">
@@ -62,6 +61,15 @@ const path = loadTaiwanTravelPathModel();
       </ol>
     </section>
 
+    <nav class="taiwan-path-practice" aria-label="台湾旅行の練習と準備度">
+      <h2>旅先で使う練習</h2>
+      <a href="/phrasebook/">フレーズ集 →</a>
+      <a href="/roleplay/">旅行ロールプレイ →</a>
+      <a href="/practice/tones/">声調練習 →</a>
+      <a href="/practice/word-order/">語順練習 →</a>
+      <a href="/paths/#readiness-heading">旅行の準備度を確認する →</a>
+    </nav>
+
     <section class="taiwan-path-assessment" aria-labelledby="taiwan-path-assessment-heading">
       <div>
         <h2 id="taiwan-path-assessment-heading">{path.assessment.labelJa}</h2>
@@ -76,6 +84,11 @@ const path = loadTaiwanTravelPathModel();
 </BaseLayout>
 
 <style>
+  .taiwan-path-practice { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-block: var(--sp-8); }
+  .taiwan-path-practice h2 { width: 100%; margin: 0; font-size: 1.125rem; }
+  .taiwan-path-practice a { display: inline-flex; align-items: center; min-height: 44px; color: var(--jade-ink); }
+  .taiwan-path-practice a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+
   * {
     box-sizing: border-box;
   }

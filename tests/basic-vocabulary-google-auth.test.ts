@@ -195,10 +195,10 @@ describe('route placement', () => {
     );
     // Exactly one rendered root element; the second occurrence is the
     // client bootstrap's querySelectorAll selector.
-    expect(component.match(/data-basic-vocabulary-account>/g)).toHaveLength(1);
+    expect(component.match(/data-basic-vocabulary-account hidden=/g)).toHaveLength(1);
     expect(component.match(/\[data-basic-vocabulary-account\]/g)).toHaveLength(2);
     expect(component).toContain(
-      '<section class="basic-vocabulary-account" data-basic-vocabulary-account>',
+      '<section class="basic-vocabulary-account" data-basic-vocabulary-account hidden={!authConfigured}>',
     );
     expect(component).toContain('aria-live="polite"');
     expect(component).toContain('<button');
@@ -226,7 +226,8 @@ describe('account states and exact copy', () => {
     initBasicVocabularyAccount(root);
     await flush();
 
-    expect(statusText(root)).toBe('ログイン機能は現在利用できません');
+    expect(statusText(root)).toBe('');
+    expect(root.hidden).toBe(true);
     expect(actionButton(root).hidden).toBe(true);
     expect(rootText(root)).not.toContain('Googleでログイン');
     expect(rootText(root)).not.toContain('ログアウト');

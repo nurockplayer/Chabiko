@@ -1,4 +1,4 @@
-import { rm } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 
@@ -12,11 +12,26 @@ function pruneDevAssets() {
   return {
     name: 'prune-dev-assets',
     hooks: {
-      async 'astro:build:done'({ dir }) {
+      async 'astro:build:done'({ dir, pages }) {
         await rm(fileURLToPath(new URL('assets/dev', dir)), {
           recursive: true,
           force: true,
         });
+        // Prototype fixtures remain available to the explicit browser-test build.
+        // Normal builds (including Cloudflare Pages) never publish these routes.
+        if (process.env.CHABIKO_INCLUDE_DEV_ROUTES !== '1') {
+          await rm(new URL('dev', dir), { recursive: true, force: true });
+        }
+        const locations = [];
+        for (const { pathname } of pages) {
+          const path = pathname.replace(/^\//, '');
+          if (/^(dev|teacher-review|auth|data)(\/|$)/.test(path) || /^404(?:\/|\.html|$)/.test(path)) continue;
+          const html = await readFile(new URL(`${path.replace(/\/$/, '')}${path ? '/' : ''}index.html`, dir), 'utf8');
+          if (/<meta\s+name="robots"\s+content="[^"]*noindex/.test(html)) continue;
+          const url = new URL(path, 'https://chabiko.pages.dev/').href;
+          locations.push(`<url><loc>${url.replace(/&/g, '&amp;')}</loc></url>`);
+        }
+        await writeFile(new URL('sitemap.xml', dir), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${locations.join('')}</urlset>\n`);
       },
     },
   };

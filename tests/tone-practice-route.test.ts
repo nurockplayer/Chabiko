@@ -262,13 +262,14 @@ describe('tone route wiring', () => {
     expect(contour?.querySelector('svg')).not.toBeNull();
     expect(contour?.querySelectorAll('line')).toHaveLength(5);
     expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(
-      VALID_TONE.interferenceJa,
+      '',
     );
     // No pre-solved answer in the markup; submit starts disabled.
     expect(root.querySelector('.tone-action--submit')?.hasAttribute('disabled')).toBe(true);
   });
 
   it.each(loadTonePractice())('conceals the answer outside choices before submitting $recordId', (item) => {
+    expect(item.promptJa).not.toMatch(/[āáǎàēéěèīíǐìōóǒòūúǔù]/u);
     const root = mount({ items: [item] });
     // Choice labels are required; every other piece of visible text must be secret.
     const visibleText = () => [...root.children]
@@ -278,12 +279,12 @@ describe('tone route wiring', () => {
     // The simulated DOM has no layout engine. Check actual rendered copy,
     // with a positive assertion so an empty text extraction cannot pass.
     expect(visibleText()).toContain(item.promptJa);
-    expect(visibleText()).toContain(item.interferenceJa);
+    expect(visibleText()).not.toContain(item.interferenceJa);
     expect(visibleText()).not.toContain(item.correctAnswer);
     expect(root.textContent).not.toContain(item.toneContourHintJa);
     expect(root.querySelector('[data-tone-contour-label]')).toBeNull();
     expect(root.querySelector('[data-tone-hint]')).toBeNull();
-    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe(item.interferenceJa);
+    expect(root.querySelector('[data-tone-interference]')?.textContent).toBe('');
     const contour = root.querySelector('[data-tone-contour]')!;
     const accessibleDescriptions = {
       't1-high-flat': '高い音のまま平らに続く形',
@@ -340,7 +341,7 @@ describe('tone route wiring', () => {
 describe('tone route page structure', () => {
   it('page source renders a route shell with title, subtitle, and home breadcrumb', () => {
     const source = readAstroSource('src/pages/practice/tones/index.astro');
-    expect(source).toMatch(/<BaseLayout title="声調練習" themeEnabled>/);
+    expect(source).toMatch(/<BaseLayout title="声調練習" description="[^"]+" themeEnabled>/);
     expect(source).toMatch(/声調の形を見て、正しい声調を選びましょう/);
     // Auxiliary practice surface: a contextual home breadcrumb (not a
     // first-class track, so no TrackNav) replaces the old bare back link.

@@ -65,10 +65,11 @@ describe('lesson practice answer visibility', () => {
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--correct')");
     expect(practiceComponentSource).toContain("btn.classList.add('practice-choice--incorrect')");
     // The answer handler still schedules the completion render after the
-    // correct-answer timeout and the next render after the incorrect timeout.
+    // correct-answer timeout; incorrect feedback waits for an explicit retry.
     expect(practiceComponentSource).toContain('renderCompleted()');
     expect(practiceComponentSource).toContain('}, 1200);');
-    expect(practiceComponentSource).toContain('}, 2000);');
+    expect(practiceComponentSource).not.toContain('}, 2000);');
+    expect(practiceComponentSource).toContain("retry.addEventListener('click'");
   });
 
   it('manages focus after answering and after completion re-render (no focus loss)', () => {

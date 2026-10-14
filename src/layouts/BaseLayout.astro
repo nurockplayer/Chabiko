@@ -10,6 +10,7 @@ export interface Props {
 
 const { title, description, robots, referrerPolicy, themeEnabled = false } = Astro.props;
 const metaDescription = description ?? 'Chabiko | チャビコ — 日本人のための中国語学習';
+const pageRobots = robots ?? (/^\/(dev|teacher-review|auth)(\/|$)/.test(Astro.url.pathname) || /^\/404(?:\/|\.html)?$/.test(Astro.url.pathname) ? 'noindex, nofollow' : undefined);
 const url = new URL(Astro.url.pathname, Astro.site);
 const canonical = url.href;
 ---
@@ -21,7 +22,7 @@ const canonical = url.href;
     {referrerPolicy && <meta name="referrer" content={referrerPolicy} />}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={metaDescription} />
-    {robots && <meta name="robots" content={robots} />}
+    {pageRobots && <meta name="robots" content={pageRobots} />}
     <title>{title} | Chabiko</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
@@ -398,9 +399,8 @@ const canonical = url.href;
       /* Shared feedback keyframes (names are not scoped by Astro). Each one
        * ends on the element's natural resting state, so static captures are
        * unchanged. Consumers must gate usage on
-       * `prefers-reduced-motion: no-preference`: the reduced-motion rule
-       * below is scoped to this layout's own elements and does not reach
-       * component markup. */
+       * `prefers-reduced-motion: no-preference`. The global guard below also
+       * reaches child components and dynamically rendered elements. */
       /* Transform-only on purpose: content is never translucent, so text
        * contrast is identical to the static state at every frame. */
       @keyframes chabiko-rise {
@@ -437,6 +437,8 @@ const canonical = url.href;
           transform: translateX(-2px);
         }
       }
+    </style>
+    <style is:global>
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,

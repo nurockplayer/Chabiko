@@ -140,6 +140,8 @@ export function initBasicVocabularyQuiz(root: HTMLElement): () => void {
   let state: VocabularyQuizState = createVocabularyQuizSession(questions);
 
   function updateProgressAndScore(): void {
+    const meter = root.querySelector<HTMLProgressElement>('[data-session-meter]');
+    if (meter) { meter.max = Math.max(1, total); meter.value = state.answeredCount; }
     if (progressElement) {
       progressElement.textContent = `${state.answeredCount} / ${total}`;
     }
