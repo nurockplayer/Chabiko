@@ -12,6 +12,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import presentation from '../../data/practice/tone-presentation.json';
 import type { ToneChoice, ToneContourId, TonePracticeItem } from '../domain/tonePractice';
 import {
   CONTOUR_BY_TONE,
@@ -158,7 +159,8 @@ export function loadTonePractice(filePath?: string): TonePracticeItem[] {
 
     items.push({
       recordId: record.id,
-      promptJa: record.promptJa,
+      // Production questions must not reveal the answer through tone-marked pinyin.
+      promptJa: filePath === undefined ? presentation.promptJa : record.promptJa,
       correctAnswer: record.correctAnswer,
       distractors: [
         record.distractors[0] as ToneChoice,

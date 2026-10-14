@@ -31,6 +31,9 @@ const entries = loadEligibleKanjiBridge();
             このコンテンツは現在、内容の確認・レビューを進めています。公開の準備が整い次第、ここで単語を確認できるようになります。
           </p>
         </div>
+        <a class="kanji-bridge-next" href="/lessons/lesson-001/#kanji-heading">
+          第1課の漢字ブリッジで「要」を学ぶ →
+        </a>
       </section>
     ) : (
       <section class="kanji-bridge-page" data-kanji-bridge-page>
@@ -91,6 +94,18 @@ const entries = loadEligibleKanjiBridge();
 </script>
 
 <style>
+  .kanji-bridge-next {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: var(--sp-4);
+    color: var(--jade-ink);
+    text-underline-offset: 4px;
+  }
+  .kanji-bridge-next:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
   .kanji-bridge-page {
     width: 100%;
     max-width: 48rem;

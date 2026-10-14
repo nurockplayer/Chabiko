@@ -28,7 +28,6 @@ function webpCount(dir: string): number {
 }
 
 describe('TeacherPreview — build output (fresh build)', () => {
-  let html: string;
   // Directories the test created, deepest first; only these may be removed and
   // only when empty.
   const createdDirs: string[] = [];
@@ -57,11 +56,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
       timeout: 120_000,
     });
 
-    // Read fresh output
-    if (!existsSync(BUILD_FILE)) {
-      throw new Error(`Build output not found at ${BUILD_FILE}`);
-    }
-    html = readFileSync(BUILD_FILE, 'utf-8');
+
   });
 
   afterAll(() => {
@@ -97,12 +92,17 @@ describe('TeacherPreview — build output (fresh build)', () => {
     }
   });
 
-  it('no teacher source Chinese text, pinyin, or Japanese translation', () => {
-    expect(html).not.toContain('dà jiā');
-    expect(html).not.toContain('みんな');
-    expect(html).not.toContain('大家');
-    expect(html).not.toContain('sourceWorkbookSha256');
-    expect(html).not.toContain('unreviewed-development-preview');
+  it('excludes prototype routes and private surfaces from production discovery', () => {
+    expect(existsSync(BUILD_FILE)).toBe(false);
+    expect(existsSync(resolve(BUILD_DIST, 'dev'))).toBe(false);
+    const sitemap = readFileSync(resolve(BUILD_DIST, 'sitemap.xml'), 'utf8');
+    expect(sitemap).toContain('https://chabiko.pages.dev/paths/taiwan-travel/');
+    for (const path of ['/dev/', '/teacher-review/', '/auth/', '/404', '/vocabulary/basic/preview/']) {
+      expect(sitemap).not.toContain(path);
+    }
+    for (const path of ['teacher-review/index.html', 'teacher-review/vocabulary/index.html']) {
+      expect(readFileSync(resolve(BUILD_DIST, path), 'utf8')).toMatch(/name="robots" content="noindex/);
+    }
   });
 
   it('deploys exactly 1,131 review-only teacher derivatives, prunes no preview assets, and drops dev sentinels', () => {
@@ -190,49 +190,7 @@ describe('TeacherPreview — build output (fresh build)', () => {
     expect(learnerHtml).toContain('data-basic-vocabulary-session-size="10"');
   });
 
-  it('no define:vars in built output', () => {
-    expect(html).not.toContain('define:vars');
-  });
 
-  it('no unresolved source-relative TypeScript import', () => {
-    expect(html).not.toContain('../../../../client/previewSession');
-    expect(html).not.toContain('../../../../scripts/teacher-preview-init');
-    expect(html).not.toContain('.ts');
-  });
-
-  it('client entry is a bundled module script', () => {
-    expect(html).toContain('type="module"');
-  });
-
-  it('clean route contains LOCAL SOURCE NOT GENERATED', () => {
-    expect(html).toContain('LOCAL SOURCE NOT GENERATED');
-  });
-
-  it('empty state has source-not-generated--visible by default', () => {
-    expect(html).toContain('source-not-generated--visible');
-  });
-
-  it('flashcard is hidden by default', () => {
-    expect(html).toContain('flashcard--hidden');
-  });
-
-  it('flashcard hidden rule has higher specificity than .flashcard default', () => {
-    // The CSS file must have a higher-specificity selector like
-    // .flashcard[data-astro-cid-XXX].flashcard--hidden
-    // that beats .flashcard[data-astro-cid-XXX] { display: flex }
-    const cssDir = resolve(BUILD_DIST, '_astro');
-    expect(existsSync(cssDir)).toBe(true);
-    const cssFiles = readdirSync(cssDir).filter((file) => file.endsWith('.css'));
-    expect(cssFiles.length).toBeGreaterThan(0);
-
-    const matchingCss = cssFiles
-      .map((file) => readFileSync(join(cssDir, file), 'utf-8'))
-      .find((css) => css.includes('flashcard--hidden'));
-    expect(matchingCss).toBeDefined();
-    // Must contain a selector with both class scoped and hidden.
-    expect(matchingCss).toMatch(/\.flashcard\[data-astro-cid-[\w]+\]\.flashcard--hidden/);
-    expect(matchingCss).not.toMatch(/[^.\]]\.flashcard--hidden\{/);
-  });
 });
 
 /**

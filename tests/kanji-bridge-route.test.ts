@@ -295,6 +295,12 @@ describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235, fail-clos
     }
   });
 
+  it('links the pending state to a generated lesson and real kanji anchor', () => {
+    expect(builtHtml).toContain('href="/lessons/lesson-001/#kanji-heading"');
+    expect(builtHtml).toContain('第1課の漢字ブリッジで「要」を学ぶ');
+    expect(readFileSync(join(BUILD_DIR, 'lessons/lesson-001/index.html'), 'utf8')).toContain('id="kanji-heading"');
+  });
+
   it('renders the exact Japanese title/h1 and loads through the eligible loader', () => {
     expect(existsSync(BUILT_ROUTE)).toBe(true);
     // Exact h1 markup is guaranteed in source; the built HTML (with Astro

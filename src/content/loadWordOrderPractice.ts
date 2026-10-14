@@ -18,6 +18,8 @@ import {
 } from '../domain/wordOrderPractice';
 import type { Lesson } from '../types/lesson';
 import { loadAllRenderableLessons } from './loadLessons';
+import cues from '../../data/practice/word-order-cues.json';
+import { applyWordOrderCues } from './wordOrderCues';
 
 const DEFAULT_DATA_PATH = 'data/examples/valid/practice.json';
 const WORD_ORDER_TYPE = 'word-order';
@@ -342,7 +344,8 @@ export function loadWordOrderPractice(
   const raw = readFileSync(path, 'utf-8');
   const bundle = parsePracticeBundle(raw, path);
   const strictReconciliation = filePath === undefined || lessonFilePath !== undefined;
-  return strictReconciliation
+  const items = strictReconciliation
     ? loadStrictWordOrderPractice(bundle, lessonFilePath)
     : loadLooseFixture(bundle);
+  return filePath === undefined ? applyWordOrderCues(items, cues) : items;
 }

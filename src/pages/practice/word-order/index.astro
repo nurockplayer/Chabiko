@@ -8,7 +8,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 const items = loadWordOrderPractice();
 ---
 
-<BaseLayout title="語順練習" themeEnabled>
+<BaseLayout title="語順練習" description="日本語の意味をヒントに中国語の文を組み立て、台湾旅行で使う表現の語順を練習しましょう。" themeEnabled>
   <Fragment slot="header">
     <Header themeEnabled />
   </Fragment>
@@ -21,7 +21,9 @@ const items = loadWordOrderPractice();
       ]}
     />
     <h1 class="page-title">語順練習</h1>
-    <p class="page-subtitle">チャンクを選んで、正しい中国語の語順に並べ替えましょう。</p>
+    <p class="page-subtitle">日本語の意味に合うように、文字を選んで中国語の文を作りましょう。</p>
+
+    <p class="provisional-note">日本語のヒントと許容する語順は AI が整理した暫定版で、教師による確認はまだ済んでいません。自然な別の言い方をすべて判定できるわけではありません。</p>
 
     {
       items.length > 0 ? (
@@ -32,6 +34,7 @@ const items = loadWordOrderPractice();
         </div>
       )
     }
+    <p><a href="/paths/taiwan-travel/">台湾旅行のレッスンで使ってみる →</a></p>
   </div>
 </BaseLayout>
 
@@ -58,6 +61,13 @@ const items = loadWordOrderPractice();
     line-height: 1.8;
     overflow-wrap: anywhere;
   }
+  .provisional-note {
+    margin: 0 0 var(--sp-5);
+    color: var(--ink-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+  .page-subtitle { margin-bottom: var(--sp-3); }
   .empty-fallback {
     background: var(--paper-deep);
     border-radius: var(--radius-content);
