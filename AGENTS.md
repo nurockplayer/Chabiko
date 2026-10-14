@@ -10,7 +10,7 @@ The goal is a complete, usable product for real learners. Prefer shipping workin
 - Learner UI and explanations are Japanese. Chinese is dual-script: Taiwan travel is Traditional-first; HSK defaults to Simplified.
 - The first screen shows real learning content, not a landing page. Mobile-first; verify no overlap/truncation at 375px.
 - V1 progress is local (localStorage). Accounts are not part of V1.
-- Pronunciation: static pre-generated audio when present, otherwise browser speech synthesis; see `docs/content/pronunciation-audio.md`.
+- Pronunciation: static pre-generated audio when present, otherwise browser speech synthesis (decision record: issue #522).
 - Content lives in structured data files under `data/`, not hard-coded in pages.
 
 ## Non-negotiable safeguards
