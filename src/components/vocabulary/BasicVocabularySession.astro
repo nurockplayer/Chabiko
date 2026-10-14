@@ -1,5 +1,6 @@
 ---
 import type { LearnerSessionPayload } from '../../content/learnerSessionPayload';
+import PronounceButton from '../PronounceButton.astro';
 
 export interface Props {
   payload: LearnerSessionPayload;
@@ -44,6 +45,8 @@ const sessionSize = Math.min(10, ids.length);
       学習記録をリセット
     </button>
   </details>
+  <!-- Loads the shared client runtime; study controls are created only after answer reveal. -->
+  <span hidden aria-hidden="true"><PronounceButton text="" /></span>
   <script type="application/json" id="basic-vocabulary-data" set:html={payloadJson} is:inline></script>
 </section>
 

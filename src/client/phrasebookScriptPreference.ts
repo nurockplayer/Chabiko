@@ -93,6 +93,19 @@ function setLeadingText(element: HTMLElement, text: string): void {
   if (leading !== undefined) leading.textContent = text;
 }
 
+function pronunciationButtonsAfter(element: HTMLElement): HTMLButtonElement[] {
+  const buttons: HTMLButtonElement[] = [];
+  let sibling = element.nextElementSibling;
+  while (sibling !== null && !sibling.matches(FIELD_SELECTOR)) {
+    if (sibling.matches('[data-pronunciation-button]')) {
+      buttons.push(sibling as HTMLButtonElement);
+    }
+    buttons.push(...sibling.querySelectorAll<HTMLButtonElement>('[data-pronunciation-button]'));
+    sibling = sibling.nextElementSibling;
+  }
+  return buttons;
+}
+
 /**
  * Apply the effective preference to one phrasebook field (a phrase headword or
  * a dialog turn line).
@@ -133,6 +146,16 @@ function applyField(element: HTMLElement, preference: ScriptPreference): void {
       preference === 'simplified' && result.isFallback === false
         ? 'zh-Hans'
         : 'zh-Hant';
+
+    for (const pronunciation of pronunciationButtonsAfter(element)) {
+      pronunciation.dataset.pronunciationText = result.script;
+      pronunciation.dataset.pronunciationLang = 'zh-TW'; // Taiwan path: script toggle never changes pronunciation
+      const slow = pronunciation.dataset.pronunciationSlow === 'true';
+      pronunciation.setAttribute(
+        'aria-label',
+        `${slow ? 'ゆっくり' : ''}発音を聞く：${result.script}`,
+      );
+    }
   }
 
   // The annotation is a phrase-headword/dialog-turn affordance.
@@ -198,6 +221,7 @@ export function initPhrasebookScriptPreference(
     )) {
       applyField(field, preference);
     }
+    document.dispatchEvent(new CustomEvent('pronunciation:refresh'));
   }
 
   function onPreferenceChange(): void {

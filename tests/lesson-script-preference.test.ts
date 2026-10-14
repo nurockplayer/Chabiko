@@ -37,7 +37,7 @@ function lessonFixture(): HTMLElement {
     `<p class="core-sentence" lang="zh-Hant" data-script-path-default="${CORE}">${CORE}</p>`,
     `<dl><dt lang="zh-Hant" data-script-path-default="${CHUNK}">${CHUNK}</dt></dl>`,
     `<p><strong lang="zh-Hant" data-script-path-default="${KANJI}">${KANJI}</strong></p>`,
-    `<p class="example-sentence" lang="zh-Hant" data-script-path-default="${EXAMPLE_TRADITIONAL}" data-script-path-default-status="authored" data-script-simplified="${EXAMPLE_SIMPLIFIED}" data-script-simplified-status="verified">${EXAMPLE_TRADITIONAL}</p>`,
+    `<p class="example-sentence" lang="zh-Hant" data-script-path-default="${EXAMPLE_TRADITIONAL}" data-script-path-default-status="authored" data-script-simplified="${EXAMPLE_SIMPLIFIED}" data-script-simplified-status="verified">${EXAMPLE_TRADITIONAL}</p><button data-pronunciation-button data-pronunciation-text="${EXAMPLE_TRADITIONAL}" data-pronunciation-lang="zh-TW" aria-label="発音を聞く：${EXAMPLE_TRADITIONAL}"></button><button data-pronunciation-button data-pronunciation-slow="true" data-pronunciation-text="${EXAMPLE_TRADITIONAL}" data-pronunciation-lang="zh-TW" aria-label="ゆっくり発音を聞く：${EXAMPLE_TRADITIONAL}"></button>`,
   ].join('');
   return root;
 }
@@ -174,6 +174,14 @@ describe('initial script from the validated root dataset', () => {
     const exampleEl = example(root);
     expect(exampleEl.textContent).toBe(EXAMPLE_SIMPLIFIED);
     expect(exampleEl.lang).toBe('zh-Hans');
+    const audioButtons = root.querySelectorAll<HTMLButtonElement>('[data-pronunciation-button]');
+    expect(audioButtons).toHaveLength(2);
+    expect(audioButtons[0]?.dataset.pronunciationText).toBe(EXAMPLE_SIMPLIFIED);
+    expect(audioButtons[0]?.dataset.pronunciationLang).toBe('zh-TW');
+    expect(audioButtons[0]?.getAttribute('aria-label')).toBe(`発音を聞く：${EXAMPLE_SIMPLIFIED}`);
+    expect(audioButtons[1]?.dataset.pronunciationText).toBe(EXAMPLE_SIMPLIFIED);
+    expect(audioButtons[1]?.dataset.pronunciationLang).toBe('zh-TW');
+    expect(audioButtons[1]?.getAttribute('aria-label')).toBe(`ゆっくり発音を聞く：${EXAMPLE_SIMPLIFIED}`);
     // Fields without a simplified form fall back to Traditional with the
     // exact #251 annotation.
     const coreEl = root.querySelector('.core-sentence') as HTMLElement;
@@ -500,7 +508,7 @@ describe('practice, progress, and navigation stay untouched', () => {
 
   it('keeps static Traditional markup for no-JS rendering', () => {
     expect(lessonSource).toContain('<p class="core-sentence" lang="zh-Hant"');
-    expect(lessonSource).toContain('<dt lang="zh-Hant"');
+    expect(lessonSource).toContain('<span lang="zh-Hant" data-script-path-default={chunk.chunk}>{chunk.chunk}</span>');
     expect(lessonSource).toContain('<strong lang="zh-Hant"');
     expect(lessonSource).toContain('<p class="example-sentence" lang="zh-Hant"');
   });

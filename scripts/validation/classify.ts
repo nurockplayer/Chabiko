@@ -419,7 +419,11 @@ export const DOMAIN_TEST_RULES: DomainRule[] = [
 
 /** Affected test globs for a single source file, or `[]` if unmapped. */
 export function domainTestGlobsFor(file: string): string[] {
-  const base = normalize(file).split('/').at(-1) ?? file;
+  const normalized = normalize(file);
+  if (normalized.startsWith('src/lib/pronunciation/')) {
+    return ['tests/pronunciation-*.test.ts'];
+  }
+  const base = normalized.split('/').at(-1) ?? file;
   for (const rule of DOMAIN_TEST_RULES) {
     if (rule.match(base)) return rule.testGlobs;
   }

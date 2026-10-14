@@ -161,6 +161,8 @@ export function loadTonePractice(filePath?: string): TonePracticeItem[] {
       recordId: record.id,
       // Production questions must not reveal the answer through tone-marked pinyin.
       promptJa: filePath === undefined ? presentation.promptJa : record.promptJa,
+      // Spoken only after submission; taken from the source prompt's quoted Han word.
+      audioText: record.promptJa.match(/「([^」]+)」/u)?.[1].match(/\p{Script=Han}+/gu)?.join('') ?? '',
       correctAnswer: record.correctAnswer,
       distractors: [
         record.distractors[0] as ToneChoice,

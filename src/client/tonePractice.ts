@@ -31,6 +31,7 @@ export interface SerializedTonePracticeItem {
   readonly toneContourId: string;
   readonly toneContourHintJa: string;
   readonly interferenceJa: string;
+  readonly audioText?: string;
 }
 
 export interface TonePracticeSessionData {
@@ -116,6 +117,9 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     toneContourHintJa: item.toneContourHintJa,
     interferenceJa: item.interferenceJa,
   }));
+  const audioTextById = new Map(
+    parsed.items.map((item) => [item.recordId, item.audioText ?? '']),
+  );
 
   if (items.length === 0) {
     throw new Error('tone practice has no items');
@@ -144,6 +148,15 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
   const interferenceView: HTMLElement = interferenceEl;
   const choicesView: HTMLElement = choicesEl;
   const feedbackView: HTMLElement = feedbackEl;
+  // Audio sits beside (not inside) the feedback live region so feedback text stays exact.
+  // Reuse one slot per root across remounts and start empty, so a previous answer's audio never survives.
+  const existingSlot = feedbackView.nextElementSibling;
+  const audioSlot = existingSlot instanceof HTMLElement && existingSlot.classList.contains('tone-audio')
+    ? existingSlot
+    : document.createElement('div');
+  audioSlot.className = 'tone-audio';
+  audioSlot.replaceChildren();
+  if (!audioSlot.isConnected) feedbackView.after(audioSlot);
   const actionsView: HTMLElement = actionsEl;
 
   function currentItem(): TonePracticeItem {
@@ -188,6 +201,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     }
 
     // ── Feedback ──────────────────────────────────────────────────────────
+    audioSlot.replaceChildren();
     feedbackView.textContent = '';
     feedbackView.className = 'tone-feedback';
     if (state.status === 'submitted') {
@@ -213,6 +227,19 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
       hint.setAttribute('data-tone-hint', '');
       hint.textContent = item.toneContourHintJa;
       feedbackView.append(hint);
+      const audioText = audioTextById.get(item.recordId);
+      if (audioText) {
+        const pronunciation = document.createElement('button');
+        pronunciation.type = 'button';
+        pronunciation.className = 'pronunciation-control pronunciation-button';
+        pronunciation.dataset.pronunciationButton = '';
+        pronunciation.dataset.pronunciationText = audioText;
+        pronunciation.dataset.pronunciationLang = 'zh-TW';
+        pronunciation.setAttribute('aria-label', `発音を聞く：${audioText}`);
+        pronunciation.textContent = '🔊';
+        pronunciation.hidden = true;
+        audioSlot.append(pronunciation);
+      }
     }
 
     // ── Actions ───────────────────────────────────────────────────────────
@@ -292,6 +319,7 @@ export function mountTonePractice(root: HTMLElement): TonePracticeController {
     const complete = document.createElement('p');
     complete.className = 'tone-complete-text';
     complete.textContent = '練習完了！すべての声調を見分けられました。';
+    audioSlot.replaceChildren();
     feedbackView.replaceChildren(complete);
     feedbackView.className = 'tone-feedback tone-feedback--complete';
 

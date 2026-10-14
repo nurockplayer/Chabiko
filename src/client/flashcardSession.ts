@@ -350,6 +350,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
     promptFallbackEl.textContent = '';
     promptFallbackEl.hidden = true;
     pinyinEl.textContent = '';
+    setPronunciation('');
     japaneseEl.textContent = '';
     japaneseEl.removeAttribute('lang');
     answerFallbackEl.textContent = '';
@@ -450,6 +451,7 @@ export function mountFlashcardSession(data: SessionData): () => void {
       renderChinese(frontEl, promptFallbackEl, entry);
     }
     pinyinEl.textContent = '';
+    setPronunciation('');
     japaneseEl.textContent = '';
     japaneseEl.removeAttribute('lang');
     answerFallbackEl.textContent = '';
@@ -493,6 +495,13 @@ export function mountFlashcardSession(data: SessionData): () => void {
       answerFallbackEl.hidden = true;
     }
     pinyinEl.textContent = entry.pinyin;
+    setPronunciation(entry.simplified);
+  }
+
+  /** HSK audio speaks the Simplified headword in zh-CN; empty text keeps the control hidden. */
+  function setPronunciation(text: string) {
+    const button = document.querySelector<HTMLButtonElement>('[data-hsk-pronunciation] [data-pronunciation-button]');
+    if (button) button.dataset.pronunciationText = text;
   }
 
   function handleScriptPreferenceChange() {

@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import Header from '../../components/Header.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import LessonPractice from '../../components/LessonPractice.astro';
+import PronounceButton from '../../components/PronounceButton.astro';
 import {
   lessonPhrasebookDestination,
   loadProductionPhrasebookScenarios,
@@ -132,6 +133,8 @@ const exampleScriptAttrs = (example: {
                 <span class="core-kicker__sub" aria-current="step">レッスン {lessonNumber}</span>
               </p>
               <p class="core-sentence" lang="zh-Hant" data-script-path-default={lesson.coreSentence}>{lesson.coreSentence}</p>
+              <PronounceButton text={lesson.coreSentence} lang="zh-TW" />
+              <PronounceButton text={lesson.coreSentence} lang="zh-TW" slow />
               {coreExample && hasText(coreExample.pinyin) && (
                 <p class="core-pinyin" lang="zh-Latn">{coreExample.pinyin}</p>
               )}
@@ -152,7 +155,10 @@ const exampleScriptAttrs = (example: {
               <dl class="detail-list">
                 {chunks.map((chunk) => (
                   <div>
-                    <dt lang="zh-Hant" data-script-path-default={chunk.chunk}>{chunk.chunk}</dt>
+                    <dt class="chunk-term">
+                      <span lang="zh-Hant" data-script-path-default={chunk.chunk}>{chunk.chunk}</span>
+                      <PronounceButton text={chunk.chunk} lang="zh-TW" />
+                    </dt>
                     <dd>{chunk.meaning}</dd>
                     {hasText(chunk.notesJa) && <dd class="note">{chunk.notesJa}</dd>}
                   </div>
@@ -190,6 +196,7 @@ const exampleScriptAttrs = (example: {
                 {examples.map((example) => (
                   <div>
                     <p class="example-sentence" lang="zh-Hant" {...exampleScriptAttrs(example)}>{example.traditional}</p>
+                    <PronounceButton text={example.traditional} lang="zh-TW" />
                     {hasText(example.pinyin) && <p class="pinyin" lang="zh-Latn">{example.pinyin}</p>}
                     <p>{example.japanese}</p>
                   </div>
@@ -438,6 +445,14 @@ const exampleScriptAttrs = (example: {
     font-size: 21px;
     font-weight: 700;
     letter-spacing: 0.02em;
+  }
+  .chunk-term {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   dd {
     margin: 0;

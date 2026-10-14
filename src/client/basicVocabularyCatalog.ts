@@ -120,6 +120,17 @@ export function initBasicVocabularyCatalog(root: HTMLElement): () => void {
     detailLink.append(heading);
     body.append(detailLink);
 
+    const pronunciation = document.createElement('button');
+    pronunciation.type = 'button';
+    pronunciation.className = 'pronunciation-control pronunciation-button';
+    pronunciation.dataset.pronunciationButton = '';
+    pronunciation.dataset.pronunciationText = item.simplified;
+    pronunciation.dataset.pronunciationLang = 'zh-CN';
+    pronunciation.setAttribute('aria-label', `発音を聞く：${item.simplified}`);
+    pronunciation.textContent = '🔊';
+    pronunciation.hidden = true;
+    body.append(pronunciation);
+
     if (item.traditional !== undefined) {
       const traditional = document.createElement('p');
       traditional.className = 'basic-vocabulary-catalog-traditional';

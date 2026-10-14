@@ -28,6 +28,9 @@ for (const viewport of VIEWPORTS) {
   test(`page-2 detail round trip is refresh-safe at ${viewport.width}px`, async ({
     page,
   }, testInfo) => {
+    // This journey performs several full reloads. Cold Chromium startup in the
+    // pinned amd64 container on Apple Silicon can exceed the default 30s.
+    test.setTimeout(60_000);
     await page.setViewportSize(viewport);
     await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
     await page.goto(`${CATALOG_PATH}?page=2`, { waitUntil: 'load' });

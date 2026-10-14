@@ -140,7 +140,10 @@ function fieldMarkup(field: FieldFixture, tag = 'h3'): string {
     `data-script-traditional="${escapeHtml(field.traditional)}" ` +
     `data-script-traditional-status="${field.traditionalStatus}" ` +
     simplifiedAttr +
-    `>${escapeHtml(field.traditional)}</${tag}>`
+    `>${escapeHtml(field.traditional)}</${tag}>` +
+    (field.kind === 'dialog-reference'
+      ? ''
+      : `<button data-pronunciation-button data-pronunciation-text="${escapeHtml(field.traditional)}" data-pronunciation-lang="zh-TW" aria-label="発音を聞く：${escapeHtml(field.traditional)}"></button>`)
   );
 }
 
@@ -308,6 +311,14 @@ describe('phrasebook script preference — exact prelaunch corpus', () => {
             ? 'zh-Hans'
             : 'zh-Hant';
         expect(el.lang, field.id).toBe(wantLang);
+        if (field.kind !== 'dialog-reference') {
+          const button = el.nextElementSibling as HTMLButtonElement | null;
+          expect(button?.dataset.pronunciationText, field.id).toBe(
+            r.status === 'unavailable' ? field.traditional : r.script,
+          );
+          // Taiwan path: the script toggle never changes the pronunciation locale.
+          expect(button?.dataset.pronunciationLang, field.id).toBe('zh-TW');
+        }
 
         expect(
           el.querySelectorAll('.script-fallback').length,

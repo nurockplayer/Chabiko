@@ -1,0 +1,42 @@
+---
+export interface Props {
+  text: string;
+  lang?: string;
+  slow?: boolean;
+}
+const { text, lang = 'zh-TW', slow = false } = Astro.props;
+---
+<span class:list={["pronunciation-control", { "pronunciation-control--slow": slow }]}>
+  <button
+    type="button"
+    lang="ja"
+    class="pronunciation-button"
+    data-pronunciation-button
+    data-pronunciation-text={text}
+    data-pronunciation-lang={lang}
+    data-pronunciation-slow={String(slow)}
+    aria-label={`${slow ? 'ゆっくり発音を聞く' : '発音を聞く'}：${text}`}
+    title="端末の音声または録音で発音を聞く"
+    hidden
+  >
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>
+    {slow && <span>ゆっくり</span>}
+  </button>
+  <span class="pronunciation-status" data-pronunciation-status role="status" lang="ja"></span>
+</span>
+<script>
+  import { installPronunciationButtons } from '../lib/pronunciation/buttons';
+  installPronunciationButtons();
+</script>
+<style is:global>
+  .pronunciation-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .pronunciation-control { display: inline-flex; position: relative; min-width: 44px; min-height: 44px; vertical-align: middle; flex-shrink: 0; max-width: 100%; }
+  .pronunciation-control--slow { min-width: 6.5rem; }
+  .pronunciation-control--slow > .pronunciation-button { width: 100%; }
+  .pronunciation-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; min-width: 44px; min-height: 44px; padding: 0.5rem; border: 1px solid var(--hairline, #767676); border-radius: 0.5rem; background: var(--paper, #fff); color: var(--ink, #202020); cursor: pointer; font: inherit; font-size: 0.8rem; }
+  .pronunciation-button[hidden] { display: none !important; }
+  .pronunciation-button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .pronunciation-button[data-playing] { background: var(--paper-deep, #d9e8db); box-shadow: inset 0 0 0 2px currentColor; }
+  .pronunciation-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .pronunciation-button { animation: none; transition: none; } }
+</style>
