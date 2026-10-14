@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01001",
+      "globalSequence": 1001,
+      "simplified": "啊",
+      "pinyin": "ā",
+      "japanese": "ああ（感嘆の声）。"
+    },
+    {
+      "sourceId": "w01002",
+      "globalSequence": 1002,
+      "simplified": "爱情",
+      "pinyin": "àiqíng",
+      "japanese": "恋愛。愛情。"
+    },
+    {
+      "sourceId": "w01003",
+      "globalSequence": 1003,
+      "simplified": "爱心",
+      "pinyin": "àixīn",
+      "japanese": "思いやり。慈愛。"
+    },
+    {
+      "sourceId": "w01004",
+      "globalSequence": 1004,
+      "simplified": "安检",
+      "pinyin": "ānjiǎn",
+      "japanese": "保安検査。"
+    },
+    {
+      "sourceId": "w01005",
+      "globalSequence": 1005,
+      "simplified": "安排",
+      "pinyin": "ānpái",
+      "japanese": "手配する。予定を組む。"
+    },
+    {
+      "sourceId": "w01006",
+      "globalSequence": 1006,
+      "simplified": "按",
+      "pinyin": "àn",
+      "japanese": "押す。〜に従って。"
+    },
+    {
+      "sourceId": "w01007",
+      "globalSequence": 1007,
+      "simplified": "按时",
+      "pinyin": "ànshí",
+      "japanese": "時間どおりに。"
+    },
+    {
+      "sourceId": "w01008",
+      "globalSequence": 1008,
+      "simplified": "按照",
+      "pinyin": "ànzhào",
+      "japanese": "〜に従って。"
+    },
+    {
+      "sourceId": "w01009",
+      "globalSequence": 1009,
+      "simplified": "白酒",
+      "pinyin": "báijiǔ",
+      "japanese": "中国の蒸留酒。"
+    },
+    {
+      "sourceId": "w01010",
+      "globalSequence": 1010,
+      "simplified": "办公",
+      "pinyin": "bàngōng",
+      "japanese": "事務を行う。"
+    },
+    {
+      "sourceId": "w01011",
+      "globalSequence": 1011,
+      "simplified": "办理",
+      "pinyin": "bànlǐ",
+      "japanese": "手続きをする。"
+    },
+    {
+      "sourceId": "w01012",
+      "globalSequence": 1012,
+      "simplified": "办事",
+      "pinyin": "bànshì",
+      "japanese": "用事を処理する。"
+    },
+    {
+      "sourceId": "w01013",
+      "globalSequence": 1013,
+      "simplified": "棒",
+      "pinyin": "bàng",
+      "japanese": "すばらしい。棒。"
+    },
+    {
+      "sourceId": "w01014",
+      "globalSequence": 1014,
+      "simplified": "保护",
+      "pinyin": "bǎohù",
+      "japanese": "守る。保護する。"
+    },
+    {
+      "sourceId": "w01015",
+      "globalSequence": 1015,
+      "simplified": "保证",
+      "pinyin": "bǎozhèng",
+      "japanese": "保証する。"
+    },
+    {
+      "sourceId": "w01016",
+      "globalSequence": 1016,
+      "simplified": "抱",
+      "pinyin": "bào",
+      "japanese": "抱く。抱える。"
+    },
+    {
+      "sourceId": "w01017",
+      "globalSequence": 1017,
+      "simplified": "报考",
+      "pinyin": "bàokǎo",
+      "japanese": "受験を申し込む。"
+    },
+    {
+      "sourceId": "w01018",
+      "globalSequence": 1018,
+      "simplified": "报名",
+      "pinyin": "bàomíng",
+      "japanese": "参加・入学を申し込む。"
+    },
+    {
+      "sourceId": "w01019",
+      "globalSequence": 1019,
+      "simplified": "抱歉",
+      "pinyin": "bàoqiàn",
+      "japanese": "申し訳ないと思う。"
+    },
+    {
+      "sourceId": "w01020",
+      "globalSequence": 1020,
+      "simplified": "背",
+      "pinyin": "bēi",
+      "japanese": "背負う。"
+    },
+    {
+      "sourceId": "w01021",
+      "globalSequence": 1021,
+      "simplified": "背包",
+      "pinyin": "bēibāo",
+      "japanese": "リュックサック。"
+    },
+    {
+      "sourceId": "w01022",
+      "globalSequence": 1022,
+      "simplified": "北部",
+      "pinyin": "běibù",
+      "japanese": "北部。"
+    },
+    {
+      "sourceId": "w01023",
+      "globalSequence": 1023,
+      "simplified": "倍",
+      "pinyin": "bèi",
+      "japanese": "〜倍。"
+    },
+    {
+      "sourceId": "w01024",
+      "globalSequence": 1024,
+      "simplified": "本科",
+      "pinyin": "běnkē",
+      "japanese": "大学の学部課程。"
+    },
+    {
+      "sourceId": "w01025",
+      "globalSequence": 1025,
+      "simplified": "本来",
+      "pinyin": "běnlái",
+      "japanese": "もともと。本来。"
+    },
+    {
+      "sourceId": "w01026",
+      "globalSequence": 1026,
+      "simplified": "笨",
+      "pinyin": "bèn",
+      "japanese": "不器用な。頭の働きが鈍い。"
+    },
+    {
+      "sourceId": "w01027",
+      "globalSequence": 1027,
+      "simplified": "鼻子",
+      "pinyin": "bízi",
+      "japanese": "鼻。"
+    },
+    {
+      "sourceId": "w01028",
+      "globalSequence": 1028,
+      "simplified": "笔试",
+      "pinyin": "bǐshì",
+      "japanese": "筆記試験。"
+    },
+    {
+      "sourceId": "w01029",
+      "globalSequence": 1029,
+      "simplified": "毕业",
+      "pinyin": "bìyè",
+      "japanese": "卒業する。"
+    },
+    {
+      "sourceId": "w01030",
+      "globalSequence": 1030,
+      "simplified": "毕业生",
+      "pinyin": "bìyèshēng",
+      "japanese": "卒業生。"
+    },
+    {
+      "sourceId": "w01031",
+      "globalSequence": 1031,
+      "simplified": "便于",
+      "pinyin": "biànyú",
+      "japanese": "〜しやすい。〜するのに便利な。"
+    },
+    {
+      "sourceId": "w01032",
+      "globalSequence": 1032,
+      "simplified": "标准",
+      "pinyin": "biāozhǔn",
+      "japanese": "基準。標準的な。"
+    },
+    {
+      "sourceId": "w01033",
+      "globalSequence": 1033,
+      "simplified": "表",
+      "pinyin": "biǎo",
+      "japanese": "表。時計。"
+    },
+    {
+      "sourceId": "w01034",
+      "globalSequence": 1034,
+      "simplified": "表格",
+      "pinyin": "biǎogé",
+      "japanese": "表。記入用紙。"
+    },
+    {
+      "sourceId": "w01035",
+      "globalSequence": 1035,
+      "simplified": "表示",
+      "pinyin": "biǎoshì",
+      "japanese": "表す。意思を示す。"
+    },
+    {
+      "sourceId": "w01036",
+      "globalSequence": 1036,
+      "simplified": "表现",
+      "pinyin": "biǎoxiàn",
+      "japanese": "表れる。振る舞い。"
+    },
+    {
+      "sourceId": "w01037",
+      "globalSequence": 1037,
+      "simplified": "表扬",
+      "pinyin": "biǎoyáng",
+      "japanese": "褒める。"
+    },
+    {
+      "sourceId": "w01038",
+      "globalSequence": 1038,
+      "simplified": "饼干",
+      "pinyin": "bǐnggān",
+      "japanese": "ビスケット。"
+    },
+    {
+      "sourceId": "w01039",
+      "globalSequence": 1039,
+      "simplified": "并",
+      "pinyin": "bìng",
+      "japanese": "そのうえ。否定の前で「決して」。"
+    },
+    {
+      "sourceId": "w01040",
+      "globalSequence": 1040,
+      "simplified": "并且",
+      "pinyin": "bìngqiě",
+      "japanese": "しかも。かつ。"
+    },
+    {
+      "sourceId": "w01041",
+      "globalSequence": 1041,
+      "simplified": "播放",
+      "pinyin": "bōfàng",
+      "japanese": "再生する。放送する。"
+    },
+    {
+      "sourceId": "w01042",
+      "globalSequence": 1042,
+      "simplified": "博士",
+      "pinyin": "bóshì",
+      "japanese": "博士。"
+    },
+    {
+      "sourceId": "w01043",
+      "globalSequence": 1043,
+      "simplified": "不必",
+      "pinyin": "búbì",
+      "japanese": "〜する必要がない。"
+    },
+    {
+      "sourceId": "w01044",
+      "globalSequence": 1044,
+      "simplified": "不便",
+      "pinyin": "búbiàn",
+      "japanese": "不便な。都合が悪い。"
+    },
+    {
+      "sourceId": "w01045",
+      "globalSequence": 1045,
+      "simplified": "不断",
+      "pinyin": "búduàn",
+      "japanese": "絶えず。"
+    },
+    {
+      "sourceId": "w01046",
+      "globalSequence": 1046,
+      "simplified": "不够",
+      "pinyin": "búgòu",
+      "japanese": "足りない。"
+    },
+    {
+      "sourceId": "w01047",
+      "globalSequence": 1047,
+      "simplified": "不过",
+      "pinyin": "búguò",
+      "japanese": "しかし。〜にすぎない。"
+    },
+    {
+      "sourceId": "w01048",
+      "globalSequence": 1048,
+      "simplified": "不论",
+      "pinyin": "búlùn",
+      "japanese": "〜にかかわらず。"
+    },
+    {
+      "sourceId": "w01049",
+      "globalSequence": 1049,
+      "simplified": "步",
+      "pinyin": "bù",
+      "japanese": "歩。歩み。"
+    },
+    {
+      "sourceId": "w01050",
+      "globalSequence": 1050,
+      "simplified": "部",
+      "pinyin": "bù",
+      "japanese": "部門。映画などを数える「〜本」。"
+    }
+  ]
+}

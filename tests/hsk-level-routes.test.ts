@@ -30,9 +30,10 @@ describe('HSK level route contract', () => {
     expect(pageSource).toContain('params: { level: String(pool.level) }');
   });
 
-  it('renders the current zero-row state without a session and keeps the unavailable copy noninteractive', () => {
+  it('renders complete study pools and keeps the fail-closed unavailable fallback', () => {
     const { pools } = loadHskPublication();
-    expect(pools.every((pool) => pool.status === 'unavailable' && pool.fullRange.length === 0)).toBe(true);
+    expect(pools.every((pool) => pool.status === 'available' && pool.fullRange.length > 0)).toBe(true);
+    expect(pageSource).toContain('日本語訳はAIによる下書き');
     expect(pageSource).toContain("pool.status === 'unavailable' || entries.length === 0");
     expect(pageSource).toContain('<h2 id="preparing-title">準備中</h2>');
     expect(pageSource).toContain('一部の単語を公開中です。');
@@ -80,7 +81,7 @@ describe('HSK level route contract', () => {
     expect(notice?.provenanceUrl).toBeTruthy();
     expect(notice?.disclaimerUrl).toBeTruthy();
     expect(notice?.modificationNotice).toContain('Modified by retaining only');
-    expect(pageSource).toContain('sourceNotice.modificationNotice');
+    expect(pageSource).toContain('日本語訳を独自に追加');
     expect(pageSource).toContain('sourceNotice.attribution');
   });
 });

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01153",
+      "globalSequence": 1153,
+      "simplified": "底",
+      "pinyin": "dǐ",
+      "japanese": "底。終わり。"
+    },
+    {
+      "sourceId": "w01154",
+      "globalSequence": 1154,
+      "simplified": "底下",
+      "pinyin": "dǐxia",
+      "japanese": "下。下側。"
+    },
+    {
+      "sourceId": "w01155",
+      "globalSequence": 1155,
+      "simplified": "地球",
+      "pinyin": "dìqiú",
+      "japanese": "地球。"
+    },
+    {
+      "sourceId": "w01156",
+      "globalSequence": 1156,
+      "simplified": "地址",
+      "pinyin": "dìzhǐ",
+      "japanese": "住所。"
+    },
+    {
+      "sourceId": "w01157",
+      "globalSequence": 1157,
+      "simplified": "点名",
+      "pinyin": "diǎnmíng",
+      "japanese": "名前を呼ぶ。点呼する。"
+    },
+    {
+      "sourceId": "w01158",
+      "globalSequence": 1158,
+      "simplified": "点头",
+      "pinyin": "diǎntóu",
+      "japanese": "うなずく。"
+    },
+    {
+      "sourceId": "w01159",
+      "globalSequence": 1159,
+      "simplified": "电动车",
+      "pinyin": "diàndòngchē",
+      "japanese": "電動車。電動バイク。"
+    },
+    {
+      "sourceId": "w01160",
+      "globalSequence": 1160,
+      "simplified": "电视剧",
+      "pinyin": "diànshìjù",
+      "japanese": "テレビドラマ。"
+    },
+    {
+      "sourceId": "w01161",
+      "globalSequence": 1161,
+      "simplified": "掉",
+      "pinyin": "diào",
+      "japanese": "落ちる。落とす。"
+    },
+    {
+      "sourceId": "w01162",
+      "globalSequence": 1162,
+      "simplified": "调查",
+      "pinyin": "diàochá",
+      "japanese": "調査する。"
+    },
+    {
+      "sourceId": "w01163",
+      "globalSequence": 1163,
+      "simplified": "订",
+      "pinyin": "dìng",
+      "japanese": "予約する。注文する。"
+    },
+    {
+      "sourceId": "w01164",
+      "globalSequence": 1164,
+      "simplified": "定",
+      "pinyin": "dìng",
+      "japanese": "決める。定まる。"
+    },
+    {
+      "sourceId": "w01165",
+      "globalSequence": 1165,
+      "simplified": "东部",
+      "pinyin": "dōngbù",
+      "japanese": "東部。"
+    },
+    {
+      "sourceId": "w01166",
+      "globalSequence": 1166,
+      "simplified": "动车",
+      "pinyin": "dòngchē",
+      "japanese": "動力分散式列車。中国の高速列車の一種。"
+    },
+    {
+      "sourceId": "w01167",
+      "globalSequence": 1167,
+      "simplified": "动作",
+      "pinyin": "dòngzuò",
+      "japanese": "動作。"
+    },
+    {
+      "sourceId": "w01168",
+      "globalSequence": 1168,
+      "simplified": "读者",
+      "pinyin": "dúzhě",
+      "japanese": "読者。"
+    },
+    {
+      "sourceId": "w01169",
+      "globalSequence": 1169,
+      "simplified": "堵车",
+      "pinyin": "dǔchē",
+      "japanese": "交通渋滞になる。"
+    },
+    {
+      "sourceId": "w01170",
+      "globalSequence": 1170,
+      "simplified": "度假",
+      "pinyin": "dùjià",
+      "japanese": "休暇を過ごす。"
+    },
+    {
+      "sourceId": "w01171",
+      "globalSequence": 1171,
+      "simplified": "肚子",
+      "pinyin": "dùzi",
+      "japanese": "お腹。"
+    },
+    {
+      "sourceId": "w01172",
+      "globalSequence": 1172,
+      "simplified": "短信",
+      "pinyin": "duǎnxìn",
+      "japanese": "ショートメッセージ。SMS。"
+    },
+    {
+      "sourceId": "w01173",
+      "globalSequence": 1173,
+      "simplified": "队",
+      "pinyin": "duì",
+      "japanese": "隊。チーム。"
+    },
+    {
+      "sourceId": "w01174",
+      "globalSequence": 1174,
+      "simplified": "对方",
+      "pinyin": "duìfāng",
+      "japanese": "相手。"
+    },
+    {
+      "sourceId": "w01175",
+      "globalSequence": 1175,
+      "simplified": "对面",
+      "pinyin": "duìmiàn",
+      "japanese": "向かい側。"
+    },
+    {
+      "sourceId": "w01176",
+      "globalSequence": 1176,
+      "simplified": "对于",
+      "pinyin": "duìyú",
+      "japanese": "〜に対して。〜について。"
+    },
+    {
+      "sourceId": "w01177",
+      "globalSequence": 1177,
+      "simplified": "队员",
+      "pinyin": "duìyuán",
+      "japanese": "チームのメンバー。"
+    },
+    {
+      "sourceId": "w01178",
+      "globalSequence": 1178,
+      "simplified": "队长",
+      "pinyin": "duìzhǎng",
+      "japanese": "隊長。チームの主将。"
+    },
+    {
+      "sourceId": "w01179",
+      "globalSequence": 1179,
+      "simplified": "顿",
+      "pinyin": "dùn",
+      "japanese": "食事などの回数を数える「〜回」。"
+    },
+    {
+      "sourceId": "w01180",
+      "globalSequence": 1180,
+      "simplified": "多么",
+      "pinyin": "duōme",
+      "japanese": "なんと。どれほど。"
+    },
+    {
+      "sourceId": "w01181",
+      "globalSequence": 1181,
+      "simplified": "多数",
+      "pinyin": "duōshù",
+      "japanese": "多数。"
+    },
+    {
+      "sourceId": "w01182",
+      "globalSequence": 1182,
+      "simplified": "多样",
+      "pinyin": "duōyàng",
+      "japanese": "多様な。"
+    },
+    {
+      "sourceId": "w01183",
+      "globalSequence": 1183,
+      "simplified": "而",
+      "pinyin": "ér",
+      "japanese": "そして。しかし。"
+    },
+    {
+      "sourceId": "w01184",
+      "globalSequence": 1184,
+      "simplified": "儿童",
+      "pinyin": "értóng",
+      "japanese": "児童。子ども。"
+    },
+    {
+      "sourceId": "w01185",
+      "globalSequence": 1185,
+      "simplified": "发出",
+      "pinyin": "fāchū",
+      "japanese": "発する。送り出す。"
+    },
+    {
+      "sourceId": "w01186",
+      "globalSequence": 1186,
+      "simplified": "发送",
+      "pinyin": "fāsòng",
+      "japanese": "送信する。発送する。"
+    },
+    {
+      "sourceId": "w01187",
+      "globalSequence": 1187,
+      "simplified": "法",
+      "pinyin": "fǎ",
+      "japanese": "方法。法律。"
+    },
+    {
+      "sourceId": "w01188",
+      "globalSequence": 1188,
+      "simplified": "法律",
+      "pinyin": "fǎlǜ",
+      "japanese": "法律。"
+    },
+    {
+      "sourceId": "w01189",
+      "globalSequence": 1189,
+      "simplified": "翻译",
+      "pinyin": "fānyì",
+      "japanese": "翻訳する。通訳する。"
+    },
+    {
+      "sourceId": "w01190",
+      "globalSequence": 1190,
+      "simplified": "烦",
+      "pinyin": "fán",
+      "japanese": "うっとうしい。いらいらする。"
+    },
+    {
+      "sourceId": "w01191",
+      "globalSequence": 1191,
+      "simplified": "烦恼",
+      "pinyin": "fánnǎo",
+      "japanese": "悩み。悩む。"
+    },
+    {
+      "sourceId": "w01192",
+      "globalSequence": 1192,
+      "simplified": "反对",
+      "pinyin": "fǎnduì",
+      "japanese": "反対する。"
+    },
+    {
+      "sourceId": "w01193",
+      "globalSequence": 1193,
+      "simplified": "方面",
+      "pinyin": "fāngmiàn",
+      "japanese": "方面。面。"
+    },
+    {
+      "sourceId": "w01194",
+      "globalSequence": 1194,
+      "simplified": "方式",
+      "pinyin": "fāngshì",
+      "japanese": "方式。やり方。"
+    },
+    {
+      "sourceId": "w01195",
+      "globalSequence": 1195,
+      "simplified": "房东",
+      "pinyin": "fángdōng",
+      "japanese": "大家。"
+    },
+    {
+      "sourceId": "w01196",
+      "globalSequence": 1196,
+      "simplified": "房租",
+      "pinyin": "fángzū",
+      "japanese": "家賃。"
+    },
+    {
+      "sourceId": "w01197",
+      "globalSequence": 1197,
+      "simplified": "放弃",
+      "pinyin": "fàngqì",
+      "japanese": "諦める。放棄する。"
+    },
+    {
+      "sourceId": "w01198",
+      "globalSequence": 1198,
+      "simplified": "放松",
+      "pinyin": "fàngsōng",
+      "japanese": "リラックスする。緩める。"
+    },
+    {
+      "sourceId": "w01199",
+      "globalSequence": 1199,
+      "simplified": "费",
+      "pinyin": "fèi",
+      "japanese": "費用。費やす。"
+    },
+    {
+      "sourceId": "w01200",
+      "globalSequence": 1200,
+      "simplified": "费用",
+      "pinyin": "fèiyong",
+      "japanese": "費用。"
+    },
+    {
+      "sourceId": "w01201",
+      "globalSequence": 1201,
+      "simplified": "分数",
+      "pinyin": "fēnshù",
+      "japanese": "点数。分数。"
+    },
+    {
+      "sourceId": "w01202",
+      "globalSequence": 1202,
+      "simplified": "分为",
+      "pinyin": "fēnwéi",
+      "japanese": "〜に分かれる。〜に分ける。"
+    }
+  ]
+}

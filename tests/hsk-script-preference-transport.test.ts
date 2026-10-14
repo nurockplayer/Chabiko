@@ -23,7 +23,7 @@ interface SyntheticEntry {
 
 function createRouteFixture(entryOrEntries: SyntheticEntry | SyntheticEntry[], newWordIds: string[] = []) {
   // Synthetic status/form inputs exercise transport only. The production HSK
-  // loader currently excludes Traditional fields and all real HSK routes stay unavailable.
+  // loader excludes Traditional fields; this fixture exercises display preference fallback.
   const entries = Array.isArray(entryOrEntries) ? entryOrEntries : [entryOrEntries];
   syntheticPublication.current = {
     pools: [{
@@ -401,4 +401,63 @@ describe('HSK answer transport and script selection', () => {
       cleanup();
     },
   );
+});
+
+describe('HSK external storage deletion lifecycle (#508)', () => {
+  it('filters unrelated keys and storage areas, passes explicit clear evidence, and disposes listeners', async () => {
+    const entry: SyntheticEntry = { id: 'synthetic-clear', simplified: '字', simplifiedStatus: 'authored', pinyin: 'zì', japanese: '文字' };
+    createRouteFixture(entry);
+    const response = await getHskAnswers({ params: { level: '1' } } as never);
+    const body = await response.text();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(body)));
+    const root = createSessionRoot();
+    const cleanup = await mountRemoteFlashcardSession({ ids: [entry.id], newPoolIds: [], answerSource: '/data/hsk/1.json' });
+    (root.querySelector('#btn-start') as HTMLButtonElement).click();
+    const refresh = vi.spyOn(VocabularyProgressStore.prototype, 'refresh');
+    const key = 'chabiko:hsk-vocabulary-progress:v1';
+    try {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other-key', newValue: null, storageArea: localStorage }));
+      window.dispatchEvent(new StorageEvent('storage', { key, newValue: null, storageArea: sessionStorage }));
+      expect(refresh).not.toHaveBeenCalled();
+      window.dispatchEvent(new StorageEvent('storage', { key, newValue: null, storageArea: localStorage }));
+      expect(refresh).toHaveBeenLastCalledWith(true);
+      window.dispatchEvent(new StorageEvent('storage', { key: null, newValue: null, storageArea: localStorage }));
+      expect(refresh).toHaveBeenCalledTimes(2);
+      window.dispatchEvent(new StorageEvent('storage', { key, newValue: '{}', storageArea: localStorage }));
+      expect(refresh).toHaveBeenLastCalledWith(false);
+      cleanup();
+      refresh.mockClear();
+      window.dispatchEvent(new StorageEvent('storage', { key, newValue: null, storageArea: localStorage }));
+      window.dispatchEvent(new PageTransitionEvent('pageshow'));
+      expect(refresh).not.toHaveBeenCalled();
+    } finally {
+      cleanup();
+      refresh.mockRestore();
+    }
+  });
+});
+
+
+describe('HSK default storage under quota limits (#508)', () => {
+  it('loads previous progress after a failed probe and flushes pending ratings when writes recover', () => {
+    const key = 'chabiko:hsk-vocabulary-progress:v1';
+    localStorage.setItem(key, JSON.stringify({ version: 1, entries: { previous: { status: 'learned', knownStreak: 2 } } }));
+    const prototype = Object.getPrototypeOf(localStorage) as Storage;
+    const originalSet = prototype.setItem;
+    const write = vi.spyOn(prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Full storage', 'QuotaExceededError');
+    });
+    try {
+      const store = new VocabularyProgressStore();
+      expect(store.getStatus('previous')).toBe('learned');
+      store.applyRating('pending', 'known');
+      store.refresh();
+      write.mockImplementation(function (this: Storage, name: string, value: string) { originalSet.call(this, name, value); });
+      store.applyRating('pending', 'known');
+      expect(JSON.parse(localStorage.getItem(key)!).entries).toEqual({ previous: { status: 'learned', knownStreak: 2 }, pending: { status: 'learned', knownStreak: 2 } });
+    } finally {
+      write.mockRestore();
+      localStorage.removeItem(key);
+    }
+  });
 });

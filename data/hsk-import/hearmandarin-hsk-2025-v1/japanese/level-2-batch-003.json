@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00356",
+      "globalSequence": 356,
+      "simplified": "后面",
+      "pinyin": "hòumiàn",
+      "japanese": "後ろ。後半。"
+    },
+    {
+      "sourceId": "w00359",
+      "globalSequence": 359,
+      "simplified": "画",
+      "pinyin": "huà",
+      "japanese": "絵。描く。"
+    },
+    {
+      "sourceId": "w00360",
+      "globalSequence": 360,
+      "simplified": "坏",
+      "pinyin": "huài",
+      "japanese": "悪い。壊れる。"
+    },
+    {
+      "sourceId": "w00361",
+      "globalSequence": 361,
+      "simplified": "回来",
+      "pinyin": "huílái",
+      "japanese": "帰ってくる。"
+    },
+    {
+      "sourceId": "w00362",
+      "globalSequence": 362,
+      "simplified": "回去",
+      "pinyin": "huíqù",
+      "japanese": "帰っていく。"
+    },
+    {
+      "sourceId": "w00363",
+      "globalSequence": 363,
+      "simplified": "机场",
+      "pinyin": "jīchǎng",
+      "japanese": "空港。"
+    },
+    {
+      "sourceId": "w00364",
+      "globalSequence": 364,
+      "simplified": "机票",
+      "pinyin": "jīpiào",
+      "japanese": "航空券。"
+    },
+    {
+      "sourceId": "w00365",
+      "globalSequence": 365,
+      "simplified": "记得",
+      "pinyin": "jìde",
+      "japanese": "覚えている。"
+    },
+    {
+      "sourceId": "w00366",
+      "globalSequence": 366,
+      "simplified": "间",
+      "pinyin": "jiān",
+      "japanese": "部屋などを数える「〜室・軒」。"
+    },
+    {
+      "sourceId": "w00367",
+      "globalSequence": 367,
+      "simplified": "教",
+      "pinyin": "jiāo",
+      "japanese": "教える。"
+    },
+    {
+      "sourceId": "w00368",
+      "globalSequence": 368,
+      "simplified": "教室",
+      "pinyin": "jiàoshì",
+      "japanese": "教室。"
+    },
+    {
+      "sourceId": "w00369",
+      "globalSequence": 369,
+      "simplified": "介绍",
+      "pinyin": "jièshào",
+      "japanese": "紹介する。"
+    },
+    {
+      "sourceId": "w00370",
+      "globalSequence": 370,
+      "simplified": "进",
+      "pinyin": "jìn",
+      "japanese": "入る。"
+    },
+    {
+      "sourceId": "w00371",
+      "globalSequence": 371,
+      "simplified": "近",
+      "pinyin": "jìn",
+      "japanese": "近い。"
+    },
+    {
+      "sourceId": "w00372",
+      "globalSequence": 372,
+      "simplified": "进来",
+      "pinyin": "jìnlái",
+      "japanese": "入ってくる。"
+    },
+    {
+      "sourceId": "w00373",
+      "globalSequence": 373,
+      "simplified": "进去",
+      "pinyin": "jìnqù",
+      "japanese": "入っていく。"
+    },
+    {
+      "sourceId": "w00374",
+      "globalSequence": 374,
+      "simplified": "经常",
+      "pinyin": "jīngcháng",
+      "japanese": "よく。しょっちゅう。"
+    },
+    {
+      "sourceId": "w00375",
+      "globalSequence": 375,
+      "simplified": "酒店",
+      "pinyin": "jiǔdiàn",
+      "japanese": "ホテル。"
+    },
+    {
+      "sourceId": "w00376",
+      "globalSequence": 376,
+      "simplified": "就",
+      "pinyin": "jiù",
+      "japanese": "すぐ。まさに。〜なら。"
+    },
+    {
+      "sourceId": "w00377",
+      "globalSequence": 377,
+      "simplified": "咖啡",
+      "pinyin": "kāfēi",
+      "japanese": "コーヒー。"
+    },
+    {
+      "sourceId": "w00378",
+      "globalSequence": 378,
+      "simplified": "开始",
+      "pinyin": "kāishǐ",
+      "japanese": "始まる。始める。"
+    },
+    {
+      "sourceId": "w00379",
+      "globalSequence": 379,
+      "simplified": "开学",
+      "pinyin": "kāixué",
+      "japanese": "新学期が始まる。"
+    },
+    {
+      "sourceId": "w00380",
+      "globalSequence": 380,
+      "simplified": "考",
+      "pinyin": "kǎo",
+      "japanese": "試験を受ける。試験する。"
+    },
+    {
+      "sourceId": "w00381",
+      "globalSequence": 381,
+      "simplified": "考试",
+      "pinyin": "kǎoshì",
+      "japanese": "試験。"
+    },
+    {
+      "sourceId": "w00382",
+      "globalSequence": 382,
+      "simplified": "可能",
+      "pinyin": "kěnéng",
+      "japanese": "可能な。〜かもしれない。"
+    },
+    {
+      "sourceId": "w00383",
+      "globalSequence": 383,
+      "simplified": "裤子",
+      "pinyin": "kùzi",
+      "japanese": "ズボン。"
+    },
+    {
+      "sourceId": "w00384",
+      "globalSequence": 384,
+      "simplified": "快",
+      "pinyin": "kuài",
+      "japanese": "速い。もうすぐ。"
+    },
+    {
+      "sourceId": "w00385",
+      "globalSequence": 385,
+      "simplified": "快乐",
+      "pinyin": "kuàilè",
+      "japanese": "楽しい。幸せな。"
+    },
+    {
+      "sourceId": "w00386",
+      "globalSequence": 386,
+      "simplified": "快要",
+      "pinyin": "kuàiyào",
+      "japanese": "まもなく〜する。"
+    },
+    {
+      "sourceId": "w00387",
+      "globalSequence": 387,
+      "simplified": "篮球",
+      "pinyin": "lánqiú",
+      "japanese": "バスケットボール。"
+    },
+    {
+      "sourceId": "w00388",
+      "globalSequence": 388,
+      "simplified": "累",
+      "pinyin": "lèi",
+      "japanese": "疲れる。"
+    },
+    {
+      "sourceId": "w00389",
+      "globalSequence": 389,
+      "simplified": "离",
+      "pinyin": "lí",
+      "japanese": "〜から離れている。離れる。"
+    },
+    {
+      "sourceId": "w00390",
+      "globalSequence": 390,
+      "simplified": "里面",
+      "pinyin": "lǐmiàn",
+      "japanese": "中。内側。"
+    },
+    {
+      "sourceId": "w00391",
+      "globalSequence": 391,
+      "simplified": "楼",
+      "pinyin": "lóu",
+      "japanese": "建物。階。"
+    },
+    {
+      "sourceId": "w00392",
+      "globalSequence": 392,
+      "simplified": "路",
+      "pinyin": "lù",
+      "japanese": "道。"
+    },
+    {
+      "sourceId": "w00393",
+      "globalSequence": 393,
+      "simplified": "路上",
+      "pinyin": "lùshang",
+      "japanese": "道の上。途中。"
+    },
+    {
+      "sourceId": "w00394",
+      "globalSequence": 394,
+      "simplified": "旅游",
+      "pinyin": "lǚyóu",
+      "japanese": "旅行する。"
+    },
+    {
+      "sourceId": "w00395",
+      "globalSequence": 395,
+      "simplified": "绿茶",
+      "pinyin": "lǜchá",
+      "japanese": "緑茶。"
+    },
+    {
+      "sourceId": "w00396",
+      "globalSequence": 396,
+      "simplified": "绿色",
+      "pinyin": "lǜsè",
+      "japanese": "緑色。"
+    },
+    {
+      "sourceId": "w00397",
+      "globalSequence": 397,
+      "simplified": "慢",
+      "pinyin": "màn",
+      "japanese": "遅い。ゆっくりした。"
+    },
+    {
+      "sourceId": "w00398",
+      "globalSequence": 398,
+      "simplified": "没意思",
+      "pinyin": "méi yìsi",
+      "japanese": "つまらない。"
+    },
+    {
+      "sourceId": "w00399",
+      "globalSequence": 399,
+      "simplified": "每",
+      "pinyin": "měi",
+      "japanese": "毎〜。"
+    },
+    {
+      "sourceId": "w00400",
+      "globalSequence": 400,
+      "simplified": "门",
+      "pinyin": "mén",
+      "japanese": "門。ドア。"
+    },
+    {
+      "sourceId": "w00401",
+      "globalSequence": 401,
+      "simplified": "门口",
+      "pinyin": "ménkǒu",
+      "japanese": "入り口。"
+    },
+    {
+      "sourceId": "w00402",
+      "globalSequence": 402,
+      "simplified": "门票",
+      "pinyin": "ménpiào",
+      "japanese": "入場券。"
+    },
+    {
+      "sourceId": "w00404",
+      "globalSequence": 404,
+      "simplified": "名",
+      "pinyin": "míng",
+      "japanese": "名前。人数を数える「〜名」。"
+    },
+    {
+      "sourceId": "w00405",
+      "globalSequence": 405,
+      "simplified": "拿",
+      "pinyin": "ná",
+      "japanese": "持つ。取る。"
+    },
+    {
+      "sourceId": "w00406",
+      "globalSequence": 406,
+      "simplified": "那么",
+      "pinyin": "nàme",
+      "japanese": "そんなに。それでは。"
+    },
+    {
+      "sourceId": "w00407",
+      "globalSequence": 407,
+      "simplified": "那样",
+      "pinyin": "nàyàng",
+      "japanese": "そのような。"
+    },
+    {
+      "sourceId": "w00408",
+      "globalSequence": 408,
+      "simplified": "奶茶",
+      "pinyin": "nǎichá",
+      "japanese": "ミルクティー。"
+    }
+  ]
+}

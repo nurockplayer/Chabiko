@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00552",
+      "globalSequence": 552,
+      "simplified": "差不多",
+      "pinyin": "chàbuduō",
+      "japanese": "ほぼ同じ。だいたい。"
+    },
+    {
+      "sourceId": "w00553",
+      "globalSequence": 553,
+      "simplified": "尝",
+      "pinyin": "cháng",
+      "japanese": "味見する。経験する。"
+    },
+    {
+      "sourceId": "w00554",
+      "globalSequence": 554,
+      "simplified": "常",
+      "pinyin": "cháng",
+      "japanese": "よく。いつも。"
+    },
+    {
+      "sourceId": "w00555",
+      "globalSequence": 555,
+      "simplified": "常见",
+      "pinyin": "cháng jiàn",
+      "japanese": "よく見られる。"
+    },
+    {
+      "sourceId": "w00556",
+      "globalSequence": 556,
+      "simplified": "常用",
+      "pinyin": "cháng yòng",
+      "japanese": "よく使われる。"
+    },
+    {
+      "sourceId": "w00557",
+      "globalSequence": 557,
+      "simplified": "常常",
+      "pinyin": "chángcháng",
+      "japanese": "よく。しばしば。"
+    },
+    {
+      "sourceId": "w00558",
+      "globalSequence": 558,
+      "simplified": "衬衫",
+      "pinyin": "chènshān",
+      "japanese": "シャツ。"
+    },
+    {
+      "sourceId": "w00559",
+      "globalSequence": 559,
+      "simplified": "成绩",
+      "pinyin": "chéngjì",
+      "japanese": "成績。"
+    },
+    {
+      "sourceId": "w00560",
+      "globalSequence": 560,
+      "simplified": "城市",
+      "pinyin": "chéngshì",
+      "japanese": "都市。"
+    },
+    {
+      "sourceId": "w00561",
+      "globalSequence": 561,
+      "simplified": "迟到",
+      "pinyin": "chídào",
+      "japanese": "遅刻する。"
+    },
+    {
+      "sourceId": "w00562",
+      "globalSequence": 562,
+      "simplified": "出发",
+      "pinyin": "chūfā",
+      "japanese": "出発する。"
+    },
+    {
+      "sourceId": "w00563",
+      "globalSequence": 563,
+      "simplified": "出生",
+      "pinyin": "chūshēng",
+      "japanese": "生まれる。"
+    },
+    {
+      "sourceId": "w00564",
+      "globalSequence": 564,
+      "simplified": "出院",
+      "pinyin": "chūyuàn",
+      "japanese": "退院する。"
+    },
+    {
+      "sourceId": "w00565",
+      "globalSequence": 565,
+      "simplified": "初中",
+      "pinyin": "chūzhōng",
+      "japanese": "中学校。"
+    },
+    {
+      "sourceId": "w00566",
+      "globalSequence": 566,
+      "simplified": "除了",
+      "pinyin": "chúle",
+      "japanese": "〜を除いて。〜のほかに。"
+    },
+    {
+      "sourceId": "w00567",
+      "globalSequence": 567,
+      "simplified": "船",
+      "pinyin": "chuán",
+      "japanese": "船。"
+    },
+    {
+      "sourceId": "w00568",
+      "globalSequence": 568,
+      "simplified": "春天",
+      "pinyin": "chūntiān",
+      "japanese": "春。"
+    },
+    {
+      "sourceId": "w00569",
+      "globalSequence": 569,
+      "simplified": "词典",
+      "pinyin": "cídiǎn",
+      "japanese": "辞書。"
+    },
+    {
+      "sourceId": "w00570",
+      "globalSequence": 570,
+      "simplified": "聪明",
+      "pinyin": "cōngmíng",
+      "japanese": "賢い。"
+    },
+    {
+      "sourceId": "w00571",
+      "globalSequence": 571,
+      "simplified": "打扫",
+      "pinyin": "dǎsǎo",
+      "japanese": "掃除する。"
+    },
+    {
+      "sourceId": "w00572",
+      "globalSequence": 572,
+      "simplified": "打算",
+      "pinyin": "dǎsuàn",
+      "japanese": "〜するつもりだ。計画。"
+    },
+    {
+      "sourceId": "w00573",
+      "globalSequence": 573,
+      "simplified": "大概",
+      "pinyin": "dàgài",
+      "japanese": "おそらく。だいたい。"
+    },
+    {
+      "sourceId": "w00574",
+      "globalSequence": 574,
+      "simplified": "大人",
+      "pinyin": "dàren",
+      "japanese": "大人。"
+    },
+    {
+      "sourceId": "w00575",
+      "globalSequence": 575,
+      "simplified": "大小",
+      "pinyin": "dàxiǎo",
+      "japanese": "大きさ。"
+    },
+    {
+      "sourceId": "w00576",
+      "globalSequence": 576,
+      "simplified": "大熊猫",
+      "pinyin": "dàxióngmāo",
+      "japanese": "ジャイアントパンダ。"
+    },
+    {
+      "sourceId": "w00577",
+      "globalSequence": 577,
+      "simplified": "大衣",
+      "pinyin": "dàyī",
+      "japanese": "コート。"
+    },
+    {
+      "sourceId": "w00578",
+      "globalSequence": 578,
+      "simplified": "带",
+      "pinyin": "dài",
+      "japanese": "持っていく。連れていく。帯。"
+    },
+    {
+      "sourceId": "w00579",
+      "globalSequence": 579,
+      "simplified": "担心",
+      "pinyin": "dānxīn",
+      "japanese": "心配する。"
+    },
+    {
+      "sourceId": "w00580",
+      "globalSequence": 580,
+      "simplified": "蛋糕",
+      "pinyin": "dàngāo",
+      "japanese": "ケーキ。"
+    },
+    {
+      "sourceId": "w00581",
+      "globalSequence": 581,
+      "simplified": "当然",
+      "pinyin": "dāngrán",
+      "japanese": "もちろん。"
+    },
+    {
+      "sourceId": "w00582",
+      "globalSequence": 582,
+      "simplified": "到处",
+      "pinyin": "dàochù",
+      "japanese": "至る所。"
+    },
+    {
+      "sourceId": "w00583",
+      "globalSequence": 583,
+      "simplified": "得",
+      "pinyin": "dé",
+      "japanese": "得る。"
+    },
+    {
+      "sourceId": "w00584",
+      "globalSequence": 584,
+      "simplified": "得到",
+      "pinyin": "dédào",
+      "japanese": "手に入れる。"
+    },
+    {
+      "sourceId": "w00585",
+      "globalSequence": 585,
+      "simplified": "得分",
+      "pinyin": "défēn",
+      "japanese": "得点する。得点。"
+    },
+    {
+      "sourceId": "w00586",
+      "globalSequence": 586,
+      "simplified": "的话",
+      "pinyin": "dehuà",
+      "japanese": "〜なら。"
+    },
+    {
+      "sourceId": "w00587",
+      "globalSequence": 587,
+      "simplified": "得",
+      "pinyin": "děi",
+      "japanese": "〜しなければならない。"
+    },
+    {
+      "sourceId": "w00588",
+      "globalSequence": 588,
+      "simplified": "灯",
+      "pinyin": "dēng",
+      "japanese": "明かり。電灯。"
+    },
+    {
+      "sourceId": "w00589",
+      "globalSequence": 589,
+      "simplified": "地",
+      "pinyin": "dì",
+      "japanese": "土地。地面。"
+    },
+    {
+      "sourceId": "w00590",
+      "globalSequence": 590,
+      "simplified": "地点",
+      "pinyin": "dìdiǎn",
+      "japanese": "地点。場所。"
+    },
+    {
+      "sourceId": "w00591",
+      "globalSequence": 591,
+      "simplified": "地方",
+      "pinyin": "dìfang",
+      "japanese": "場所。"
+    },
+    {
+      "sourceId": "w00592",
+      "globalSequence": 592,
+      "simplified": "地图",
+      "pinyin": "dìtú",
+      "japanese": "地図。"
+    },
+    {
+      "sourceId": "w00593",
+      "globalSequence": 593,
+      "simplified": "电",
+      "pinyin": "diàn",
+      "japanese": "電気。"
+    },
+    {
+      "sourceId": "w00594",
+      "globalSequence": 594,
+      "simplified": "电梯",
+      "pinyin": "diàntī",
+      "japanese": "エレベーター。エスカレーター。"
+    },
+    {
+      "sourceId": "w00595",
+      "globalSequence": 595,
+      "simplified": "电子书",
+      "pinyin": "diànzǐshū",
+      "japanese": "電子書籍。"
+    },
+    {
+      "sourceId": "w00596",
+      "globalSequence": 596,
+      "simplified": "丢",
+      "pinyin": "diū",
+      "japanese": "なくす。捨てる。"
+    },
+    {
+      "sourceId": "w00597",
+      "globalSequence": 597,
+      "simplified": "东",
+      "pinyin": "dōng",
+      "japanese": "東。"
+    },
+    {
+      "sourceId": "w00598",
+      "globalSequence": 598,
+      "simplified": "东北",
+      "pinyin": "dōngběi",
+      "japanese": "北東。中国東北地方。"
+    },
+    {
+      "sourceId": "w00599",
+      "globalSequence": 599,
+      "simplified": "东方",
+      "pinyin": "dōngfāng",
+      "japanese": "東方。東洋。"
+    },
+    {
+      "sourceId": "w00600",
+      "globalSequence": 600,
+      "simplified": "东南",
+      "pinyin": "dōngnán",
+      "japanese": "南東。"
+    },
+    {
+      "sourceId": "w00601",
+      "globalSequence": 601,
+      "simplified": "冬天",
+      "pinyin": "dōngtiān",
+      "japanese": "冬。"
+    }
+  ]
+}

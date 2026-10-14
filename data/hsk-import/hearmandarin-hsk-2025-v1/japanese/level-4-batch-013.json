@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01555",
+      "globalSequence": 1555,
+      "simplified": "片",
+      "pinyin": "piàn",
+      "japanese": "薄い一片。地域・景色などを数える語。"
+    },
+    {
+      "sourceId": "w01556",
+      "globalSequence": 1556,
+      "simplified": "乒乓球",
+      "pinyin": "pīngpāngqiú",
+      "japanese": "卓球。"
+    },
+    {
+      "sourceId": "w01557",
+      "globalSequence": 1557,
+      "simplified": "平常",
+      "pinyin": "píngcháng",
+      "japanese": "普段。普通の。"
+    },
+    {
+      "sourceId": "w01558",
+      "globalSequence": 1558,
+      "simplified": "破",
+      "pinyin": "pò",
+      "japanese": "壊れた。破る。"
+    },
+    {
+      "sourceId": "w01559",
+      "globalSequence": 1559,
+      "simplified": "葡萄",
+      "pinyin": "pútao",
+      "japanese": "ブドウ。"
+    },
+    {
+      "sourceId": "w01560",
+      "globalSequence": 1560,
+      "simplified": "葡萄酒",
+      "pinyin": "pútaojiǔ",
+      "japanese": "ワイン。"
+    },
+    {
+      "sourceId": "w01561",
+      "globalSequence": 1561,
+      "simplified": "普遍",
+      "pinyin": "pǔbiàn",
+      "japanese": "広く見られる。普遍的な。"
+    },
+    {
+      "sourceId": "w01562",
+      "globalSequence": 1562,
+      "simplified": "普通",
+      "pinyin": "pǔtōng",
+      "japanese": "普通の。"
+    },
+    {
+      "sourceId": "w01563",
+      "globalSequence": 1563,
+      "simplified": "普通话",
+      "pinyin": "pǔtōnghuà",
+      "japanese": "中国の標準語。"
+    },
+    {
+      "sourceId": "w01564",
+      "globalSequence": 1564,
+      "simplified": "期",
+      "pinyin": "qī",
+      "japanese": "期間。期。"
+    },
+    {
+      "sourceId": "w01565",
+      "globalSequence": 1565,
+      "simplified": "期末",
+      "pinyin": "qīmò",
+      "japanese": "学期末。"
+    },
+    {
+      "sourceId": "w01566",
+      "globalSequence": 1566,
+      "simplified": "期中",
+      "pinyin": "qīzhōng",
+      "japanese": "学期の中間。"
+    },
+    {
+      "sourceId": "w01567",
+      "globalSequence": 1567,
+      "simplified": "其次",
+      "pinyin": "qícì",
+      "japanese": "次に。その次の。"
+    },
+    {
+      "sourceId": "w01568",
+      "globalSequence": 1568,
+      "simplified": "其中",
+      "pinyin": "qízhōng",
+      "japanese": "その中。"
+    },
+    {
+      "sourceId": "w01569",
+      "globalSequence": 1569,
+      "simplified": "起到",
+      "pinyin": "qǐdào",
+      "japanese": "役割・効果を果たす。"
+    },
+    {
+      "sourceId": "w01570",
+      "globalSequence": 1570,
+      "simplified": "气",
+      "pinyin": "qì",
+      "japanese": "気体。息。怒り。"
+    },
+    {
+      "sourceId": "w01571",
+      "globalSequence": 1571,
+      "simplified": "气候",
+      "pinyin": "qìhòu",
+      "japanese": "気候。"
+    },
+    {
+      "sourceId": "w01572",
+      "globalSequence": 1572,
+      "simplified": "汽水",
+      "pinyin": "qìshuǐ",
+      "japanese": "炭酸飲料。"
+    },
+    {
+      "sourceId": "w01573",
+      "globalSequence": 1573,
+      "simplified": "气温",
+      "pinyin": "qìwēn",
+      "japanese": "気温。"
+    },
+    {
+      "sourceId": "w01574",
+      "globalSequence": 1574,
+      "simplified": "千克",
+      "pinyin": "qiānkè",
+      "japanese": "キログラム。"
+    },
+    {
+      "sourceId": "w01575",
+      "globalSequence": 1575,
+      "simplified": "千万",
+      "pinyin": "qiānwàn",
+      "japanese": "千万。くれぐれも。"
+    },
+    {
+      "sourceId": "w01576",
+      "globalSequence": 1576,
+      "simplified": "签证",
+      "pinyin": "qiānzhèng",
+      "japanese": "ビザ。"
+    },
+    {
+      "sourceId": "w01577",
+      "globalSequence": 1577,
+      "simplified": "前方",
+      "pinyin": "qiánfāng",
+      "japanese": "前方。"
+    },
+    {
+      "sourceId": "w01578",
+      "globalSequence": 1578,
+      "simplified": "前后",
+      "pinyin": "qiánhòu",
+      "japanese": "前後。およそ。"
+    },
+    {
+      "sourceId": "w01579",
+      "globalSequence": 1579,
+      "simplified": "强",
+      "pinyin": "qiáng",
+      "japanese": "強い。"
+    },
+    {
+      "sourceId": "w01580",
+      "globalSequence": 1580,
+      "simplified": "敲",
+      "pinyin": "qiāo",
+      "japanese": "たたく。ノックする。"
+    },
+    {
+      "sourceId": "w01581",
+      "globalSequence": 1581,
+      "simplified": "桥",
+      "pinyin": "qiáo",
+      "japanese": "橋。"
+    },
+    {
+      "sourceId": "w01582",
+      "globalSequence": 1582,
+      "simplified": "巧",
+      "pinyin": "qiǎo",
+      "japanese": "巧みな。偶然の。"
+    },
+    {
+      "sourceId": "w01583",
+      "globalSequence": 1583,
+      "simplified": "巧克力",
+      "pinyin": "qiǎokèlì",
+      "japanese": "チョコレート。"
+    },
+    {
+      "sourceId": "w01584",
+      "globalSequence": 1584,
+      "simplified": "亲戚",
+      "pinyin": "qīnqi",
+      "japanese": "親戚。"
+    },
+    {
+      "sourceId": "w01585",
+      "globalSequence": 1585,
+      "simplified": "琴",
+      "pinyin": "qín",
+      "japanese": "弦楽器。ピアノなどの楽器。"
+    },
+    {
+      "sourceId": "w01586",
+      "globalSequence": 1586,
+      "simplified": "轻",
+      "pinyin": "qīng",
+      "japanese": "軽い。"
+    },
+    {
+      "sourceId": "w01587",
+      "globalSequence": 1587,
+      "simplified": "青年",
+      "pinyin": "qīngnián",
+      "japanese": "青年。"
+    },
+    {
+      "sourceId": "w01588",
+      "globalSequence": 1588,
+      "simplified": "轻松",
+      "pinyin": "qīngsōng",
+      "japanese": "気楽な。楽な。"
+    },
+    {
+      "sourceId": "w01589",
+      "globalSequence": 1589,
+      "simplified": "情况",
+      "pinyin": "qíngkuàng",
+      "japanese": "状況。"
+    },
+    {
+      "sourceId": "w01590",
+      "globalSequence": 1590,
+      "simplified": "庆祝",
+      "pinyin": "qìngzhù",
+      "japanese": "祝う。"
+    },
+    {
+      "sourceId": "w01591",
+      "globalSequence": 1591,
+      "simplified": "球队",
+      "pinyin": "qiúduì",
+      "japanese": "球技のチーム。"
+    },
+    {
+      "sourceId": "w01592",
+      "globalSequence": 1592,
+      "simplified": "球迷",
+      "pinyin": "qiúmí",
+      "japanese": "球技のファン。"
+    },
+    {
+      "sourceId": "w01593",
+      "globalSequence": 1593,
+      "simplified": "区",
+      "pinyin": "qū",
+      "japanese": "区。区域。"
+    },
+    {
+      "sourceId": "w01594",
+      "globalSequence": 1594,
+      "simplified": "区别",
+      "pinyin": "qūbié",
+      "japanese": "違い。区別する。"
+    },
+    {
+      "sourceId": "w01595",
+      "globalSequence": 1595,
+      "simplified": "取",
+      "pinyin": "qǔ",
+      "japanese": "取る。受け取る。"
+    },
+    {
+      "sourceId": "w01596",
+      "globalSequence": 1596,
+      "simplified": "取得",
+      "pinyin": "qǔdé",
+      "japanese": "得る。"
+    },
+    {
+      "sourceId": "w01597",
+      "globalSequence": 1597,
+      "simplified": "取消",
+      "pinyin": "qǔxiāo",
+      "japanese": "取り消す。"
+    },
+    {
+      "sourceId": "w01598",
+      "globalSequence": 1598,
+      "simplified": "全",
+      "pinyin": "quán",
+      "japanese": "全部の。そろっている。"
+    },
+    {
+      "sourceId": "w01599",
+      "globalSequence": 1599,
+      "simplified": "全部",
+      "pinyin": "quánbù",
+      "japanese": "全部。"
+    },
+    {
+      "sourceId": "w01600",
+      "globalSequence": 1600,
+      "simplified": "全都",
+      "pinyin": "quándōu",
+      "japanese": "すべて。"
+    },
+    {
+      "sourceId": "w01601",
+      "globalSequence": 1601,
+      "simplified": "全球",
+      "pinyin": "quánqiú",
+      "japanese": "全世界。"
+    },
+    {
+      "sourceId": "w01602",
+      "globalSequence": 1602,
+      "simplified": "全身",
+      "pinyin": "quánshēn",
+      "japanese": "全身。"
+    },
+    {
+      "sourceId": "w01603",
+      "globalSequence": 1603,
+      "simplified": "缺",
+      "pinyin": "quē",
+      "japanese": "欠ける。不足する。"
+    },
+    {
+      "sourceId": "w01604",
+      "globalSequence": 1604,
+      "simplified": "缺点",
+      "pinyin": "quēdiǎn",
+      "japanese": "欠点。"
+    }
+  ]
+}

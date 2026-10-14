@@ -88,20 +88,18 @@ describe('loadLearningPaths', () => {
     // kanji-bridge is unavailable until its route/data exist.
     expect(byId.get('kanji-bridge')?.availabilityReason).toBe('unavailable');
     expect(byId.get('kanji-bridge')?.availability).toBe('unavailable');
-    // The source-backed rows are currently draft and globally unadmitted, so
-    // the production learner projection must remain empty.
     expect(byId.get('hsk-vocabulary')?.availabilityReason).toBe('hsk');
-    expect(byId.get('hsk-vocabulary')?.availability).toBe('unavailable');
-    expect(byId.get('hsk-vocabulary')?.availabilityLabelJa).toBe('準備中です');
-    expect(byId.get('hsk-vocabulary')?.hsk?.levels).toEqual([1]);
-    expect(byId.get('hsk-vocabulary')?.members).toEqual([]);
+    expect(byId.get('hsk-vocabulary')?.availability).toBe('available');
+    expect(byId.get('hsk-vocabulary')?.availabilityLabelJa).toBe('利用できます');
+    expect(byId.get('hsk-vocabulary')?.hsk?.levels).toEqual([1, 2, 3, 4]);
+    expect(byId.get('hsk-vocabulary')?.members).toHaveLength(1969);
   });
 
   it('fails the HSK path closed when no entry is eligible', () => {
     const hsk = structuredClone(loadHskVocabulary()) as {
       vocabulary: Array<{ reviewStatus: string }>;
     };
-    for (const entry of hsk.vocabulary) entry.reviewStatus = 'draft';
+    for (const entry of hsk.vocabulary) entry.reviewStatus = 'invalid';
 
     const document = loadLearningPaths(undefined, writeTempHsk(hsk));
     const path = document.learningPaths.find(
@@ -114,14 +112,14 @@ describe('loadLearningPaths', () => {
     expect(path?.hsk?.status).toBe('unavailable');
   });
 
-  it('does not enable the level-1 path when only another level is eligible', () => {
+  it('enables the HSK path when a released higher level is eligible', () => {
     const hsk = structuredClone(loadHskVocabulary()) as {
       vocabulary: Array<{
         reviewStatus: string;
         hsk: { introducedAtLevel: number };
       }>;
     };
-    for (const entry of hsk.vocabulary) entry.reviewStatus = 'draft';
+    for (const entry of hsk.vocabulary) entry.reviewStatus = 'invalid';
     hsk.vocabulary[0].reviewStatus = 'published';
     hsk.vocabulary[0].hsk.introducedAtLevel = 2;
 
@@ -129,11 +127,11 @@ describe('loadLearningPaths', () => {
     const path = document.learningPaths.find(
       (candidate) => candidate.id === 'hsk-vocabulary',
     );
-    expect(path?.availability).toBe('unavailable');
-    expect(path?.availabilityLabelJa).toBe('準備中です');
+    expect(path?.availability).toBe('available');
+    expect(path?.availabilityLabelJa).toBe('利用できます');
     expect(path?.destination).toBe('/vocabulary/hsk/1/');
-    expect(path?.members).toEqual([]);
-    expect(path?.hsk?.status).toBe('unavailable');
+    expect(path?.members).toHaveLength(1);
+    expect(path?.hsk?.status).toBe('available');
   });
 
   it('every path has Japanese label and description', () => {

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00501",
+      "globalSequence": 501,
+      "simplified": "阿姨",
+      "pinyin": "āyí",
+      "japanese": "おばさん。母親世代の女性への呼びかけ。"
+    },
+    {
+      "sourceId": "w00502",
+      "globalSequence": 502,
+      "simplified": "矮",
+      "pinyin": "ǎi",
+      "japanese": "背が低い。低い。"
+    },
+    {
+      "sourceId": "w00503",
+      "globalSequence": 503,
+      "simplified": "爱人",
+      "pinyin": "àiren",
+      "japanese": "配偶者。"
+    },
+    {
+      "sourceId": "w00504",
+      "globalSequence": 504,
+      "simplified": "安静",
+      "pinyin": "ānjìng",
+      "japanese": "静かな。"
+    },
+    {
+      "sourceId": "w00505",
+      "globalSequence": 505,
+      "simplified": "安全",
+      "pinyin": "ānquán",
+      "japanese": "安全な。"
+    },
+    {
+      "sourceId": "w00506",
+      "globalSequence": 506,
+      "simplified": "把",
+      "pinyin": "bǎ",
+      "japanese": "目的語を動詞の前に置く語。握る。"
+    },
+    {
+      "sourceId": "w00507",
+      "globalSequence": 507,
+      "simplified": "搬",
+      "pinyin": "bān",
+      "japanese": "運ぶ。引っ越す。"
+    },
+    {
+      "sourceId": "w00508",
+      "globalSequence": 508,
+      "simplified": "班级",
+      "pinyin": "bānjí",
+      "japanese": "クラス。"
+    },
+    {
+      "sourceId": "w00509",
+      "globalSequence": 509,
+      "simplified": "搬家",
+      "pinyin": "bānjiā",
+      "japanese": "引っ越す。"
+    },
+    {
+      "sourceId": "w00510",
+      "globalSequence": 510,
+      "simplified": "办",
+      "pinyin": "bàn",
+      "japanese": "処理する。行う。"
+    },
+    {
+      "sourceId": "w00511",
+      "globalSequence": 511,
+      "simplified": "办法",
+      "pinyin": "bànfǎ",
+      "japanese": "方法。手だて。"
+    },
+    {
+      "sourceId": "w00512",
+      "globalSequence": 512,
+      "simplified": "办公室",
+      "pinyin": "bàngōngshì",
+      "japanese": "事務室。オフィス。"
+    },
+    {
+      "sourceId": "w00513",
+      "globalSequence": 513,
+      "simplified": "半天",
+      "pinyin": "bàntiān",
+      "japanese": "半日。長い間。"
+    },
+    {
+      "sourceId": "w00514",
+      "globalSequence": 514,
+      "simplified": "帮助",
+      "pinyin": "bāngzhù",
+      "japanese": "助ける。援助。"
+    },
+    {
+      "sourceId": "w00515",
+      "globalSequence": 515,
+      "simplified": "饱",
+      "pinyin": "bǎo",
+      "japanese": "お腹がいっぱいの。"
+    },
+    {
+      "sourceId": "w00516",
+      "globalSequence": 516,
+      "simplified": "报纸",
+      "pinyin": "bàozhǐ",
+      "japanese": "新聞。"
+    },
+    {
+      "sourceId": "w00517",
+      "globalSequence": 517,
+      "simplified": "北",
+      "pinyin": "běi",
+      "japanese": "北。"
+    },
+    {
+      "sourceId": "w00518",
+      "globalSequence": 518,
+      "simplified": "北方",
+      "pinyin": "běifāng",
+      "japanese": "北方。北部。"
+    },
+    {
+      "sourceId": "w00519",
+      "globalSequence": 519,
+      "simplified": "被",
+      "pinyin": "bèi",
+      "japanese": "受け身を表す語。〜に〜される。"
+    },
+    {
+      "sourceId": "w00520",
+      "globalSequence": 520,
+      "simplified": "笔记",
+      "pinyin": "bǐjì",
+      "japanese": "メモ。ノート。"
+    },
+    {
+      "sourceId": "w00521",
+      "globalSequence": 521,
+      "simplified": "比较",
+      "pinyin": "bǐjiào",
+      "japanese": "比較する。比較的。"
+    },
+    {
+      "sourceId": "w00522",
+      "globalSequence": 522,
+      "simplified": "笔记本",
+      "pinyin": "bǐjìběn",
+      "japanese": "ノート。ノートパソコン。"
+    },
+    {
+      "sourceId": "w00523",
+      "globalSequence": 523,
+      "simplified": "比如",
+      "pinyin": "bǐrú",
+      "japanese": "例えば。"
+    },
+    {
+      "sourceId": "w00524",
+      "globalSequence": 524,
+      "simplified": "比赛",
+      "pinyin": "bǐsài",
+      "japanese": "試合。競争する。"
+    },
+    {
+      "sourceId": "w00525",
+      "globalSequence": 525,
+      "simplified": "必须",
+      "pinyin": "bìxū",
+      "japanese": "必ず〜しなければならない。"
+    },
+    {
+      "sourceId": "w00526",
+      "globalSequence": 526,
+      "simplified": "变",
+      "pinyin": "biàn",
+      "japanese": "変わる。変える。"
+    },
+    {
+      "sourceId": "w00527",
+      "globalSequence": 527,
+      "simplified": "遍",
+      "pinyin": "biàn",
+      "japanese": "一通り行う回数の「〜回」。"
+    },
+    {
+      "sourceId": "w00528",
+      "globalSequence": 528,
+      "simplified": "变成",
+      "pinyin": "biànchéng",
+      "japanese": "〜になる。"
+    },
+    {
+      "sourceId": "w00529",
+      "globalSequence": 529,
+      "simplified": "变化",
+      "pinyin": "biànhuà",
+      "japanese": "変化。変化する。"
+    },
+    {
+      "sourceId": "w00530",
+      "globalSequence": 530,
+      "simplified": "表演",
+      "pinyin": "biǎoyǎn",
+      "japanese": "演じる。演技。"
+    },
+    {
+      "sourceId": "w00531",
+      "globalSequence": 531,
+      "simplified": "别的",
+      "pinyin": "biéde",
+      "japanese": "ほかの。"
+    },
+    {
+      "sourceId": "w00532",
+      "globalSequence": 532,
+      "simplified": "别人",
+      "pinyin": "biérén",
+      "japanese": "ほかの人。"
+    },
+    {
+      "sourceId": "w00533",
+      "globalSequence": 533,
+      "simplified": "宾馆",
+      "pinyin": "bīnguǎn",
+      "japanese": "ホテル。旅館。"
+    },
+    {
+      "sourceId": "w00534",
+      "globalSequence": 534,
+      "simplified": "冰",
+      "pinyin": "bīng",
+      "japanese": "氷。"
+    },
+    {
+      "sourceId": "w00535",
+      "globalSequence": 535,
+      "simplified": "冰激凌",
+      "pinyin": "bīngjīlíng",
+      "japanese": "アイスクリーム。"
+    },
+    {
+      "sourceId": "w00536",
+      "globalSequence": 536,
+      "simplified": "冰箱",
+      "pinyin": "bīngxiāng",
+      "japanese": "冷蔵庫。"
+    },
+    {
+      "sourceId": "w00537",
+      "globalSequence": 537,
+      "simplified": "病人",
+      "pinyin": "bìngrén",
+      "japanese": "患者。"
+    },
+    {
+      "sourceId": "w00538",
+      "globalSequence": 538,
+      "simplified": "不但",
+      "pinyin": "búdàn",
+      "japanese": "〜だけでなく。"
+    },
+    {
+      "sourceId": "w00539",
+      "globalSequence": 539,
+      "simplified": "不见",
+      "pinyin": "bújiàn",
+      "japanese": "見当たらない。なくなる。"
+    },
+    {
+      "sourceId": "w00540",
+      "globalSequence": 540,
+      "simplified": "不用",
+      "pinyin": "búyòng",
+      "japanese": "〜する必要がない。"
+    },
+    {
+      "sourceId": "w00541",
+      "globalSequence": 541,
+      "simplified": "不同",
+      "pinyin": "bù tóng",
+      "japanese": "異なる。"
+    },
+    {
+      "sourceId": "w00542",
+      "globalSequence": 542,
+      "simplified": "不久",
+      "pinyin": "bùjiǔ",
+      "japanese": "まもなく。ほどなく。"
+    },
+    {
+      "sourceId": "w00543",
+      "globalSequence": 543,
+      "simplified": "不行",
+      "pinyin": "bùxíng",
+      "japanese": "だめだ。できない。"
+    },
+    {
+      "sourceId": "w00545",
+      "globalSequence": 545,
+      "simplified": "菜单",
+      "pinyin": "càidān",
+      "japanese": "メニュー。"
+    },
+    {
+      "sourceId": "w00546",
+      "globalSequence": 546,
+      "simplified": "参加",
+      "pinyin": "cānjiā",
+      "japanese": "参加する。"
+    },
+    {
+      "sourceId": "w00547",
+      "globalSequence": 547,
+      "simplified": "草",
+      "pinyin": "cǎo",
+      "japanese": "草。"
+    },
+    {
+      "sourceId": "w00548",
+      "globalSequence": 548,
+      "simplified": "草地",
+      "pinyin": "cǎodì",
+      "japanese": "草地。芝生。"
+    },
+    {
+      "sourceId": "w00549",
+      "globalSequence": 549,
+      "simplified": "层",
+      "pinyin": "céng",
+      "japanese": "層。階。"
+    },
+    {
+      "sourceId": "w00550",
+      "globalSequence": 550,
+      "simplified": "查",
+      "pinyin": "chá",
+      "japanese": "調べる。"
+    },
+    {
+      "sourceId": "w00551",
+      "globalSequence": 551,
+      "simplified": "差",
+      "pinyin": "chà",
+      "japanese": "劣っている。足りない。"
+    }
+  ]
+}

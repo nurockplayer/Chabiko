@@ -1,0 +1,854 @@
+{
+  "vocabulary": [
+    {
+      "id": "hm-hsk3-w01454",
+      "pinyin": "làngmàn",
+      "japanese": "ロマンチックな。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "浪漫",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01454; global sequence 1454; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01455",
+      "pinyin": "lǎohǔ",
+      "japanese": "トラ。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "老虎",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01455; global sequence 1455; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01456",
+      "pinyin": "lǎojiā",
+      "japanese": "故郷。実家。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "老家",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01456; global sequence 1456; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01457",
+      "pinyin": "lǎonián",
+      "japanese": "老年。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "老年",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01457; global sequence 1457; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01458",
+      "pinyin": "lǎoshì",
+      "japanese": "いつも。しょっちゅう。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "老是",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01458; global sequence 1458; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01459",
+      "pinyin": "lěngjìng",
+      "japanese": "冷静な。落ち着く。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "冷静",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01459; global sequence 1459; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01460",
+      "pinyin": "lǐfà",
+      "japanese": "散髪する。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "理发",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01460; global sequence 1460; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01461",
+      "pinyin": "lǐjiě",
+      "japanese": "理解する。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "理解",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01461; global sequence 1461; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01462",
+      "pinyin": "lǐmào",
+      "japanese": "礼儀。礼儀正しい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "礼貌",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01462; global sequence 1462; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01463",
+      "pinyin": "lǐxiǎng",
+      "japanese": "理想。理想的な。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "理想",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01463; global sequence 1463; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01464",
+      "pinyin": "lìhai",
+      "japanese": "すごい。厳しい。ひどい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "厉害",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01464; global sequence 1464; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01465",
+      "pinyin": "lìqi",
+      "japanese": "力。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "力气",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01465; global sequence 1465; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01466",
+      "pinyin": "lìrú",
+      "japanese": "例えば。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "例如",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01466; global sequence 1466; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01467",
+      "pinyin": "lìzi",
+      "japanese": "例。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "例子",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01467; global sequence 1467; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01468",
+      "pinyin": "liǎ",
+      "japanese": "二人。二つ。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "俩",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01468; global sequence 1468; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01469",
+      "pinyin": "lián",
+      "japanese": "つなぐ。〜さえ。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4（5）"
+      },
+      "simplified": "连",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01469; global sequence 1469; primary level 4; source level label 4（5）."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01470",
+      "pinyin": "liánxì",
+      "japanese": "連絡する。つながり。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "联系",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01470; global sequence 1470; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01471",
+      "pinyin": "liáng",
+      "japanese": "涼しい。冷たい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "凉",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01471; global sequence 1471; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01472",
+      "pinyin": "liáng",
+      "japanese": "測る。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "量",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01472; global sequence 1472; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01474",
+      "pinyin": "liàng",
+      "japanese": "明るい。光る。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "亮",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01474; global sequence 1474; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01475",
+      "pinyin": "liè",
+      "japanese": "列。並べる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "列",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01475; global sequence 1475; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01476",
+      "pinyin": "líng xià",
+      "japanese": "氷点下。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "零下",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01476; global sequence 1476; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01477",
+      "pinyin": "línghuāqián",
+      "japanese": "小遣い。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "零花钱",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01477; global sequence 1477; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01478",
+      "pinyin": "língqián",
+      "japanese": "小銭。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "零钱",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01478; global sequence 1478; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01479",
+      "pinyin": "língshí",
+      "japanese": "間食。お菓子。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "零食",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01479; global sequence 1479; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01480",
+      "pinyin": "lìng",
+      "japanese": "別の。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4（6）"
+      },
+      "simplified": "另",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01480; global sequence 1480; primary level 4; source level label 4（6）."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01481",
+      "pinyin": "lìngwài",
+      "japanese": "ほかに。別の。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "另外",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01481; global sequence 1481; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01482",
+      "pinyin": "liú",
+      "japanese": "残る。残す。とどまる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "留",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01482; global sequence 1482; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01483",
+      "pinyin": "liú",
+      "japanese": "流れる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "流",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01483; global sequence 1483; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01484",
+      "pinyin": "liúlì",
+      "japanese": "流暢な。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "流利",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01484; global sequence 1484; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01485",
+      "pinyin": "liúxia",
+      "japanese": "残す。とどまる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "留下",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01485; global sequence 1485; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01486",
+      "pinyin": "liúxíng",
+      "japanese": "流行する。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "流行",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01486; global sequence 1486; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01487",
+      "pinyin": "lùguò",
+      "japanese": "通りかかる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "路过",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01487; global sequence 1487; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01488",
+      "pinyin": "lǚguǎn",
+      "japanese": "旅館。ホテル。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "旅馆",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01488; global sequence 1488; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01489",
+      "pinyin": "lǚkè",
+      "japanese": "旅行客。乗客。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "旅客",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01489; global sequence 1489; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01490",
+      "pinyin": "lǚxíng",
+      "japanese": "旅行する。旅行。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "旅行",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01490; global sequence 1490; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01491",
+      "pinyin": "lǜshī",
+      "japanese": "弁護士。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "律师",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01491; global sequence 1491; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01492",
+      "pinyin": "luàn",
+      "japanese": "乱れた。むやみに。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "乱",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01492; global sequence 1492; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01493",
+      "pinyin": "luò",
+      "japanese": "落ちる。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "落",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01493; global sequence 1493; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01494",
+      "pinyin": "máfan",
+      "japanese": "面倒な。手数をかける。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "麻烦",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01494; global sequence 1494; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01495",
+      "pinyin": "mántou",
+      "japanese": "具のない蒸しパン。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "馒头",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01495; global sequence 1495; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01496",
+      "pinyin": "mǎn",
+      "japanese": "満ちている。満〜。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "满",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01496; global sequence 1496; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01497",
+      "pinyin": "máojīn",
+      "japanese": "タオル。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "毛巾",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01497; global sequence 1497; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01498",
+      "pinyin": "máoyī",
+      "japanese": "セーター。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "毛衣",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01498; global sequence 1498; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01499",
+      "pinyin": "màozi",
+      "japanese": "帽子。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "帽子",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01499; global sequence 1499; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01500",
+      "pinyin": "měi",
+      "japanese": "美しい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "美",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01500; global sequence 1500; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01501",
+      "pinyin": "měihǎo",
+      "japanese": "すばらしい。美しくよい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "美好",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01501; global sequence 1501; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01502",
+      "pinyin": "měijǐng",
+      "japanese": "美しい景色。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "美景",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01502; global sequence 1502; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01503",
+      "pinyin": "měilì",
+      "japanese": "美しい。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "美丽",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01503; global sequence 1503; primary level 4; source level label 4."
+      }
+    },
+    {
+      "id": "hm-hsk3-w01504",
+      "pinyin": "měishí",
+      "japanese": "おいしい食べ物。",
+      "reviewStatus": "draft",
+      "hsk": {
+        "standardVersion": "hsk-3.0",
+        "introducedAtLevel": 4,
+        "sourceLevelLabel": "4"
+      },
+      "simplified": "美食",
+      "simplifiedStatus": "authored",
+      "source": {
+        "type": "hearmandarin-hsk-json",
+        "note": "Source: HearMandarin (https://hearmandarin.com), HSK 3.0 word list (https://hearmandarin.com/datasets/). Publisher provenance and independence disclaimer: https://hearmandarin.com/data-sources/. Publisher Terms: https://hearmandarin.com/terms/. Sol's source-admission inference treats the exact pinned JSON artifact's explicit CC BY 4.0 grant and the dataset page's study-app and paid-product permission with attribution as a distinct permission for this retained-field derivative. This is not a legal determination that CC BY overrides separate contracts, a date-based supersession claim, or permission for other site content or paid exports. License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified by retaining only the source ID, Simplified Chinese, tone-marked pinyin, primary HSK 3.0 level, and observed official global sequence; Japanese glosses are separately authored AI-provisional drafts. Japanese is independently AI-authored and provisional, not human reviewed. Source ID w01504; global sequence 1504; primary level 4; source level label 4."
+      }
+    }
+  ]
+}

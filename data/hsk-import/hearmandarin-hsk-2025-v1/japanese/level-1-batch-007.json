@@ -1,0 +1,179 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00277",
+      "globalSequence": 277,
+      "simplified": "怎么样",
+      "pinyin": "zěnmeyàng",
+      "japanese": "どう。どのような様子。"
+    },
+    {
+      "sourceId": "w00278",
+      "globalSequence": 278,
+      "simplified": "找",
+      "pinyin": "zhǎo",
+      "japanese": "探す。"
+    },
+    {
+      "sourceId": "w00279",
+      "globalSequence": 279,
+      "simplified": "这",
+      "pinyin": "zhè",
+      "japanese": "この。これ。"
+    },
+    {
+      "sourceId": "w00280",
+      "globalSequence": 280,
+      "simplified": "这边",
+      "pinyin": "zhèbiān",
+      "japanese": "こちら。この辺り。"
+    },
+    {
+      "sourceId": "w00281",
+      "globalSequence": 281,
+      "simplified": "这个",
+      "pinyin": "zhège",
+      "japanese": "これ。"
+    },
+    {
+      "sourceId": "w00282",
+      "globalSequence": 282,
+      "simplified": "这里",
+      "pinyin": "zhèlǐ",
+      "japanese": "ここ。"
+    },
+    {
+      "sourceId": "w00283",
+      "globalSequence": 283,
+      "simplified": "这儿",
+      "pinyin": "zhèr",
+      "japanese": "ここ。"
+    },
+    {
+      "sourceId": "w00284",
+      "globalSequence": 284,
+      "simplified": "这些",
+      "pinyin": "zhèxiē",
+      "japanese": "これら。"
+    },
+    {
+      "sourceId": "w00285",
+      "globalSequence": 285,
+      "simplified": "真",
+      "pinyin": "zhēn",
+      "japanese": "本当の。本当に。"
+    },
+    {
+      "sourceId": "w00286",
+      "globalSequence": 286,
+      "simplified": "正在",
+      "pinyin": "zhèngzài",
+      "japanese": "ちょうど〜している。"
+    },
+    {
+      "sourceId": "w00287",
+      "globalSequence": 287,
+      "simplified": "只",
+      "pinyin": "zhī",
+      "japanese": "動物などを数える「〜匹・羽」。"
+    },
+    {
+      "sourceId": "w00288",
+      "globalSequence": 288,
+      "simplified": "知道",
+      "pinyin": "zhīdào",
+      "japanese": "知っている。"
+    },
+    {
+      "sourceId": "w00289",
+      "globalSequence": 289,
+      "simplified": "中国",
+      "pinyin": "Zhōngguó",
+      "japanese": "中国。"
+    },
+    {
+      "sourceId": "w00290",
+      "globalSequence": 290,
+      "simplified": "中文",
+      "pinyin": "Zhōngwén",
+      "japanese": "中国語。"
+    },
+    {
+      "sourceId": "w00291",
+      "globalSequence": 291,
+      "simplified": "中午",
+      "pinyin": "zhōngwǔ",
+      "japanese": "正午。昼。"
+    },
+    {
+      "sourceId": "w00292",
+      "globalSequence": 292,
+      "simplified": "中学",
+      "pinyin": "zhōngxué",
+      "japanese": "中学校・高校。"
+    },
+    {
+      "sourceId": "w00293",
+      "globalSequence": 293,
+      "simplified": "中学生",
+      "pinyin": "zhōngxuéshēng",
+      "japanese": "中学生・高校生。"
+    },
+    {
+      "sourceId": "w00294",
+      "globalSequence": 294,
+      "simplified": "住",
+      "pinyin": "zhù",
+      "japanese": "住む。泊まる。"
+    },
+    {
+      "sourceId": "w00295",
+      "globalSequence": 295,
+      "simplified": "桌子",
+      "pinyin": "zhuōzi",
+      "japanese": "机。テーブル。"
+    },
+    {
+      "sourceId": "w00296",
+      "globalSequence": 296,
+      "simplified": "字",
+      "pinyin": "zì",
+      "japanese": "字。文字。"
+    },
+    {
+      "sourceId": "w00297",
+      "globalSequence": 297,
+      "simplified": "昨天",
+      "pinyin": "zuótiān",
+      "japanese": "昨日。"
+    },
+    {
+      "sourceId": "w00298",
+      "globalSequence": 298,
+      "simplified": "坐",
+      "pinyin": "zuò",
+      "japanese": "座る。乗る。"
+    },
+    {
+      "sourceId": "w00299",
+      "globalSequence": 299,
+      "simplified": "做",
+      "pinyin": "zuò",
+      "japanese": "する。作る。"
+    },
+    {
+      "sourceId": "w00300",
+      "globalSequence": 300,
+      "simplified": "做饭",
+      "pinyin": "zuò fàn",
+      "japanese": "料理する。"
+    }
+  ]
+}

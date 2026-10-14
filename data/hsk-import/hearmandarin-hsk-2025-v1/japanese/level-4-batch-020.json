@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01909",
+      "globalSequence": 1909,
+      "simplified": "阅读",
+      "pinyin": "yuèdú",
+      "japanese": "読む。読書。"
+    },
+    {
+      "sourceId": "w01910",
+      "globalSequence": 1910,
+      "simplified": "月份",
+      "pinyin": "yuèfèn",
+      "japanese": "月（暦の区分）。"
+    },
+    {
+      "sourceId": "w01911",
+      "globalSequence": 1911,
+      "simplified": "云",
+      "pinyin": "yún",
+      "japanese": "雲。"
+    },
+    {
+      "sourceId": "w01912",
+      "globalSequence": 1912,
+      "simplified": "允许",
+      "pinyin": "yǔnxǔ",
+      "japanese": "許可する。"
+    },
+    {
+      "sourceId": "w01913",
+      "globalSequence": 1913,
+      "simplified": "杂志",
+      "pinyin": "zázhì",
+      "japanese": "雑誌。"
+    },
+    {
+      "sourceId": "w01914",
+      "globalSequence": 1914,
+      "simplified": "再次",
+      "pinyin": "zàicì",
+      "japanese": "再び。"
+    },
+    {
+      "sourceId": "w01915",
+      "globalSequence": 1915,
+      "simplified": "再说",
+      "pinyin": "zàishuō",
+      "japanese": "そのうえ。あとで考える。"
+    },
+    {
+      "sourceId": "w01916",
+      "globalSequence": 1916,
+      "simplified": "暂时",
+      "pinyin": "zànshí",
+      "japanese": "しばらく。暫定的に。"
+    },
+    {
+      "sourceId": "w01917",
+      "globalSequence": 1917,
+      "simplified": "暂停",
+      "pinyin": "zàntíng",
+      "japanese": "一時停止する。"
+    },
+    {
+      "sourceId": "w01918",
+      "globalSequence": 1918,
+      "simplified": "早餐",
+      "pinyin": "zǎocān",
+      "japanese": "朝食。"
+    },
+    {
+      "sourceId": "w01919",
+      "globalSequence": 1919,
+      "simplified": "早晨",
+      "pinyin": "zǎochen",
+      "japanese": "早朝。朝。"
+    },
+    {
+      "sourceId": "w01920",
+      "globalSequence": 1920,
+      "simplified": "责任",
+      "pinyin": "zérèn",
+      "japanese": "責任。"
+    },
+    {
+      "sourceId": "w01921",
+      "globalSequence": 1921,
+      "simplified": "增加",
+      "pinyin": "zēngjiā",
+      "japanese": "増える。増やす。"
+    },
+    {
+      "sourceId": "w01922",
+      "globalSequence": 1922,
+      "simplified": "增长",
+      "pinyin": "zēngzhǎng",
+      "japanese": "増加する。成長する。"
+    },
+    {
+      "sourceId": "w01923",
+      "globalSequence": 1923,
+      "simplified": "招聘",
+      "pinyin": "zhāopìn",
+      "japanese": "求人する。採用する。"
+    },
+    {
+      "sourceId": "w01924",
+      "globalSequence": 1924,
+      "simplified": "着",
+      "pinyin": "zháo",
+      "japanese": "動詞の後で目的の達成・結果を表す語。"
+    },
+    {
+      "sourceId": "w01925",
+      "globalSequence": 1925,
+      "simplified": "着火",
+      "pinyin": "zháohuǒ",
+      "japanese": "火がつく。火事になる。"
+    },
+    {
+      "sourceId": "w01926",
+      "globalSequence": 1926,
+      "simplified": "者",
+      "pinyin": "zhě",
+      "japanese": "〜する人。〜であるもの。"
+    },
+    {
+      "sourceId": "w01927",
+      "globalSequence": 1927,
+      "simplified": "真正",
+      "pinyin": "zhēnzhèng",
+      "japanese": "本当の。本当に。"
+    },
+    {
+      "sourceId": "w01928",
+      "globalSequence": 1928,
+      "simplified": "整",
+      "pinyin": "zhěng",
+      "japanese": "全体の。整える。"
+    },
+    {
+      "sourceId": "w01929",
+      "globalSequence": 1929,
+      "simplified": "整个",
+      "pinyin": "zhěnggè",
+      "japanese": "全体。まるごとの。"
+    },
+    {
+      "sourceId": "w01930",
+      "globalSequence": 1930,
+      "simplified": "整理",
+      "pinyin": "zhěnglǐ",
+      "japanese": "整理する。"
+    },
+    {
+      "sourceId": "w01931",
+      "globalSequence": 1931,
+      "simplified": "证",
+      "pinyin": "zhèng",
+      "japanese": "証明書。証明する。"
+    },
+    {
+      "sourceId": "w01932",
+      "globalSequence": 1932,
+      "simplified": "正常",
+      "pinyin": "zhèngcháng",
+      "japanese": "正常な。通常の。"
+    },
+    {
+      "sourceId": "w01933",
+      "globalSequence": 1933,
+      "simplified": "正好",
+      "pinyin": "zhènghǎo",
+      "japanese": "ちょうどよい。ちょうど。"
+    },
+    {
+      "sourceId": "w01934",
+      "globalSequence": 1934,
+      "simplified": "证件",
+      "pinyin": "zhèngjiàn",
+      "japanese": "証明書。身分証明書類。"
+    },
+    {
+      "sourceId": "w01935",
+      "globalSequence": 1935,
+      "simplified": "证明",
+      "pinyin": "zhèngmíng",
+      "japanese": "証明する。証明。"
+    },
+    {
+      "sourceId": "w01936",
+      "globalSequence": 1936,
+      "simplified": "正确",
+      "pinyin": "zhèngquè",
+      "japanese": "正しい。"
+    },
+    {
+      "sourceId": "w01937",
+      "globalSequence": 1937,
+      "simplified": "正式",
+      "pinyin": "zhèngshì",
+      "japanese": "正式な。"
+    },
+    {
+      "sourceId": "w01939",
+      "globalSequence": 1939,
+      "simplified": "支持",
+      "pinyin": "zhīchí",
+      "japanese": "支持する。支える。"
+    },
+    {
+      "sourceId": "w01940",
+      "globalSequence": 1940,
+      "simplified": "支付",
+      "pinyin": "zhīfù",
+      "japanese": "支払う。"
+    },
+    {
+      "sourceId": "w01941",
+      "globalSequence": 1941,
+      "simplified": "之后",
+      "pinyin": "zhīhòu",
+      "japanese": "〜の後。"
+    },
+    {
+      "sourceId": "w01942",
+      "globalSequence": 1942,
+      "simplified": "之间",
+      "pinyin": "zhījiān",
+      "japanese": "〜の間。"
+    },
+    {
+      "sourceId": "w01943",
+      "globalSequence": 1943,
+      "simplified": "之前",
+      "pinyin": "zhīqián",
+      "japanese": "〜の前。"
+    },
+    {
+      "sourceId": "w01944",
+      "globalSequence": 1944,
+      "simplified": "知识",
+      "pinyin": "zhīshi",
+      "japanese": "知識。"
+    },
+    {
+      "sourceId": "w01945",
+      "globalSequence": 1945,
+      "simplified": "之中",
+      "pinyin": "zhīzhōng",
+      "japanese": "〜の中。"
+    },
+    {
+      "sourceId": "w01946",
+      "globalSequence": 1946,
+      "simplified": "值",
+      "pinyin": "zhí",
+      "japanese": "価値。〜の値打ちがある。"
+    },
+    {
+      "sourceId": "w01947",
+      "globalSequence": 1947,
+      "simplified": "值得",
+      "pinyin": "zhídé",
+      "japanese": "〜する価値がある。"
+    },
+    {
+      "sourceId": "w01948",
+      "globalSequence": 1948,
+      "simplified": "直接",
+      "pinyin": "zhíjiē",
+      "japanese": "直接の。直接に。"
+    },
+    {
+      "sourceId": "w01949",
+      "globalSequence": 1949,
+      "simplified": "植物",
+      "pinyin": "zhíwù",
+      "japanese": "植物。"
+    },
+    {
+      "sourceId": "w01950",
+      "globalSequence": 1950,
+      "simplified": "职业",
+      "pinyin": "zhíyè",
+      "japanese": "職業。"
+    },
+    {
+      "sourceId": "w01951",
+      "globalSequence": 1951,
+      "simplified": "指",
+      "pinyin": "zhǐ",
+      "japanese": "指。指す。"
+    },
+    {
+      "sourceId": "w01952",
+      "globalSequence": 1952,
+      "simplified": "指出",
+      "pinyin": "zhǐchū",
+      "japanese": "指摘する。"
+    },
+    {
+      "sourceId": "w01953",
+      "globalSequence": 1953,
+      "simplified": "只好",
+      "pinyin": "zhǐhǎo",
+      "japanese": "仕方なく〜する。"
+    },
+    {
+      "sourceId": "w01954",
+      "globalSequence": 1954,
+      "simplified": "纸巾",
+      "pinyin": "zhǐjīn",
+      "japanese": "ティッシュ。紙ナプキン。"
+    },
+    {
+      "sourceId": "w01955",
+      "globalSequence": 1955,
+      "simplified": "质量",
+      "pinyin": "zhìliàng",
+      "japanese": "品質。質量。"
+    },
+    {
+      "sourceId": "w01956",
+      "globalSequence": 1956,
+      "simplified": "至少",
+      "pinyin": "zhìshǎo",
+      "japanese": "少なくとも。"
+    },
+    {
+      "sourceId": "w01957",
+      "globalSequence": 1957,
+      "simplified": "中餐",
+      "pinyin": "zhōngcān",
+      "japanese": "中国料理。"
+    },
+    {
+      "sourceId": "w01958",
+      "globalSequence": 1958,
+      "simplified": "中年",
+      "pinyin": "zhōngnián",
+      "japanese": "中年。"
+    },
+    {
+      "sourceId": "w01959",
+      "globalSequence": 1959,
+      "simplified": "种",
+      "pinyin": "zhòng",
+      "japanese": "植える。栽培する。"
+    }
+  ]
+}

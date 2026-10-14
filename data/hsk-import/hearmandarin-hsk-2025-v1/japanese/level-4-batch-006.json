@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01203",
+      "globalSequence": 1203,
+      "simplified": "份",
+      "pinyin": "fèn",
+      "japanese": "取り分。書類・料理などを数える語。"
+    },
+    {
+      "sourceId": "w01204",
+      "globalSequence": 1204,
+      "simplified": "丰富",
+      "pinyin": "fēngfù",
+      "japanese": "豊富な。"
+    },
+    {
+      "sourceId": "w01205",
+      "globalSequence": 1205,
+      "simplified": "风景",
+      "pinyin": "fēngjǐng",
+      "japanese": "風景。"
+    },
+    {
+      "sourceId": "w01206",
+      "globalSequence": 1206,
+      "simplified": "否则",
+      "pinyin": "fǒuzé",
+      "japanese": "さもなければ。"
+    },
+    {
+      "sourceId": "w01207",
+      "globalSequence": 1207,
+      "simplified": "幅",
+      "pinyin": "fú",
+      "japanese": "絵や布などを数える「〜枚・幅」。"
+    },
+    {
+      "sourceId": "w01208",
+      "globalSequence": 1208,
+      "simplified": "符合",
+      "pinyin": "fúhé",
+      "japanese": "合致する。適合する。"
+    },
+    {
+      "sourceId": "w01209",
+      "globalSequence": 1209,
+      "simplified": "付",
+      "pinyin": "fù",
+      "japanese": "払う。渡す。"
+    },
+    {
+      "sourceId": "w01210",
+      "globalSequence": 1210,
+      "simplified": "父母",
+      "pinyin": "fùmǔ",
+      "japanese": "両親。"
+    },
+    {
+      "sourceId": "w01211",
+      "globalSequence": 1211,
+      "simplified": "父女",
+      "pinyin": "fùnǚ",
+      "japanese": "父と娘。"
+    },
+    {
+      "sourceId": "w01212",
+      "globalSequence": 1212,
+      "simplified": "父亲",
+      "pinyin": "fùqīn",
+      "japanese": "父。"
+    },
+    {
+      "sourceId": "w01213",
+      "globalSequence": 1213,
+      "simplified": "复印",
+      "pinyin": "fùyìn",
+      "japanese": "コピーする。"
+    },
+    {
+      "sourceId": "w01214",
+      "globalSequence": 1214,
+      "simplified": "复杂",
+      "pinyin": "fùzá",
+      "japanese": "複雑な。"
+    },
+    {
+      "sourceId": "w01215",
+      "globalSequence": 1215,
+      "simplified": "负责",
+      "pinyin": "fùzé",
+      "japanese": "責任を持つ。担当する。"
+    },
+    {
+      "sourceId": "w01216",
+      "globalSequence": 1216,
+      "simplified": "负责人",
+      "pinyin": "fùzérén",
+      "japanese": "責任者。"
+    },
+    {
+      "sourceId": "w01217",
+      "globalSequence": 1217,
+      "simplified": "父子",
+      "pinyin": "fùzǐ",
+      "japanese": "父と息子。"
+    },
+    {
+      "sourceId": "w01218",
+      "globalSequence": 1218,
+      "simplified": "改",
+      "pinyin": "gǎi",
+      "japanese": "改める。変える。"
+    },
+    {
+      "sourceId": "w01219",
+      "globalSequence": 1219,
+      "simplified": "改变",
+      "pinyin": "gǎibiàn",
+      "japanese": "変える。変化。"
+    },
+    {
+      "sourceId": "w01220",
+      "globalSequence": 1220,
+      "simplified": "干",
+      "pinyin": "gān",
+      "japanese": "乾いた。"
+    },
+    {
+      "sourceId": "w01221",
+      "globalSequence": 1221,
+      "simplified": "干杯",
+      "pinyin": "gānbēi",
+      "japanese": "乾杯する。"
+    },
+    {
+      "sourceId": "w01222",
+      "globalSequence": 1222,
+      "simplified": "赶",
+      "pinyin": "gǎn",
+      "japanese": "急ぐ。追う。"
+    },
+    {
+      "sourceId": "w01223",
+      "globalSequence": 1223,
+      "simplified": "敢",
+      "pinyin": "gǎn",
+      "japanese": "思い切って〜する。〜する勇気がある。"
+    },
+    {
+      "sourceId": "w01224",
+      "globalSequence": 1224,
+      "simplified": "感",
+      "pinyin": "gǎn",
+      "japanese": "感じる。感覚。"
+    },
+    {
+      "sourceId": "w01225",
+      "globalSequence": 1225,
+      "simplified": "感动",
+      "pinyin": "gǎndòng",
+      "japanese": "感動する。感動させる。"
+    },
+    {
+      "sourceId": "w01226",
+      "globalSequence": 1226,
+      "simplified": "赶紧",
+      "pinyin": "gǎnjǐn",
+      "japanese": "急いで。"
+    },
+    {
+      "sourceId": "w01227",
+      "globalSequence": 1227,
+      "simplified": "感觉",
+      "pinyin": "gǎnjué",
+      "japanese": "感じる。感覚。"
+    },
+    {
+      "sourceId": "w01228",
+      "globalSequence": 1228,
+      "simplified": "赶快",
+      "pinyin": "gǎnkuài",
+      "japanese": "急いで。早く。"
+    },
+    {
+      "sourceId": "w01229",
+      "globalSequence": 1229,
+      "simplified": "感情",
+      "pinyin": "gǎnqíng",
+      "japanese": "感情。愛情。"
+    },
+    {
+      "sourceId": "w01230",
+      "globalSequence": 1230,
+      "simplified": "感人",
+      "pinyin": "gǎnrén",
+      "japanese": "感動的な。"
+    },
+    {
+      "sourceId": "w01231",
+      "globalSequence": 1231,
+      "simplified": "赶上",
+      "pinyin": "gǎnshàng",
+      "japanese": "追いつく。間に合う。"
+    },
+    {
+      "sourceId": "w01232",
+      "globalSequence": 1232,
+      "simplified": "感受",
+      "pinyin": "gǎnshòu",
+      "japanese": "感じる。感じたこと。"
+    },
+    {
+      "sourceId": "w01233",
+      "globalSequence": 1233,
+      "simplified": "感谢",
+      "pinyin": "gǎnxiè",
+      "japanese": "感謝する。"
+    },
+    {
+      "sourceId": "w01234",
+      "globalSequence": 1234,
+      "simplified": "干活儿",
+      "pinyin": "gànhuór",
+      "japanese": "仕事をする。働く。"
+    },
+    {
+      "sourceId": "w01235",
+      "globalSequence": 1235,
+      "simplified": "钢琴",
+      "pinyin": "gāngqín",
+      "japanese": "ピアノ。"
+    },
+    {
+      "sourceId": "w01236",
+      "globalSequence": 1236,
+      "simplified": "高价",
+      "pinyin": "gāojià",
+      "japanese": "高値。"
+    },
+    {
+      "sourceId": "w01237",
+      "globalSequence": 1237,
+      "simplified": "高考",
+      "pinyin": "gāokǎo",
+      "japanese": "中国の大学入学統一試験。"
+    },
+    {
+      "sourceId": "w01238",
+      "globalSequence": 1238,
+      "simplified": "高速",
+      "pinyin": "gāosù",
+      "japanese": "高速。"
+    },
+    {
+      "sourceId": "w01239",
+      "globalSequence": 1239,
+      "simplified": "高温",
+      "pinyin": "gāowēn",
+      "japanese": "高温。"
+    },
+    {
+      "sourceId": "w01240",
+      "globalSequence": 1240,
+      "simplified": "高于",
+      "pinyin": "gāoyú",
+      "japanese": "〜より高い。"
+    },
+    {
+      "sourceId": "w01241",
+      "globalSequence": 1241,
+      "simplified": "胳膊",
+      "pinyin": "gēbo",
+      "japanese": "腕。"
+    },
+    {
+      "sourceId": "w01242",
+      "globalSequence": 1242,
+      "simplified": "歌声",
+      "pinyin": "gēshēng",
+      "japanese": "歌声。"
+    },
+    {
+      "sourceId": "w01243",
+      "globalSequence": 1243,
+      "simplified": "歌手",
+      "pinyin": "gēshǒu",
+      "japanese": "歌手。"
+    },
+    {
+      "sourceId": "w01244",
+      "globalSequence": 1244,
+      "simplified": "各",
+      "pinyin": "gè",
+      "japanese": "各〜。それぞれ。"
+    },
+    {
+      "sourceId": "w01245",
+      "globalSequence": 1245,
+      "simplified": "各地",
+      "pinyin": "gèdì",
+      "japanese": "各地。"
+    },
+    {
+      "sourceId": "w01246",
+      "globalSequence": 1246,
+      "simplified": "各个",
+      "pinyin": "gègè",
+      "japanese": "一つ一つの。それぞれの。"
+    },
+    {
+      "sourceId": "w01247",
+      "globalSequence": 1247,
+      "simplified": "各位",
+      "pinyin": "gèwèi",
+      "japanese": "皆様。それぞれの方。"
+    },
+    {
+      "sourceId": "w01248",
+      "globalSequence": 1248,
+      "simplified": "各种",
+      "pinyin": "gèzhǒng",
+      "japanese": "各種。さまざまな。"
+    },
+    {
+      "sourceId": "w01249",
+      "globalSequence": 1249,
+      "simplified": "更加",
+      "pinyin": "gèngjiā",
+      "japanese": "いっそう。"
+    },
+    {
+      "sourceId": "w01250",
+      "globalSequence": 1250,
+      "simplified": "工厂",
+      "pinyin": "gōngchǎng",
+      "japanese": "工場。"
+    },
+    {
+      "sourceId": "w01251",
+      "globalSequence": 1251,
+      "simplified": "功夫",
+      "pinyin": "gōngfu",
+      "japanese": "腕前。カンフー。時間・手間。"
+    },
+    {
+      "sourceId": "w01252",
+      "globalSequence": 1252,
+      "simplified": "公共",
+      "pinyin": "gōnggòng",
+      "japanese": "公共の。"
+    }
+  ]
+}

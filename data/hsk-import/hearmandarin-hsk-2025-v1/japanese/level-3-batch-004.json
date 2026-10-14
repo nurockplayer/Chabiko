@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00602",
+      "globalSequence": 602,
+      "simplified": "懂得",
+      "pinyin": "dǒngde",
+      "japanese": "分かる。心得ている。"
+    },
+    {
+      "sourceId": "w00603",
+      "globalSequence": 603,
+      "simplified": "动物",
+      "pinyin": "dòngwù",
+      "japanese": "動物。"
+    },
+    {
+      "sourceId": "w00604",
+      "globalSequence": 604,
+      "simplified": "动物园",
+      "pinyin": "dòngwùyuán",
+      "japanese": "動物園。"
+    },
+    {
+      "sourceId": "w00605",
+      "globalSequence": 605,
+      "simplified": "短",
+      "pinyin": "duǎn",
+      "japanese": "短い。"
+    },
+    {
+      "sourceId": "w00606",
+      "globalSequence": 606,
+      "simplified": "短裤",
+      "pinyin": "duǎnkù",
+      "japanese": "短パン。"
+    },
+    {
+      "sourceId": "w00607",
+      "globalSequence": 607,
+      "simplified": "段",
+      "pinyin": "duàn",
+      "japanese": "区間。段落。ひとまとまりを数える語。"
+    },
+    {
+      "sourceId": "w00608",
+      "globalSequence": 608,
+      "simplified": "锻炼",
+      "pinyin": "duànliàn",
+      "japanese": "体を鍛える。訓練する。"
+    },
+    {
+      "sourceId": "w00609",
+      "globalSequence": 609,
+      "simplified": "对话",
+      "pinyin": "duìhuà",
+      "japanese": "対話。会話。"
+    },
+    {
+      "sourceId": "w00610",
+      "globalSequence": 610,
+      "simplified": "饿",
+      "pinyin": "è",
+      "japanese": "お腹がすいた。"
+    },
+    {
+      "sourceId": "w00611",
+      "globalSequence": 611,
+      "simplified": "而且",
+      "pinyin": "érqiě",
+      "japanese": "そのうえ。しかも。"
+    },
+    {
+      "sourceId": "w00612",
+      "globalSequence": 612,
+      "simplified": "耳朵",
+      "pinyin": "ěrduo",
+      "japanese": "耳。"
+    },
+    {
+      "sourceId": "w00613",
+      "globalSequence": 613,
+      "simplified": "耳机",
+      "pinyin": "ěrjī",
+      "japanese": "イヤホン。ヘッドホン。"
+    },
+    {
+      "sourceId": "w00614",
+      "globalSequence": 614,
+      "simplified": "发",
+      "pinyin": "fā",
+      "japanese": "出す。送る。発する。"
+    },
+    {
+      "sourceId": "w00615",
+      "globalSequence": 615,
+      "simplified": "发烧",
+      "pinyin": "fāshāo",
+      "japanese": "熱が出る。"
+    },
+    {
+      "sourceId": "w00616",
+      "globalSequence": 616,
+      "simplified": "发生",
+      "pinyin": "fāshēng",
+      "japanese": "起こる。発生する。"
+    },
+    {
+      "sourceId": "w00617",
+      "globalSequence": 617,
+      "simplified": "发现",
+      "pinyin": "fāxiàn",
+      "japanese": "発見する。気づく。"
+    },
+    {
+      "sourceId": "w00618",
+      "globalSequence": 618,
+      "simplified": "发展",
+      "pinyin": "fāzhǎn",
+      "japanese": "発展する。発展。"
+    },
+    {
+      "sourceId": "w00619",
+      "globalSequence": 619,
+      "simplified": "方便",
+      "pinyin": "fāngbiàn",
+      "japanese": "便利な。都合がよい。"
+    },
+    {
+      "sourceId": "w00620",
+      "globalSequence": 620,
+      "simplified": "方便面",
+      "pinyin": "fāngbiànmiàn",
+      "japanese": "インスタント麺。"
+    },
+    {
+      "sourceId": "w00621",
+      "globalSequence": 621,
+      "simplified": "方法",
+      "pinyin": "fāngfǎ",
+      "japanese": "方法。"
+    },
+    {
+      "sourceId": "w00622",
+      "globalSequence": 622,
+      "simplified": "方向",
+      "pinyin": "fāngxiàng",
+      "japanese": "方向。"
+    },
+    {
+      "sourceId": "w00623",
+      "globalSequence": 623,
+      "simplified": "房子",
+      "pinyin": "fángzi",
+      "japanese": "家。建物。"
+    },
+    {
+      "sourceId": "w00624",
+      "globalSequence": 624,
+      "simplified": "放",
+      "pinyin": "fàng",
+      "japanese": "置く。放す。"
+    },
+    {
+      "sourceId": "w00625",
+      "globalSequence": 625,
+      "simplified": "放假",
+      "pinyin": "fàngjià",
+      "japanese": "休みになる。"
+    },
+    {
+      "sourceId": "w00626",
+      "globalSequence": 626,
+      "simplified": "放心",
+      "pinyin": "fàngxīn",
+      "japanese": "安心する。"
+    },
+    {
+      "sourceId": "w00627",
+      "globalSequence": 627,
+      "simplified": "放学",
+      "pinyin": "fàngxué",
+      "japanese": "学校の授業が終わる。"
+    },
+    {
+      "sourceId": "w00628",
+      "globalSequence": 628,
+      "simplified": "分开",
+      "pinyin": "fēnkāi",
+      "japanese": "分ける。別れる。"
+    },
+    {
+      "sourceId": "w00629",
+      "globalSequence": 629,
+      "simplified": "风",
+      "pinyin": "fēng",
+      "japanese": "風。"
+    },
+    {
+      "sourceId": "w00630",
+      "globalSequence": 630,
+      "simplified": "封",
+      "pinyin": "fēng",
+      "japanese": "封じる。手紙を数える「〜通」。"
+    },
+    {
+      "sourceId": "w00631",
+      "globalSequence": 631,
+      "simplified": "夫妻",
+      "pinyin": "fūqī",
+      "japanese": "夫婦。"
+    },
+    {
+      "sourceId": "w00632",
+      "globalSequence": 632,
+      "simplified": "服务",
+      "pinyin": "fúwù",
+      "japanese": "サービス。接客する。"
+    },
+    {
+      "sourceId": "w00633",
+      "globalSequence": 633,
+      "simplified": "附近",
+      "pinyin": "fùjìn",
+      "japanese": "近く。"
+    },
+    {
+      "sourceId": "w00634",
+      "globalSequence": 634,
+      "simplified": "复习",
+      "pinyin": "fùxí",
+      "japanese": "復習する。"
+    },
+    {
+      "sourceId": "w00636",
+      "globalSequence": 636,
+      "simplified": "干净",
+      "pinyin": "gānjìng",
+      "japanese": "清潔な。きれいな。"
+    },
+    {
+      "sourceId": "w00637",
+      "globalSequence": 637,
+      "simplified": "感兴趣",
+      "pinyin": "gǎn xìngqù",
+      "japanese": "興味を持つ。"
+    },
+    {
+      "sourceId": "w00638",
+      "globalSequence": 638,
+      "simplified": "感到",
+      "pinyin": "gǎndào",
+      "japanese": "感じる。"
+    },
+    {
+      "sourceId": "w00639",
+      "globalSequence": 639,
+      "simplified": "感冒",
+      "pinyin": "gǎnmào",
+      "japanese": "風邪。風邪をひく。"
+    },
+    {
+      "sourceId": "w00640",
+      "globalSequence": 640,
+      "simplified": "干",
+      "pinyin": "gàn",
+      "japanese": "する。働く。"
+    },
+    {
+      "sourceId": "w00641",
+      "globalSequence": 641,
+      "simplified": "刚",
+      "pinyin": "gāng",
+      "japanese": "たった今。ちょうど。"
+    },
+    {
+      "sourceId": "w00642",
+      "globalSequence": 642,
+      "simplified": "刚才",
+      "pinyin": "gāngcái",
+      "japanese": "さっき。"
+    },
+    {
+      "sourceId": "w00643",
+      "globalSequence": 643,
+      "simplified": "刚刚",
+      "pinyin": "gānggāng",
+      "japanese": "たった今。ちょうど。"
+    },
+    {
+      "sourceId": "w00644",
+      "globalSequence": 644,
+      "simplified": "高铁",
+      "pinyin": "gāotiě",
+      "japanese": "高速鉄道。"
+    },
+    {
+      "sourceId": "w00645",
+      "globalSequence": 645,
+      "simplified": "根据",
+      "pinyin": "gēnjù",
+      "japanese": "〜に基づいて。根拠。"
+    },
+    {
+      "sourceId": "w00646",
+      "globalSequence": 646,
+      "simplified": "更",
+      "pinyin": "gèng",
+      "japanese": "さらに。もっと。"
+    },
+    {
+      "sourceId": "w00647",
+      "globalSequence": 647,
+      "simplified": "公斤",
+      "pinyin": "gōngjīn",
+      "japanese": "キログラム。"
+    },
+    {
+      "sourceId": "w00648",
+      "globalSequence": 648,
+      "simplified": "公园",
+      "pinyin": "gōngyuán",
+      "japanese": "公園。"
+    },
+    {
+      "sourceId": "w00649",
+      "globalSequence": 649,
+      "simplified": "工作日",
+      "pinyin": "gōngzuòrì",
+      "japanese": "平日。営業日。"
+    },
+    {
+      "sourceId": "w00650",
+      "globalSequence": 650,
+      "simplified": "故事",
+      "pinyin": "gùshi",
+      "japanese": "物語。"
+    },
+    {
+      "sourceId": "w00651",
+      "globalSequence": 651,
+      "simplified": "刮",
+      "pinyin": "guā",
+      "japanese": "削る。風が吹く。"
+    },
+    {
+      "sourceId": "w00652",
+      "globalSequence": 652,
+      "simplified": "关",
+      "pinyin": "guān",
+      "japanese": "閉める。電源を切る。"
+    }
+  ]
+}

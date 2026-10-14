@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w01758",
+      "globalSequence": 1758,
+      "simplified": "脱",
+      "pinyin": "tuō",
+      "japanese": "脱ぐ。離れる。"
+    },
+    {
+      "sourceId": "w01759",
+      "globalSequence": 1759,
+      "simplified": "袜子",
+      "pinyin": "wàzi",
+      "japanese": "靴下。"
+    },
+    {
+      "sourceId": "w01760",
+      "globalSequence": 1760,
+      "simplified": "外出",
+      "pinyin": "wàichū",
+      "japanese": "外出する。"
+    },
+    {
+      "sourceId": "w01761",
+      "globalSequence": 1761,
+      "simplified": "外套",
+      "pinyin": "wàitào",
+      "japanese": "上着。コート。"
+    },
+    {
+      "sourceId": "w01762",
+      "globalSequence": 1762,
+      "simplified": "完全",
+      "pinyin": "wánquán",
+      "japanese": "完全に。"
+    },
+    {
+      "sourceId": "w01763",
+      "globalSequence": 1763,
+      "simplified": "晚安",
+      "pinyin": "wǎn’ān",
+      "japanese": "おやすみなさい。"
+    },
+    {
+      "sourceId": "w01764",
+      "globalSequence": 1764,
+      "simplified": "晚餐",
+      "pinyin": "wǎncān",
+      "japanese": "夕食。"
+    },
+    {
+      "sourceId": "w01765",
+      "globalSequence": 1765,
+      "simplified": "网购",
+      "pinyin": "wǎnggòu",
+      "japanese": "ネットで買い物をする。"
+    },
+    {
+      "sourceId": "w01766",
+      "globalSequence": 1766,
+      "simplified": "往往",
+      "pinyin": "wǎngwǎng",
+      "japanese": "往々にして。よく。"
+    },
+    {
+      "sourceId": "w01767",
+      "globalSequence": 1767,
+      "simplified": "网页",
+      "pinyin": "wǎngyè",
+      "japanese": "ウェブページ。"
+    },
+    {
+      "sourceId": "w01768",
+      "globalSequence": 1768,
+      "simplified": "网友",
+      "pinyin": "wǎngyǒu",
+      "japanese": "ネット上の友達。"
+    },
+    {
+      "sourceId": "w01769",
+      "globalSequence": 1769,
+      "simplified": "网址",
+      "pinyin": "wǎngzhǐ",
+      "japanese": "ウェブアドレス。URL。"
+    },
+    {
+      "sourceId": "w01770",
+      "globalSequence": 1770,
+      "simplified": "危险",
+      "pinyin": "wēixiǎn",
+      "japanese": "危険な。危険。"
+    },
+    {
+      "sourceId": "w01772",
+      "globalSequence": 1772,
+      "simplified": "味",
+      "pinyin": "wèi",
+      "japanese": "味。"
+    },
+    {
+      "sourceId": "w01773",
+      "globalSequence": 1773,
+      "simplified": "味道",
+      "pinyin": "wèidào",
+      "japanese": "味。におい。"
+    },
+    {
+      "sourceId": "w01774",
+      "globalSequence": 1774,
+      "simplified": "卫生",
+      "pinyin": "wèishēng",
+      "japanese": "衛生。清潔な。"
+    },
+    {
+      "sourceId": "w01775",
+      "globalSequence": 1775,
+      "simplified": "温度",
+      "pinyin": "wēndù",
+      "japanese": "温度。"
+    },
+    {
+      "sourceId": "w01776",
+      "globalSequence": 1776,
+      "simplified": "闻",
+      "pinyin": "wén",
+      "japanese": "においをかぐ。聞く。"
+    },
+    {
+      "sourceId": "w01777",
+      "globalSequence": 1777,
+      "simplified": "文件",
+      "pinyin": "wénjiàn",
+      "japanese": "書類。ファイル。"
+    },
+    {
+      "sourceId": "w01778",
+      "globalSequence": 1778,
+      "simplified": "文章",
+      "pinyin": "wénzhāng",
+      "japanese": "文章。"
+    },
+    {
+      "sourceId": "w01779",
+      "globalSequence": 1779,
+      "simplified": "文字",
+      "pinyin": "wénzì",
+      "japanese": "文字。"
+    },
+    {
+      "sourceId": "w01780",
+      "globalSequence": 1780,
+      "simplified": "污染",
+      "pinyin": "wūrǎn",
+      "japanese": "汚染する。汚染。"
+    },
+    {
+      "sourceId": "w01781",
+      "globalSequence": 1781,
+      "simplified": "无",
+      "pinyin": "wú",
+      "japanese": "ない。"
+    },
+    {
+      "sourceId": "w01782",
+      "globalSequence": 1782,
+      "simplified": "无法",
+      "pinyin": "wúfǎ",
+      "japanese": "〜できない。"
+    },
+    {
+      "sourceId": "w01783",
+      "globalSequence": 1783,
+      "simplified": "无聊",
+      "pinyin": "wúliáo",
+      "japanese": "退屈な。つまらない。"
+    },
+    {
+      "sourceId": "w01784",
+      "globalSequence": 1784,
+      "simplified": "无论",
+      "pinyin": "wúlùn",
+      "japanese": "〜にかかわらず。"
+    },
+    {
+      "sourceId": "w01785",
+      "globalSequence": 1785,
+      "simplified": "午餐",
+      "pinyin": "wǔcān",
+      "japanese": "昼食。"
+    },
+    {
+      "sourceId": "w01786",
+      "globalSequence": 1786,
+      "simplified": "误会",
+      "pinyin": "wùhuì",
+      "japanese": "誤解する。誤解。"
+    },
+    {
+      "sourceId": "w01787",
+      "globalSequence": 1787,
+      "simplified": "吸",
+      "pinyin": "xī",
+      "japanese": "吸う。吸い込む。"
+    },
+    {
+      "sourceId": "w01788",
+      "globalSequence": 1788,
+      "simplified": "西部",
+      "pinyin": "xībù",
+      "japanese": "西部。"
+    },
+    {
+      "sourceId": "w01789",
+      "globalSequence": 1789,
+      "simplified": "西红柿",
+      "pinyin": "xīhóngshì",
+      "japanese": "トマト。"
+    },
+    {
+      "sourceId": "w01790",
+      "globalSequence": 1790,
+      "simplified": "吸引",
+      "pinyin": "xīyǐn",
+      "japanese": "引きつける。"
+    },
+    {
+      "sourceId": "w01791",
+      "globalSequence": 1791,
+      "simplified": "细",
+      "pinyin": "xì",
+      "japanese": "細い。細かい。"
+    },
+    {
+      "sourceId": "w01792",
+      "globalSequence": 1792,
+      "simplified": "细心",
+      "pinyin": "xìxīn",
+      "japanese": "注意深い。"
+    },
+    {
+      "sourceId": "w01793",
+      "globalSequence": 1793,
+      "simplified": "下降",
+      "pinyin": "xiàjiàng",
+      "japanese": "下がる。下降する。"
+    },
+    {
+      "sourceId": "w01794",
+      "globalSequence": 1794,
+      "simplified": "鲜",
+      "pinyin": "xiān",
+      "japanese": "新鮮な。鮮やかな。"
+    },
+    {
+      "sourceId": "w01795",
+      "globalSequence": 1795,
+      "simplified": "鲜花",
+      "pinyin": "xiānhuā",
+      "japanese": "生花。"
+    },
+    {
+      "sourceId": "w01796",
+      "globalSequence": 1796,
+      "simplified": "咸",
+      "pinyin": "xián",
+      "japanese": "塩辛い。"
+    },
+    {
+      "sourceId": "w01797",
+      "globalSequence": 1797,
+      "simplified": "现金",
+      "pinyin": "xiànjīn",
+      "japanese": "現金。"
+    },
+    {
+      "sourceId": "w01798",
+      "globalSequence": 1798,
+      "simplified": "羡慕",
+      "pinyin": "xiànmù",
+      "japanese": "うらやましく思う。"
+    },
+    {
+      "sourceId": "w01799",
+      "globalSequence": 1799,
+      "simplified": "线上",
+      "pinyin": "xiànshàng",
+      "japanese": "オンライン。"
+    },
+    {
+      "sourceId": "w01800",
+      "globalSequence": 1800,
+      "simplified": "线下",
+      "pinyin": "xiànxià",
+      "japanese": "オフライン。対面の。"
+    },
+    {
+      "sourceId": "w01801",
+      "globalSequence": 1801,
+      "simplified": "现有",
+      "pinyin": "xiànyǒu",
+      "japanese": "現在ある。"
+    },
+    {
+      "sourceId": "w01802",
+      "globalSequence": 1802,
+      "simplified": "香",
+      "pinyin": "xiāng",
+      "japanese": "香りがよい。"
+    },
+    {
+      "sourceId": "w01803",
+      "globalSequence": 1803,
+      "simplified": "相比",
+      "pinyin": "xiāngbǐ",
+      "japanese": "比較する。比べて。"
+    },
+    {
+      "sourceId": "w01804",
+      "globalSequence": 1804,
+      "simplified": "相反",
+      "pinyin": "xiāngfǎn",
+      "japanese": "反対の。反対に。"
+    },
+    {
+      "sourceId": "w01805",
+      "globalSequence": 1805,
+      "simplified": "相互",
+      "pinyin": "xiānghù",
+      "japanese": "互いに。"
+    },
+    {
+      "sourceId": "w01806",
+      "globalSequence": 1806,
+      "simplified": "相同",
+      "pinyin": "xiāngtóng",
+      "japanese": "同じ。"
+    },
+    {
+      "sourceId": "w01807",
+      "globalSequence": 1807,
+      "simplified": "详细",
+      "pinyin": "xiángxì",
+      "japanese": "詳しい。"
+    },
+    {
+      "sourceId": "w01808",
+      "globalSequence": 1808,
+      "simplified": "响",
+      "pinyin": "xiǎng",
+      "japanese": "音が鳴る。音が大きい。"
+    }
+  ]
+}

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00805",
+      "globalSequence": 805,
+      "simplified": "前年",
+      "pinyin": "qiánnián",
+      "japanese": "一昨年。"
+    },
+    {
+      "sourceId": "w00806",
+      "globalSequence": 806,
+      "simplified": "前天",
+      "pinyin": "qiántiān",
+      "japanese": "一昨日。"
+    },
+    {
+      "sourceId": "w00807",
+      "globalSequence": 807,
+      "simplified": "清楚",
+      "pinyin": "qīngchu",
+      "japanese": "はっきりした。よく分かる。"
+    },
+    {
+      "sourceId": "w00808",
+      "globalSequence": 808,
+      "simplified": "请假",
+      "pinyin": "qǐngjià",
+      "japanese": "休みを取る。欠席・欠勤を届ける。"
+    },
+    {
+      "sourceId": "w00809",
+      "globalSequence": 809,
+      "simplified": "请客",
+      "pinyin": "qǐngkè",
+      "japanese": "ごちそうする。客を招く。"
+    },
+    {
+      "sourceId": "w00810",
+      "globalSequence": 810,
+      "simplified": "秋天",
+      "pinyin": "qiūtiān",
+      "japanese": "秋。"
+    },
+    {
+      "sourceId": "w00811",
+      "globalSequence": 811,
+      "simplified": "球场",
+      "pinyin": "qiúchǎng",
+      "japanese": "球技場。コート。"
+    },
+    {
+      "sourceId": "w00812",
+      "globalSequence": 812,
+      "simplified": "裙子",
+      "pinyin": "qúnzi",
+      "japanese": "スカート。"
+    },
+    {
+      "sourceId": "w00813",
+      "globalSequence": 813,
+      "simplified": "然后",
+      "pinyin": "ránhòu",
+      "japanese": "それから。"
+    },
+    {
+      "sourceId": "w00814",
+      "globalSequence": 814,
+      "simplified": "热情",
+      "pinyin": "rèqíng",
+      "japanese": "親切な。熱意。"
+    },
+    {
+      "sourceId": "w00815",
+      "globalSequence": 815,
+      "simplified": "认得",
+      "pinyin": "rènde",
+      "japanese": "見覚えがある。識別できる。"
+    },
+    {
+      "sourceId": "w00816",
+      "globalSequence": 816,
+      "simplified": "认为",
+      "pinyin": "rènwéi",
+      "japanese": "〜と思う。"
+    },
+    {
+      "sourceId": "w00817",
+      "globalSequence": 817,
+      "simplified": "认真",
+      "pinyin": "rènzhēn",
+      "japanese": "真剣な。まじめな。"
+    },
+    {
+      "sourceId": "w00818",
+      "globalSequence": 818,
+      "simplified": "容易",
+      "pinyin": "róngyì",
+      "japanese": "簡単な。〜しやすい。"
+    },
+    {
+      "sourceId": "w00819",
+      "globalSequence": 819,
+      "simplified": "如果",
+      "pinyin": "rúguǒ",
+      "japanese": "もし〜なら。"
+    },
+    {
+      "sourceId": "w00820",
+      "globalSequence": 820,
+      "simplified": "伞",
+      "pinyin": "sǎn",
+      "japanese": "傘。"
+    },
+    {
+      "sourceId": "w00821",
+      "globalSequence": 821,
+      "simplified": "扫",
+      "pinyin": "sǎo",
+      "japanese": "掃く。"
+    },
+    {
+      "sourceId": "w00822",
+      "globalSequence": 822,
+      "simplified": "沙发",
+      "pinyin": "shāfā",
+      "japanese": "ソファ。"
+    },
+    {
+      "sourceId": "w00823",
+      "globalSequence": 823,
+      "simplified": "山",
+      "pinyin": "shān",
+      "japanese": "山。"
+    },
+    {
+      "sourceId": "w00824",
+      "globalSequence": 824,
+      "simplified": "上衣",
+      "pinyin": "shàngyī",
+      "japanese": "上着。"
+    },
+    {
+      "sourceId": "w00825",
+      "globalSequence": 825,
+      "simplified": "勺子",
+      "pinyin": "sháozi",
+      "japanese": "スプーン。"
+    },
+    {
+      "sourceId": "w00826",
+      "globalSequence": 826,
+      "simplified": "身边",
+      "pinyin": "shēnbiān",
+      "japanese": "身の回り。そば。"
+    },
+    {
+      "sourceId": "w00827",
+      "globalSequence": 827,
+      "simplified": "身高",
+      "pinyin": "shēngāo",
+      "japanese": "身長。"
+    },
+    {
+      "sourceId": "w00828",
+      "globalSequence": 828,
+      "simplified": "声",
+      "pinyin": "shēng",
+      "japanese": "声。声や音を数える語。"
+    },
+    {
+      "sourceId": "w00829",
+      "globalSequence": 829,
+      "simplified": "生活",
+      "pinyin": "shēnghuó",
+      "japanese": "生活。暮らす。"
+    },
+    {
+      "sourceId": "w00830",
+      "globalSequence": 830,
+      "simplified": "生气",
+      "pinyin": "shēngqì",
+      "japanese": "怒る。"
+    },
+    {
+      "sourceId": "w00831",
+      "globalSequence": 831,
+      "simplified": "声音",
+      "pinyin": "shēngyīn",
+      "japanese": "声。音。"
+    },
+    {
+      "sourceId": "w00832",
+      "globalSequence": 832,
+      "simplified": "市",
+      "pinyin": "shì",
+      "japanese": "市。市場。"
+    },
+    {
+      "sourceId": "w00833",
+      "globalSequence": 833,
+      "simplified": "试",
+      "pinyin": "shì",
+      "japanese": "試す。"
+    },
+    {
+      "sourceId": "w00834",
+      "globalSequence": 834,
+      "simplified": "室",
+      "pinyin": "shì",
+      "japanese": "部屋。"
+    },
+    {
+      "sourceId": "w00835",
+      "globalSequence": 835,
+      "simplified": "世界",
+      "pinyin": "shìjiè",
+      "japanese": "世界。"
+    },
+    {
+      "sourceId": "w00836",
+      "globalSequence": 836,
+      "simplified": "收",
+      "pinyin": "shōu",
+      "japanese": "受け取る。集める。片づける。"
+    },
+    {
+      "sourceId": "w00837",
+      "globalSequence": 837,
+      "simplified": "收到",
+      "pinyin": "shōudào",
+      "japanese": "受け取る。"
+    },
+    {
+      "sourceId": "w00838",
+      "globalSequence": 838,
+      "simplified": "受",
+      "pinyin": "shòu",
+      "japanese": "受ける。耐える。"
+    },
+    {
+      "sourceId": "w00839",
+      "globalSequence": 839,
+      "simplified": "瘦",
+      "pinyin": "shòu",
+      "japanese": "痩せている。"
+    },
+    {
+      "sourceId": "w00840",
+      "globalSequence": 840,
+      "simplified": "受到",
+      "pinyin": "shòudào",
+      "japanese": "受ける。"
+    },
+    {
+      "sourceId": "w00841",
+      "globalSequence": 841,
+      "simplified": "叔叔",
+      "pinyin": "shūshu",
+      "japanese": "父の弟。おじさん。"
+    },
+    {
+      "sourceId": "w00842",
+      "globalSequence": 842,
+      "simplified": "树",
+      "pinyin": "shù",
+      "japanese": "木。"
+    },
+    {
+      "sourceId": "w00843",
+      "globalSequence": 843,
+      "simplified": "数学",
+      "pinyin": "shùxué",
+      "japanese": "数学。"
+    },
+    {
+      "sourceId": "w00844",
+      "globalSequence": 844,
+      "simplified": "刷",
+      "pinyin": "shuā",
+      "japanese": "ブラシで磨く。刷毛で塗る。"
+    },
+    {
+      "sourceId": "w00845",
+      "globalSequence": 845,
+      "simplified": "双",
+      "pinyin": "shuāng",
+      "japanese": "対のものを数える「〜足・組」。"
+    },
+    {
+      "sourceId": "w00846",
+      "globalSequence": 846,
+      "simplified": "水平",
+      "pinyin": "shuǐpíng",
+      "japanese": "水準。レベル。"
+    },
+    {
+      "sourceId": "w00847",
+      "globalSequence": 847,
+      "simplified": "司机",
+      "pinyin": "sījī",
+      "japanese": "運転手。"
+    },
+    {
+      "sourceId": "w00848",
+      "globalSequence": 848,
+      "simplified": "四季",
+      "pinyin": "sìjì",
+      "japanese": "四季。"
+    },
+    {
+      "sourceId": "w00849",
+      "globalSequence": 849,
+      "simplified": "太阳",
+      "pinyin": "tàiyáng",
+      "japanese": "太陽。"
+    },
+    {
+      "sourceId": "w00850",
+      "globalSequence": 850,
+      "simplified": "糖",
+      "pinyin": "táng",
+      "japanese": "砂糖。あめ。"
+    },
+    {
+      "sourceId": "w00851",
+      "globalSequence": 851,
+      "simplified": "特别",
+      "pinyin": "tèbié",
+      "japanese": "特別な。特に。"
+    },
+    {
+      "sourceId": "w00852",
+      "globalSequence": 852,
+      "simplified": "提高",
+      "pinyin": "tígāo",
+      "japanese": "高める。向上する。"
+    },
+    {
+      "sourceId": "w00853",
+      "globalSequence": 853,
+      "simplified": "体育",
+      "pinyin": "tǐyù",
+      "japanese": "体育。スポーツ。"
+    },
+    {
+      "sourceId": "w00854",
+      "globalSequence": 854,
+      "simplified": "体育馆",
+      "pinyin": "tǐyùguǎn",
+      "japanese": "体育館。"
+    }
+  ]
+}

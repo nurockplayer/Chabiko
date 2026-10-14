@@ -354,14 +354,11 @@ function loadProductionSnapshot(root: string): HskBundle {
     const sequenceById = new Map(manifest.rows.map((row) => [row.recordId, row.globalSequence]));
     vocabulary.sort((left, right) => (sequenceById.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
       (sequenceById.get(right.id) ?? Number.MAX_SAFE_INTEGER));
-    const learnerAllowed = manifest.publication.sourceEligibleIsHumanReviewed === true &&
-      manifest.publication.sourceEligibleIsRuntimeAvailable === true;
-    const learnerVocabulary = learnerAllowed
-      ? vocabulary.filter((entry) => entry.reviewStatus === 'reviewed' || entry.reviewStatus === 'published')
-      : [];
-    const diagnostic = learnerAllowed
-      ? null
-      : `Manifest learner gate is closed (humanReviewed=${manifest.publication.sourceEligibleIsHumanReviewed}, runtimeAvailable=${manifest.publication.sourceEligibleIsRuntimeAvailable})`;
+    // Runtime release is independent of human review. Draft rows retain their
+    // truthful provenance and are disclosed as provisional on learner pages.
+    const learnerAllowed = manifest.publication.sourceEligibleIsRuntimeAvailable === true;
+    const learnerVocabulary = learnerAllowed ? vocabulary : [];
+    const diagnostic = learnerAllowed ? null : 'Manifest learner gate is closed (runtimeAvailable=false)';
     const sourceNotice: HskSourceNotice = Object.freeze({
       attribution: manifest.source.attribution,
       sourceUrl: manifest.source.sourceUrl,

@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00073",
+      "globalSequence": 73,
+      "simplified": "好看",
+      "pinyin": "hǎokàn",
+      "japanese": "見た目がよい。美しい。"
+    },
+    {
+      "sourceId": "w00074",
+      "globalSequence": 74,
+      "simplified": "好听",
+      "pinyin": "hǎotīng",
+      "japanese": "聞いて心地よい。"
+    },
+    {
+      "sourceId": "w00075",
+      "globalSequence": 75,
+      "simplified": "好玩儿",
+      "pinyin": "hǎowánr",
+      "japanese": "楽しい。おもしろい。"
+    },
+    {
+      "sourceId": "w00076",
+      "globalSequence": 76,
+      "simplified": "号",
+      "pinyin": "hào",
+      "japanese": "番号。日付の「〜日」。"
+    },
+    {
+      "sourceId": "w00077",
+      "globalSequence": 77,
+      "simplified": "喝",
+      "pinyin": "hē",
+      "japanese": "飲む。"
+    },
+    {
+      "sourceId": "w00079",
+      "globalSequence": 79,
+      "simplified": "很",
+      "pinyin": "hěn",
+      "japanese": "とても。形容詞の前に置く程度の語。"
+    },
+    {
+      "sourceId": "w00080",
+      "globalSequence": 80,
+      "simplified": "后",
+      "pinyin": "hòu",
+      "japanese": "後ろ。あと。"
+    },
+    {
+      "sourceId": "w00081",
+      "globalSequence": 81,
+      "simplified": "回",
+      "pinyin": "huí",
+      "japanese": "戻る。回数の「〜回」。"
+    },
+    {
+      "sourceId": "w00083",
+      "globalSequence": 83,
+      "simplified": "火车",
+      "pinyin": "huǒchē",
+      "japanese": "列車。"
+    },
+    {
+      "sourceId": "w00084",
+      "globalSequence": 84,
+      "simplified": "鸡蛋",
+      "pinyin": "jīdàn",
+      "japanese": "鶏卵。卵。"
+    },
+    {
+      "sourceId": "w00085",
+      "globalSequence": 85,
+      "simplified": "几",
+      "pinyin": "jǐ",
+      "japanese": "いくつ。いくつかの。"
+    },
+    {
+      "sourceId": "w00086",
+      "globalSequence": 86,
+      "simplified": "家",
+      "pinyin": "jiā",
+      "japanese": "家。家庭。"
+    },
+    {
+      "sourceId": "w00087",
+      "globalSequence": 87,
+      "simplified": "家人",
+      "pinyin": "jiārén",
+      "japanese": "家族。"
+    },
+    {
+      "sourceId": "w00088",
+      "globalSequence": 88,
+      "simplified": "见",
+      "pinyin": "jiàn",
+      "japanese": "会う。目にする。"
+    },
+    {
+      "sourceId": "w00089",
+      "globalSequence": 89,
+      "simplified": "件",
+      "pinyin": "jiàn",
+      "japanese": "衣類・事柄などを数える「〜件・着」。"
+    },
+    {
+      "sourceId": "w00090",
+      "globalSequence": 90,
+      "simplified": "饺子",
+      "pinyin": "jiǎozi",
+      "japanese": "ギョーザ。"
+    },
+    {
+      "sourceId": "w00091",
+      "globalSequence": 91,
+      "simplified": "叫",
+      "pinyin": "jiào",
+      "japanese": "呼ぶ。〜という名前である。"
+    },
+    {
+      "sourceId": "w00092",
+      "globalSequence": 92,
+      "simplified": "姐姐",
+      "pinyin": "jiějie",
+      "japanese": "姉。"
+    },
+    {
+      "sourceId": "w00093",
+      "globalSequence": 93,
+      "simplified": "今年",
+      "pinyin": "jīnnián",
+      "japanese": "今年。"
+    },
+    {
+      "sourceId": "w00094",
+      "globalSequence": 94,
+      "simplified": "今天",
+      "pinyin": "jīntiān",
+      "japanese": "今日。"
+    },
+    {
+      "sourceId": "w00095",
+      "globalSequence": 95,
+      "simplified": "九",
+      "pinyin": "jiǔ",
+      "japanese": "九。"
+    },
+    {
+      "sourceId": "w00096",
+      "globalSequence": 96,
+      "simplified": "觉得",
+      "pinyin": "juéde",
+      "japanese": "〜と思う。〜と感じる。"
+    },
+    {
+      "sourceId": "w00097",
+      "globalSequence": 97,
+      "simplified": "开",
+      "pinyin": "kāi",
+      "japanese": "開ける。始める。"
+    },
+    {
+      "sourceId": "w00098",
+      "globalSequence": 98,
+      "simplified": "开车",
+      "pinyin": "kāichē",
+      "japanese": "車を運転する。"
+    },
+    {
+      "sourceId": "w00099",
+      "globalSequence": 99,
+      "simplified": "看",
+      "pinyin": "kàn",
+      "japanese": "見る。読む。"
+    },
+    {
+      "sourceId": "w00100",
+      "globalSequence": 100,
+      "simplified": "看病",
+      "pinyin": "kànbìng",
+      "japanese": "診察を受ける。診察する。"
+    },
+    {
+      "sourceId": "w00101",
+      "globalSequence": 101,
+      "simplified": "看见",
+      "pinyin": "kànjiàn",
+      "japanese": "見える。目にする。"
+    },
+    {
+      "sourceId": "w00102",
+      "globalSequence": 102,
+      "simplified": "可以",
+      "pinyin": "kěyǐ",
+      "japanese": "〜できる。〜してもよい。"
+    },
+    {
+      "sourceId": "w00103",
+      "globalSequence": 103,
+      "simplified": "课",
+      "pinyin": "kè",
+      "japanese": "授業。課。"
+    },
+    {
+      "sourceId": "w00104",
+      "globalSequence": 104,
+      "simplified": "口",
+      "pinyin": "kǒu",
+      "japanese": "口。家族の人数などを数える語。"
+    },
+    {
+      "sourceId": "w00105",
+      "globalSequence": 105,
+      "simplified": "块",
+      "pinyin": "kuài",
+      "japanese": "塊。中国の通貨単位「元」の口語。"
+    },
+    {
+      "sourceId": "w00106",
+      "globalSequence": 106,
+      "simplified": "来",
+      "pinyin": "lái",
+      "japanese": "来る。"
+    },
+    {
+      "sourceId": "w00107",
+      "globalSequence": 107,
+      "simplified": "老师",
+      "pinyin": "lǎoshī",
+      "japanese": "先生。"
+    },
+    {
+      "sourceId": "w00108",
+      "globalSequence": 108,
+      "simplified": "了",
+      "pinyin": "le",
+      "japanese": "動作の完了や状況の変化を表す語。"
+    },
+    {
+      "sourceId": "w00109",
+      "globalSequence": 109,
+      "simplified": "冷",
+      "pinyin": "lěng",
+      "japanese": "寒い。冷たい。"
+    },
+    {
+      "sourceId": "w00110",
+      "globalSequence": 110,
+      "simplified": "里",
+      "pinyin": "lǐ",
+      "japanese": "中。内側。"
+    },
+    {
+      "sourceId": "w00112",
+      "globalSequence": 112,
+      "simplified": "零",
+      "pinyin": "líng",
+      "japanese": "ゼロ。"
+    },
+    {
+      "sourceId": "w00113",
+      "globalSequence": 113,
+      "simplified": "六",
+      "pinyin": "liù",
+      "japanese": "六。"
+    },
+    {
+      "sourceId": "w00114",
+      "globalSequence": 114,
+      "simplified": "妈妈",
+      "pinyin": "māma",
+      "japanese": "お母さん。"
+    },
+    {
+      "sourceId": "w00115",
+      "globalSequence": 115,
+      "simplified": "吗",
+      "pinyin": "ma",
+      "japanese": "文末で疑問を表す語。"
+    },
+    {
+      "sourceId": "w00116",
+      "globalSequence": 116,
+      "simplified": "买",
+      "pinyin": "mǎi",
+      "japanese": "買う。"
+    },
+    {
+      "sourceId": "w00117",
+      "globalSequence": 117,
+      "simplified": "卖",
+      "pinyin": "mài",
+      "japanese": "売る。"
+    },
+    {
+      "sourceId": "w00118",
+      "globalSequence": 118,
+      "simplified": "忙",
+      "pinyin": "máng",
+      "japanese": "忙しい。"
+    },
+    {
+      "sourceId": "w00119",
+      "globalSequence": 119,
+      "simplified": "猫",
+      "pinyin": "māo",
+      "japanese": "猫。"
+    },
+    {
+      "sourceId": "w00120",
+      "globalSequence": 120,
+      "simplified": "没关系",
+      "pinyin": "méi guānxi",
+      "japanese": "大丈夫。気にしないで。"
+    },
+    {
+      "sourceId": "w00121",
+      "globalSequence": 121,
+      "simplified": "没事",
+      "pinyin": "méishì",
+      "japanese": "何でもない。用事がない。"
+    },
+    {
+      "sourceId": "w00122",
+      "globalSequence": 122,
+      "simplified": "没有",
+      "pinyin": "méiyǒu",
+      "japanese": "ない。持っていない。〜していない。"
+    },
+    {
+      "sourceId": "w00123",
+      "globalSequence": 123,
+      "simplified": "妹妹",
+      "pinyin": "mèimei",
+      "japanese": "妹。"
+    },
+    {
+      "sourceId": "w00124",
+      "globalSequence": 124,
+      "simplified": "们",
+      "pinyin": "men",
+      "japanese": "人を表す語につけて複数を表す語。"
+    },
+    {
+      "sourceId": "w00125",
+      "globalSequence": 125,
+      "simplified": "米饭",
+      "pinyin": "mǐfàn",
+      "japanese": "ご飯。炊いた米。"
+    }
+  ]
+}

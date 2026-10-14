@@ -1,4 +1,5 @@
 ---
+import HskLevelLinks from '../../../../components/HskLevelLinks.astro';
 import Header from '../../../../components/Header.astro';
 import FlashcardSession from '../../../../components/FlashcardSession.astro';
 import { loadHskPublication } from '../../../../content/loadHskVocabulary';
@@ -33,6 +34,7 @@ const title = `HSK ${level} 単語フラッシュカード`;
   <div class="flashcard-page">
     <a class="back-link" href="/">← ホームに戻る</a>
     <h1 class="page-title">{title}</h1>
+    <p class="availability-note">日本語訳はAIによる下書きで、先生による確認前の内容です。</p>
     <p class="page-subtitle">簡体字を見て、ピンインと日本語の意味を確認しよう。</p>
 
     {pool.status === 'unavailable' || entries.length === 0 ? (
@@ -58,11 +60,12 @@ const title = `HSK ${level} 単語フラッシュカード`;
             <p>ライセンス: <a href={sourceNotice.licenseUrl} rel="noreferrer">{sourceNotice.license}</a></p>
             <p><a href={sourceNotice.provenanceUrl} rel="noreferrer">出典と独立性について</a></p>
             <p><a href={sourceNotice.disclaimerUrl} rel="noreferrer">免責事項</a></p>
-            <p>{sourceNotice.modificationNotice}</p>
+            <p>HearMandarinの簡体字・ピンイン・HSKレベルを使用し、日本語訳を独自に追加しています。</p>
           </aside>
         )}
       </>
     )}
+    <HskLevelLinks />
   </div>
 </BaseLayout>
 

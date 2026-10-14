@@ -1,0 +1,298 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00459",
+      "globalSequence": 459,
+      "simplified": "下面",
+      "pinyin": "xiàmiàn",
+      "japanese": "下。下側。"
+    },
+    {
+      "sourceId": "w00460",
+      "globalSequence": 460,
+      "simplified": "下去",
+      "pinyin": "xiàqù",
+      "japanese": "下りていく。"
+    },
+    {
+      "sourceId": "w00461",
+      "globalSequence": 461,
+      "simplified": "小孩儿",
+      "pinyin": "xiǎoháir",
+      "japanese": "子ども。"
+    },
+    {
+      "sourceId": "w00462",
+      "globalSequence": 462,
+      "simplified": "小时候",
+      "pinyin": "xiǎoshíhou",
+      "japanese": "子どもの頃。"
+    },
+    {
+      "sourceId": "w00463",
+      "globalSequence": 463,
+      "simplified": "笑",
+      "pinyin": "xiào",
+      "japanese": "笑う。"
+    },
+    {
+      "sourceId": "w00464",
+      "globalSequence": 464,
+      "simplified": "姓",
+      "pinyin": "xìng",
+      "japanese": "名字。名字が〜である。"
+    },
+    {
+      "sourceId": "w00465",
+      "globalSequence": 465,
+      "simplified": "姓名",
+      "pinyin": "xìngmíng",
+      "japanese": "氏名。"
+    },
+    {
+      "sourceId": "w00466",
+      "globalSequence": 466,
+      "simplified": "颜色",
+      "pinyin": "yánsè",
+      "japanese": "色。"
+    },
+    {
+      "sourceId": "w00467",
+      "globalSequence": 467,
+      "simplified": "眼睛",
+      "pinyin": "yǎnjing",
+      "japanese": "目。"
+    },
+    {
+      "sourceId": "w00468",
+      "globalSequence": 468,
+      "simplified": "药",
+      "pinyin": "yào",
+      "japanese": "薬。"
+    },
+    {
+      "sourceId": "w00469",
+      "globalSequence": 469,
+      "simplified": "药店",
+      "pinyin": "yàodiàn",
+      "japanese": "薬局。"
+    },
+    {
+      "sourceId": "w00470",
+      "globalSequence": 470,
+      "simplified": "爷爷",
+      "pinyin": "yéye",
+      "japanese": "父方の祖父。"
+    },
+    {
+      "sourceId": "w00471",
+      "globalSequence": 471,
+      "simplified": "一会儿",
+      "pinyin": "yíhuìr",
+      "japanese": "少しの間。まもなく。"
+    },
+    {
+      "sourceId": "w00472",
+      "globalSequence": 472,
+      "simplified": "已经",
+      "pinyin": "yǐjīng",
+      "japanese": "すでに。もう。"
+    },
+    {
+      "sourceId": "w00473",
+      "globalSequence": 473,
+      "simplified": "一起",
+      "pinyin": "yìqǐ",
+      "japanese": "一緒に。"
+    },
+    {
+      "sourceId": "w00474",
+      "globalSequence": 474,
+      "simplified": "意思",
+      "pinyin": "yìsi",
+      "japanese": "意味。"
+    },
+    {
+      "sourceId": "w00475",
+      "globalSequence": 475,
+      "simplified": "阴",
+      "pinyin": "yīn",
+      "japanese": "曇り。陰。"
+    },
+    {
+      "sourceId": "w00476",
+      "globalSequence": 476,
+      "simplified": "因为",
+      "pinyin": "yīnwèi",
+      "japanese": "〜なので。なぜなら。"
+    },
+    {
+      "sourceId": "w00477",
+      "globalSequence": 477,
+      "simplified": "游",
+      "pinyin": "yóu",
+      "japanese": "泳ぐ。遊覧する。"
+    },
+    {
+      "sourceId": "w00478",
+      "globalSequence": 478,
+      "simplified": "游泳",
+      "pinyin": "yóuyǒng",
+      "japanese": "泳ぐ。"
+    },
+    {
+      "sourceId": "w00479",
+      "globalSequence": 479,
+      "simplified": "有意思",
+      "pinyin": "yǒu yìsi",
+      "japanese": "おもしろい。"
+    },
+    {
+      "sourceId": "w00480",
+      "globalSequence": 480,
+      "simplified": "有时",
+      "pinyin": "yǒushí",
+      "japanese": "時々。"
+    },
+    {
+      "sourceId": "w00481",
+      "globalSequence": 481,
+      "simplified": "右",
+      "pinyin": "yòu",
+      "japanese": "右。"
+    },
+    {
+      "sourceId": "w00482",
+      "globalSequence": 482,
+      "simplified": "右边",
+      "pinyin": "yòubian",
+      "japanese": "右側。"
+    },
+    {
+      "sourceId": "w00483",
+      "globalSequence": 483,
+      "simplified": "鱼",
+      "pinyin": "yú",
+      "japanese": "魚。"
+    },
+    {
+      "sourceId": "w00484",
+      "globalSequence": 484,
+      "simplified": "远",
+      "pinyin": "yuǎn",
+      "japanese": "遠い。"
+    },
+    {
+      "sourceId": "w00485",
+      "globalSequence": 485,
+      "simplified": "运动",
+      "pinyin": "yùndòng",
+      "japanese": "運動。運動する。"
+    },
+    {
+      "sourceId": "w00487",
+      "globalSequence": 487,
+      "simplified": "丈夫",
+      "pinyin": "zhàngfu",
+      "japanese": "夫。"
+    },
+    {
+      "sourceId": "w00488",
+      "globalSequence": 488,
+      "simplified": "这么",
+      "pinyin": "zhème",
+      "japanese": "こんなに。"
+    },
+    {
+      "sourceId": "w00489",
+      "globalSequence": 489,
+      "simplified": "这样",
+      "pinyin": "zhèyàng",
+      "japanese": "このような。"
+    },
+    {
+      "sourceId": "w00490",
+      "globalSequence": 490,
+      "simplified": "着",
+      "pinyin": "zhe",
+      "japanese": "動作・状態の持続を表す語。"
+    },
+    {
+      "sourceId": "w00491",
+      "globalSequence": 491,
+      "simplified": "正",
+      "pinyin": "zhèng",
+      "japanese": "ちょうど。まさに。正しい。"
+    },
+    {
+      "sourceId": "w00492",
+      "globalSequence": 492,
+      "simplified": "周",
+      "pinyin": "zhōu",
+      "japanese": "週。"
+    },
+    {
+      "sourceId": "w00493",
+      "globalSequence": 493,
+      "simplified": "准备",
+      "pinyin": "zhǔnbèi",
+      "japanese": "準備する。"
+    },
+    {
+      "sourceId": "w00494",
+      "globalSequence": 494,
+      "simplified": "自己",
+      "pinyin": "zìjǐ",
+      "japanese": "自分。"
+    },
+    {
+      "sourceId": "w00495",
+      "globalSequence": 495,
+      "simplified": "走",
+      "pinyin": "zǒu",
+      "japanese": "歩く。去る。"
+    },
+    {
+      "sourceId": "w00496",
+      "globalSequence": 496,
+      "simplified": "走路",
+      "pinyin": "zǒulù",
+      "japanese": "歩く。"
+    },
+    {
+      "sourceId": "w00497",
+      "globalSequence": 497,
+      "simplified": "足球",
+      "pinyin": "zúqiú",
+      "japanese": "サッカー。"
+    },
+    {
+      "sourceId": "w00498",
+      "globalSequence": 498,
+      "simplified": "最",
+      "pinyin": "zuì",
+      "japanese": "最も。一番。"
+    },
+    {
+      "sourceId": "w00499",
+      "globalSequence": 499,
+      "simplified": "左",
+      "pinyin": "zuǒ",
+      "japanese": "左。"
+    },
+    {
+      "sourceId": "w00500",
+      "globalSequence": 500,
+      "simplified": "左边",
+      "pinyin": "zuǒbian",
+      "japanese": "左側。"
+    }
+  ]
+}

@@ -185,7 +185,7 @@ def _primary_coordinates(source: dict[str, Any], profile: dict[str, Any]) -> lis
     return rows
 
 
-def _validate_receipt(rows: list[dict[str, Any]], profile: dict[str, Any], receipt: dict[str, Any]) -> tuple[dict[int, list[str]], dict[int, str], str]:
+def _validate_receipt(rows: list[dict[str, Any]], profile: dict[str, Any], receipt: dict[str, Any], *, check_duplicates: bool = True) -> tuple[dict[int, list[str]], dict[int, str], str]:
     counts = profile["counts"]
     coordinate = profile["coordinate"]
     require(receipt.get("datasetSha256") == profile["dataset"]["json"]["sha256"], "receipt is bound to a different source dataset SHA256")
@@ -221,6 +221,9 @@ def _validate_receipt(rows: list[dict[str, Any]], profile: dict[str, Any], recei
     require(projection_sha == receipt.get("eligibleProjectionSha256"), "complete retained eligible projection digest does not match independent receipt")
     actual_eligible_levels = Counter(str(row["primaryLevel"]) for row in eligible_rows)
     require(dict(sorted(actual_eligible_levels.items())) == counts["eligibleLevelCounts"], "eligible primary-level accounting drifted")
+
+    if not check_duplicates:
+        return blocked, labels, projection_sha
 
     duplicates: dict[tuple[str, str], list[int]] = defaultdict(list)
     for row in rows:
@@ -310,8 +313,12 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
     require(len(source_bytes) == profile["dataset"]["json"]["bytes"], "source JSON byte count does not match the pinned source profile")
     _check_source_metadata(source, profile)
     rows = _primary_coordinates(source, profile)
+    return _build_from_rows(rows, profile, receipt, japanese_by_placement, publication_index)
+
+
+def _build_from_rows(rows: list[dict[str, Any]], profile: dict[str, Any], receipt: dict[str, Any], japanese_by_placement: dict[str, dict[str, Any]], publication_index: dict[str, Any], *, manifest_input: bool = False) -> tuple[bytes, dict[str, bytes]]:
     require(len(rows) == profile["counts"]["sourceCandidates"], "source candidate count does not match profile")
-    blocked, supplementary_labels, projection_sha = _validate_receipt(rows, profile, receipt)
+    blocked, supplementary_labels, projection_sha = _validate_receipt(rows, profile, receipt, check_duplicates=not manifest_input)
     eligible = [row for row in rows if row["globalSequence"] not in blocked]
     first_batch_count = profile["counts"]["firstBatch"]
     first_batch_rows = eligible[:first_batch_count]
@@ -447,7 +454,7 @@ def build_outputs(source_bytes: bytes, source: dict[str, Any], profile: dict[str
             "repositoryPublishedBatchCount": len(batch_entries),
             "repositoryPublishedRecordCount": sum(entry["records"] for entry in batch_entries),
             "sourceEligibleIsHumanReviewed": False,
-            "sourceEligibleIsRuntimeAvailable": False,
+            "sourceEligibleIsRuntimeAvailable": True,
         },
         "rows": manifest_rows,
     }
@@ -485,7 +492,7 @@ def write_outputs(output_dir: Path, manifest_bytes: bytes, batch_outputs: dict[s
         shutil.rmtree(stage)
 
 
-def run_import(repo_root: Path, source_path: Path, output_dir: Path) -> None:
+def run_import(repo_root: Path, source_path: Path | None, output_dir: Path) -> None:
     profile, receipt, japanese, publication_index = load_configuration(repo_root)
     japanese_by_placement = {"batch-001": japanese}
     for placement in _validate_publication_index_header(publication_index):
@@ -493,15 +500,27 @@ def run_import(repo_root: Path, source_path: Path, output_dir: Path) -> None:
             continue
         companion_path = repo_root / _companion_path(placement)
         japanese_by_placement[placement] = load_json(companion_path)
-    if source_path.is_symlink():
-        raise ImportFailure("source JSON cannot be a symlink")
-    try:
-        source_bytes = source_path.read_bytes()
-        source = json.loads(source_bytes.decode("utf-8"), object_pairs_hook=_unique_object)
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        raise ImportFailure(f"cannot read valid UTF-8 source JSON: {error}") from error
-    require(isinstance(source, dict), "source JSON root must be an object")
-    manifest_bytes, batch_outputs = build_outputs(source_bytes, source, profile, receipt, japanese_by_placement, publication_index)
+    if source_path is None:
+        # Offline rebuilds use only the previously admitted retained projection.
+        # The full identity/disposition plan and eligible source fields are frozen
+        # independently of mutable publication state and Japanese companions.
+        manifest = load_json(repo_root / PROFILE_REL.parent / "manifest.json")
+        require(manifest["source"]["jsonSha256"] == profile["dataset"]["json"]["sha256"], "manifest source identity drifted")
+        plan = [[r["recordId"], r["sourceId"], r["globalSequence"], r["primaryLevel"], r["sourceLevelLabel"], r["sourceEligible"], r["batchPlacement"], r["disposition"], r.get("blockedReason", [])] for r in manifest["rows"]]
+        digest = sha256(json.dumps(plan, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        require(digest == "7a1dd56a17d6d973600bcaa487035108dd61ede3b488ff88dff60c3a1a1c4bd3", "manifest immutable identity/disposition plan drifted")
+        rows = [{key: r.get(key) for key in ("sourceId", "globalSequence", "primaryLevel", "simplified", "pinyin")} for r in manifest["rows"]]
+        manifest_bytes, batch_outputs = _build_from_rows(rows, profile, receipt, japanese_by_placement, publication_index, manifest_input=True)
+    else:
+        if source_path.is_symlink():
+            raise ImportFailure("source JSON cannot be a symlink")
+        try:
+            source_bytes = source_path.read_bytes()
+            source = json.loads(source_bytes.decode("utf-8"), object_pairs_hook=_unique_object)
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            raise ImportFailure(f"cannot read valid UTF-8 source JSON: {error}") from error
+        require(isinstance(source, dict), "source JSON root must be an object")
+        manifest_bytes, batch_outputs = build_outputs(source_bytes, source, profile, receipt, japanese_by_placement, publication_index)
     write_outputs(output_dir, manifest_bytes, batch_outputs)
     print(f"wrote {output_dir}/manifest.json ({sha256(manifest_bytes)})")
     for filename, batch_bytes in batch_outputs.items():
@@ -1208,6 +1227,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--self-test", action="store_true", help="exercise actual CLI in an isolated miniature repository")
+    group.add_argument("--from-manifest", action="store_true", help="rebuild from the frozen committed retained-field manifest")
     group.add_argument("--source", type=Path, help="local exact pinned HearMandarin JSON input")
     parser.add_argument("--output-dir", type=Path, help="new or empty output directory")
     args = parser.parse_args(argv)
@@ -1216,7 +1236,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.self_test:
             self_test(script_path)
         else:
-            require(args.output_dir is not None, "--output-dir is required with --source")
+            require(args.output_dir is not None, "--output-dir is required with --source or --from-manifest")
             run_import(script_path.parent.parent, args.source, args.output_dir)
     except (ImportFailure, OSError, KeyError, TypeError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)

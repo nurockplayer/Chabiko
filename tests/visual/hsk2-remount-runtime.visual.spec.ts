@@ -109,7 +109,10 @@ for (const mode of ['unavailable', 'quota-absent', 'quota-populated'] as const) 
     await expect(page.locator('#dir-ja-zh')).toHaveAttribute('aria-checked', 'true');
     await page.evaluate((key) => {
       window.dispatchEvent(new Event('pageshow'));
-      window.dispatchEvent(new StorageEvent('storage', { key, newValue: localStorage.getItem(key), storageArea: localStorage }));
+      const raw = localStorage.getItem(key);
+      // An absent-key read is an ordinary refresh; a null storage event is
+      // explicit deletion evidence and is covered separately below.
+      if (raw !== null) window.dispatchEvent(new StorageEvent('storage', { key, newValue: raw, storageArea: localStorage }));
     }, KEY);
     await remount(page);
     await assertCleanSetup(page);
@@ -125,6 +128,33 @@ for (const mode of ['unavailable', 'quota-absent', 'quota-populated'] as const) 
     expect(await counts(page)).toEqual(expected);
   });
 }
+
+test('explicit deletion clears pending quota-fallback ratings without resurrecting them', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await installProbe(page, 'quota-absent');
+  await page.route('**/__acceptance/hsk2.json', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(answerPayload) }));
+  await page.goto(URL, { waitUntil: 'load' });
+  await expect(page.locator('#btn-start')).toBeEnabled();
+  await observeRatingAndRoot(page);
+  await page.locator('#pool-new').check();
+  await page.locator('#dir-ja-zh').press('Space');
+  await page.locator('#btn-start').press('Enter');
+  await page.locator('#btn-reveal').press('Enter');
+  await page.locator('#btn-known').press('Enter');
+  expect(await counts(page)).toEqual({ writes: 1, ratings: [{ id: newPoolIds[0], rating: 'known' }] });
+  await page.evaluate((key) => window.dispatchEvent(new StorageEvent('storage', { key, newValue: null, storageArea: localStorage })), KEY);
+  await remount(page);
+  await assertCleanSetup(page);
+  await page.locator('#pool-full').check();
+  await page.locator('#btn-start').press('Enter');
+  await expect(page.locator('[data-front]')).toHaveText('日本語の意味001');
+  await expect(page.locator('[data-progress-hint]')).toBeHidden();
+  await expect(page.locator('#btn-reset-progress')).toBeHidden();
+  expect(await counts(page)).toEqual({ writes: 1, ratings: [{ id: newPoolIds[0], rating: 'known' }] });
+  await page.locator('#btn-reveal').press('Enter');
+  await page.locator('#btn-known').press('Enter');
+  expect(await counts(page)).toEqual({ writes: 2, ratings: [{ id: newPoolIds[0], rating: 'known' }, { id: ids[0], rating: 'known' }] });
+});
 
 for (const failure of ['invalid-payload', 'request-failure'] as const satisfies readonly Failure[]) {
   test(`native active remount recovers focus after ${failure} without duplicate writes`, async ({ page }) => {

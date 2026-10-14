@@ -1,0 +1,361 @@
+{
+  "authoring": {
+    "method": "Independently AI-authored from the supplied Simplified Chinese, tone-marked pinyin, and primary-level introduction context only.",
+    "status": "ai-provisional",
+    "reviewStatus": "draft",
+    "humanReview": false,
+    "excludedSourceFieldsUsed": []
+  },
+  "records": [
+    {
+      "sourceId": "w00409",
+      "globalSequence": 409,
+      "simplified": "奶奶",
+      "pinyin": "nǎinai",
+      "japanese": "父方の祖母。"
+    },
+    {
+      "sourceId": "w00410",
+      "globalSequence": 410,
+      "simplified": "男孩儿",
+      "pinyin": "nánháir",
+      "japanese": "男の子。"
+    },
+    {
+      "sourceId": "w00411",
+      "globalSequence": 411,
+      "simplified": "鸟",
+      "pinyin": "niǎo",
+      "japanese": "鳥。"
+    },
+    {
+      "sourceId": "w00412",
+      "globalSequence": 412,
+      "simplified": "女孩儿",
+      "pinyin": "nǚháir",
+      "japanese": "女の子。"
+    },
+    {
+      "sourceId": "w00413",
+      "globalSequence": 413,
+      "simplified": "旁边",
+      "pinyin": "pángbiān",
+      "japanese": "隣。そば。"
+    },
+    {
+      "sourceId": "w00414",
+      "globalSequence": 414,
+      "simplified": "跑",
+      "pinyin": "pǎo",
+      "japanese": "走る。"
+    },
+    {
+      "sourceId": "w00415",
+      "globalSequence": 415,
+      "simplified": "跑步",
+      "pinyin": "pǎobù",
+      "japanese": "走る。ジョギングする。"
+    },
+    {
+      "sourceId": "w00416",
+      "globalSequence": 416,
+      "simplified": "票",
+      "pinyin": "piào",
+      "japanese": "券。切符。"
+    },
+    {
+      "sourceId": "w00417",
+      "globalSequence": 417,
+      "simplified": "妻子",
+      "pinyin": "qīzi",
+      "japanese": "妻。"
+    },
+    {
+      "sourceId": "w00418",
+      "globalSequence": 418,
+      "simplified": "起来",
+      "pinyin": "qǐlái",
+      "japanese": "起き上がる。〜し始める。"
+    },
+    {
+      "sourceId": "w00419",
+      "globalSequence": 419,
+      "simplified": "前面",
+      "pinyin": "qiánmiàn",
+      "japanese": "前。前半。"
+    },
+    {
+      "sourceId": "w00420",
+      "globalSequence": 420,
+      "simplified": "晴",
+      "pinyin": "qíng",
+      "japanese": "晴れた。"
+    },
+    {
+      "sourceId": "w00421",
+      "globalSequence": 421,
+      "simplified": "球",
+      "pinyin": "qiú",
+      "japanese": "球。ボール。"
+    },
+    {
+      "sourceId": "w00422",
+      "globalSequence": 422,
+      "simplified": "让",
+      "pinyin": "ràng",
+      "japanese": "〜させる。譲る。"
+    },
+    {
+      "sourceId": "w00423",
+      "globalSequence": 423,
+      "simplified": "肉",
+      "pinyin": "ròu",
+      "japanese": "肉。"
+    },
+    {
+      "sourceId": "w00424",
+      "globalSequence": 424,
+      "simplified": "商场",
+      "pinyin": "shāngchǎng",
+      "japanese": "ショッピングセンター。"
+    },
+    {
+      "sourceId": "w00425",
+      "globalSequence": 425,
+      "simplified": "上来",
+      "pinyin": "shànglái",
+      "japanese": "上がってくる。"
+    },
+    {
+      "sourceId": "w00426",
+      "globalSequence": 426,
+      "simplified": "上面",
+      "pinyin": "shàngmiàn",
+      "japanese": "上。上側。"
+    },
+    {
+      "sourceId": "w00427",
+      "globalSequence": 427,
+      "simplified": "上去",
+      "pinyin": "shàngqù",
+      "japanese": "上がっていく。"
+    },
+    {
+      "sourceId": "w00428",
+      "globalSequence": 428,
+      "simplified": "上网",
+      "pinyin": "shàngwǎng",
+      "japanese": "インターネットを使う。"
+    },
+    {
+      "sourceId": "w00429",
+      "globalSequence": 429,
+      "simplified": "身体",
+      "pinyin": "shēntǐ",
+      "japanese": "体。"
+    },
+    {
+      "sourceId": "w00430",
+      "globalSequence": 430,
+      "simplified": "生日",
+      "pinyin": "shēngrì",
+      "japanese": "誕生日。"
+    },
+    {
+      "sourceId": "w00431",
+      "globalSequence": 431,
+      "simplified": "时",
+      "pinyin": "shí",
+      "japanese": "時。時刻。"
+    },
+    {
+      "sourceId": "w00432",
+      "globalSequence": 432,
+      "simplified": "事情",
+      "pinyin": "shìqing",
+      "japanese": "事。用事。"
+    },
+    {
+      "sourceId": "w00433",
+      "globalSequence": 433,
+      "simplified": "手",
+      "pinyin": "shǒu",
+      "japanese": "手。"
+    },
+    {
+      "sourceId": "w00434",
+      "globalSequence": 434,
+      "simplified": "手表",
+      "pinyin": "shǒubiǎo",
+      "japanese": "腕時計。"
+    },
+    {
+      "sourceId": "w00435",
+      "globalSequence": 435,
+      "simplified": "书包",
+      "pinyin": "shūbāo",
+      "japanese": "通学かばん。"
+    },
+    {
+      "sourceId": "w00436",
+      "globalSequence": 436,
+      "simplified": "舒服",
+      "pinyin": "shūfu",
+      "japanese": "快適な。気分がよい。"
+    },
+    {
+      "sourceId": "w00437",
+      "globalSequence": 437,
+      "simplified": "送",
+      "pinyin": "sòng",
+      "japanese": "送る。贈る。"
+    },
+    {
+      "sourceId": "w00438",
+      "globalSequence": 438,
+      "simplified": "虽然",
+      "pinyin": "suīrán",
+      "japanese": "〜だけれども。"
+    },
+    {
+      "sourceId": "w00439",
+      "globalSequence": 439,
+      "simplified": "所以",
+      "pinyin": "suǒyǐ",
+      "japanese": "だから。"
+    },
+    {
+      "sourceId": "w00440",
+      "globalSequence": 440,
+      "simplified": "疼",
+      "pinyin": "téng",
+      "japanese": "痛い。"
+    },
+    {
+      "sourceId": "w00441",
+      "globalSequence": 441,
+      "simplified": "踢",
+      "pinyin": "tī",
+      "japanese": "蹴る。"
+    },
+    {
+      "sourceId": "w00442",
+      "globalSequence": 442,
+      "simplified": "题",
+      "pinyin": "tí",
+      "japanese": "問題。題。"
+    },
+    {
+      "sourceId": "w00443",
+      "globalSequence": 443,
+      "simplified": "条",
+      "pinyin": "tiáo",
+      "japanese": "細長い物を数える「〜本・匹」。"
+    },
+    {
+      "sourceId": "w00444",
+      "globalSequence": 444,
+      "simplified": "跳舞",
+      "pinyin": "tiàowǔ",
+      "japanese": "踊る。"
+    },
+    {
+      "sourceId": "w00445",
+      "globalSequence": 445,
+      "simplified": "头",
+      "pinyin": "tóu",
+      "japanese": "頭。"
+    },
+    {
+      "sourceId": "w00446",
+      "globalSequence": 446,
+      "simplified": "外国",
+      "pinyin": "wàiguó",
+      "japanese": "外国。"
+    },
+    {
+      "sourceId": "w00447",
+      "globalSequence": 447,
+      "simplified": "外面",
+      "pinyin": "wàimiàn",
+      "japanese": "外。"
+    },
+    {
+      "sourceId": "w00448",
+      "globalSequence": 448,
+      "simplified": "完",
+      "pinyin": "wán",
+      "japanese": "終わる。〜し終える。"
+    },
+    {
+      "sourceId": "w00449",
+      "globalSequence": 449,
+      "simplified": "万",
+      "pinyin": "wàn",
+      "japanese": "万。"
+    },
+    {
+      "sourceId": "w00450",
+      "globalSequence": 450,
+      "simplified": "往",
+      "pinyin": "wǎng",
+      "japanese": "〜の方へ。"
+    },
+    {
+      "sourceId": "w00451",
+      "globalSequence": 451,
+      "simplified": "网上",
+      "pinyin": "wǎngshang",
+      "japanese": "インターネット上。"
+    },
+    {
+      "sourceId": "w00452",
+      "globalSequence": 452,
+      "simplified": "忘",
+      "pinyin": "wàng",
+      "japanese": "忘れる。"
+    },
+    {
+      "sourceId": "w00453",
+      "globalSequence": 453,
+      "simplified": "位",
+      "pinyin": "wèi",
+      "japanese": "人を丁寧に数える「〜名」。"
+    },
+    {
+      "sourceId": "w00454",
+      "globalSequence": 454,
+      "simplified": "为什么",
+      "pinyin": "wèi shénme",
+      "japanese": "なぜ。"
+    },
+    {
+      "sourceId": "w00455",
+      "globalSequence": 455,
+      "simplified": "希望",
+      "pinyin": "xīwàng",
+      "japanese": "希望する。希望。"
+    },
+    {
+      "sourceId": "w00456",
+      "globalSequence": 456,
+      "simplified": "洗",
+      "pinyin": "xǐ",
+      "japanese": "洗う。"
+    },
+    {
+      "sourceId": "w00457",
+      "globalSequence": 457,
+      "simplified": "洗手间",
+      "pinyin": "xǐshǒujiān",
+      "japanese": "トイレ。"
+    },
+    {
+      "sourceId": "w00458",
+      "globalSequence": 458,
+      "simplified": "下来",
+      "pinyin": "xiàlái",
+      "japanese": "下りてくる。"
+    }
+  ]
+}
