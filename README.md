@@ -22,9 +22,7 @@ Chabiko is a Japanese-first Mandarin Chinese learning website. Its learner goal 
 
 ## Repository Authority
 
-Start implementation from the current GitHub issue and [`AGENTS.md`](AGENTS.md). The repository documentation status map is [`docs/README.md`](docs/README.md).
-
-The `.planning/` tree is historical planning evidence, not a current project-state ledger. See [`.planning/README.md`](.planning/README.md). Do not use old roadmap/phase text to override a live issue, current merged implementation, or an explicitly adopted active contract.
+Working rules for contributors and agents are in [`AGENTS.md`](AGENTS.md). Significant product and architecture decisions are recorded as GitHub issues labelled `decision`. The `.planning/` tree and older strategy documents are historical context, not current requirements.
 
 English is the canonical language for repository technical artifacts. See [`docs/engineering/repository-language-policy.md`](docs/engineering/repository-language-policy.md). Learner-facing Japanese/Chinese, localization, and language-learning data remain in the languages required by product behavior.
 
