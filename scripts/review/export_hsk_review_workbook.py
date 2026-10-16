@@ -43,6 +43,8 @@ def export_workbook(output, root=None):
         "行やシートを削除しないでください。フィルターで絞り込んで作業できます。",
         "元データの更新があった場合は取込できません。担当者から新しいファイルを受け取ってください。",
         "記入したファイルを .xlsx 形式で保存し、担当者に返送してください。",
+        "出典：簡体字・ピンイン・HSKレベルは HearMandarin（https://hearmandarin.com/datasets/）の HSK 3.0 単語リストを使用しています。",
+        "ライセンス：CC BY 4.0（https://creativecommons.org/licenses/by/4.0/）。元データから一部の項目のみを使用し、日本語訳は独自に追加したものです。HearMandarin は HSK 試験の主催者とは無関係です。",
     ]:
         instructions.append([line])
     instructions.column_dimensions["A"].width = 105

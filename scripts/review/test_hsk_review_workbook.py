@@ -48,6 +48,9 @@ class WorkbookTests(unittest.TestCase):
         book = load_workbook(self.workbook)
         self.assertEqual(sum(book[f"HSK{i}"].max_row - 1 for i in range(1, 5)), 1969)
         self.assertEqual([book["確認者"].cell(i, 2).value for i in range(1, 4)], [None] * 3)
+        notes = "\n".join(str(row[0].value) for row in book["記入方法"].iter_rows())
+        self.assertIn("HearMandarin", notes)
+        self.assertIn("CC BY 4.0", notes)
         for level in range(1, 5):
             sheet = book[f"HSK{level}"]
             self.assertTrue(sheet.column_dimensions["A"].hidden)
