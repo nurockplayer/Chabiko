@@ -61,6 +61,8 @@ for (const width of [375, 320]) {
       const heights = await page.locator('[data-action="select"]').evaluateAll((elements) => elements.map((e) => e.getBoundingClientRect().height));
       expect(heights).toHaveLength(4);
       expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+      // The pointer is left where the previous click happened; move it so no choice is captured in :hover.
+      await page.mouse.move(0, 0);
       await expect(page.locator('.basic-vocabulary-quiz-options')).toHaveScreenshot(`ux-quiz-choices-${theme}-${width}.png`);
 
       await page.goto('/paths/');
