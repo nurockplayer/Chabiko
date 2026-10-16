@@ -1,0 +1,967 @@
+{
+  "contractId": "teacher-phrase-pilot-candidates-v1",
+  "records": [
+    {
+      "learnerId": "teacher-learner-5762bc98cd920b67",
+      "source": {
+        "sheet": "动词1",
+        "row": 2,
+        "column": "造词/造句",
+        "rawCell": "看电视\n看书",
+        "rawCellSha256": "38d9ff4cd4cf792b55598e1e8401c3b46f620809166a174d3872716fa620aa9c",
+        "sourceRevision": "teacher-phrase-source-v1-b827e43e8ae207d1f8ba626af223dd852318ac2eff8df5d2d4f9195533919cc7",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-2add628a7572f9ebfc1e9dd5044967da965d1109f2b22817e4074f7f884eab43",
+          "sourceRange": {
+            "start": 0,
+            "end": 3
+          },
+          "simplified": "看电视",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2add628a7572f9ebfc1e9dd5044967da965d1109f2b22817e4074f7f884eab43:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2add628a7572f9ebfc1e9dd5044967da965d1109f2b22817e4074f7f884eab43:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2add628a7572f9ebfc1e9dd5044967da965d1109f2b22817e4074f7f884eab43:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "看電視",
+          "pinyin": "Kàn diànshì",
+          "japanese": "テレビを見る。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-99c3fec9b5805be81510ebdc749bd3eb257b264bf1332c2fe92d4c6638ecc447",
+          "sourceRange": {
+            "start": 4,
+            "end": 6
+          },
+          "simplified": "看书",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-99c3fec9b5805be81510ebdc749bd3eb257b264bf1332c2fe92d4c6638ecc447:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-99c3fec9b5805be81510ebdc749bd3eb257b264bf1332c2fe92d4c6638ecc447:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-99c3fec9b5805be81510ebdc749bd3eb257b264bf1332c2fe92d4c6638ecc447:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "看書",
+          "pinyin": "Kàn shū",
+          "japanese": "本を読む。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-19f92faeca6b3484",
+      "source": {
+        "sheet": "动词1",
+        "row": 3,
+        "column": "造词/造句",
+        "rawCell": "听音乐\n听妈妈的话",
+        "rawCellSha256": "3fddf17912e9b613a17f7b55990f24b693a26f6c79a0ba7a27f1e57ca3c4d850",
+        "sourceRevision": "teacher-phrase-source-v1-38d9f978c03d0f6129c5a1be2053f08cbc28e44de5824d269546c9723481ffe6",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-c3247466b357879c2b3e07c1cfddaab0677c1510bf98c300c78ac247d149debe",
+          "sourceRange": {
+            "start": 0,
+            "end": 3
+          },
+          "simplified": "听音乐",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c3247466b357879c2b3e07c1cfddaab0677c1510bf98c300c78ac247d149debe:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c3247466b357879c2b3e07c1cfddaab0677c1510bf98c300c78ac247d149debe:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c3247466b357879c2b3e07c1cfddaab0677c1510bf98c300c78ac247d149debe:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "聽音樂",
+          "pinyin": "Tīng yīnyuè",
+          "japanese": "音楽を聴く。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-430da1c2ac49b658c217d017e9beec26babe87bcce3e8286d940e5a172f3c25a",
+          "sourceRange": {
+            "start": 4,
+            "end": 9
+          },
+          "simplified": "听妈妈的话",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-430da1c2ac49b658c217d017e9beec26babe87bcce3e8286d940e5a172f3c25a:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-430da1c2ac49b658c217d017e9beec26babe87bcce3e8286d940e5a172f3c25a:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-430da1c2ac49b658c217d017e9beec26babe87bcce3e8286d940e5a172f3c25a:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "聽媽媽的話",
+          "pinyin": "Tīng māma de huà",
+          "japanese": "お母さんの言うことを聞く。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-c248f4ac6f5be489",
+      "source": {
+        "sheet": "动词2",
+        "row": 2,
+        "column": "造词/造句",
+        "rawCell": "姐姐生了一个小孩\n我是1990年出生的",
+        "rawCellSha256": "252e4da5c3c8d358eadd76b3191e6c411ccc818a5ac1fe971dcb7b78b8c76c4f",
+        "sourceRevision": "teacher-phrase-source-v1-13156c763277b19766c99c24d93bca39022553494aa7808608785794c76cc795",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-c2e42d4dfad3f51f02801a686e08dfbc3bab0ff0c43dcddf3a8e547ca664e2b4",
+          "sourceRange": {
+            "start": 0,
+            "end": 8
+          },
+          "simplified": "姐姐生了一个小孩",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词2:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c2e42d4dfad3f51f02801a686e08dfbc3bab0ff0c43dcddf3a8e547ca664e2b4:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c2e42d4dfad3f51f02801a686e08dfbc3bab0ff0c43dcddf3a8e547ca664e2b4:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-c2e42d4dfad3f51f02801a686e08dfbc3bab0ff0c43dcddf3a8e547ca664e2b4:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "姐姐生了一個小孩",
+          "pinyin": "Jiějie shēng le yī ge xiǎohái",
+          "japanese": "姉に子どもが生まれました。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-fef9495ec9355f57b9b45496bdba5cfb73d50665a16d886a14f7de2ff015333f",
+          "sourceRange": {
+            "start": 9,
+            "end": 19
+          },
+          "simplified": "我是1990年出生的",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词2:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-fef9495ec9355f57b9b45496bdba5cfb73d50665a16d886a14f7de2ff015333f:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-fef9495ec9355f57b9b45496bdba5cfb73d50665a16d886a14f7de2ff015333f:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-fef9495ec9355f57b9b45496bdba5cfb73d50665a16d886a14f7de2ff015333f:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "我是1990年出生的",
+          "pinyin": "Wǒ shì yī jiǔ jiǔ líng nián chūshēng de",
+          "japanese": "私は1990年生まれです。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-3e6949f60abfc7f4",
+      "source": {
+        "sheet": "动词2",
+        "row": 3,
+        "column": "造词/造句",
+        "rawCell": "我家养一只猫咪\n我是爷爷奶奶把我养大的",
+        "rawCellSha256": "5c11cd04194db4e91105b60c04706528b34d407ddbd3b9ecc3104ac320488f18",
+        "sourceRevision": "teacher-phrase-source-v1-364f8031c1af08a865f4fdd0165734ff8ed4f4b63ddd8277a8f02dd08d0a99c7",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-86480feb5ab135d2249041ae7db37ecdd253c030427c477fb35656321cdd37fc",
+          "sourceRange": {
+            "start": 0,
+            "end": 7
+          },
+          "simplified": "我家养一只猫咪",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词2:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-86480feb5ab135d2249041ae7db37ecdd253c030427c477fb35656321cdd37fc:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-86480feb5ab135d2249041ae7db37ecdd253c030427c477fb35656321cdd37fc:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-86480feb5ab135d2249041ae7db37ecdd253c030427c477fb35656321cdd37fc:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "我家養一隻貓咪",
+          "pinyin": "Wǒ jiā yǎng yī zhī māomī",
+          "japanese": "うちでは猫を1匹飼っています。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-b508a14c384bb7de2db71ec8194cef702bee1889298674cc12bdf07278974bc2",
+          "sourceRange": {
+            "start": 8,
+            "end": 19
+          },
+          "simplified": "我是爷爷奶奶把我养大的",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#动词2:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-b508a14c384bb7de2db71ec8194cef702bee1889298674cc12bdf07278974bc2:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-b508a14c384bb7de2db71ec8194cef702bee1889298674cc12bdf07278974bc2:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-b508a14c384bb7de2db71ec8194cef702bee1889298674cc12bdf07278974bc2:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "我是爺爺奶奶把我養大的",
+          "pinyin": "Wǒ shì yéye nǎinai bǎ wǒ yǎng dà de",
+          "japanese": "私は祖父母に育てられました。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-star-1-37e0eb213f0f",
+      "source": {
+        "sheet": "名词1",
+        "row": 2,
+        "column": "造词/造句",
+        "rawCell": "大家好\n大家请听",
+        "rawCellSha256": "9dbbdf25c39ad3d71e1ad9136c90c9a50badff131fda82dbc76536478001d393",
+        "sourceRevision": "teacher-phrase-source-v1-c518ef66a067668c09902e504bd5c70486fb169836d7529d47407c3d00489b89",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-e5fbcb1f3b31f48708ce5a956cc02996ada3b84c5c2a57c9bb81f7f72bcf5d98",
+          "sourceRange": {
+            "start": 0,
+            "end": 3
+          },
+          "simplified": "大家好",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-e5fbcb1f3b31f48708ce5a956cc02996ada3b84c5c2a57c9bb81f7f72bcf5d98:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-e5fbcb1f3b31f48708ce5a956cc02996ada3b84c5c2a57c9bb81f7f72bcf5d98:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-e5fbcb1f3b31f48708ce5a956cc02996ada3b84c5c2a57c9bb81f7f72bcf5d98:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "大家好",
+          "pinyin": "Dàjiā hǎo",
+          "japanese": "みなさん、こんにちは。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-f6c767e85ca9fe7bf2c504bfcda3e64e1a02bd2b93606362258f1affb49a4e21",
+          "sourceRange": {
+            "start": 4,
+            "end": 8
+          },
+          "simplified": "大家请听",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-f6c767e85ca9fe7bf2c504bfcda3e64e1a02bd2b93606362258f1affb49a4e21:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-f6c767e85ca9fe7bf2c504bfcda3e64e1a02bd2b93606362258f1affb49a4e21:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-f6c767e85ca9fe7bf2c504bfcda3e64e1a02bd2b93606362258f1affb49a4e21:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "大家請聽",
+          "pinyin": "Dàjiā qǐng tīng",
+          "japanese": "みなさん、聞いてください。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-star-1-a66948a76fda",
+      "source": {
+        "sheet": "名词1",
+        "row": 3,
+        "column": "造词/造句",
+        "rawCell": "他是日本人\n我们是人",
+        "rawCellSha256": "4cb1e7d11f36563279b70499379b7f2912b145fbed6274a8627d774e80518011",
+        "sourceRevision": "teacher-phrase-source-v1-eab855df815e1989e9cef1588709e0378512812769c7445963a31375b92de2bb",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-0e9d533d2d263cea357d3bb462a99470220bb973a7351be74df0c4382f9122a9",
+          "sourceRange": {
+            "start": 0,
+            "end": 5
+          },
+          "simplified": "他是日本人",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-0e9d533d2d263cea357d3bb462a99470220bb973a7351be74df0c4382f9122a9:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-0e9d533d2d263cea357d3bb462a99470220bb973a7351be74df0c4382f9122a9:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-0e9d533d2d263cea357d3bb462a99470220bb973a7351be74df0c4382f9122a9:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "他是日本人",
+          "pinyin": "Tā shì Rìběnrén",
+          "japanese": "彼は日本人です。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-ca4ba2c7c83cebe348e9e44b6519f6bb520dc383d873b12a0ea0c5ea42fd297a",
+          "sourceRange": {
+            "start": 6,
+            "end": 10
+          },
+          "simplified": "我们是人",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-ca4ba2c7c83cebe348e9e44b6519f6bb520dc383d873b12a0ea0c5ea42fd297a:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-ca4ba2c7c83cebe348e9e44b6519f6bb520dc383d873b12a0ea0c5ea42fd297a:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-ca4ba2c7c83cebe348e9e44b6519f6bb520dc383d873b12a0ea0c5ea42fd297a:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "我們是人",
+          "pinyin": "Wǒmen shì rén",
+          "japanese": "私たちは人間です。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-6d2e021571bd7dea",
+      "source": {
+        "sheet": "名词2",
+        "row": 251,
+        "column": "造词/造句",
+        "rawCell": "帮你找好对象",
+        "rawCellSha256": "f92568b694d3c5ac9b0aa506c2410a3b08256750882d9fd7f0f2d4291e11507f",
+        "sourceRevision": "teacher-phrase-source-v1-dcd63acd485d8dd1d1080c4d5f1828e10d15e9a58b2031cb1a1bbf6df5430c77",
+        "segmentation": "review-required",
+        "segmentationReason": "no-raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-96b28d14b9b9948ea406082a729aa5c075cfa2e5a96f87728fc4052c93fedd0c",
+          "sourceRange": {
+            "start": 0,
+            "end": 6
+          },
+          "simplified": "帮你找好对象",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词2:251:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-96b28d14b9b9948ea406082a729aa5c075cfa2e5a96f87728fc4052c93fedd0c:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-96b28d14b9b9948ea406082a729aa5c075cfa2e5a96f87728fc4052c93fedd0c:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-96b28d14b9b9948ea406082a729aa5c075cfa2e5a96f87728fc4052c93fedd0c:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "幫你找好對象",
+          "pinyin": "Bāng nǐ zhǎo hǎo duìxiàng",
+          "japanese": "あなたにいいお相手を見つけてあげる。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-0750c62ba42852c3",
+      "source": {
+        "sheet": "名词2",
+        "row": 272,
+        "column": "造词/造句",
+        "rawCell": "这是代表2020年的词",
+        "rawCellSha256": "ba6c726bf811e2d45a373d50ae5da5b0ba8cafa612ce4350b397f325e141a38c",
+        "sourceRevision": "teacher-phrase-source-v1-82bcf072436cc7bf46e2ce769a4c7cef37ae3ab7282abdcb79ca3ddfc5e34f4a",
+        "segmentation": "review-required",
+        "segmentationReason": "no-raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-17333a5f0126b081610864f4486ec4e418f99bb50219eff241bf6d7ed4f8fe49",
+          "sourceRange": {
+            "start": 0,
+            "end": 11
+          },
+          "simplified": "这是代表2020年的词",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#名词2:272:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-17333a5f0126b081610864f4486ec4e418f99bb50219eff241bf6d7ed4f8fe49:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-17333a5f0126b081610864f4486ec4e418f99bb50219eff241bf6d7ed4f8fe49:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-17333a5f0126b081610864f4486ec4e418f99bb50219eff241bf6d7ed4f8fe49:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "這是代表2020年的詞",
+          "pinyin": "Zhè shì dàibiǎo èr líng èr líng nián de cí",
+          "japanese": "これは2020年を代表する言葉です。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-7ee1d177b4cedae7",
+      "source": {
+        "sheet": "形容词1",
+        "row": 2,
+        "column": "造词/造句",
+        "rawCell": "今天天气很好\n好吃\n这只狗好可爱啊\n好，知道了",
+        "rawCellSha256": "c13e73727df2bbcd10966d6799518ba04c559002111b8c6d483df17ed6ad7ed7",
+        "sourceRevision": "teacher-phrase-source-v1-94e045496a916839e358c3dd3f4966c73346e832de19d53173d3c592119ae572",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-7f2f8d033075deb2c0c341c5a97186ec56105a787fa28c4d0b15a968270af757",
+          "sourceRange": {
+            "start": 0,
+            "end": 6
+          },
+          "simplified": "今天天气很好",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7f2f8d033075deb2c0c341c5a97186ec56105a787fa28c4d0b15a968270af757:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7f2f8d033075deb2c0c341c5a97186ec56105a787fa28c4d0b15a968270af757:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7f2f8d033075deb2c0c341c5a97186ec56105a787fa28c4d0b15a968270af757:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "今天天氣很好",
+          "pinyin": "Jīntiān tiānqì hěn hǎo",
+          "japanese": "今日は天気がいいです。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-983be1d9df1b7fa12dec7007fb1af94ffa8e063b06139f68ac917caf20608dc6",
+          "sourceRange": {
+            "start": 7,
+            "end": 9
+          },
+          "simplified": "好吃",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983be1d9df1b7fa12dec7007fb1af94ffa8e063b06139f68ac917caf20608dc6:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983be1d9df1b7fa12dec7007fb1af94ffa8e063b06139f68ac917caf20608dc6:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983be1d9df1b7fa12dec7007fb1af94ffa8e063b06139f68ac917caf20608dc6:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "好吃",
+          "pinyin": "Hǎochī",
+          "japanese": "おいしい。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-19ca4f8c8637733ed72a5d26dc8b1cc384d826898e53ee16616774c8e6736b09",
+          "sourceRange": {
+            "start": 10,
+            "end": 17
+          },
+          "simplified": "这只狗好可爱啊",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-19ca4f8c8637733ed72a5d26dc8b1cc384d826898e53ee16616774c8e6736b09:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-19ca4f8c8637733ed72a5d26dc8b1cc384d826898e53ee16616774c8e6736b09:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-19ca4f8c8637733ed72a5d26dc8b1cc384d826898e53ee16616774c8e6736b09:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "這隻狗好可愛啊",
+          "pinyin": "Zhè zhī gǒu hǎo kě’ài a",
+          "japanese": "この犬、すごくかわいいね。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-983c1aeca614591138e9ce3d9fd6db83662c886d993e02eed8d5005606b1182d",
+          "sourceRange": {
+            "start": 18,
+            "end": 23
+          },
+          "simplified": "好，知道了",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:2:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983c1aeca614591138e9ce3d9fd6db83662c886d993e02eed8d5005606b1182d:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983c1aeca614591138e9ce3d9fd6db83662c886d993e02eed8d5005606b1182d:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-983c1aeca614591138e9ce3d9fd6db83662c886d993e02eed8d5005606b1182d:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "好，知道了",
+          "pinyin": "Hǎo, zhīdào le",
+          "japanese": "うん、わかった。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-805da746fddfb977",
+      "source": {
+        "sheet": "形容词1",
+        "row": 3,
+        "column": "造词/造句",
+        "rawCell": "爷爷身体不好\n不好吃",
+        "rawCellSha256": "6bbf3b8b8d0e2e157a0af37036aaa5d06c01a11431dca2bc267aec527a5350b8",
+        "sourceRevision": "teacher-phrase-source-v1-f23115895b912338079694b96e344a7c0a4dd72252bee3cda1bd22ab4aed0df0",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-2f3d8cb6a157e5e4716abfa4d909d4dea76bebb308c2079bc6397e34c8be0ae4",
+          "sourceRange": {
+            "start": 0,
+            "end": 6
+          },
+          "simplified": "爷爷身体不好",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2f3d8cb6a157e5e4716abfa4d909d4dea76bebb308c2079bc6397e34c8be0ae4:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2f3d8cb6a157e5e4716abfa4d909d4dea76bebb308c2079bc6397e34c8be0ae4:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-2f3d8cb6a157e5e4716abfa4d909d4dea76bebb308c2079bc6397e34c8be0ae4:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "爺爺身體不好",
+          "pinyin": "Yéye shēntǐ bù hǎo",
+          "japanese": "祖父は体の調子がよくありません。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-7856759c316abdd7ac681287406f3bdec737b0eb32310c895813aff97dc4c38d",
+          "sourceRange": {
+            "start": 7,
+            "end": 10
+          },
+          "simplified": "不好吃",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词1:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7856759c316abdd7ac681287406f3bdec737b0eb32310c895813aff97dc4c38d:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7856759c316abdd7ac681287406f3bdec737b0eb32310c895813aff97dc4c38d:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-7856759c316abdd7ac681287406f3bdec737b0eb32310c895813aff97dc4c38d:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "不好吃",
+          "pinyin": "Bù hǎochī",
+          "japanese": "おいしくない。"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-d35d9c0fdfef4f04",
+      "source": {
+        "sheet": "形容词2",
+        "row": 3,
+        "column": "造词/造句",
+        "rawCell": "好棒啊！！日本队有得分了。\n他的料理很棒！！",
+        "rawCellSha256": "5ca83480ea253a6dea89c2c94ee1acb8ca396101c19b39732b0757c7f54bcb04",
+        "sourceRevision": "teacher-phrase-source-v1-5647d507fa127495f358f1bb0144fbb705763cf9c360b8a39d6459e0dcc176ad",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-537f8a7cec486c16ed47f287197058ebbc88c54ffe7c854569de3b9a73bca2f9",
+          "sourceRange": {
+            "start": 0,
+            "end": 13
+          },
+          "simplified": "好棒啊！！日本队有得分了。",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词2:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-537f8a7cec486c16ed47f287197058ebbc88c54ffe7c854569de3b9a73bca2f9:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-537f8a7cec486c16ed47f287197058ebbc88c54ffe7c854569de3b9a73bca2f9:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-537f8a7cec486c16ed47f287197058ebbc88c54ffe7c854569de3b9a73bca2f9:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "好棒啊！！日本隊有得分了。",
+          "pinyin": "Hǎo bàng a!! Rìběn duì yǒu défēn le.",
+          "japanese": "すごい！！日本チームが得点したよ。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-32add7d3e8e1ef81228f3e16d1b50e63e5ff51bd68546ef3bbfd01bb7ab95fc9",
+          "sourceRange": {
+            "start": 14,
+            "end": 22
+          },
+          "simplified": "他的料理很棒！！",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词2:3:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-32add7d3e8e1ef81228f3e16d1b50e63e5ff51bd68546ef3bbfd01bb7ab95fc9:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-32add7d3e8e1ef81228f3e16d1b50e63e5ff51bd68546ef3bbfd01bb7ab95fc9:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-32add7d3e8e1ef81228f3e16d1b50e63e5ff51bd68546ef3bbfd01bb7ab95fc9:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "他的料理很棒！！",
+          "pinyin": "Tā de liàolǐ hěn bàng!!",
+          "japanese": "彼の料理はすばらしい！！"
+        }
+      ]
+    },
+    {
+      "learnerId": "teacher-learner-b76c830de32b0ac7",
+      "source": {
+        "sheet": "形容词2",
+        "row": 5,
+        "column": "造词/造句",
+        "rawCell": "历史上的伟大人物\n伟大的发明",
+        "rawCellSha256": "08e14d863f4d9496e098b9bad829d2a3aec636221cc998b916135d235d505542",
+        "sourceRevision": "teacher-phrase-source-v1-8df90e2e34ee5285d8a42606ea8b0cc5eca590f73b18756390197f224ca9c0f5",
+        "segmentation": "raw-lf"
+      },
+      "teacherPhrases": [
+        {
+          "phraseId": "teacher-phrase-v1-85942d55004f4c0184063898149f650cdb2c8bf934ac276ac657f1288d4e975c",
+          "sourceRange": {
+            "start": 0,
+            "end": 8
+          },
+          "simplified": "历史上的伟大人物",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词2:5:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-85942d55004f4c0184063898149f650cdb2c8bf934ac276ac657f1288d4e975c:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-85942d55004f4c0184063898149f650cdb2c8bf934ac276ac657f1288d4e975c:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-85942d55004f4c0184063898149f650cdb2c8bf934ac276ac657f1288d4e975c:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "歷史上的偉大人物",
+          "pinyin": "Lìshǐ shàng de wěidà rénwù",
+          "japanese": "歴史上の偉大な人物。"
+        },
+        {
+          "phraseId": "teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958",
+          "sourceRange": {
+            "start": 9,
+            "end": 14
+          },
+          "simplified": "伟大的发明",
+          "fieldProvenance": {
+            "simplified": {
+              "provenance": "authored",
+              "sourceRef": "teacher-workbook:sha256:3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37#形容词2:5:造词/造句",
+              "rightsRef": "https://github.com/nurockplayer/Chabiko/issues/340#issuecomment-5279951072"
+            },
+            "traditional": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958:traditional",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "pinyin": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958:pinyin",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            },
+            "japanese": {
+              "provenance": "generated",
+              "sourceRef": "codex-draft:issue-484:v1:teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958:japanese",
+              "rightsRef": "docs/content/teacher-phrase-pilot-484/provenance.md#generated-rights-pending"
+            }
+          },
+          "traditional": "偉大的發明",
+          "pinyin": "Wěidà de fāmíng",
+          "japanese": "偉大な発明。"
+        }
+      ]
+    }
+  ]
+}

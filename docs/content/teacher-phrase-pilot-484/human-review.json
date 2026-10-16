@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "contractId": "teacher-phrase-human-review-v1",
+  "base": {
+    "sidecarContractId": "teacher-phrase-authoring-v1",
+    "sidecarSha256": "5c3f85144cac43a20299a356f0ec48432c21226dd144d504ccf0103c4a7600e2",
+    "learnerManifestSemanticSha256": "b4271e3f032483c839afd46d4bcf7cecf7d54a6c5e7ca3ffc0dcb795aaea556f",
+    "workbookSha256": "3fad65934dd3801fedfbd9e110f2c5bb8730b36d4117ee7a228cbf0089383f37"
+  },
+  "records": [
+    {
+      "learnerId": "teacher-learner-5762bc98cd920b67",
+      "sourceRevision": "teacher-phrase-source-v1-b827e43e8ae207d1f8ba626af223dd852318ac2eff8df5d2d4f9195533919cc7",
+      "reviewVersion": "6247f72aae8b15efab4123ab4a76f665a8b44e5a380a32822278959ba5ba0b08",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-2add628a7572f9ebfc1e9dd5044967da965d1109f2b22817e4074f7f884eab43",
+        "teacher-phrase-v1-99c3fec9b5805be81510ebdc749bd3eb257b264bf1332c2fe92d4c6638ecc447"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-19f92faeca6b3484",
+      "sourceRevision": "teacher-phrase-source-v1-38d9f978c03d0f6129c5a1be2053f08cbc28e44de5824d269546c9723481ffe6",
+      "reviewVersion": "39ebdc5b508aac373893f30fa25d8071b2c9824764ae2d7e850df95b11a0704d",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-c3247466b357879c2b3e07c1cfddaab0677c1510bf98c300c78ac247d149debe",
+        "teacher-phrase-v1-430da1c2ac49b658c217d017e9beec26babe87bcce3e8286d940e5a172f3c25a"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-c248f4ac6f5be489",
+      "sourceRevision": "teacher-phrase-source-v1-13156c763277b19766c99c24d93bca39022553494aa7808608785794c76cc795",
+      "reviewVersion": "fa572b328cc71013eb863821d1d30fbab589df55508e1da28295b545233d12cd",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-c2e42d4dfad3f51f02801a686e08dfbc3bab0ff0c43dcddf3a8e547ca664e2b4",
+        "teacher-phrase-v1-fef9495ec9355f57b9b45496bdba5cfb73d50665a16d886a14f7de2ff015333f"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-3e6949f60abfc7f4",
+      "sourceRevision": "teacher-phrase-source-v1-364f8031c1af08a865f4fdd0165734ff8ed4f4b63ddd8277a8f02dd08d0a99c7",
+      "reviewVersion": "2d53356ca9b663d297d9ce1724f310dca9a5604ca0e7dc83ed0433b41a934934",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-86480feb5ab135d2249041ae7db37ecdd253c030427c477fb35656321cdd37fc",
+        "teacher-phrase-v1-b508a14c384bb7de2db71ec8194cef702bee1889298674cc12bdf07278974bc2"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-star-1-37e0eb213f0f",
+      "sourceRevision": "teacher-phrase-source-v1-c518ef66a067668c09902e504bd5c70486fb169836d7529d47407c3d00489b89",
+      "reviewVersion": "d2521b791495866c3ab101b637c8c2e46b9d64a7060ff319f68f05b119938652",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-e5fbcb1f3b31f48708ce5a956cc02996ada3b84c5c2a57c9bb81f7f72bcf5d98",
+        "teacher-phrase-v1-f6c767e85ca9fe7bf2c504bfcda3e64e1a02bd2b93606362258f1affb49a4e21"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-star-1-a66948a76fda",
+      "sourceRevision": "teacher-phrase-source-v1-eab855df815e1989e9cef1588709e0378512812769c7445963a31375b92de2bb",
+      "reviewVersion": "ece60c9a9afad73307f9cf2edd45c2360b3f47ee207d12a9bf0d5e76af246d50",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-0e9d533d2d263cea357d3bb462a99470220bb973a7351be74df0c4382f9122a9",
+        "teacher-phrase-v1-ca4ba2c7c83cebe348e9e44b6519f6bb520dc383d873b12a0ea0c5ea42fd297a"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-6d2e021571bd7dea",
+      "sourceRevision": "teacher-phrase-source-v1-dcd63acd485d8dd1d1080c4d5f1828e10d15e9a58b2031cb1a1bbf6df5430c77",
+      "reviewVersion": "9f4754dfc8a69387f4027afb5cc0c15a4ca334ebe6a95597bdc9fe0374dd9c53",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-96b28d14b9b9948ea406082a729aa5c075cfa2e5a96f87728fc4052c93fedd0c"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-0750c62ba42852c3",
+      "sourceRevision": "teacher-phrase-source-v1-82bcf072436cc7bf46e2ce769a4c7cef37ae3ab7282abdcb79ca3ddfc5e34f4a",
+      "reviewVersion": "b3a1934df6514bac93b95a52a481430e96c37af15abd2103ce6ab4580c43c486",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-17333a5f0126b081610864f4486ec4e418f99bb50219eff241bf6d7ed4f8fe49"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-7ee1d177b4cedae7",
+      "sourceRevision": "teacher-phrase-source-v1-94e045496a916839e358c3dd3f4966c73346e832de19d53173d3c592119ae572",
+      "reviewVersion": "7f67d65a650e7a33bee9012d0f07cf8c5b7c92650bd0af88bec377f894f4faac",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-7f2f8d033075deb2c0c341c5a97186ec56105a787fa28c4d0b15a968270af757",
+        "teacher-phrase-v1-983be1d9df1b7fa12dec7007fb1af94ffa8e063b06139f68ac917caf20608dc6",
+        "teacher-phrase-v1-19ca4f8c8637733ed72a5d26dc8b1cc384d826898e53ee16616774c8e6736b09",
+        "teacher-phrase-v1-983c1aeca614591138e9ce3d9fd6db83662c886d993e02eed8d5005606b1182d"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-805da746fddfb977",
+      "sourceRevision": "teacher-phrase-source-v1-f23115895b912338079694b96e344a7c0a4dd72252bee3cda1bd22ab4aed0df0",
+      "reviewVersion": "e09386b9ddaedfb574feadb94b392c6be79049c6fa837da6b5cee97f33d463b7",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-2f3d8cb6a157e5e4716abfa4d909d4dea76bebb308c2079bc6397e34c8be0ae4",
+        "teacher-phrase-v1-7856759c316abdd7ac681287406f3bdec737b0eb32310c895813aff97dc4c38d"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-d35d9c0fdfef4f04",
+      "sourceRevision": "teacher-phrase-source-v1-5647d507fa127495f358f1bb0144fbb705763cf9c360b8a39d6459e0dcc176ad",
+      "reviewVersion": "512c75dcdd4f4fac322a42e2e890ef28bbdf9766db84dac5198132328f17e9d6",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-537f8a7cec486c16ed47f287197058ebbc88c54ffe7c854569de3b9a73bca2f9",
+        "teacher-phrase-v1-32add7d3e8e1ef81228f3e16d1b50e63e5ff51bd68546ef3bbfd01bb7ab95fc9"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    },
+    {
+      "learnerId": "teacher-learner-b76c830de32b0ac7",
+      "sourceRevision": "teacher-phrase-source-v1-8df90e2e34ee5285d8a42606ea8b0cc5eca590f73b18756390197f224ca9c0f5",
+      "reviewVersion": "20baa3645216b352063db1b2bb432017725a113bc2046e14c1da50a6df8b5fef",
+      "orderedPhraseIds": [
+        "teacher-phrase-v1-85942d55004f4c0184063898149f650cdb2c8bf934ac276ac657f1288d4e975c",
+        "teacher-phrase-v1-37028ed6f2b06111594d58bf31fbec633e7b298b4de9064bd15e8f6261847958"
+      ],
+      "roleEvidence": [
+        {
+          "role": "human-language-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-script-verifier",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-teaching-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null
+        },
+        {
+          "role": "human-source-reviewer",
+          "outcome": "not-reviewed",
+          "reviewerIdentity": null,
+          "reviewDate": null,
+          "reviewVersion": null,
+          "reviewedPhraseIds": [],
+          "findings": null,
+          "sourceRevision": null
+        }
+      ],
+      "overallDecision": null,
+      "maintainerPromotion": null
+    }
+  ]
+}
