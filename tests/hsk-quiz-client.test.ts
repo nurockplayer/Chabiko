@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initHskQuiz } from '../src/client/hskQuiz';
 import { readHskQuizBest } from '../src/domain/hskQuizBestScore';
 
-const entries = Array.from({ length: 25 }, (_, i) => ({ id: `w${i}`, simplified: `字${i}`, japanese: `意味${i}`, pinyin: `pinyin${i}`, simplifiedStatus: 'authored' }));
+const entries = Array.from({ length: 25 }, (_, i) => ({ id: `w${i}`, simplified: String.fromCodePoint(0x4e00 + i * 3), japanese: `いみ${i}`, pinyin: `pinyin${i}`, simplifiedStatus: 'authored' }));
 let cleanup: (() => void) | undefined;
 function root() {
   const el = document.createElement('section');

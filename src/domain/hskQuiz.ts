@@ -25,6 +25,16 @@ function meanings(value: string): string[] {
     .split(/[。、.,;；/／・\n]/u).map(normalized).filter(Boolean);
 }
 
+const HAN = /\p{Script=Han}/gu;
+/** Kanji in a Japanese gloss: お母さん and 母 share 母, so they must not appear as competing choices. */
+function hanSet(value: string): Set<string> {
+  return new Set(value.normalize('NFKC').match(HAN) ?? []);
+}
+function overlaps(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+  for (const item of a) if (b.has(item)) return true;
+  return false;
+}
+
 function shuffle<T>(values: readonly T[], random: () => number): T[] {
   const result = [...values];
   for (let index = result.length - 1; index > 0; index--) {
@@ -49,7 +59,12 @@ export function buildHskQuizQuestions(
       !entry.pinyin.trim() || meanings(entry.japanese).length === 0) return false;
     ids.add(entry.id);
     return true;
-  }).map((entry) => ({ entry, headword: normalized(entry.simplified), senses: meanings(entry.japanese) }));
+  }).map((entry) => ({
+    entry,
+    headword: normalized(entry.simplified),
+    senses: meanings(entry.japanese),
+    glossKanji: hanSet(entry.japanese),
+  }));
   const questions: HskQuizQuestion[] = [];
   const prompts = new Set<string>();
   for (const answer of shuffle(pool, random)) {
@@ -57,8 +72,12 @@ export function buildHskQuizQuestions(
     if (prompts.has(normalized(prompt))) continue;
     const choices = [answer];
     for (const candidate of shuffle(pool, random)) {
-      if (choices.some((choice) => choice.headword === candidate.headword ||
-        choice.senses.some((sense) => candidate.senses.includes(sense)))) continue;
+      // Exclude near-synonyms conservatively: shared sense text, shared kanji in the
+      // Japanese gloss (お母さん／母), or one headword containing the other (妈妈／妈).
+      if (choices.some((choice) => choice.headword.includes(candidate.headword) ||
+        candidate.headword.includes(choice.headword) ||
+        choice.senses.some((sense) => candidate.senses.includes(sense)) ||
+        overlaps(choice.glossKanji, candidate.glossKanji))) continue;
       choices.push(candidate);
       if (choices.length === 4) break;
     }

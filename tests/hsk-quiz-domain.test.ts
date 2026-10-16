@@ -6,8 +6,10 @@ import { formatHskQuizBest, HSK_QUIZ_BEST_KEY, readHskQuizBest, saveHskQuizBest,
 export function seededRandom(seed = 42) {
   return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
 }
+// Distinct single-character headwords and kana glosses, so fixtures never collide by kanji.
+const han = (i: number) => String.fromCodePoint(0x4e00 + i * 3);
 const corpus = (count: number): HskQuizEntry[] => Array.from({ length: count }, (_, i) => ({
-  id: `word-${i}`, simplified: `字${i}`, japanese: `意味${i}`, pinyin: `p${i}`,
+  id: `word-${i}`, simplified: han(i), japanese: `いみ${i}`, pinyin: `p${i}`,
 }));
 
 describe('HSK quiz generation', () => {
@@ -33,10 +35,10 @@ describe('HSK quiz generation', () => {
     it(`rejects duplicate headwords and overlapping normalized senses: ${direction}`, () => {
       const entries = corpus(15).flatMap((entry, i) => [
         entry,
-        { ...entry, id: `${entry.id}-same-head`, japanese: `別の意味${i}` },
-        { ...entry, id: `${entry.id}-same-gloss`, simplified: `別字${i}`, japanese: `意味${i}（補足）` },
-        { ...entry, id: `${entry.id}-overlap`, simplified: `他字${i}`, japanese: `追加${i}、意味${i}` },
-        { ...entry, id: `${entry.id}-sentences`, simplified: `文${i}`, japanese: `意味${i}。説明${i}。` },
+        { ...entry, id: `${entry.id}-same-head`, japanese: `べつのいみ${i}` },
+        { ...entry, id: `${entry.id}-same-gloss`, simplified: han(100 + i), japanese: `いみ${i}（ほそく）` },
+        { ...entry, id: `${entry.id}-overlap`, simplified: han(200 + i), japanese: `ついか${i}、いみ${i}` },
+        { ...entry, id: `${entry.id}-sentences`, simplified: han(300 + i), japanese: `いみ${i}。せつめい${i}。` },
       ]);
       const normalize = (s: string) => s.normalize('NFKC').replace(/\([^)]*\)/g, '').split(/[。、]/).filter(Boolean);
       const questions = buildHskQuizQuestions(entries, 20, direction, seededRandom());
@@ -60,6 +62,38 @@ describe('HSK quiz generation', () => {
       }
     });
   }
+
+  it('never offers near-synonym glosses as competing choices (お母さん／母)', () => {
+    const fillers = ['ここ', 'そこ', 'あそこ', 'どこ', 'これ', 'それ', 'あれ', 'どれ', 'いつ', 'だれ', 'なに', 'すこし']
+      .map((japanese, i) => ({ id: `f${i}`, simplified: han(400 + i), pinyin: 'x', japanese: `${japanese}。` }));
+    const entries = [
+      { id: 'mama', simplified: '妈妈', pinyin: 'māma', japanese: 'お母さん。' },
+      { id: 'muqin', simplified: '母亲', pinyin: 'mǔqīn', japanese: '母。' },
+      ...fillers,
+    ];
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const direction of ['zh-to-ja', 'ja-to-zh'] as const) {
+        for (const q of buildHskQuizQuestions(entries, 10, direction, seededRandom(seed))) {
+          const labels = direction === 'zh-to-ja' ? ['お母さん。', '母。'] : ['妈妈', '母亲'];
+          expect(labels.filter((label) => q.options.includes(label)).length).toBeLessThan(2);
+        }
+      }
+    }
+  });
+
+  it('keeps published-pool choices free of shared gloss kanji (HSK 4, seed 5108)', () => {
+    const kanji = (text: string) => new Set(text.match(/\p{Script=Han}/gu) ?? []);
+    const pool = loadHskPublication().pools.at(-1)!.fullRange;
+    const byLabel = new Map(pool.map((e) => [e.japanese, e]));
+    for (const seed of [5108, 1, 2, 3]) {
+      for (const q of buildHskQuizQuestions(pool, 20, 'zh-to-ja', seededRandom(seed))) {
+        const sets = q.options.map((label) => kanji(byLabel.get(label)?.japanese ?? label));
+        for (let a = 0; a < sets.length; a++) for (let b = a + 1; b < sets.length; b++) {
+          expect([...sets[a]].some((c) => sets[b].has(c)), `${q.entry.simplified}: ${q.options.join(' | ')}`).toBe(false);
+        }
+      }
+    }
+  });
 
   it('fails closed for short, empty, or ambiguous pools', () => {
     for (const entries of [[], corpus(9), corpus(20).map((e) => ({ ...e, japanese: '同じ' })), corpus(20).map((e) => ({ ...e, simplified: '同' }))]) {
