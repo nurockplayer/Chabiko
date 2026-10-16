@@ -1,11 +1,12 @@
 // @vitest-environment node
+import { realpathSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Window } from 'happy-dom';
 import {
-  VOICES, assertBudget, assertOutputOutsideRepo, azureSsml, billableCharacters,
+  VOICES, assertBudget, assertOutputOutsideRepo, repositoryCheckouts, azureSsml, billableCharacters,
   blindCode, buildHtml, credentials, estimate, loadItems, parseArgs, runComparison, synthesize,
 } from '../scripts/audio/compare-voices';
 import type { Clip, Credentials, Options } from '../scripts/audio/compare-voices';
@@ -95,6 +96,12 @@ describe('credentials and output isolation', () => {
     symlinkSync(root, join(outside, 'linked'));
     expect(() => assertOutputOutsideRepo(join(outside, 'linked/new/sub'))).toThrow('outside');
     expect(assertOutputOutsideRepo(join(outside, 'safe/new'))).toContain('safe/new');
+    // Every checkout of the repository is guarded, including the main checkout of a linked worktree.
+    for (const checkout of repositoryCheckouts()) {
+      expect(() => assertOutputOutsideRepo(join(checkout, 'voice-review-output'))).toThrow('outside');
+    }
+    const mainCheckout = temporary();
+    expect(() => assertOutputOutsideRepo(join(mainCheckout, 'out'), undefined, [realpathSync(mainCheckout)])).toThrow('outside');
     expect(assertOutputOutsideRepo(`${root}-sibling`)).toContain('-sibling');
   });
 });

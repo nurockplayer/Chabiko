@@ -50,13 +50,28 @@ function canonicalPath(path: string): string {
   return realpathSync(absolute);
 }
 
-export function assertOutputOutsideRepo(output: string, root = ROOT): string {
+/** Every checkout of this repository (main checkout and all linked worktrees). */
+export function repositoryCheckouts(root = ROOT): string[] {
+  const checkouts = new Set([realpathSync(root)]);
+  try {
+    const listing = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: root, encoding: 'utf8', timeout: 10_000 });
+    for (const line of listing.split('\n')) {
+      if (line.startsWith('worktree ')) {
+        try { checkouts.add(realpathSync(line.slice('worktree '.length))); } catch { /* pruned worktree */ }
+      }
+    }
+  } catch { /* not a git checkout: the root alone is still guarded */ }
+  return [...checkouts];
+}
+
+export function assertOutputOutsideRepo(output: string, root = ROOT, checkouts = repositoryCheckouts(root)): string {
   const path = canonicalPath(output.startsWith('~/') ? join(homedir(), output.slice(2)) : output);
-  const repo = realpathSync(root);
-  // Case-fold conservatively for the default macOS filesystem.
-  const rel = relative(repo.toLowerCase(), path.toLowerCase());
-  if (rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))) {
-    throw new Error('Output must be outside the git worktree.');
+  for (const repo of checkouts) {
+    // Case-fold conservatively for the default macOS filesystem.
+    const rel = relative(repo.toLowerCase(), path.toLowerCase());
+    if (rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))) {
+      throw new Error(`Output must be outside every checkout of this repository (${repo}).`);
+    }
   }
   return path;
 }
