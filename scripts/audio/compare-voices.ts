@@ -23,10 +23,21 @@ export function billableCharacters(text: string, provider: Provider): number {
   return [...text].reduce((sum, char) => sum + (provider === 'azure' && /\p{Script=Han}/u.test(char) ? 2 : 1), 0);
 }
 
+/**
+ * Billable characters for one request. Azure bills all SSML except the <speak> and
+ * <voice> tags (so slow clips pay for the <prosody> markup), with Han characters
+ * counted twice. Google is sent plain text, billed per character.
+ */
+export function requestCharacters(item: Item, voice: Voice, speed: Speed): number {
+  if (voice.provider === 'google') return billableCharacters(item.text, 'google');
+  const billed = azureSsml(item.text, voice.name, speed).replace(/<\/?(speak|voice)\b[^>]*>/g, '');
+  return billableCharacters(billed, 'azure');
+}
+
 export function estimate(items: readonly Item[], voices: readonly Voice[]) {
   const counts = { azure: 0, google: 0 };
-  for (const voice of voices) {
-    counts[voice.provider] += items.reduce((sum, item) => sum + billableCharacters(item.text, voice.provider), 0) * SPEEDS.length;
+  for (const voice of voices) for (const speed of SPEEDS) {
+    counts[voice.provider] += items.reduce((sum, item) => sum + requestCharacters(item, voice, speed), 0);
   }
   const usd = { azure: counts.azure * RATES.azure / 1e6, google: counts.google * RATES.google / 1e6 };
   return { counts, usd, total: usd.azure + usd.google };
@@ -168,7 +179,8 @@ export async function synthesize(
     if (!auth.google) throw new Error('Google credentials unavailable.');
     url = 'https://texttospeech.googleapis.com/v1/text:synthesize';
     headers = { 'Content-Type': 'application/json' };
-    if (auth.google.apiKey) url += `?key=${encodeURIComponent(auth.google.apiKey)}`;
+    // Header, not query string: keys in URLs leak into request logs.
+    if (auth.google.apiKey) headers['x-goog-api-key'] = auth.google.apiKey;
     else {
       headers.Authorization = `Bearer ${auth.google.token}`;
       headers['x-goog-user-project'] = auth.google.project!;
@@ -274,7 +286,7 @@ export async function runComparison(options: Options, deps: {
   let attemptsUsd = 0;
   let pendingUsd = plan.total;
   for (const item of items) for (const voice of voices) for (const speed of SPEEDS) {
-    const cost = billableCharacters(item.text, voice.provider) * RATES[voice.provider] / 1e6;
+    const cost = requestCharacters(item, voice, speed) * RATES[voice.provider] / 1e6;
     pendingUsd -= cost;
     const audio = await synthesize(item, voice, speed, auth, () => {
       // Reserve enough for all remaining first attempts; count even failed attempts.

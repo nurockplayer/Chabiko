@@ -38,8 +38,10 @@ describe('matched-text corpus and cost guard', () => {
     expect(billableCharacters('<speak>一</speak>', 'google')).toBe(16);
     const plan = estimate(items, VOICES);
     expect(plan.counts.google).toBe(500);
-    expect(plan.counts.azure).toBe(928);
-    expect(plan.total).toBeCloseTo(0.01592, 8);
+    // Azure bills <prosody> markup on slow clips (everything except <speak>/<voice>).
+    expect(plan.counts.azure).toBe(1796);
+    expect(plan.total).toBeCloseTo(0.02894, 8);
+    expect(plan.total).toBeLessThan(0.03);
   });
   it('validates the budget and command options', () => {
     expect(() => assertBudget(0.03, 0.03)).not.toThrow();
@@ -116,7 +118,8 @@ describe('synthesis HTTP contract', () => {
     for (const [url, request] of fetcher.mock.calls as unknown as [string, RequestInit][]) {
       expect(request.redirect).toBe('error');
       if (url.includes('googleapis')) {
-        expect(url).toContain('?key=secret-google');
+        expect(url).not.toContain('key=');
+        expect((request.headers as Record<string, string>)['x-goog-api-key']).toBe('secret-google');
         const body = JSON.parse(request.body as string);
         expect(body.input).toEqual({ text: items[0].text });
         expect([1, 0.75]).toContain(body.audioConfig.speakingRate);
