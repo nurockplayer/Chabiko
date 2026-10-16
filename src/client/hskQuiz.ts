@@ -3,6 +3,7 @@ import {
   type HskQuizDirection, type HskQuizEntry, type HskQuizLength, type HskQuizQuestion,
 } from '../domain/hskQuiz';
 import { HSK_QUIZ_SCORE_EVENT, formatHskQuizBest, readHskQuizBest, saveHskQuizBest } from '../domain/hskQuizBestScore';
+import { hskQuizNearSynonymGroupOf } from '../content/hskQuizNearSynonyms';
 
 const cleanups = new WeakMap<HTMLElement, () => void>();
 
@@ -134,7 +135,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     const data = new FormData(setup);
     length = data.get('length') === '20' ? 20 : 10;
     direction = data.get('direction') === 'ja-to-zh' ? 'ja-to-zh' : 'zh-to-ja';
-    questions = buildHskQuizQuestions(entries, length, direction, random);
+    questions = buildHskQuizQuestions(entries, length, direction, random, hskQuizNearSynonymGroupOf);
     if (!questions.length) {
       status.textContent = 'この条件では十分な問題を作れません。問題数や出題方向を変えてください。';
       return;

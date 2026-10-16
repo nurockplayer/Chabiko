@@ -1,5 +1,6 @@
 export type HskQuizDirection = 'zh-to-ja' | 'ja-to-zh';
 export type HskQuizLength = 10 | 20;
+export type HskQuizGroupOf = (id: string) => number | undefined;
 
 export interface HskQuizEntry {
   readonly id: string;
@@ -50,6 +51,7 @@ export function buildHskQuizQuestions(
   length: HskQuizLength,
   direction: HskQuizDirection,
   random: () => number = Math.random,
+  groupOf: HskQuizGroupOf = () => undefined,
 ): HskQuizQuestion[] {
   if (length !== 10 && length !== 20) return [];
   if (direction !== 'zh-to-ja' && direction !== 'ja-to-zh') return [];
@@ -64,6 +66,7 @@ export function buildHskQuizQuestions(
     headword: normalized(entry.simplified),
     senses: meanings(entry.japanese),
     glossKanji: hanSet(entry.japanese),
+    group: groupOf(entry.id),
   }));
   const questions: HskQuizQuestion[] = [];
   const prompts = new Set<string>();
@@ -72,9 +75,10 @@ export function buildHskQuizQuestions(
     if (prompts.has(normalized(prompt))) continue;
     const choices = [answer];
     for (const candidate of shuffle(pool, random)) {
-      // Exclude near-synonyms conservatively: shared sense text, shared kanji in the
+      // Exclude curated near-synonyms, shared sense text, shared kanji in the
       // Japanese gloss (お母さん／母), or one headword containing the other (妈妈／妈).
-      if (choices.some((choice) => choice.headword.includes(candidate.headword) ||
+      if (choices.some((choice) => (choice.group !== undefined && choice.group === candidate.group) ||
+        choice.headword.includes(candidate.headword) ||
         candidate.headword.includes(choice.headword) ||
         choice.senses.some((sense) => candidate.senses.includes(sense)) ||
         overlaps(choice.glossKanji, candidate.glossKanji))) continue;

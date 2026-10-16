@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadHskPublication } from '../src/content/loadHskVocabulary';
+import nearSynonyms from '../data/hsk-quiz/near-synonym-groups.json';
+import { hskQuizNearSynonymGroupOf } from '../src/content/hskQuizNearSynonyms';
 import { buildHskQuizQuestions, parseHskQuizAnswers, scoreHskQuiz, type HskQuizEntry } from '../src/domain/hskQuiz';
 import { formatHskQuizBest, HSK_QUIZ_BEST_KEY, readHskQuizBest, saveHskQuizBest, type HskQuizBestScore } from '../src/domain/hskQuizBestScore';
 
@@ -13,6 +15,31 @@ const corpus = (count: number): HskQuizEntry[] => Array.from({ length: count }, 
 }));
 
 describe('HSK quiz generation', () => {
+  it('excludes group zero and conflicts between distractors while keeping ungrouped choices', () => {
+    const entries = corpus(30);
+    const groupOf = (id: string) => Number(id.slice(5)) < 15 ? 0 : undefined;
+    let sawGroupedAnswer = false;
+    let sawUngroupedAnswer = false;
+    let sawGroupedDistractor = false;
+    for (const direction of ['zh-to-ja', 'ja-to-zh'] as const) {
+      for (let seed = 1; seed <= 30; seed++) {
+        const questions = buildHskQuizQuestions(entries, 20, direction, seededRandom(seed), groupOf);
+        expect(questions).toHaveLength(20);
+        for (const question of questions) {
+          const choices = entries.filter((entry) => question.options.includes(direction === 'zh-to-ja' ? entry.japanese : entry.simplified));
+          expect(choices).toHaveLength(4);
+          expect(choices.filter((entry) => groupOf(entry.id) === 0).length).toBeLessThanOrEqual(1);
+          if (groupOf(question.entry.id) === 0) sawGroupedAnswer = true;
+          else {
+            sawUngroupedAnswer = true;
+            if (choices.some((entry) => groupOf(entry.id) === 0)) sawGroupedDistractor = true;
+          }
+        }
+      }
+    }
+    expect([sawGroupedAnswer, sawUngroupedAnswer, sawGroupedDistractor]).toEqual([true, true, true]);
+  });
+
   for (const direction of ['zh-to-ja', 'ja-to-zh'] as const) {
     it(`creates deterministic, distinct questions and choices: ${direction}`, () => {
       const entries = corpus(30);
@@ -107,6 +134,98 @@ describe('HSK quiz generation', () => {
     expect(buildHskQuizQuestions([...entries.slice(0, 9), entries[0], { ...entries[9], japanese: ' ' }], 10, 'zh-to-ja')).toEqual([]);
     expect(buildHskQuizQuestions(entries.map((e) => ({ ...e, japanese: '同じ' })), 10, 'ja-to-zh')).toEqual([]);
   });
+});
+
+describe('published HSK near-synonym exclusions', () => {
+  const pools = loadHskPublication().pools;
+  const entries = pools.at(-1)!.fullRange;
+
+  it('contains only existing IDs, with at least two members and one group per ID', () => {
+    expect(nearSynonyms.version).toBe(1);
+    expect(nearSynonyms.purpose).toBe('quiz distractor exclusion only; not learner-facing; AI-authored');
+    expect(nearSynonyms.groups.length).toBeGreaterThan(0);
+    const existing = new Set(entries.map((entry) => entry.id));
+    const seen = new Set<string>();
+    nearSynonyms.groups.forEach((group, index) => {
+      expect(group.length).toBeGreaterThanOrEqual(2);
+      for (const id of group) {
+        expect(existing.has(id), id).toBe(true);
+        expect(seen.has(id), `duplicate: ${id}`).toBe(false);
+        expect(hskQuizNearSynonymGroupOf(id)).toBe(index);
+        seen.add(id);
+      }
+    });
+    expect(hskQuizNearSynonymGroupOf('synthetic-unlisted-id')).toBeUndefined();
+  });
+
+  it.each([
+    ['漂亮', '好看', '美丽'], ['妈妈', '母亲'], ['爸爸', '父亲'],
+    ['高兴', '快乐', '开心'], ['认识', '知道'], ['一起', '一块儿'], ['刚', '刚才'],
+    ['干净', '漂亮'], ['也许', '大概'], ['方法', '办法'], ['美丽', '美'],
+  ])('groups overlapping meanings: %s / %s', (...words) => {
+    const groups = words.map((word) => hskQuizNearSynonymGroupOf(entries.find((entry) => entry.simplified === word)!.id));
+    expect(groups.every((group) => group !== undefined && group === groups[0])).toBe(true);
+  });
+
+  for (const direction of ['zh-to-ja', 'ja-to-zh'] as const) {
+    it(`regresses 漂亮/好看 in HSK 1 with seed 638: ${direction}`, () => {
+      const questions = buildHskQuizQuestions(pools[0].fullRange, 20, direction, seededRandom(638), hskQuizNearSynonymGroupOf);
+      const pair = pools[0].fullRange.filter((entry) => ['漂亮', '好看'].includes(entry.simplified));
+      expect(pair).toHaveLength(2);
+      expect(questions).toHaveLength(20);
+      // Exercise the pair even if the stricter exclusions change which prompts are drawn.
+      expect(questions.some((question) => pair.some((entry) => question.options.includes(direction === 'zh-to-ja' ? entry.japanese : entry.simplified)))).toBe(true);
+      for (const question of questions) {
+        expect(pair.filter((entry) => question.options.includes(direction === 'zh-to-ja' ? entry.japanese : entry.simplified)).length).toBeLessThan(2);
+      }
+    });
+
+    it(`keeps published 妈妈/母亲 apart as answers and distractors: ${direction}`, () => {
+      const pair = entries.filter((entry) => ['妈妈', '母亲'].includes(entry.simplified));
+      const fillers = corpus(25);
+      expect(pair).toHaveLength(2);
+      const covered = new Set<string>();
+      for (let seed = 1; seed <= 30; seed++) {
+        const questions = buildHskQuizQuestions([...pair, ...fillers], 20, direction, seededRandom(seed), hskQuizNearSynonymGroupOf);
+        expect(questions).toHaveLength(20);
+        for (const question of questions) {
+          if (pair.some((entry) => entry.id === question.entry.id)) covered.add(question.entry.id);
+          expect(pair.filter((entry) => question.options.includes(direction === 'zh-to-ja' ? entry.japanese : entry.simplified)).length).toBeLessThan(2);
+        }
+      }
+      expect(covered).toEqual(new Set(pair.map((entry) => entry.id)));
+    });
+
+    for (const pool of pools) {
+      for (const length of [10, 20] as const) {
+        it(`fills ${length} questions without grouped options: HSK ${pool.level}, ${direction}, seeds 1..300`, () => {
+          const field = direction === 'zh-to-ja' ? 'japanese' : 'simplified';
+          const groupsByLabel = new Map<string, Set<number>>();
+          for (const entry of pool.fullRange) {
+            const group = hskQuizNearSynonymGroupOf(entry.id);
+            const groups = groupsByLabel.get(entry[field]) ?? new Set<number>();
+            if (group !== undefined) groups.add(group);
+            groupsByLabel.set(entry[field], groups);
+          }
+          for (let seed = 1; seed <= 300; seed++) {
+            const questions = buildHskQuizQuestions(pool.fullRange, length, direction, seededRandom(seed), hskQuizNearSynonymGroupOf);
+            expect(questions, `seed ${seed}`).toHaveLength(length);
+            for (const question of questions) {
+              expect(question.options).toHaveLength(4);
+              const seen = new Set<number>();
+              for (const label of question.options) {
+                expect(groupsByLabel.has(label)).toBe(true);
+                for (const group of groupsByLabel.get(label)!) {
+                  expect(seen.has(group), `seed ${seed}: ${question.options.join(' | ')}`).toBe(false);
+                  seen.add(group);
+                }
+              }
+            }
+          }
+        }, 60_000);
+      }
+    }
+  }
 });
 
 describe('HSK scoring and answer loading', () => {
