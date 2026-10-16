@@ -28,19 +28,25 @@ const isHome = Astro.url.pathname === '/';
           class="theme-toggle"
           type="button"
           aria-label="ダークテーマに切り替える"
+          title="ダークテーマに切り替える"
           aria-pressed="false"
         >
-          <span class="theme-toggle__mark" aria-hidden="true">◐</span>
-          <span class="theme-toggle__label" aria-hidden="true">暗</span>
+          <svg class="theme-toggle__mark" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path data-theme-moon d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+            <g data-theme-sun data-theme-hidden>
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+            </g>
+          </svg>
         </button>
       )
     }
     <div class="script-toggle-slot">
       <label for="script-preference-select">漢字表記</label>
       <select id="script-preference-select" class="script-preference-select">
-        <option value="path-default">コース標準</option>
-        <option value="traditional">繁体字</option>
-        <option value="simplified">簡体字</option>
+        <option value="path-default">表記：標準</option>
+        <option value="traditional">表記：繁体字</option>
+        <option value="simplified">表記：簡体字</option>
       </select>
     </div>
   </div>
@@ -60,8 +66,9 @@ const isHome = Astro.url.pathname === '/';
       'aria-label',
       isDark ? 'ライトテーマに切り替える' : 'ダークテーマに切り替える',
     );
-    const label = themeToggle.querySelector('.theme-toggle__label');
-    if (label) label.textContent = isDark ? '明' : '暗';
+    themeToggle.title = isDark ? 'ライトテーマに切り替える' : 'ダークテーマに切り替える';
+    themeToggle.querySelector('[data-theme-moon]')?.toggleAttribute('data-theme-hidden', isDark);
+    themeToggle.querySelector('[data-theme-sun]')?.toggleAttribute('data-theme-hidden', !isDark);
   }
 
   if (themeToggle instanceof HTMLButtonElement) {
@@ -204,6 +211,9 @@ const isHome = Astro.url.pathname === '/';
     font-size: 1.125rem;
     line-height: 1;
   }
+  .theme-toggle__mark [data-theme-hidden] {
+    display: none;
+  }
   .script-toggle-slot {
     display: flex;
     align-items: center;
@@ -247,23 +257,23 @@ const isHome = Astro.url.pathname === '/';
       display: none;
     }
     .header-inner {
-      gap: var(--sp-3);
+      gap: var(--sp-2);
+      padding-inline: var(--sp-3);
     }
-    /* The control label stacks above the select so the header never
-     * overflows at 320/375/390px. */
-    .script-toggle-slot {
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-      line-height: 1.2;
-    }
+    /* Keep the native label accessible without adding a second header row. */
     .script-toggle-slot label {
-      font-size: 0.625rem;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
     .script-preference-select {
-      max-width: 6.5rem;
+      max-width: 7rem;
       padding-inline: var(--sp-1);
-      font-size: 0.625rem;
+      font-size: 0.6875rem;
     }
   }
   @media (width <= 374px) {
@@ -273,18 +283,14 @@ const isHome = Astro.url.pathname === '/';
       gap: var(--sp-1);
       padding-inline: var(--sp-3);
     }
-    .script-toggle-slot label {
-      font-size: 0.5625rem;
-    }
     .script-preference-select {
-      max-width: 6rem;
-      font-size: 0.5625rem;
+      max-width: 6.5rem;
     }
     .theme-toggle {
       min-width: 44px;
       padding-inline: var(--sp-1);
     }
-    .theme-toggle__mark {
+    .brand-mark {
       display: none;
     }
   }

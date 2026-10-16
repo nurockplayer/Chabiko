@@ -120,7 +120,7 @@ describe('Direction C production journey presentation', () => {
   });
 
   it('keeps Chinese, pinyin, Japanese, and route state semantics explicit', () => {
-    expect(homeSource).toContain('lang="zh-Hant"');
+    expect(homeSource).toContain("initialContinuation.trackId === 'basic-vocabulary' ? 'zh-Hans' : 'zh-Hant'");
     expect(homeSource).toContain('lang="zh-Latn"');
     expect(lessonSource).toContain('lang="zh-Hant"');
     expect(lessonSource).toContain('lang="zh-Latn"');

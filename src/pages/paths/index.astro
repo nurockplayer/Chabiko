@@ -18,6 +18,10 @@ import type { LearnerManifest } from '../../types/learnerManifest';
 
 const document = loadLearningPaths();
 const learningPaths = document.learningPaths;
+const taiwanMembers = learningPaths.find((path) => path.id === 'taiwan-travel')?.members ?? [];
+const taiwanLessonCount = taiwanMembers.filter((member) => member.type === 'lesson').length;
+const taiwanWordCount = taiwanMembers.filter((member) => member.type === 'vocabulary').length;
+const taiwanPhraseCount = taiwanMembers.filter((member) => member.type === 'phrase').length;
 
 const readinessTargets = (readinessData as TravelQuestReadinessDocument).targets;
 // Initial SSR snapshot: no progress signals (storage is client-only), so every
@@ -66,7 +70,48 @@ const pathsPayload = JSON.stringify({
     />
     <section class="paths-page" aria-labelledby="paths-heading">
       <h1 id="paths-heading" class="paths-heading">ルートを選んで中国語を学ぼう</h1>
-      <p class="paths-lead">目的に合ったルートを選んでください。進捗はレッスン・単語・会話を合わせた学習項目数です。</p>
+      <p class="paths-lead">目的に合ったルートを選んで、ひとつずつ練習しましょう。</p>
+
+      <section
+        class="readiness-section"
+        data-readiness-section
+        aria-labelledby="readiness-heading"
+      >
+        <p class="readiness-kicker">Travel Quest</p>
+        <h2 id="readiness-heading" class="readiness-heading">旅行の準備度</h2>
+        <p class="readiness-lead">レッスンやロールプレイの学習記録で、場面ごとの準備を確認できます。</p>
+        <p class="readiness-note">フレーズ練習の記録は未対応のため、今は「準備OK」まで進められません。</p>
+        <ol class="readiness-list">
+          {initialReadiness.map((result) => {
+            const target = readinessTargets.find(
+              (t) => t.id === result.targetId,
+            );
+            return (
+              <li
+                class="readiness-list-item"
+                data-readiness-target={result.targetId}
+              >
+                <div class="readiness-item">
+                  <div class="readiness-item__head">
+                    <h3 class="readiness-item__label">{target?.labelJa}</h3>
+                    <span
+                      class="readiness-item__status"
+                      data-readiness-status
+                      data-status={result.status}
+                    >未開始</span>
+                  </div>
+                  <div class="readiness-item__meta">
+                    <progress class="readiness-meter" data-readiness-meter max={result.denominator} value={result.numerator} aria-label={`${target?.labelJa}の学習項目`}></progress>
+                    <span class="readiness-item__count" data-readiness-count>
+                      {result.numerator} / {result.denominator}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
 
       <ol class="paths-list">
         {learningPaths.map((path, index) => {
@@ -74,60 +119,18 @@ const pathsPayload = JSON.stringify({
           return (
             <li class="paths-list-item" data-path-id={path.id}>
               <LearningPathCard path={path} emphasized={index === 0} quiz={quiz} />
+              {path.id === 'taiwan-travel' && (
+                <p class="paths-count-note" data-taiwan-count-note>
+                  全{taiwanMembers.length}項目の内訳：レッスン{taiwanLessonCount}課・単語{taiwanWordCount}語・フレーズ{taiwanPhraseCount}件。
+                  ホームの進捗は{taiwanLessonCount}課のレッスンのみです。
+                  このルートの単語・フレーズはまだ完了を記録できないため、全項目を完了にはできません。
+                </p>
+              )}
             </li>
           );
         })}
       </ol>
       <HskLevelLinks />
-    </section>
-
-    <section
-      class="readiness-section"
-      data-readiness-section
-      aria-labelledby="readiness-heading"
-    >
-      <p class="readiness-kicker">Travel Quest</p>
-      <h2 id="readiness-heading" class="readiness-heading">旅行の準備度</h2>
-      <p class="readiness-lead">実際に台湾で使える場面ごとの準備度です。</p>
-      <ol class="readiness-list">
-        {initialReadiness.map((result) => {
-          const target = readinessTargets.find(
-            (t) => t.id === result.targetId,
-          );
-          return (
-            <li
-              class="readiness-list-item"
-              data-readiness-target={result.targetId}
-            >
-              <div class="readiness-item">
-                <div class="readiness-item__head">
-                  <h3 class="readiness-item__label">{target?.labelJa}</h3>
-                  <span
-                    class="readiness-item__status"
-                    data-readiness-status
-                    data-status={result.status}
-                  >未開始</span>
-                </div>
-                {target?.goalJa && (
-                  <p class="readiness-item__goal">{target.goalJa}</p>
-                )}
-                <div class="readiness-item__meta">
-                  <span class="readiness-item__count" data-readiness-count>
-                    {result.numerator} / {result.denominator}
-                  </span>
-                </div>
-                <p
-                  class="readiness-item__note"
-                  data-readiness-note
-                  hidden={result.unavailableEvidence.length === 0}
-                >
-                  この準備度にはまだ利用できない項目があります。
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
     </section>
   </div>
 
@@ -213,7 +216,7 @@ const pathsPayload = JSON.stringify({
 
   .readiness-section {
     min-width: 0;
-    margin-top: var(--sp-12);
+    margin-block: var(--sp-6) var(--sp-10);
   }
   .readiness-kicker {
     color: var(--coral-deep);
@@ -234,7 +237,7 @@ const pathsPayload = JSON.stringify({
     max-width: 44rem;
     font-size: 13px;
     color: var(--ink-secondary);
-    margin-bottom: var(--sp-6);
+    margin-bottom: var(--sp-2);
   }
   .readiness-list {
     list-style: none;
@@ -255,7 +258,7 @@ const pathsPayload = JSON.stringify({
     background: var(--paper-deep);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-content);
-    padding: var(--sp-5);
+    padding: var(--sp-3) var(--sp-4);
     overflow-wrap: anywhere;
   }
   .readiness-item__head {
@@ -266,6 +269,7 @@ const pathsPayload = JSON.stringify({
     gap: var(--sp-2);
   }
   .readiness-item__label {
+    margin: 0;
     font-size: 14px;
     font-weight: 700;
     color: var(--ink);
@@ -293,8 +297,9 @@ const pathsPayload = JSON.stringify({
     border-color: var(--coral-soft);
     color: var(--coral-deep);
   }
-  .readiness-item__goal {
-    font-size: 13px;
+  .readiness-note,
+  .paths-count-note {
+    font-size: 12px;
     line-height: 1.7;
     color: var(--ink-secondary);
   }
@@ -307,10 +312,9 @@ const pathsPayload = JSON.stringify({
     color: var(--ink-secondary);
     font-variant-numeric: tabular-nums;
   }
-  .readiness-item__note {
-    font-size: 12px;
-    color: var(--ink-muted);
-  }
+  .readiness-meter { flex: 1; min-width: 0; height: 6px; accent-color: var(--jade); }
+  .readiness-item__count { white-space: nowrap; }
+  #readiness-heading { scroll-margin-top: 5rem; }
   @media (width >= 768px) {
     .readiness-list {
       gap: var(--sp-4);

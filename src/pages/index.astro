@@ -61,7 +61,7 @@ const initialContinuation = deriveContinuation(
 
   <div class="dashboard" data-dashboard-root>
     <h1 class="page-title">今日の学習</h1>
-    <p class="page-lead">次に学ぶことを選んで、今日も続けましょう。</p>
+    <p class="page-lead">ひとつの単語から、中国語を身につけましょう。</p>
 
     <!-- Continuation · featured spread (coral = "now here") -->
     <section
@@ -71,7 +71,7 @@ const initialContinuation = deriveContinuation(
     >
       <div class="section-head">
         <h2 id="continuation-heading">はじめの一歩</h2>
-        <span class="en">CONTINUE</span>
+        <span class="en" data-continuation-en>START</span>
       </div>
       <a
         class="featured"
@@ -89,7 +89,7 @@ const initialContinuation = deriveContinuation(
         </p>
         <p
           class="featured-sentence"
-          lang="zh-Hant"
+          lang={initialContinuation.trackId === 'basic-vocabulary' ? 'zh-Hans' : 'zh-Hant'}
           data-continuation-sentence
           hidden={initialContinuation.sentence === null}
         >{initialContinuation.sentence}</p>

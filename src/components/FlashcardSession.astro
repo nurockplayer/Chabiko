@@ -247,11 +247,13 @@ const json = JSON.stringify({
     font-size: 0.85rem; color: var(--ink-secondary);
   }
   .flashcard-reset-btn {
-    font-size: 0.7rem; padding: 2px var(--sp-2);
+    display: inline-flex; align-items: center; min-height: 44px;
+    font-size: 0.75rem; padding: 0 var(--sp-3);
     border: 1px solid var(--hairline); border-radius: var(--radius-control);
     background: transparent; color: var(--ink-secondary); cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
   }
+  .flashcard-reset-btn[hidden] { display: none; }
   .flashcard-reset-btn:hover { border-color: var(--coral-deep); color: var(--coral-deep); }
   .flashcard-reset-btn:focus-visible {
     outline: 3px solid var(--color-focus);

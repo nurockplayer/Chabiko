@@ -44,6 +44,17 @@ afterEach(() => {
 });
 
 describe('basic vocabulary session lifecycle', () => {
+  it('reveals all source senses as separate list items without fabricating phrase pinyin', () => {
+    const root = rootWith(['teacher-learner-5762bc98cd920b67']);
+    initBasicVocabularySession(root);
+    expect(root.querySelector('.basic-vocabulary-japanese')).toBeNull();
+    reveal(root);
+    expect([...root.querySelectorAll('.basic-vocabulary-japanese li')].map((item) => item.textContent))
+      .toEqual(['(もの)を見る', '(本など)を読む']);
+    expect(root.querySelector('.basic-vocabulary-context')?.textContent).toContain('看电视 看书');
+    expect(root.querySelector('.basic-vocabulary-context [lang="zh-Latn"]')).toBeNull();
+  });
+
   it('uses the state machine for reveal, exact requeue, completion, and continue', () => {
     const root = rootWith();
     initBasicVocabularySession(root);

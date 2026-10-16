@@ -213,6 +213,9 @@ describe('dashboard build-time payload', () => {
   it('carries the production corpora and Taiwan destination metadata', () => {
     const payload = buildDashboardProgressPayload();
     expect(payload.basicVocabularyCorpusIds.length).toBeGreaterThan(0);
+    expect(payload.basicVocabularyStarter).toEqual({
+      simplified: '看', pinyin: 'kàn', japanese: '・(もの)を見る ・(本など)を読む',
+    });
     expect(payload.hsk.destination).toBe('/vocabulary/hsk/1/');
     expect(payload.hsk.statusLabelJa).toBe('利用できます');
     expect(payload.hsk.eligibleIds).toHaveLength(1969);
@@ -269,6 +272,26 @@ describe('dashboard continuation derivation', () => {
       trackId: 'basic-vocabulary',
       href: '/vocabulary/basic/',
       actionLabel: '単語学習を始める',
+    });
+  });
+
+  it('previews the source word only before the vocabulary track starts', () => {
+    const payload = { ...TEST_PAYLOAD, basicVocabularyStarter: {
+      simplified: '看', pinyin: 'kàn', japanese: '・(もの)を見る ・(本など)を読む',
+    } };
+    expect(deriveContinuation(zeroSnapshot, payload, new Set())).toMatchObject({
+      kind: 'start', sentence: '看', pinyin: 'kàn', title: '(もの)を見る ／ (本など)を読む',
+    });
+    const started = buildCrossTrackProgressSnapshot({
+      basicVocabulary: buildBasicVocabularyTrackSummary({
+        progress: { [TEST_PAYLOAD.basicVocabularyCorpusIds[0]]: { status: 'learning', knownStreak: 0 } },
+        corpusIds: new Set(TEST_PAYLOAD.basicVocabularyCorpusIds), scope: { kind: 'guest' },
+      }),
+      hsk: zeroSnapshot.tracks.hsk,
+      taiwanTravel: zeroSnapshot.tracks['taiwan-travel'],
+    });
+    expect(deriveContinuation(started, payload, new Set())).toMatchObject({
+      kind: 'continue', sentence: null, pinyin: null, title: '先生厳選単語',
     });
   });
 
@@ -642,7 +665,7 @@ describe('dashboard home page (index.astro)', () => {
   });
 
   it('keeps Chinese and pinyin semantics for the continuation destination', () => {
-    expect(homeSource).toContain('lang="zh-Hant"');
+    expect(homeSource).toContain("initialContinuation.trackId === 'basic-vocabulary' ? 'zh-Hans' : 'zh-Hant'");
     expect(homeSource).toContain('lang="zh-Latn"');
   });
 

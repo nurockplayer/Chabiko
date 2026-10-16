@@ -136,6 +136,8 @@ function renderContinuation(
   const stage = link.querySelector<HTMLElement>('[data-continuation-stage]');
   if (heading) heading.textContent = continuation.kind === 'start' ? 'はじめの一歩' : '続きを学ぶ';
   if (stage) stage.textContent = continuation.kind === 'start' ? 'ここから始める' : '続きから';
+  const english = root.querySelector<HTMLElement>('[data-continuation-en]');
+  if (english) english.textContent = continuation.kind === 'start' ? 'START' : 'CONTINUE';
   link.href = continuation.href;
   const kicker = link.querySelector<HTMLElement>('[data-continuation-kicker]');
   if (kicker) {
@@ -147,6 +149,7 @@ function renderContinuation(
   if (title) title.textContent = continuation.title;
   const sentence = link.querySelector<HTMLElement>('[data-continuation-sentence]');
   if (sentence) {
+    sentence.lang = continuation.trackId === 'basic-vocabulary' ? 'zh-Hans' : 'zh-Hant';
     sentence.textContent = continuation.sentence ?? '';
     sentence.hidden = continuation.sentence === null;
   }

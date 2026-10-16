@@ -439,6 +439,8 @@ const canonical = url.href;
       }
     </style>
     <style is:global>
+      /* Keep focused/scrolled-to elements clear of the sticky site header (WCAG 2.4.11). */
+      html { scroll-padding-top: 72px; }
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,

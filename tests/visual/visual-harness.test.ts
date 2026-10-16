@@ -92,6 +92,9 @@ describe('visual regression harness contract', () => {
     const expected = [
       ...HSK_STUDY_VISUAL_CASES.flatMap((capture) => [capture.setupSnapshot, capture.answerSnapshot]),
       'v1-word-order-alternative-375x812.png',
+      // ux-audit-followup.visual.spec.ts (#509 follow-up)
+      ...['header', 'meanings', 'quiz-choices', 'readiness'].flatMap((name) =>
+        ['dark', 'light'].flatMap((theme) => [320, 375].map((width) => `ux-${name}-${theme}-${width}.png`))),
       ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,

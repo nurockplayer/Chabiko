@@ -7,6 +7,7 @@ import {
   type AchievementEvaluation,
 } from './achievements';
 import type { HskLearnerProjection } from './hskLearnerProjection';
+import { japaneseSenses } from './japaneseSenses';
 
 // ─── Dashboard presentation domain (Issue #374) ───────────────────────────────
 //
@@ -58,6 +59,11 @@ export interface DashboardTrackLesson {
  *  ids that exist in these production corpora. */
 export interface DashboardProgressPayload {
   readonly basicVocabularyCorpusIds: readonly string[];
+  readonly basicVocabularyStarter?: {
+    readonly simplified: string;
+    readonly pinyin?: string;
+    readonly japanese?: string;
+  };
   readonly hsk: HskLearnerProjection;
   readonly taiwanCompletableLessonIds: readonly string[];
   readonly taiwanLessons: readonly DashboardTrackLesson[];
@@ -187,16 +193,20 @@ function continuationForTrack(
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return null;
   const track = snapshot.tracks[trackId];
   if (track.status === 'completed') return null;
-  const started = track.status === 'in-progress';
+  const started = track.status === 'in-progress'
+    || (track.trackId === 'basic-vocabulary' && track.learningCount > 0);
   if (trackId === 'basic-vocabulary') {
+    const starter = started ? undefined : payload.basicVocabularyStarter;
     return {
       kind: started ? 'continue' : 'start',
       trackId,
       href: '/vocabulary/basic/',
       actionLabel: started ? '単語学習を続ける' : '単語学習を始める',
-      title: DASHBOARD_TRACK_LABELS['basic-vocabulary'],
-      sentence: null,
-      pinyin: null,
+      title: starter?.japanese
+        ? japaneseSenses(starter.japanese).join(' ／ ')
+        : DASHBOARD_TRACK_LABELS['basic-vocabulary'],
+      sentence: starter?.simplified ?? null,
+      pinyin: starter?.pinyin ?? null,
     };
   }
   if (trackId === 'hsk') {
@@ -246,7 +256,8 @@ export function deriveContinuation(
 ): DashboardContinuation {
   const order = DASHBOARD_TRACK_ORDER;
   for (const trackId of order) {
-    if (snapshot.tracks[trackId].status === 'in-progress') {
+    if (snapshot.tracks[trackId].status === 'in-progress'
+      || (trackId === 'basic-vocabulary' && snapshot.tracks[trackId].learningCount > 0)) {
       const continuation = continuationForTrack(
         trackId,
         snapshot,

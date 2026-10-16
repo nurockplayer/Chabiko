@@ -220,6 +220,11 @@ export function initPathsReadiness(
       if (!item) continue;
       const count = item.querySelector<HTMLElement>('[data-readiness-count]');
       if (count) count.textContent = `${result.numerator} / ${result.denominator}`;
+      const meter = item.querySelector<HTMLProgressElement>('[data-readiness-meter]');
+      if (meter) {
+        meter.max = result.denominator;
+        meter.value = result.numerator;
+      }
       const percent = item.querySelector<HTMLElement>(
         '[data-readiness-percent]',
       );
