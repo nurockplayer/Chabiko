@@ -1,5 +1,7 @@
 ---
 import { loadHskLearnerProjection } from '../content/loadHskVocabulary';
+interface Props { showQuizScores?: boolean }
+const { showQuizScores = false } = Astro.props;
 const projection = loadHskLearnerProjection();
 const levels = projection.levels.filter(({ ids }) => ids.length > 0);
 const payload = JSON.stringify(levels);
@@ -14,6 +16,7 @@ const payload = JSON.stringify(levels);
         <strong>HSK {level}</strong>
         <span>新出 {ids.length}語</span>
         <span data-hsk-level-progress>覚えた 0 / {ids.length}語</span>
+        {showQuizScores && <span data-hsk-quiz-best>テスト未受験</span>}
       </a>
     ))}
   </div>
@@ -22,6 +25,7 @@ const payload = JSON.stringify(levels);
 )}
 
 <script>
+  import { HSK_QUIZ_BEST_KEY, HSK_QUIZ_SCORE_EVENT, formatHskQuizBest, readHskQuizBest } from '../domain/hskQuizBestScore';
   import { VocabularyProgressStore, VOCABULARY_PROGRESS_KEY } from '../domain/vocabularyProgress';
   const roots = document.querySelectorAll<HTMLElement>('[data-hsk-levels]');
   for (const root of roots) {
@@ -32,13 +36,16 @@ const payload = JSON.stringify(levels);
       for (const { level, ids } of levels) {
         const count = ids.filter((id) => store.getStatus(id) === 'learned').length;
         const label = root.querySelector(`[data-hsk-level="${level}"] [data-hsk-level-progress]`);
+        const best = root.querySelector(`[data-hsk-level="${level}"] [data-hsk-quiz-best]`);
+        if (best) best.textContent = formatHskQuizBest(readHskQuizBest(level));
         if (label) label.textContent = `覚えた ${count} / ${ids.length}語`;
       }
     };
     render();
     window.addEventListener('pageshow', render);
+    window.addEventListener(HSK_QUIZ_SCORE_EVENT, render);
     window.addEventListener('storage', (event) => {
-      if (event.key === null || event.key === VOCABULARY_PROGRESS_KEY) render();
+      if (event.key === null || event.key === VOCABULARY_PROGRESS_KEY || event.key.startsWith(`${HSK_QUIZ_BEST_KEY}:`)) render();
     });
   }
 </script>

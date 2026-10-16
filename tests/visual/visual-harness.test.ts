@@ -95,6 +95,10 @@ describe('visual regression harness contract', () => {
       // ux-audit-followup.visual.spec.ts (#509 follow-up)
       ...['header', 'meanings', 'quiz-choices', 'readiness'].flatMap((name) =>
         ['dark', 'light'].flatMap((theme) => [320, 375].map((width) => `ux-${name}-${theme}-${width}.png`))),
+      // hsk-quiz.visual.spec.ts
+      ...['zh-to-ja', 'ja-to-zh'].flatMap((direction) =>
+        ['setup', 'question', 'feedback', 'result'].flatMap((state) =>
+          ['dark', 'light'].flatMap((theme) => [375, 1440].map((width) => `hsk-quiz-${direction}-${state}-${theme}-${width}.png`)))),
       ...TONE_VISUAL_CASES.map((visualCase) => visualCase.snapshotName),
       ...expectedMatrix,
       ...expectedLearner,
