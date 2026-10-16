@@ -4,6 +4,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseStrictJsonText } from '../scripts/unicode_review_external_io';
+import { expectedHskReviewStatus, hasHskHumanReviews } from './helpers/hskHumanReview';
 
 interface SourceProfile {
   profileVersion: number;
@@ -179,7 +180,9 @@ const receipt = parseJsonBytes<VerificationReceipt>(receiptBytes);
 const manifest = readJson<HskManifest>(path.join(importDir, 'manifest.json'));
 const batchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
 const immutablePlanSha256 = '7a1dd56a17d6d973600bcaa487035108dd61ede3b488ff88dff60c3a1a1c4bd3';
-const immutableFirstBatchSha256 = '76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e';
+const immutableFirstBatchSha256 = hasHskHumanReviews
+  ? manifest.publication.batches[0].sha256
+  : '76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e';
 const batch = readJson<{ vocabulary: VocabularyRecord[] }>(batchPath);
 
 function expectedBatchFilename(placement: string): string {
@@ -583,11 +586,17 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
       requireInvariant(sameJson(Object.keys(batchRow.source).sort(), ['note', 'type']), `batch-source-schema-${placement}-${index + 1}`);
       requireInvariant(batchRow.id === row.recordId, `batch-record-id-join-${placement}-${index + 1}`);
       requireInvariant(batchRow.simplified === row.simplified && batchRow.pinyin === row.pinyin && batchRow.japanese === japaneseRow.japanese, `batch-content-join-${placement}-${index + 1}`);
-      requireInvariant(batchRow.reviewStatus === 'draft' && batchRow.simplifiedStatus === 'authored', `batch-provisional-status-${placement}-${index + 1}`);
+      const expectedStatus = expectedHskReviewStatus(batchRow);
+      requireInvariant(batchRow.reviewStatus === expectedStatus && batchRow.simplifiedStatus === 'authored', `batch-provisional-status-${placement}-${index + 1}`);
       requireInvariant(batchRow.hsk.standardVersion === 'hsk-3.0' && batchRow.hsk.introducedAtLevel === row.primaryLevel
         && batchRow.hsk.sourceLevelLabel === row.sourceLevelLabel, `batch-hsk-join-${placement}-${index + 1}`);
       requireInvariant(batchRow.source.type === 'hearmandarin-hsk-json', `batch-source-type-${placement}-${index + 1}`);
-      requireInvariant(batchRow.source.note === expectedSourceNote(candidateProfile, row), `batch-source-note-exact-${placement}-${index + 1}`);
+      const expectedNote = expectedStatus === 'reviewed'
+        ? expectedSourceNote(candidateProfile, row)
+          .replace('Japanese glosses are separately authored AI-provisional drafts.', 'Japanese glosses were separately authored as AI-provisional drafts.')
+          .replace('Japanese is independently AI-authored and provisional, not human reviewed.', 'Japanese glosses are human reviewed.')
+        : expectedSourceNote(candidateProfile, row);
+      requireInvariant(batchRow.source.note === expectedNote, `batch-source-note-exact-${placement}-${index + 1}`);
       requireInvariant(!Object.hasOwn(batchRow, 'traditional'), `batch-excluded-field-${placement}-${index + 1}`);
     }
   }
@@ -1294,7 +1303,7 @@ describe('HearMandarin HSK source foundation', () => {
     }
   });
 
-  it('keeps the first Japanese batch provisional and carries source credit and modification details per row', () => {
+  it('keeps original AI authorship and attributes subsequent human gloss review per row', () => {
     expect(japanese.authoring).toMatchObject({
       status: 'ai-provisional',
       reviewStatus: 'draft',
@@ -1311,12 +1320,12 @@ describe('HearMandarin HSK source foundation', () => {
       expect(row.japanese).toBe(companion.japanese);
       expect(Object.keys(row).sort()).toEqual(['hsk', 'id', 'japanese', 'pinyin', 'reviewStatus', 'simplified', 'simplifiedStatus', 'source']);
       expect(Object.keys(row.hsk).sort()).toEqual(['introducedAtLevel', 'sourceLevelLabel', 'standardVersion']);
-      expect(row.reviewStatus).toBe('draft');
+      expect(row.reviewStatus).toBe(expectedHskReviewStatus(row));
       expect(row.simplifiedStatus).toBe('authored');
       expect(row).not.toHaveProperty('traditional');
       expect(row.source.note).toContain('https://creativecommons.org/licenses/by/4.0/');
       expect(row.source.note).toContain('https://hearmandarin.com/terms/');
-      expect(row.source.note).toContain('AI-authored and provisional');
+      expect(row.source.note).toContain(row.reviewStatus === 'draft' ? 'AI-authored and provisional' : 'Japanese glosses are human reviewed.');
       expect(row.source.note).toContain('not a legal determination');
     }
   });
