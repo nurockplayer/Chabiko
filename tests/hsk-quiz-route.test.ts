@@ -1,16 +1,13 @@
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Window } from 'happy-dom';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { loadHskPublication } from '../src/content/loadHskVocabulary';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
 
-const output = mkdtempSync(join(tmpdir(), 'chabiko-hsk-quiz-'));
-beforeAll(() => {
-  execFileSync('pnpm', ['astro', 'build', '--outDir', output], { stdio: 'pipe', timeout: 180_000 });
-}, 180_000);
-afterAll(() => { rmSync(output, { recursive: true, force: true }); });
+// Read-only suite: reuse the shared route build instead of a separate astro build.
+const output = routeBuildDirectory();
+beforeAll(() => { ensureRouteBuild(); }, 180_000);
 
 describe('rendered HSK quiz routes', () => {
   for (const pool of loadHskPublication().pools) {
