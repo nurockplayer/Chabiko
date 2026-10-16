@@ -55,20 +55,13 @@ were added. Changes are left uncommitted for the lead's review and delivery.
   corners. The exact case then passed 3/3 isolated runs with unchanged
   expectations and tolerances. Unicode visual artifacts also passed their
   currency check. This is not an all-green full-suite result.
-- `pnpm test:a11y`: 90 passed, two failed. Both failures are `target-size`
-  on HSK 2's `#btn-reset-progress` at 320px, in light and dark themes, in
-  `tests/a11y/hsk-vocabulary.a11y.spec.ts`. The same two tests passed on a
-  temporary, untouched archive of baseline `5f630b0e`, so the current patch
-  must not be treated as accessibility-clean.
-
-The reset button measures 117 × 21px. In a focused reproduction after revealing
-HSK 2, its top was −1.83px while the sticky header occupied 0–57px; a center
-hit-test resolved to the header's script select. The compact header exposes
-this target-size/occlusion interaction. The HSK owner should assess the reset
-button's target size (currently `font-size: 0.7rem; padding: 2px ...` in
-`src/components/FlashcardSession.astro:249`) and rerun the two 320px checks.
-No HSK source, global HSK-specific workaround, or accessibility exclusion was
-added. **This integration issue remains open before merge.**
+- `pnpm test:a11y`: the first run had two `target-size` failures on HSK 2's
+  `#btn-reset-progress` at 320px. The 117 × 21px button sat under the
+  compact sticky header after reveal. Resolved by the lead in this branch:
+  a 44px `min-height` on `.flashcard-reset-btn` (still honoring `hidden`) and a
+  global `scroll-padding-top` so focused elements clear the sticky header.
+  Final result on latest `main`: `pnpm test:a11y` 92 passed and
+  `pnpm test:visual` 229 passed after the baseline update.
 
 Logs are available locally at `/tmp/chabiko-ux-{unit,unit-adjacent,visual-update,visual-verify,visual-retry,a11y,baseline-a11y}.log`.
 The baseline experiment used an isolated temporary source copy and did not
