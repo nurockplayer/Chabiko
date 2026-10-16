@@ -47,9 +47,13 @@ were added. Changes are left uncommitted for the lead's review and delivery.
 - `pnpm test:visual:update`: 221 passed, eight HSK dev-server failures after
   a shared-module hot reload during the run. All eight passed in the subsequent
   stable full verification. Inspected changed captures in both themes;
-  restored three unrelated vocabulary raster-noise updates. No small-talk
-  baselines changed. The 16 HSK snapshot updates reflect the shared header;
-  HSK pages/components were not edited.
+  restored three unrelated vocabulary raster-noise updates. The 16 HSK
+  snapshot updates reflect the shared header; HSK pages/components were not
+  edited by the worker. Lead integration later added the HSK reset-target fix
+  and refreshed the `/dev/small-talk/` prototype evidence for the shorter
+  header: eight `small-talk-*.png` baselines changed, and the matching
+  `captureHeight`/`scrollY` values in `tests/visual/smallTalkLabCases.ts` were
+  re-measured from the pinned container (all 14 cases), then verified (18/18).
 - `pnpm test:visual`: 228 passed, one two-pixel comparison failure in
   `dark-completion-768x1024.png`. The differences were rounding at card
   corners. The exact case then passed 3/3 isolated runs with unchanged
