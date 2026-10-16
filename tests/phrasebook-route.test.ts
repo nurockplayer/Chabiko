@@ -692,7 +692,7 @@ describe('/phrasebook/ — SSR route surface (Issue #236, fail-closed)', () => {
     expect(routeSource).toContain('<Header themeEnabled />');
     expect(routeSource).toContain('slot="header"');
     expect(builtHtml).toContain('id="script-preference-select"');
-    expect(builtHtml).toContain('コース標準');
+    expect(builtHtml).toContain('表記：標準');
   });
 
   it('provides the native scenario filter with the six controlled values and a reset link', () => {

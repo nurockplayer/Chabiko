@@ -45,6 +45,9 @@ for (const width of [375, 320]) {
       await reveal.click();
       await expect(page.locator('.basic-vocabulary-japanese li')).toHaveText(['(もの)を見る', '(本など)を読む']);
       await expect(page.locator('.basic-vocabulary-context-text')).toHaveText('看电视 看书');
+      // Let the audio index request settle (it can re-evaluate control visibility) and keep the pointer off the capture.
+      await page.waitForLoadState('networkidle');
+      await page.mouse.move(0, 0);
       await expect(page.locator('.basic-vocabulary-word-breakdown')).toHaveScreenshot(`ux-meanings-${theme}-${width}.png`);
       await page.getByRole('button', { name: 'むずかしい', exact: true }).click();
       await page.goto('/');

@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 
+import { japaneseSenses } from '../src/domain/japaneseSenses';
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { loadProductionLearnerCorpus } from '../src/content/loadProductionLearnerCorpus';
@@ -80,7 +81,7 @@ describe('basic vocabulary route', () => {
 
     expect(root.textContent).toContain(first[0].simplified);
     expect(root.textContent).not.toContain(first[0].pinyin);
-    expect(root.textContent).not.toContain(first[0].japanese);
+    for (const sense of japaneseSenses(first[0].japanese)) expect(root.textContent).not.toContain(sense);
     if (first[0].traditional && first[0].traditional !== first[0].simplified) {
       expect(root.textContent).not.toContain(first[0].traditional);
     }
@@ -88,7 +89,8 @@ describe('basic vocabulary route', () => {
 
     (root.querySelector('[data-action="reveal"]') as HTMLButtonElement).click();
     expect(root.textContent).toContain(first[0].pinyin);
-    expect(root.textContent).toContain(first[0].japanese);
+    // Meanings render as a sense list (#509 F11).
+    for (const sense of japaneseSenses(first[0].japanese)) expect(root.textContent).toContain(sense);
     if (first[0].traditional) {
       expect(root.textContent).toContain(first[0].traditional);
     }

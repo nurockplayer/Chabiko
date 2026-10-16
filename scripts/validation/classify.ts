@@ -232,6 +232,10 @@ interface DomainRule {
 
 export const DOMAIN_TEST_RULES: DomainRule[] = [
   {
+    match: (b) => b === 'japanesesenses.ts',
+    testGlobs: ['tests/japanese-senses.test.ts', 'tests/basic-vocabulary-*.test.ts', 'tests/dashboard.test.ts'],
+  },
+  {
     match: (b) => b.includes('basicvocabulary'),
     testGlobs: ['tests/basic-vocabulary-*.test.ts'],
   },
