@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { collectPronunciationInputs, createAzureSpeechProvider, generatePronunciationAudio, manifestKey, normalizePronunciationText, selectGenerationInputs, type PronunciationManifestEntry } from '../scripts/audio/generate';
+import { INDEX_PATH, buildPronunciationIndex, collectPronunciationInputs, createAzureSpeechProvider, generatePronunciationAudio, manifestKey, normalizePronunciationText, selectGenerationInputs, type PronunciationManifestEntry } from '../scripts/audio/generate';
+import { findRecording, normalizeText } from '../src/lib/pronunciation/player';
 
 const temporaryRoots: string[] = [];
 
@@ -76,6 +77,45 @@ describe('pronunciation audio source collection', () => {
     expect(manifestKey(' 謝謝 ', 'zh_TW')).toBe('zh-tw|謝謝');
     expect(selectGenerationInputs(inputs, manifest)).toEqual([inputs[1]]);
   });
+
+  it('uses the same normalization as the player for slash alternatives', () => {
+    for (const text of ['小姐/女士', ' 小姐 ／ 女士 ', 'Ａ\n 謝謝']) expect(normalizePronunciationText(text)).toBe(normalizeText(text));
+  });
+});
+
+describe('pronunciation audio index', () => {
+  const entry = (text: string, lang: string, file: string, source: PronunciationManifestEntry['source']) => ({
+    text, lang, file, source, voice: 'v', provider: 'p', sha256: '0'.repeat(64), generatedAt: '2026-01-01T00:00:00.000Z',
+  }) as PronunciationManifestEntry;
+
+  it('keys by normalized text and language, keeps only files, and prefers teacher recordings', () => {
+    const index = buildPronunciationIndex([
+      entry('小姐/女士', 'zh_TW', '/audio/tts-ms.mp3', 'tts'),
+      entry('謝謝', 'zh-TW', '/audio/tts.mp3', 'tts'),
+      entry(' 謝謝 ', 'zh_TW', '/audio/teacher.mp3', 'teacher-recording'),
+      entry('谢谢', 'zh-CN', '/audio/cn.mp3', 'tts'),
+      entry('謝謝', 'zh-TW', '/audio/later-tts.mp3', 'tts'),
+    ]);
+    expect(index).toEqual({ 'zh-cn|谢谢': '/audio/cn.mp3', 'zh-tw|小姐，女士': '/audio/tts-ms.mp3', 'zh-tw|謝謝': '/audio/teacher.mp3' });
+    expect(Object.keys(index)).toEqual(Object.keys(index).sort());
+    const lookup = new Map(Object.entries(index));
+    expect(findRecording('小姐／女士', 'zh-TW', lookup)).toBe('/audio/tts-ms.mp3');
+    expect(findRecording('謝謝', 'zh-TW', lookup)).toBe('/audio/teacher.mp3');
+  });
+
+  it('rebuilds the index from the manifest without credentials', async () => {
+    const root = tempRoot();
+    const logs: string[] = [];
+    await generatePronunciationAudio({ root, inputs: [], manifest: [entry('老師好', 'zh-TW', '/audio/teacher.mp3', 'teacher-recording')], dryRun: false, indexOnly: true, key: '', log: (message) => logs.push(message) });
+    expect(JSON.parse(readFileSync(join(root, INDEX_PATH), 'utf8'))).toEqual({ 'zh-tw|老師好': '/audio/teacher.mp3' });
+    expect(logs.join('\n')).toContain('Index rebuilt with 1 entries');
+  });
+
+  it('keeps the committed index in sync with the committed manifest', () => {
+    const manifest = JSON.parse(readFileSync(join(process.cwd(), 'src/lib/pronunciation/manifest.json'), 'utf8')) as PronunciationManifestEntry[];
+    const committed: unknown = JSON.parse(readFileSync(join(process.cwd(), INDEX_PATH), 'utf8'));
+    expect(committed).toEqual(buildPronunciationIndex(manifest));
+  });
 });
 
 describe('Azure Speech provider', () => {
@@ -120,6 +160,7 @@ describe('pronunciation audio generation', () => {
     expect(calls).toBe(1);
     const manifest = JSON.parse(readFileSync(join(root, 'src/lib/pronunciation/manifest.json'), 'utf8')) as PronunciationManifestEntry[];
     expect(manifest[0]).toMatchObject({ text: '你好', lang: 'zh-CN', source: 'tts', reviewStatus: 'draft', humanReview: false, provider: 'mock', file: `/audio/${manifest[0]?.sha256}.mp3` });
+    expect(JSON.parse(readFileSync(join(root, INDEX_PATH), 'utf8'))).toEqual({ 'zh-cn|你好': manifest[0]?.file });
     await generatePronunciationAudio({ root, inputs, manifest, dryRun: false, provider, log: () => undefined });
     expect(calls).toBe(1);
   });
@@ -152,6 +193,7 @@ describe('pronunciation audio generation', () => {
     const saved = JSON.parse(readFileSync(join(root, 'src/lib/pronunciation/manifest.json'), 'utf8')) as PronunciationManifestEntry[];
     expect(saved.some((entry) => entry.source === 'teacher-recording' && entry.text === '老師好')).toBe(true);
     expect(saved.some((entry) => entry.source === 'tts' && entry.text === '第一個' && entry.file.startsWith('/audio/'))).toBe(true);
+    expect(JSON.parse(readFileSync(join(root, INDEX_PATH), 'utf8'))).toEqual(buildPronunciationIndex(saved));
   });
 
   it('exercises dry-run limits and missing-key errors through the executable CLI', () => {

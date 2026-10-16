@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
+import { normalizeText, pronunciationKey } from '../../src/lib/pronunciation/normalize.ts';
 
 export type PronunciationLanguage = 'zh-TW' | 'zh-CN';
 
@@ -40,11 +41,8 @@ const LANGUAGE_FIELDS: Readonly<Record<string, PronunciationLanguage>> = {
 const HAN_CHARACTER = /\p{Script=Han}/u;
 const JAPANESE_KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
-export function normalizePronunciationText(text: string): string {
-  // Slash-separated alternatives (小姐/女士) are spoken as a list (小姐，女士); mirrors player normalizeText.
-  return text.normalize('NFKC').trim().replace(/\s+/gu, ' ')
-    .replace(/(\p{Script=Han})\s*\/\s*(?=\p{Script=Han})/gu, '$1，');
-}
+/** The player's normalization (shared module), so generated keys always match playback lookups. */
+export const normalizePronunciationText = normalizeText;
 
 function addInput(
   output: Map<string, PronunciationInput>,
@@ -206,14 +204,46 @@ export interface GenerationOptions {
   readonly region?: string;
   /** Operator confirms the Azure resource is a paid tier; Microsoft grants neural-voice output use rights to paid-tier customers. */
   readonly confirmPaidTier?: boolean;
+  /** Rebuild public/audio/index.json from the manifest only (e.g. after adding a teacher recording); no credentials needed. */
+  readonly indexOnly?: boolean;
   readonly root?: string;
   readonly log?: (message: string) => void;
 }
 
-export function manifestKey(text: string, lang: string): string {
-  const normalizedText = normalizePronunciationText(text);
-  const normalizedLang = lang.replace(/_/gu, '-').toLowerCase();
-  return `${normalizedLang}|${normalizedText}`;
+export const manifestKey = pronunciationKey;
+
+const MANIFEST_PATH = 'src/lib/pronunciation/manifest.json';
+/** Compact lookup the player fetches after page load; the full manifest is never shipped to browsers. */
+export const INDEX_PATH = 'public/audio/index.json';
+
+/** `lang|text` → root-relative file, with teacher recordings taking precedence over generated speech. */
+export function buildPronunciationIndex(manifest: readonly PronunciationManifestEntry[]): Record<string, string> {
+  const chosen = new Map<string, PronunciationManifestEntry>();
+  for (const entry of manifest) {
+    const key = manifestKey(entry.text, entry.lang);
+    const current = chosen.get(key);
+    if (!current || (entry.source === 'teacher-recording' && current.source !== 'teacher-recording')) chosen.set(key, entry);
+  }
+  return Object.fromEntries([...chosen].sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0)).map(([key, entry]) => [key, entry.file]));
+}
+
+function sortManifest(manifest: PronunciationManifestEntry[]): void {
+  manifest.sort((left, right) => {
+    const leftKey = manifestKey(left.text, left.lang);
+    const rightKey = manifestKey(right.text, right.lang);
+    return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
+  });
+}
+
+/** Writes the manifest and its index together so every checkpoint leaves them consistent. */
+function writeOutputs(root: string, manifest: PronunciationManifestEntry[]): void {
+  sortManifest(manifest);
+  const manifestPath = join(root, MANIFEST_PATH);
+  mkdirSync(dirname(manifestPath), { recursive: true });
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const indexPath = join(root, INDEX_PATH);
+  mkdirSync(dirname(indexPath), { recursive: true });
+  writeFileSync(indexPath, `${JSON.stringify(buildPronunciationIndex(manifest))}\n`);
 }
 
 export function selectGenerationInputs(
@@ -253,7 +283,7 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
   const root = options.root ?? ROOT;
   const log = options.log ?? console.log;
   const allInputs = options.inputs ?? collectPronunciationInputs(root);
-  const manifest = [...(options.manifest ?? readManifest(join(root, 'src/lib/pronunciation/manifest.json')))];
+  const manifest = [...(options.manifest ?? readManifest(join(root, MANIFEST_PATH)))];
   const existingByKey = new Map(manifest.map((entry) => [manifestKey(entry.text, entry.lang), entry]));
   const needed = selectGenerationInputs(allInputs, manifest).filter((input) => {
     const existing = existingByKey.get(manifestKey(input.text, input.lang));
@@ -264,6 +294,12 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
   if (options.dryRun) {
     log(`Pronunciation audio: ${allInputs.length} distinct text/language pairs, ${countHanCharacters(allInputs)} Han characters.`);
     log(`Pending generation: ${needed.length}; selected by limit: ${selected.length}.`);
+    return;
+  }
+
+  if (options.indexOnly) {
+    writeOutputs(root, manifest);
+    log(`Index rebuilt with ${Object.keys(buildPronunciationIndex(manifest)).length} entries.`);
     return;
   }
 
@@ -303,44 +339,32 @@ export async function generatePronunciationAudio(options: GenerationOptions): Pr
     };
     if (current === -1) manifest.push(entry);
     else if (manifest[current]?.source !== 'teacher-recording') manifest[current] = entry;
-    manifest.sort((left, right) => {
-      const leftKey = manifestKey(left.text, left.lang);
-      const rightKey = manifestKey(right.text, right.lang);
-      return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
-    });
-    const manifestPath = join(root, 'src/lib/pronunciation/manifest.json');
-    mkdirSync(dirname(manifestPath), { recursive: true });
-    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    writeOutputs(root, manifest);
     log(`Generated ${input.lang} ${input.text} → ${entry.file}`);
   }
 
-  manifest.sort((left, right) => {
-    const leftKey = manifestKey(left.text, left.lang);
-    const rightKey = manifestKey(right.text, right.lang);
-    return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
-  });
-  const manifestPath = join(root, 'src/lib/pronunciation/manifest.json');
-  mkdirSync(dirname(manifestPath), { recursive: true });
-  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  writeOutputs(root, manifest);
   log(`Manifest updated with ${manifest.length} entries.`);
 }
 
-function parseArguments(args: readonly string[]): { dryRun: boolean; limit?: number; confirmPaidTier: boolean } {
+function parseArguments(args: readonly string[]): { dryRun: boolean; limit?: number; confirmPaidTier: boolean; indexOnly: boolean } {
   let dryRun = false;
   let confirmPaidTier = false;
+  let indexOnly = false;
   let limit: number | undefined;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === '--') continue;
     else if (argument === '--dry-run') dryRun = true;
     else if (argument === '--confirm-paid-tier') confirmPaidTier = true;
+    else if (argument === '--index-only') indexOnly = true;
     else if (argument === '--limit') {
       const raw = args[++index];
       if (!raw || !/^\d+$/u.test(raw)) throw new Error('--limit requires a non-negative integer.');
       limit = Number(raw);
     } else throw new Error(`Unknown argument: ${argument}`);
   }
-  return { dryRun, limit, confirmPaidTier };
+  return { dryRun, limit, confirmPaidTier, indexOnly };
 }
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
