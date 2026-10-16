@@ -21,7 +21,8 @@
     "validate:full": "node scripts/validation/run.ts run --tier t3",
     "validate:classify": "node scripts/validation/run.ts classify",
     "validate:content": "bash scripts/validate-content.sh",
-    "audio:generate": "node scripts/audio/generate.ts"
+    "audio:generate": "node scripts/audio/generate.ts",
+    "audio:compare": "node scripts/audio/compare-voices.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.0",

@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "reviewStatus": "draft",
+  "humanReview": false,
+  "provenance": "Verbatim Chabiko material selected in issue #526; includes drafts, pilots and a fixture. Focus notes are AI-provisional, not teacher-approved targets.",
+  "items": [
+    {
+      "id": "matched-01",
+      "text": "我要一杯珍珠奶茶。",
+      "focus": "一の変調（yì bēi）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/roleplay/food.json#L16"
+    },
+    {
+      "id": "matched-02",
+      "text": "我要一個。",
+      "focus": "一の変調（yí ge）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/practice/word-order-cues.json#L70"
+    },
+    {
+      "id": "matched-03",
+      "text": "我想問一個問題。",
+      "focus": "長い文の中での一の変調",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/content-pilots/hsk-golden/vocabulary.json#L43"
+    },
+    {
+      "id": "matched-04",
+      "text": "不要辣，謝謝。可以外帶嗎？",
+      "focus": "不の変調（bú yào）、間、疑問文",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/roleplay/food.json#L48"
+    },
+    {
+      "id": "matched-05",
+      "text": "可以，少冰。要不要辣？",
+      "focus": "疑問文のリズム・軽声",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/roleplay/food.json#L41"
+    },
+    {
+      "id": "matched-06",
+      "text": "也不一定，每個人不一樣。",
+      "focus": "一と不が組み合わさる場面",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/small-talk/encounters.json#L917"
+    },
+    {
+      "id": "matched-07",
+      "text": "銀行在哪裡",
+      "focus": "銀行（yínháng）。原文どおり文末記号なし",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/examples/valid/vocabulary.json#L119"
+    },
+    {
+      "id": "matched-08",
+      "text": "重新",
+      "focus": "重の読み（chóngxīn）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/hsk-vocabulary/hsk-vocabulary-level-4-batch-003.json#L608"
+    },
+    {
+      "id": "matched-09",
+      "text": "我的行李箱很重。",
+      "focus": "很重（hěn zhòng）、第三声の連続",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/content-pilots/taiwan-travel-wave-1/lessons.json#L32"
+    },
+    {
+      "id": "matched-10",
+      "text": "垃圾",
+      "focus": "台湾での読み（lè sè）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/hsk-vocabulary/hsk-vocabulary-level-4-batch-010.json#L761"
+    },
+    {
+      "id": "matched-11",
+      "text": "星期一",
+      "focus": "星期の読み（xīngqí）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/teacher-vocabulary-preview/learner-manifest.json#L11813"
+    },
+    {
+      "id": "matched-12",
+      "text": "每次不一樣，這次朋友說想準備蔬菜和肉。",
+      "focus": "和の読み（hàn を候補に比較。hé もあり、指導目標は先生に要確認）",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/small-talk/encounters.json#L1105"
+    },
+    {
+      "id": "matched-13",
+      "text": "不好意思，我聽不懂。可以說慢一點嗎？",
+      "focus": "つながった発話、間、一點",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/roleplay/airport.json#L47"
+    },
+    {
+      "id": "matched-14",
+      "text": "請問機場捷運在哪裡？",
+      "focus": "台湾の語彙・疑問文の文末",
+      "source": "https://github.com/nurockplayer/Chabiko/blob/5f630b0efc0b651a8c7ea1673dc29917530cb407/data/roleplay/airport.json#L31"
+    }
+  ]
+}

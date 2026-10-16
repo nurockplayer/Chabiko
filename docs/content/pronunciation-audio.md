@@ -15,3 +15,21 @@ To add a teacher recording, place the permitted recording under `public/audio/`,
 Microsoft's [Azure Product Terms for Text-to-Speech](https://www.microsoft.com/licensing/terms/en-US/productoffering/MicrosoftAzure/allprograms) state that paid-tier customers may use prebuilt neural voice output in applications, including commercially. Confirm the terms that apply to the selected resource and use at generation time. Browser Web Speech is requested on the learner's device through its available voice service; Chabiko does not store or redistribute that output. Some device voices may require a network connection. No speech recognition, microphone capture, or pronunciation scoring is included.
 
 Generated entries are recorded as synthetic and unreviewed (`source: "tts"`, `reviewStatus: "draft"`, `humanReview: false`). All audio is synthesized speech unless an entry's `source` is `teacher-recording`. Only a real reviewer record may mark a clip reviewed.
+
+## Matched-text voice comparison (#526)
+
+Under Node 24 with pnpm 12.11.2, run `pnpm audio:compare --dry-run` to preview the 14 verbatim items in `data/audio-eval/matched-text-v1.json`, four voices and two synthesized speeds. Dry runs include all selected voices regardless of credentials and invoke neither synthesis nor gcloud. The pinned source links identify existing Chabiko material, including drafts/pilots and a fixture; focus notes are AI-provisional, not teacher-approved pronunciation targets.
+
+Set `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` for Azure. Set `GOOGLE_TTS_API_KEY` for Google, or set `GOOGLE_CLOUD_PROJECT` with an existing gcloud login (`gcloud auth print-access-token`). API-key auth takes precedence. Then run:
+
+```sh
+pnpm audio:compare --confirm-paid-tier --max-usd 0.03
+```
+
+Use `--only azure` or `--only google` to limit providers; missing credentials skip that provider. Azure generation refuses without `--confirm-paid-tier`: its output-use grant applies to paid-tier TTS only ([Microsoft terms](https://www.microsoft.com/licensing/terms/en-US/productoffering/MicrosoftAzure/allprograms)). Google output is subject to the [Cloud terms](https://cloud.google.com/terms) and [TTS usage guidance](https://docs.cloud.google.com/text-to-speech/docs/basics). These are private evaluation clips, not published assets or teacher-reviewed content.
+
+The preflight estimate uses Azure US$15/million (Han characters counted twice) and Google WaveNet US$4/million Unicode characters, including punctuation; Google receives plain text without SSML markup. Every voice/speed counts separately. Up to two retries on HTTP 429/5xx are allowed, with every attempt conservatively charged against the cap and remaining first attempts reserved. A cap exhaustion stops the run. Estimates exclude taxes and account-specific pricing/credits; this is not an invoice guarantee.
+
+Output defaults to `~/Downloads/chabiko-voice-compare-<UTC-date>/`. Override with `--output /absolute/path/outside-the-worktree`; existing directories and worktree paths (including symlink aliases) are refused. A fresh random seed gives stable opaque clip filenames within each bundle, with sentence-specific shuffled A–D labels. The private `key.json` records seed and code/provider/voice/speed mappings. Open `listening.html` offline or import it into an Artifact: it embeds all MP3s, offers normal/slow players and 1–5 ratings per sentence/voice, and reveals identities only when the bottom disclosure is opened. Ratings stay in the page without storage or network; copy decisions before closing. The HTML contains the reveal key, so blinding is for listening, not secrecy from source inspection.
+
+No resume is attempted: a failure may leave partial clips and their key, without a listening page. Inspect partial output before choosing a fresh directory for another paid run; caps apply per invocation, not cumulatively across invocations. Keep all output outside the repo and do not publish it through the site's audio manifest.
