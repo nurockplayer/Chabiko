@@ -127,11 +127,13 @@ describe('先生厳選単語 track wiring (real sibling modes)', () => {
 });
 
 describe('pages without real sibling destinations omit local nav', () => {
-  it('HSK and phrasebook omit the breadcrumb and track nav', () => {
-    for (const source of [hskSource, phrasebookSource]) {
-      expect(source).not.toContain('Breadcrumb');
-      expect(source).not.toContain('TrackNav');
-    }
+  it('phrasebook omits the breadcrumb and track nav', () => {
+    expect(phrasebookSource).not.toContain('Breadcrumb');
+    expect(phrasebookSource).not.toContain('TrackNav');
+  });
+
+  it('HSK levels have a real sibling (study / test), so they use track nav', () => {
+    expect(hskSource).toContain('TrackNav');
   });
 
   it('tone and word-order practice keep a home breadcrumb but no track nav (auxiliary surfaces)', () => {
