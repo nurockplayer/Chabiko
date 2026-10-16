@@ -1,4 +1,5 @@
 ---
+import TrackNav from '../../../../components/TrackNav.astro';
 import HskLevelLinks from '../../../../components/HskLevelLinks.astro';
 import Header from '../../../../components/Header.astro';
 import FlashcardSession from '../../../../components/FlashcardSession.astro';
@@ -33,6 +34,12 @@ const title = `HSK ${level} 単語フラッシュカード`;
 
   <div class="flashcard-page">
     <a class="back-link" href="/">← ホームに戻る</a>
+    {pool.status !== 'unavailable' && entries.length > 0 && (
+      <TrackNav label={`HSK ${level}`} items={[
+        { label: '学ぶ', href: `/vocabulary/hsk/${level}/`, current: true },
+        { label: 'テスト', href: `/vocabulary/hsk/${level}/quiz/` },
+      ]} />
+    )}
     <h1 class="page-title">{title}</h1>
     <p class="availability-note">日本語訳はAIによる下書きで、先生による確認前の内容です。</p>
     <p class="page-subtitle">簡体字を見て、ピンインと日本語の意味を確認しよう。</p>
@@ -65,7 +72,7 @@ const title = `HSK ${level} 単語フラッシュカード`;
         )}
       </>
     )}
-    <HskLevelLinks />
+    <HskLevelLinks showQuizScores />
   </div>
 </BaseLayout>
 

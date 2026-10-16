@@ -1,0 +1,65 @@
+---
+import PronounceButton from './PronounceButton.astro';
+interface Props { level: number; ids: string[]; answerSource: string }
+const { level, ids, answerSource } = Astro.props;
+---
+<section class="hsk-quiz" data-hsk-quiz={JSON.stringify({ level, ids, answerSource })} aria-label="単語テスト">
+  <form data-quiz-setup>
+    <fieldset>
+      <legend>問題数</legend>
+      <div class="quiz-settings">
+        <label><input type="radio" name="length" value="10" checked />10問</label>
+        <label><input type="radio" name="length" value="20" />20問</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>出題方向</legend>
+      <div class="quiz-settings">
+        <label><input type="radio" name="direction" value="zh-to-ja" checked />簡体字 → 日本語</label>
+        <label><input type="radio" name="direction" value="ja-to-zh" />日本語 → 簡体字</label>
+      </div>
+    </fieldset>
+    <p>HSK {level}の全範囲から出題します。答えを選ぶと、すぐに正解を確認できます。</p>
+    <button type="submit" data-quiz-start disabled aria-busy="true">テストを始める</button>
+  </form>
+  <p data-quiz-status role="status">単語データを読み込んでいます。</p>
+  <div data-quiz-card></div>
+  <noscript><p>テストにはJavaScriptを有効にしてください。</p></noscript>
+  <!-- Include shared pronunciation styles without mounting an answer control. -->
+  <template><PronounceButton text="" lang="zh-CN" /></template>
+</section>
+
+<script>
+  import { initHskQuiz } from '../client/hskQuiz';
+  import { installPronunciationButtons } from '../lib/pronunciation/buttons';
+  installPronunciationButtons();
+  for (const root of document.querySelectorAll<HTMLElement>('[data-hsk-quiz]')) initHskQuiz(root);
+</script>
+
+<style is:global>
+  .hsk-quiz { padding: var(--sp-6); background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--radius-content); overflow-wrap: anywhere; }
+  .hsk-quiz [hidden] { display: none !important; }
+  .hsk-quiz fieldset { border: 0; padding: 0; margin: 0 0 var(--sp-6); min-width: 0; }
+  .hsk-quiz legend { font-weight: 700; margin-bottom: var(--sp-2); }
+  .hsk-quiz .quiz-settings { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+  .hsk-quiz label { display: flex; align-items: center; gap: var(--sp-2); min-height: 44px; cursor: pointer; }
+  .hsk-quiz input { accent-color: var(--jade-ink); }
+  .hsk-quiz p { margin: 0 0 var(--sp-4); }
+  .hsk-quiz button, .hsk-quiz .quiz-back { min-height: 44px; padding: var(--sp-3) var(--sp-4); font: inherit; border: 1px solid var(--hairline); border-radius: var(--radius-content); color: var(--ink); background: var(--paper-deep); cursor: pointer; overflow-wrap: anywhere; max-width: 100%; }
+  .hsk-quiz button:disabled { cursor: default; }
+  .hsk-quiz button:focus-visible, .hsk-quiz a:focus-visible, .hsk-quiz input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+  .hsk-quiz [data-quiz-start], .hsk-quiz [data-action="next"], .hsk-quiz [data-action="retry"] { background: var(--jade-ink); color: var(--paper); font-weight: 700; }
+  .hsk-quiz [data-quiz-start]:disabled { background: var(--paper-deep); color: var(--ink-secondary); }
+  .hsk-quiz [data-quiz-status] { margin-top: var(--sp-4); color: var(--ink-secondary); font-size: 0.875rem; }
+  .hsk-quiz .quiz-prompt { font-size: 1.75rem; line-height: 1.5; margin: var(--sp-4) 0; }
+  .hsk-quiz .quiz-options { display: grid; gap: var(--sp-3); margin: var(--sp-6) 0; }
+  .hsk-quiz .quiz-options button { text-align: left; background: var(--paper); }
+  .hsk-quiz .quiz-options [data-correct] { border: 2px solid var(--jade-ink); font-weight: 700; }
+  .hsk-quiz .quiz-feedback { font-weight: 700; font-size: 1.125rem; }
+  .hsk-quiz .quiz-answer { border-top: 1px solid var(--hairline); padding-top: var(--sp-4); margin-bottom: var(--sp-4); }
+  .hsk-quiz .quiz-missed { padding-left: var(--sp-6); margin: var(--sp-4) 0 var(--sp-6); }
+  .hsk-quiz .quiz-missed li { padding: var(--sp-3) 0; border-bottom: 1px solid var(--hairline); }
+  .hsk-quiz .quiz-missed p { margin-bottom: var(--sp-1); }
+  .hsk-quiz .quiz-back { display: inline-flex; align-items: center; margin: var(--sp-3) 0 0; }
+  .hsk-quiz h2, .hsk-quiz h3 { margin-bottom: var(--sp-4); }
+</style>
