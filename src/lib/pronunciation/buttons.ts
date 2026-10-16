@@ -1,4 +1,4 @@
-import { canPlayPronunciation, playPronunciation, stopPronunciation } from './player';
+import { canPlayPronunciation, loadPronunciationIndex, playPronunciation, stopPronunciation } from './player';
 
 let installed = false;
 let activeButton: HTMLButtonElement | undefined;
@@ -39,7 +39,14 @@ function resetButton(): void {
   }
 }
 
+/** Fetch the static audio index after the page has loaded so it never competes with page content. */
+function scheduleIndexLoad(): void {
+  if (document.readyState === 'complete') void loadPronunciationIndex();
+  else window.addEventListener('load', () => { void loadPronunciationIndex(); }, { once: true });
+}
+
 export function installPronunciationButtons(): void {
+  scheduleIndexLoad();
   if (installed) { refreshPronunciationButtons(); return; }
   installed = true;
   document.addEventListener('click', (event) => {

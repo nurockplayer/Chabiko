@@ -1,27 +1,50 @@
-import manifestData from './manifest.json';
+import { normalizeLang, normalizeText, pronunciationKey } from './normalize';
 
-export interface PronunciationEntry {
-  text: string;
-  lang: string;
-  voice: string;
-  provider: string;
-  file: string;
-  sha256: string;
-  generatedAt: string;
-  source: 'tts' | 'teacher-recording';
-  reviewStatus?: 'draft' | 'reviewed';
-  humanReview?: boolean;
+export { normalizeLang, normalizeText } from './normalize';
+
+/** Compact index written by scripts/audio/generate.ts: `lang|text` key → root-relative audio file. */
+export const PRONUNCIATION_INDEX_URL = '/audio/index.json';
+
+let audioIndex: ReadonlyMap<string, string> | undefined;
+let indexRequest: Promise<void> | undefined;
+
+/** Accepts only an object of root-relative file paths; anything else leaves playback on speech synthesis. */
+export function parsePronunciationIndex(data: unknown): Map<string, string> | undefined {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return undefined;
+  const index = new Map<string, string>();
+  for (const [key, file] of Object.entries(data)) {
+    if (typeof file === 'string' && file.startsWith('/') && !file.startsWith('//')) index.set(key, file);
+  }
+  return index;
 }
 
-// Alternatives written with a slash (e.g. 小姐/女士) are spoken as a list with a pause (小姐，女士).
-// Keep in sync with normalizePronunciationText in scripts/audio/generate.ts so manifest keys match.
-export const normalizeText = (text: string): string => text.normalize('NFKC').trim().replace(/\s+/gu, ' ')
-  .replace(/(\p{Script=Han})\s*\/\s*(?=\p{Script=Han})/gu, '$1，');
-export const normalizeLang = (lang: string): string => lang.replace(/_/g, '-').toLowerCase();
+/** Replaces the loaded index (tests, or callers that already have the data). */
+export function setPronunciationIndex(index: ReadonlyMap<string, string> | undefined): void {
+  audioIndex = index;
+  indexRequest = undefined;
+}
 
-export function findRecording(text: string, lang: string, entries: readonly PronunciationEntry[] = manifestData as PronunciationEntry[]): PronunciationEntry | undefined {
-  const matches = entries.filter((entry) => normalizeText(entry.text) === normalizeText(text) && normalizeLang(entry.lang) === normalizeLang(lang));
-  return matches.find((entry) => entry.source === 'teacher-recording') ?? matches[0];
+/**
+ * Fetches the audio index once, off the critical path. Until it arrives, or if it fails,
+ * playback uses browser speech; a failed request is retried on the next call.
+ */
+export function loadPronunciationIndex(fetcher: typeof fetch = fetch): Promise<void> {
+  if (audioIndex || indexRequest) return indexRequest ?? Promise.resolve();
+  indexRequest = fetcher(PRONUNCIATION_INDEX_URL)
+    .then((response) => (response.ok ? response.json() : undefined))
+    .then((data: unknown) => {
+      const index = parsePronunciationIndex(data);
+      if (!index) throw new Error('Invalid pronunciation index.');
+      audioIndex = index;
+      if (typeof document !== 'undefined') document.dispatchEvent(new Event('pronunciation:refresh'));
+    })
+    .catch(() => { indexRequest = undefined; });
+  return indexRequest;
+}
+
+/** Synchronous so it can run inside the click handler; teacher precedence is resolved by the generator. */
+export function findRecording(text: string, lang: string, index: ReadonlyMap<string, string> | undefined = audioIndex): string | undefined {
+  return index?.get(pronunciationKey(text, lang));
 }
 
 export function selectVoice(voices: readonly SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | undefined {
@@ -134,7 +157,7 @@ export function playPronunciation(text: string, { lang = 'zh-TW', rate = 0.9 }: 
     const recording = findRecording(text, lang);
     if (recording && typeof window.Audio === 'function') {
       try {
-        audio = new window.Audio(recording.file);
+        audio = new window.Audio(recording);
         audio.playbackRate = rate;
         audio.onended = () => finish(true);
         let fellBack = false;

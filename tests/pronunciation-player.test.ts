@@ -1,10 +1,9 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-vi.mock('../src/lib/pronunciation/manifest.json', () => ({ default: [
-  { text: '謝謝', lang: 'zh-TW', file: '/audio/test.mp3', source: 'tts' },
-] }));
-import { canPlayPronunciation, findRecording, normalizeText, playPronunciation, selectVoice, stopPronunciation } from '../src/lib/pronunciation/player';
-import type { PronunciationEntry } from '../src/lib/pronunciation/player';
+import {
+  PRONUNCIATION_INDEX_URL, canPlayPronunciation, findRecording, loadPronunciationIndex, normalizeText,
+  parsePronunciationIndex, playPronunciation, selectVoice, setPronunciationIndex, stopPronunciation,
+} from '../src/lib/pronunciation/player';
 
 const voice = (lang: string) => ({ lang, name: lang }) as SpeechSynthesisVoice;
 class Utterance {
@@ -25,20 +24,19 @@ beforeEach(() => {
   synth = { cancel: vi.fn(), speak: vi.fn((item: Utterance) => spoken.push(item)), getVoices: () => voices };
   vi.stubGlobal('speechSynthesis', synth);
   vi.stubGlobal('SpeechSynthesisUtterance', Utterance);
+  setPronunciationIndex(new Map([['zh-tw|謝謝', '/audio/test.mp3']]));
 });
-afterEach(() => { stopPronunciation(); vi.unstubAllGlobals(); });
+afterEach(() => { stopPronunciation(); setPronunciationIndex(undefined); vi.unstubAllGlobals(); });
 
 describe('pronunciation selection', () => {
   it('normalizes whitespace and width without conflating scripts or language', () => {
     expect(normalizeText('  Ａ\n 謝謝  ')).toBe('A 謝謝');
     expect(normalizeText('小姐/女士')).toBe('小姐，女士');
     expect(normalizeText('小姐／女士')).toBe('小姐，女士');
-    const entries = [
-      { text: '謝謝', lang: 'zh_TW', source: 'tts' },
-      { text: '謝謝', lang: 'zh-TW', source: 'teacher-recording' },
-    ] as PronunciationEntry[];
-    expect(findRecording(' 謝謝 ', 'zh-tw', entries)?.source).toBe('teacher-recording');
-    expect(findRecording('谢谢', 'zh-CN', entries)).toBeUndefined();
+    const index = new Map([['zh-tw|謝謝', '/audio/teacher.mp3'], ['zh-tw|小姐，女士', '/audio/ms.mp3']]);
+    expect(findRecording(' 謝謝 ', 'zh_TW', index)).toBe('/audio/teacher.mp3');
+    expect(findRecording('小姐／女士', 'zh-TW', index)).toBe('/audio/ms.mp3');
+    expect(findRecording('谢谢', 'zh-CN', index)).toBeUndefined();
   });
   it('prefers the exact locale, accepts underscore tags, then any Chinese voice', () => {
     const available = [voice('en-US'), voice('zh-CN'), voice('zh_TW')];
@@ -148,5 +146,57 @@ describe('pronunciation selection', () => {
     const result = playPronunciation('你好');
     spoken[0].onerror?.();
     expect(await result).toBe(false);
+  });
+});
+
+describe('lazy audio index', () => {
+  const response = (body: unknown, ok = true) => ({ ok, json: async () => body }) as Response;
+
+  it('accepts only root-relative file paths', () => {
+    expect(parsePronunciationIndex({ 'zh-tw|謝謝': '/audio/a.mp3', 'zh-tw|你好': 'https://x.test/a.mp3', 'zh-cn|好': '//x.test/a.mp3', 'zh-cn|是': 3 }))
+      .toEqual(new Map([['zh-tw|謝謝', '/audio/a.mp3']]));
+    expect(parsePronunciationIndex([])).toBeUndefined();
+    expect(parsePronunciationIndex(null)).toBeUndefined();
+  });
+
+  it('speaks with browser synthesis until the index arrives, then plays the static file', async () => {
+    setPronunciationIndex(undefined);
+    const audios: { url: string; onended: (() => void) | null }[] = [];
+    class AudioMock { url: string; play = vi.fn(() => Promise.resolve()); pause = vi.fn(); playbackRate = 1; onended: (() => void) | null = null; onerror = null; constructor(url: string) { this.url = url; audios.push(this); } }
+    vi.stubGlobal('Audio', AudioMock);
+    const before = playPronunciation('謝謝');
+    expect(spoken).toHaveLength(1);
+    spoken[0].onend?.();
+    expect(await before).toBe(true);
+
+    const refreshed = vi.fn();
+    document.addEventListener('pronunciation:refresh', refreshed);
+    const fetcher = vi.fn(async () => response({ 'zh-tw|謝謝': '/audio/late.mp3' }));
+    await loadPronunciationIndex(fetcher as unknown as typeof fetch);
+    await loadPronunciationIndex(fetcher as unknown as typeof fetch);
+    document.removeEventListener('pronunciation:refresh', refreshed);
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(fetcher).toHaveBeenCalledWith(PRONUNCIATION_INDEX_URL);
+    expect(refreshed).toHaveBeenCalledOnce();
+    expect(findRecording('謝謝', 'zh-TW')).toBe('/audio/late.mp3');
+    const after = playPronunciation('謝謝');
+    expect(audios.map((audio) => audio.url)).toEqual(['/audio/late.mp3']);
+    expect(spoken).toHaveLength(1);
+    audios[0].onended?.();
+    expect(await after).toBe(true);
+  });
+
+  it('keeps speech synthesis after a failed fetch and retries on the next call', async () => {
+    setPronunciationIndex(undefined);
+    const failing = vi.fn(async () => response(undefined, false));
+    await loadPronunciationIndex(failing as unknown as typeof fetch);
+    expect(findRecording('謝謝', 'zh-TW')).toBeUndefined();
+    const rejected = vi.fn(async () => { throw new Error('offline'); });
+    await loadPronunciationIndex(rejected as unknown as typeof fetch);
+    expect(rejected).toHaveBeenCalledOnce();
+    const result = playPronunciation('謝謝');
+    expect(spoken).toHaveLength(1);
+    spoken[0].onend?.();
+    expect(await result).toBe(true);
   });
 });
