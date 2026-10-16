@@ -178,7 +178,7 @@ function createFixture(): {
 }
 
 function runBundle(script: string, args: readonly string[], cwd: string) {
-  const result = spawnSync(process.execPath, [script, 'bundle', ...args], { cwd, encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [script, 'bundle', ...args], { timeout: 30_000, cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -221,7 +221,7 @@ function createLoadedContextFixture() {
 function runLoader(fixture: ReturnType<typeof createLoadedContextFixture>) {
   const runner = join(fixture.external, 'load-context.mjs');
   writeFileSync(runner, `import { readFileSync } from 'node:fs';\nimport { pathToFileURL } from 'node:url';\nconst { loadReviewEvidenceContext } = await import(pathToFileURL(process.argv[2]).href);\nconst context = loadReviewEvidenceContext(JSON.parse(readFileSync(process.argv[3], 'utf8')));\nprocess.stdout.write(JSON.stringify({ items: context.bundle.items.length, inputs: context.inputs.length, pngs: context.localPngs.size, candidate: context.sidecar.entries[0].candidateId, capability: context.contract.visionCapabilityEvidenceRef }));\n`);
-  const result = spawnSync(process.execPath, [runner, join(fixture.repository, 'scripts/unicode_review_cli_context.ts'), fixture.descriptor], { cwd: join(fixture.external, 'caller-cwd'), encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [runner, join(fixture.repository, 'scripts/unicode_review_cli_context.ts'), fixture.descriptor], { timeout: 30_000, cwd: join(fixture.external, 'caller-cwd'), encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }

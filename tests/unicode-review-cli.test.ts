@@ -184,7 +184,7 @@ function createFixture(): {
 }
 
 function runBundle(script: string, args: readonly string[], cwd: string) {
-  const result = spawnSync(process.execPath, [script, 'bundle', ...args], { cwd, encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [script, 'bundle', ...args], { timeout: 30_000, cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -332,7 +332,7 @@ function createCalibrationFixture() {
 }
 
 function runCalibration(script: string, args: readonly string[], cwd: string) {
-  const result = spawnSync(process.execPath, [script, 'calibrate', ...args], { cwd, encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [script, 'calibrate', ...args], { timeout: 30_000, cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -621,7 +621,7 @@ describe('#477 Unicode review bundle CLI', () => {
 });
 
 function runWorkflow(script: string, command: string, args: readonly string[], cwd: string, preload?: string) {
-  const result = spawnSync(process.execPath, [...(preload ? ['--import', preload] : []), script, command, ...args], { cwd, encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [...(preload ? ['--import', preload] : []), script, command, ...args], { timeout: 30_000, cwd, encoding: 'utf8' });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
@@ -1674,7 +1674,7 @@ describe('#477 Unicode review workflow CLI', () => {
     const interruptedPublish = spawnSync('uv', [
       'run', '--locked', '--no-sync', '--project', lostAckFixture.repository, 'python', '-c', loseAcknowledgement,
       helper, stagedRoot, lostAckJournal, JSON.stringify(expected),
-    ], { cwd: lostAckFixture.repository, encoding: 'utf8' });
+    ], { timeout: 30_000, cwd: lostAckFixture.repository, encoding: 'utf8' });
     if (interruptedPublish.error) throw interruptedPublish.error;
     expect(interruptedPublish.status, `${interruptedPublish.stdout}${interruptedPublish.stderr}`).toBe(86);
     expect(existsSync(stagedRoot)).toBe(false);

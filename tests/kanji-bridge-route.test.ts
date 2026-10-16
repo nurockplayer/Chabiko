@@ -13,7 +13,7 @@
  * Astro still writes its repository-local .astro cache.
  */
 
-import { execSync } from 'node:child_process';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
 import {
   existsSync,
   mkdtempSync,
@@ -43,7 +43,7 @@ const SCRIPT_CLIENT_PATH = resolve(
 );
 
 // Unique per-run build + fixture directories, outside the repo and never shared.
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-kanji-bridge-route-'));
+const BUILD_DIR = routeBuildDirectory();
 const FIXTURE_DIR = mkdtempSync(join(tmpdir(), 'chabiko-kanji-bridge-fixtures-'));
 const BUILT_ROUTE = join(BUILD_DIR, 'vocabulary/kanji-bridge/index.html');
 
@@ -280,17 +280,13 @@ describe('kanji-bridge production-eligibility gate (content-review contract)', (
 
 describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235, fail-closed)', () => {
   beforeAll(() => {
-    execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 180_000,
-    });
+    ensureRouteBuild();
     builtHtml = readFileSync(BUILT_ROUTE, 'utf8');
   });
 
   afterAll(() => {
     // Clean only the directories this suite created.
-    for (const dir of [BUILD_DIR, FIXTURE_DIR]) {
+    for (const dir of [FIXTURE_DIR]) {
       if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
     }
   });

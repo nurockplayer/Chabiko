@@ -51,7 +51,7 @@ function writeLock(root: string, ownerPid: number, ownerNonce: string): void {
 }
 
 function stoppedProcessPid(): number {
-  const result = spawnSync(process.execPath, ['-e', '']);
+  const result = spawnSync(process.execPath, ['-e', ''], { timeout: 30_000 });
   expect(result.status).toBe(0);
   expect(result.pid).toBeTypeOf('number');
   return result.pid as number;
@@ -63,7 +63,7 @@ function crashAfterCommit(root: string, expectedTip: unknown): void {
     `import { appendUnicodeReviewJournalEvent } from ${JSON.stringify(journalModule)};`,
     `appendUnicodeReviewJournalEvent(${JSON.stringify(root)}, ${JSON.stringify(expectedTip)}, { opaque: 'committed-before-cleanup' }, { afterCommit() { process.exit(86); } });`,
   ].join('\n');
-  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source]);
+  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { timeout: 30_000 });
   expect(result.status).toBe(86);
 }
 
@@ -76,7 +76,7 @@ function runJournalChild(body: string): { readonly status: number | null; readon
     `const journalModuleUrl = ${JSON.stringify(journalModule)};`,
     body,
   ].join('\n');
-  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { timeout: 30_000, encoding: 'utf8' });
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
 
@@ -122,7 +122,7 @@ describe('#477 restart-safe Unicode review journal', () => {
       `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)};`,
       `initializeUnicodeReviewJournal(${JSON.stringify(journal)}, { beforePublish() { process.exit(86); } });`,
     ].join('\n');
-    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashBefore]).status).toBe(86);
+    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashBefore], { timeout: 30_000 }).status).toBe(86);
     expect(existsSync(journal)).toBe(false);
     expect(readdirSync(parent)).toHaveLength(1);
     const abandonedStage = readdirSync(parent)[0];
@@ -134,7 +134,7 @@ describe('#477 restart-safe Unicode review journal', () => {
       `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)};`,
       `initializeUnicodeReviewJournal(${JSON.stringify(journal)}, { afterPublish() { process.exit(87); } });`,
     ].join('\n');
-    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashAfter]).status).toBe(87);
+    expect(spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', crashAfter], { timeout: 30_000 }).status).toBe(87);
     expect(inspectUnicodeReviewJournalRecoveryState(journal)).toBe('unlocked-empty');
     expect(() => initializeUnicodeReviewJournal(journal)).toThrow(/exist|journal/i);
     expect(inspectUnicodeReviewJournalRecoveryState(journal)).toBe('unlocked-empty');
@@ -226,7 +226,7 @@ describe('#477 restart-safe Unicode review journal', () => {
     const moduleUrl = pathToFileURL(join(process.cwd(), 'scripts', 'unicode_review_journal.ts')).href;
     const source = `import { initializeUnicodeReviewJournal } from ${JSON.stringify(moduleUrl)}; try { initializeUnicodeReviewJournal(${JSON.stringify(journal)}); process.exit(0); } catch (error) { if (error && error.code === 'EEXIST') process.exit(73); throw error; }`;
     const launch = () => new Promise<number>((resolveExit, reject) => {
-      const child = spawn(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { stdio: 'ignore' });
+      const child = spawn(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { timeout: 30_000, stdio: 'ignore' });
       child.once('error', reject);
       child.once('exit', (code) => resolveExit(code ?? -1));
     });
@@ -293,7 +293,7 @@ describe('#477 restart-safe Unicode review journal', () => {
       `for (let index = 0; index < 100; index += 1) tip = appendUnicodeReviewJournalEvent(${JSON.stringify(journal)}, tip, { index }).tip;`,
       `console.log(JSON.stringify({ before, after: count() }));`,
     ].join('\n');
-    const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { encoding: 'utf8' });
+    const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '--eval', source], { timeout: 30_000, encoding: 'utf8' });
     expect(result.status).toBe(0);
     const counts = JSON.parse(result.stdout.trim()) as { before: number; after: number };
     expect(counts.after - counts.before).toBeLessThanOrEqual(2);

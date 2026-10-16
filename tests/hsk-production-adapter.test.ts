@@ -16,6 +16,7 @@ import {
 } from '../src/content/loadHskVocabulary';
 import { buildHskLevelPools } from '../src/domain/hskLevelPool';
 import type { HskVocabularyType } from '../src/types/vocabulary';
+import { expectedHskReviewStatus } from './helpers/hskHumanReview';
 
 const repositoryRoot = process.cwd();
 const tempRoots: string[] = [];
@@ -187,7 +188,7 @@ afterEach(() => {
 });
 
 describe('production HSK source adapter', () => {
-  it('publishes every eligible draft without claiming human review', () => {
+  it('publishes eligible glosses with their attributed review status', () => {
     const bundle = loadHskVocabulary();
     expect(bundle.diagnostic).toBeNull();
     expect(bundle.vocabulary).toHaveLength(1969);
@@ -197,7 +198,7 @@ describe('production HSK source adapter', () => {
     expect(new Set(bundle.vocabulary.map((entry) => entry.id))).toEqual(new Set(
       manifest.rows.filter((row) => row.sourceEligible).map((row) => row.recordId),
     ));
-    expect(bundle.vocabulary.every((entry) => entry.reviewStatus === 'draft' && entry.japanese.trim().length > 0)).toBe(true);
+    expect(bundle.vocabulary.every((entry) => entry.reviewStatus === expectedHskReviewStatus(entry) && entry.japanese.trim().length > 0)).toBe(true);
     expect(loadHskLevelPools().map((pool) => [pool.status, pool.counts.newWords, pool.counts.fullRange])).toEqual([
       ['available', 294, 294], ['available', 191, 485], ['available', 495, 980], ['available', 989, 1969],
     ]);

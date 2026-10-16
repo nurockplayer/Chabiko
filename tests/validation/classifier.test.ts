@@ -30,9 +30,9 @@ function createDirtyCallerFixture(routing: 'repository' | 'index-only') {
   const repo = join(root, 'repo');
   mkdirSync(repo);
   const env = isolatedFixtureEnvironment();
-  const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env }).stdout.trim();
+  const gitPath = spawnSync('which', ['git'], { timeout: 30_000, encoding: 'utf8', env }).stdout.trim();
   expect(gitPath).not.toBe('');
-  const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env, encoding: 'utf8' });
+  const git = (args: string[]) => spawnSync(gitPath, args, { timeout: 30_000, cwd: repo, env, encoding: 'utf8' });
   expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
   expect(git(['config', 'user.email', 'caller@example.invalid']).status).toBe(0);
   expect(git(['config', 'user.name', 'Surrogate Caller']).status).toBe(0);
@@ -513,6 +513,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     stderr: string;
   } {
     return spawnSync('git', args, {
+      timeout: 30_000,
       cwd,
       env: isolatedFixtureEnvironment(inheritedEnv),
       encoding: 'utf8',
@@ -565,6 +566,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       process.execPath,
       [scriptPath, 'classify', '--base', base, ...(files ? ['--files', files] : []), '--emit-github-output'],
       {
+        timeout: 120_000,
         cwd,
         env: { ...isolatedFixtureEnvironment(inheritedEnv), GITHUB_OUTPUT: outputPath },
         encoding: 'utf8',
@@ -614,19 +616,31 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
     return { repo, base };
   }
 
+  let foundationSeed: string | undefined;
+
   function seedFoundationRepo(inheritedEnv: NodeJS.ProcessEnv = process.env): { repo: string; base: string } {
-    const repo = createTempRepo(inheritedEnv);
-    cpSync(repositoryRoot, repo, {
-      recursive: true,
-      filter: (source) => {
-        const relativePath = relative(repositoryRoot, source).replaceAll('\\', '/');
-        return !['.git', 'node_modules', '.astro', 'dist', 'coverage', 'test-results', 'playwright-report']
-          .some((directory) => relativePath === directory || relativePath.startsWith(`${directory}/`));
-      },
-    });
-    symlinkSync(join(repositoryRoot, 'node_modules'), join(repo, 'node_modules'), 'dir');
-    expect(git(repo, ['add', '-A'], inheritedEnv).status).toBe(0);
-    expect(git(repo, ['commit', '-m', 'seed full package for type-change probe'], inheritedEnv).status).toBe(0);
+    // Seed and compress the unchanged package once. Each scenario still gets a
+    // real, independent working tree and index, including all mutable fixtures.
+    if (!foundationSeed) {
+      const seed = createTempRepo(inheritedEnv);
+      cpSync(repositoryRoot, seed, {
+        recursive: true,
+        filter: (source) => {
+          const relativePath = relative(repositoryRoot, source).replaceAll('\\', '/');
+          return !['.git', 'node_modules', '.astro', '.venv', '.serena', 'dist', 'coverage', 'test-results', 'playwright-report']
+            .some((directory) => relativePath === directory || relativePath.startsWith(`${directory}/`));
+        },
+      });
+      symlinkSync(join(repositoryRoot, 'node_modules'), join(seed, 'node_modules'), 'dir');
+      expect(git(seed, ['add', '-A'], inheritedEnv).status).toBe(0);
+      expect(git(seed, ['commit', '-m', 'seed full package for type-change probe'], inheritedEnv).status).toBe(0);
+      foundationSeed = seed;
+    }
+    const repo = mkdtempSync(join(tmpdir(), 'chabiko-classifier-'));
+    tempRepos.push(repo);
+    expect(git(repositoryRoot, ['clone', '--local', foundationSeed, repo], inheritedEnv).status).toBe(0);
+    expect(git(repo, ['config', 'user.email', 'classifier-test@example.com'], inheritedEnv).status).toBe(0);
+    expect(git(repo, ['config', 'user.name', 'Classifier Test'], inheritedEnv).status).toBe(0);
     const base = git(repo, ['rev-parse', 'HEAD'], inheritedEnv).stdout.trim();
     expect(base).not.toBe('');
     return { repo, base };
@@ -783,7 +797,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
         '--files',
         'docs/content/content-review-workflow.md',
       ],
-      { cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
+      { timeout: 120_000, cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
     );
     const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
     const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
@@ -839,7 +853,7 @@ describe('#347: the documented classify CLI gates visual/a11y from real git stat
       const result = spawnSync(
         process.execPath,
         [scriptPath, 'affected', '--files', path],
-        { cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
+        { timeout: 120_000, cwd: repositoryRoot, env: isolatedFixtureEnvironment(), encoding: 'utf8' },
       );
       const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
       const normalizedOutput = stripVTControlCharacters(output).replace(/\s+/g, ' ');
@@ -1119,9 +1133,9 @@ describe('validation runner child-process outcomes', () => {
 
     try {
       const fixtureEnv = isolatedFixtureEnvironment(inheritedEnv);
-      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
+      const gitPath = spawnSync('which', ['git'], { timeout: 30_000, encoding: 'utf8', env: fixtureEnv }).stdout.trim();
       expect(gitPath).not.toBe('');
-      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      const git = (args: string[]) => spawnSync(gitPath, args, { timeout: 30_000, cwd: repo, env: fixtureEnv });
       expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
       expect(git(['config', 'user.email', 'validation-child-test@example.invalid']).status).toBe(0);
       expect(git(['config', 'user.name', 'Validation Child Test']).status).toBe(0);
@@ -1254,9 +1268,9 @@ describe('validation runner affected-test selection', () => {
     const caller = dirtyCaller ? createDirtyCallerFixture('repository') : undefined;
     try {
       const fixtureEnv = isolatedFixtureEnvironment();
-      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
+      const gitPath = spawnSync('which', ['git'], { timeout: 30_000, encoding: 'utf8', env: fixtureEnv }).stdout.trim();
       expect(gitPath).not.toBe('');
-      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      const git = (args: string[]) => spawnSync(gitPath, args, { timeout: 30_000, cwd: repo, env: fixtureEnv });
       expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
       expect(git(['config', 'user.email', 'validation-affected-test@example.invalid']).status).toBe(0);
       expect(git(['config', 'user.name', 'Validation Affected Test']).status).toBe(0);
@@ -1425,9 +1439,9 @@ describe('validation runner Git discovery failures', () => {
 
     try {
       const fixtureEnv = isolatedFixtureEnvironment(inheritedEnv);
-      const gitPath = spawnSync('which', ['git'], { encoding: 'utf8', env: fixtureEnv }).stdout.trim();
+      const gitPath = spawnSync('which', ['git'], { timeout: 30_000, encoding: 'utf8', env: fixtureEnv }).stdout.trim();
       expect(gitPath).not.toBe('');
-      const git = (args: string[]) => spawnSync(gitPath, args, { cwd: repo, env: fixtureEnv });
+      const git = (args: string[]) => spawnSync(gitPath, args, { timeout: 30_000, cwd: repo, env: fixtureEnv });
       expect(git(['init', '-q', '-b', 'main']).status).toBe(0);
       expect(git(['config', 'user.email', 'validation-git-test@example.invalid']).status).toBe(0);
       expect(git(['config', 'user.name', 'Validation Git Test']).status).toBe(0);

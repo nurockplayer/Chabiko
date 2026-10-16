@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,51 @@ FIRST_BATCH_SIZE = 20
 FIRST_BATCH_LEVEL = 1
 SUBSEQUENT_BATCH_MAX_ROWS = 50
 SUBSEQUENT_BATCH_ORDERING = "global-sequence-within-primary-level"
+HUMAN_REVIEWS_REL = PROFILE_REL.parent / "human-reviews.json"
+
+
+def review_fingerprint(record: dict[str, Any]) -> str:
+    """Bind gloss approval to the exact ID, prompt text, level, and final gloss."""
+    fields = [record["id"], record["simplified"], record["pinyin"],
+              record["hsk"]["introducedAtLevel"], record["japanese"]]
+    return sha256(json.dumps(fields, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+
+
+def apply_human_reviews(repo_root: Path, manifest_bytes: bytes, batches: dict[str, bytes]) -> tuple[bytes, dict[str, bytes]]:
+    """Replay attributed gloss decisions; text drift invalidates approval."""
+    path = repo_root / HUMAN_REVIEWS_REL
+    if not path.exists():
+        return manifest_bytes, batches
+    ledger = load_json(path)
+    require(ledger.get("schemaVersion") == 1 and isinstance(ledger.get("artifacts"), list), "invalid HSK human review ledger")
+    decisions: dict[str, dict[str, Any]] = {}
+    for artifact in ledger["artifacts"]:
+        require(artifact.get("approvalScope") == ["japanese-gloss", "review-status"], "invalid HSK review scope")
+        require(isinstance(artifact.get("reviewerIdentity"), str) and bool(artifact["reviewerIdentity"].strip()), "missing human reviewer identity")
+        require(artifact.get("reviewerRole") == "human-language-reviewer", "HSK gloss review requires human-language-reviewer")
+        review_date = artifact.get("reviewDate")
+        require(isinstance(review_date, str) and date.fromisoformat(review_date).isoformat() == review_date, "invalid human review date")
+        for row in artifact["rows"]:
+            require(row["decision"] in ("", "OK", "修正", "要相談"), "invalid human review decision")
+            require(row["reviewVersion"] == review_fingerprint(row["after"]), "human review fingerprint mismatch")
+            if row["decision"]:
+                decisions[row["after"]["id"]] = row
+    manifest = json.loads(manifest_bytes)
+    result = dict(batches)
+    for batch in manifest["publication"]["batches"]:
+        content = json.loads(batches[batch["file"]])
+        for record in content["vocabulary"]:
+            decision = decisions.get(record["id"])
+            if decision and decision["decision"] in ("OK", "修正") and decision["reviewVersion"] == review_fingerprint(record):
+                record["reviewStatus"] = "reviewed"
+                record["source"]["note"] = record["source"]["note"].replace(
+                    "Japanese glosses are separately authored AI-provisional drafts.",
+                    "Japanese glosses were separately authored as AI-provisional drafts."
+                ).replace("Japanese is independently AI-authored and provisional, not human reviewed.",
+                          "Japanese glosses are human reviewed.")
+        result[batch["file"]] = json_bytes(content)
+        batch["sha256"] = sha256(result[batch["file"]])
+    return json_bytes(manifest), result
 
 
 class ImportFailure(Exception):
@@ -521,6 +567,7 @@ def run_import(repo_root: Path, source_path: Path | None, output_dir: Path) -> N
             raise ImportFailure(f"cannot read valid UTF-8 source JSON: {error}") from error
         require(isinstance(source, dict), "source JSON root must be an object")
         manifest_bytes, batch_outputs = build_outputs(source_bytes, source, profile, receipt, japanese_by_placement, publication_index)
+    manifest_bytes, batch_outputs = apply_human_reviews(repo_root, manifest_bytes, batch_outputs)
     write_outputs(output_dir, manifest_bytes, batch_outputs)
     print(f"wrote {output_dir}/manifest.json ({sha256(manifest_bytes)})")
     for filename, batch_bytes in batch_outputs.items():

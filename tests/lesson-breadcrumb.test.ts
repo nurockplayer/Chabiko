@@ -16,18 +16,17 @@
  * cache.
  */
 
-import { execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { loadAllRenderableLessons } from '../src/content/loadLessons';
 
 const REPO_ROOT = resolve(__dirname, '..');
 const ROUTE_SOURCE = resolve(REPO_ROOT, 'src/pages/lessons/[id].astro');
 
-// Unique per-run build directory, outside the repo and never shared.
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-lesson-breadcrumb-'));
+// Fresh per-run output shared by read-only route suites; global teardown owns cleanup.
+const BUILD_DIR = routeBuildDirectory();
 
 const routeSource = readFileSync(ROUTE_SOURCE, 'utf8');
 
@@ -88,11 +87,7 @@ describe('lesson route source — breadcrumb and hierarchy contract', () => {
 
 describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
   beforeAll(() => {
-    execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 180_000,
-    });
+    ensureRouteBuild();
     for (const lesson of loadAllRenderableLessons()) {
       const html = readFileSync(
         join(BUILD_DIR, `lessons/${lesson.id}/index.html`),
@@ -100,11 +95,6 @@ describe('/lessons/:id/ — built wayfinding surface (Issue #368)', () => {
       );
       builtLessonHtml.set(lesson.id, html);
     }
-  });
-
-  afterAll(() => {
-    // Clean only the directory this suite created.
-    if (existsSync(BUILD_DIR)) rmSync(BUILD_DIR, { recursive: true, force: true });
   });
 
   it('renders exactly one 台湾旅行 breadcrumb for every lesson', () => {

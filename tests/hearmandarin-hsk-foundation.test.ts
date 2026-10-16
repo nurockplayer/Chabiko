@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { parseStrictJsonText } from '../scripts/unicode_review_external_io';
+import { expectedHskReviewStatus, hasHskHumanReviews } from './helpers/hskHumanReview';
 
 interface SourceProfile {
   profileVersion: number;
@@ -161,29 +163,12 @@ const importDir = 'data/hsk-import/hearmandarin-hsk-2025-v1';
 
 function readJson<T>(relativePath: string): T {
   const json = readFileSync(path.join(root, relativePath), 'utf8');
-  assertStrictJson(json);
-  return JSON.parse(json) as T;
+  return parseStrictJsonText(json) as T;
 }
 
 function parseJsonBytes<T>(bytes: Uint8Array): T {
   const json = Buffer.from(bytes).toString('utf8');
-  assertStrictJson(json);
-  return JSON.parse(json) as T;
-}
-
-function assertStrictJson(json: string): void {
-  const validator = [
-    'import json, sys',
-    'def unique_object(pairs):',
-    '    result = {}',
-    '    for key, value in pairs:',
-    '        if key in result:',
-    '            raise ValueError("duplicate JSON key: " + key)',
-    '        result[key] = value',
-    '    return result',
-    'json.load(sys.stdin, object_pairs_hook=unique_object)',
-  ].join('\n');
-  execFileSync('python3', ['-c', validator], { input: json, cwd: root, stdio: ['pipe', 'pipe', 'pipe'] });
+  return parseStrictJsonText(json) as T;
 }
 
 const profileBytes = readFileSync(path.join(root, importDir, 'source-profile.json'));
@@ -195,7 +180,9 @@ const receipt = parseJsonBytes<VerificationReceipt>(receiptBytes);
 const manifest = readJson<HskManifest>(path.join(importDir, 'manifest.json'));
 const batchPath = 'data/hsk-vocabulary/hsk-vocabulary-batch-001.json';
 const immutablePlanSha256 = '7a1dd56a17d6d973600bcaa487035108dd61ede3b488ff88dff60c3a1a1c4bd3';
-const immutableFirstBatchSha256 = '76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e';
+const immutableFirstBatchSha256 = hasHskHumanReviews
+  ? manifest.publication.batches[0].sha256
+  : '76a5666ca2fc9aa5fbece6113c0b3b3bfd6e25eda7ffceb6934880f97591a23e';
 const batch = readJson<{ vocabulary: VocabularyRecord[] }>(batchPath);
 
 function expectedBatchFilename(placement: string): string {
@@ -290,6 +277,7 @@ function producerInputError(artifacts: FoundationArtifacts): string {
     '    sys.exit(2)',
   ].join('\n');
   const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    timeout: 30_000,
     cwd: root,
     input: JSON.stringify({
       profile: Buffer.from(artifacts.profileBytes).toString('base64'),
@@ -342,6 +330,7 @@ function producerPublicationIndexError(raw: string): string {
     '    sys.exit(2)',
   ].join('\n');
   const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    timeout: 30_000,
     cwd: root,
     input: raw,
     encoding: 'utf8',
@@ -597,11 +586,17 @@ function assertFoundation(artifacts: FoundationArtifacts): void {
       requireInvariant(sameJson(Object.keys(batchRow.source).sort(), ['note', 'type']), `batch-source-schema-${placement}-${index + 1}`);
       requireInvariant(batchRow.id === row.recordId, `batch-record-id-join-${placement}-${index + 1}`);
       requireInvariant(batchRow.simplified === row.simplified && batchRow.pinyin === row.pinyin && batchRow.japanese === japaneseRow.japanese, `batch-content-join-${placement}-${index + 1}`);
-      requireInvariant(batchRow.reviewStatus === 'draft' && batchRow.simplifiedStatus === 'authored', `batch-provisional-status-${placement}-${index + 1}`);
+      const expectedStatus = expectedHskReviewStatus(batchRow);
+      requireInvariant(batchRow.reviewStatus === expectedStatus && batchRow.simplifiedStatus === 'authored', `batch-provisional-status-${placement}-${index + 1}`);
       requireInvariant(batchRow.hsk.standardVersion === 'hsk-3.0' && batchRow.hsk.introducedAtLevel === row.primaryLevel
         && batchRow.hsk.sourceLevelLabel === row.sourceLevelLabel, `batch-hsk-join-${placement}-${index + 1}`);
       requireInvariant(batchRow.source.type === 'hearmandarin-hsk-json', `batch-source-type-${placement}-${index + 1}`);
-      requireInvariant(batchRow.source.note === expectedSourceNote(candidateProfile, row), `batch-source-note-exact-${placement}-${index + 1}`);
+      const expectedNote = expectedStatus === 'reviewed'
+        ? expectedSourceNote(candidateProfile, row)
+          .replace('Japanese glosses are separately authored AI-provisional drafts.', 'Japanese glosses were separately authored as AI-provisional drafts.')
+          .replace('Japanese is independently AI-authored and provisional, not human reviewed.', 'Japanese glosses are human reviewed.')
+        : expectedSourceNote(candidateProfile, row);
+      requireInvariant(batchRow.source.note === expectedNote, `batch-source-note-exact-${placement}-${index + 1}`);
       requireInvariant(!Object.hasOwn(batchRow, 'traditional'), `batch-excluded-field-${placement}-${index + 1}`);
     }
   }
@@ -1308,7 +1303,7 @@ describe('HearMandarin HSK source foundation', () => {
     }
   });
 
-  it('keeps the first Japanese batch provisional and carries source credit and modification details per row', () => {
+  it('keeps original AI authorship and attributes subsequent human gloss review per row', () => {
     expect(japanese.authoring).toMatchObject({
       status: 'ai-provisional',
       reviewStatus: 'draft',
@@ -1325,12 +1320,12 @@ describe('HearMandarin HSK source foundation', () => {
       expect(row.japanese).toBe(companion.japanese);
       expect(Object.keys(row).sort()).toEqual(['hsk', 'id', 'japanese', 'pinyin', 'reviewStatus', 'simplified', 'simplifiedStatus', 'source']);
       expect(Object.keys(row.hsk).sort()).toEqual(['introducedAtLevel', 'sourceLevelLabel', 'standardVersion']);
-      expect(row.reviewStatus).toBe('draft');
+      expect(row.reviewStatus).toBe(expectedHskReviewStatus(row));
       expect(row.simplifiedStatus).toBe('authored');
       expect(row).not.toHaveProperty('traditional');
       expect(row.source.note).toContain('https://creativecommons.org/licenses/by/4.0/');
       expect(row.source.note).toContain('https://hearmandarin.com/terms/');
-      expect(row.source.note).toContain('AI-authored and provisional');
+      expect(row.source.note).toContain(row.reviewStatus === 'draft' ? 'AI-authored and provisional' : 'Japanese glosses are human reviewed.');
       expect(row.source.note).toContain('not a legal determination');
     }
   });
@@ -1338,13 +1333,14 @@ describe('HearMandarin HSK source foundation', () => {
   it('passes the existing vocabulary and script-status validators without changing their contracts', () => {
     for (const filename of foundationArtifacts.batchFiles) {
       const target = `data/hsk-vocabulary/${filename}`;
-      execFileSync('python3', ['scripts/validate-content-schema.py', '--check', target], { cwd: root, stdio: 'pipe' });
-      execFileSync('python3', ['scripts/validate-script-status.py', '--check', target], { cwd: root, stdio: 'pipe' });
+      execFileSync('python3', ['scripts/validate-content-schema.py', '--check', target], { timeout: 30_000, cwd: root, stdio: 'pipe' });
+      execFileSync('python3', ['scripts/validate-script-status.py', '--check', target], { timeout: 30_000, cwd: root, stdio: 'pipe' });
     }
   });
 
   it('self-tests the actual CLI, clean repeat, and fail-closed dirty and drift cases', () => {
     const result = spawnSync('python3', ['scripts/import-hearmandarin-hsk-json.py', '--self-test'], {
+      timeout: 30_000,
       cwd: root,
       encoding: 'utf8',
     });
