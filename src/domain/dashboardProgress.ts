@@ -130,6 +130,19 @@ export function trackDestinationHref(
 
 // ─── Track card presentation ──────────────────────────────────────────────────
 
+/** One started-status derivation for both the track card and the continuation:
+ *  a rated (learning) teacher-vocabulary item counts as started. */
+export function effectiveTrackStatus(
+  trackId: DashboardTrackId,
+  snapshot: CrossTrackProgressSnapshot,
+): CrossTrackStatus {
+  const track = snapshot.tracks[trackId];
+  if (track.status === 'not-started' && track.trackId === 'basic-vocabulary' && track.learningCount > 0) {
+    return 'in-progress';
+  }
+  return track.status;
+}
+
 export function trackStatusLabel(status: CrossTrackStatus): string {
   switch (status) {
     case 'completed':
@@ -149,7 +162,7 @@ export function trackCardStatusKey(
   payload: DashboardProgressPayload,
 ): 'preparing' | 'available' | CrossTrackStatus {
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return 'preparing';
-  return trackId === 'hsk' ? 'available' : snapshot.tracks[trackId].status;
+  return trackId === 'hsk' ? 'available' : effectiveTrackStatus(trackId, snapshot);
 }
 
 /** The card status chip label derived from {@link trackCardStatusKey}. */
@@ -193,8 +206,7 @@ function continuationForTrack(
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return null;
   const track = snapshot.tracks[trackId];
   if (track.status === 'completed') return null;
-  const started = track.status === 'in-progress'
-    || (track.trackId === 'basic-vocabulary' && track.learningCount > 0);
+  const started = effectiveTrackStatus(trackId, snapshot) === 'in-progress';
   if (trackId === 'basic-vocabulary') {
     const starter = started ? undefined : payload.basicVocabularyStarter;
     return {
@@ -256,8 +268,7 @@ export function deriveContinuation(
 ): DashboardContinuation {
   const order = DASHBOARD_TRACK_ORDER;
   for (const trackId of order) {
-    if (snapshot.tracks[trackId].status === 'in-progress'
-      || (trackId === 'basic-vocabulary' && snapshot.tracks[trackId].learningCount > 0)) {
+    if (effectiveTrackStatus(trackId, snapshot) === 'in-progress') {
       const continuation = continuationForTrack(
         trackId,
         snapshot,
@@ -268,7 +279,7 @@ export function deriveContinuation(
     }
   }
   for (const trackId of order) {
-    if (snapshot.tracks[trackId].status === 'not-started') {
+    if (effectiveTrackStatus(trackId, snapshot) === 'not-started') {
       const continuation = continuationForTrack(
         trackId,
         snapshot,

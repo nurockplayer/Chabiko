@@ -154,6 +154,8 @@ function mountDashboard(): HTMLElement {
   const root = document.createElement('div');
   root.dataset.dashboardRoot = 'true';
   root.innerHTML = `
+    <h2 id="continuation-heading">はじめの一歩</h2>
+    <span data-continuation-en>START</span>
     <a class="continuation-card" data-dashboard-continuation href="/vocabulary/basic/">
       <span data-continuation-kicker>先生厳選単語</span>
       <span data-continuation-title></span>
@@ -293,6 +295,8 @@ describe('dashboard continuation derivation', () => {
     expect(deriveContinuation(started, payload, new Set())).toMatchObject({
       kind: 'continue', sentence: null, pinyin: null, title: '先生厳選単語',
     });
+    // The card agrees with the continuation: a rated word means the track has started.
+    expect(trackCardStatusLabel('basic-vocabulary', started, payload)).toBe('学習中');
   });
 
   it('continues an in-progress track in Dashboard order', () => {
@@ -472,6 +476,23 @@ describe('dashboard continuation derivation', () => {
     expect(continuation.kind).toBe('unavailable');
     expect(continuation.href).toBeNull();
     expect(continuation.title).toBe('利用できるコースは準備中です');
+  });
+
+  it('replaces the START header once every available track is complete', () => {
+    const storage = createRecordingStorage();
+    storage._data[STORAGE_KEY] = JSON.stringify(['lesson-001', 'lesson-002', 'lesson-003']);
+    storage._data[VOCABULARY_PROGRESS_KEY] = hskProgress({
+      'hsk-001': { status: 'learned', knownStreak: 2 },
+      'hsk-002': { status: 'learned', knownStreak: 2 },
+    });
+    storage._data[BASIC_VOCABULARY_PROGRESS_KEY] = guestProgress(Object.fromEntries(
+      TEST_PAYLOAD.basicVocabularyCorpusIds.map((id) => [id, { status: 'learned', knownStreak: 2 }]),
+    ));
+    const root = mountDashboard();
+    initDashboard(root, TEST_PAYLOAD, { basicVocabulary: createFakeBasicCoordinator(storage), storage });
+    expect(root.querySelector('[data-dashboard-continuation]')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('#continuation-heading')?.textContent).toBe('学習の状況');
+    expect(root.querySelector('[data-continuation-en]')?.textContent).toBe('PROGRESS');
   });
 
   it('reports unavailable (not completed) when content exists but no destination is usable', () => {

@@ -121,7 +121,12 @@ function renderContinuation(
     '[data-dashboard-continuation-empty]',
   );
   if (!link || !empty) return;
+  const heading = root.querySelector<HTMLElement>('#continuation-heading');
+  const english = root.querySelector<HTMLElement>('[data-continuation-en]');
   if (continuation.href === null) {
+    // Terminal states (all completed / nothing available) get their own header.
+    if (heading) heading.textContent = '学習の状況';
+    if (english) english.textContent = 'PROGRESS';
     link.hidden = true;
     empty.hidden = false;
     const title = empty.querySelector<HTMLElement>(
@@ -132,11 +137,9 @@ function renderContinuation(
   }
   empty.hidden = true;
   link.hidden = false;
-  const heading = root.querySelector<HTMLElement>('#continuation-heading');
   const stage = link.querySelector<HTMLElement>('[data-continuation-stage]');
   if (heading) heading.textContent = continuation.kind === 'start' ? 'はじめの一歩' : '続きを学ぶ';
   if (stage) stage.textContent = continuation.kind === 'start' ? 'ここから始める' : '続きから';
-  const english = root.querySelector<HTMLElement>('[data-continuation-en]');
   if (english) english.textContent = continuation.kind === 'start' ? 'START' : 'CONTINUE';
   link.href = continuation.href;
   const kicker = link.querySelector<HTMLElement>('[data-continuation-kicker]');
