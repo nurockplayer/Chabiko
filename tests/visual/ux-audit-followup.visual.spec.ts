@@ -48,7 +48,9 @@ for (const width of [375, 320]) {
       // Let the audio index request settle (it can re-evaluate control visibility) and keep the pointer off the capture.
       await page.waitForLoadState('networkidle');
       await page.mouse.move(0, 0);
-      await expect(page.locator('.basic-vocabulary-word-breakdown')).toHaveScreenshot(`ux-meanings-${theme}-${width}.png`);
+      // CI (native amd64) and local pinned-container (emulated amd64) renders differ by a
+      // stable ~281px inside this region; the capture guards the sense-list layout, so allow it.
+      await expect(page.locator('.basic-vocabulary-word-breakdown')).toHaveScreenshot(`ux-meanings-${theme}-${width}.png`, { maxDiffPixels: 400 });
       await page.getByRole('button', { name: 'むずかしい', exact: true }).click();
       await page.goto('/');
       await expect(page.locator('#continuation-heading')).toHaveText('続きを学ぶ');
