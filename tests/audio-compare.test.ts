@@ -3,7 +3,7 @@ import { realpathSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { Window } from 'happy-dom';
 import {
   VOICES, assertBudget, assertOutputOutsideRepo, repositoryCheckouts, azureSsml, billableCharacters,
@@ -91,7 +91,7 @@ describe('credentials and output isolation', () => {
   });
   it('rejects root, descendants, traversal, case aliases and symlinked ancestors', () => {
     const root = process.cwd();
-    for (const path of [root, join(root, 'new/sub'), join(root, '../voice-compare/out'), root.toUpperCase()]) {
+    for (const path of [root, join(root, 'new/sub'), join(root, '..', basename(root), 'out'), root.toUpperCase()]) {
       expect(() => assertOutputOutsideRepo(path)).toThrow();
     }
     const outside = temporary();
