@@ -585,6 +585,11 @@ export function readStrictExternalJson(path: string): unknown {
     throw new ExternalJsonContentError(`JSON input must contain strict UTF-8: ${error instanceof Error ? error.message : String(error)}`);
   }
 
+  return parseStrictJsonText(text);
+}
+
+/** Parses JSON without silently accepting duplicate object members. */
+export function parseStrictJsonText(text: string): unknown {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

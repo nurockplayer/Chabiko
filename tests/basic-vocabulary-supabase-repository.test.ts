@@ -737,7 +737,7 @@ function psql(queries: string): string {
   const r = spawnSync(
     'docker',
     ['exec', '-i', DB_CONTAINER, 'psql', '-q', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-tA'],
-    { input: queries, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+    { timeout: 30_000, input: queries, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
   );
   const combined = `${r.stdout ?? ''}${r.stderr ?? ''}`;
   if (r.status !== 0 && !/error/i.test(combined)) {

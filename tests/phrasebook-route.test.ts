@@ -18,7 +18,7 @@
  * Astro still writes its repository-local .astro cache.
  */
 
-import { execSync } from 'node:child_process';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
 import {
   existsSync,
   mkdtempSync,
@@ -55,7 +55,7 @@ const PHRASEBOOK_DATA = resolve(REPO_ROOT, 'data/examples/valid/phrasebook.json'
 const DIALOG_DATA = resolve(REPO_ROOT, 'data/examples/valid/phrasebook-dialogs.json');
 
 // Unique per-run build + fixture directories, outside the repo and never shared.
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-phrasebook-route-'));
+const BUILD_DIR = routeBuildDirectory();
 const FIXTURE_DIR = mkdtempSync(join(tmpdir(), 'chabiko-phrasebook-fixtures-'));
 const BUILT_ROUTE = join(BUILD_DIR, 'phrasebook/index.html');
 
@@ -609,17 +609,13 @@ describe('phrasebook prelaunch projection (#440)', () => {
 
 describe('/phrasebook/ — SSR route surface (Issue #236, fail-closed)', () => {
   beforeAll(() => {
-    execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 180_000,
-    });
+    ensureRouteBuild();
     builtHtml = readFileSync(BUILT_ROUTE, 'utf8');
   });
 
   afterAll(() => {
     // Clean only the directories this suite created.
-    for (const dir of [BUILD_DIR, FIXTURE_DIR]) {
+    for (const dir of [FIXTURE_DIR]) {
       if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
     }
   });

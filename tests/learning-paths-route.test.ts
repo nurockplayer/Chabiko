@@ -16,16 +16,13 @@
  * because Astro still writes its repository-local .astro cache.
  */
 
-import { execSync } from 'node:child_process';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
 import {
   existsSync,
-  mkdtempSync,
   readFileSync,
-  rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLearningPaths } from '../src/content/loadLearningPaths';
 
 const REPO_ROOT = resolve(__dirname, '..');
@@ -36,8 +33,8 @@ const COMPONENT_SOURCE = resolve(
 );
 const HOME_SOURCE = resolve(REPO_ROOT, 'src/pages/index.astro');
 
-// Unique per-run build directory, outside the repo and never shared.
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-paths-route-'));
+// Fresh per-run output shared by read-only route suites; global teardown owns cleanup.
+const BUILD_DIR = routeBuildDirectory();
 const BUILT_ROUTE = join(BUILD_DIR, 'paths/index.html');
 const BUILT_HOME = join(BUILD_DIR, 'index.html');
 
@@ -66,20 +63,9 @@ function extractStyles(source: string): string {
 
 describe('/paths/ — repository-driven static route (Issue #230)', () => {
   beforeAll(() => {
-    execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 120_000,
-    });
+    ensureRouteBuild();
     builtRouteHtml = readFileSync(BUILT_ROUTE, 'utf8');
     builtHomeHtml = readFileSync(BUILT_HOME, 'utf8');
-  });
-
-  afterAll(() => {
-    // Clean only the directory this suite created.
-    if (existsSync(BUILD_DIR)) {
-      rmSync(BUILD_DIR, { recursive: true, force: true });
-    }
   });
 
   it('renders the exact built /paths/ route and the home link destinations', () => {

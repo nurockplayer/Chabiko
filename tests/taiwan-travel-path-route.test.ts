@@ -1,13 +1,10 @@
-import { execSync } from 'node:child_process';
+import { ensureRouteBuild, routeBuildDirectory, routeBuildArguments } from './helpers/route-build';
 import {
   existsSync,
-  mkdtempSync,
   readFileSync,
-  rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { loadTaiwanTravelPathModel } from '../src/content/taiwanTravelPath';
 
 const REPO_ROOT = resolve(__dirname, '..');
@@ -15,9 +12,9 @@ const ROUTE_SOURCE = resolve(
   REPO_ROOT,
   'src/pages/paths/taiwan-travel/index.astro',
 );
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-taiwan-path-route-'));
+const BUILD_DIR = routeBuildDirectory();
 const BUILT_ROUTE = join(BUILD_DIR, 'paths/taiwan-travel/index.html');
-const BUILD_COMMAND = `pnpm astro build --outDir ${BUILD_DIR}`;
+const BUILD_COMMAND = `pnpm ${routeBuildArguments().join(' ')}`;
 
 let routeSource = '';
 let builtRouteHtml = '';
@@ -25,18 +22,8 @@ let builtRouteHtml = '';
 describe('/paths/taiwan-travel/ direct-refresh landing', () => {
   beforeAll(() => {
     routeSource = readFileSync(ROUTE_SOURCE, 'utf8');
-    execSync(BUILD_COMMAND, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 120_000,
-    });
+    ensureRouteBuild();
     builtRouteHtml = readFileSync(BUILT_ROUTE, 'utf8');
-  });
-
-  afterAll(() => {
-    if (existsSync(BUILD_DIR)) {
-      rmSync(BUILD_DIR, { recursive: true, force: true });
-    }
   });
 
   it('uses the installed pnpm build command without a Corepack or version fallback', () => {

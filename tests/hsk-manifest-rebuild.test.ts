@@ -17,7 +17,7 @@ describe('offline HSK rebuild CLI', () => {
       cpSync(importer, join(root, 'scripts/import-hearmandarin-hsk-json.py'), { recursive: true });
       const script = join(root, 'scripts/import-hearmandarin-hsk-json.py');
       const output = join(root, 'output');
-      execFileSync('python3', [script, '--from-manifest', '--output-dir', output]);
+      execFileSync('python3', [script, '--from-manifest', '--output-dir', output], { timeout: 30_000 });
       expect(readFileSync(join(output, 'manifest.json'))).toEqual(readFileSync(resolve(packagePath, 'manifest.json')));
       const manifest = JSON.parse(readFileSync(join(output, 'manifest.json'), 'utf8'));
       for (const batch of manifest.publication.batches) {
@@ -25,14 +25,14 @@ describe('offline HSK rebuild CLI', () => {
       }
       const sentinel = join(output, 'caller.txt');
       writeFileSync(sentinel, 'keep');
-      expect(spawnSync('python3', [script, '--from-manifest', '--output-dir', output]).status).toBe(2);
+      expect(spawnSync('python3', [script, '--from-manifest', '--output-dir', output], { timeout: 30_000 }).status).toBe(2);
       expect(readFileSync(sentinel, 'utf8')).toBe('keep');
       const path = join(root, packagePath, 'manifest.json');
       for (const field of ['simplified', 'pinyin', 'batchPlacement'] as const) {
         const changed = structuredClone(manifest);
         changed.rows[0][field] = 'drift';
         writeFileSync(path, JSON.stringify(changed));
-        const result = spawnSync('python3', [script, '--from-manifest', '--output-dir', join(root, `bad-${field}`)]);
+        const result = spawnSync('python3', [script, '--from-manifest', '--output-dir', join(root, `bad-${field}`)], { timeout: 30_000 });
         expect(result.status).toBe(2);
         expect(result.stderr.toString()).toMatch(/drifted|digest/);
       }

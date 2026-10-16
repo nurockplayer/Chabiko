@@ -23,7 +23,7 @@
  * Astro still writes its repository-local .astro cache.
  */
 
-import { execSync } from 'node:child_process';
+import { ensureRouteBuild, routeBuildDirectory } from './helpers/route-build';
 import {
   existsSync,
   mkdtempSync,
@@ -51,7 +51,7 @@ const DIALOG_DATA = resolve(
 );
 
 // Unique per-run build + fixture directories, outside the repo and never shared.
-const BUILD_DIR = mkdtempSync(join(tmpdir(), 'chabiko-lesson-phrasebook-link-'));
+const BUILD_DIR = routeBuildDirectory();
 const FIXTURE_DIR = mkdtempSync(
   join(tmpdir(), 'chabiko-lesson-phrasebook-fixtures-'),
 );
@@ -218,11 +218,7 @@ describe('lesson route source — related-link contract', () => {
 
 describe('/lessons/:id/ — built related-link surface (Issue #239)', () => {
   beforeAll(() => {
-    execSync(`pnpm astro build --outDir ${BUILD_DIR}`, {
-      cwd: REPO_ROOT,
-      stdio: 'pipe',
-      timeout: 180_000,
-    });
+    ensureRouteBuild();
     for (const lesson of loadAllRenderableLessons()) {
       const html = readFileSync(
         join(BUILD_DIR, `lessons/${lesson.id}/index.html`),
@@ -234,7 +230,7 @@ describe('/lessons/:id/ — built related-link surface (Issue #239)', () => {
 
   afterAll(() => {
     // Clean only the directories this suite created.
-    for (const dir of [BUILD_DIR, FIXTURE_DIR]) {
+    for (const dir of [FIXTURE_DIR]) {
       if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
     }
   });

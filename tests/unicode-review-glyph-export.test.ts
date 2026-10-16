@@ -17,7 +17,6 @@ import { sha256Json } from '../scripts/unicode_visual_contract';
 const roots: string[] = [];
 const image = 'mcr.microsoft.com/playwright@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48';
 const linuxCiExportTimeoutMs = 900_000;
-const pinnedPnpmCommand = ['pnpm@12.11.2'];
 const canonicalJsonPaths = [
   'data/unicode/source-manifest.json',
   'data/unicode/generated/scalar-inventory.json',
@@ -92,14 +91,16 @@ describe('#477 canonical external glyph exporter', () => {
   it('publishes through the real CLI argument boundary with path safety before Docker', () => {
     const script = resolve('scripts/export_unicode_review_glyphs.ts');
     const repository = resolveUnicodeReviewRepositoryRoot();
-    const inRepo = spawnSync('corepack', [...pinnedPnpmCommand, 'exec', 'node', script, '--output', join(repository, 'unsafe-export')], { encoding: 'utf8' });
+    const inRepo = spawnSync(process.execPath, [script, '--output', join(repository, 'unsafe-export')], { timeout: 30_000, encoding: 'utf8' });
+    expect(inRepo.error).toBeUndefined();
     expect(inRepo.status).not.toBe(0);
     expect(`${inRepo.stdout}${inRepo.stderr}`).toMatch(/outside every worktree|outside this worktree/i);
     const root = mkdtempSync(join(tmpdir(), 'chabiko-glyph-export-'));
     roots.push(root);
     const collision = join(root, 'existing');
     writeFileSync(collision, 'keep');
-    const collided = spawnSync('corepack', [...pinnedPnpmCommand, 'exec', 'node', script, '--output', collision], { encoding: 'utf8' });
+    const collided = spawnSync(process.execPath, [script, '--output', collision], { timeout: 30_000, encoding: 'utf8' });
+    expect(collided.error).toBeUndefined();
     expect(collided.status).not.toBe(0);
     expect(readFileSync(collision, 'utf8')).toBe('keep');
     const neighbour = join(root, 'neighbour.txt');
@@ -116,7 +117,7 @@ describe('#477 canonical external glyph exporter', () => {
     writeFileSync(fakeDocker, '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify({ schemaVersion: 0, padding: "x".repeat(2 * 1024 * 1024) }));\n');
     chmodSync(fakeDocker, 0o755);
     const output = join(root, 'pack');
-    const result = spawnSync('corepack', [...pinnedPnpmCommand, 'exec', 'node', resolve('scripts/export_unicode_review_glyphs.ts'), '--output', output], {
+    const result = spawnSync(process.execPath, [resolve('scripts/export_unicode_review_glyphs.ts'), '--output', output], {
       encoding: 'utf8',
       env: { ...process.env, PATH: `${root}:${process.env.PATH ?? ''}` },
       timeout: 30_000,
@@ -134,7 +135,7 @@ describe('#477 canonical external glyph exporter', () => {
     const repository = resolveUnicodeReviewRepositoryRoot();
     const before = snapshotCanonicalSourceBytes(repository);
     const output = join(root, 'pack');
-    const result = spawnSync('corepack', [...pinnedPnpmCommand, 'exec', 'node', resolve('scripts/export_unicode_review_glyphs.ts'), '--output', output], { encoding: 'utf8', timeout: linuxCiExportTimeoutMs });
+    const result = spawnSync(process.execPath, [resolve('scripts/export_unicode_review_glyphs.ts'), '--output', output], { encoding: 'utf8', timeout: linuxCiExportTimeoutMs });
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
     const after = snapshotCanonicalSourceBytes(repository);
     expect(after).toEqual(before);
