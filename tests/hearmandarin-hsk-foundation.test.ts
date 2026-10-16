@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { parseStrictJsonText } from '../scripts/unicode_review_external_io';
 
 interface SourceProfile {
   profileVersion: number;
@@ -161,29 +162,12 @@ const importDir = 'data/hsk-import/hearmandarin-hsk-2025-v1';
 
 function readJson<T>(relativePath: string): T {
   const json = readFileSync(path.join(root, relativePath), 'utf8');
-  assertStrictJson(json);
-  return JSON.parse(json) as T;
+  return parseStrictJsonText(json) as T;
 }
 
 function parseJsonBytes<T>(bytes: Uint8Array): T {
   const json = Buffer.from(bytes).toString('utf8');
-  assertStrictJson(json);
-  return JSON.parse(json) as T;
-}
-
-function assertStrictJson(json: string): void {
-  const validator = [
-    'import json, sys',
-    'def unique_object(pairs):',
-    '    result = {}',
-    '    for key, value in pairs:',
-    '        if key in result:',
-    '            raise ValueError("duplicate JSON key: " + key)',
-    '        result[key] = value',
-    '    return result',
-    'json.load(sys.stdin, object_pairs_hook=unique_object)',
-  ].join('\n');
-  execFileSync('python3', ['-c', validator], { input: json, cwd: root, stdio: ['pipe', 'pipe', 'pipe'] });
+  return parseStrictJsonText(json) as T;
 }
 
 const profileBytes = readFileSync(path.join(root, importDir, 'source-profile.json'));
@@ -290,6 +274,7 @@ function producerInputError(artifacts: FoundationArtifacts): string {
     '    sys.exit(2)',
   ].join('\n');
   const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    timeout: 30_000,
     cwd: root,
     input: JSON.stringify({
       profile: Buffer.from(artifacts.profileBytes).toString('base64'),
@@ -342,6 +327,7 @@ function producerPublicationIndexError(raw: string): string {
     '    sys.exit(2)',
   ].join('\n');
   const result = spawnSync('python3', ['-B', '-c', code, path.join(root, 'scripts/import-hearmandarin-hsk-json.py')], {
+    timeout: 30_000,
     cwd: root,
     input: raw,
     encoding: 'utf8',
@@ -1338,13 +1324,14 @@ describe('HearMandarin HSK source foundation', () => {
   it('passes the existing vocabulary and script-status validators without changing their contracts', () => {
     for (const filename of foundationArtifacts.batchFiles) {
       const target = `data/hsk-vocabulary/${filename}`;
-      execFileSync('python3', ['scripts/validate-content-schema.py', '--check', target], { cwd: root, stdio: 'pipe' });
-      execFileSync('python3', ['scripts/validate-script-status.py', '--check', target], { cwd: root, stdio: 'pipe' });
+      execFileSync('python3', ['scripts/validate-content-schema.py', '--check', target], { timeout: 30_000, cwd: root, stdio: 'pipe' });
+      execFileSync('python3', ['scripts/validate-script-status.py', '--check', target], { timeout: 30_000, cwd: root, stdio: 'pipe' });
     }
   });
 
   it('self-tests the actual CLI, clean repeat, and fail-closed dirty and drift cases', () => {
     const result = spawnSync('python3', ['scripts/import-hearmandarin-hsk-json.py', '--self-test'], {
+      timeout: 30_000,
       cwd: root,
       encoding: 'utf8',
     });

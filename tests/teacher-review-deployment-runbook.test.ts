@@ -44,6 +44,7 @@ describe('teacher-review deployment runbook local Pages command (Issue #390)', (
   it('is valid shell syntax', () => {
     expect(() =>
       execFileSync('sh', ['-n'], {
+        timeout: 30_000,
         input: `${command}\n`,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],

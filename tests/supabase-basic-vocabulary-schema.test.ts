@@ -88,7 +88,7 @@ function psql(queries: string): string {
   const r = spawnSync(
     'docker',
     ['exec', '-i', DB_CONTAINER, 'psql', '-q', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-tA'],
-    { input: queries, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+    { timeout: 30_000, input: queries, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
   );
   const combined = `${r.stdout ?? ''}${r.stderr ?? ''}`;
   if (r.status !== 0 && !/error/i.test(combined)) {
@@ -268,6 +268,7 @@ describe.skipIf(!liveSuiteActive)(`supabase basic-vocabulary schema (live databa
     // Ensure the migrations were applied by a fresh reset. `db reset` also proves
     // the migration applies reproducibly from empty state.
     const reset = spawnSync('supabase', ['db', 'reset', '--local'], {
+      timeout: 120_000,
       cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
     });
     if (reset.status !== 0) {

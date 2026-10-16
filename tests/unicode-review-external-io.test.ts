@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ExternalJsonContentError,
+  parseStrictJsonText,
   readStrictExternalJson,
   readStrictExternalBytes,
   resolveUnicodeReviewRepositoryRoot,
@@ -76,6 +77,11 @@ describe('#477 external Unicode review I/O', () => {
     const root = externalRoot();
     const prettyPath = join(root, 'pretty.json');
     writeFileSync(prettyPath, '{\n  "top": {"same": 1, "nested": [{"same": 2}]},\n  "array": [true, null]\n}\n', 'utf8');
+    expect(parseStrictJsonText(readFileSync(prettyPath, 'utf8'))).toEqual({ top: { same: 1, nested: [{ same: 2 }] }, array: [true, null] });
+    for (const value of [null, true, 42, 'text', [1, null]]) {
+      expect(parseStrictJsonText(JSON.stringify(value))).toEqual(value);
+    }
+    expect(() => parseStrictJsonText('{')).toThrow(ExternalJsonContentError);
     expect(readStrictExternalJson(prettyPath)).toEqual({ top: { same: 1, nested: [{ same: 2 }] }, array: [true, null] });
 
     for (const [name, contents] of [
@@ -86,6 +92,7 @@ describe('#477 external Unicode review I/O', () => {
     ] as const) {
       const path = join(root, `${name.replaceAll(' ', '-')}.json`);
       writeFileSync(path, contents, 'utf8');
+      expect(() => parseStrictJsonText(contents), name).toThrow(ExternalJsonContentError);
       expect(() => readStrictExternalJson(path), name).toThrow(ExternalJsonContentError);
       expect(() => readStrictExternalJson(path), name).toThrow(/duplicate object member/i);
     }

@@ -1856,9 +1856,9 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
         'utf8',
       );
       expect(workflow).toContain(`\`\`\`bash\nnode ${rendererPath}\n\`\`\``);
-      execFileSync(process.execPath, commandArguments, { cwd: root, stdio: 'pipe' });
+      execFileSync(process.execPath, commandArguments, { timeout: 30_000, cwd: root, stdio: 'pipe' });
       const first = readFileSync(outputPath, 'utf8');
-      execFileSync(process.execPath, commandArguments, { cwd: root, stdio: 'pipe' });
+      execFileSync(process.execPath, commandArguments, { timeout: 30_000, cwd: root, stdio: 'pipe' });
       expect(readFileSync(outputPath, 'utf8')).toBe(first);
       expect(first).toBe(
         readFileSync(resolve(root, TAIWAN_TRAVEL_WAVE1_PACKET_PATH), 'utf8'),
@@ -1921,7 +1921,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '--output',
           outputPath,
         ],
-        { cwd: root, stdio: 'pipe' },
+        { timeout: 30_000, cwd: root, stdio: 'pipe' },
       );
       const rendered = readFileSync(outputPath, 'utf8');
       execFileSync(
@@ -1933,7 +1933,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '--output',
           outputPath,
         ],
-        { cwd: root, stdio: 'pipe' },
+        { timeout: 30_000, cwd: root, stdio: 'pipe' },
       );
       expect(readFileSync(outputPath, 'utf8')).toBe(rendered);
       expect(rendered).toContain(`**Review version:** ${baseline.reviewVersion}`);
@@ -1991,7 +1991,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '--output',
           outputPath,
         ],
-        { cwd: root, encoding: 'utf8' },
+        { timeout: 30_000, cwd: root, encoding: 'utf8' },
       );
 
       expect(result.status).not.toBe(0);
@@ -2041,7 +2041,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '--output',
           outputPath,
         ],
-        { cwd: root, encoding: 'utf8' },
+        { timeout: 30_000, cwd: root, encoding: 'utf8' },
       );
 
       expect(result.status).not.toBe(0);
@@ -2092,7 +2092,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
           '--output',
           outputPath,
         ],
-        { cwd: root, encoding: 'utf8' },
+        { timeout: 30_000, cwd: root, encoding: 'utf8' },
       );
 
       expect(result.status).not.toBe(0);
@@ -2237,7 +2237,7 @@ describe('Taiwan Travel Wave 1 candidate package', () => {
             '--output',
             outputPath,
           ],
-          { cwd: root, encoding: 'utf8' },
+          { timeout: 30_000, cwd: root, encoding: 'utf8' },
         );
 
         expect(result.status, testCase.name).not.toBe(0);

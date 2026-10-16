@@ -200,12 +200,14 @@ describe('pronunciation audio generation', () => {
     const script = join(process.cwd(), 'scripts/audio/generate.ts');
     const env = { ...process.env, AZURE_SPEECH_KEY: '', AZURE_SPEECH_REGION: '' };
     const dryRun = spawnSync(process.execPath, [script, '--dry-run', '--limit', '1'], {
+      timeout: 30_000,
       cwd: process.cwd(), env, encoding: 'utf8',
     });
     expect(dryRun.status).toBe(0);
     expect(dryRun.stdout).toContain('selected by limit: 1');
 
     const missingKey = spawnSync(process.execPath, [script, '--limit', '1'], {
+      timeout: 30_000,
       cwd: process.cwd(), env, encoding: 'utf8',
     });
     expect(missingKey.status).toBe(1);

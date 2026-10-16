@@ -658,7 +658,7 @@ describe('Small Talk Lab authored encounter contract', () => {
     const valid = spawnSync(
       'node',
       ['scripts/validate-small-talk-encounters.ts', '--check', 'data/small-talk/encounters.json'],
-      { cwd: process.cwd(), encoding: 'utf8' },
+      { timeout: 30_000, cwd: process.cwd(), encoding: 'utf8' },
     );
     expect(valid.status, valid.stderr).toBe(0);
     expect(valid.stdout).toContain('Small Talk Encounter contract valid');
@@ -675,7 +675,7 @@ describe('Small Talk Lab authored encounter contract', () => {
       const result = spawnSync(
         'node',
         ['scripts/validate-small-talk-encounters.ts', '--check', invalidPath],
-        { cwd: process.cwd(), encoding: 'utf8' },
+        { timeout: 30_000, cwd: process.cwd(), encoding: 'utf8' },
       );
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('targetMovePattern[0] must be a known Move');
