@@ -326,8 +326,8 @@ describe('/vocabulary/kanji-bridge/ — SSR route surface (Issue #235, fail-clos
     expect(routeSource).toContain('<Header themeEnabled />');
     expect(routeSource).toContain('slot="header"');
     expect(builtHtml).toContain('id="script-preference-select"');
-    // The #252 control renders the frozen コース標準 option label.
-    expect(builtHtml).toContain('コース標準');
+    // The #252 control renders the compact 表記：標準 option label (#509 F8).
+    expect(builtHtml).toContain('表記：標準');
   });
 
   it('marks the dynamic filter count as a live status region (P2-4)', () => {

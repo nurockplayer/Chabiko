@@ -253,7 +253,7 @@ describe('/paths/ — repository-driven static route (Issue #230)', () => {
   it('safe missing-data state: invalid or missing data fails closed without fabricating a path', () => {
     // The route only renders what the loader returns; there is no fallback
     // list and no fabricated path anywhere in the route source.
-    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary|taiwan-travel/);
+    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary/);
     const fragment = builtRouteFragment();
     // The rendered labels come from the data file, not the route.
     for (const path of document.learningPaths) {
@@ -320,6 +320,13 @@ describe('/paths/ — wayfinding refinement (Issue #367)', () => {
     );
   });
 
+  it('explains both Taiwan denominators and promotes readiness before the path cards', () => {
+    expect(builtRouteHtml.indexOf('data-readiness-section')).toBeLessThan(builtRouteHtml.indexOf('class="paths-list"'));
+    expect(builtRouteHtml).toContain('レッスン24課・単語4語・フレーズ7件');
+    expect(builtRouteHtml).toContain('ホームの進捗は24課のレッスンのみ');
+    expect(builtRouteHtml).toContain('まだ完了を記録できない');
+  });
+
   it('drops the redundant percent summary from readiness items', () => {
     // The status + fixed-denominator count already convey progress; the percent
     // display duplicated the same fact and is removed from the surface.
@@ -333,8 +340,8 @@ describe('/paths/ — wayfinding refinement (Issue #367)', () => {
     // The fixed denominators, states, and unavailable-evidence note remain.
     expect(readinessBlock).toContain('0 / 3');
     expect(readinessBlock).toContain('0 / 5');
-    expect(readinessBlock).toContain('data-readiness-note');
-    expect(readinessBlock).toContain('利用できない項目');
+    expect(readinessBlock).toContain('data-readiness-meter');
+    expect(readinessBlock).toContain('フレーズ練習の記録は未対応');
   });
 });
 
@@ -361,7 +368,7 @@ describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
     expect(readinessBlock).toContain('聞き直して助けを求める');
     expect(readinessBlock).toContain('未開始');
     // No fake ready/in-progress state in the SSR snapshot.
-    expect(readinessBlock).not.toContain('準備OK');
+    expect(readinessBlock).not.toContain('data-status="ready"');
   });
 
   it('renders fixed denominators and the unavailable-evidence note truthfully', () => {
@@ -375,8 +382,8 @@ describe('/paths/ — Travel Quest readiness section (Issue #233)', () => {
     expect(readinessBlock).toContain('0 / 5');
     expect(readinessBlock).toContain('0 / 2');
     // Phrase/roleplay-only targets show the unavailable note.
-    expect(readinessBlock).toContain('data-readiness-note');
-    expect(readinessBlock).toContain('利用できない項目');
+    expect(readinessBlock).toContain('data-readiness-meter');
+    expect(readinessBlock).toContain('フレーズ練習の記録は未対応');
   });
 
   it('links only to real learner destinations', () => {
@@ -459,9 +466,9 @@ describe('/paths/ — Taiwan Travel 総合テスト entry (Issue #376)', () => {
 
   it('keeps the quiz route out of a new global navigation tier', () => {
     // The entry lives only inside the Taiwan Travel path card context; the
-    // route source stays id-free (the loader and the nav-config module are the
-    // single sources of truth).
-    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary|taiwan-travel/);
+    // quiz destination still comes from the navigation configuration. The
+    // Taiwan ID also selects its data-derived denominator explanation.
+    expect(routeSource).not.toMatch(/kanji-bridge|hsk-vocabulary/);
     expect(routeSource).not.toContain('paths/taiwan-travel/quiz');
   });
 });

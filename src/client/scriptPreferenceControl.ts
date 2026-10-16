@@ -12,17 +12,17 @@ export const SCRIPT_PREFERENCE_EVENT = 'chabiko:script-preference-change';
 /** The only select id this module binds. */
 export const SCRIPT_PREFERENCE_CONTROL_ID = 'script-preference-select';
 
-/** Exact visible label frozen in Issue #252. */
+/** Accessible label retained from Issue #252. */
 export const SCRIPT_PREFERENCE_LABEL = '漢字表記';
 
-/** Exact option labels and values frozen in Issue #252. */
+/** Self-describing phone labels (#509); persisted values remain unchanged. */
 export const SCRIPT_PREFERENCE_OPTIONS: ReadonlyArray<{
   readonly label: string;
   readonly value: ScriptPreference;
 }> = [
-  { label: 'コース標準', value: 'path-default' },
-  { label: '繁体字', value: 'traditional' },
-  { label: '簡体字', value: 'simplified' },
+  { label: '表記：標準', value: 'path-default' },
+  { label: '表記：繁体字', value: 'traditional' },
+  { label: '表記：簡体字', value: 'simplified' },
 ];
 
 function isControlledPreference(value: unknown): value is ScriptPreference {

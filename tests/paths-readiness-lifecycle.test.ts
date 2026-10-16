@@ -107,6 +107,7 @@ function createRoot(): HTMLElement {
           `<li data-readiness-target="${targetId}">` +
           `<span data-readiness-status data-status="not-started">未開始</span>` +
           `<span data-readiness-count>0 / 0</span>` +
+          `<progress data-readiness-meter max="1" value="0"></progress>` +
           `<span data-readiness-percent>0%</span>` +
           `<span data-readiness-note hidden>note</span>` +
           '</li>',
@@ -294,6 +295,8 @@ describe('initial render', () => {
     expect(navigate.querySelector('[data-readiness-status]')?.textContent).toBe('未開始');
     expect(navigate.querySelector('[data-readiness-status]')?.getAttribute('data-status')).toBe('not-started');
     expect(navigate.querySelector('[data-readiness-count]')?.textContent).toBe('0 / 3');
+    expect(navigate.querySelector<HTMLProgressElement>('[data-readiness-meter]')?.max).toBe(3);
+    expect(navigate.querySelector<HTMLProgressElement>('[data-readiness-meter]')?.value).toBe(0);
     expect(navigate.querySelector('[data-readiness-percent]')?.textContent).toBe('0%');
     expect((navigate.querySelector('[data-readiness-note]') as HTMLElement).hidden).toBe(false);
 
@@ -472,6 +475,8 @@ describe('progress signals', () => {
     window.dispatchEvent(new Event('pageshow'));
     const order = target(root, 'order-and-pay');
     expect(order.querySelector('[data-readiness-count]')?.textContent).toBe('1 / 5');
+    expect(order.querySelector<HTMLProgressElement>('[data-readiness-meter]')?.value).toBe(1);
+    expect(order.querySelector<HTMLProgressElement>('[data-readiness-meter]')?.max).toBe(5);
   });
 
   it('reads the user-scoped basic-vocabulary store on direct /paths/ load (signed-in session)', async () => {

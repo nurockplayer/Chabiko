@@ -262,7 +262,7 @@ describe('BaseLayout pre-paint bootstrap', () => {
 // ─── Header control markup and initial state ───────────────────────────────────
 
 describe('header script-preference control', () => {
-  it('renders the frozen exact visible label and options', () => {
+  it('retains the accessible label and values with self-describing visible options', () => {
     expect(headerSource).toContain(
       `<label for="${SCRIPT_PREFERENCE_CONTROL_ID}">${SCRIPT_PREFERENCE_LABEL}</label>`,
     );
@@ -275,9 +275,9 @@ describe('header script-preference control', () => {
       );
     }
     expect(SCRIPT_PREFERENCE_OPTIONS).toEqual([
-      { label: 'コース標準', value: 'path-default' },
-      { label: '繁体字', value: 'traditional' },
-      { label: '簡体字', value: 'simplified' },
+      { label: '表記：標準', value: 'path-default' },
+      { label: '表記：繁体字', value: 'traditional' },
+      { label: '表記：簡体字', value: 'simplified' },
     ]);
   });
 

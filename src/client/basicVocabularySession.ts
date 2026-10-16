@@ -20,6 +20,7 @@ import {
 } from './scriptPreferenceControl';
 import { FALLBACK_ANNOTATION } from '../domain/scriptSelection';
 import type { ScriptPreference } from '../lib/scriptPreference';
+import { japaneseSenses } from '../domain/japaneseSenses';
 
 interface SessionIllustration {
   assetPath: string;
@@ -198,7 +199,20 @@ function labeledWordElement(
   fieldLabel.lang = 'ja';
   fieldLabel.textContent = label;
 
-  field.append(fieldLabel, textElement(document, className, value, language));
+  const senses = className === 'basic-vocabulary-japanese' ? japaneseSenses(value) : [];
+  if (senses.length > 1) {
+    const list = document.createElement('ul');
+    list.className = className;
+    list.lang = language;
+    for (const sense of senses) {
+      const item = document.createElement('li');
+      item.textContent = sense;
+      list.append(item);
+    }
+    field.append(fieldLabel, list);
+  } else {
+    field.append(fieldLabel, textElement(document, className, senses[0] ?? value, language));
+  }
   return field;
 }
 

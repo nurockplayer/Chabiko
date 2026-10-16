@@ -29,6 +29,7 @@ const path = loadTaiwanTravelPathModel();
       <p class="taiwan-path-intro__kicker">台湾旅行</p>
       <h1>{path.labelJa}</h1>
       <p class="taiwan-path-intro__description">{path.descriptionJa}</p>
+      <a class="taiwan-path-readiness-link" href="/paths/#readiness-heading">旅行の準備度を見る →</a>
     </header>
 
     <section class="taiwan-path-index" aria-labelledby="taiwan-path-lessons-heading">
@@ -84,6 +85,8 @@ const path = loadTaiwanTravelPathModel();
 </BaseLayout>
 
 <style>
+  .taiwan-path-readiness-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: var(--sp-3); color: var(--jade-ink); }
+  .taiwan-path-readiness-link:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
   .taiwan-path-practice { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-block: var(--sp-8); }
   .taiwan-path-practice h2 { width: 100%; margin: 0; font-size: 1.125rem; }
   .taiwan-path-practice a { display: inline-flex; align-items: center; min-height: 44px; color: var(--jade-ink); }

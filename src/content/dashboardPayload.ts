@@ -26,9 +26,15 @@ export function buildDashboardProgressPayload(): DashboardProgressPayload {
   const completableLessons = lessons.filter(hasUsableLessonPractice);
 
   const basicVocabularyCorpusIds = manifest.rows.map((row) => row.learnerId);
+  const first = manifest.rows[0];
 
   return {
     basicVocabularyCorpusIds,
+    ...(first ? { basicVocabularyStarter: {
+      simplified: first.simplified,
+      pinyin: first.pinyin,
+      japanese: first.japanese,
+    } } : {}),
     hsk: loadHskLearnerProjection(),
     taiwanCompletableLessonIds: completableLessons.map((lesson) => lesson.id),
     taiwanLessons: completableLessons.map((lesson) => ({

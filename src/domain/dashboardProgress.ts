@@ -7,6 +7,7 @@ import {
   type AchievementEvaluation,
 } from './achievements';
 import type { HskLearnerProjection } from './hskLearnerProjection';
+import { japaneseSenses } from './japaneseSenses';
 
 // ─── Dashboard presentation domain (Issue #374) ───────────────────────────────
 //
@@ -58,6 +59,11 @@ export interface DashboardTrackLesson {
  *  ids that exist in these production corpora. */
 export interface DashboardProgressPayload {
   readonly basicVocabularyCorpusIds: readonly string[];
+  readonly basicVocabularyStarter?: {
+    readonly simplified: string;
+    readonly pinyin?: string;
+    readonly japanese?: string;
+  };
   readonly hsk: HskLearnerProjection;
   readonly taiwanCompletableLessonIds: readonly string[];
   readonly taiwanLessons: readonly DashboardTrackLesson[];
@@ -124,6 +130,19 @@ export function trackDestinationHref(
 
 // ─── Track card presentation ──────────────────────────────────────────────────
 
+/** One started-status derivation for both the track card and the continuation:
+ *  a rated (learning) teacher-vocabulary item counts as started. */
+export function effectiveTrackStatus(
+  trackId: DashboardTrackId,
+  snapshot: CrossTrackProgressSnapshot,
+): CrossTrackStatus {
+  const track = snapshot.tracks[trackId];
+  if (track.status === 'not-started' && track.trackId === 'basic-vocabulary' && track.learningCount > 0) {
+    return 'in-progress';
+  }
+  return track.status;
+}
+
 export function trackStatusLabel(status: CrossTrackStatus): string {
   switch (status) {
     case 'completed':
@@ -143,7 +162,7 @@ export function trackCardStatusKey(
   payload: DashboardProgressPayload,
 ): 'preparing' | 'available' | CrossTrackStatus {
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return 'preparing';
-  return trackId === 'hsk' ? 'available' : snapshot.tracks[trackId].status;
+  return trackId === 'hsk' ? 'available' : effectiveTrackStatus(trackId, snapshot);
 }
 
 /** The card status chip label derived from {@link trackCardStatusKey}. */
@@ -187,16 +206,19 @@ function continuationForTrack(
   if (!trackDestinationAvailable(trackId, snapshot, payload)) return null;
   const track = snapshot.tracks[trackId];
   if (track.status === 'completed') return null;
-  const started = track.status === 'in-progress';
+  const started = effectiveTrackStatus(trackId, snapshot) === 'in-progress';
   if (trackId === 'basic-vocabulary') {
+    const starter = started ? undefined : payload.basicVocabularyStarter;
     return {
       kind: started ? 'continue' : 'start',
       trackId,
       href: '/vocabulary/basic/',
       actionLabel: started ? '単語学習を続ける' : '単語学習を始める',
-      title: DASHBOARD_TRACK_LABELS['basic-vocabulary'],
-      sentence: null,
-      pinyin: null,
+      title: starter?.japanese
+        ? japaneseSenses(starter.japanese).join(' ／ ')
+        : DASHBOARD_TRACK_LABELS['basic-vocabulary'],
+      sentence: starter?.simplified ?? null,
+      pinyin: starter?.pinyin ?? null,
     };
   }
   if (trackId === 'hsk') {
@@ -246,7 +268,7 @@ export function deriveContinuation(
 ): DashboardContinuation {
   const order = DASHBOARD_TRACK_ORDER;
   for (const trackId of order) {
-    if (snapshot.tracks[trackId].status === 'in-progress') {
+    if (effectiveTrackStatus(trackId, snapshot) === 'in-progress') {
       const continuation = continuationForTrack(
         trackId,
         snapshot,
@@ -257,7 +279,7 @@ export function deriveContinuation(
     }
   }
   for (const trackId of order) {
-    if (snapshot.tracks[trackId].status === 'not-started') {
+    if (effectiveTrackStatus(trackId, snapshot) === 'not-started') {
       const continuation = continuationForTrack(
         trackId,
         snapshot,

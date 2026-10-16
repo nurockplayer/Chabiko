@@ -154,6 +154,8 @@ function mountDashboard(): HTMLElement {
   const root = document.createElement('div');
   root.dataset.dashboardRoot = 'true';
   root.innerHTML = `
+    <h2 id="continuation-heading">はじめの一歩</h2>
+    <span data-continuation-en>START</span>
     <a class="continuation-card" data-dashboard-continuation href="/vocabulary/basic/">
       <span data-continuation-kicker>先生厳選単語</span>
       <span data-continuation-title></span>
@@ -213,6 +215,9 @@ describe('dashboard build-time payload', () => {
   it('carries the production corpora and Taiwan destination metadata', () => {
     const payload = buildDashboardProgressPayload();
     expect(payload.basicVocabularyCorpusIds.length).toBeGreaterThan(0);
+    expect(payload.basicVocabularyStarter).toEqual({
+      simplified: '看', pinyin: 'kàn', japanese: '・(もの)を見る ・(本など)を読む',
+    });
     expect(payload.hsk.destination).toBe('/vocabulary/hsk/1/');
     expect(payload.hsk.statusLabelJa).toBe('利用できます');
     expect(payload.hsk.eligibleIds).toHaveLength(1969);
@@ -270,6 +275,28 @@ describe('dashboard continuation derivation', () => {
       href: '/vocabulary/basic/',
       actionLabel: '単語学習を始める',
     });
+  });
+
+  it('previews the source word only before the vocabulary track starts', () => {
+    const payload = { ...TEST_PAYLOAD, basicVocabularyStarter: {
+      simplified: '看', pinyin: 'kàn', japanese: '・(もの)を見る ・(本など)を読む',
+    } };
+    expect(deriveContinuation(zeroSnapshot, payload, new Set())).toMatchObject({
+      kind: 'start', sentence: '看', pinyin: 'kàn', title: '(もの)を見る ／ (本など)を読む',
+    });
+    const started = buildCrossTrackProgressSnapshot({
+      basicVocabulary: buildBasicVocabularyTrackSummary({
+        progress: { [TEST_PAYLOAD.basicVocabularyCorpusIds[0]]: { status: 'learning', knownStreak: 0 } },
+        corpusIds: new Set(TEST_PAYLOAD.basicVocabularyCorpusIds), scope: { kind: 'guest' },
+      }),
+      hsk: zeroSnapshot.tracks.hsk,
+      taiwanTravel: zeroSnapshot.tracks['taiwan-travel'],
+    });
+    expect(deriveContinuation(started, payload, new Set())).toMatchObject({
+      kind: 'continue', sentence: null, pinyin: null, title: '先生厳選単語',
+    });
+    // The card agrees with the continuation: a rated word means the track has started.
+    expect(trackCardStatusLabel('basic-vocabulary', started, payload)).toBe('学習中');
   });
 
   it('continues an in-progress track in Dashboard order', () => {
@@ -449,6 +476,23 @@ describe('dashboard continuation derivation', () => {
     expect(continuation.kind).toBe('unavailable');
     expect(continuation.href).toBeNull();
     expect(continuation.title).toBe('利用できるコースは準備中です');
+  });
+
+  it('replaces the START header once every available track is complete', () => {
+    const storage = createRecordingStorage();
+    storage._data[STORAGE_KEY] = JSON.stringify(['lesson-001', 'lesson-002', 'lesson-003']);
+    storage._data[VOCABULARY_PROGRESS_KEY] = hskProgress({
+      'hsk-001': { status: 'learned', knownStreak: 2 },
+      'hsk-002': { status: 'learned', knownStreak: 2 },
+    });
+    storage._data[BASIC_VOCABULARY_PROGRESS_KEY] = guestProgress(Object.fromEntries(
+      TEST_PAYLOAD.basicVocabularyCorpusIds.map((id) => [id, { status: 'learned', knownStreak: 2 }]),
+    ));
+    const root = mountDashboard();
+    initDashboard(root, TEST_PAYLOAD, { basicVocabulary: createFakeBasicCoordinator(storage), storage });
+    expect(root.querySelector('[data-dashboard-continuation]')?.hasAttribute('hidden')).toBe(true);
+    expect(root.querySelector('#continuation-heading')?.textContent).toBe('学習の状況');
+    expect(root.querySelector('[data-continuation-en]')?.textContent).toBe('PROGRESS');
   });
 
   it('reports unavailable (not completed) when content exists but no destination is usable', () => {
@@ -642,7 +686,7 @@ describe('dashboard home page (index.astro)', () => {
   });
 
   it('keeps Chinese and pinyin semantics for the continuation destination', () => {
-    expect(homeSource).toContain('lang="zh-Hant"');
+    expect(homeSource).toContain("initialContinuation.trackId === 'basic-vocabulary' ? 'zh-Hans' : 'zh-Hant'");
     expect(homeSource).toContain('lang="zh-Latn"');
   });
 
