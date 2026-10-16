@@ -37,7 +37,8 @@ including route builds. JSON assertion spans alone can omit build hooks.
   have native child-process timeouts: usually 30 seconds, 120 seconds for nested
   validation, Python contract checks and database reset. Existing larger build
   and Linux glyph-export limits remain. The journal publisher's internal `uv`
-  call is also bounded. These are command limits, not a whole-suite deadline.
+  call is intentionally left unbounded: a production timeout could abort after
+  the canonical journal is already published. These are command limits, not a whole-suite deadline.
 - The glyph CLI tests invoke the current Node executable directly, avoiding
   Corepack/package-manager bootstrap while retaining real argument-boundary and
   full Linux CI export assertions.

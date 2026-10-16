@@ -701,7 +701,7 @@ function invokeExclusiveJournalPublisher(stagingRoot: string, canonicalRoot: str
   const result = spawnSync('uv', [
     'run', '--locked', '--no-sync', '--project', repositoryRoot,
     'python', helper, stagingRoot, canonicalRoot, JSON.stringify(expected),
-  ], { timeout: 30_000, cwd: repositoryRoot, encoding: 'utf8' });
+  ], { cwd: repositoryRoot, encoding: 'utf8' });
   if (result.error) throw result.error;
   if (result.status === 0) return;
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim();
