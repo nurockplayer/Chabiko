@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { INDEX_PATH, buildPronunciationIndex, collectPronunciationInputs, createAzureSpeechProvider, generatePronunciationAudio, manifestKey, normalizePronunciationText, selectGenerationInputs, type PronunciationManifestEntry } from '../scripts/audio/generate';
-import { findRecording, normalizeText } from '../src/lib/pronunciation/player';
+import { findRecording, normalizeText, parsePronunciationIndex } from '../src/lib/pronunciation/player';
 
 const temporaryRoots: string[] = [];
 
@@ -87,6 +87,24 @@ describe('pronunciation audio index', () => {
   const entry = (text: string, lang: string, file: string, source: PronunciationManifestEntry['source']) => ({
     text, lang, file, source, voice: 'v', provider: 'p', sha256: '0'.repeat(64), generatedAt: '2026-01-01T00:00:00.000Z',
   }) as PronunciationManifestEntry;
+
+  it('finds the generated clip for slash-separated vocabulary in the emitted index', async () => {
+    const text = '小姐/女士';
+    const lang = 'zh-CN';
+    const input = collectPronunciationInputs().find((candidate) =>
+      candidate.lang === lang && candidate.text === normalizeText(text));
+    expect(input).toBeDefined();
+
+    const root = tempRoot();
+    const clip = '/audio/ms.mp3';
+    await generatePronunciationAudio({
+      root, inputs: [], manifest: [entry(input!.text, lang, clip, 'tts')],
+      dryRun: false, indexOnly: true, log: () => {},
+    });
+    const index = parsePronunciationIndex(JSON.parse(readFileSync(join(root, INDEX_PATH), 'utf8')))!;
+    expect(findRecording(text, lang, index)).toBe(clip);
+    expect(normalizeText(input!.text)).toBe(input!.text);
+  });
 
   it('keys by normalized text and language, keeps only files, and prefers teacher recordings', () => {
     const index = buildPronunciationIndex([
