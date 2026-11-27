@@ -62,6 +62,7 @@ interface FakeResponse {
   data: unknown;
   error: FakeError | null;
   status?: number;
+  count: number | null;
 }
 
 interface RecordedQuery {
@@ -70,6 +71,8 @@ interface RecordedQuery {
   select?: string;
   filters?: Array<[string, unknown]>;
   orders?: Array<{ column: string; ascending: boolean }>;
+  count?: 'exact';
+  range?: [number, number];
   body?: unknown;
   onConflict?: string;
   ignoreDuplicates?: boolean;
@@ -77,12 +80,12 @@ interface RecordedQuery {
   args?: Record<string, unknown>;
 }
 
-function ok(data: unknown, status = 200): FakeResponse {
-  return { data, error: null, status };
+function ok(data: unknown, status = 200, count = Array.isArray(data) ? data.length : null): FakeResponse {
+  return { data, error: null, status, count };
 }
 
 function fail(status: number | undefined, error: FakeError): FakeResponse {
-  return { data: null, error, status };
+  return { data: null, error, status, count: null };
 }
 
 const FK_ERROR = {
@@ -116,7 +119,7 @@ class FakeSupabaseClient {
 
   from(table: string): {
     upsert: (body: unknown, opts: { onConflict: string; ignoreDuplicates: boolean }) => FakeResponse;
-    select: (fields: string) => FakeSelectBuilder;
+    select: (fields: string, options?: { count: 'exact' }) => FakeSelectBuilder;
   } {
     const record = (q: RecordedQuery) => this.recorded.push(q);
     return {
@@ -130,7 +133,7 @@ class FakeSupabaseClient {
         });
         return this.next();
       },
-      select: (fields) => new FakeSelectBuilder(table, fields, record, () => this.next()),
+      select: (fields, options) => new FakeSelectBuilder(table, fields, record, () => this.next(), options?.count),
     };
   }
 
@@ -143,12 +146,14 @@ class FakeSupabaseClient {
 class FakeSelectBuilder {
   filters: Array<[string, unknown]> = [];
   orders: Array<{ column: string; ascending: boolean }> = [];
+  private rowRange?: [number, number];
 
   constructor(
     private readonly table: string,
     private readonly fields: string,
     private readonly record: (q: RecordedQuery) => void,
     private readonly respond: () => FakeResponse,
+    private readonly count?: 'exact',
   ) {}
 
   eq(column: string, value: unknown): this {
@@ -158,6 +163,11 @@ class FakeSelectBuilder {
 
   order(column: string, opts: { ascending: boolean }): this {
     this.orders.push({ column, ascending: opts.ascending });
+    return this;
+  }
+
+  range(from: number, to: number): this {
+    this.rowRange = [from, to];
     return this;
   }
 
@@ -180,6 +190,8 @@ class FakeSelectBuilder {
       select: this.fields,
       filters: this.filters,
       orders: this.orders,
+      count: this.count,
+      range: this.rowRange,
     });
     return Promise.resolve(this.respond()).then(onfulfilled);
   }
@@ -231,8 +243,6 @@ describe('validation before query', () => {
       [item('a', 'learning', 0, 0, 5)],
       // Duplicate item id.
       [item('a', 'learning', 0, 0, 0), item('a', 'learning', 0, 1, 0)],
-      // Duplicate review order.
-      [item('a', 'learning', 0, 0, 0), item('b', 'learning', 0, 0, 0)],
       // Inconsistent streak.
       [item('a', 'learning', 5, 0, 0)],
       // Empty item id.
@@ -398,6 +408,57 @@ describe('loadSnapshot', () => {
     ]);
   });
 
+  it('loads and pushes distinct words that share a review order', async () => {
+    const rows = ['a', 'b'].map((id) => ({
+      item_id: id,
+      status: 'learning',
+      known_streak: 1,
+      review_order: 0,
+      reset_generation: 0,
+    }));
+    const { repo, client } = makeRepo(ok(null, 201), ok({ reset_generation: 0 }), ok(rows), ok(null, 201));
+    const snapshot = await repo.loadSnapshot(USER_A);
+    expect(snapshot.items).toEqual(['a', 'b'].map((id) => item(id, 'learning', 1, 0, 0)));
+    await repo.pushMutations(USER_A, 0, snapshot.items);
+    expect(calls(client)[3].body).toEqual(rows.map((row) => ({
+      ...row, user_id: USER_A, course_id: 'basic-vocabulary',
+    })));
+  });
+
+  const firstPage = Array.from({ length: 1000 }, (_, order) => ({
+    item_id: `id-${order}`,
+    status: 'learning',
+    known_streak: 0,
+    review_order: order,
+    reset_generation: 0,
+  }));
+
+  it('loads all 1,001 words beyond the Supabase row limit', async () => {
+    const last = { ...firstPage[0], item_id: 'id-1000', review_order: 1000 };
+    const { repo, client } = makeRepo(
+      ok(null, 201), ok({ reset_generation: 0 }),
+      ok(firstPage, 206, 1001), ok([last], 206, 1001),
+    );
+    const snapshot = await repo.loadSnapshot(USER_A);
+    expect(snapshot.items.length).toBe(1001);
+    expect(snapshot.items.map((row) => row.itemId)).toEqual([...firstPage, last].map((row) => row.item_id));
+    const pages = calls(client).slice(2);
+    expect(pages.map(({ range, count }) => ({ range, count }))).toEqual([
+      { range: [0, 999], count: 'exact' },
+      { range: [1000, 1999], count: 'exact' },
+    ]);
+  });
+
+  it.each([
+    ['failed', fail(0, { code: '', message: 'unavailable' }), 'network'],
+    ['truncated', ok([], 206, 1001), 'invalid-data'],
+  ] as const)('rejects the whole snapshot when a later page is %s', async (_case, response, kind) => {
+    const { repo } = makeRepo(
+      ok(null, 201), ok({ reset_generation: 0 }), ok(firstPage, 206, 1001), response,
+    );
+    await expect(repo.loadSnapshot(USER_A)).rejects.toMatchObject({ kind });
+  });
+
   it('maps missing/malformed/wrong-generation/duplicate data to invalid-data', async () => {
     const invalidStates: unknown[] = [
       null,
@@ -432,8 +493,6 @@ describe('loadSnapshot', () => {
       [row({ reset_generation: 1 })],
       // duplicate item id
       [row({ item_id: 'a' }), row({ item_id: 'a', review_order: 1 })],
-      // duplicate review order
-      [row(), row({ item_id: 'b' })],
       // inconsistent streak (learning with 5)
       [row({ known_streak: 5 })],
       // learned with streak 1
