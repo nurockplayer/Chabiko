@@ -151,7 +151,7 @@ export function credentials(
       if (gemini) result.gemini = oauth;
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to acquire Google Cloud access token: ${detail}. Run `gcloud auth login` or `gcloud auth application-default login`, then retry.`);
+      throw new Error(`Failed to acquire Google Cloud access token: ${detail}. Run 'gcloud auth login' or 'gcloud auth application-default login', then retry.`);
     }
   }
   if (google && !result.google) log('Skipping Google WaveNet: set GOOGLE_TTS_API_KEY, or GOOGLE_CLOUD_PROJECT with a working gcloud login.');
