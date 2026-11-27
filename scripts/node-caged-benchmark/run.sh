@@ -59,13 +59,22 @@ docker run --rm --platform linux/arm64 --entrypoint cat "$resolved" /usr/local/b
 chmod +x "$scratch/docker" "$scratch/profile.py"
 browser_image=$(sed -n "s/.*'\(mcr.microsoft.com\/playwright@sha256:[0-9a-f]*\)'.*/\1/p" tests/visual/run.ts)
 pull "$browser_image" amd64
-export BENCH_BROWSER_IMAGE=$resolved
+browser_base=$resolved
+export BENCH_BROWSER_IMAGE="$run_id-browser:bench"
+images+=("$BENCH_BROWSER_IMAGE")
+browser_setup=$(docker run -d "${limits[@]}" --platform linux/amd64 --entrypoint sleep "$browser_base" infinity)
+docker exec "$browser_setup" bash -euc '
+  apt-get update -qq
+  apt-get install -y -qq --no-install-recommends python3 libatomic1
+'
+docker commit "$browser_setup" "$BENCH_BROWSER_IMAGE" >/dev/null
+docker stop "$browser_setup" >/dev/null
 pull "${CAGED_IMAGE:-platformatic/node-caged:26-slim}" arm64
 caged=$resolved
 patch=$(docker run --rm --platform linux/arm64 --entrypoint node "$caged" -p 'process.versions.node')
 stock="node:$patch-trixie-slim"
 baseline=${BASELINE_IMAGE:-node:24-slim}
-printf 'baseline=%s stock=%s candidate=%s browser=%s\n' "$baseline" "$stock" "${CAGED_IMAGE:-platformatic/node-caged:26-slim}" "$BENCH_BROWSER_IMAGE"
+printf 'baseline=%s stock=%s candidate=%s browser=%s\n' "$baseline" "$stock" "${CAGED_IMAGE:-platformatic/node-caged:26-slim}" "$browser_base"
 
 for variant in node24 node26 caged26; do
   case "$variant" in
@@ -105,13 +114,14 @@ for variant in node24 node26 caged26; do
     apt-get install -y -qq --no-install-recommends ca-certificates curl git python3
     mkdir -p /opt/pnpm
     curl -fsSL https://registry.npmjs.org/pnpm/-/pnpm-12.11.2.tgz | tar -xz -C /opt/pnpm --strip-components=1
-    ln -sf /opt/pnpm/bin/pnpm.cjs /usr/local/bin/pnpm
+    ln -sf /opt/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin UV_NO_MODIFY_PATH=1 sh
     git config --global --add safe.directory "$PWD"
     pnpm install --frozen-lockfile
     uv sync --locked
     node -p "JSON.stringify({node:process.version,v8:process.versions.v8,arch:process.arch,abi:process.versions.modules,napi:process.versions.napi,compression:process.config.variables.v8_enable_pointer_compression,heapLimit:require(\"node:v8\").getHeapStatistics().heap_size_limit})"
     pnpm --version
+    pnpm exec node -p process.version
     uv --version
     uname -m
     cat /etc/debian_version
@@ -151,4 +161,8 @@ for variant in node24 node26 caged26; do
 done
 
 python3 "$scratch/profile.py" summary "$scratch"
+if ! compgen -G "$scratch/results/*.json" >/dev/null; then
+  echo "No runtime produced a benchmark measurement" >&2
+  exit 1
+fi
 printf 'finished %s\n' "$(TZ=Asia/Tokyo date '+%F %T %Z')"
