@@ -36,9 +36,10 @@ describe('teacher vocabulary review overview', () => {
 
     const { onRequestGet } = await import('../functions/teacher-review/api/vocabulary');
     const next = vi.fn();
+    const env: Record<string, string> = {};
     const context = {
       request: new Request('https://chabiko.pages.dev/teacher-review/api/vocabulary'),
-      env: {},
+      env,
       data: {},
       next,
     } as unknown as Parameters<typeof onRequest>[0];
@@ -48,8 +49,8 @@ describe('teacher vocabulary review overview', () => {
     expect(await unavailable.json()).toEqual({ error: expect.stringMatching(/^Access not configured:/) });
     expect(next).not.toHaveBeenCalled();
 
-    context.env.TEACHER_REVIEW_ACCESS_TEAM_DOMAIN = 'https://test.cloudflareaccess.com';
-    context.env.TEACHER_REVIEW_ACCESS_AUD = 'test-audience';
+    env.TEACHER_REVIEW_ACCESS_TEAM_DOMAIN = 'https://test.cloudflareaccess.com';
+    env.TEACHER_REVIEW_ACCESS_AUD = 'test-audience';
     expect((await onRequest(context)).status).toBe(401);
     expect(next).not.toHaveBeenCalled();
 
