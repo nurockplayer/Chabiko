@@ -52,11 +52,13 @@ export class ProgressStore {
     }
   }
 
-  private persist(): void {
+  private persist(): boolean {
+    if (this.storage === null) return false;
     try {
-      this.storage?.setItem(STORAGE_KEY, JSON.stringify([...this.completed]));
+      this.storage.setItem(STORAGE_KEY, JSON.stringify([...this.completed]));
+      return true;
     } catch {
-      /* storage full or unavailable — keep in-memory state */
+      return false;
     }
   }
 
@@ -64,7 +66,7 @@ export class ProgressStore {
     return this.completed.has(lessonId);
   }
 
-  markComplete(lessonId: string): void {
+  markComplete(lessonId: string): boolean {
     // Sync in-memory state with current storage to prevent stale-instance
     // resurrection after reset, and to merge concurrent writes from other tabs.
     if (this.storage !== null) {
@@ -88,7 +90,7 @@ export class ProgressStore {
       }
     } /* storage === null: keep existing in-memory state */
     this.completed.add(lessonId);
-    this.persist();
+    return this.persist();
   }
 
   resetAll(): void {

@@ -50,6 +50,7 @@ const isHome = Astro.url.pathname === '/';
       </select>
     </div>
   </div>
+  <p id="script-preference-save-status" role="status"></p>
 </header>
 
 <script>
@@ -222,6 +223,13 @@ const isHome = Astro.url.pathname === '/';
     letter-spacing: 0.08em;
     color: var(--ink-muted);
     white-space: nowrap;
+  }
+  #script-preference-save-status {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding-inline: var(--sp-3);
+    color: var(--ink-muted);
+    font-size: 0.75rem;
   }
   .script-toggle-slot label {
     font-size: 0.6875rem;

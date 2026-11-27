@@ -106,7 +106,8 @@ function makeHeaderMarkup(): string {
       (option) => `<option value="${option.value}">${option.label}</option>`,
     ).join('') +
     '</select>' +
-    '</div>'
+    '</div>' +
+    '<p id="script-preference-save-status" role="status"></p>'
   );
 }
 
@@ -262,6 +263,33 @@ describe('BaseLayout pre-paint bootstrap', () => {
 // ─── Header control markup and initial state ───────────────────────────────────
 
 describe('header script-preference control', () => {
+  it.each(['QuotaExceededError', 'SecurityError'])(
+    'reports a page-only script preference on %s and clears the notice after a save',
+    (errorName) => {
+      document.body.innerHTML = makeHeaderMarkup();
+      init();
+      const write = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+        throw new DOMException('Write failed', errorName);
+      });
+      const status = document.getElementById('script-preference-save-status');
+      try {
+        selectOption('simplified');
+        expect(rootDataset().scriptPreference).toBe('simplified');
+        expect(control().value).toBe('simplified');
+        expect(storageValue()).toBeNull();
+        expect(status?.textContent).toBe(
+          'このブラウザには表記設定を保存できませんでした。このページでのみ反映されます。',
+        );
+        expect(headerSource).toContain('id="script-preference-save-status" role="status"');
+      } finally {
+        write.mockRestore();
+      }
+
+      selectOption('traditional');
+      expect(status?.textContent).toBe('');
+    },
+  );
+
   it('retains the accessible label and values with self-describing visible options', () => {
     expect(headerSource).toContain(
       `<label for="${SCRIPT_PREFERENCE_CONTROL_ID}">${SCRIPT_PREFERENCE_LABEL}</label>`,

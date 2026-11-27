@@ -323,7 +323,9 @@ describe('taiwan travel assessment client', () => {
       const card = root.querySelector('[data-quiz-card]')!;
       expect(card.textContent).toContain('24問中 24問正解');
       expect(card.textContent).toContain('ベストスコア 24 / 24');
-      expect(card.textContent).toContain('ベストスコアを保存できませんでした。');
+      expect(card.textContent).toContain(
+        'このブラウザにはベストスコアを保存できませんでした。このページでのみ反映されます。',
+      );
       expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBe(previous);
     } finally {
       write.mockRestore();

@@ -1,5 +1,12 @@
+// @vitest-environment happy-dom
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import ts from 'typescript';
+import { describe, expect, it, vi } from 'vitest';
+import * as progress from '../src/lib/progress';
+import * as practiceSession from '../src/lib/practiceSession';
+import * as timeoutManager from '../src/lib/timeoutManager';
+import * as progressSnapshot from '../src/lib/progressSnapshot';
+import * as practiceRefresh from '../src/lib/practiceRefresh';
 
 const lessonPageSource = readFileSync(
   new URL('../src/pages/lessons/[id].astro', import.meta.url),
@@ -8,6 +15,51 @@ const lessonPageSource = readFileSync(
 const practiceComponentSource = readFileSync(
   new URL('../src/components/LessonPractice.astro', import.meta.url),
   'utf8',
+);
+
+it.each(['QuotaExceededError', 'SecurityError'])(
+  'explains temporary lesson completion on %s',
+  (errorName) => {
+    const script = practiceComponentSource.split('<script>')[1].split('</script>')[0];
+    const { outputText } = ts.transpileModule(script, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS },
+    });
+    const imports: Record<string, unknown> = {
+      '../lib/progress': progress,
+      '../lib/practiceSession': practiceSession,
+      '../lib/timeoutManager': timeoutManager,
+      '../lib/progressSnapshot': progressSnapshot,
+      '../lib/practiceRefresh': practiceRefresh,
+    };
+    const question = { promptJa: '質問', correctAnswer: '答え', choices: ['答え'], lessonId: 'lesson-001' };
+    document.body.innerHTML = `
+      <span id="lesson-completion-badge"></span>
+      <section data-questions='${JSON.stringify([question])}'><div id="practice-root"></div></section>
+      <nav class="lesson-nav"><a class="nav-next" href="/lessons/lesson-002/">次へ</a></nav>`;
+    vi.useFakeTimers();
+    const listeners = vi.spyOn(window, 'addEventListener');
+    const write = vi.spyOn(window.localStorage, 'setItem').mockImplementation((key) => {
+      if (key === progress.STORAGE_KEY) throw new DOMException('Write failed', errorName);
+    });
+    try {
+      new Function('require', 'exports', outputText)((path: string) => imports[path], {});
+      document.querySelector<HTMLButtonElement>('.practice-choice')!.click();
+      vi.advanceTimersByTime(1200);
+
+      expect(document.querySelector('#lesson-completion-badge')?.textContent).toBe('✔ 完了済み');
+      expect(document.querySelector('.practice-next-step')?.getAttribute('href')).toBe('/lessons/lesson-002/');
+      expect(document.querySelector('.practice-complete')?.textContent).toContain(
+        'このブラウザにはレッスンの完了を保存できませんでした。このページでのみ反映されます。',
+      );
+      expect(window.localStorage.getItem(progress.STORAGE_KEY)).toBeNull();
+    } finally {
+      for (const [type, listener] of listeners.mock.calls) window.removeEventListener(type, listener);
+      listeners.mockRestore();
+      write.mockRestore();
+      vi.useRealTimers();
+      document.body.replaceChildren();
+    }
+  },
 );
 
 describe('lesson practice answer visibility', () => {
