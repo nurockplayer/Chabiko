@@ -22,7 +22,8 @@
     "validate:classify": "node scripts/validation/run.ts classify",
     "validate:content": "bash scripts/validate-content.sh",
     "audio:generate": "node scripts/audio/generate.ts",
-    "audio:compare": "node scripts/audio/compare-voices.ts"
+    "audio:compare": "node scripts/audio/compare-voices.ts",
+    "map:symbols": "node scripts/map/generate-symbols.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.0",

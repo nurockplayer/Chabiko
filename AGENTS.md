@@ -1,5 +1,7 @@
 # Chabiko — Agent Guidelines
 
+Read `docs/map/INDEX.md` first; structural PRs update the map in the same change.
+
 Chabiko | チャビコ is a commissioned Mandarin-learning website for Japanese speakers, built for a Chinese teacher. Production: https://chabiko.pages.dev (Cloudflare Pages, deployed automatically from `main`).
 
 The goal is a complete, usable product for real learners. Prefer shipping working learner value over process, documentation, or PR count.
