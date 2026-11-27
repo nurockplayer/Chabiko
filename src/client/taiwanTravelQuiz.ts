@@ -268,11 +268,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     cardElement.querySelector<HTMLButtonElement>('[data-action="next"]')?.focus();
   }
 
-  function renderCompleted(): void {
-    if (state.status !== 'completed') return;
-    const score = scoreOfCompletedAttempt(state) ?? 0;
-    const bestScore = store.readBestScore();
-
+  function renderCompleted(score: number, { bestScore, wrote }: ReturnType<TaiwanTravelAssessmentStore['recordCompletedAttempt']>): void {
     const fragment = document.createDocumentFragment();
     fragment.append(
       textElement(document, 'taiwan-travel-quiz-completion-title', 'テスト完了', 'ja'),
@@ -293,6 +289,11 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
         'ja',
       ),
     );
+    if (!wrote) {
+      fragment.append(
+        textElement(document, 'taiwan-travel-quiz-completion-notice', 'ベストスコアを保存できませんでした。', 'ja'),
+      );
+    }
     fragment.append(
       button(
         document,
@@ -308,12 +309,6 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     cardElement
       .querySelector<HTMLButtonElement>('[data-action="restart"]')
       ?.focus();
-  }
-
-  function render(stealFocus = false): void {
-    if (state.status === 'answering') renderAnswering(stealFocus);
-    else if (state.status === 'revealed') renderRevealed();
-    else renderCompleted();
   }
 
   function select(index: number): void {
@@ -339,16 +334,17 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
       // store never writes before a full attempt completes and never touches
       // lesson progress.
       const score = scoreOfCompletedAttempt(state) ?? 0;
-      store.recordCompletedAttempt(score);
+      renderCompleted(score, store.recordCompletedAttempt(score));
+    } else {
+      renderAnswering(true);
     }
-    render(true);
   }
 
   function restart(): void {
     const result = applyTaiwanTravelQuizAction(state, { kind: 'restart' });
     if (result.effect !== 'accepted') return;
     state = result.state;
-    render(true);
+    renderAnswering(true);
   }
 
   function onClick(event: MouseEvent): void {
@@ -369,7 +365,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
   }
 
   root.addEventListener('click', onClick);
-  render(false);
+  renderAnswering(false);
 
   const cleanup = (): void => {
     root.removeEventListener('click', onClick);

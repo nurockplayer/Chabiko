@@ -31,9 +31,9 @@ afterEach(() => { stopPronunciation(); setPronunciationIndex(undefined); vi.unst
 describe('pronunciation selection', () => {
   it('normalizes whitespace and width without conflating scripts or language', () => {
     expect(normalizeText('  Ａ\n 謝謝  ')).toBe('A 謝謝');
-    expect(normalizeText('小姐/女士')).toBe('小姐，女士');
-    expect(normalizeText('小姐／女士')).toBe('小姐，女士');
-    const index = new Map([['zh-tw|謝謝', '/audio/teacher.mp3'], ['zh-tw|小姐，女士', '/audio/ms.mp3']]);
+    expect(normalizeText('小姐/女士')).toBe('小姐,女士');
+    expect(normalizeText('小姐／女士')).toBe('小姐,女士');
+    const index = new Map([['zh-tw|謝謝', '/audio/teacher.mp3'], ['zh-tw|小姐,女士', '/audio/ms.mp3']]);
     expect(findRecording(' 謝謝 ', 'zh_TW', index)).toBe('/audio/teacher.mp3');
     expect(findRecording('小姐／女士', 'zh-TW', index)).toBe('/audio/ms.mp3');
     expect(findRecording('谢谢', 'zh-CN', index)).toBeUndefined();

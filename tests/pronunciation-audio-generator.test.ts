@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { INDEX_PATH, buildPronunciationIndex, collectPronunciationInputs, createAzureSpeechProvider, generatePronunciationAudio, manifestKey, normalizePronunciationText, selectGenerationInputs, type PronunciationManifestEntry } from '../scripts/audio/generate';
-import { findRecording, normalizeText } from '../src/lib/pronunciation/player';
+import { findRecording, normalizeText, parsePronunciationIndex } from '../src/lib/pronunciation/player';
 
 const temporaryRoots: string[] = [];
 
@@ -21,7 +21,7 @@ afterEach(() => {
 describe('pronunciation audio source collection', () => {
   it('normalizes keys and collects only Chinese script fields with language tags', () => {
     expect(normalizePronunciationText('  謝謝\n  你  ')).toBe('謝謝 你');
-    expect(normalizePronunciationText('小姐/女士')).toBe('小姐，女士');
+    expect(normalizePronunciationText('小姐/女士')).toBe('小姐,女士');
     const root = tempRoot();
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-wave-1'), { recursive: true });
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-golden'), { recursive: true });
@@ -88,6 +88,24 @@ describe('pronunciation audio index', () => {
     text, lang, file, source, voice: 'v', provider: 'p', sha256: '0'.repeat(64), generatedAt: '2026-01-01T00:00:00.000Z',
   }) as PronunciationManifestEntry;
 
+  it('finds the generated clip for slash-separated vocabulary in the emitted index', async () => {
+    const text = '小姐/女士';
+    const lang = 'zh-CN';
+    const input = collectPronunciationInputs().find((candidate) =>
+      candidate.lang === lang && candidate.text === normalizeText(text));
+    expect(input).toBeDefined();
+
+    const root = tempRoot();
+    const clip = '/audio/ms.mp3';
+    await generatePronunciationAudio({
+      root, inputs: [], manifest: [entry(input!.text, lang, clip, 'tts')],
+      dryRun: false, indexOnly: true, log: () => {},
+    });
+    const index = parsePronunciationIndex(JSON.parse(readFileSync(join(root, INDEX_PATH), 'utf8')))!;
+    expect(findRecording(text, lang, index)).toBe(clip);
+    expect(normalizeText(input!.text)).toBe(input!.text);
+  });
+
   it('keys by normalized text and language, keeps only files, and prefers teacher recordings', () => {
     const index = buildPronunciationIndex([
       entry('小姐/女士', 'zh_TW', '/audio/tts-ms.mp3', 'tts'),
@@ -96,7 +114,7 @@ describe('pronunciation audio index', () => {
       entry('谢谢', 'zh-CN', '/audio/cn.mp3', 'tts'),
       entry('謝謝', 'zh-TW', '/audio/later-tts.mp3', 'tts'),
     ]);
-    expect(index).toEqual({ 'zh-cn|谢谢': '/audio/cn.mp3', 'zh-tw|小姐，女士': '/audio/tts-ms.mp3', 'zh-tw|謝謝': '/audio/teacher.mp3' });
+    expect(index).toEqual({ 'zh-cn|谢谢': '/audio/cn.mp3', 'zh-tw|小姐,女士': '/audio/tts-ms.mp3', 'zh-tw|謝謝': '/audio/teacher.mp3' });
     expect(Object.keys(index)).toEqual(Object.keys(index).sort());
     const lookup = new Map(Object.entries(index));
     expect(findRecording('小姐／女士', 'zh-TW', lookup)).toBe('/audio/tts-ms.mp3');
