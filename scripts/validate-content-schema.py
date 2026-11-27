@@ -53,6 +53,9 @@ VALID_LEVELS = frozenset({"beginner", "elementary", "pre-intermediate", "interme
 
 VALID_REVIEW_STATUSES = frozenset({"draft", "reviewed", "published"})
 
+# The frozen assessment roster in src/domain/taiwanTravelAssessment.ts.
+TAIWAN_TRAVEL_QUIZ_LESSON_IDS = tuple(f"lesson-{number:03d}" for number in range(1, 25))
+
 VALID_SCENARIOS = frozenset({
     "food", "transport", "hotel", "shopping", "emergency", "airport",
 })
@@ -731,7 +734,7 @@ def _check_regional_usage(record: dict, path: str) -> list[str]:
 
 
 def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
-    """Production-ready lessons (reviewed/published) must have at least one usable review prompt.
+    """Reviewed, published, and quiz lessons must have a usable review prompt.
 
     Each distractor element must be a non-empty string distinct from the answer.
     Non-string elements (numbers, null, objects, arrays) are reported with
@@ -739,7 +742,10 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
     """
     errors = []
     review_status = record.get("reviewStatus", "")
-    if review_status not in ("reviewed", "published"):
+    if (
+        review_status not in ("reviewed", "published")
+        and record.get("id") not in TAIWAN_TRAVEL_QUIZ_LESSON_IDS
+    ):
         return errors
 
     prompts = record.get("reviewPrompts")
@@ -760,7 +766,7 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
         dj = prompt.get("distractorsJa")
 
         # Check distractor element types regardless of promptJa/answerJa validity,
-        # so non-string elements are always reported for reviewed/published lessons.
+        # so non-string elements are always reported for lessons checked here.
         if isinstance(dj, list):
             for di, d in enumerate(dj):
                 if not isinstance(d, str):
@@ -778,10 +784,11 @@ def _check_lesson_practice_readiness(record: dict, path: str) -> list[str]:
         if not isinstance(dj, list):
             continue
 
-        for di, d in enumerate(dj):
+        answer = unicodedata.normalize("NFC", aj.strip())
+        for d in dj:
             if isinstance(d, str):
-                stripped = d.strip()
-                if stripped and stripped != aj.strip():
+                distractor = unicodedata.normalize("NFC", d.strip())
+                if distractor and distractor != answer:
                     has_usable = True
 
     if not has_usable:
@@ -3301,6 +3308,7 @@ def run_tests():
         test_lesson_practice_readiness_missing_distractors,
         test_lesson_practice_readiness_valid,
         test_draft_lesson_missing_distractors_ok,
+        test_draft_quiz_lesson_requires_review_prompts,
         test_lesson_practice_readiness_published_fails,
         test_lesson_practice_readiness_published_ok,
         test_lesson_practice_reviewed_mixed_distractor_types,
@@ -3827,7 +3835,7 @@ def _minimal_lesson(**overrides):
         "chunks": [],
         "kanjiBridgeNotes": [],
         "soundFocus": [],
-        "reviewPrompts": [],
+        "reviewPrompts": [{"promptJa": "Q?", "answerJa": "A", "distractorsJa": ["B"]}],
         "travelTask": "練習してみよう",
     }
     data.update(overrides)
@@ -4134,12 +4142,18 @@ def test_lesson_practice_readiness_missing_distractors():
 
 
 def test_draft_lesson_missing_distractors_ok():
-    """draft lesson can have reviewPrompts without usable distractors."""
+    """Draft lessons outside the quiz can have prompts without usable distractors."""
     errs = validate_single(
-        _minimal_lesson(reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}]),
+        _minimal_lesson(id="lesson-025",
+                        reviewPrompts=[{"promptJa": "Q?", "answerJa": "A", "distractorsJa": []}]),
         "lesson",
     )
     _assert_no_errors(errs, "draft_lesson_missing_distractors")
+
+
+def test_draft_quiz_lesson_requires_review_prompts():
+    errs = validate_single(_minimal_lesson(id="lesson-011", reviewPrompts=[]), "lesson")
+    _assert_has_error(errs, "must have at least one review prompt", "draft_quiz_lesson")
 
 
 def test_lesson_practice_readiness_valid():

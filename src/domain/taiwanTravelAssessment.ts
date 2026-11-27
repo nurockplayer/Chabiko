@@ -67,6 +67,10 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeChoice(value: string): string {
+  return value.trim().normalize('NFC');
+}
+
 /** A review prompt is usable when it has a non-empty prompt and answer and at
  *  least one effective distinct distractor (the lesson practice contract). */
 export function isUsableReviewPrompt(prompt: unknown): prompt is ReviewPrompt {
@@ -76,10 +80,10 @@ export function isUsableReviewPrompt(prompt: unknown): prompt is ReviewPrompt {
     return false;
   }
   if (!Array.isArray(candidate.distractorsJa)) return false;
-  const answer = (candidate.answerJa as string).trim();
+  const answer = normalizeChoice(candidate.answerJa);
   return candidate.distractorsJa.some(
     (distractor) =>
-      isNonEmptyString(distractor) && (distractor as string).trim() !== answer,
+      isNonEmptyString(distractor) && normalizeChoice(distractor) !== answer,
   );
 }
 
@@ -129,10 +133,10 @@ function distinctSourceDistractors(prompt: ReviewPrompt, answer: string): string
   const distinct: string[] = [];
   for (const distractor of raw) {
     if (!isNonEmptyString(distractor)) continue;
-    const trimmed = distractor.trim();
-    if (trimmed === answer) continue;
-    if (distinct.includes(trimmed)) continue;
-    distinct.push(trimmed);
+    const choice = normalizeChoice(distractor);
+    if (choice === answer) continue;
+    if (distinct.includes(choice)) continue;
+    distinct.push(choice);
   }
   return distinct;
 }
@@ -146,7 +150,7 @@ export function buildTaiwanTravelQuestion(
   ordering: ChoiceOrdering = defaultTaiwanTravelChoiceOrdering,
 ): TaiwanTravelQuestion {
   const prompt = lesson.reviewPrompts[promptIndex];
-  const answer = prompt.answerJa.trim();
+  const answer = normalizeChoice(prompt.answerJa);
   const distractors = distinctSourceDistractors(prompt, answer);
   const options = ordering(
     [answer, ...distractors],

@@ -42,6 +42,7 @@ import {
   PHRASEBOOK_PHRASE_COUNT,
   PHRASEBOOK_SCENARIOS,
 } from '../src/content/loadPhrasebook';
+import { selectScript } from '../src/domain/scriptSelection';
 
 const REPO_ROOT = resolve(__dirname, '..');
 const ROUTE_SOURCE = resolve(REPO_ROOT, 'src/pages/phrasebook/index.astro');
@@ -163,6 +164,17 @@ function cloneDocument<T>(document: T): T {
 // ─── Loader: exact deterministic corpus ───────────────────────────────────────
 
 describe('loadPhrasebook — exact deterministic corpus', () => {
+  it('falls back to Traditional when a phrase explicitly has no Simplified form', () => {
+    const doc = basePhrasebookDocument();
+    delete doc.phrasebook[0].simplified;
+    doc.phrasebook[0].simplifiedStatus = 'unavailable';
+
+    const { phrases: [phrase] } = loadPhrasebook(writeTemp('phrasebook', doc));
+    expect(phrase.simplified).toBeUndefined();
+    expect(selectScript(phrase.traditional, phrase.traditionalStatus, 'simplified', phrase))
+      .toMatchObject({ script: phrase.traditional, isFallback: true });
+  });
+
   it('loads exactly 30 phrases and 6 dialogs with the frozen scenario set', () => {
     const data = loadPhrasebook();
     expect(data.phrases).toHaveLength(PHRASEBOOK_PHRASE_COUNT);
