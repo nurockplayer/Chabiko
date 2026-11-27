@@ -1,4 +1,4 @@
-import manifestData from '../../data/teacher-vocabulary-preview/learner-manifest.json';
+import manifestData from '../../data/teacher-vocabulary-preview/learner-manifest.json' assert { type: 'json' };
 import type { LearnerManifest } from '../types/learnerManifest';
 
 /** A deliberately narrow, teacher-readable projection of the production
