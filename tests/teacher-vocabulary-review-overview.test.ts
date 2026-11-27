@@ -29,6 +29,15 @@ const allQuery = {
 };
 
 describe('teacher vocabulary review overview', () => {
+  it('keeps reviewer records and workbook locators out of unauthenticated static entry points', () => {
+    const route = readFileSync('src/pages/teacher-review/vocabulary/index.astro', 'utf8');
+    expect(route).not.toMatch(/loadTeacherVocabularyReviewOverview|data-teacher-vocabulary-review-data|sourceSheets\.map/);
+    for (const client of ['basicVocabularySession', 'basicVocabularyQuiz']) {
+      const source = readFileSync(`src/client/${client}.ts`, 'utf8');
+      expect(source).not.toMatch(/learner-manifest\.json['"]/);
+    }
+  });
+
   it('preserves the production learner order and exposes only review-readable fields', () => {
     const overview = loadTeacherVocabularyReviewOverview();
     expect(overview.length).toBeGreaterThan(0);
