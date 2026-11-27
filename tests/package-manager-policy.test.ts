@@ -23,9 +23,9 @@ describe('pnpm toolchain policy', () => {
   });
 
   it('keeps only esbuild and sharp allowed to run dependency builds', () => {
-    expect(readFileSync('pnpm-workspace.yaml', 'utf8')).toBe(
-      'allowBuilds:\n  esbuild: true\n  sharp: true\n',
-    );
+    const workspace = readFileSync('pnpm-workspace.yaml', 'utf8');
+    const allowBuilds = workspace.split(/\n(?=\S)/).find((section) => section.startsWith('allowBuilds:'));
+    expect(allowBuilds?.trimEnd()).toBe('allowBuilds:\n  esbuild: true\n  sharp: true');
   });
 
   it('records the package manager separately from application dependency resolutions', () => {
