@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { loadTeacherVocabularyReviewOverview } from '../../src/content/teacherVocabularyReviewOverview';
 
 const ROUTE = '/teacher-review/vocabulary/';
 
@@ -8,6 +9,8 @@ async function assertNoHorizontalOverflow(page: import('@playwright/test').Page)
 }
 
 test('teacher vocabulary overview filters, pages, and remains contained on desktop and mobile', async ({ page }, testInfo) => {
+  await page.route('**/teacher-review/api/vocabulary', (route) =>
+    route.fulfill({ json: loadTeacherVocabularyReviewOverview() }));
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(ROUTE, { waitUntil: 'networkidle' });
   await expect(page.locator('[data-teacher-vocabulary-review]')).toBeVisible();

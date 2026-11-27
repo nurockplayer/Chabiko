@@ -1,10 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { loadTeacherVocabularyReviewOverview } from '../../src/content/teacherVocabularyReviewOverview';
 
 const ROUTE = '/teacher-review/vocabulary/';
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 test('teacher vocabulary overview is keyboard-accessible and contained at 390px', async ({ page }) => {
+  await page.route('**/teacher-review/api/vocabulary', (route) =>
+    route.fulfill({ json: loadTeacherVocabularyReviewOverview() }));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(ROUTE, { waitUntil: 'networkidle' });
   const controls = [

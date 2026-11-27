@@ -1,14 +1,7 @@
 ---
-// Read-only teacher vocabulary overview (Issue #489). This static shell is
-// intentionally outside learner navigation/sitemaps and inherits the existing
-// Cloudflare Access path boundary for `/teacher-review` and its descendants.
+// Read-only teacher vocabulary overview (Issue #489). The static shell loads
+// records through the Access-protected API.
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { loadTeacherVocabularyReviewOverview } from '../../../content/teacherVocabularyReviewOverview';
-
-const items = loadTeacherVocabularyReviewOverview();
-if (items.length === 0) throw new Error('teacher vocabulary review overview is empty');
-const sourceSheets = [...new Set(items.map((item) => item.sourceSheet))];
-const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout
@@ -41,7 +34,6 @@ const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
         <label for="teacher-vocabulary-review-source-sheet">出典シート</label>
         <select id="teacher-vocabulary-review-source-sheet" data-tvro-source-sheet>
           <option value="all">すべて</option>
-          {sourceSheets.map((sheet) => <option value={sheet}>{sheet}</option>)}
         </select>
       </div>
       <div class="teacher-vocabulary-review__field">
@@ -58,7 +50,7 @@ const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
       </div>
     </section>
 
-    <p class="teacher-vocabulary-review__summary" data-tvro-summary aria-live="polite">全{items.length}語を読み込み中</p>
+    <p class="teacher-vocabulary-review__summary" data-tvro-summary aria-live="polite">単語一覧を読み込み中</p>
     <section class="teacher-vocabulary-review__list" aria-label="先生厳選単語の確認一覧">
       <div class="teacher-vocabulary-review__columns" aria-hidden="true">
         <span>簡体字</span><span>繁体字</span><span>ピンイン</span><span>日本語</span><span>品詞</span><span>出典</span><span>状態</span><span>ID</span>
@@ -66,11 +58,10 @@ const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
       <ol data-tvro-results></ol>
     </section>
     <nav class="teacher-vocabulary-review__pagination" aria-label="ページ移動">
-      <button data-tvro-page="previous" type="button">前へ</button>
+      <button data-tvro-page="previous" type="button" disabled>前へ</button>
       <span data-tvro-page-indicator>1 / 1</span>
-      <button data-tvro-page="next" type="button">次へ</button>
+      <button data-tvro-page="next" type="button" disabled>次へ</button>
     </nav>
-    <script type="application/json" data-teacher-vocabulary-review-data set:html={itemsJson} is:inline></script>
   </main>
 </BaseLayout>
 
@@ -78,7 +69,7 @@ const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
   import { initTeacherVocabularyReviewOverview } from '../../../client/teacherVocabularyReviewOverview';
   function initialise(): void {
     document.querySelectorAll<HTMLElement>('[data-teacher-vocabulary-review]').forEach((root) => {
-      initTeacherVocabularyReviewOverview(root);
+      void initTeacherVocabularyReviewOverview(root);
     });
   }
   initialise();

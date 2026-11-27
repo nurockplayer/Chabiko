@@ -42,6 +42,26 @@ export default defineConfig({
   output: 'static',
   compressHTML: true,
   integrations: [pruneDevAssets()],
+  vite: {
+    plugins: [{
+      // Study and quiz need answers in the browser, but the workbook locators
+      // and provenance in the full manifest belong on the server.
+      name: 'public-learner-answers',
+      enforce: 'pre',
+      applyToEnvironment(environment) {
+        return environment.config.consumer === 'client';
+      },
+      async load(id) {
+        if (!id.endsWith('/data/teacher-vocabulary-preview/learner-manifest.json')) return;
+        const { rows } = JSON.parse(await readFile(id, 'utf8'));
+        return JSON.stringify({
+          rows: rows.map(({ learnerId, simplified, traditional, pinyin, japanese, example }) => ({
+            learnerId, simplified, traditional, pinyin, japanese, example,
+          })),
+        });
+      },
+    }],
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,
