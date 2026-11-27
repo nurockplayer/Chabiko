@@ -7,7 +7,7 @@ updated: 2026-11-27 JST
 
 Read this page first, then the note for the area you are changing. Follow its entry points instead of scanning the repository.
 
-`symbols.tsv` lists exported TypeScript functions, classes, types, constants, Astro components, and package scripts as `symbol<TAB>kind<TAB>path:line`. Find a symbol with `grep '^name<TAB>' docs/map/symbols.tsv`; refresh it with `pnpm map:symbols`.
+`symbols.tsv` lists exported TypeScript functions, classes, types, constants, Astro components, and package scripts as `symbol<TAB>kind<TAB>path:line`. Find a symbol with `grep "^AcceptedTransition$(printf '\t')" docs/map/symbols.tsv`; replace `AcceptedTransition` with the symbol name. Refresh the list with `pnpm map:symbols`.
 
 Structural PRs update this index, the relevant area note, and `symbols.tsv` in the same change.
 
