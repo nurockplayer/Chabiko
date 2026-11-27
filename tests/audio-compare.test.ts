@@ -49,22 +49,25 @@ describe('matched-text corpus and cost guard', () => {
     expect(parseArgs(['--only', 'google', '--max-usd', '0.02', '--dry-run']).only).toBe('google');
     for (const args of [['--only', 'other'], ['--max-usd', 'NaN'], ['--output'], ['--unknown']]) expect(() => parseArgs(args)).toThrow();
   });
-  it('refuses an over-budget run and unconfirmed Azure before fetch or output', async () => {
+  it('refuses an over-budget run before fetch or output', async () => {
     const fetcher = vi.fn(success);
     const config = options({ maxUsd: 0.001 });
     await expect(runComparison(config, { env, fetcher, log: vi.fn() })).rejects.toThrow('Cost estimate');
-    await expect(runComparison({ ...config, maxUsd: 0.03, confirmPaidTier: false }, { env, fetcher, log: vi.fn() })).rejects.toThrow('--confirm-paid-tier');
     expect(fetcher).not.toHaveBeenCalled();
     const tokenReader = vi.fn(() => 'token');
     await expect(runComparison(config, { env: { GOOGLE_CLOUD_PROJECT: 'project' }, tokenReader, fetcher, log: vi.fn() })).rejects.toThrow('Cost estimate');
     expect(tokenReader).not.toHaveBeenCalled();
     expect(readdirSync(join(config.output, '..'))).toEqual([]);
   });
-  it('dry run neither calls gcloud/fetch nor writes, even with credentials', async () => {
+  it('plans Gemini without gcloud, fetch or files when there is no paid confirmation', async () => {
     const fetcher = vi.fn(success), tokenReader = vi.fn(), log = vi.fn();
-    const config = options({ dryRun: true, confirmPaidTier: false });
-    await runComparison(config, { env, fetcher, tokenReader, log });
-    expect(log.mock.calls.flat().join('\n')).toContain('112 requests');
+    const config = options({ confirmPaidTier: false, geminiVoices: 1, maxUsd: 0.05 });
+    await runComparison(config, { env: { ...env, GOOGLE_CLOUD_PROJECT: 'project' }, fetcher, tokenReader, log });
+    expect(log.mock.calls.flat().join('\n')).toContain('140 requests');
+    expect(log.mock.calls.flat().join('\n')).toMatch(/gemini: 28 requests, text and audio tokens, US\$0\.019\d+/);
+    await expect(runComparison({ ...config, geminiVoices: 2 }, { env, fetcher, tokenReader, log })).rejects.toThrow('Cost estimate');
+    await runComparison({ ...config, only: 'google', geminiVoices: 2 }, { env, fetcher, tokenReader, log });
+    expect(log.mock.calls.flat().join('\n')).toMatch(/gemini: 56 requests, text and audio tokens, US\$0\.039\d+/);
     expect(fetcher).not.toHaveBeenCalled(); expect(tokenReader).not.toHaveBeenCalled();
     expect(readdirSync(join(config.output, '..'))).toEqual([]);
   });
@@ -73,9 +76,10 @@ describe('matched-text corpus and cost guard', () => {
 describe('credentials and output isolation', () => {
   it('skips missing credentials and suppresses gcloud error details', async () => {
     const log = vi.fn(); const token = vi.fn(() => { throw new Error('secret-stderr'); });
-    expect(credentials({}, undefined, token, log)).toEqual({});
+    expect(credentials({}, ['azure', 'google', 'gemini'], token, log)).toEqual({});
     expect(token).not.toHaveBeenCalled();
-    expect(credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, 'google', token, log)).toEqual({});
+    expect(credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, ['google', 'gemini'], token, log)).toEqual({});
+    expect(log.mock.calls.flat().join('\n')).toContain('Skipping Gemini-TTS');
     expect(log.mock.calls.flat().join('\n')).not.toContain('secret');
     const fetcher = vi.fn(success); const config = options();
     await runComparison(config, { env: {}, fetcher, log });
@@ -84,10 +88,12 @@ describe('credentials and output isolation', () => {
   });
   it('prefers Google API key, otherwise requires project and nonempty gcloud token', () => {
     const token = vi.fn(() => 'oauth-token');
-    expect(credentials(env, 'google', token)).toEqual({ google: { apiKey: 'secret-google' } });
+    expect(credentials(env, ['google'], token)).toEqual({ google: { apiKey: 'secret-google' } });
     expect(token).not.toHaveBeenCalled();
-    expect(credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, 'google', token)).toEqual({ google: { token: 'oauth-token', project: 'project' } });
-    expect(() => credentials({ ...env, AZURE_SPEECH_REGION: 'evil.com/path' })).toThrow('Invalid');
+    const oauth = { token: 'oauth-token', project: 'project' };
+    expect(credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, ['google', 'gemini'], token)).toEqual({ google: oauth, gemini: oauth });
+    expect(token).toHaveBeenCalledTimes(1);
+    expect(() => credentials({ ...env, AZURE_SPEECH_REGION: 'evil.com/path' }, ['azure'])).toThrow('Invalid');
   });
   it('rejects root, descendants, traversal, case aliases and symlinked ancestors', () => {
     const root = process.cwd();
@@ -155,6 +161,14 @@ describe('synthesis HTTP contract', () => {
     await expect(runComparison(options({ maxUsd: estimate(items, VOICES).total }), { env, fetcher, log: vi.fn() })).rejects.toThrow('Cost estimate');
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
+  it('reserves the Gemini estimate for each retry and rejects a raised hard cap', async () => {
+    const fetcher = vi.fn(async () => new Response('', { status: 429 }));
+    const config = options({ only: 'gemini', geminiVoices: 2, maxUsd: 0.04 });
+    const deps = { env: { GOOGLE_CLOUD_PROJECT: 'project' }, tokenReader: vi.fn(() => 'token'), fetcher, log: vi.fn() };
+    await expect(runComparison(config, deps)).rejects.toThrow('Cost estimate');
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(() => parseArgs(['--max-usd', '0.050001'])).toThrow('budget');
+  });
 });
 
 describe('blind artifacts', () => {
@@ -187,7 +201,7 @@ describe('blind artifacts', () => {
     window.happyDOM.abort();
   });
   it('writes a complete private offline bundle, skips unconfigured providers, refuses overwrite', async () => {
-    const config = options({ confirmPaidTier: false });
+    const config = options({ geminiVoices: 2 });
     const fetcher = vi.fn(success), log = vi.fn();
     await runComparison(config, { env: { GOOGLE_TTS_API_KEY: env.GOOGLE_TTS_API_KEY }, fetcher, log });
     expect(fetcher).toHaveBeenCalledTimes(56);
@@ -202,8 +216,38 @@ describe('blind artifacts', () => {
     const html = readFileSync(join(config.output, 'listening.html'), 'utf8');
     expect(html.match(/data:audio\/mpeg;base64,/g)).toHaveLength(56);
     expect(html).not.toContain('secret-google');
+    expect(log.mock.calls.flat().join('\n')).toContain('Skipping Gemini-TTS');
     expect(log.mock.calls.flat().join('\n')).not.toContain('secret');
-    await expect(runComparison(config, { env, fetcher, log })).rejects.toThrow();
+    await expect(runComparison(config, { env: { GOOGLE_TTS_API_KEY: env.GOOGLE_TTS_API_KEY }, fetcher, log })).rejects.toThrow();
     expect(fetcher).toHaveBeenCalledTimes(56);
+  });
+  it('keeps Gemini prompts and identities in the private key and reveal', async () => {
+    const config = options({ only: 'google', geminiVoices: 2, maxUsd: 0.05 });
+    const fetcher = vi.fn(success);
+    await runComparison(config, { env: { GOOGLE_CLOUD_PROJECT: 'project' }, tokenReader: () => 'oauth-token', fetcher, log: vi.fn() });
+    const key = JSON.parse(readFileSync(join(config.output, 'key.json'), 'utf8'));
+    const entries = Object.entries(key.codes) as [string, { provider: string; voice: string; model: string; prompt: string; speed: string; itemId: string }][];
+    const gemini = entries.filter(([, clip]) => clip.provider === 'gemini');
+    expect(gemini).toHaveLength(56);
+    expect(new Set(gemini.map(([, clip]) => clip.voice))).toEqual(new Set(['Kore', 'Puck']));
+    const html = readFileSync(join(config.output, 'listening.html'), 'utf8');
+    const [blind, reveal] = html.split('<details id="reveal">');
+    expect(blind.match(/data:audio\/mpeg;base64,/g)).toHaveLength(112);
+    expect(blind).not.toMatch(/Kore|Puck|gemini/);
+    expect(reveal).toContain('gemini / Kore');
+    const requests = (fetcher.mock.calls as unknown as [string, RequestInit][]).map(([, request]) => JSON.parse(request.body as string));
+    for (const speed of ['normal', 'slow']) {
+      const clips = gemini.filter(([, clip]) => clip.speed === speed);
+      const prompt = clips[0][1].prompt;
+      expect(prompt).toContain('Taiwan Mandarin');
+      expect(new Set(clips.map(([, clip]) => clip.prompt)).size).toBe(1);
+      expect(clips.every(([code, clip]) => /^[a-f0-9]{24}$/.test(code) && clip.model === 'gemini-2.5-flash-tts')).toBe(true);
+      for (const item of items) expect(requests).toContainEqual({
+        input: { text: item.text, prompt },
+        voice: { languageCode: 'cmn-tw', name: 'Kore', model_name: 'gemini-2.5-flash-tts' },
+        audioConfig: { audioEncoding: 'MP3' },
+      });
+    }
+    expect(gemini.find(([, clip]) => clip.speed === 'slow')?.[1].prompt).toContain('25% slower');
   });
 });
