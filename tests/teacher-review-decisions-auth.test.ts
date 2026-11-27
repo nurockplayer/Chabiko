@@ -9,6 +9,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RecordsPayload } from '../src/client/teacherReview';
 import { resolveCurrentCampaign } from '../src/content/loadTeacherReviewCampaign';
 
 const mocks = vi.hoisted(() => ({
@@ -25,6 +26,7 @@ vi.mock('../functions/teacher-review/api/d1-store', () => ({
 
 // Imported after the mocks are registered.
 import { onRequestPost } from '../functions/teacher-review/api/decisions';
+import { onRequestGet } from '../functions/teacher-review/api/records';
 
 interface DecisionContext {
   env: Record<string, unknown>;
@@ -63,6 +65,16 @@ function makeContext(
     ),
     upsertDecision,
   };
+}
+
+async function readRecords(env: Record<string, string>, reviewerEmail: string) {
+  const context = makeContext(env, reviewerEmail, {});
+  const response = await onRequestGet({
+    ...context,
+    request: new Request('https://chabiko.pages.dev/teacher-review/api/records'),
+  } as unknown as Parameters<typeof onRequestGet>[0]);
+  const { records } = (await response.json()) as RecordsPayload;
+  return records;
 }
 
 beforeEach(() => {
@@ -139,11 +151,13 @@ describe('POST /teacher-review/api/decisions write authorization (Issue #390)', 
   it('authorizes an eligible reviewer to write (allowlist email normalized)', async () => {
     const campaign = await resolveCurrentCampaign();
     mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });
-    const context = makeContext(
-      { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'Teacher@Example.com' },
-      'teacher@example.com',
-      { recordId: campaign.records[0].id, outcome: 'accepted' },
-    );
+    const env = { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'Teacher@Example.com' };
+    const [record] = await readRecords(env, 'teacher@example.com');
+    const context = makeContext(env, 'teacher@example.com', {
+      recordId: record.id,
+      revision: record.revision,
+      outcome: 'accepted',
+    });
     const response = await onRequestPost(
       context as unknown as Parameters<typeof onRequestPost>[0],
     );
@@ -204,15 +218,48 @@ describe('POST /teacher-review/api/decisions write authorization (Issue #390)', 
   it('authorizes only the configured allowlist; a second configured reviewer also writes', async () => {
     const campaign = await resolveCurrentCampaign();
     mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });
-    const context = makeContext(
-      { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'a@example.com, reviewer@example.com' },
-      'reviewer@example.com',
-      { recordId: campaign.records[0].id, outcome: 'accepted' },
-    );
+    const env = { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'a@example.com, reviewer@example.com' };
+    const [record] = await readRecords(env, 'reviewer@example.com');
+    const context = makeContext(env, 'reviewer@example.com', {
+      recordId: record.id,
+      revision: record.revision,
+      outcome: 'accepted',
+    });
     const response = await onRequestPost(
       context as unknown as Parameters<typeof onRequestPost>[0],
     );
     expect(response.status).toBe(200);
     expect(context.upsertDecision).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects an approval after the displayed record changes without changing ID', async () => {
+    const campaign = await resolveCurrentCampaign();
+    const [record, ...otherRecords] = campaign.records;
+    const env = { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'teacher@example.com' };
+    mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });
+    const [displayed] = await readRecords(env, 'teacher@example.com');
+
+    mocks.resolveCampaignOr500.mockResolvedValue({
+      resolution: {
+        ...campaign,
+        records: [{ ...record, fingerprint: 'edited-content-fingerprint' }, ...otherRecords],
+      },
+    });
+    for (const revision of [displayed.revision, undefined]) {
+      const context = makeContext(env, 'teacher@example.com', {
+        recordId: record.id,
+        revision,
+        outcome: 'accepted',
+      });
+      const response = await onRequestPost(
+        context as unknown as Parameters<typeof onRequestPost>[0],
+      );
+
+      expect(response.status).toBe(409);
+      expect((await response.json()).error).toContain('再読み込み');
+      expect(context.upsertDecision).not.toHaveBeenCalled();
+    }
+    expect(displayed.revision).toEqual(expect.any(String));
+    expect(displayed.revision).not.toBe(record.fingerprint);
   });
 });

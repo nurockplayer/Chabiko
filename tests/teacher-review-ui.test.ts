@@ -25,6 +25,7 @@ async function loadUiRecords(): Promise<ReviewUiRecord[]> {
   const campaign = await resolveCurrentCampaign();
   return campaign.records.map((record) => ({
     id: record.id,
+    revision: `revision:${record.id}`,
     type: record.type,
     scenario: record.scenario,
     content: toTeacherFacingReviewContent(record),

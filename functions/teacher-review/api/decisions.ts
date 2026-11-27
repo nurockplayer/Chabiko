@@ -2,13 +2,14 @@
  * POST /teacher-review/api/decisions
  *
  * Upsert ONE human decision for a current campaign record. The server resolves
- * the record and its semantic fingerprint from the bundled content — a
- * client-supplied fingerprint or arbitrary record payload is never trusted.
+ * the record and its semantic fingerprint from the bundled content and
+ * checks the submitted revision before writing the decision.
  * Only an explicitly configured eligible reviewer may write; `needs_changes`
  * requires a non-empty note.
  */
 
 import { resolveCampaignOr500 } from './resolve-campaign';
+import { sha256Hex } from '../../../src/content/loadTeacherReviewCampaign';
 import {
   validateDecisionInput,
   type DecisionRecord,
@@ -85,6 +86,13 @@ export const onRequestPost: TeacherReviewPagesFunction = async (context) => {
   );
   if (!record) {
     return json({ error: `Unknown review record '${validation.decision.recordId}'.` }, 400);
+  }
+  const { revision } = body as { revision?: unknown };
+  if (revision !== await sha256Hex(record.fingerprint)) {
+    return json(
+      { error: 'レビュー対象のバージョンが一致しません。ページを再読み込みし、内容を確認してから保存してください。' },
+      409,
+    );
   }
 
   const decision: DecisionRecord = {

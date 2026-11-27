@@ -35,6 +35,7 @@ function makePayload(
     records: [
       {
         id: 'phrase-transport-002',
+        revision: 'transport-revision',
         type: 'phrase',
         scenario: 'transport',
         content: phraseContent(),
@@ -42,6 +43,7 @@ function makePayload(
       },
       {
         id: 'phrase-food-002',
+        revision: 'food-revision',
         type: 'phrase',
         scenario: 'food',
         content: phraseContent({ traditional: '我要一份牛肉麵。' }),
@@ -195,10 +197,31 @@ describe('initTeacherReview', () => {
     const decisionCall = calls.find((call) => String(call.url).endsWith('/decisions'));
     expect(JSON.parse(String(decisionCall?.init?.body))).toEqual({
       recordId: 'phrase-transport-002',
+      revision: 'transport-revision',
       outcome: 'accepted',
       note: '',
     });
     expect(document.body.textContent).toContain('2 / 2');
+  });
+
+  it('shows a save error and keeps the draft note when the approval POST rejects', async () => {
+    setupDom();
+    const { fn } = mockFetch(makePayload());
+    const review = initTeacherReview({ fetchImpl: fn })!;
+    await flush();
+
+    const note = document.querySelector<HTMLTextAreaElement>('[data-tr-note]')!;
+    const draftNote = '表記を確認しました。';
+    note.value = draftNote;
+    note.dispatchEvent(new Event('input'));
+    fn.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    await expect(review.applyDecision('accepted')).resolves.toBeUndefined();
+
+    const error = document.querySelector<HTMLElement>('[data-tr-error]');
+    expect(error?.hidden).toBe(false);
+    expect(error?.textContent).toContain('決定の保存に失敗しました');
+    expect(document.querySelector<HTMLTextAreaElement>('[data-tr-note]')?.value).toBe(draftNote);
+    expect(document.body.textContent).toContain('1 / 2');
   });
 
   it('shows a teacher-friendly Access error', async () => {
@@ -240,6 +263,7 @@ describe('initTeacherReview', () => {
       records: [
         {
           id: 'dialog-transport-001',
+          revision: 'dialog-revision',
           type: 'dialog',
           scenario: 'transport',
           content,
@@ -275,6 +299,7 @@ describe('initTeacherReview', () => {
       records: [
         {
           id: 'dialog-transport-001',
+          revision: 'dialog-revision',
           type: 'dialog',
           scenario: 'transport',
           content,
