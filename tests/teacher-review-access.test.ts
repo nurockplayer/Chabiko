@@ -196,6 +196,29 @@ describe('verifyAccessJwt', () => {
     if (!result.ok) expect(result.reason).toMatch(/not found/);
   });
 
+  it('shares one in-flight JWKS refresh across concurrent key misses', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now());
+    const cached = makeSetup();
+    const rotated = makeSetup({}, 'test-key-2');
+    let resolveRefresh!: (jwks: SigningSetup['jwks']) => void;
+    const refresh = new Promise<SigningSetup['jwks']>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const fetchJson = vi.fn<(url: string) => Promise<unknown>>()
+      .mockResolvedValueOnce(cached.jwks)
+      .mockReturnValueOnce(refresh)
+      .mockRejectedValue(new Error('Unexpected JWKS fetch'));
+    const verify = (token: string) => verifyAccessJwt(token, TEAM_DOMAIN, AUD, fetchJson);
+
+    expect((await verify(cached.token)).ok).toBe(true);
+    const first = verify(rotated.token);
+    const second = verify(rotated.token);
+    resolveRefresh(rotated.jwks);
+
+    expect((await Promise.all([first, second])).map((result) => result.ok)).toEqual([true, true]);
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+  });
+
   it('limits key-miss refreshes, retaining valid cached keys when a refresh fails', async () => {
     const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now());
     const cached = makeSetup();

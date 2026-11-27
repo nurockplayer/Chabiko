@@ -199,8 +199,8 @@ export async function verifyAccessJwt(
     };
   }
   let jwk = keys.get(header.kid);
-  if (!jwk && Date.now() >= entry.refreshAfter) {
-    entry.refreshAfter = Date.now() + JWKS_KEY_MISS_COOLDOWN_MS;
+  if (!jwk && (entry.pending || Date.now() >= entry.refreshAfter)) {
+    if (!entry.pending) entry.refreshAfter = Date.now() + JWKS_KEY_MISS_COOLDOWN_MS;
     try {
       jwk = (await fetchJwks(entry, normalizedTeam, fetchJson)).get(header.kid);
     } catch {
