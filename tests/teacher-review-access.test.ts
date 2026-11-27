@@ -25,6 +25,10 @@ import {
 
 const TEAM_DOMAIN = 'https://team-test.cloudflareaccess.com';
 const AUD = '4714c1358e65fe4b408ad6d432a5f878f08194bdb4752441fd56faefa9b2b6f2';
+const signingKeys = {
+  'test-key-1': generateKeyPairSync('rsa', { modulusLength: 2048 }),
+  'test-key-2': generateKeyPairSync('rsa', { modulusLength: 2048 }),
+};
 
 interface TestJwk {
   kid: string;
@@ -58,10 +62,8 @@ function signJwt(
   return `${header}.${body}.${signature}`;
 }
 
-function makeSetup(overrides: Partial<AccessJwtPayload> = {}, kid = 'test-key-1'): SigningSetup {
-  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-  }) as { publicKey: KeyObject; privateKey: KeyObject };
+function makeSetup(overrides: Partial<AccessJwtPayload> = {}, kid: keyof typeof signingKeys = 'test-key-1'): SigningSetup {
+  const { publicKey, privateKey } = signingKeys[kid];
   const exported = publicKey.export({ format: 'jwk' }) as Record<string, string>;
   const jwk = { ...exported, kid, alg: 'RS256' } as TestJwk;
   const now = Math.floor(Date.now() / 1000);

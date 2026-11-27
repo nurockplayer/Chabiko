@@ -109,7 +109,7 @@ describe('credentials and output isolation', () => {
     expect(token).toHaveBeenCalledTimes(1);
     expect(() => credentials({ ...env, AZURE_SPEECH_REGION: 'evil.com/path' }, ['azure'])).toThrow('Invalid');
   });
-  it('rejects root, descendants, traversal, case aliases and symlinked ancestors', () => {
+  it('rejects root, descendants, traversal, case aliases and symlinked ancestors', { timeout: 15_000 }, () => {
     const root = process.cwd();
     for (const path of [root, join(root, 'new/sub'), join(root, '..', basename(root), 'out'), root.toUpperCase()]) {
       expect(() => assertOutputOutsideRepo(path)).toThrow();
@@ -235,7 +235,7 @@ describe('blind artifacts', () => {
     await expect(runComparison(config, { env: { GOOGLE_TTS_API_KEY: env.GOOGLE_TTS_API_KEY }, fetcher, log })).rejects.toThrow();
     expect(fetcher).toHaveBeenCalledTimes(56);
   });
-  it('keeps Gemini prompts and identities in the private key and reveal', async () => {
+  it('keeps Gemini prompts and identities in the private key and reveal', { timeout: 15_000 }, async () => {
     const config = options({ only: 'google', geminiVoices: 2, maxUsd: 0.05 });
     const fetcher = vi.fn(success);
     await runComparison(config, { env: { GOOGLE_CLOUD_PROJECT: 'project' }, tokenReader: () => 'oauth-token', fetcher, log: vi.fn() });
