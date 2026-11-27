@@ -18,6 +18,8 @@ import { createD1TeacherReviewStore } from './d1-store';
 import { json } from './http';
 import type { TeacherReviewPagesFunction } from './types';
 
+const DECISION_BODY_MAX_BYTES = 16 * 1024;
+
 export const onRequestPost: TeacherReviewPagesFunction = async (context) => {
   const resolved = await resolveCampaignOr500();
   if ('response' in resolved) return resolved.response;
@@ -44,11 +46,33 @@ export const onRequestPost: TeacherReviewPagesFunction = async (context) => {
     );
   }
 
+  const mediaType = context.request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+  if (mediaType !== 'application/json') {
+    return json({ error: 'Content-Type must be application/json.' }, 415);
+  }
+
+  const reader = context.request.body?.getReader();
+  if (!reader) return json({ error: 'Request body must be JSON.' }, 400);
+
   let body: unknown;
   try {
-    body = await context.request.json();
+    const bytes = new Uint8Array(DECISION_BODY_MAX_BYTES);
+    let length = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (length + value.byteLength > bytes.length) {
+        await reader.cancel();
+        return json({ error: 'Request body exceeds 16 KiB.' }, 413);
+      }
+      bytes.set(value, length);
+      length += value.byteLength;
+    }
+    body = JSON.parse(new TextDecoder().decode(bytes.subarray(0, length)));
   } catch {
     return json({ error: 'Request body must be JSON.' }, 400);
+  } finally {
+    reader.releaseLock();
   }
 
   const validation = validateDecisionInput(body, resolution.records);

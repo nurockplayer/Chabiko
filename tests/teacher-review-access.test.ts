@@ -10,6 +10,7 @@
 
 import { createSign, generateKeyPairSync, type KeyObject } from 'node:crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { onRequest } from '../functions/teacher-review/api/_middleware';
 import {
   clearAccessJwksCache,
   verifyAccessJwt,
@@ -57,12 +58,12 @@ function signJwt(
   return `${header}.${body}.${signature}`;
 }
 
-function makeSetup(overrides: Partial<AccessJwtPayload> = {}): SigningSetup {
+function makeSetup(overrides: Partial<AccessJwtPayload> = {}, kid = 'test-key-1'): SigningSetup {
   const { publicKey, privateKey } = generateKeyPairSync('rsa', {
     modulusLength: 2048,
   }) as { publicKey: KeyObject; privateKey: KeyObject };
   const exported = publicKey.export({ format: 'jwk' }) as Record<string, string>;
-  const jwk = { ...exported, kid: 'test-key-1', alg: 'RS256' } as TestJwk;
+  const jwk = { ...exported, kid, alg: 'RS256' } as TestJwk;
   const now = Math.floor(Date.now() / 1000);
   const payload: AccessJwtPayload = {
     aud: [AUD],
@@ -78,7 +79,7 @@ function makeSetup(overrides: Partial<AccessJwtPayload> = {}): SigningSetup {
     ...overrides,
   };
   return {
-    token: signJwt(payload, privateKey),
+    token: signJwt(payload, privateKey, kid),
     payload,
     jwks: { keys: [jwk] },
   };
@@ -117,6 +118,32 @@ describe('verifyAccessJwt', () => {
     const setup = makeSetup();
     const result = await verifyAccessJwt('not-a-jwt', TEAM_DOMAIN, AUD, fetchJsonOf(setup.jwks));
     expect(result.ok).toBe(false);
+  });
+
+  it.each([[null], [[]], ['invalid']])('returns JSON 401 for non-object JWT segments (%j)', async (value) => {
+    const badSegment = b64url(JSON.stringify(value));
+    const header = b64url(JSON.stringify({ alg: 'RS256', kid: 'test-key-1' }));
+    const next = vi.fn();
+    for (const [part, token] of [
+      ['header', `${badSegment}.e30.AA`],
+      ['payload', `${header}.${badSegment}.AA`],
+    ]) {
+      const context = {
+        request: new Request('https://chabiko.pages.dev/teacher-review/api/decisions', {
+          headers: { 'cf-access-jwt-assertion': token },
+        }),
+        env: {
+          TEACHER_REVIEW_ACCESS_TEAM_DOMAIN: TEAM_DOMAIN,
+          TEACHER_REVIEW_ACCESS_AUD: AUD,
+        },
+        data: {},
+        next,
+      };
+      const response = await onRequest(context as unknown as Parameters<typeof onRequest>[0]);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: `Access authentication failed: Malformed Access JWT ${part}.` });
+    }
+    expect(next).not.toHaveBeenCalled();
   });
 
   it('rejects an expired token', async () => {
@@ -167,6 +194,31 @@ describe('verifyAccessJwt', () => {
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/not found/);
+  });
+
+  it('limits key-miss refreshes, retaining valid cached keys when a refresh fails', async () => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now());
+    const cached = makeSetup();
+    const rotated = makeSetup({}, 'test-key-2');
+    const fetchJson = vi.fn<(url: string) => Promise<unknown>>()
+      .mockResolvedValueOnce(cached.jwks)
+      .mockRejectedValueOnce(new Error('JWKS unavailable'))
+      .mockResolvedValueOnce(rotated.jwks)
+      .mockRejectedValue(new Error('Unexpected JWKS fetch'));
+    const verify = (token: string) => verifyAccessJwt(token, TEAM_DOMAIN, AUD, fetchJson);
+
+    expect((await verify(cached.token)).ok).toBe(true);
+    expect((await verify(rotated.token)).ok).toBe(false);
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+    expect((await verify(cached.token)).ok).toBe(true);
+    expect((await verify(rotated.token)).ok).toBe(false);
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+
+    clock.mockReturnValue(Date.now() + 60_000);
+    expect((await verify(rotated.token)).ok).toBe(true);
+    expect((await verify(rotated.token)).ok).toBe(true);
+    expect((await verify(cached.token)).ok).toBe(false);
+    expect(fetchJson).toHaveBeenCalledTimes(3);
   });
 
   it('rejects a token without an email identity', async () => {
