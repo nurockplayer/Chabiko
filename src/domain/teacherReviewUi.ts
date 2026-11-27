@@ -25,6 +25,7 @@ export type ScenarioFilter = 'all' | TeacherReviewScenario;
 /** The teacher-facing record shape (no fingerprint, no reviewStatus). */
 export interface ReviewUiRecord {
   id: string;
+  revision: string;
   type: ReviewRecordType;
   scenario: TeacherReviewScenario;
   content: TeacherFacingReviewContent;

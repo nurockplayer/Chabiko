@@ -31,7 +31,6 @@ import type {
 import type {
   TeacherFacingDialogContent,
   TeacherFacingPhraseContent,
-  TeacherFacingReviewContent,
   TeacherFacingRoleplayContent,
   TeacherFacingTurn,
 } from '../domain/teacherReviewPublic';
@@ -45,18 +44,14 @@ export interface RecordsPayload {
     name: string;
     isEligibleReviewer: boolean;
   };
-  records: {
-    id: string;
-    type: ReviewUiRecord['type'];
-    scenario: TeacherReviewScenario;
-    content: TeacherFacingReviewContent;
+  records: (ReviewUiRecord & {
     decision: {
       outcome: ReviewOutcome;
       note: string;
       updatedAt: string;
       reviewerName: string;
     } | null;
-  }[];
+  })[];
   progress: {
     total: number;
     decided: number;
@@ -410,9 +405,14 @@ export function initTeacherReview(
     const response = await fetchImpl(urls.decisionsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recordId: current.id, outcome, note: note.trim() }),
-    });
-    const body = (await response.json().catch(() => null)) as
+      body: JSON.stringify({
+        recordId: current.id,
+        revision: current.revision,
+        outcome,
+        note: note.trim(),
+      }),
+    }).catch(() => null);
+    const body = (await response?.json().catch(() => null)) as
       | {
           ok?: boolean;
           error?: string;
@@ -423,9 +423,10 @@ export function initTeacherReview(
             reviewerName: string;
           };
         }
-      | null;
+      | null
+      | undefined;
 
-    if (!response.ok || !body?.ok) {
+    if (!response?.ok || !body?.ok) {
       const message = body?.error ?? '決定の保存に失敗しました。';
       if (errorEl) {
         errorEl.textContent = message;

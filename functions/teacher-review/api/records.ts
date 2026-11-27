@@ -2,14 +2,16 @@
  * GET /teacher-review/api/records
  *
  * Returns the current #360 launch review target (sanitized for the teacher),
- * the current-version decisions, the authenticated reviewer identity, and
- * progress. Fails closed on campaign drift. The payload never exposes raw
- * fingerprints, SHAs, `reviewStatus`, provenance enums, internal refs, or
+ * an opaque revision per record, the current-version decisions, the
+ * authenticated reviewer identity, and progress. Fails closed on campaign
+ * drift. The payload never exposes raw fingerprints, SHAs, `reviewStatus`,
+ * provenance enums, internal refs, or
  * engineering-only schema; stale decisions (fingerprint mismatch) are never
  * surfaced.
  */
 
 import { resolveCampaignOr500 } from './resolve-campaign';
+import { sha256Hex } from '../../../src/content/loadTeacherReviewCampaign';
 import {
   computeReviewProgress,
   isDecisionValidForRecord,
@@ -54,10 +56,11 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
       isEligibleReviewer:
         allowlist.ok && isEligibleReviewer(reviewer.email, allowlist.emails),
     },
-    records: resolution.records.map((record) => {
+    records: await Promise.all(resolution.records.map(async (record) => {
       const decision = validByRecord.get(record.id);
       return {
         id: record.id,
+        revision: await sha256Hex(record.fingerprint),
         type: record.type,
         scenario: record.scenario,
         content: toTeacherFacingReviewContent(record),
@@ -70,7 +73,7 @@ export const onRequestGet: TeacherReviewPagesFunction = async (context) => {
             }
           : null,
       };
-    }),
+    })),
     progress: computeReviewProgress(resolution.records, stored),
   });
 };
