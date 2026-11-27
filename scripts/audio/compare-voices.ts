@@ -5,7 +5,7 @@ import { homedir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-export type Provider = 'azure' | 'google';
+export type Provider = 'azure' | 'google' | 'gemini';
 export type Speed = 'normal' | 'slow';
 export interface Item { id: string; text: string; focus: string; source: string }
 export interface Voice { provider: Provider; name: string }
@@ -15,8 +15,18 @@ export const VOICES: readonly Voice[] = [
   { provider: 'google', name: 'cmn-TW-Wavenet-A' },
   { provider: 'google', name: 'cmn-TW-Wavenet-B' },
 ];
+const GEMINI_VOICES: readonly Voice[] = [
+  { provider: 'gemini', name: 'Kore' },
+  { provider: 'gemini', name: 'Puck' },
+];
+const GEMINI_MODEL = 'gemini-2.5-flash-tts';
+const GEMINI_PROMPTS = {
+  normal: 'Read only the text verbatim in Taiwan Mandarin at a natural conversational pace.',
+  slow: 'Read only the text verbatim in Taiwan Mandarin, about 25% slower than conversational pace.',
+};
 const SPEEDS: Speed[] = ['normal', 'slow'];
 const RATES = { azure: 15, google: 4 }; // USD per million billable characters.
+const HARD_CAP_USD = 0.05;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export function billableCharacters(text: string, provider: Provider): number {
@@ -28,23 +38,35 @@ export function billableCharacters(text: string, provider: Provider): number {
  * <voice> tags (so slow clips pay for the <prosody> markup), with Han characters
  * counted twice. Google is sent plain text, billed per character.
  */
-export function requestCharacters(item: Item, voice: Voice, speed: Speed): number {
+function requestCharacters(item: Item, voice: Voice, speed: Speed): number {
   if (voice.provider === 'google') return billableCharacters(item.text, 'google');
   const billed = azureSsml(item.text, voice.name, speed).replace(/<\/?(speak|voice)\b[^>]*>/g, '');
   return billableCharacters(billed, 'azure');
 }
 
+function requestCost(item: Item, voice: Voice, speed: Speed): number {
+  if (voice.provider !== 'gemini') return requestCharacters(item, voice, speed) * RATES[voice.provider] / 1e6;
+  // Estimate input tokens from UTF-8 bytes. Estimate output from line length,
+  // including punctuation, at 4 characters/s normal and 3 for slow.
+  const inputTokens = Buffer.byteLength(item.text + GEMINI_PROMPTS[speed]);
+  const audioTokens = Math.ceil(25 * [...item.text].length / (speed === 'slow' ? 3 : 4));
+  return (0.50 * inputTokens + 10 * audioTokens) / 1e6;
+}
+
 export function estimate(items: readonly Item[], voices: readonly Voice[]) {
   const counts = { azure: 0, google: 0 };
-  for (const voice of voices) for (const speed of SPEEDS) {
-    counts[voice.provider] += items.reduce((sum, item) => sum + requestCharacters(item, voice, speed), 0);
+  const usd = { azure: 0, google: 0, gemini: 0 };
+  const requests = { azure: 0, google: 0, gemini: 0 };
+  for (const voice of voices) for (const speed of SPEEDS) for (const item of items) {
+    if (voice.provider !== 'gemini') counts[voice.provider] += requestCharacters(item, voice, speed);
+    usd[voice.provider] += requestCost(item, voice, speed);
+    requests[voice.provider]++;
   }
-  const usd = { azure: counts.azure * RATES.azure / 1e6, google: counts.google * RATES.google / 1e6 };
-  return { counts, usd, total: usd.azure + usd.google };
+  return { counts, usd, requests, total: usd.azure + usd.google + usd.gemini };
 }
 
 export function assertBudget(usd: number, maxUsd: number): void {
-  if (!Number.isFinite(maxUsd) || maxUsd < 0 || usd > maxUsd + 1e-12) {
+  if (!Number.isFinite(maxUsd) || maxUsd < 0 || maxUsd > HARD_CAP_USD || usd > maxUsd + 1e-12) {
     throw new Error('Cost estimate exceeds --max-usd, or the budget is invalid. No further requests allowed.');
   }
 }
@@ -100,54 +122,63 @@ export function blindCode(seed: string, ...parts: string[]): string {
   return createHmac('sha256', seed).update(JSON.stringify(parts)).digest('hex').slice(0, 24);
 }
 
-export interface Credentials { azure?: { key: string; region: string }; google?: { apiKey?: string; token?: string; project?: string } }
+interface GoogleOAuth { token: string; project: string }
+export interface Credentials { azure?: { key: string; region: string }; google?: { apiKey: string } | GoogleOAuth; gemini?: GoogleOAuth }
 const readGcloudToken = (): string => execFileSync('gcloud', ['auth', 'print-access-token'], {
   encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30_000,
 }).trim();
 
 export function credentials(
-  env: NodeJS.ProcessEnv, only?: Provider, tokenReader = readGcloudToken, log: (message: string) => void = console.log,
+  env: NodeJS.ProcessEnv, providers: readonly Provider[], tokenReader = readGcloudToken, log: (message: string) => void = console.log,
 ): Credentials {
   const result: Credentials = {};
-  if (!only || only === 'azure') {
+  if (providers.includes('azure')) {
     if (env.AZURE_SPEECH_KEY?.trim() && env.AZURE_SPEECH_REGION?.trim()) {
       // Never interpolate arbitrary environment input into a credential-bearing URL.
       if (!/^[a-z][a-z0-9-]*$/.test(env.AZURE_SPEECH_REGION)) throw new Error('Invalid AZURE_SPEECH_REGION.');
       result.azure = { key: env.AZURE_SPEECH_KEY, region: env.AZURE_SPEECH_REGION };
     } else log('Skipping Azure: set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.');
   }
-  if (!only || only === 'google') {
-    if (env.GOOGLE_TTS_API_KEY?.trim()) result.google = { apiKey: env.GOOGLE_TTS_API_KEY };
-    else if (env.GOOGLE_CLOUD_PROJECT?.trim()) {
-      try {
-        const token = tokenReader().trim();
-        if (token) result.google = { token, project: env.GOOGLE_CLOUD_PROJECT };
-      } catch { /* Do not expose gcloud stderr, tokens or credential paths. */ }
-    }
-    if (!result.google) log('Skipping Google: set GOOGLE_TTS_API_KEY, or GOOGLE_CLOUD_PROJECT with a working gcloud login.');
+  const google = providers.includes('google');
+  const gemini = providers.includes('gemini');
+  if (google && env.GOOGLE_TTS_API_KEY?.trim()) result.google = { apiKey: env.GOOGLE_TTS_API_KEY };
+  if (env.GOOGLE_CLOUD_PROJECT?.trim() && (gemini || (google && !result.google))) {
+    try {
+      const token = tokenReader().trim();
+      if (token) {
+        const oauth = { token, project: env.GOOGLE_CLOUD_PROJECT };
+        if (google) result.google ??= oauth;
+        if (gemini) result.gemini = oauth;
+      }
+    } catch { /* Do not expose gcloud stderr, tokens or credential paths. */ }
   }
+  if (google && !result.google) log('Skipping Google WaveNet: set GOOGLE_TTS_API_KEY, or GOOGLE_CLOUD_PROJECT with a working gcloud login.');
+  if (gemini && !result.gemini) log('Skipping Gemini-TTS: set GOOGLE_CLOUD_PROJECT with a working gcloud login.');
   return result;
 }
 
-export interface Options { dryRun: boolean; confirmPaidTier: boolean; maxUsd: number; output: string; only?: Provider }
+export interface Options { dryRun: boolean; confirmPaidTier: boolean; maxUsd: number; output: string; only?: Provider; geminiVoices?: 1 | 2 }
 export function parseArgs(args: string[]): Options {
   const options: Options = {
-    dryRun: false, confirmPaidTier: false, maxUsd: 0.03,
+    dryRun: false, confirmPaidTier: false, maxUsd: HARD_CAP_USD,
     output: join(homedir(), 'Downloads', `chabiko-voice-compare-${new Date().toISOString().slice(0, 10)}`),
   };
   for (let i = 0; i < args.length; i++) {
     const flag = args[i];
     if (flag === '--dry-run') options.dryRun = true;
     else if (flag === '--confirm-paid-tier') options.confirmPaidTier = true;
-    else if (['--only', '--max-usd', '--output'].includes(flag)) {
+    else if (['--only', '--gemini-voices', '--max-usd', '--output'].includes(flag)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error('Missing option value.');
       if (flag === '--only') {
-        if (value !== 'azure' && value !== 'google') throw new Error('--only must be azure or google.');
+        if (value !== 'azure' && value !== 'google' && value !== 'gemini') throw new Error('--only must be azure, google or gemini.');
         options.only = value;
+      } else if (flag === '--gemini-voices') {
+        if (value !== '1' && value !== '2') throw new Error('--gemini-voices must be 1 or 2.');
+        options.geminiVoices = value === '1' ? 1 : 2;
       } else if (flag === '--max-usd') options.maxUsd = Number(value);
       else options.output = value;
-    } else throw new Error('Unknown option. Use --dry-run, --only azure|google, --confirm-paid-tier, --max-usd or --output.');
+    } else throw new Error('Unknown option. Use --dry-run, --only azure|google|gemini, --gemini-voices 1|2, --confirm-paid-tier, --max-usd or --output.');
   }
   assertBudget(0, options.maxUsd);
   return options;
@@ -176,16 +207,25 @@ export async function synthesize(
     headers = { 'Ocp-Apim-Subscription-Key': auth.azure.key, 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3' };
     body = azureSsml(item.text, voice.name, speed);
   } else {
-    if (!auth.google) throw new Error('Google credentials unavailable.');
+    const google = auth[voice.provider];
+    if (!google) throw new Error(`${voice.provider}: credentials unavailable.`);
     url = 'https://texttospeech.googleapis.com/v1/text:synthesize';
     headers = { 'Content-Type': 'application/json' };
     // Header, not query string: keys in URLs leak into request logs.
-    if (auth.google.apiKey) headers['x-goog-api-key'] = auth.google.apiKey;
+    if ('apiKey' in google) headers['x-goog-api-key'] = google.apiKey;
     else {
-      headers.Authorization = `Bearer ${auth.google.token}`;
-      headers['x-goog-user-project'] = auth.google.project!;
+      headers.Authorization = `Bearer ${google.token}`;
+      headers['x-goog-user-project'] = google.project;
     }
-    body = JSON.stringify({ input: { text: item.text }, voice: { languageCode: 'cmn-TW', name: voice.name }, audioConfig: { audioEncoding: 'MP3', speakingRate: speed === 'slow' ? 0.75 : 1 } });
+    body = JSON.stringify(voice.provider === 'gemini' ? {
+      input: { text: item.text, prompt: GEMINI_PROMPTS[speed] },
+      voice: { languageCode: 'cmn-tw', name: voice.name, model_name: GEMINI_MODEL },
+      audioConfig: { audioEncoding: 'MP3' },
+    } : {
+      input: { text: item.text },
+      voice: { languageCode: 'cmn-TW', name: voice.name },
+      audioConfig: { audioEncoding: 'MP3', speakingRate: speed === 'slow' ? 0.75 : 1 },
+    });
   }
   for (let attempt = 0; attempt < 3; attempt++) {
     beforeAttempt();
@@ -239,7 +279,7 @@ export function buildHtml(items: readonly Item[], voices: readonly Voice[], clip
   }).join('');
   return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; media-src data:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'"><title>台湾華語 音声比較</title><style>
 body{font-family:system-ui,sans-serif;line-height:1.6;max-width:1000px;margin:auto;padding:16px;color:#202020;background:#fff}h2{overflow-wrap:anywhere}.candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}article{border:1px solid #777;border-radius:8px;padding:12px;min-width:0}audio{width:100%}fieldset{margin-top:16px;min-width:0}label{display:inline-flex;align-items:center;padding:8px}section{margin-bottom:32px}summary{cursor:pointer;padding:12px}details{overflow-wrap:anywhere}a{color:#124b92}
-</style></head><body><h1>台湾華語 音声比較</h1><p>評価用の合成音声です。公開教材ではありません。下書き・試作・テスト用の原文を含み、先生による発音確認は未実施です。注目点はAIによる暫定案です。</p><p>文ごとにA〜Dの順序を入れ替えています。同じ文の通常・ゆっくりは同じ声です。利用できた提供元のみ表示します。速度指定は提供元によって聞こえ方が異なります。</p><p>評価はこのページを開いている間だけ保持され、送信・保存されません。再読み込みやページを閉じる操作で失われることがあります。</p>${sections}<details id="reveal"><summary>声の対応表を表示／非表示</summary><ol>${key}</ol></details></body></html>`;
+</style></head><body><h1>台湾華語 音声比較</h1><p>評価用の合成音声です。公開教材ではありません。下書き・試作・テスト用の原文を含み、先生による発音確認は未実施です。注目点はAIによる暫定案です。</p><p>文ごとに声の順序を入れ替えています。同じ文の通常・ゆっくりは同じ声です。利用できた提供元のみ表示します。速度指定は提供元によって聞こえ方が異なります。</p><p>評価はこのページを開いている間だけ保持され、送信・保存されません。再読み込みやページを閉じる操作で失われることがあります。</p>${sections}<details id="reveal"><summary>声の対応表を表示／非表示</summary><ol>${key}</ol></details></body></html>`;
 }
 
 export async function runComparison(options: Options, deps: {
@@ -250,43 +290,53 @@ export async function runComparison(options: Options, deps: {
   const root = deps.root ?? ROOT;
   const output = assertOutputOutsideRepo(options.output, root);
   const items = loadItems(root);
-  const selected = VOICES.filter(voice => !options.only || voice.provider === options.only);
+  const selected = [
+    ...VOICES.filter(voice => !options.only || voice.provider === options.only),
+    ...GEMINI_VOICES.slice(0, options.geminiVoices ?? (options.only === 'gemini' ? 1 : 0)),
+  ];
   const env = deps.env ?? process.env;
+  const dryRun = options.dryRun || !options.confirmPaidTier;
+  assertBudget(0, options.maxUsd);
   // Check locally configured candidates before gcloud can refresh a token online.
-  const candidates = options.dryRun ? selected : selected.filter(voice => voice.provider === 'azure'
-    ? env.AZURE_SPEECH_KEY?.trim() && env.AZURE_SPEECH_REGION?.trim()
-    : env.GOOGLE_TTS_API_KEY?.trim() || env.GOOGLE_CLOUD_PROJECT?.trim());
-  const preflight = estimate(items, candidates);
-  if (preflight.total > options.maxUsd) {
-    log(`Preflight estimate: US$${preflight.total.toFixed(6)}; cap: US$${options.maxUsd.toFixed(6)}.`);
-    assertBudget(preflight.total, options.maxUsd);
+  if (!dryRun) {
+    const configured = selected.filter(voice => {
+      if (voice.provider === 'azure') return env.AZURE_SPEECH_KEY?.trim() && env.AZURE_SPEECH_REGION?.trim();
+      return voice.provider === 'google' && env.GOOGLE_TTS_API_KEY?.trim();
+    });
+    // When OAuth is the only configured path, the entire Google selection shares its token.
+    const candidates = !configured.length && env.GOOGLE_CLOUD_PROJECT?.trim()
+      ? selected.filter(voice => voice.provider !== 'azure') : configured;
+    assertBudget(estimate(items, candidates).total, options.maxUsd);
   }
   // A dry run never invokes gcloud (which may refresh tokens over the network).
-  const auth = options.dryRun ? {} : credentials(env, options.only, deps.tokenReader, log);
-  const voices = options.dryRun ? selected : selected.filter(voice => auth[voice.provider]);
+  const auth = dryRun ? {} : credentials(env, selected.map(voice => voice.provider), deps.tokenReader, log);
+  const voices = dryRun ? selected : selected.filter(voice => auth[voice.provider]);
   const plan = estimate(items, voices);
   log(`${items.length} exact-text items; ${voices.length} voices; normal + slow; ${items.length * voices.length * 2} requests.`);
-  for (const voice of voices) log(`${voice.provider} / ${voice.name}: normal + slow (${voice.provider === 'azure' ? 'SSML -25%' : 'speakingRate 0.75'}).`);
-  for (const provider of ['azure', 'google'] as const) log(`${provider}: ${plan.counts[provider]} billable characters, US$${plan.usd[provider].toFixed(6)}.`);
+  const pace = { azure: 'SSML -25%', google: 'speakingRate 0.75', gemini: 'style prompt' };
+  for (const voice of voices) log(`${voice.provider} / ${voice.name}: normal + slow (${pace[voice.provider]}).`);
+  for (const provider of ['azure', 'google', 'gemini'] as const) {
+    const units = provider === 'gemini' ? 'text and audio tokens' : `${plan.counts[provider]} billable characters`;
+    log(`${provider}: ${plan.requests[provider]} requests, ${units}, US$${plan.usd[provider].toFixed(6)}.`);
+  }
   log(`Total estimate: US$${plan.total.toFixed(6)}; cap: US$${options.maxUsd.toFixed(6)}. Failed/retried attempts also consume the cap.`);
   assertBudget(plan.total, options.maxUsd);
-  if (options.dryRun) {
+  if (dryRun) {
     log('Dry run: all selected voices estimated regardless of credentials; no network or files.');
     return;
   }
   if (!voices.length) { log('No providers available; no files written.'); return; }
-  if (voices.some(voice => voice.provider === 'azure') && !options.confirmPaidTier) throw new Error('Azure requires --confirm-paid-tier for paid-tier output rights.');
   // Exclusive directory creation prevents overwrites and accidental rerun charges.
   mkdirSync(dirname(output), { recursive: true });
   mkdirSync(output, { mode: 0o700 });
   const seed = randomBytes(32).toString('hex');
   const clips: Clip[] = [];
-  const key: Record<string, { itemId: string; provider: Provider; voice: string; speed: Speed }> = {};
+  const key: Record<string, Omit<Clip, 'code' | 'audio'> & { model?: string; prompt?: string }> = {};
   const saveKey = () => writeFileSync(join(output, 'key.json'), JSON.stringify({ seed, reviewStatus: 'draft', humanReview: false, codes: key }, null, 2) + '\n', { mode: 0o600 });
   let attemptsUsd = 0;
   let pendingUsd = plan.total;
   for (const item of items) for (const voice of voices) for (const speed of SPEEDS) {
-    const cost = requestCharacters(item, voice, speed) * RATES[voice.provider] / 1e6;
+    const cost = requestCost(item, voice, speed);
     pendingUsd -= cost;
     const audio = await synthesize(item, voice, speed, auth, () => {
       // Reserve enough for all remaining first attempts; count even failed attempts.
@@ -295,7 +345,9 @@ export async function runComparison(options: Options, deps: {
     }, deps.fetcher);
     const code = blindCode(seed, item.id, voice.name, speed);
     writeFileSync(join(output, `${code}.mp3`), audio, { mode: 0o600, flag: 'wx' });
-    key[code] = { itemId: item.id, provider: voice.provider, voice: voice.name, speed };
+    key[code] = { itemId: item.id, provider: voice.provider, voice: voice.name, speed,
+      ...(voice.provider === 'gemini' ? { model: GEMINI_MODEL, prompt: GEMINI_PROMPTS[speed] } : {}),
+    };
     saveKey();
     clips.push({ code, ...key[code], audio });
   }
