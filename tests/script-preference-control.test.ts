@@ -295,7 +295,7 @@ describe('header script-preference control', () => {
       `<label for="${SCRIPT_PREFERENCE_CONTROL_ID}">${SCRIPT_PREFERENCE_LABEL}</label>`,
     );
     expect(headerSource).toContain(
-      `<select id="${SCRIPT_PREFERENCE_CONTROL_ID}" class="script-preference-select">`,
+      `<select id="${SCRIPT_PREFERENCE_CONTROL_ID}" class="script-preference-select"`,
     );
     for (const option of SCRIPT_PREFERENCE_OPTIONS) {
       expect(headerSource).toContain(

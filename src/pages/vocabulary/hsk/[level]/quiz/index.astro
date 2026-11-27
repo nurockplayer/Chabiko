@@ -17,7 +17,7 @@ const level = pool.level;
 const title = `HSK ${level} 単語テスト`;
 ---
 <BaseLayout title={title} themeEnabled>
-  <Fragment slot="header"><Header themeEnabled /></Fragment>
+  <Fragment slot="header"><Header themeEnabled scriptPreferenceNote="HSKテストでは簡体字を使います。" /></Fragment>
   <div class="hsk-quiz-page">
     <a class="back-link" href={`/vocabulary/hsk/${level}/`}>← HSK {level}の学習に戻る</a>
     <TrackNav label={`HSK ${level}`} items={[
