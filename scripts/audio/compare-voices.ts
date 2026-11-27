@@ -145,12 +145,14 @@ export function credentials(
   if (env.GOOGLE_CLOUD_PROJECT?.trim() && (gemini || (google && !result.google))) {
     try {
       const token = tokenReader().trim();
-      if (token) {
-        const oauth = { token, project: env.GOOGLE_CLOUD_PROJECT };
-        if (google) result.google ??= oauth;
-        if (gemini) result.gemini = oauth;
-      }
-    } catch { /* Do not expose gcloud stderr, tokens or credential paths. */ }
+      if (!token) throw new Error('gcloud returned an empty access token');
+      const oauth = { token, project: env.GOOGLE_CLOUD_PROJECT };
+      if (google) result.google ??= oauth;
+      if (gemini) result.gemini = oauth;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to acquire Google Cloud access token: ${detail}. Run `gcloud auth login` or `gcloud auth application-default login`, then retry.`);
+    }
   }
   if (google && !result.google) log('Skipping Google WaveNet: set GOOGLE_TTS_API_KEY, or GOOGLE_CLOUD_PROJECT with a working gcloud login.');
   if (gemini && !result.gemini) log('Skipping Gemini-TTS: set GOOGLE_CLOUD_PROJECT with a working gcloud login.');

@@ -74,15 +74,29 @@ describe('matched-text corpus and cost guard', () => {
 });
 
 describe('credentials and output isolation', () => {
-  it('skips missing credentials and suppresses gcloud error details', async () => {
-    const log = vi.fn(); const token = vi.fn(() => { throw new Error('secret-stderr'); });
-    expect(credentials({}, ['azure', 'google', 'gemini'], token, log)).toEqual({});
-    expect(token).not.toHaveBeenCalled();
-    expect(credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, ['google', 'gemini'], token, log)).toEqual({});
+  it('skips unconfigured providers without calling gcloud', async () => {
+    const log = vi.fn(), tokenReader = vi.fn(), fetcher = vi.fn(success);
+    const config = options({ geminiVoices: 1, maxUsd: 0.05 });
+    await runComparison(config, { env: {}, tokenReader, fetcher, log });
     expect(log.mock.calls.flat().join('\n')).toContain('Skipping Gemini-TTS');
-    expect(log.mock.calls.flat().join('\n')).not.toContain('secret');
-    const fetcher = vi.fn(success); const config = options();
-    await runComparison(config, { env: {}, fetcher, log });
+    expect(log.mock.calls.flat().join('\n')).toContain('Skipping Google WaveNet');
+    expect(tokenReader).not.toHaveBeenCalled();
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(readdirSync(join(config.output, '..'))).toEqual([]);
+  });
+  it('aborts configured Google OAuth providers when gcloud token acquisition fails', async () => {
+    const token = vi.fn(() => { throw new Error('gcloud refresh failed'); });
+    for (const provider of ['google', 'gemini'] as const) {
+      expect(() => credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, [provider], token, vi.fn()))
+        .toThrow(/gcloud refresh failed.*gcloud auth login.*gcloud auth application-default login/);
+    }
+    expect(token).toHaveBeenCalledTimes(2);
+    expect(() => credentials({ GOOGLE_CLOUD_PROJECT: 'project' }, ['google'], () => ' '))
+      .toThrow('gcloud returned an empty access token');
+    const fetcher = vi.fn(success), config = options({ geminiVoices: 1, maxUsd: 0.05 });
+    await expect(runComparison(config, {
+      env: { ...env, GOOGLE_CLOUD_PROJECT: 'project' }, tokenReader: token, fetcher, log: vi.fn(),
+    })).rejects.toThrow(/gcloud refresh failed.*gcloud auth login.*gcloud auth application-default login/);
     expect(fetcher).not.toHaveBeenCalled();
     expect(readdirSync(join(config.output, '..'))).toEqual([]);
   });
