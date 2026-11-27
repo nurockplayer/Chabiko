@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { readFileSync } from 'node:fs';
+import { URL } from 'node:url';
 import ts from 'typescript';
 import { describe, expect, it, vi } from 'vitest';
 import * as progress from '../src/lib/progress';
