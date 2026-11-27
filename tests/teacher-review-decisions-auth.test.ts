@@ -151,6 +151,56 @@ describe('POST /teacher-review/api/decisions write authorization (Issue #390)', 
     expect(context.upsertDecision).toHaveBeenCalledTimes(1);
   });
 
+  it.each([[null], ['text/plain']])('rejects a non-JSON Content-Type (%s) with JSON 415', async (mediaType) => {
+    const campaign = await resolveCurrentCampaign();
+    mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });
+    const context = makeContext(
+      { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'teacher@example.com' },
+      'teacher@example.com',
+      { recordId: campaign.records[0].id, outcome: 'accepted' },
+    );
+    if (mediaType === null) context.request.headers.delete('content-type');
+    else context.request.headers.set('content-type', mediaType);
+
+    const response = await onRequestPost(context as unknown as Parameters<typeof onRequestPost>[0]);
+
+    expect(response.status).toBe(415);
+    expect(await response.json()).toEqual({ error: 'Content-Type must be application/json.' });
+    expect(context.request.bodyUsed).toBe(false);
+    expect(context.upsertDecision).not.toHaveBeenCalled();
+  });
+
+  it('rejects an oversized byte stream before it ends, with JSON 413', async () => {
+    const campaign = await resolveCurrentCampaign();
+    mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });
+    const context = makeContext(
+      { TEACHER_REVIEW_ELIGIBLE_REVIEWER_EMAILS: 'teacher@example.com' },
+      'teacher@example.com',
+      {},
+    );
+    const cancel = vi.fn();
+    const init = {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      duplex: 'half',
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('語'.repeat(5461)));
+          controller.enqueue(new Uint8Array(2));
+        },
+        cancel,
+      }),
+    };
+    context.request = new Request(context.request.url, init);
+
+    const response = await onRequestPost(context as unknown as Parameters<typeof onRequestPost>[0]);
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: 'Request body exceeds 16 KiB.' });
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(context.upsertDecision).not.toHaveBeenCalled();
+  });
+
   it('authorizes only the configured allowlist; a second configured reviewer also writes', async () => {
     const campaign = await resolveCurrentCampaign();
     mocks.resolveCampaignOr500.mockResolvedValue({ resolution: campaign });

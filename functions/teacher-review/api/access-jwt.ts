@@ -67,43 +67,50 @@ function utf8Bytes(value: string): Uint8Array {
   return new TextEncoder().encode(value);
 }
 
-function parseJwtPayload(payloadSegment: string): AccessJwtPayload {
-  return JSON.parse(bytesToUtf8(base64UrlToBytes(payloadSegment))) as AccessJwtPayload;
+function parseJwtObject(segment: string): Record<string, unknown> {
+  const value: unknown = JSON.parse(bytesToUtf8(base64UrlToBytes(segment)));
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Expected a JWT JSON object.');
+  }
+  return value as Record<string, unknown>;
 }
 
-/** Access signing keys cache, keyed by team domain. Keys rotate every ~6 weeks
- * with a 7-day overlap; a `kid` miss forces a refresh. */
-const jwksCache = new Map<
-  string,
-  { keys: Map<string, JsonWebKey>; fetchedAt: number }
->();
+interface JwksCacheEntry {
+  cached?: { keys: Map<string, JsonWebKey>; fetchedAt: number };
+  pending?: Promise<Map<string, JsonWebKey>>;
+  refreshAfter: number;
+}
 
+const jwksCache = new Map<string, JwksCacheEntry>();
 const JWKS_MAX_AGE_MS = 60 * 60 * 1000;
+const JWKS_KEY_MISS_COOLDOWN_MS = 60 * 1000;
 
 /** Test seam / operator escape hatch: drop the cached JWKS. */
 export function clearAccessJwksCache(): void {
   jwksCache.clear();
 }
 
-async function loadJwks(teamDomain: string, fetchJson: (url: string) => Promise<unknown>): Promise<Map<string, JsonWebKey>> {
-  const cached = jwksCache.get(teamDomain);
-  if (
-    cached &&
-    Date.now() - cached.fetchedAt < JWKS_MAX_AGE_MS &&
-    cached.keys.size > 0
-  ) {
-    return cached.keys;
-  }
-  const url = `${teamDomain.replace(/\/$/, '')}/cdn-cgi/access/certs`;
-  const raw = await fetchJson(url);
-  const set = raw as JsonWebKeySet;
-  const keys = new Map<string, JsonWebKey>();
-  for (const key of set.keys ?? []) {
-    const kid = (key as { kid?: string }).kid;
-    if (kid && key.kty) keys.set(kid, key);
-  }
-  jwksCache.set(teamDomain, { keys, fetchedAt: Date.now() });
-  return keys;
+function fetchJwks(
+  entry: JwksCacheEntry,
+  teamDomain: string,
+  fetchJson: (url: string) => Promise<unknown>,
+): Promise<Map<string, JsonWebKey>> {
+  if (entry.pending) return entry.pending;
+
+  entry.pending = (async () => {
+    const set = await fetchJson(`${teamDomain}/cdn-cgi/access/certs`) as JsonWebKeySet | null;
+    if (!Array.isArray(set?.keys)) throw new Error('Malformed Access JWKS.');
+    const keys = new Map<string, JsonWebKey>();
+    for (const key of set.keys) {
+      const kid = (key as { kid?: string }).kid;
+      if (kid && key.kty) keys.set(kid, key);
+    }
+    entry.cached = { keys, fetchedAt: Date.now() };
+    return keys;
+  })().finally(() => {
+    entry.pending = undefined;
+  });
+  return entry.pending;
 }
 
 function getClaimedAudiences(payload: AccessJwtPayload): readonly string[] {
@@ -135,22 +142,22 @@ export async function verifyAccessJwt(
   }
   const [headerSegment, payloadSegment, signatureSegment] = segments;
 
-  let header: { alg?: string; kid?: string };
+  let header: Record<string, unknown>;
   try {
-    header = JSON.parse(bytesToUtf8(base64UrlToBytes(headerSegment))) as { alg?: string; kid?: string };
+    header = parseJwtObject(headerSegment);
   } catch {
     return { ok: false, reason: 'Malformed Access JWT header.' };
   }
   if (header.alg !== 'RS256') {
     return { ok: false, reason: `Unexpected Access JWT algorithm '${header.alg ?? 'missing'}'.` };
   }
-  if (!header.kid) {
+  if (typeof header.kid !== 'string' || !header.kid) {
     return { ok: false, reason: 'Access JWT header has no kid.' };
   }
 
   let payload: AccessJwtPayload;
   try {
-    payload = parseJwtPayload(payloadSegment);
+    payload = parseJwtObject(payloadSegment) as AccessJwtPayload;
   } catch {
     return { ok: false, reason: 'Malformed Access JWT payload.' };
   }
@@ -174,9 +181,17 @@ export async function verifyAccessJwt(
     return { ok: false, reason: `Access JWT audience mismatch (aud=${audiences.join(',')}).` };
   }
 
+  let entry = jwksCache.get(normalizedTeam);
+  if (!entry) {
+    entry = { refreshAfter: 0 };
+    jwksCache.set(normalizedTeam, entry);
+  }
   let keys: Map<string, JsonWebKey>;
   try {
-    keys = await loadJwks(normalizedTeam, fetchJson);
+    const cached = entry.cached;
+    keys = cached && Date.now() - cached.fetchedAt < JWKS_MAX_AGE_MS
+      ? cached.keys
+      : await fetchJwks(entry, normalizedTeam, fetchJson);
   } catch (error) {
     return {
       ok: false,
@@ -184,18 +199,16 @@ export async function verifyAccessJwt(
     };
   }
   let jwk = keys.get(header.kid);
-  if (!jwk) {
-    // Key rotation refresh: refetch once on a kid miss.
-    jwksCache.delete(normalizedTeam);
+  if (!jwk && Date.now() >= entry.refreshAfter) {
+    entry.refreshAfter = Date.now() + JWKS_KEY_MISS_COOLDOWN_MS;
     try {
-      keys = await loadJwks(normalizedTeam, fetchJson);
-      jwk = keys.get(header.kid);
+      jwk = (await fetchJwks(entry, normalizedTeam, fetchJson)).get(header.kid);
     } catch {
       return { ok: false, reason: 'Access JWKS refresh failed.' };
     }
-    if (!jwk) {
-      return { ok: false, reason: `Access signing key kid=${header.kid} not found.` };
-    }
+  }
+  if (!jwk) {
+    return { ok: false, reason: `Access signing key kid=${header.kid} not found.` };
   }
 
   try {
