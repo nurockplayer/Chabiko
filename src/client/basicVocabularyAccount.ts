@@ -1,4 +1,6 @@
-import { getSupabaseBrowserClient } from '../lib/supabaseBrowserClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { hasStoredSupabaseSession, loadSupabaseBrowserClient, supabaseSessionStorageKey } from '../lib/lazySupabaseBrowserClient';
+import { readSupabasePublicConfig } from '../lib/supabasePublicConfig';
 import { isValidSupabaseUserId } from '../domain/basicVocabularyProgressScope';
 
 /**
@@ -97,6 +99,33 @@ function publishAuthState(state: BasicVocabularyAuthState): void {
   for (const listener of [...authStateSubscribers]) listener(immutableState);
 }
 
+/** Restore account scope on the dashboard, which has no account control. */
+export function restoreBasicVocabularyAuth(): () => void {
+  const config = readSupabasePublicConfig();
+  if (config === null || !hasStoredSupabaseSession(supabaseSessionStorageKey(config))) return () => undefined;
+
+  let disposed = false;
+  let unsubscribe: (() => void) | undefined;
+  void loadSupabaseBrowserClient().then((client) => {
+    if (disposed || client === null) return;
+    const { data } = client.auth.onAuthStateChange((event, session) => {
+      const user = session?.user;
+      if (user && isValidSupabaseUserId(user.id)) {
+        publishAuthState({ kind: 'signed-in', userId: user.id, email: user.email ?? null });
+      } else if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && session === null)) {
+        publishAuthState({ kind: 'signed-out' });
+      }
+    });
+    unsubscribe = () => data.subscription.unsubscribe();
+  }).catch(() => {
+    console.error('Dashboard account session could not be restored');
+  });
+  return () => {
+    disposed = true;
+    unsubscribe?.();
+  };
+}
+
 function getActionLabel(state: BasicVocabularyAuthState): string | null {
   if (state.kind === 'signed-in') return 'ログアウト';
   if (state.kind === 'signed-out') return 'Googleでログイン';
@@ -163,9 +192,9 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
   const status: HTMLElement = statusEl;
   const action: HTMLButtonElement = actionEl;
 
-  const client = getSupabaseBrowserClient();
-  root.hidden = client === null;
-  if (client === null) {
+  const config = readSupabasePublicConfig();
+  root.hidden = config === null;
+  if (config === null) {
     render({ status, action }, { kind: 'unavailable' });
     dispatchState(root, { kind: 'unavailable' });
     publishAuthState({ kind: 'unavailable' });
@@ -180,6 +209,9 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
   let disposed = false;
   let signInInFlight = false;
   let signOutInFlight = false;
+  let client: SupabaseClient | null = null;
+  let unsubscribe: (() => void) | undefined;
+  const sessionKey = supabaseSessionStorageKey(config);
 
   /** Safe error text only — never raw messages, codes or token material. */
   function showAuthError(): void {
@@ -212,10 +244,21 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
     accept({ kind: 'signed-in', userId, email }, 'signed-in');
   }
 
+  async function connect(): Promise<SupabaseClient | null> {
+    const loaded = await loadSupabaseBrowserClient();
+    if (disposed || loaded === null) return null;
+    client = loaded;
+    window.removeEventListener('storage', onSessionStorage);
+    const { data } = loaded.auth.onAuthStateChange(handleAuthEvent);
+    unsubscribe = () => data.subscription.unsubscribe();
+    return loaded;
+  }
+
   async function loadInitialSession(): Promise<void> {
-    if (client === null || disposed) return;
     try {
-      const result = await client.auth.getSession();
+      const activeClient = await connect();
+      if (activeClient === null) return;
+      const result = await activeClient.auth.getSession();
       if (disposed) return;
       const session = result.data.session;
       if (session !== null && session.user !== undefined) {
@@ -271,11 +314,13 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
         // Storage unavailable must not throw; the callback route then falls
         // back to `/vocabulary/basic/`.
       }
-      if (client === null) {
+      const activeClient = client ?? await connect();
+      if (disposed) return;
+      if (activeClient === null) {
         showAuthError();
         return;
       }
-      const result = await client.auth.signInWithOAuth({
+      const result = await activeClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback/`,
@@ -336,16 +381,25 @@ export function initBasicVocabularyAccount(root: HTMLElement): () => void {
 
   root.addEventListener('click', onClick);
 
-  const subscription = client.auth.onAuthStateChange((event, session) => {
-    handleAuthEvent(event, session);
-  });
+  function onSessionStorage(event: StorageEvent): void {
+    if (event.key !== sessionKey || event.newValue === null || signInInFlight) return;
+    window.removeEventListener('storage', onSessionStorage);
+    accept({ kind: 'loading' }, 'loading');
+    void loadInitialSession();
+  }
 
-  void loadInitialSession();
+  if (hasStoredSupabaseSession(sessionKey)) {
+    void loadInitialSession();
+  } else {
+    window.addEventListener('storage', onSessionStorage);
+    accept({ kind: 'signed-out' }, 'signed-out');
+  }
 
   function cleanup(): void {
     if (disposed) return;
     disposed = true;
-    subscription.data.subscription.unsubscribe();
+    unsubscribe?.();
+    window.removeEventListener('storage', onSessionStorage);
     root.removeEventListener('click', onClick);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   }

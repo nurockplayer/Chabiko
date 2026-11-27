@@ -25,6 +25,21 @@ beforeEach(() => {
 afterEach(() => { cleanup?.(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
 describe('HSK quiz browser session', () => {
+  it('updates the live region only when its announcement changes', async () => {
+    const el = root();
+    await loaded(el);
+    click(el, '[data-quiz-start]');
+    const status = el.querySelector('[data-quiz-status]')!;
+    const announcement = status.firstChild;
+    const entry = entries.find((item) => item.simplified === el.querySelector('h2')!.textContent)!;
+    const answers = [...el.querySelectorAll<HTMLButtonElement>('[data-action="answer"]')];
+
+    answers.find((answer) => answer.textContent !== entry.japanese)!.click();
+    expect(status.firstChild).toBe(announcement);
+
+    click(el, '[data-action="next"]');
+    expect(status.textContent).toBe('2 / 10問 · 正解 0問');
+  });
   for (const direction of ['zh-to-ja', 'ja-to-zh'] as const) {
     it(`applies near-synonym exclusions to the published HSK 1 session: ${direction}`, async () => {
       const published = loadHskPublication().pools[0].fullRange;

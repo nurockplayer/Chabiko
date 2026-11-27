@@ -126,6 +126,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   clearBasicVocabularyAuthState();
   resetBasicVocabularyProgressCoordinator();
   setBasicVocabularyProgressCoordinator(null);
@@ -210,6 +211,9 @@ describe('basic vocabulary progress coordinator', () => {
 
     // The account module accepts and publishes signed-in before any
     // coordinator exists.
+    vi.stubEnv('PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'test-public-key');
+    window.localStorage.setItem('sb-example-auth-token', '{}');
     const { initBasicVocabularyAccount } = await import('../src/client/basicVocabularyAccount');
     const accountRoot = document.createElement('section');
     accountRoot.dataset.basicVocabularyAccount = '';
@@ -218,6 +222,7 @@ describe('basic vocabulary progress coordinator', () => {
       '<button data-basic-vocabulary-account-action type="button" hidden>Googleでログイン</button>';
     document.body.append(accountRoot);
     initBasicVocabularyAccount(accountRoot);
+    await vi.dynamicImportSettled();
     await flush();
 
     // A coordinator created after the state was published must pick it up.

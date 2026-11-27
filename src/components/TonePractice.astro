@@ -1,5 +1,5 @@
 ---
-import type { TonePracticeItem } from '../domain/tonePractice';
+import { TONE_CHOICES, type TonePracticeItem } from '../domain/tonePractice';
 import PronounceButton from './PronounceButton.astro';
 
 export interface Props {
@@ -29,19 +29,26 @@ const serialized = JSON.stringify({
   data-tone-session={serialized}
 >
   <div class="tone-practice-header">
-    <p class="tone-practice-progress" data-tone-progress></p>
+    <p class="tone-practice-progress" data-tone-progress>1 / {items.length}</p>
     <progress class="tone-practice-meter" max={items.length} value="0" aria-label="この回の声調練習の進み具合"></progress>
-    <p class="tone-practice-prompt" data-tone-prompt></p>
+    <p class="tone-practice-prompt" data-tone-prompt>{items[0].promptJa}</p>
   </div>
 
   <div class="tone-contour" data-tone-contour></div>
-  <p class="tone-interference" data-tone-interference></p>
+  <p class="tone-interference" data-tone-interference hidden></p>
 
-  <div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ"></div>
+  <div class="tone-choices" data-tone-choices role="group" aria-label="声調を選ぶ">
+    {TONE_CHOICES.map((choice) => (
+      <button type="button" class="tone-choice" lang="zh-Hant" disabled>{choice}</button>
+    ))}
+  </div>
 
   <div class="tone-feedback" data-tone-feedback role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <div class="tone-actions" data-tone-actions></div>
+  <div class="tone-audio"></div>
+  <div class="tone-actions" data-tone-actions>
+    <button type="button" class="tone-action tone-action--submit" disabled>答え合わせ</button>
+  </div>
   <!-- Loads the shared client runtime; answer audio appears only after submission. -->
   <span hidden aria-hidden="true"><PronounceButton text="" /></span>
 </div>
@@ -111,6 +118,13 @@ const serialized = JSON.stringify({
 
   .tone-contour[hidden] {
     display: none;
+  }
+
+  .tone-contour:empty::before {
+    content: '';
+    width: 100%;
+    max-width: 15rem;
+    aspect-ratio: 2;
   }
 
   .tone-contour__drawing {

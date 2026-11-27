@@ -39,20 +39,24 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
   let direction: HskQuizDirection = 'zh-to-ja';
   let length: HskQuizLength = 10;
 
+  function announce(message: string) {
+    if (status.textContent !== message) status.textContent = message;
+  }
+
   function reset() {
     questions = [];
     answers = [];
     index = 0;
     card.replaceChildren();
     setup.hidden = false;
-    status.textContent = formatHskQuizBest(readHskQuizBest(level));
+    announce(formatHskQuizBest(readHskQuizBest(level)));
   }
 
   function showQuestion() {
     const question = questions[index];
     const revealed = answers.length > index;
     const result = scoreHskQuiz(questions, answers);
-    status.textContent = `${index + 1} / ${questions.length}問 · 正解 ${result.correct}問`;
+    announce(`${index + 1} / ${questions.length}問 · 正解 ${result.correct}問`);
     const prompt = text('h2', question.prompt, 'quiz-prompt', direction === 'zh-to-ja' ? 'zh-Hans' : 'ja');
     prompt.tabIndex = -1;
     const options = document.createElement('div');
@@ -104,9 +108,9 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     if (!result.complete) return;
     const saved = saveHskQuizBest(level, { version: 1, correct: result.correct, total: length, direction });
     if (saved) window.dispatchEvent(new Event(HSK_QUIZ_SCORE_EVENT));
-    status.textContent = saved
+    announce(saved
       ? `${formatHskQuizBest(readHskQuizBest(level))} · このブラウザに保存しました。`
-      : 'このブラウザには最高得点を保存できませんでした。';
+      : 'このブラウザには最高得点を保存できませんでした。');
     const heading = text('h2', 'テスト結果');
     heading.tabIndex = -1;
     const score = text('p', `${result.correct} / ${result.total}問正解（${Math.round(result.correct / result.total * 100)}%）`, 'quiz-feedback');
@@ -137,7 +141,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     direction = data.get('direction') === 'ja-to-zh' ? 'ja-to-zh' : 'zh-to-ja';
     questions = buildHskQuizQuestions(entries, length, direction, random, hskQuizNearSynonymGroupOf);
     if (!questions.length) {
-      status.textContent = 'この条件では十分な問題を作れません。問題数や出題方向を変えてください。';
+      announce('この条件では十分な問題を作れません。問題数や出題方向を変えてください。');
       return;
     }
     answers = [];
@@ -168,7 +172,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
   start.disabled = true;
   start.setAttribute('aria-busy', 'true');
   reset();
-  status.textContent = '単語データを読み込んでいます。';
+  announce('単語データを読み込んでいます。');
   void (async () => {
     try {
       const data = JSON.parse(root.dataset.hskQuiz ?? '{}');
@@ -185,9 +189,9 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
       if (disposed) return;
       entries = loaded;
       start.disabled = false;
-      status.textContent = formatHskQuizBest(readHskQuizBest(level));
+      announce(formatHskQuizBest(readHskQuizBest(level)));
     } catch {
-      if (!disposed) status.textContent = '単語データを読み込めませんでした。ページを再読み込みしてください。';
+      if (!disposed) announce('単語データを読み込めませんでした。ページを再読み込みしてください。');
     } finally {
       if (!disposed) start.removeAttribute('aria-busy');
     }
