@@ -5,28 +5,16 @@ import {
 } from '../domain/teacherVocabularyReviewOverview';
 import type { TeacherVocabularyReviewItem } from '../content/teacherVocabularyReviewOverview';
 
-const cleanups = new WeakMap<HTMLElement, () => void>();
-
-function readItems(root: HTMLElement): TeacherVocabularyReviewItem[] | null {
-  const source = root.querySelector<HTMLScriptElement>('[data-teacher-vocabulary-review-data]');
-  if (source?.textContent === undefined) return null;
-  try {
-    const parsed: unknown = JSON.parse(source.textContent);
-    if (!Array.isArray(parsed)) return null;
-    return parsed as TeacherVocabularyReviewItem[];
-  } catch {
-    return null;
-  }
-}
+const initialized = new WeakSet<HTMLElement>();
 
 function partOfSpeechLabel(value: TeacherVocabularyReviewItem['partOfSpeech']): string {
   return ({ noun: '名詞', verb: '動詞', adjective: '形容詞', adverb: '副詞' })[value];
 }
 
 /** Browser binding for the protected, read-only vocabulary overview. */
-export function initTeacherVocabularyReviewOverview(root: HTMLElement): () => void {
-  cleanups.get(root)?.();
-  const items = readItems(root);
+export async function initTeacherVocabularyReviewOverview(root: HTMLElement): Promise<void> {
+  if (initialized.has(root)) return;
+  initialized.add(root);
   const search = root.querySelector<HTMLInputElement>('[data-tvro-search]');
   const sourceSheet = root.querySelector<HTMLSelectElement>('[data-tvro-source-sheet]');
   const partOfSpeech = root.querySelector<HTMLSelectElement>('[data-tvro-part-of-speech]');
@@ -36,9 +24,23 @@ export function initTeacherVocabularyReviewOverview(root: HTMLElement): () => vo
   const previous = root.querySelector<HTMLButtonElement>('[data-tvro-page="previous"]');
   const next = root.querySelector<HTMLButtonElement>('[data-tvro-page="next"]');
   const indicator = root.querySelector<HTMLElement>('[data-tvro-page-indicator]');
-  if (items === null || !search || !sourceSheet || !partOfSpeech || !decision || !summary || !results || !previous || !next || !indicator) {
-    if (summary) summary.textContent = '単語一覧を読み込めませんでした';
-    return () => undefined;
+  if (!search || !sourceSheet || !partOfSpeech || !decision || !summary || !results || !previous || !next || !indicator) {
+    throw new Error('Teacher vocabulary review shell is incomplete');
+  }
+
+  let items: readonly TeacherVocabularyReviewItem[];
+  try {
+    const response = await fetch('/teacher-review/api/vocabulary');
+    if (!response.ok) throw new Error(`Vocabulary overview request failed (${response.status})`);
+    items = await response.json() as readonly TeacherVocabularyReviewItem[];
+  } catch (error) {
+    summary.textContent = '単語一覧を読み込めませんでした';
+    console.error(error);
+    return;
+  }
+
+  for (const sheet of new Set(items.map((item) => item.sourceSheet))) {
+    sourceSheet.add(new Option(sheet, sheet));
   }
 
   let page = 1;
@@ -101,11 +103,4 @@ export function initTeacherVocabularyReviewOverview(root: HTMLElement): () => vo
   previous.addEventListener('click', goPrevious);
   next.addEventListener('click', goNext);
   render();
-  const cleanup = () => {
-    search.removeEventListener('input', reset); sourceSheet.removeEventListener('change', reset);
-    partOfSpeech.removeEventListener('change', reset); decision.removeEventListener('change', reset);
-    previous.removeEventListener('click', goPrevious); next.removeEventListener('click', goNext);
-  };
-  cleanups.set(root, cleanup);
-  return cleanup;
 }

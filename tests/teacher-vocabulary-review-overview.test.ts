@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { onRequest } from '../functions/teacher-review/api/_middleware';
 import {
   TEACHER_VOCABULARY_REVIEW_PAGE_SIZE,
   selectTeacherVocabularyReviewPage,
@@ -29,6 +30,35 @@ const allQuery = {
 };
 
 describe('teacher vocabulary review overview', () => {
+  it('keeps reviewer records out of the static overview and requires Access for the data request', async () => {
+    const route = readFileSync('src/pages/teacher-review/vocabulary/index.astro', 'utf8');
+    expect(/loadTeacherVocabularyReviewOverview|data-teacher-vocabulary-review-data|sourceSheets\.map/.test(route)).toBe(false);
+
+    const { onRequestGet } = await import('../functions/teacher-review/api/vocabulary');
+    const next = vi.fn();
+    const env: Record<string, string> = {};
+    const context = {
+      request: new Request('https://chabiko.pages.dev/teacher-review/api/vocabulary'),
+      env,
+      data: {},
+      next,
+    } as unknown as Parameters<typeof onRequest>[0];
+
+    const unavailable = await onRequest(context);
+    expect(unavailable.status).toBe(500);
+    expect(await unavailable.json()).toEqual({ error: expect.stringMatching(/^Access not configured:/) });
+    expect(next).not.toHaveBeenCalled();
+
+    env.TEACHER_REVIEW_ACCESS_TEAM_DOMAIN = 'https://test.cloudflareaccess.com';
+    env.TEACHER_REVIEW_ACCESS_AUD = 'test-audience';
+    expect((await onRequest(context)).status).toBe(401);
+    expect(next).not.toHaveBeenCalled();
+
+    const response = await onRequestGet(context);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(await response.json()).toEqual(JSON.parse(JSON.stringify(loadTeacherVocabularyReviewOverview())));
+  });
+
   it('preserves the production learner order and exposes only review-readable fields', () => {
     const overview = loadTeacherVocabularyReviewOverview();
     expect(overview.length).toBeGreaterThan(0);
