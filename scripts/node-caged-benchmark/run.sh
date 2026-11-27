@@ -112,9 +112,10 @@ for variant in node24 node26 caged26; do
   if docker exec "$setup" bash -euo pipefail -c '
     apt-get update -qq
     apt-get install -y -qq --no-install-recommends ca-certificates curl git python3
-    mkdir -p /opt/pnpm
-    curl -fsSL https://registry.npmjs.org/pnpm/-/pnpm-12.11.2.tgz | tar -xz -C /opt/pnpm --strip-components=1
-    ln -sf /opt/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm
+    curl -fsSL https://registry.npmjs.org/@pnpm/exe.linux-arm64/-/exe.linux-arm64-12.11.2.tgz \
+      | tar -xOzf - package/pnpm > /tmp/pnpm-12.11.2
+    install -m 0755 /tmp/pnpm-12.11.2 /usr/local/bin/pnpm
+    rm /tmp/pnpm-12.11.2
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin UV_NO_MODIFY_PATH=1 sh
     git config --global --add safe.directory "$PWD"
     pnpm install --frozen-lockfile
