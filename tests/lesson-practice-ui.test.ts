@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { readFileSync } from 'node:fs';
-import { URL } from 'node:url';
 import ts from 'typescript';
 import { describe, expect, it, vi } from 'vitest';
 import * as progress from '../src/lib/progress';
@@ -10,11 +9,11 @@ import * as progressSnapshot from '../src/lib/progressSnapshot';
 import * as practiceRefresh from '../src/lib/practiceRefresh';
 
 const lessonPageSource = readFileSync(
-  new URL('../src/pages/lessons/[id].astro', import.meta.url),
+  'src/pages/lessons/[id].astro',
   'utf8',
 );
 const practiceComponentSource = readFileSync(
-  new URL('../src/components/LessonPractice.astro', import.meta.url),
+  'src/components/LessonPractice.astro',
   'utf8',
 );
 
