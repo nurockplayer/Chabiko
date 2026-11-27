@@ -74,6 +74,7 @@ export function createBasicVocabularySupabaseRepository(
 
 /** Fixed course id owned by this repository; every query filters it. */
 const COURSE_ID = 'basic-vocabulary';
+const PROGRESS_PAGE_SIZE = 1000; // Matches max_rows in supabase/config.toml.
 
 /**
  * The #287 foreign key that enforces the stale-generation contract: a progress
@@ -215,30 +216,15 @@ function isValidCloudItem(value: unknown): value is BasicVocabularyCloudItem {
 }
 
 /**
- * All-or-nothing validation of a loaded snapshot. Any missing/malformed row,
- * wrong generation, or duplicate id/order invalidates the whole snapshot and
- * maps to `invalid-data`. An empty valid snapshot is allowed. Rows are
- * translated from snake_case database fields to the #289 cloud item shape.
+ * Validate and translate all loaded progress rows. A malformed row, wrong
+ * generation, or duplicate item ID invalidates the whole snapshot.
  */
 function validateSnapshot(
-  state: unknown,
+  generation: number,
   progress: readonly unknown[],
 ): BasicVocabularyCloudSnapshot {
-  if (state === null || typeof state !== 'object' || Array.isArray(state)) {
-    return toRepoError('invalid-data', state);
-  }
-  const stateRow = state as Record<string, unknown>;
-  const generation = stateRow.reset_generation;
-  if (!isNonNegativeInteger(generation)) {
-    return toRepoError('invalid-data', state);
-  }
-  if (!Array.isArray(progress)) {
-    return toRepoError('invalid-data', progress);
-  }
-
   const items: BasicVocabularyCloudItem[] = [];
   const seenIds = new Set<string>();
-  const seenOrders = new Set<number>();
   for (const raw of progress) {
     const parsed = parseCloudItemRow(raw);
     if (parsed === null) {
@@ -250,11 +236,7 @@ function validateSnapshot(
     if (seenIds.has(parsed.itemId)) {
       return toRepoError('invalid-data', raw);
     }
-    if (seenOrders.has(parsed.reviewOrder)) {
-      return toRepoError('invalid-data', raw);
-    }
     seenIds.add(parsed.itemId);
-    seenOrders.add(parsed.reviewOrder);
     items.push(parsed);
   }
   return { resetGeneration: generation, items };
@@ -262,8 +244,8 @@ function validateSnapshot(
 
 /**
  * Validate a push batch before any network call. Generation and every item
- * must be valid and must share the batch generation; ids and orders must be
- * unique. Empty batches return before validation and never touch the network.
+ * must be valid and must share the batch generation. Item IDs must be unique.
+ * Empty batches return before validation and never touch the network.
  */
 function validateBatch(
   userId: string,
@@ -277,7 +259,6 @@ function validateBatch(
     toRepoError('invalid-data', `Invalid generation ${generation}`);
   }
   const seenIds = new Set<string>();
-  const seenOrders = new Set<number>();
   for (const item of items) {
     if (!isValidCloudItem(item)) {
       toRepoError('invalid-data', item);
@@ -288,11 +269,7 @@ function validateBatch(
     if (seenIds.has(item.itemId)) {
       toRepoError('invalid-data', item);
     }
-    if (seenOrders.has(item.reviewOrder)) {
-      toRepoError('invalid-data', item);
-    }
     seenIds.add(item.itemId);
-    seenOrders.add(item.reviewOrder);
   }
 }
 
@@ -334,25 +311,41 @@ class BasicVocabularySupabaseRepositoryImpl implements BasicVocabularySupabaseRe
 
       // A valid signed-in user always has a state row after the ensure above;
       // a missing row is still guarded rather than silently coerced.
-      if (!isNonNegativeInteger(state.data?.reset_generation)) {
+      const generation: unknown = state.data?.reset_generation;
+      if (!isNonNegativeInteger(generation)) {
         toRepoError('invalid-data', state.data);
       }
 
-      // Minimal progress fields for the exact user/course/current generation,
-      // ordered by review order with a defensive item-id tie-break.
-      const progress = await this.client
-        .from('basic_vocabulary_progress')
-        .select('item_id,status,known_streak,review_order,reset_generation')
-        .eq('user_id', userId)
-        .eq('course_id', COURSE_ID)
-        .eq('reset_generation', state.data?.reset_generation)
-        .order('review_order', { ascending: true })
-        .order('item_id', { ascending: true });
-      if (progress.error) {
-        toRepoError(classifyError(progress.status, progress.error), progress.error);
+      // Check the exact total and page lengths before exposing any rows.
+      const rows: unknown[] = [];
+      let total: number | null = null;
+      for (let offset = 0; total === null || offset < total; offset += PROGRESS_PAGE_SIZE) {
+        const progress = await this.client
+          .from('basic_vocabulary_progress')
+          .select('item_id,status,known_streak,review_order,reset_generation', { count: 'exact' })
+          .eq('user_id', userId)
+          .eq('course_id', COURSE_ID)
+          .eq('reset_generation', generation)
+          .order('review_order', { ascending: true })
+          .order('item_id', { ascending: true })
+          .range(offset, offset + PROGRESS_PAGE_SIZE - 1);
+        if (progress.error) {
+          toRepoError(classifyError(progress.status, progress.error), progress.error);
+        }
+        const { count, data } = progress;
+        if (
+          !isNonNegativeInteger(count) ||
+          (total !== null && count !== total) ||
+          !Array.isArray(data) ||
+          data.length !== Math.min(PROGRESS_PAGE_SIZE, count - offset)
+        ) {
+          toRepoError('invalid-data', 'Incomplete basic-vocabulary progress snapshot');
+        }
+        total = count;
+        rows.push(...data);
       }
 
-      return validateSnapshot(state.data, progress.data);
+      return validateSnapshot(generation, rows);
     } catch (error) {
       if (error instanceof BasicVocabularyRepositoryError) throw error;
       toRepoError('unknown', error);

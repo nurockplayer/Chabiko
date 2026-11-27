@@ -656,6 +656,26 @@ describe('mergeBasicVocabularyCloudSnapshot', () => {
     ]);
   });
 
+  it('merges independent first ratings in item ID order before and after both reach the cloud', () => {
+    const local = cloudProgress({});
+    const deviceA = metaWithDirty([['b', entry('learning', 1)]]);
+    const deviceB = metaWithDirty([['a', entry('learning', 1)]]);
+    const [first] = mergeBasicVocabularyCloudSnapshot(local, deviceA, snapshot(0, [])).mutationsToPush;
+    const beforePush = mergeBasicVocabularyCloudSnapshot(local, deviceB, snapshot(0, [first]));
+    const [second] = beforePush.mutationsToPush;
+
+    expect(first.reviewOrder).toBe(0);
+    expect(second.reviewOrder).toBe(0);
+    expect(Object.keys(beforePush.progress.items)).toEqual(['a', 'b']);
+
+    const afterPush = mergeBasicVocabularyCloudSnapshot(
+      local,
+      createBasicVocabularySyncMeta(USER_ID),
+      snapshot(0, [first, second]),
+    );
+    expect(Object.keys(afterPush.progress.items)).toEqual(['a', 'b']);
+  });
+
   it('rejects malformed cloud snapshots before touching local state', () => {
     const local = cloudProgress({ a: entry('learning', 1) });
     const meta = metaWithDirty([['a', entry('learning', 1)]]);
@@ -665,10 +685,6 @@ describe('mergeBasicVocabularyCloudSnapshot', () => {
       snapshot(0, [
         cloudItem('a', 'learning', 1, 0, 0),
         cloudItem('a', 'learned', 2, 1, 0), // duplicate ID
-      ]),
-      snapshot(0, [
-        cloudItem('a', 'learning', 1, 0, 0),
-        cloudItem('b', 'learning', 0, 0, 0), // duplicate order
       ]),
       snapshot(0, [
         {
@@ -694,19 +710,19 @@ describe('mergeBasicVocabularyCloudSnapshot', () => {
     expect(meta.dirtyItems.a).toEqual({ entry: entry('learning', 1), reviewOrder: 0 });
   });
 
-  it('applies a newer remote generation by rebuilding from cloud rows in ascending order', () => {
+  it('applies a newer remote generation by rebuilding in review order with item ID ties', () => {
     const local = cloudProgress({
       a: entry('learned', 2),
       b: entry('learning', 1),
     });
     const meta = metaWithDirty([['a', entry('learned', 2)]]);
     const cloud = snapshot(1, [
+      cloudItem('y', 'learning', 0, 1, 1),
       cloudItem('x', 'learned', 2, 1, 1),
-      cloudItem('y', 'learning', 0, 0, 1),
     ]);
     const result = mergeBasicVocabularyCloudSnapshot(local, meta, cloud);
     expect(result.kind).toBe('remote-reset-applied');
-    expect(Object.keys(result.progress.items)).toEqual(['y', 'x']);
+    expect(Object.keys(result.progress.items)).toEqual(['x', 'y']);
     expect(result.progress.items.y).toEqual(entry('learning', 0));
     expect(result.meta.resetGeneration).toBe(1);
     expect(result.meta.nextReviewOrder).toBe(2);
@@ -813,8 +829,8 @@ describe('importBasicVocabularyGuestProgress', () => {
     });
     const meta = createBasicVocabularySyncMeta(USER_ID);
     const cloud = snapshot(1, [
-      cloudItem('a', 'learning', 0, 0, 1),
       cloudItem('x', 'learned', 2, 1, 1),
+      cloudItem('a', 'learning', 0, 1, 1),
     ]);
     const result = importBasicVocabularyGuestProgress(guest, cloud, meta);
     // a is in the cloud → cloud wins; b and c are imported after the highest

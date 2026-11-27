@@ -471,8 +471,8 @@ function isValidCloudItem(value: unknown): value is BasicVocabularyCloudItem {
 
 /**
  * Validate a cloud snapshot: every row must match the snapshot generation,
- * IDs must be unique, and review orders must be unique. Any violation
- * throws a controlled `TypeError` before the merge touches local state.
+ * and IDs must be unique. Any violation throws a controlled `TypeError`
+ * before the merge touches local state.
  */
 function validateCloudSnapshot(snapshot: BasicVocabularyCloudSnapshot): void {
   const generation = snapshot.resetGeneration;
@@ -482,7 +482,6 @@ function validateCloudSnapshot(snapshot: BasicVocabularyCloudSnapshot): void {
     );
   }
   const seenIds = new Set<string>();
-  const seenOrders = new Set<number>();
   for (const item of snapshot.items) {
     if (!isValidCloudItem(item)) {
       throw new TypeError(
@@ -499,17 +498,17 @@ function validateCloudSnapshot(snapshot: BasicVocabularyCloudSnapshot): void {
         `Duplicate item ID "${item.itemId}" in basic-vocabulary cloud snapshot`,
       );
     }
-    if (seenOrders.has(item.reviewOrder)) {
-      throw new TypeError(
-        `Duplicate review order ${item.reviewOrder} in basic-vocabulary cloud snapshot`,
-      );
-    }
     seenIds.add(item.itemId);
-    seenOrders.add(item.reviewOrder);
   }
 }
 
 // ─── Cloud merge ──────────────────────────────────────────────────────────────
+
+function compareReviewOrder(aOrder: number, bOrder: number, aId: string, bId: string): number {
+  if (aOrder !== bOrder) return aOrder - bOrder;
+  if (aId === bId) return 0;
+  return aId < bId ? -1 : 1;
+}
 
 /**
  * Merge a remote snapshot into local progress and sync metadata.
@@ -527,6 +526,7 @@ function validateCloudSnapshot(snapshot: BasicVocabularyCloudSnapshot): void {
  * - `stale-remote-rejected`: older remote generation; local progress and
  *   meta are preserved byte-equivalently with no pushes.
  *
+ * Equal review orders are sorted by item ID.
  * No client-clock comparison, status-strength merge, random tie-break, or
  * full-snapshot overwrite.
  */
@@ -558,7 +558,7 @@ export function mergeBasicVocabularyCloudSnapshot(
   if (cloudGeneration > meta.resetGeneration) {
     const items: Record<string, VocabularyProgressEntry> = {};
     const rows = [...cloud.items].sort(
-      (a, b) => a.reviewOrder - b.reviewOrder,
+      (a, b) => compareReviewOrder(a.reviewOrder, b.reviewOrder, a.itemId, b.itemId),
     );
     for (const row of rows) {
       items[row.itemId] = { status: row.status, knownStreak: row.knownStreak };
@@ -600,7 +600,7 @@ export function mergeBasicVocabularyCloudSnapshot(
   ]);
   const entries: Record<string, VocabularyProgressEntry> = {};
   const sortedIds = [...ids].sort(
-    (a, b) => (orderOf.get(a) ?? -1) - (orderOf.get(b) ?? -1),
+    (a, b) => compareReviewOrder(orderOf.get(a) ?? -1, orderOf.get(b) ?? -1, a, b),
   );
   for (const id of sortedIds) {
     const dirty = meta.dirtyItems[id];
@@ -614,7 +614,7 @@ export function mergeBasicVocabularyCloudSnapshot(
     }
   }
   const mutationsToPush: BasicVocabularyCloudItem[] = dirtyEntries
-    .sort((a, b) => a[1].reviewOrder - b[1].reviewOrder)
+    .sort(([aId, a], [bId, b]) => compareReviewOrder(a.reviewOrder, b.reviewOrder, aId, bId))
     .map(([id, dirty]) => ({
       itemId: id,
       status: toCloudStatus(dirty.entry.status),
@@ -663,7 +663,7 @@ export function importBasicVocabularyGuestProgress(
     -1,
   );
   const cloudRows = [...cloud.items].sort(
-    (a, b) => a.reviewOrder - b.reviewOrder,
+    (a, b) => compareReviewOrder(a.reviewOrder, b.reviewOrder, a.itemId, b.itemId),
   );
   const progressItems: Record<string, VocabularyProgressEntry> = {};
   for (const row of cloudRows) {
