@@ -110,7 +110,7 @@ describe('buildTaiwanTravelQuestions — frozen coverage contract', () => {
       expect(prompt).toBeDefined();
       expect(isUsableReviewPrompt(prompt)).toBe(true);
       expect(question.promptJa).toBe(prompt.promptJa.trim());
-      expect(question.answerJa).toBe(prompt.answerJa.trim());
+      expect(question.answerJa).toBe(prompt.answerJa.trim().normalize('NFC'));
     }
   });
 
@@ -120,7 +120,7 @@ describe('buildTaiwanTravelQuestions — frozen coverage contract', () => {
     for (const question of buildTaiwanTravelQuestions(lessons)) {
       const prompt = byId.get(question.lessonId)!.reviewPrompts[question.sourcePromptIndex];
       const sourceDistractors = (prompt.distractorsJa ?? [])
-        .map((d) => d.trim())
+        .map((d) => d.trim().normalize('NFC'))
         .filter((d) => d.length > 0 && d !== question.answerJa);
       const distinct = [...new Set(sourceDistractors)];
       expect(question.options).toHaveLength(1 + distinct.length);
@@ -220,6 +220,19 @@ describe('buildTaiwanTravelQuestion', () => {
     const question = buildTaiwanTravelQuestion(entry, 0);
     expect([...question.options].sort()).toEqual(['A', 'B', 'C']);
     expect(question.options[question.correctIndex]).toBe('A');
+  });
+
+  it('normalizes Japanese choices before checking usability and indexing the answer', () => {
+    const prompt = { promptJa: 'Q', answerJa: 'ガイド', distractorsJa: ['カ\u3099イド'] };
+    const entry = lesson('lesson-001', [
+      prompt,
+      { ...prompt, distractorsJa: [...prompt.distractorsJa, 'ハ\u309aス', 'パス'] },
+    ]);
+
+    const question = buildTaiwanTravelQuestion(entry, 1);
+    expect([...question.options].sort()).toEqual(['ガイド', 'パス']);
+    expect(question.options[question.correctIndex]).toBe('ガイド');
+    expect(firstUsableReviewPrompt(entry)).toBe(entry.reviewPrompts[1]);
   });
 });
 

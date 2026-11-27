@@ -316,7 +316,7 @@ function parsePhrases(records: unknown[]): PhrasebookPhrase[] {
     let simplifiedStatus: PhrasebookFormStatus | undefined;
     if (item.simplified === undefined) {
       assert(
-        item.simplifiedStatus === undefined,
+        item.simplifiedStatus === undefined || item.simplifiedStatus === 'unavailable',
         `${prefix} has simplifiedStatus without a simplified form`,
       );
     } else {
