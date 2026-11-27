@@ -21,7 +21,7 @@ afterEach(() => {
 describe('pronunciation audio source collection', () => {
   it('normalizes keys and collects only Chinese script fields with language tags', () => {
     expect(normalizePronunciationText('  謝謝\n  你  ')).toBe('謝謝 你');
-    expect(normalizePronunciationText('小姐/女士')).toBe('小姐，女士');
+    expect(normalizePronunciationText('小姐/女士')).toBe('小姐,女士');
     const root = tempRoot();
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-wave-1'), { recursive: true });
     mkdirSync(join(root, 'data/content-pilots/taiwan-travel-golden'), { recursive: true });
@@ -114,7 +114,7 @@ describe('pronunciation audio index', () => {
       entry('谢谢', 'zh-CN', '/audio/cn.mp3', 'tts'),
       entry('謝謝', 'zh-TW', '/audio/later-tts.mp3', 'tts'),
     ]);
-    expect(index).toEqual({ 'zh-cn|谢谢': '/audio/cn.mp3', 'zh-tw|小姐，女士': '/audio/tts-ms.mp3', 'zh-tw|謝謝': '/audio/teacher.mp3' });
+    expect(index).toEqual({ 'zh-cn|谢谢': '/audio/cn.mp3', 'zh-tw|小姐,女士': '/audio/tts-ms.mp3', 'zh-tw|謝謝': '/audio/teacher.mp3' });
     expect(Object.keys(index)).toEqual(Object.keys(index).sort());
     const lookup = new Map(Object.entries(index));
     expect(findRecording('小姐／女士', 'zh-TW', lookup)).toBe('/audio/tts-ms.mp3');
