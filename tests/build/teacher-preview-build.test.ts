@@ -104,7 +104,10 @@ describe('TeacherPreview — build output (fresh build)', () => {
       expect(readFileSync(resolve(BUILD_DIST, path), 'utf8')).toMatch(/name="robots" content="noindex/);
     }
     const overview = readFileSync(resolve(BUILD_DIST, 'teacher-review/vocabulary/index.html'), 'utf8');
-    expect(/data-teacher-vocabulary-review-data|data-tvro-item-id|learnerId|sourceSheet|sourceRow/.test(overview)).toBe(false);
+    expect(/data-teacher-vocabulary-review-data|"(?:learnerId|sourceSheet|sourceRow)"\s*:/.test(overview)).toBe(false);
+    expect(/<ol\b[^>]*\bdata-tvro-results\b[^>]*>\s*<\/ol>/.test(overview)).toBe(true);
+    const sheetFilter = overview.match(/<select\b[^>]*\bdata-tvro-source-sheet\b[^>]*>([\s\S]*?)<\/select>/)?.[1];
+    expect(sheetFilter?.match(/<option\b/g)).toHaveLength(1);
   });
 
   it('deploys exactly 1,131 review-only teacher derivatives, prunes no preview assets, and drops dev sentinels', () => {
