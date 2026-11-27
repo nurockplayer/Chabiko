@@ -45,6 +45,10 @@ print(next(item["digest"] for item in manifest["manifests"]
 
 root=$(pwd)
 source_ref=${1:-HEAD}
+tasks=(typecheck test build validate:full audio:generate audio:compare)
+if [[ ${2:-} == "--browser-follow-up" ]]; then
+  tasks=(test:visual test:a11y)
+fi
 source_sha=$(git rev-parse "$source_ref^{commit}")
 cp scripts/node-caged-benchmark/{profile.py,heap.cjs} "$scratch/"
 mkdir "$scratch/bin" "$scratch/results"
@@ -129,7 +133,7 @@ for variant in node24 node26 caged26; do
     find node_modules/.pnpm -type f -name "*.node" | sort
     node -e "for (const path of process.argv.slice(1)) { try { require(path); console.log(\"ADDON OK\",path); } catch(error) { console.log(\"ADDON FAIL\",path,error.code,error.message); } }" $(find "$PWD/node_modules/.pnpm" -type f -name "*.node" | sort)
   ' > "$scratch/setup-$variant.log" 2>&1; then
-    tail -n 12 "$scratch/setup-$variant.log"
+    sed -n '/^{"node":/,$p' "$scratch/setup-$variant.log"
     docker commit "$setup" "$prepared" >/dev/null
     docker stop "$setup" >/dev/null
   else
@@ -140,8 +144,18 @@ for variant in node24 node26 caged26; do
     continue
   fi
 
+  if [[ ${2:-} == "--browser-follow-up" && $variant == node24 ]]; then
+    docker run "${common[@]}" --entrypoint bash "$prepared" -c '
+      set -x
+      pnpm astro build --outDir /tmp/benchmark-route-build
+      pnpm exec vitest run tests/learning-paths-route.test.ts tests/unicode-review-cli.test.ts
+    ' > "$scratch/route-diagnostic.log" 2>&1 || {
+      grep -En ' FAIL |AssertionError|Error:|ERR_|failed|Unknown command' "$scratch/route-diagnostic.log"         | tail -n 32 || true
+    }
+  fi
+
   for rep in 1 2 3; do
-    for task in typecheck test build validate:full audio:generate audio:compare; do
+    for task in "${tasks[@]}"; do
       label="$variant-$rep-${task//:/-}"
       args=("$task")
       case "$task" in
@@ -157,6 +171,9 @@ for variant in node24 node26 caged26; do
           exec python3 /bench/profile.py "$BENCH_LABEL" pnpm "$@"
         ' bash "${args[@]}" > "$scratch/$label.log" 2>&1 || status=$?
       printf 'exit %s %s\n' "$label" "$status"
+      if ((status != 0)) && [[ $task == test:visual || $task == test:a11y ]]; then
+        tail -n 24 "$scratch/$label.log"
+      fi
     done
   done
 done
