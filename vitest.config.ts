@@ -11,6 +11,9 @@ export default defineConfig({
     globalSetup: ['./tests/helpers/global-setup.ts'],
     clearMocks: false,
     maxWorkers: 2,
+    // Let the existing subprocess and route-build deadlines report their errors.
+    testTimeout: 120_000,
+    hookTimeout: 180_000,
     projects: [
       {
         test: {

@@ -206,7 +206,7 @@ function trackStatus(root: HTMLElement, trackId: string): string | undefined {
 
 afterEach(() => {
   document.body.replaceChildren();
-  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 // ─── Build-time payload ────────────────────────────────────────────────────────
@@ -885,7 +885,7 @@ describe('dashboard client hydration', () => {
     initDashboard(root, TEST_PAYLOAD, { basicVocabulary: basic, storage });
     expect(trackSummary(root, 'taiwan-travel')).toBe('2 / 3 レッスン完了');
 
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.stubGlobal('confirm', vi.fn(() => true));
     root
       .querySelector<HTMLButtonElement>('#reset-progress-btn')
       ?.dispatchEvent(new MouseEvent('click'));

@@ -87,6 +87,7 @@ function createSessionRoot(): HTMLElement {
 }
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
   delete document.documentElement.dataset.scriptPreference;
@@ -278,7 +279,7 @@ describe('HSK answer transport and script selection', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
 
       const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
-      const setItemSpy = vi.spyOn(localStorage, 'setItem');
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
       start.click();
       expect((root.querySelector('[data-front]') as HTMLElement).textContent).toBe('回復成功');
       (root.querySelector('#btn-reveal') as HTMLButtonElement).click();
@@ -337,7 +338,7 @@ describe('HSK answer transport and script selection', () => {
       const sessionArea = root.querySelector('#session-area') as HTMLElement;
       const setupPanel = root.querySelector('#setup-panel') as HTMLElement;
       const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
-      const progressWriteSpy = vi.spyOn(localStorage, 'setItem');
+      const progressWriteSpy = vi.spyOn(Storage.prototype, 'setItem');
 
       expect(start.disabled).toBe(false);
       start.click();
