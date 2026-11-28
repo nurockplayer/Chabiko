@@ -66,7 +66,7 @@ pull "$browser_image" amd64
 browser_base=$resolved
 export BENCH_BROWSER_IMAGE="$run_id-browser:bench"
 images+=("$BENCH_BROWSER_IMAGE")
-browser_setup=$(docker run -d "${limits[@]}" --platform linux/amd64 --entrypoint sleep "$browser_base" infinity)
+browser_setup=$(docker run -d "${limits[@]}" --platform linux/amd64 "$browser_base" sleep infinity)
 docker exec "$browser_setup" bash -euc '
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends python3 libatomic1
