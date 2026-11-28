@@ -86,14 +86,16 @@ export class TaiwanTravelAssessmentStore {
     }
   }
 
-  restoreAttempt(questions: readonly TaiwanTravelQuestion[]): TaiwanTravelQuizState | null {
+  /** Returns undefined when storage cannot be read, or null for no valid attempt. */
+  restoreAttempt(questions: readonly TaiwanTravelQuestion[]): TaiwanTravelQuizState | null | undefined {
     let raw: string | null | undefined;
     try {
       raw = this.storage?.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY);
     } catch {
-      return null;
+      return undefined;
     }
-    if (raw == null) return null;
+    if (raw === undefined) return undefined;
+    if (raw === null) return null;
 
     let saved: unknown;
     try {

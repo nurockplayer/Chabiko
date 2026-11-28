@@ -377,12 +377,26 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     }
   }
 
+  function renderActive(): void {
+    if (state.status === 'revealed') renderRevealed(false);
+    else renderAnswering(false);
+  }
+
+  function onPageShow(event: PageTransitionEvent): void {
+    if (!event.persisted || state.status === 'completed') return;
+    const restored = store.restoreAttempt(questions);
+    if (restored === undefined) return;
+    state = restored ?? createTaiwanTravelQuizSession(questions);
+    renderActive();
+  }
+
   root.addEventListener('click', onClick);
-  if (state.status === 'revealed') renderRevealed(false);
-  else renderAnswering(false);
+  window.addEventListener('pageshow', onPageShow);
+  renderActive();
 
   const cleanup = (): void => {
     root.removeEventListener('click', onClick);
+    window.removeEventListener('pageshow', onPageShow);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };
   cleanups.set(root, cleanup);

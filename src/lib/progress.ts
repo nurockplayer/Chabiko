@@ -70,14 +70,16 @@ export class ProgressStore {
     return this.completed.has(lessonId);
   }
 
-  readPracticePosition(lessonId: string, questionCount: number): number {
+  /** Returns null when storage cannot be read, or zero when there is no saved position. */
+  readPracticePosition(lessonId: string, questionCount: number): number | null {
     let raw: string | null | undefined;
     try {
       raw = this.storage?.getItem(practicePositionStorageKey(lessonId));
     } catch {
-      return 0;
+      return null;
     }
-    if (raw == null) return 0;
+    if (raw === undefined) return null;
+    if (raw === null) return 0;
     const index = Number(raw);
     if (Number.isInteger(index) && index > 0 && index < questionCount) return index;
     this.clearPracticePosition(lessonId);

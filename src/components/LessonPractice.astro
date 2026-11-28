@@ -50,7 +50,7 @@ const json = JSON.stringify(questions);
     let store = new ProgressStore();
     let session: import('../lib/practiceSession').PracticeSession = createSession(questions);
     if (!store.isComplete(session.lessonId)) {
-      session.currentIndex = store.readPracticePosition(session.lessonId, questions.length);
+      session.currentIndex = store.readPracticePosition(session.lessonId, questions.length) ?? 0;
     }
     let completionSaved = true;
     const timer = createTimeoutManager();
@@ -217,14 +217,15 @@ const json = JSON.stringify(questions);
 
     render();
 
-    // Refresh state on pageshow (browser back/forward cache).
-    // Preserves active session position so returning via bfcache
-    // keeps the learner at their current question.
-    window.addEventListener('pageshow', () => {
+    window.addEventListener('pageshow', (event) => {
       timer.clear();
       store = new ProgressStore();
       const outcome = computeRefresh(store, session, questions);
       session = outcome.session;
+      if (event.persisted && outcome.kind === 'active' && session.status === 'active') {
+        session.currentIndex =
+          store.readPracticePosition(session.lessonId, questions.length) ?? session.currentIndex;
+      }
       if (outcome.kind === 'completed') {
         syncBadge();
         root.innerHTML =
