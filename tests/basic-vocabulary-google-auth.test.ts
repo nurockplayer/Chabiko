@@ -121,6 +121,7 @@ function collectEvents(root: HTMLElement): Array<Pick<BasicVocabularyAuthState, 
 }
 
 async function flush(): Promise<void> {
+  await vi.dynamicImportSettled();
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
@@ -147,10 +148,14 @@ async function initRoot(options: {
 beforeEach(() => {
   authListeners = [];
   subscriptionCount = 0;
+  vi.stubEnv('PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+  vi.stubEnv('PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'test-public-key');
+  window.localStorage.setItem('sb-example-auth-token', '{}');
 });
 
 afterEach(() => {
   mockedGetClient.mockReset();
+  vi.unstubAllEnvs();
   document.body.replaceChildren();
   window.localStorage.clear();
   window.sessionStorage.clear();
@@ -219,8 +224,23 @@ describe('route placement', () => {
 // ─── State copy ──────────────────────────────────────────────────────────────
 
 describe('account states and exact copy', () => {
+  it('leaves the browser client unloaded for a guest until sign-in is requested', async () => {
+    window.localStorage.removeItem('sb-example-auth-token');
+    const { root, client, cleanup } = await initRoot({ pathname: '/vocabulary/basic/' });
+
+    expect(actionButton(root).textContent).toBe('Googleでログイン');
+    expect(mockedGetClient).not.toHaveBeenCalled();
+
+    actionButton(root).click();
+    await flush();
+
+    expect(mockedGetClient).toHaveBeenCalledTimes(1);
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledTimes(1);
+    cleanup();
+  });
+
   it('renders the unconfigured state with no action, no network, and no event duplication', async () => {
-    mockedGetClient.mockReturnValue(null);
+    vi.stubEnv('PUBLIC_SUPABASE_URL', '');
     const root = createAccountRoot();
     const events = collectEvents(root);
     initBasicVocabularyAccount(root);
@@ -663,6 +683,7 @@ describe('accessibility and layout', () => {
     expect(statusText(root)).toBe('ログイン状態を確認しています');
     expect(actionButton(root).hidden).toBe(true);
     expect(actionButton(root).disabled).toBe(true);
+    await vi.dynamicImportSettled();
     resolveGetSession({ data: { session: null }, error: null });
     await flush();
   });

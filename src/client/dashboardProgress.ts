@@ -1,6 +1,7 @@
 import { ProgressStore, STORAGE_KEY, type StorageLike } from '../lib/progress';
 import { RoleplayProgressStore } from '../lib/roleplayProgress';
 import type { BasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
+import { restoreBasicVocabularyAuth } from './basicVocabularyAccount';
 import { ensureBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import { createCrossTrackProgressCoordinator } from './crossTrackProgressCoordinator';
 import type { CrossTrackProgressSnapshot } from '../domain/crossTrackProgress';
@@ -101,8 +102,10 @@ export function initDashboard(
   }
 
   const unsubscribe = coordinator.subscribe(render);
+  const stopAuth = options.basicVocabulary === undefined ? restoreBasicVocabularyAuth() : undefined;
 
   return () => {
+    stopAuth?.();
     unsubscribe();
     coordinator.dispose();
   };

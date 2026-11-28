@@ -13,7 +13,7 @@ import type { BasicVocabularyProgressStore } from '../domain/basicVocabularyProg
 import type { VocabularySessionRating } from '../domain/vocabularySession';
 import type { BasicVocabularySupabaseRepository } from '../data/basicVocabularySupabaseRepository';
 import { createBasicVocabularySupabaseRepository } from '../data/basicVocabularySupabaseRepository';
-import { getSupabaseBrowserClient } from '../lib/supabaseBrowserClient';
+import { getLoadedSupabaseBrowserClient } from '../lib/lazySupabaseBrowserClient';
 import type { StorageLike } from '../lib/progress';
 
 // ─── Public API ─────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ export function getDefaultBasicVocabularyStorage(): StorageLike | null {
  * user-scoped local mode rather than falling back to guest.
  */
 export function getDefaultBasicVocabularyRepository(): BasicVocabularySupabaseRepository | null {
-  const client = getSupabaseBrowserClient();
+  const client = getLoadedSupabaseBrowserClient();
   if (client === null) return null;
   return createBasicVocabularySupabaseRepository(client);
 }
@@ -169,7 +169,7 @@ export function getBasicVocabularyProgressCoordinator(): BasicVocabularyProgress
 export function defaultDependencies(): BasicVocabularyCoordinatorDependencies {
   return {
     storage: getDefaultBasicVocabularyStorage(),
-    repository: getDefaultBasicVocabularyRepository(),
+    get repository() { return getDefaultBasicVocabularyRepository(); },
     isOnline: defaultIsOnline,
     createResetId: defaultCreateResetId,
   };
@@ -181,7 +181,7 @@ class BasicVocabularyProgressCoordinatorImpl
   implements BasicVocabularyProgressCoordinator
 {
   private readonly storage: StorageLike | null;
-  private readonly repository: BasicVocabularySupabaseRepository | null;
+  private readonly dependencies: BasicVocabularyCoordinatorDependencies;
   private readonly isOnline: () => boolean;
   private readonly createResetId: () => string;
   private runtime: BasicVocabularySyncRuntime;
@@ -197,7 +197,7 @@ class BasicVocabularyProgressCoordinatorImpl
 
   constructor(dependencies: BasicVocabularyCoordinatorDependencies) {
     this.storage = dependencies.storage;
-    this.repository = dependencies.repository;
+    this.dependencies = dependencies;
     this.isOnline = dependencies.isOnline;
     this.createResetId = dependencies.createResetId;
     this.runtime = createGuestBasicVocabularySyncRuntime(this.runtimeDependencies());
@@ -289,10 +289,10 @@ class BasicVocabularyProgressCoordinatorImpl
 
   // ── Internal ────────────────────────────────────────────────────────────────
 
-  private runtimeDependencies(): BasicVocabularySyncRuntimeDependencies {
+  private runtimeDependencies(userScope = false): BasicVocabularySyncRuntimeDependencies {
     return {
       storage: this.storage,
-      repository: this.repository,
+      repository: userScope ? this.dependencies.repository : null,
       isOnline: this.isOnline,
       createResetId: this.createResetId,
     };
@@ -339,7 +339,7 @@ class BasicVocabularyProgressCoordinatorImpl
     }
     const previousRuntime = this.runtime;
     if (kind === 'user' && userId !== null) {
-      this.runtime = createUserBasicVocabularySyncRuntime(userId, this.runtimeDependencies());
+      this.runtime = createUserBasicVocabularySyncRuntime(userId, this.runtimeDependencies(true));
     } else {
       this.runtime = createGuestBasicVocabularySyncRuntime(this.runtimeDependencies());
     }
