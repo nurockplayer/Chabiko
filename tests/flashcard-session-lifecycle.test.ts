@@ -146,7 +146,10 @@ describe('FlashcardSession DOM lifecycle', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
+    const storage = new Storage();
+    // Happy DOM binds storage methods to each instance on first access.
+    Object.defineProperty(storage, 'setItem', { value: vi.fn(storage.setItem) });
+    vi.stubGlobal('localStorage', storage);
     document.documentElement.dataset.scriptPreference = 'path-default';
     root = createFlashcardHTML(SAMPLE_ENTRIES);
     document.body.appendChild(root);
@@ -241,7 +244,7 @@ describe('FlashcardSession DOM lifecycle', () => {
   });
 
   it('keeps unavailable-storage progress across repeated remounts without persistence writes', () => {
-    const storageUnavailable = vi.spyOn(Storage.prototype, 'setItem')
+    const storageUnavailable = vi.mocked(localStorage.setItem)
       .mockImplementation(() => { throw new DOMException('Storage unavailable', 'SecurityError'); });
     mountSession();
     storageUnavailable.mockRestore();
@@ -250,7 +253,7 @@ describe('FlashcardSession DOM lifecycle', () => {
     const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
     const fullPool = root.querySelector('[data-pool="full"]') as HTMLInputElement;
     const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
-    const progressWriteSpy = vi.spyOn(Storage.prototype, 'setItem');
+    const progressWriteSpy = vi.mocked(localStorage.setItem);
     const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
 
     newPool.click();
@@ -338,7 +341,7 @@ describe('FlashcardSession DOM lifecycle', () => {
     const el = getCardElements(root);
     const newPool = root.querySelector('[data-pool="new"]') as HTMLInputElement;
     const resetButton = root.querySelector('#btn-reset-progress') as HTMLButtonElement;
-    const progressWriteSpy = vi.spyOn(Storage.prototype, 'setItem');
+    const progressWriteSpy = vi.mocked(localStorage.setItem);
 
     newPool.click();
     el.startBtn.click();
@@ -374,10 +377,10 @@ describe('FlashcardSession DOM lifecycle', () => {
     },
   ])('keeps quota-fallback progress through same-root refreshes with $physicalState storage', ({ initialRaw }) => {
     const storageKey = 'chabiko:hsk-vocabulary-progress:v1';
-    const nativeSetItem = localStorage.setItem.bind(localStorage);
+    const nativeSetItem = Storage.prototype.setItem.bind(localStorage);
     if (initialRaw !== null) nativeSetItem(storageKey, initialRaw);
     let failedProgressWrites = 0;
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key, value) => {
+    const setItemSpy = vi.mocked(localStorage.setItem).mockImplementation((key, value) => {
       if (key === storageKey) {
         failedProgressWrites += 1;
         throw new DOMException('storage quota exceeded', 'QuotaExceededError');

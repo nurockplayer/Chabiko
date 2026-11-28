@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountRemoteFlashcardSession } from '../src/client/flashcardSession';
 import { GET as getHskAnswers } from '../src/pages/data/hsk/[level].json';
 import { VocabularyProgressStore } from '../src/domain/vocabularyProgress';
@@ -85,6 +85,13 @@ function createSessionRoot(): HTMLElement {
   document.body.appendChild(root);
   return root;
 }
+
+beforeEach(() => {
+  const storage = new Storage();
+  // Happy DOM binds storage methods to each instance on first access.
+  Object.defineProperty(storage, 'setItem', { value: vi.fn(storage.setItem) });
+  vi.stubGlobal('localStorage', storage);
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -279,7 +286,7 @@ describe('HSK answer transport and script selection', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
 
       const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
-      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+      const setItemSpy = vi.mocked(localStorage.setItem);
       start.click();
       expect((root.querySelector('[data-front]') as HTMLElement).textContent).toBe('回復成功');
       (root.querySelector('#btn-reveal') as HTMLButtonElement).click();
@@ -338,7 +345,7 @@ describe('HSK answer transport and script selection', () => {
       const sessionArea = root.querySelector('#session-area') as HTMLElement;
       const setupPanel = root.querySelector('#setup-panel') as HTMLElement;
       const applyRatingSpy = vi.spyOn(VocabularyProgressStore.prototype, 'applyRating');
-      const progressWriteSpy = vi.spyOn(Storage.prototype, 'setItem');
+      const progressWriteSpy = vi.mocked(localStorage.setItem);
 
       expect(start.disabled).toBe(false);
       start.click();
@@ -443,9 +450,7 @@ describe('HSK default storage under quota limits (#508)', () => {
   it('loads previous progress after a failed probe and flushes pending ratings when writes recover', () => {
     const key = 'chabiko:hsk-vocabulary-progress:v1';
     localStorage.setItem(key, JSON.stringify({ version: 1, entries: { previous: { status: 'learned', knownStreak: 2 } } }));
-    const prototype = Object.getPrototypeOf(localStorage) as Storage;
-    const originalSet = prototype.setItem;
-    const write = vi.spyOn(prototype, 'setItem').mockImplementation(() => {
+    const write = vi.mocked(localStorage.setItem).mockImplementation(() => {
       throw new DOMException('Full storage', 'QuotaExceededError');
     });
     try {
@@ -453,7 +458,7 @@ describe('HSK default storage under quota limits (#508)', () => {
       expect(store.getStatus('previous')).toBe('learned');
       store.applyRating('pending', 'known');
       store.refresh();
-      write.mockImplementation(function (this: Storage, name: string, value: string) { originalSet.call(this, name, value); });
+      write.mockReset();
       store.applyRating('pending', 'known');
       expect(JSON.parse(localStorage.getItem(key)!).entries).toEqual({ previous: { status: 'learned', knownStreak: 2 }, pending: { status: 'learned', knownStreak: 2 } });
     } finally {
