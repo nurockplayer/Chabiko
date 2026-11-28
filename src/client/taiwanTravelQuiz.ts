@@ -140,7 +140,8 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
   }
 
   const store = new TaiwanTravelAssessmentStore();
-  let state: TaiwanTravelQuizState = createTaiwanTravelQuizSession(questions);
+  let state: TaiwanTravelQuizState =
+    store.restoreAttempt(questions) ?? createTaiwanTravelQuizSession(questions);
   let unsavedBestScore = 0;
 
   function updateProgressAndScore(): void {
@@ -188,12 +189,12 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
       '答える',
       'submit',
     );
-    submit.disabled = true;
     fragment.append(submit);
 
     cardElement.className = 'taiwan-travel-quiz-card';
     cardElement.replaceChildren(fragment);
     updateProgressAndScore();
+    updateSelectionUI();
 
     if (stealFocus) {
       cardElement
@@ -215,7 +216,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     if (submit) submit.disabled = state.selected === null;
   }
 
-  function renderRevealed(): void {
+  function renderRevealed(stealFocus: boolean): void {
     if (state.status !== 'revealed') return;
     const question = state.questions[state.currentIndex];
     const isCorrect = state.lastCorrect === true;
@@ -269,7 +270,9 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     cardElement.className = 'taiwan-travel-quiz-card';
     cardElement.replaceChildren(fragment);
     updateProgressAndScore();
-    cardElement.querySelector<HTMLButtonElement>('[data-action="next"]')?.focus();
+    if (stealFocus) {
+      cardElement.querySelector<HTMLButtonElement>('[data-action="next"]')?.focus();
+    }
   }
 
   function formatBestScore(bestScore: number): string {
@@ -344,6 +347,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     const result = applyTaiwanTravelQuizAction(state, { kind: 'select', index });
     if (result.effect !== 'accepted') return;
     state = result.state;
+    store.saveAttempt(state);
     updateSelectionUI();
   }
 
@@ -351,7 +355,8 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     const result = applyTaiwanTravelQuizAction(state, { kind: 'submit' });
     if (result.effect !== 'correct' && result.effect !== 'incorrect') return;
     state = result.state;
-    renderRevealed();
+    store.saveAttempt(state);
+    renderRevealed(true);
   }
 
   function next(): void {
@@ -363,8 +368,10 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
       // store never writes before a full attempt completes and never touches
       // lesson progress.
       const score = scoreOfCompletedAttempt(state) ?? 0;
+      store.clearAttempt();
       renderCompleted(score, store.recordCompletedAttempt(score));
     } else {
+      store.saveAttempt(state);
       renderAnswering(true);
     }
   }
@@ -373,6 +380,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     const result = applyTaiwanTravelQuizAction(state, { kind: 'restart' });
     if (result.effect !== 'accepted') return;
     state = result.state;
+    store.clearAttempt();
     renderAnswering(true);
   }
 
@@ -393,16 +401,33 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     }
   }
 
+  function renderActive(): void {
+    if (state.status === 'revealed') renderRevealed(false);
+    else renderAnswering(false);
+  }
+
+  function onPageShow(event: PageTransitionEvent): void {
+    if (state.status === 'completed') {
+      refreshBestScore();
+      return;
+    }
+    if (!event.persisted) return;
+    const restored = store.restoreAttempt(questions);
+    if (restored === undefined) return;
+    state = restored ?? createTaiwanTravelQuizSession(questions);
+    renderActive();
+  }
+
   root.addEventListener('click', onClick);
   window.addEventListener('storage', onStorage);
-  window.addEventListener('pageshow', refreshBestScore);
+  window.addEventListener('pageshow', onPageShow);
   document.addEventListener('visibilitychange', onVisibilityChange);
-  renderAnswering(false);
+  renderActive();
 
   const cleanup = (): void => {
     root.removeEventListener('click', onClick);
     window.removeEventListener('storage', onStorage);
-    window.removeEventListener('pageshow', refreshBestScore);
+    window.removeEventListener('pageshow', onPageShow);
     document.removeEventListener('visibilitychange', onVisibilityChange);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };

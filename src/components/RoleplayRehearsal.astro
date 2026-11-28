@@ -32,10 +32,14 @@ const SCENARIO_LABELS: Record<RoleplayCardRecord['scenario'], string> = {
               type="button"
               data-roleplay-card-select={card.id}
               aria-label={`${SCENARIO_LABELS[card.scenario]}：${card.titleJa}を選ぶ`}
+              aria-describedby={card.reviewStatus === 'draft' ? `${card.id}-review-status` : undefined}
             >
               <span class="roleplay-card-select__scenario">{SCENARIO_LABELS[card.scenario]}</span>
               <span class="roleplay-card-select__title">{card.titleJa}</span>
               <span class="roleplay-card-select__goal">{card.goalJa}</span>
+              {card.reviewStatus === 'draft' && (
+                <span id={`${card.id}-review-status`}>未レビュー</span>
+              )}
               <span class="roleplay-card-select__status" data-roleplay-card-status={card.id}></span>
             </button>
           </li>

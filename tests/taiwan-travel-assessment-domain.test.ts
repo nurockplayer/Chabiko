@@ -308,10 +308,11 @@ describe('TaiwanTravelQuiz session', () => {
     expect(applyTaiwanTravelQuizAction(s, { kind: 'select', index: 99 }).effect).toBe('noop');
   });
 
-  it('state keys are exactly the seven quiz fields (no hidden state)', () => {
+  it('lists all quiz state, including the committed choices', () => {
     const s = session();
     expect(Object.keys(s).sort()).toEqual([
       'answeredCount',
+      'answers',
       'correctCount',
       'currentIndex',
       'lastCorrect',

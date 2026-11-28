@@ -12,6 +12,7 @@ import { initTaiwanTravelQuiz } from '../src/client/taiwanTravelQuiz';
 import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_VERSION,
+  TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY,
   TaiwanTravelAssessmentStore,
 } from '../src/lib/taiwanTravelAssessmentStore';
 import { TAIWAN_TRAVEL_PATH_ROUTE } from '../src/domain/taiwanTravelQuizNavigation';
@@ -237,7 +238,7 @@ describe('taiwan travel assessment client', () => {
     const submit = card.querySelector<HTMLButtonElement>('[data-action="submit"]')!;
     expect(submit.disabled).toBe(true);
 
-    // No storage write before a full attempt completes.
+    // No evidence write before a full attempt completes.
     expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBeNull();
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
   });
@@ -271,7 +272,8 @@ describe('taiwan travel assessment client', () => {
     const next = card.querySelector<HTMLButtonElement>('[data-action="next"]')!;
     expect(document.activeElement).toBe(next);
 
-    // Still no storage write mid-attempt.
+    // A submitted answer is resumable and is not evidence of completion.
+    expect(window.localStorage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).not.toBeNull();
     expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBeNull();
   });
 
@@ -303,6 +305,7 @@ describe('taiwan travel assessment client', () => {
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
     ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 24 });
+    expect(window.localStorage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).toBeNull();
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
     recordSpy.mockRestore();
   });
@@ -369,6 +372,32 @@ describe('taiwan travel assessment client', () => {
       }
     },
   );
+
+  it('keeps the higher in-page best and warns on both attempts when storage writes fail', () => {
+    const write = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+    });
+
+    try {
+      const payload = buildTaiwanTravelAssessmentPayload();
+      const root = createQuizRoot(payload.lessonIds as string[]);
+      initTaiwanTravelQuiz(root);
+
+      const card = root.querySelector('[data-quiz-card]')!;
+      driveFullAttempt(root, true);
+      expect(card.textContent).toContain('24問中 24問正解');
+      expect(card.textContent).toContain('ベストスコア 24 / 24');
+      expect(card.querySelector('.taiwan-travel-quiz-completion-notice')).not.toBeNull();
+
+      root.querySelector<HTMLButtonElement>('[data-action="restart"]')!.click();
+      driveFullAttempt(root, false);
+      expect(card.textContent).toContain('24問中 0問正解');
+      expect(card.textContent).toContain('ベストスコア 24 / 24');
+      expect(card.querySelector('.taiwan-travel-quiz-completion-notice')).not.toBeNull();
+    } finally {
+      write.mockRestore();
+    }
+  });
 
   it('records max best score across attempts and preserves it on restart', () => {
     const payload = buildTaiwanTravelAssessmentPayload();

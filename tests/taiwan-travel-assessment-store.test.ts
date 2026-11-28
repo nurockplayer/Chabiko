@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { StorageLike } from '../src/lib/progress';
 import {
+  applyTaiwanTravelQuizAction,
+  createTaiwanTravelQuizSession,
+  type TaiwanTravelQuestion,
+} from '../src/domain/taiwanTravelAssessment';
+import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_LEGACY_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_VERSION,
+  TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY,
   TaiwanTravelAssessmentStore,
   normalizeBestScore,
   readTaiwanTravelAssessmentEvidence,
@@ -27,6 +33,58 @@ function createMemoryStorage(
     dump: () => Object.fromEntries(data),
   };
 }
+
+describe('saved Taiwan Travel quiz attempt', () => {
+  const questions: TaiwanTravelQuestion[] = ['lesson-001', 'lesson-002'].map((lessonId) => ({
+    lessonId,
+    promptJa: lessonId,
+    answerJa: 'yes',
+    options: ['yes', 'no'],
+    correctIndex: 0,
+    sourcePromptIndex: 0,
+  }));
+  const fresh = createTaiwanTravelQuizSession(questions);
+  const selected = applyTaiwanTravelQuizAction(fresh, { kind: 'select', index: 0 }).state;
+  const revealed = applyTaiwanTravelQuizAction(selected, { kind: 'submit' }).state;
+  const advanced = applyTaiwanTravelQuizAction(revealed, { kind: 'next' }).state;
+
+  it.each([selected, revealed, advanced])('restores $status at question index $currentIndex', (state) => {
+    const storage = createMemoryStorage();
+    const store = new TaiwanTravelAssessmentStore(storage);
+    store.saveAttempt(state);
+    expect(new TaiwanTravelAssessmentStore(storage).restoreAttempt(questions)).toEqual(state);
+    expect(store.hasCompletedAttempt()).toBe(false);
+  });
+
+  it('clears active state and keeps completed best evidence', () => {
+    const store = new TaiwanTravelAssessmentStore(createMemoryStorage());
+    store.recordCompletedAttempt(10);
+    store.saveAttempt(advanced);
+    store.clearAttempt();
+    expect(store.restoreAttempt(questions)).toBeNull();
+    expect(store.readBestScore()).toBe(10);
+  });
+
+  it('discards attempts whose ordered question content has changed', () => {
+    const storage = createMemoryStorage();
+    const store = new TaiwanTravelAssessmentStore(storage);
+    store.saveAttempt(advanced);
+    expect(store.restoreAttempt([...questions].reverse())).toBeNull();
+    expect(storage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).toBeNull();
+  });
+
+  it.each(['{broken', '[99]'])('discards invalid data %s', (invalid) => {
+    const storage = createMemoryStorage();
+    const store = new TaiwanTravelAssessmentStore(storage);
+    store.saveAttempt(advanced);
+    const saved = storage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)!;
+    storage.setItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY, invalid === '{broken'
+      ? invalid
+      : JSON.stringify({ ...JSON.parse(saved), answers: JSON.parse(invalid) }));
+    expect(store.restoreAttempt(questions)).toBeNull();
+    expect(storage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).toBeNull();
+  });
+});
 
 describe('normalizeBestScore', () => {
   it('bounds a completed score to 0–24', () => {

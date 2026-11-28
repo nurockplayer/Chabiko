@@ -28,6 +28,24 @@ describe('ProgressStore', () => {
     expect(store.isComplete('lesson-001')).toBe(false);
   });
 
+  it('restores practice per lesson and clears it on completion', () => {
+    store.savePracticePosition('lesson-002', 1);
+    const reloaded = new ProgressStore(mock);
+    expect(reloaded.readPracticePosition('lesson-001', 2)).toBe(0);
+    expect(reloaded.readPracticePosition('lesson-002', 2)).toBe(1);
+    expect(reloaded.isComplete('lesson-002')).toBe(false);
+
+    reloaded.markComplete('lesson-002');
+    expect(reloaded.readPracticePosition('lesson-002', 2)).toBe(0);
+    expect(reloaded.isComplete('lesson-002')).toBe(true);
+  });
+
+  it('discards a practice position outside the current question list', () => {
+    store.savePracticePosition('lesson-002', 2);
+    expect(store.readPracticePosition('lesson-002', 2)).toBe(0);
+    expect(store.readPracticePosition('lesson-002', 3)).toBe(0);
+  });
+
   it('marks a lesson complete', () => {
     store.markComplete('lesson-001');
     expect(store.isComplete('lesson-001')).toBe(true);
