@@ -60,6 +60,7 @@ function getDefaultStorage(): StorageLike | null {
  */
 export class TaiwanTravelAssessmentStore {
   private readonly storage: StorageLike | null;
+  private unsavedBestScore = 0;
 
   constructor(storage?: StorageLike | null) {
     this.storage = storage !== undefined ? storage : getDefaultStorage();
@@ -77,17 +78,15 @@ export class TaiwanTravelAssessmentStore {
   }
 
   /**
-   * Record a completed attempt's score. `bestScore` is max(previousBest,
-   * score) bounded to 0–24 and persisted once. Returns the new best score and
-   * whether a write actually happened (a write can fail when storage is full
-   * or unavailable, which is a safe no-op).
+   * Record a completed attempt's score. The best includes any unsaved best
+   * from this store instance. Returns the best score and whether it was saved.
    */
   recordCompletedAttempt(
     score: number,
   ): { readonly bestScore: number; readonly wrote: boolean } {
-    const bestScore = Math.max(this.readBestScore(), normalizeBestScore(score));
+    const bestScore = Math.max(this.readBestScore(), this.unsavedBestScore, normalizeBestScore(score));
+    this.unsavedBestScore = bestScore;
     if (this.storage === null) {
-      // Unavailable storage: keep the in-memory best score, no write possible.
       return { bestScore, wrote: false };
     }
     const document: TaiwanTravelAssessmentDocument = {
@@ -99,6 +98,7 @@ export class TaiwanTravelAssessmentStore {
         TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
         JSON.stringify(document),
       );
+      this.unsavedBestScore = 0;
       return { bestScore, wrote: true };
     } catch {
       return { bestScore, wrote: false };

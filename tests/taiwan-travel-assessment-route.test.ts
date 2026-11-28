@@ -332,6 +332,32 @@ describe('taiwan travel assessment client', () => {
     }
   });
 
+  it('keeps the higher in-page best and warns on both attempts when storage writes fail', () => {
+    const write = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+    });
+
+    try {
+      const payload = buildTaiwanTravelAssessmentPayload();
+      const root = createQuizRoot(payload.lessonIds as string[]);
+      initTaiwanTravelQuiz(root);
+
+      const card = root.querySelector('[data-quiz-card]')!;
+      driveFullAttempt(root, true);
+      expect(card.textContent).toContain('24問中 24問正解');
+      expect(card.textContent).toContain('ベストスコア 24 / 24');
+      expect(card.querySelector('.taiwan-travel-quiz-completion-notice')).not.toBeNull();
+
+      root.querySelector<HTMLButtonElement>('[data-action="restart"]')!.click();
+      driveFullAttempt(root, false);
+      expect(card.textContent).toContain('24問中 0問正解');
+      expect(card.textContent).toContain('ベストスコア 24 / 24');
+      expect(card.querySelector('.taiwan-travel-quiz-completion-notice')).not.toBeNull();
+    } finally {
+      write.mockRestore();
+    }
+  });
+
   it('records max best score across attempts and preserves it on restart', () => {
     const payload = buildTaiwanTravelAssessmentPayload();
     const root = createQuizRoot(payload.lessonIds as string[]);
