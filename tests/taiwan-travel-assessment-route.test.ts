@@ -12,6 +12,7 @@ import { initTaiwanTravelQuiz } from '../src/client/taiwanTravelQuiz';
 import {
   TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
   TAIWAN_TRAVEL_ASSESSMENT_VERSION,
+  TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY,
   TaiwanTravelAssessmentStore,
 } from '../src/lib/taiwanTravelAssessmentStore';
 import { TAIWAN_TRAVEL_PATH_ROUTE } from '../src/domain/taiwanTravelQuizNavigation';
@@ -237,7 +238,7 @@ describe('taiwan travel assessment client', () => {
     const submit = card.querySelector<HTMLButtonElement>('[data-action="submit"]')!;
     expect(submit.disabled).toBe(true);
 
-    // No storage write before a full attempt completes.
+    // No evidence write before a full attempt completes.
     expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBeNull();
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
   });
@@ -271,7 +272,8 @@ describe('taiwan travel assessment client', () => {
     const next = card.querySelector<HTMLButtonElement>('[data-action="next"]')!;
     expect(document.activeElement).toBe(next);
 
-    // Still no storage write mid-attempt.
+    // A submitted answer is resumable and is not evidence of completion.
+    expect(window.localStorage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).not.toBeNull();
     expect(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)).toBeNull();
   });
 
@@ -303,6 +305,7 @@ describe('taiwan travel assessment client', () => {
     expect(
       JSON.parse(window.localStorage.getItem(TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY)!),
     ).toEqual({ version: TAIWAN_TRAVEL_ASSESSMENT_VERSION, bestScore: 24 });
+    expect(window.localStorage.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY)).toBeNull();
     expect(window.localStorage.getItem(LESSON_PROGRESS_KEY)).toBeNull();
     recordSpy.mockRestore();
   });

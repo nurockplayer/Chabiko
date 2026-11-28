@@ -1,6 +1,11 @@
 import type { StorageLike } from './progress';
 import {
+  applyTaiwanTravelQuizAction,
+  createTaiwanTravelQuizSession,
+  taiwanTravelQuizRoster,
   TAIWAN_TRAVEL_MAX_SCORE,
+  type TaiwanTravelQuestion,
+  type TaiwanTravelQuizState,
 } from '../domain/taiwanTravelAssessment';
 
 /** The Taiwan-assessment-only isolated storage key. This key is owned by the
@@ -8,6 +13,9 @@ import {
  *  cross-track store/reset API. */
 export const TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY =
   'chabiko.taiwan-travel-assessment.v2';
+
+export const TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY =
+  'chabiko.taiwan-travel-quiz-attempt.v1';
 
 /** Retained only as a documented compatibility boundary: V1 evidence is not
  * comparable with the 24-question assessment and is intentionally ignored. */
@@ -50,19 +58,61 @@ function getDefaultStorage(): StorageLike | null {
  * Isolated Taiwan Travel assessment evidence store.
  *
  * Rules (frozen V2 contract):
- * - nothing is written before a full 24-question attempt completes;
+ * - the evidence key is written only after a full 24-question attempt;
  * - a completed attempt writes at most once (caller transitions to completed
  *   exactly once and calls {@link recordCompletedAttempt} once);
  * - stored bestScore is max(previousBest, completedScore), bounded 0–24;
  * - V1, malformed, unknown-version, or unavailable storage falls back safely
  *   without touching lesson progress; V1 is never migrated or compared;
- * - restart does not erase the best score (restart never calls the store).
+ * - active attempts use their own key, and restart only clears that key.
  */
 export class TaiwanTravelAssessmentStore {
   private readonly storage: StorageLike | null;
 
   constructor(storage?: StorageLike | null) {
     this.storage = storage !== undefined ? storage : getDefaultStorage();
+  }
+
+  saveAttempt(state: TaiwanTravelQuizState): void {
+    try {
+      this.storage?.setItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY, JSON.stringify({
+        roster: taiwanTravelQuizRoster(state.questions),
+        answers: state.answers,
+        status: state.status,
+        selected: state.selected,
+      }));
+    } catch {
+      /* Continue the attempt in memory when storage is unavailable. */
+    }
+  }
+
+  restoreAttempt(questions: readonly TaiwanTravelQuestion[]): TaiwanTravelQuizState | null {
+    let raw: string | null | undefined;
+    try {
+      raw = this.storage?.getItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY);
+    } catch {
+      return null;
+    }
+    if (raw == null) return null;
+
+    let saved: unknown;
+    try {
+      saved = JSON.parse(raw);
+    } catch {
+      this.clearAttempt();
+      return null;
+    }
+    const state = restoreAttempt(saved, questions);
+    if (state === null) this.clearAttempt();
+    return state;
+  }
+
+  clearAttempt(): void {
+    try {
+      this.storage?.removeItem(TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY);
+    } catch {
+      /* Storage is unavailable. */
+    }
   }
 
   /** The validated best score (0 when absent, malformed, or unavailable). */
@@ -133,6 +183,38 @@ export class TaiwanTravelAssessmentStore {
       return null;
     }
   }
+}
+
+function restoreAttempt(
+  saved: unknown,
+  questions: readonly TaiwanTravelQuestion[],
+): TaiwanTravelQuizState | null {
+  if (saved === null || typeof saved !== 'object') return null;
+  const { roster, answers, status, selected } = saved as Record<string, unknown>;
+  if (
+    roster !== taiwanTravelQuizRoster(questions) ||
+    !Array.isArray(answers) ||
+    answers.length > questions.length ||
+    (status !== 'answering' && status !== 'revealed') ||
+    (status === 'revealed' && (answers.length === 0 || selected !== answers.at(-1)))
+  ) return null;
+
+  let state = createTaiwanTravelQuizSession(questions);
+  for (let index = 0; index < answers.length; index++) {
+    const pick: unknown = answers[index];
+    if (typeof pick !== 'number') return null;
+    const selection = applyTaiwanTravelQuizAction(state, { kind: 'select', index: pick });
+    if (selection.effect !== 'accepted') return null;
+    state = applyTaiwanTravelQuizAction(selection.state, { kind: 'submit' }).state;
+    if (status === 'revealed' && index === answers.length - 1) return state;
+    state = applyTaiwanTravelQuizAction(state, { kind: 'next' }).state;
+  }
+
+  if (state.status === 'completed') return null;
+  if (selected === null) return state;
+  if (typeof selected !== 'number') return null;
+  const selection = applyTaiwanTravelQuizAction(state, { kind: 'select', index: selected });
+  return selection.effect === 'accepted' ? selection.state : null;
 }
 
 /** Read-only result-evidence adapter for #372/#373-compatible follow-up. It

@@ -195,6 +195,11 @@ export function buildTaiwanTravelQuestions(
   return questions;
 }
 
+/** Identifies the ordered question and option content used by saved attempts. */
+export function taiwanTravelQuizRoster(questions: readonly TaiwanTravelQuestion[]): number {
+  return hashString(JSON.stringify(questions));
+}
+
 // ─── Session state machine ──────────────────────────────────────────────────
 
 export type TaiwanTravelQuizPhase = 'answering' | 'revealed' | 'completed';
@@ -209,6 +214,8 @@ export interface TaiwanTravelQuizState {
   readonly correctCount: number;
   /** Running count of submitted questions (the progress denominator). */
   readonly answeredCount: number;
+  /** Committed option indices in question order. */
+  readonly answers: readonly number[];
   /** True after a correct submit, false after an incorrect one, null between. */
   readonly lastCorrect: boolean | null;
 }
@@ -239,6 +246,7 @@ export function createTaiwanTravelQuizSession(
     selected: null,
     correctCount: 0,
     answeredCount: 0,
+    answers: [],
     lastCorrect: null,
   };
 }
@@ -319,6 +327,7 @@ function applySubmit(state: TaiwanTravelQuizState): TaiwanTravelQuizResult {
       lastCorrect: isCorrect,
       correctCount: state.correctCount + (isCorrect ? 1 : 0),
       answeredCount: state.answeredCount + 1,
+      answers: [...state.answers, state.selected],
     },
     effect: isCorrect ? 'correct' : 'incorrect',
     message: isCorrect ? '正解です' : '不正解です',
