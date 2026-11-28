@@ -45,12 +45,12 @@ const isHome = Astro.url.pathname === '/';
     <div class="script-toggle-slot">
       <label for="script-preference-select">漢字表記</label>
       <div class="script-preference-field">
-        <select id="script-preference-select" class="script-preference-select" aria-describedby={scriptPreferenceNote ? 'script-preference-note' : undefined}>
+        <select id="script-preference-select" class="script-preference-select">
           <option value="path-default">表記：標準</option>
           <option value="traditional">表記：繁体字</option>
           <option value="simplified">表記：簡体字</option>
         </select>
-        {scriptPreferenceNote && <p id="script-preference-note">{scriptPreferenceNote}</p>}
+        {scriptPreferenceNote && <p id="script-preference-note" hidden>{scriptPreferenceNote}</p>}
       </div>
     </div>
   </div>
@@ -244,7 +244,7 @@ const isHome = Astro.url.pathname === '/';
   .script-preference-field {
     display: contents;
   }
-  .script-preference-field:has(#script-preference-note) {
+  .script-preference-field:has(#script-preference-note:not([hidden])) {
     display: grid;
     justify-items: start;
   }

@@ -12,9 +12,12 @@ for (const theme of ['light', 'dark'] as const) {
           await page.evaluate(async () => { await document.fonts.ready; window.scrollTo(0, 0); });
           await expect(page.locator('.hsk-quiz-page')).toHaveScreenshot(`hsk-quiz-${direction}-${state}-${theme}-${width}.png`);
         };
+        const scriptNote = page.locator('#script-preference-note');
+        await expect(scriptNote).toBeHidden();
         await snapshot('setup');
         await page.locator('[data-quiz-start]').click();
         await assertQuizConcealed(page);
+        await expect(scriptNote).toBeVisible();
         await snapshot('question');
         await answerHskQuestion(page, entries, direction);
         await snapshot('feedback');
@@ -25,6 +28,7 @@ for (const theme of ['light', 'dark'] as const) {
         }
         await expect(page.locator('.quiz-missed li')).toHaveCount(10);
         await expect(page.locator('[data-hsk-level="1"] [data-hsk-quiz-best]')).toHaveText('テスト最高 0%（0/10）');
+        await expect(scriptNote).toBeHidden();
         await snapshot('result');
         await page.locator('.quiz-back').click();
         await expect(page.locator('[data-hsk-level="1"] [data-hsk-quiz-best]')).toHaveText('テスト最高 0%（0/10）');

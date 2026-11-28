@@ -20,7 +20,8 @@ describe('rendered HSK quiz routes', () => {
       const scriptControl = doc.querySelector('#script-preference-select');
       const scriptNote = scriptControl?.nextElementSibling;
       expect(scriptNote?.textContent).toBe('HSKテストでは簡体字を使います。');
-      expect(scriptControl?.getAttribute('aria-describedby')).toBe(scriptNote?.id);
+      expect(scriptNote?.hasAttribute('hidden')).toBe(true);
+      expect(scriptControl?.hasAttribute('aria-describedby')).toBe(false);
       expect(doc.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('テスト');
       expect(doc.querySelector('[data-quiz-start]')?.hasAttribute('disabled')).toBe(true);
       expect(doc.querySelectorAll('[name="length"]')).toHaveLength(2);

@@ -29,6 +29,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
   const start = root.querySelector<HTMLButtonElement>('[data-quiz-start]')!;
   const status = root.querySelector<HTMLElement>('[data-quiz-status]')!;
   const card = root.querySelector<HTMLElement>('[data-quiz-card]')!;
+  const scriptNote = root.ownerDocument.getElementById('script-preference-note');
   const controller = new AbortController();
   let disposed = false;
   let entries: HskQuizEntry[] = [];
@@ -43,6 +44,14 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     if (status.textContent !== message) status.textContent = message;
   }
 
+  function setScriptNoteVisible(visible: boolean) {
+    if (!scriptNote) return;
+    const select = root.ownerDocument.getElementById('script-preference-select')!;
+    scriptNote.hidden = !visible;
+    if (visible) select.setAttribute('aria-describedby', scriptNote.id);
+    else select.removeAttribute('aria-describedby');
+  }
+
   function reset() {
     questions = [];
     answers = [];
@@ -50,6 +59,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     card.replaceChildren();
     setup.hidden = false;
     announce(formatHskQuizBest(readHskQuizBest(level)));
+    setScriptNoteVisible(false);
   }
 
   function showQuestion() {
@@ -106,6 +116,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
   function showResult() {
     const result = scoreHskQuiz(questions, answers);
     if (!result.complete) return;
+    setScriptNoteVisible(false);
     const saved = saveHskQuizBest(level, { version: 1, correct: result.correct, total: length, direction });
     if (saved) window.dispatchEvent(new Event(HSK_QUIZ_SCORE_EVENT));
     announce(saved
@@ -147,6 +158,7 @@ export function initHskQuiz(root: HTMLElement, random: () => number = Math.rando
     answers = [];
     index = 0;
     setup.hidden = true;
+    setScriptNoteVisible(true);
     showQuestion();
   }
 
