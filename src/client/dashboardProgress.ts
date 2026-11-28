@@ -1,5 +1,6 @@
 import { ProgressStore, STORAGE_KEY, type StorageLike } from '../lib/progress';
 import { RoleplayProgressStore } from '../lib/roleplayProgress';
+import { TaiwanTravelAssessmentStore } from '../lib/taiwanTravelAssessmentStore';
 import type { BasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
 import { restoreBasicVocabularyAuth } from './basicVocabularyAccount';
 import { ensureBasicVocabularyProgressCoordinator } from './basicVocabularyProgressCoordinator';
@@ -25,9 +26,8 @@ import {
 // reference corpora (the build-time payload), subscribes to it, and re-renders
 // the continuation, three track cards, and unlocked achievements on every
 // snapshot transition. It never writes a persistence key itself; the only write
-// is the preserved existing reset control (clears the Taiwan lesson and
-// roleplay completion stores covered by its learner-facing "all progress"
-// label).
+// is the reset control for Taiwan lesson and roleplay progress and active
+// Taiwan quiz attempts.
 
 export interface DashboardInitOptions {
   /** Inject the #293 coordinator (tests use a fake). Defaults to the
@@ -84,8 +84,8 @@ export function initDashboard(
     renderAchievements(root, snapshot);
   };
 
-  // Preserved reset behavior: clears the Taiwan lesson progress store plus the
-  // roleplay completion store. The synthetic storage event
+  // The reset clears Taiwan lesson and roleplay progress and the active quiz
+  // attempt. The synthetic storage event
   // tells the cross-track coordinator (which listens for exactly this key) to
   // recompute and notify subscribers, exactly like a cross-tab clear.
   const resetBtn = root.querySelector<HTMLButtonElement>('#reset-progress-btn');
@@ -94,7 +94,8 @@ export function initDashboard(
       if (
         window.confirm('台湾旅行のレッスンとロールプレイの進捗をリセットしますか？この操作は元に戻せません。')
       ) {
-        new ProgressStore(storage).resetAll();
+        new TaiwanTravelAssessmentStore(storage).clearAttempt();
+        new ProgressStore(storage).resetAll(payload.taiwanCompletableLessonIds);
         new RoleplayProgressStore(storage).resetAll();
         window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
       }

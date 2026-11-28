@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { StorageLike } from '../src/lib/progress';
-import { STORAGE_KEY, ProgressStore } from '../src/lib/progress';
+import { STORAGE_KEY, ProgressStore, practicePositionStorageKey } from '../src/lib/progress';
 import { VOCABULARY_PROGRESS_KEY, VocabularyProgressStore } from '../src/domain/vocabularyProgress';
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
@@ -716,6 +716,7 @@ describe('existing stores remain authoritative', () => {
     const storage = createRecordingStorage();
     // The three stores' canonical keys are untouched by the new boundary.
     expect(STORAGE_KEY).toBe('chabiko_completed_lessons');
+    expect(practicePositionStorageKey('lesson-001')).toBe('chabiko.lesson-practice.v1.lesson-001');
     expect(VOCABULARY_PROGRESS_KEY).toBe('chabiko:hsk-vocabulary-progress:v1');
     expect(BASIC_VOCABULARY_PROGRESS_KEY).toBe('chabiko:basic-vocabulary-progress:v1');
 
@@ -724,6 +725,7 @@ describe('existing stores remain authoritative', () => {
     const hskStore = new VocabularyProgressStore(storage);
     hskStore.applyRating('hsk-001', 'known');
     expect(storage._writes.map((w) => w.key)).toEqual([
+      practicePositionStorageKey('lesson-001'),
       STORAGE_KEY,
       VOCABULARY_PROGRESS_KEY,
     ]);

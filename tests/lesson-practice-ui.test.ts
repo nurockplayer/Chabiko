@@ -7,6 +7,9 @@ import * as practiceSession from '../src/lib/practiceSession';
 import * as timeoutManager from '../src/lib/timeoutManager';
 import * as progressSnapshot from '../src/lib/progressSnapshot';
 import * as practiceRefresh from '../src/lib/practiceRefresh';
+import { initTaiwanTravelQuiz } from '../src/client/taiwanTravelQuiz';
+import { TAIWAN_TRAVEL_LESSON_IDS } from '../src/domain/taiwanTravelAssessment';
+import { TaiwanTravelAssessmentStore } from '../src/lib/taiwanTravelAssessmentStore';
 
 const lessonPageSource = readFileSync(
   'src/pages/lessons/[id].astro',
@@ -17,20 +20,24 @@ const practiceComponentSource = readFileSync(
   'utf8',
 );
 
+function mountPracticeScript(): void {
+  const script = practiceComponentSource.split('<script>')[1].split('</script>')[0];
+  const { outputText } = ts.transpileModule(script, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS },
+  });
+  const imports: Record<string, unknown> = {
+    '../lib/progress': progress,
+    '../lib/practiceSession': practiceSession,
+    '../lib/timeoutManager': timeoutManager,
+    '../lib/progressSnapshot': progressSnapshot,
+    '../lib/practiceRefresh': practiceRefresh,
+  };
+  new Function('require', 'exports', outputText)((path: string) => imports[path], {});
+}
+
 it.each(['QuotaExceededError', 'SecurityError'])(
   'explains temporary lesson completion on %s',
   (errorName) => {
-    const script = practiceComponentSource.split('<script>')[1].split('</script>')[0];
-    const { outputText } = ts.transpileModule(script, {
-      compilerOptions: { module: ts.ModuleKind.CommonJS },
-    });
-    const imports: Record<string, unknown> = {
-      '../lib/progress': progress,
-      '../lib/practiceSession': practiceSession,
-      '../lib/timeoutManager': timeoutManager,
-      '../lib/progressSnapshot': progressSnapshot,
-      '../lib/practiceRefresh': practiceRefresh,
-    };
     const question = { promptJa: '質問', correctAnswer: '答え', choices: ['答え'], lessonId: 'lesson-001' };
     document.body.innerHTML = `
       <span id="lesson-completion-badge"></span>
@@ -42,7 +49,7 @@ it.each(['QuotaExceededError', 'SecurityError'])(
       if (key === progress.STORAGE_KEY) throw new DOMException('Write failed', errorName);
     });
     try {
-      new Function('require', 'exports', outputText)((path: string) => imports[path], {});
+      mountPracticeScript();
       document.querySelector<HTMLButtonElement>('.practice-choice')!.click();
       vi.advanceTimersByTime(1200);
 
@@ -61,6 +68,55 @@ it.each(['QuotaExceededError', 'SecurityError'])(
     }
   },
 );
+
+it('resets cached lesson and quiz sessions on Back after saved travel progress is cleared', () => {
+  const lessonId = 'lesson-002';
+  const questions = ['質問1', '質問2'].map((promptJa) => ({
+    promptJa, correctAnswer: '答え', choices: ['答え'], lessonId,
+  }));
+  document.body.innerHTML = `
+    <section data-questions='${JSON.stringify(questions)}'><div id="practice-root"></div></section>
+    <section id="quiz">
+      <p data-quiz-progress></p><div data-quiz-card></div>
+      <script type="application/json" id="taiwan-travel-quiz-data">${JSON.stringify({ lessonIds: TAIWAN_TRAVEL_LESSON_IDS })}</script>
+    </section>`;
+  const quiz = document.querySelector<HTMLElement>('#quiz')!;
+  const lessonProgress = () => document.querySelector('.practice-progress')?.textContent;
+  const quizProgress = () => quiz.querySelector('[data-quiz-progress]')?.textContent;
+  const returnFromCache = () => window.dispatchEvent(
+    Object.assign(new Event('pageshow'), { persisted: true }),
+  );
+  const listeners = vi.spyOn(window, 'addEventListener');
+  vi.useFakeTimers();
+  let cleanupQuiz: (() => void) | undefined;
+  try {
+    mountPracticeScript();
+    cleanupQuiz = initTaiwanTravelQuiz(quiz);
+    document.querySelector<HTMLButtonElement>('.practice-choice')!.click();
+    vi.advanceTimersByTime(1200);
+    quiz.querySelector<HTMLButtonElement>('[data-action="select"]')!.click();
+    quiz.querySelector<HTMLButtonElement>('[data-action="submit"]')!.click();
+
+    returnFromCache();
+    expect(lessonProgress()).toBe('質問 2 / 2');
+    expect(quizProgress()).toBe('1 / 24');
+
+    new TaiwanTravelAssessmentStore().clearAttempt();
+    new progress.ProgressStore().resetAll([lessonId]);
+    returnFromCache();
+
+    expect(lessonProgress()).toBe('質問 1 / 2');
+    expect(quizProgress()).toBe('0 / 24');
+    expect(quiz.querySelector('.taiwan-travel-quiz-answer')).toBeNull();
+  } finally {
+    cleanupQuiz?.();
+    for (const [type, listener] of listeners.mock.calls) window.removeEventListener(type, listener);
+    listeners.mockRestore();
+    vi.useRealTimers();
+    window.localStorage.clear();
+    document.body.replaceChildren();
+  }
+});
 
 describe('lesson practice answer visibility', () => {
   it('uses LessonPractice as the only learner-facing review prompt UI', () => {
