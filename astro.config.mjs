@@ -37,11 +37,41 @@ function pruneDevAssets() {
   };
 }
 
+function pagesContentSecurityPolicy() {
+  let supabaseOrigin = '';
+  return {
+    name: 'pages-content-security-policy',
+    hooks: {
+      'astro:config:setup'({ updateConfig }) {
+        updateConfig({ vite: { plugins: [{
+          name: 'pages-csp-supabase-origin',
+          apply: 'build',
+          configResolved({ env }) {
+            const url = URL.parse(env.PUBLIC_SUPABASE_URL?.trim() ?? '');
+            if (env.PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() &&
+                (url?.protocol === 'https:' || url?.protocol === 'http:')) {
+              supabaseOrigin = ` ${url.origin}`;
+            }
+          },
+        }] } });
+      },
+      async 'astro:build:done'({ dir }) {
+        const headersFile = new URL('_headers', dir);
+        const headers = await readFile(headersFile, 'utf8');
+        await writeFile(headersFile, headers.replace(' __SUPABASE_ORIGIN__', supabaseOrigin));
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site: 'https://chabiko.pages.dev',
   output: 'static',
   compressHTML: true,
-  integrations: [pruneDevAssets()],
+  integrations: [pruneDevAssets(), pagesContentSecurityPolicy()],
+  build: { inlineStylesheets: 'never' },
+  // Astro also uses this threshold when deciding whether to inline scripts.
+  vite: { build: { assetsInlineLimit: 0 } },
   server: {
     host: '0.0.0.0',
     port: 3000,
