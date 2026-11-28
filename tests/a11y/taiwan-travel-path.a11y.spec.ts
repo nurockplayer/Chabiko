@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { assertStructuralContract, BASE_URL } from './helpers';
+import { answerPractice, assertStructuralContract, BASE_URL } from './helpers';
 
 const ROUTE = '/paths/taiwan-travel/';
 const THEME_STORAGE_KEY = 'chabiko_theme';
@@ -13,6 +13,41 @@ const VIEWPORTS = [
 ] as const;
 const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
+
+test('resumes the Taiwan Travel quiz on reload and lesson practice on Back', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`${ROUTE}quiz/`);
+  for (let index = 0; index < 3; index++) {
+    await page.locator('[data-action="select"]').first().click();
+    await page.locator('[data-action="submit"]').click();
+    await page.locator('[data-action="next"]').click();
+  }
+  const prompt = page.locator('.taiwan-travel-quiz-prompt');
+  const score = page.locator('[data-quiz-score]');
+  const fourthPrompt = await prompt.textContent();
+  const scoreAfterThree = await score.textContent();
+  await page.reload();
+  await expect(page.locator('[data-quiz-progress]')).toHaveText('3 / 24');
+  await expect(prompt).toHaveText(fourthPrompt!);
+  await expect(score).toHaveText(scoreAfterThree!);
+  await expect(page.locator('.taiwan-travel-quiz-answer, [data-correct]')).toHaveCount(0);
+
+  await page.addInitScript(() => {
+    window.addEventListener('pageshow', (event) => {
+      document.documentElement.dataset.pageshowPersisted = String(event.persisted);
+    });
+  });
+  await page.goto('/lessons/lesson-002/#practice-heading');
+  await answerPractice(page, 'correct');
+  const practicePosition = page.locator('.practice-progress');
+  await expect(practicePosition).toHaveText('質問 2 / 2');
+  await page.locator('[data-phrasebook-link]').click();
+  await expect(page).toHaveURL(/\/phrasebook\//);
+  await page.goBack();
+  await expect(page.locator('html')).toHaveAttribute('data-pageshow-persisted', 'false');
+  await expect(practicePosition).toHaveText('質問 2 / 2');
+  await expect(page.locator('.practice-feedback')).toBeEmpty();
+});
 
 async function openRoute(
   page: Page,
