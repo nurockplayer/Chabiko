@@ -1,9 +1,11 @@
+import { getViteConfig } from 'astro/config';
 import { configDefaults, defineConfig } from 'vitest/config';
 
 const unicodeSuites = [
   'tests/unicode-review-cli.test.ts',
   'tests/unicode-review-workflow.test.ts',
 ];
+const draftDisclosureSuite = 'tests/draft-disclosure.test.ts';
 
 export default defineConfig({
   test: {
@@ -19,7 +21,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['tests/**/*.test.ts'],
-          exclude: [...configDefaults.exclude, ...unicodeSuites],
+          exclude: [...configDefaults.exclude, ...unicodeSuites, draftDisclosureSuite],
           pool: 'forks',
           // Build suites share .astro/public, and live Supabase suites share a database.
           fileParallelism: false,
@@ -27,6 +29,12 @@ export default defineConfig({
           execArgv: ['--no-experimental-webstorage'],
         },
       },
+      getViteConfig({
+        test: {
+          name: 'draft-disclosure',
+          include: [draftDisclosureSuite],
+        },
+      }),
       {
         test: {
           name: 'unicode-review',
