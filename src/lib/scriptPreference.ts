@@ -110,16 +110,17 @@ export class ScriptPreferenceStore {
    * authoritative for this page while reads still return it, and a later
    * cross-tab read can still see the last valid stored document.
    */
-  set(preference: ScriptPreference): void {
+  set(preference: ScriptPreference): boolean {
     this.preference = preference;
-    if (this.storage === null) return;
+    if (this.storage === null) return false;
     try {
       this.storage.setItem(
         SCRIPT_PREFERENCE_STORAGE_KEY,
         JSON.stringify(preferenceToDocument(preference)),
       );
+      return true;
     } catch {
-      /* quota or unavailable storage — keep in-memory state */
+      return false;
     }
   }
 

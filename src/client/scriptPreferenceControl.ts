@@ -93,6 +93,7 @@ export function initScriptPreferenceControl(
   active?.cleanup();
   if (!(select instanceof HTMLSelectElement)) return () => undefined;
   const boundSelect: HTMLSelectElement = select;
+  const saveStatus = document.getElementById('script-preference-save-status');
 
   const store = new ScriptPreferenceStore();
   let applied: ScriptPreference = readRootPreference(root);
@@ -102,6 +103,7 @@ export function initScriptPreferenceControl(
     applied = preference;
     root.dataset.scriptPreference = preference;
     boundSelect.value = preference;
+    if (changed && saveStatus) saveStatus.textContent = '';
     if (changed && dispatchChange) dispatchPreferenceChange(preference);
   }
 
@@ -110,8 +112,11 @@ export function initScriptPreferenceControl(
     if (!isControlledPreference(value)) return;
     if (value === applied) return;
     // Learner selection is the only path that persists.
-    store.set(value);
+    const saved = store.set(value);
     apply(value, true);
+    if (!saved && saveStatus) {
+      saveStatus.textContent = 'このブラウザには表記設定を保存できませんでした。このページでのみ反映されます。';
+    }
   }
 
   function onStorage(event: StorageEvent): void {

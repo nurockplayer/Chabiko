@@ -291,7 +291,12 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     );
     if (!wrote) {
       fragment.append(
-        textElement(document, 'taiwan-travel-quiz-completion-notice', 'ベストスコアを保存できませんでした。', 'ja'),
+        textElement(
+          document,
+          'taiwan-travel-quiz-completion-notice',
+          'このブラウザにはベストスコアを保存できませんでした。このページでのみ反映されます。',
+          'ja',
+        ),
       );
     }
     fragment.append(
