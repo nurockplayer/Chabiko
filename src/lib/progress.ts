@@ -7,7 +7,10 @@ export interface StorageLike {
 export const STORAGE_KEY = 'chabiko_completed_lessons';
 
 const PROBE_KEY = '__chabiko_probe__';
-const PRACTICE_POSITION_PREFIX = 'chabiko.lesson-practice.v1.';
+
+export function practicePositionStorageKey(lessonId: string): string {
+  return 'chabiko.lesson-practice.v1.' + lessonId;
+}
 
 function getDefaultStorage(): StorageLike | null {
   try {
@@ -70,7 +73,7 @@ export class ProgressStore {
   readPracticePosition(lessonId: string, questionCount: number): number {
     let raw: string | null | undefined;
     try {
-      raw = this.storage?.getItem(PRACTICE_POSITION_PREFIX + lessonId);
+      raw = this.storage?.getItem(practicePositionStorageKey(lessonId));
     } catch {
       return 0;
     }
@@ -83,7 +86,7 @@ export class ProgressStore {
 
   savePracticePosition(lessonId: string, index: number): void {
     try {
-      this.storage?.setItem(PRACTICE_POSITION_PREFIX + lessonId, String(index));
+      this.storage?.setItem(practicePositionStorageKey(lessonId), String(index));
     } catch {
       /* Continue the practice session in memory. */
     }
@@ -91,7 +94,7 @@ export class ProgressStore {
 
   private clearPracticePosition(lessonId: string): void {
     try {
-      this.storage?.removeItem(PRACTICE_POSITION_PREFIX + lessonId);
+      this.storage?.removeItem(practicePositionStorageKey(lessonId));
     } catch {
       /* Storage is unavailable. */
     }
@@ -125,8 +128,9 @@ export class ProgressStore {
     return this.persist();
   }
 
-  resetAll(): void {
+  resetAll(practiceLessonIds: readonly string[] = []): void {
     this.completed.clear();
+    for (const lessonId of practiceLessonIds) this.clearPracticePosition(lessonId);
     try {
       this.storage?.removeItem(STORAGE_KEY);
     } catch {

@@ -3,8 +3,12 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { StorageLike } from '../src/lib/progress';
-import { STORAGE_KEY } from '../src/lib/progress';
+import { ProgressStore, STORAGE_KEY } from '../src/lib/progress';
 import { ROLEPLAY_PROGRESS_KEY } from '../src/lib/roleplayProgress';
+import {
+  TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY,
+  TaiwanTravelAssessmentStore,
+} from '../src/lib/taiwanTravelAssessmentStore';
 import { VOCABULARY_PROGRESS_KEY } from '../src/domain/vocabularyProgress';
 import {
   BASIC_VOCABULARY_PROGRESS_KEY,
@@ -873,13 +877,19 @@ describe('dashboard client hydration', () => {
     expect(storage._writes).toEqual([]);
   });
 
-  it('clears Taiwan and roleplay progress, then re-renders', () => {
+  it('clears Taiwan and roleplay progress and resume state, then re-renders', () => {
     const storage = createRecordingStorage();
     storage._data[STORAGE_KEY] = JSON.stringify(['lesson-001', 'lesson-002']);
     storage._data[ROLEPLAY_PROGRESS_KEY] = JSON.stringify({
       version: 1,
       completedCardIds: ['roleplay-food-001'],
     });
+    const practice = new ProgressStore(storage);
+    practice.savePracticePosition('lesson-002', 1);
+    practice.savePracticePosition('lesson-003', 1);
+    storage._data[TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY] = 'saved attempt';
+    const assessment = new TaiwanTravelAssessmentStore(storage);
+    assessment.recordCompletedAttempt(12);
     const root = mountDashboard();
     const basic = createFakeBasicCoordinator(storage);
     initDashboard(root, TEST_PAYLOAD, { basicVocabulary: basic, storage });
@@ -892,6 +902,10 @@ describe('dashboard client hydration', () => {
 
     expect(storage._data[STORAGE_KEY]).toBeUndefined();
     expect(storage._data[ROLEPLAY_PROGRESS_KEY]).toBeUndefined();
+    expect(practice.readPracticePosition('lesson-002', 2)).toBe(0);
+    expect(practice.readPracticePosition('lesson-003', 2)).toBe(0);
+    expect(storage._data[TAIWAN_TRAVEL_QUIZ_ATTEMPT_KEY]).toBeUndefined();
+    expect(assessment.readBestScore()).toBe(12);
     expect(trackSummary(root, 'taiwan-travel')).toBe('0 / 3 レッスン完了');
     expect(trackStatus(root, 'taiwan-travel')).toBe('未開始');
   });
