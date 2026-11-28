@@ -10,7 +10,10 @@ import type {
   TaiwanTravelQuestion,
   TaiwanTravelQuizState,
 } from '../domain/taiwanTravelAssessment';
-import { TaiwanTravelAssessmentStore } from '../lib/taiwanTravelAssessmentStore';
+import {
+  TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
+  TaiwanTravelAssessmentStore,
+} from '../lib/taiwanTravelAssessmentStore';
 
 /**
  * Taiwan Travel comprehensive test client (#376).
@@ -139,6 +142,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
   const store = new TaiwanTravelAssessmentStore();
   let state: TaiwanTravelQuizState =
     store.restoreAttempt(questions) ?? createTaiwanTravelQuizSession(questions);
+  let unsavedBestScore = 0;
 
   function updateProgressAndScore(): void {
     const meter = root.querySelector<HTMLProgressElement>('[data-session-meter]');
@@ -271,7 +275,27 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
     }
   }
 
+  function formatBestScore(bestScore: number): string {
+    return `ベストスコア ${bestScore} / ${total}`;
+  }
+
+  function refreshBestScore(): void {
+    const label = cardElement.querySelector('.taiwan-travel-quiz-completion-best');
+    if (label) label.textContent = formatBestScore(Math.max(store.readBestScore(), unsavedBestScore));
+  }
+
+  function onStorage(event: StorageEvent): void {
+    if (event.key === TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY || event.key === null) {
+      refreshBestScore();
+    }
+  }
+
+  function onVisibilityChange(): void {
+    if (document.visibilityState === 'visible') refreshBestScore();
+  }
+
   function renderCompleted(score: number, { bestScore, wrote }: ReturnType<TaiwanTravelAssessmentStore['recordCompletedAttempt']>): void {
+    unsavedBestScore = wrote ? 0 : bestScore;
     const fragment = document.createDocumentFragment();
     fragment.append(
       textElement(document, 'taiwan-travel-quiz-completion-title', 'テスト完了', 'ja'),
@@ -288,7 +312,7 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
       textElement(
         document,
         'taiwan-travel-quiz-completion-best',
-        `ベストスコア ${bestScore} / ${total}`,
+        formatBestScore(bestScore),
         'ja',
       ),
     );
@@ -383,7 +407,11 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
   }
 
   function onPageShow(event: PageTransitionEvent): void {
-    if (!event.persisted || state.status === 'completed') return;
+    if (state.status === 'completed') {
+      refreshBestScore();
+      return;
+    }
+    if (!event.persisted) return;
     const restored = store.restoreAttempt(questions);
     if (restored === undefined) return;
     state = restored ?? createTaiwanTravelQuizSession(questions);
@@ -391,12 +419,16 @@ export function initTaiwanTravelQuiz(root: HTMLElement): () => void {
   }
 
   root.addEventListener('click', onClick);
+  window.addEventListener('storage', onStorage);
   window.addEventListener('pageshow', onPageShow);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   renderActive();
 
   const cleanup = (): void => {
     root.removeEventListener('click', onClick);
+    window.removeEventListener('storage', onStorage);
     window.removeEventListener('pageshow', onPageShow);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     if (cleanups.get(root) === cleanup) cleanups.delete(root);
   };
   cleanups.set(root, cleanup);

@@ -17,6 +17,11 @@ describe('rendered HSK quiz routes', () => {
       const html = readFileSync(join(output, `vocabulary/hsk/${pool.level}/quiz/index.html`), 'utf8');
       doc.body.innerHTML = html;
       expect(doc.querySelector('h1')?.textContent).toBe(`HSK ${pool.level} 単語テスト`);
+      const scriptControl = doc.querySelector('#script-preference-select');
+      const scriptNote = scriptControl?.nextElementSibling;
+      expect(scriptNote?.textContent).toBe('HSKテストでは簡体字を使います。');
+      expect(scriptNote?.hasAttribute('hidden')).toBe(true);
+      expect(scriptControl?.hasAttribute('aria-describedby')).toBe(false);
       expect(doc.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('テスト');
       expect(doc.querySelector('[data-quiz-start]')?.hasAttribute('disabled')).toBe(true);
       expect(doc.querySelectorAll('[name="length"]')).toHaveLength(2);
@@ -33,6 +38,7 @@ describe('rendered HSK quiz routes', () => {
       expect(doc.querySelectorAll('[data-hsk-quiz-best]')).toHaveLength(4);
       const levelHtml = readFileSync(join(output, `vocabulary/hsk/${pool.level}/index.html`), 'utf8');
       doc.body.innerHTML = levelHtml;
+      expect(doc.querySelector('#script-preference-note')).toBeNull();
       expect(doc.querySelector(`a[href="/vocabulary/hsk/${pool.level}/quiz/"]`)?.textContent?.trim()).toBe('テスト');
       expect(doc.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('学ぶ');
       expect(doc.querySelectorAll('[data-hsk-quiz-best]')).toHaveLength(4);

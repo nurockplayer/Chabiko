@@ -335,6 +335,44 @@ describe('taiwan travel assessment client', () => {
     }
   });
 
+  it.each(['storage', 'pageshow', 'visibilitychange'] as const)(
+    'refreshes only the completed best score on %s',
+    (event) => {
+      const payload = buildTaiwanTravelAssessmentPayload();
+      const root = createQuizRoot(payload.lessonIds as string[]);
+      const cleanup = initTaiwanTravelQuiz(root);
+
+      try {
+        driveFullAttempt(root, false);
+        const best = root.querySelector('.taiwan-travel-quiz-completion-best');
+        expect(best?.textContent).toBe('ベストスコア 0 / 24');
+        new TaiwanTravelAssessmentStore().recordCompletedAttempt(24);
+
+        if (event === 'storage') {
+          window.dispatchEvent(new StorageEvent(event, {
+            key: TAIWAN_TRAVEL_ASSESSMENT_STORAGE_KEY,
+            storageArea: window.localStorage,
+          }));
+        } else if (event === 'pageshow') {
+          window.dispatchEvent(new Event(event));
+        } else {
+          const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+          try {
+            document.dispatchEvent(new Event(event));
+          } finally {
+            visibility.mockRestore();
+          }
+        }
+
+        expect(best?.textContent).toBe('ベストスコア 24 / 24');
+        expect(root.querySelector('.taiwan-travel-quiz-completion-score')?.textContent).toBe('24問中 0問正解');
+      } finally {
+        cleanup();
+        root.remove();
+      }
+    },
+  );
+
   it('keeps the higher in-page best and warns on both attempts when storage writes fail', () => {
     const write = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
       throw new DOMException('Storage quota exceeded', 'QuotaExceededError');

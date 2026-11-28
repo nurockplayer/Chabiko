@@ -1,9 +1,10 @@
 ---
 export interface Props {
   themeEnabled?: boolean;
+  scriptPreferenceNote?: string;
 }
 
-const { themeEnabled = false } = Astro.props;
+const { themeEnabled = false, scriptPreferenceNote } = Astro.props;
 const isHome = Astro.url.pathname === '/';
 ---
 
@@ -43,11 +44,14 @@ const isHome = Astro.url.pathname === '/';
     }
     <div class="script-toggle-slot">
       <label for="script-preference-select">漢字表記</label>
-      <select id="script-preference-select" class="script-preference-select">
-        <option value="path-default">表記：標準</option>
-        <option value="traditional">表記：繁体字</option>
-        <option value="simplified">表記：簡体字</option>
-      </select>
+      <div class="script-preference-field">
+        <select id="script-preference-select" class="script-preference-select">
+          <option value="path-default">表記：標準</option>
+          <option value="traditional">表記：繁体字</option>
+          <option value="simplified">表記：簡体字</option>
+        </select>
+        {scriptPreferenceNote && <p id="script-preference-note" hidden>{scriptPreferenceNote}</p>}
+      </div>
     </div>
   </div>
   <p id="script-preference-save-status" role="status"></p>
@@ -236,6 +240,21 @@ const isHome = Astro.url.pathname === '/';
     letter-spacing: 0.08em;
     color: var(--ink-muted);
     white-space: nowrap;
+  }
+  .script-preference-field {
+    display: contents;
+  }
+  .script-preference-field:has(#script-preference-note:not([hidden])) {
+    display: grid;
+    justify-items: start;
+  }
+  #script-preference-note {
+    max-width: 6.5rem;
+    margin: 0 0 var(--sp-1);
+    color: var(--ink-secondary);
+    letter-spacing: normal;
+    line-height: 1.35;
+    white-space: normal;
   }
   .script-preference-select {
     min-height: 44px;

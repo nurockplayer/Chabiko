@@ -166,7 +166,18 @@ jobs:
           node-version: "24"
 
       - name: Verify production learner journey snapshots
+        id: visual-tests
         run: pnpm test:visual
+
+      - name: Upload visual regression failures
+        if: ${{ failure() && steps.visual-tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-failures-${{ github.run_attempt }}
+          path: |
+            test-results/**/*-actual.png
+            test-results/**/*-diff.png
+          retention-days: 7
 
       - name: Stage synthetic HSK 2 acceptance evidence
         env:
